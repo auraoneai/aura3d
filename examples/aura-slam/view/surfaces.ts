@@ -38,17 +38,32 @@ const grain = (kind: SurfaceKind) => {
   }
 };
 
+/**
+ * GU47 phase 3: World Tour colour overrides on top of the venue palette (the 4.6.2 `?look=original` keeps the palette). The
+ * blind panel found the World Tour Moon grey, muddy and low in contrast (mid-grey court on a mid-grey plane), so the lunar
+ * court is a cobalt acrylic inside a pale regolith apron on a darker charcoal plain: three clear value steps.
+ */
+export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPart, string>>>> = {
+  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#8e9297", ground: "#24272b" }
+};
+
 /** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */
 export function surfaceMaterial(venue: string | null | undefined, part: CourtPart): AuraMaterialSpec {
   const key = venueKey(venue);
-  const pal = VENUE_PALETTES[key]!;
+  const pal = { ...VENUE_PALETTES[key]!, ...WORLD_TOUR_PALETTE[key] };
   const kind = VENUE_SURFACE[key] ?? "acrylic";
-  const color = part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground;
+  const color = (part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground);
   // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
-  if (part === "ground") return kind === "regolith" ? material.planet("moon", { color, roughness: 0.98 }) : material.pbr({ color, roughness: 0.94 });
+  // GU47 phase 3: the engine's moon planet preset keeps its own pale #cbd5e1 whatever colour it is given, which washed the lunar
+  // plain out to a flat light grey; a plain PBR regolith in the palette charcoal keeps the court the brightest thing in frame.
+  if (part === "ground") return kind === "regolith" ? material.pbr({ color, roughness: 0.98, normal: grain(kind) }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
     case "acrylic":
-      return material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
+      // GU47 phase 3 (rubric: no environment reflections): the floodlit New York acrylic gets a glossier clearcoat so the floods
+      // and the night sky glint on the court; the day venues keep the panel-verified 0.35 / 0.35.
+      return key === "hard"
+        ? material.pbr({ color, roughness: part === "apron" ? 0.66 : 0.56, clearcoat: 0.6, clearcoatRoughness: 0.16, normal: grain(kind) })
+        : material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
     case "turf":
       return material.pbr({ color, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain(kind) });
     case "clay":

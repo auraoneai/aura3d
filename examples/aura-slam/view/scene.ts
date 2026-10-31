@@ -38,6 +38,9 @@ export const SCENE_NODE_IDS = [
 ] as const;
 
 /** Static box groups that venues recolour at runtime (C7): seats from `seat`, sponsor-board trim from `trim`. */
+/** The scoreboard gantry's place behind the far stand (the World Tour Moon drops it below the plain: view/renderer.ts). */
+export const GANTRY_POSITION: Vec3 = [0, 2.4, -15.6];
+
 export const STATIC_RUNTIME_IDS = { bleachers: "stadium-bleachers", sponsorTrim: "stadium-sponsor-trim" } as const;
 export const GRANDSTAND_LENGTH = 24;
 export const FLOODLIGHT_MAST_H = 9;
@@ -280,7 +283,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       castShadow: false,
       scaleMode: "fit",
       targetMaxDimension: 6.2
-    }).position(0, 2.4, -15.6),
+    }).position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION)),
     model(assets.rooftopFloodlightTowerMeshy, {
       name: "stadium-floodlight-left",
       role: "setDressing",

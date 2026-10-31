@@ -38,7 +38,7 @@ const hdri = (id: string, sizeBytes: number, sha256: string, source: string): Hd
  * venue's file is fetched: the boot venue's at mount, the next one on a venue change (`app.lighting.setEnvironment`).
  */
 const hdriDefinitions = {
-  rooftop_night: hdri("rooftop_night", 1629654, "4c8820e1517cc5fea7acaaa9b7ac1c043a4584f8b6042b6d6c72f8764abb255e", "Poly Haven rooftop_night"),
+  cobblestone_street_night: hdri("cobblestone_street_night", 1766411, "033963d2d4f34a98ee2b8d5989c29860eaaedfaf4a99e1205777a01262150a63", "Poly Haven cobblestone_street_night"),
   kloppenheim_02: hdri("kloppenheim_02", 1744238, "c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002", "Poly Haven kloppenheim_02"),
   venice_sunset: hdri("venice_sunset", 1437625, "ada97320249204fe041054c281ead9425e54302ac1538466a71cc9c1f381c725", "Poly Haven venice_sunset"),
   "outdoor-midday": hdri("outdoor-midday", 1173154, "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34", "Poly Haven kloppenheim_06_puresky (library outdoor-midday)"),
@@ -49,12 +49,21 @@ const hdriDefinitions = {
 export type VenueHdriKey = keyof typeof hdriDefinitions;
 export const venueHdriAssets: AuraAssetMap<typeof hdriDefinitions> = defineAuraAssets(hdriDefinitions as never) as AuraAssetMap<typeof hdriDefinitions>;
 
+/**
+ * The URL an emitted asset is fetched from. The bundler inlines small files (the 191-byte net tile) as a `data:` URI, whose
+ * `pathname` drops the scheme ("image/png;base64,..."): the page then requested it as a relative path, got a 404 and the net
+ * drew without its alpha tile (an opaque band). Keep the whole href for `data:` and `blob:` URLs, the path otherwise.
+ */
+export function emittedAssetUrl(url: URL): string {
+  return url.protocol === "data:" || url.protocol === "blob:" ? url.href : url.pathname;
+}
+
 type TextureAsset = AuraAssetDefinition & { readonly type: "texture"; readonly format: "png"; readonly url: string; readonly hash: string };
 
 /** `url` is a literal `new URL(..., import.meta.url)` at the call site so the bundler emits the file with the route. */
 const authoredTexture = (url: URL, file: string, sha256: string, sizeBytes: number): TextureAsset =>
   ({
-    type: "texture", format: "png", url: url.pathname, hash: `sha256-${sha256}`, sizeBytes,
+    type: "texture", format: "png", url: emittedAssetUrl(url), hash: `sha256-${sha256}`, sizeBytes,
     metadata: { license: "CC0-1.0", provenance: { sourcePath: `examples/aura-slam/assets/textures/${file}`, origin: "authored: examples/aura-slam/tools/gen-textures.mjs", sha256 } }
   }) as unknown as TextureAsset;
 
@@ -70,7 +79,7 @@ type LutAsset = AuraAssetDefinition & { readonly type: "lut"; readonly format: "
 /** `url` is a literal `new URL(..., import.meta.url)` at the call site so the bundler emits the file with the route. */
 const authoredLut = (url: URL, file: string, sha256: string, sizeBytes: number): LutAsset =>
   ({
-    type: "lut", format: "cube", url: url.pathname, hash: `sha256-${sha256}`, sizeBytes,
+    type: "lut", format: "cube", url: emittedAssetUrl(url), hash: `sha256-${sha256}`, sizeBytes,
     metadata: { license: "CC0-1.0", provenance: { sourcePath: `examples/aura-slam/assets/luts/${file}`, origin: "authored: examples/aura-slam/tools/gen-luts.mjs", sha256 } }
   }) as unknown as LutAsset;
 

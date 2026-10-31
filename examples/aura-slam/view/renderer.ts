@@ -14,7 +14,7 @@ import { createPoseRig } from "./poseRig";
 import type { AthleteRigPort } from "./rigPort";
 import { cachedMediaQuery } from "../ui/dom";
 import { createParticleUpdater } from "./particles";
-import { STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
+import { GANTRY_POSITION, STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
 import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
 import { lookMode, venueLook } from "./look";
@@ -197,11 +197,16 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     }
     const isGrass = key === "grass";
     for (const stripe of grassStripes) stripe.setScale(isGrass ? [1, 1, 1] : HIDDEN_SCALE).setVisible(isGrass);
-    // C7: the rest of the venue palette, and no crowd or grandstand on the Moon.
+    // C7: the rest of the venue palette, and no crowd or grandstand on the Moon in `?look=original`. GU47 phase 3: the blind
+    // panel found the World Tour Moon barren (no stands or crowd, an empty grey plain), so the World Tour seats a lunar crowd.
     h.backdrop?.setMaterial(material.pbr({ color: pal.background, roughness: 1, unlit: true }));
     h.bleachers?.setMaterial(material.pbr({ color: pal.seat, roughness: 0.85 }));
     h.sponsorTrim?.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
-    audienceVisible = !isMoonVenue(key);
+    audienceVisible = worldTour || !isMoonVenue(key);
+    // GU47 phase 3: the scoreboard gantry read as a tower floating in the black lunar sky; the Moon hides it (Earth stays clear).
+    // setVisible alone left the loaded GLB drawing (round-2 capture), so the Moon also drops it 60 m below the plain.
+    const gantryShown = !(worldTour && isMoonVenue(key));
+    h.gantry?.setVisible(gantryShown).setPosition(GANTRY_POSITION[0], gantryShown ? GANTRY_POSITION[1] : -60, GANTRY_POSITION[2]);
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
     standText?.setVisible(audienceVisible);
@@ -376,6 +381,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.bleachers = req(STATIC_RUNTIME_IDS.bleachers);
       h.sponsorTrim = req(STATIC_RUNTIME_IDS.sponsorTrim);
       h.grandstand = req("stadium-grandstand-rear");
+      try { h.gantry = req("stadium-scoreboard-gantry"); } catch { /* optional set dressing */ }
       try { app.camera?.shake.configure({ maxOffset: 0.18, maxAngleDeg: 0.35, frequency: 18, decayPerSecond: 2.6 }); } catch { /* optional */ }
       net = installSafetyNet({
         safety: options.safety ?? true,

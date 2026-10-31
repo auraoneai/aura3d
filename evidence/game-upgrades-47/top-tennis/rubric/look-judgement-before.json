@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/aura-slam/screens/final/1280-03-action.jpg",
+      "sha256": "76f644926cdfe78921a619b6dbdb648ef38cdc4bebcea4824026747ba5b2641d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/bp/top-tennis/frames/g01bp2-top-tennis-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "f8df93ba94de2ed2833eb1f1d9f2083a11f345ca5f00f2f37dca38e682af79b4"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/verify1/top-tennis/frames/gu47-verify1-top-tennis-1/top-tennis--grass--settle-60s.jpg",
+      "sha256": "c0970c36792f8492c24c4677fa419409dcd8ac26b63233b98481b9c6b31adb7c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/verify1/top-tennis/frames/gu47-verify1-top-tennis-2/top-tennis--clay--settle-60s.jpg",
+      "sha256": "5c18168ce08839cc89d9b548516311b62a5c5f4a857c16d266297d49490abaac"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 4.5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "NY hard court is lit by a flat directional light with a soft central hotspot and no clear flood rig. Paris clay has a warm low sun that creates readable drama, but its stands are mostly unlit dark boxes."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players cast soft, plausible shadows, and the umpire chair shadow is present. The net shadow on clay reads well. The large blocky shadows from stands in the London and Paris frames look aliased and blobby, and there are no contact shadows under the crowd."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No environment reflections are visible. The hard court has no sheen and the net has no specular response. Every surface reads matte and uniform."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Bleachers are filled with colorful voxel crowd blocks, and the London and Paris frames add a scoreboard tower and light poles. The surround is a flat green or orange ground plane extending to the edge with no walls or roof. In the first frame the crowd is reduced to a few floating cylinders."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Only a mild depth darkening is visible in the background of the London and Paris frames. There is no indoor haze, no light shafts and no particles such as clay dust."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Court surfaces are flat colors with faint stripes on grass and no wear, grain or clay texture. Line paint has no variation. The net is a solid black slab with no mesh transparency."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players are low-poly with readable racquets and outfits. The crowd consists of repeated chair-like voxel blocks with no varied silhouettes. The bench and umpire chair are simple primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "The court fills roughly 50–60% of the frame in the hard-court shots, larger than the 25–40% the recipe asks for. The highlighted service box gives a clear focal target. The London and Paris framing balances court and crowd well."
+    },
+    {
+      "category": "camera",
+      "seen": "The high broadcast angle is consistent and keeps both players readable. Perspective is mild and the court lines converge cleanly. The hard-court view crops the stands tightly at the sides."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is some soft tone mapping, and the clay frame has a slight vignette. No bloom, color grading or AO is evident, and edges show mild aliasing on the lines and stands."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames show a serve toss pose with the arm raised and a ready stance for the opponent. The poses are readable but stiff, and no motion blur or follow-through is visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard, power bar, ball speed gauge and how-to-play panel are cleanly styled and legible. The HUD crowds the corners and overlaps the court area. The on-court scoreboard text 'LONDON 0-0 0-0' adds diegetic flavor."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

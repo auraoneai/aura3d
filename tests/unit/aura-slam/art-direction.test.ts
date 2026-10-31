@@ -26,7 +26,7 @@ describe("GU47 TT-H3: Aura Slam art direction", () => {
     expect(direction.id).toBe("showcase-top-tennis");
     expect(direction.lighting.fill).toBe("ibl");
     expect(direction.lighting.key.shadow).toBe(true);
-    expect(direction.lighting.environment).toEqual({ hdri: "rooftop_night", background: "hdri" });
+    expect(direction.lighting.environment).toEqual({ hdri: "cobblestone_street_night", background: "hdri" });
     expect(direction.palette.primary.length).toBeGreaterThanOrEqual(3);
     expect(direction.references.length).toBeGreaterThanOrEqual(3);
     expect(direction.signatureEffect).toMatch(/ball marks/);

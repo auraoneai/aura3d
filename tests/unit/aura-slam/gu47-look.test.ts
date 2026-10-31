@@ -98,7 +98,7 @@ describe("GU47 TT-E1: one venue HDRI each", () => {
   it("six different catalogue HDRIs, none of them a look-preset HDRI, each file committed and under 6.5 MB", () => {
     const ids = VENUE_LOOK_ORDER.map((v) => VENUE_LOOKS[v].hdri);
     expect(new Set(ids).size).toBe(6);
-    expect(ids).toEqual(["rooftop_night", "kloppenheim_02", "venice_sunset", "outdoor-midday", "sunset-dramatic", "deep_space_starfield"]);
+    expect(ids).toEqual(["cobblestone_street_night", "kloppenheim_02", "venice_sunset", "outdoor-midday", "sunset-dramatic", "deep_space_starfield"]);
     for (const id of ids) {
       expect(LOOK_HDRIS).not.toContain(id);
       const url = venueHdriAssets[id].url;
@@ -213,7 +213,7 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     expect(log).toContain("output cinematic-film agx");
     log.length = 0;
     applyVenueRuntime(app, venueRuntimePlan(VENUE_LOOKS.moon));
-    expect(log).toContain("env /hdri/deep_space_starfield_1k.hdr 0.05");
+    expect(log).toContain("env /hdri/deep_space_starfield_1k.hdr 0.22");
     expect(log).toContain("fog none");
     log.length = 0;
     applyVenueRuntime(app, venueRuntimePlan(VENUE_LOOKS.hard));

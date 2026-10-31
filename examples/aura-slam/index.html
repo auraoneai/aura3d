@@ -6,6 +6,8 @@
     <title>Aura Slam 3D — Championship 3D Tennis on Aura3D</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="./ui/styles.css" />
+    <!-- page-parity: the quick bar comes from the shared port stylesheet, as on apps/showcase-top-tennis. -->
+    <link rel="stylesheet" href="../../apps/showcase-port-shared/quickbar.css" />
     <style>
       :root {
         --font-sans: "Graphik", sans-serif;
@@ -19,54 +21,15 @@
         color: #f3f0dc;
         font-family: "Graphik", sans-serif;
       }
-      .aura3d-top-bar {
-        position: fixed;
-        top: 12px;
-        right: 14px;
-        z-index: 60;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(9, 22, 28, 0.84);
-        border: 1px solid rgba(216, 255, 62, 0.32);
-        backdrop-filter: blur(10px);
-        font-family: "Graphik", sans-serif;
-        font-size: 12px;
-        color: #f3f0dc;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
-      }
-      .aura3d-top-bar .aura-badge {
-        font-family: "DIN Pro", sans-serif;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        color: #d8ff3e;
-        padding: 2px 7px;
-        border-radius: 999px;
-        background: rgba(216, 255, 62, 0.14);
-        font-size: 11px;
-      }
-      .aura3d-top-bar button {
-        appearance: none;
-        border: 1px solid rgba(243, 240, 220, 0.22);
-        background: rgba(255, 255, 255, 0.08);
-        color: #f3f0dc;
-        font-family: "Graphik", sans-serif;
-        font-size: 12px;
-        font-weight: 500;
-        height: 26px;
-        padding: 0 10px;
-        border-radius: 999px;
-        cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-      }
-      .aura3d-top-bar button:hover,
-      .aura3d-top-bar button.active {
-        background: #d8ff3e;
-        border-color: #d8ff3e;
-        color: #0b1f1c;
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Slam sets accents and keeps clear of its side HUDs. */
+      :root {
+        --a3d-accent: #d8ff3e;
+        --a3d-accent-ink: #0b1f1c;
+        --a3d-edge: rgba(216, 255, 62, 0.32);
+        --a3d-bg: rgba(9, 22, 28, 0.9);
+        --a3d-ink: #f3f0dc;
+        --a3d-dim: rgba(243, 240, 220, 0.78);
+        --a3d-bar-gutter: 340px;
       }
       .aura3d-controls-hint {
         position: fixed;
@@ -87,6 +50,11 @@
       }
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
+      }
+      body:has(.game-shell[data-mode=menu]) .aura3d-controls-hint { display: none; }
+      /* Desktop: the venue caption moves up so the hint bar never covers it. */
+      @media (min-width: 761px) {
+        body .court-caption { bottom: 52px; }
       }
       .boot {
         position: fixed;
@@ -120,12 +88,12 @@
       }
     </style>
   </head>
-  <body>  
+  <body>
     <div id="boot" class="boot" role="status" aria-live="polite">
       <div class="boot-title">AURA SLAM 3D</div>
       <div class="boot-sub">LOADING STADIUM &amp; 3D ATHLETES…</div>
     </div>
-    <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Aura Slam 3D Quick Switcher">
+    <div class="aura3d-top-bar" data-layout="pill" role="toolbar" aria-label="Aura3D Aura Slam 3D Quick Switcher">
       <button type="button" id="aura-btn-play" class="active" title="Jump straight into a live Single Match">Quick Match</button>
       <button type="button" id="aura-btn-practice" title="Overhead Smash Practice Drill">Smash Lab</button>
       <button type="button" id="aura-btn-auto" title="Toggle AI Autoplay">Auto</button>
@@ -136,6 +104,7 @@
       <button type="button" data-aura-venue="desert">Dubai</button>
       <button type="button" data-aura-venue="beach">Beach</button>
       <button type="button" data-aura-venue="moon">Moon</button>
+      <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
     </div>
     <div class="aura3d-controls-hint" id="aura-controls-hint">
       MOVE &amp; AIM: ARROWS/WASD · SERVE &amp; HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R (PRO/LEGEND) · POWER: SHIFT · PAUSE: P

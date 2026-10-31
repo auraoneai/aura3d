@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g01p3/screens-r1/1280-04-mid.jpg",
+      "sha256": "cc2ff7d2872384b69981812133bc88b7b1369506dfc026f6e71b245cdafbe093"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p3-r1/top-tennis/frames/g01p3-r1-2/top-tennis--default--settle-60s.jpg",
+      "sha256": "767b710a820b20e8652a3dfc30c1c0cdd9bbad87f0de2909b1aeeea8d567b893"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p3-r1/top-tennis/frames/g01p3-r1-1/top-tennis--moon--settle-60s.jpg",
+      "sha256": "15c412e36ba2f815afbc8d168e7880a41ff6832d88bdd8994f951d82f2163a76"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/verify1/top-tennis/frames/gu47-verify1-top-tennis-2/top-tennis--clay--settle-60s.jpg",
+      "sha256": "5c18168ce08839cc89d9b548516311b62a5c5f4a857c16d266297d49490abaac"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 3,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 4,
+    "animation_quality": 5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-2 use a flat overhead fill with only a soft central hotspot on the blue court, so the stands and court get almost no directional modeling. Paris has a warm low key with long raking shadows that reads well. The Moon frame is very dark, with the stands nearly unlit."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are short dark blobs in frames 1-2. Paris and the Moon show long hard shadows that sell the key direction. There is no contact softening and no shadows from the stands onto the floor in the top-down shots."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No environment reflections are visible anywhere. The hard court, the net posts and the Moon astronaut visors look matte or flat-shaded, with no specular response from the sky or arena."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The voxel crowd stands, umpire chair, bench and sponsor boards build a coherent arena. Venue variety (NY, Paris, Moon with planet and gantry) is a plus. The background structures beyond the stands are blurry, low-detail silhouettes, and the crowd is a repetitive tiled block pattern."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is no indoor haze, volumetric light or depth fog. Only the Paris backdrop has a slight distance blur, and the Moon backdrop is a flat black void with no depth cue."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Court surfaces are flat single colors with a faint noise texture. Clay has no grain or skid marks, and the hard court has no sheen variation. Crowd, chair and bench are untextured flat-shaded boxes, and the net is an opaque black slab with no mesh transparency."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly characters are readable but crude, with blocky limbs and simple rackets. Crowd figures are identical voxel stacks. The serve-box highlight is a flat pale quad that looks pasted on."
+    },
+    {
+      "category": "composition",
+      "seen": "The court fills roughly 60-70% of the frame in the top-down shots, larger than the target, and the overlay HUD crowds the top edge. The pulled-back Paris and Moon shots frame the court at about 35-40%, closer to the recipe, though with a lot of empty floor."
+    },
+    {
+      "category": "camera",
+      "seen": "The high broadcast angle reads the court clearly, but it is perspective rather than the recipe's orthographic look. The far player is small and sits near the top edge, close to being clipped by the HUD bar."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no bloom on the lights or the ball, no tone-mapping punch and no color grading in the NY frames. The image looks raw and slightly washed out. Edges show mild aliasing on the court lines and net top."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The serve toss pose and ready stances read plausibly from stills. Poses are stiff and blocky, though, with little weight shift visible between frames."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
