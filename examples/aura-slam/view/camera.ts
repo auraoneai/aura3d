@@ -1,5 +1,6 @@
 import { camera } from "@aura3d/engine";
 import type { Vec3 } from "../contract/units";
+import { lookMode } from "../ui/lookMode";
 
 export const CAMERA_EYE: Vec3 = [0, 25.5, 37.1];
 export const CAMERA_TARGET: Vec3 = [0, 0, 0.7];
@@ -57,7 +58,7 @@ export const CLASSIC_FRAMING_VENUES: ReadonlySet<string> = new Set(["hard", "bea
 export function cameraRigFor(search?: string): BroadcastCameraRig {
   const raw = search ?? (typeof location !== "undefined" ? location.search : "");
   const params = new URLSearchParams(raw);
-  if (params.get("cam") === "classic" || params.get("look") === "original") return CAMERA_CLASSIC;
+  if (params.get("cam") === "classic" || lookMode(raw) === "original") return CAMERA_CLASSIC;
   if (params.get("cam") === "v2") return CAMERA_V2;
   return CLASSIC_FRAMING_VENUES.has(params.get("venue") || "hard") ? CAMERA_CLASSIC : CAMERA_V2;
 }

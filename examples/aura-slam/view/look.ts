@@ -237,8 +237,5 @@ export function venueHdriUrl(look: Pick<VenueLook, "hdri">): string {
   return `/hdri/${look.hdri}_1k.hdr`;
 }
 
-/** `?look=original` keeps today's look (the 4.6.1 frame) for before/after captures. */
-export function lookMode(search?: string): "world-tour" | "original" {
-  const raw = search ?? (typeof location !== "undefined" ? location.search : "");
-  return new URLSearchParams(raw).get("look") === "original" ? "original" : "world-tour";
-}
+/** `?look=original` keeps today's look (the 4.6.1 frame); see ui/lookMode.ts for the per-venue fallback. */
+export { lookMode } from "../ui/lookMode";
