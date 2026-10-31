@@ -25,3 +25,15 @@ Status per acceptance line. "phase 2" = needs remote captures, measured budgets 
 | CH47-18 | <= 200 draws; <= 170 MB, no growth over 20 restarts; budget.json | partial: static pools already submit only on key change (CH-E3); 1024 px critters and lazy loads not done; budget.json committed; measured phase 2 |
 | CH47-20 | all categories >= 7; same_game false >= 0.8 vs 4 peers; 6 themes at 25/60 s; 0 warnings | art direction done; judging phase 2 |
 | CH47-19 | rows 20-25 change monotonically <= 4 luma/row; no jumps > 6 except the swap | code done (unit test on the key blend); pixels phase 2 |
+
+## Phase 3 (4.7.1)
+
+| Item | Acceptance | Status |
+|---|---|---|
+| Views better than 4.6.2 | blind panel >= 2 of 3 per view, at most 3 rounds | theme1 3/0, theme2 2/1 (g14p3r3), theme3 3/0, theme4 3/0 (g14p3r2): vivid look default. theme0 0/3, theme5 1/1/1 (g14p3r3): 4.6.2 look kept |
+| `?look=` switches | vivid, original, diorama force a look both ways | done (`defaultLookFor`, unit test) |
+| Rubric (PRD 1.2 goal 1) | every category >= 7 | not met: min 3 -> 4 (shadows); ui_hud 7; look-judgement.json (+ alt) |
+| Distinctness vs cloud-runner-port | same_game false >= 0.8 | 0.842, pass (sibling/cloud-runner-port-g14p3r2.json) |
+| Final screens and card | retaken on the release build | done (g14p3s1), card previews rebuilt; screens-fresh clear |
+| game-checks | 0 errors, fewest warnings | 0 errors, 14 warnings (luma-band, bands written for the diorama; not widened) |
+| Assets | coin, logs, pads, stones, kits, arches, lamp | blocked (WP-36) |

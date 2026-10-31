@@ -207,6 +207,22 @@ test.describe("cross hop audit capture", () => {
       log(`CH_DONE ${name}`);
     });
   }
+  // GU47 phase 3: HUD-visible frames of the views that open in the vivid look (rubric judgement input).
+  test("sc-screens-vivid", async ({ page }) => {
+    const name = "sc-screens-vivid";
+    for (const theme of [1, 2, 3, 4]) {
+      let loaded: number;
+      if (theme === 1) loaded = await open(page, name, `?seed=7&autoplay=1&theme=${theme}`, 1280, 720);
+      else {
+        await page.goto(`${serverOrigin}${APP}?seed=7&autoplay=1&theme=${theme}`, { waitUntil: "domcontentloaded" });
+        await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 });
+        loaded = Date.now();
+      }
+      await settle(page, loaded, 45);
+      await grab(page, name, `1280-vivid-theme${theme}`, true);
+    }
+    log(`CH_DONE ${name}`);
+  });
   test("sc-screens-card", async ({ page }) => {
     const name = "sc-screens-card";
     const loaded = await open(page, name, "?seed=7&autoplay=1", 1440, 900);

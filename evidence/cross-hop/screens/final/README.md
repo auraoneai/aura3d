@@ -1,4 +1,8 @@
-# Cross Hop: evidence screens (retaken 2026-10-29, audit lane G14)
+# Cross Hop: evidence screens (retaken 2026-10-31, GU47 phase 3 lane g14)
+
+Retaken 2026-10-31 from branch `gu47/g14` (4.7.0 plus the phase-3 vivid look), remote ACR run `g14p3s1`, software WebGL2 (SwiftShader), same spec, names and sizes; all ten frames come from that run (01-04 from `sc-screens-1280` / `sc-screens-390`, card from `sc-screens-card`, card-1x downscaled). Quick Play starts on Meadow, whose default stays the 4.6 look (blind panel g14p3r3), so these frames show the 4.6 look; HUD frames of the vivid views are in `evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme*.jpg`. The table below describes the 2026-10-29 set.
+
+## Previous set (2026-10-29, audit lane G14)
 
 Route: `apps/showcase-cross-hop`, built from branch `audit-fix/g14` (4.5.0 engine plus the lane G14 game fixes). This set replaces the 2026-10-25 set from `0d965903c`, which predated 4.5.0 (audit row RH-05). File names and sizes are unchanged.
 

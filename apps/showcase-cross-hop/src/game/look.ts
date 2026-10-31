@@ -243,3 +243,112 @@ export function keyAt(theme: number, next: number | null, row: number): { color:
     ...sun
   };
 }
+
+/**
+ * GU47 phase 3 (4.7.1): the "vivid" look. It keeps the 4.6 perspective chase camera, lanes and models (the blind panel
+ * rejected the diorama's steep camera) and replaces only light, sky, haze, palette of the floor and post:
+ * one shadowed sun from the camera's left, a little behind it (cast shadows fall to the right of each car),
+ * a hemisphere fill instead of the flat ambient, a gradient sky with a low sun glow on the horizon instead of the
+ * two flat boxes, theme-tinted distance haze for depth and a per-theme grade. Pure data, read by core.ts and tests.
+ */
+export interface VividLook {
+  readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
+  readonly hemi: { readonly sky: string; readonly ground: string; readonly intensity: number };
+  readonly environmentIntensity: number;
+  /** Painted sky; `glow` places the sky's sun glow low on the visible horizon (independent of the key). */
+  readonly sky: {
+    readonly zenith: string; readonly horizon: string; readonly ground: string; readonly horizonGlow: number;
+    readonly glow: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly discSize: number };
+    readonly stars?: { readonly count: number; readonly brightness: number };
+    readonly clouds?: { readonly coverage: number; readonly speed: number; readonly color: string };
+  };
+  readonly fog: { readonly color: string; readonly density: number };
+  /** The flat world floor beyond the lane strip (laid flat, so no sky band shows under the course). */
+  readonly floor: string;
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
+  readonly bloom: { readonly intensity: number; readonly threshold: number };
+  readonly exposureEv: number;
+}
+
+export const VIVID_LOOKS: readonly VividLook[] = [
+  { // 0 Meadow Roads: clear morning
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#ffe6c4", intensity: 1.9 },
+    hemi: { sky: "#cfe4ff", ground: "#5f8a45", intensity: 0.45 },
+    environmentIntensity: 0.5,
+    sky: { zenith: "#2a64b8", horizon: "#78b0e4", ground: "#9fc4a0", horizonGlow: 0.25, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 0.6, discSize: 0 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
+    fog: { color: "#a8cbe8", density: 0 },
+    floor: "#3f8a46",
+    grade: { contrast: 1.16, saturation: 1.18, temperature: 0.02 },
+    bloom: { intensity: 0.12, threshold: 0.95 },
+    exposureEv: -0.1
+  },
+  { // 1 Downtown Trams: bright overcast noon
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#f6f2ea", intensity: 1.6 },
+    hemi: { sky: "#e4e9ef", ground: "#727866", intensity: 0.55 },
+    environmentIntensity: 0.55,
+    sky: { zenith: "#4f78ac", horizon: "#9fbcdc", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
+    fog: { color: "#b8cadc", density: 0 },
+    floor: "#5f8a46",
+    grade: { contrast: 1.16, saturation: 1.16, temperature: -0.02 },
+    bloom: { intensity: 0.1, threshold: 1.0 },
+    exposureEv: -0.1
+  },
+  { // 2 Riverbend: amber golden hour
+    sun: { elevationDeg: 30, azimuthDeg: -62, color: "#ffc583", intensity: 2.0 },
+    hemi: { sky: "#ffd9b0", ground: "#5f6a36", intensity: 0.45 },
+    environmentIntensity: 0.45,
+    sky: { zenith: "#3f62a6", horizon: "#ffa860", ground: "#b0a070", horizonGlow: 0.55, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
+    fog: { color: "#f2b884", density: 0 },
+    floor: "#5e8f3e",
+    grade: { contrast: 1.16, saturation: 1.16, temperature: 0.06 },
+    bloom: { intensity: 0.16, threshold: 0.9 },
+    exposureEv: -0.1
+  },
+  { // 3 Emberline: lava-lit dusk
+    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ff9a66", intensity: 1.7 },
+    hemi: { sky: "#b07a90", ground: "#4a3a30", intensity: 0.9 },
+    environmentIntensity: 0.55,
+    sky: { zenith: "#2c2850", horizon: "#ff8a52", ground: "#4a3028", horizonGlow: 1.0, glow: { elevationDeg: 2, azimuthDeg: 200, color: "#ff7a3c", intensity: 1.5, discSize: 0.07 } },
+    fog: { color: "#a85a44", density: 0.006 },
+    floor: "#4e5548",
+    grade: { contrast: 1.12, saturation: 1.12, temperature: 0.1 },
+    bloom: { intensity: 0.32, threshold: 0.8 },
+    exposureEv: 0.1
+  },
+  { // 4 Neon District: lamplit night under a blue moon
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#b4c4ff", intensity: 1.1 },
+    hemi: { sky: "#5a6ab0", ground: "#22263c", intensity: 0.85 },
+    environmentIntensity: 0.5,
+    sky: { zenith: "#0a1236", horizon: "#4a3f96", ground: "#1c1a34", horizonGlow: 0.6, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ff5ad2", intensity: 0.9, discSize: 0 }, stars: { count: 1200, brightness: 1.1 } },
+    fog: { color: "#2e2c6e", density: 0.005 },
+    floor: "#3f5a52",
+    grade: { contrast: 1.12, saturation: 1.18, temperature: -0.08 },
+    bloom: { intensity: 0.4, threshold: 0.82 },
+    exposureEv: 0.2
+  },
+  { // 5 Critter Core: pastel studio toybox
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#fff4ea", intensity: 1.8 },
+    hemi: { sky: "#fbe8f2", ground: "#b6a6d8", intensity: 0.45 },
+    environmentIntensity: 0.5,
+    sky: { zenith: "#5a98e2", horizon: "#9cc8f2", ground: "#d8c8ee", horizonGlow: 0.2, glow: { elevationDeg: 4, azimuthDeg: 200, color: "#fff2f8", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.3, speed: 0.3, color: "#ffffff" } },
+    fog: { color: "#c4d6f2", density: 0 },
+    floor: "#6fbf62",
+    grade: { contrast: 1.18, saturation: 1.2, temperature: 0 },
+    bloom: { intensity: 0.12, threshold: 0.95 },
+    exposureEv: -0.2
+  }
+];
+
+/**
+ * Views whose default is the vivid look: the `?theme=N` variants (quick play and World Tour start on theme 0, so they
+ * follow theme 0) that a blind three-judge panel picked over the 4.6.2 frame. The others boot the 4.6 look; both
+ * `?look=vivid` and `?look=original` override this. Panel: g14p3r2 theme3 3/0, theme4 3/0; g14p3r3 theme1 3/0, theme2 2/1. Not better after three
+ * rounds, so on the 4.6 look: theme0 (g14p3r3 0/3) and theme5 (g14p3r3 1/1/1).
+ */
+export const VIVID_DEFAULT_THEMES: readonly number[] = [1, 2, 3, 4];
+
+/** The look a view boots with: an explicit `?look=` wins, otherwise the panel verdict for the starting theme. */
+export function defaultLookFor(lookParam: string | null, theme: number | null): "vivid" | "original" | "diorama" {
+  if (lookParam === "diorama" || lookParam === "original" || lookParam === "vivid") return lookParam;
+  return VIVID_DEFAULT_THEMES.includes(theme ?? 0) ? "vivid" : "original";
+}

@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Lanes are overcrowded and vehicles overlap or intersect: the red car clips into the truck in the centre and trucks cut into each other. The flat green plane runs up to an abrupt horizon, and the cluttered composition makes the play area harder to read, though the colours are more vivid.",
+     "Too many vehicles packed into the lanes, and some trucks overlap each other. The flat, oversaturated green grass gives no depth. The frog is seen from behind. The bright sky haze washes out the top left.",
+     "Badly overcrowded with identical box trucks, and vehicles overlap and clip each other (a red car pushes into a truck). The grass runs straight to a flat horizon line. The lane structure is hard to read, and only the frog's foreground area is clear."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The centre tram overlaps a red car and traffic is cluttered, but lighting, saturation and depth are better and the sun glow adds atmosphere.",
+     "The red car clips into the front tram. The back lanes are very cluttered. Haze around the sun makes the sky muddy.",
+     "Cluttered traffic, and a tram overlaps a red car in the front lane. A slight haze sits at the horizon. Brighter and more saturated overall, with a visible sun glow and a more vivid frog."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight warm haze near the horizon and trucks overlap the train in the far lanes, but the sunset mood, warm palette and lighting are clearly more attractive. The frog is seen from behind.",
+     "The warm sunset haze lowers contrast and washes out the sky and the far field. The trains appear to share road lanes with trucks. The frog is seen from behind and blends into the green.",
+     "Warm sunset haze slightly washes out the horizon, and the grass looks yellowish and a little desaturated. A train and trucks are crammed together in the same band and appear to overlap. Even so, it has a stronger mood and a warmer, more atmospheric look."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 1,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Back lanes are crowded with some overlapping vehicles and the frog faces away, but colours are more saturated, lighting is crisper and there is more depth and variety.",
+     "Pastel haze washes out the ground. The vehicles are crowded and overlap. The frog is seen from behind. Dark stepping discs look noisy and confusing.",
+     "Very cluttered background with many overlapping vehicles. The pale green foreground is low in contrast, and there is haze at the horizon. The palette is busier but richer, so overall quality is about equal to A."
+    ]
+   }
+  ]
+ }
+]

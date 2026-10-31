@@ -10,7 +10,7 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { THEME_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, THEME_LOOKS, VIVID_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
@@ -30,7 +30,7 @@ const CAP = {
  * GU47 WP-24: "diorama" is the tabletop tilt-shift look; "original" (`?look=original`) is the 4.6 look, kept
  * unchanged for before/after captures. main.ts sets it before the scene builds.
  */
-export type LookMode = "diorama" | "original";
+export type LookMode = "diorama" | "original" | "vivid";
 let lookMode: LookMode = "diorama";
 export function setLookMode(mode: LookMode): void { lookMode = mode; }
 export function getLookMode(): LookMode { return lookMode; }
@@ -339,6 +339,7 @@ function die(kind: Death["kind"], label: string): void {
 
 /** The theme look group for the current look mode (GU47 WP-24). */
 function buildLookGroup(th: (typeof THEMES)[number]) {
+  if (lookMode === "vivid") return buildVividLookGroup(THEMES.indexOf(th));
   return lookMode === "original" ? buildOriginalLookGroup(th) : buildDioramaLookGroup(THEMES.indexOf(th));
 }
 
@@ -474,6 +475,7 @@ const SPECTATOR_CRITTERS: readonly (keyof typeof assets)[] = [
 ];
 
 export function buildScene(): unknown {
+  if (lookMode === "vivid") return buildVividScene();
   return lookMode === "original" ? buildOriginalScene() : buildDioramaScene();
 }
 
@@ -528,6 +530,99 @@ function buildOriginalScene(): unknown {
   ]);
   s.addMany(poolNodes(false) as never[]);
   return s.toJSON();
+}
+
+/**
+ * GU47 phase 3 (4.7.1): the vivid look for one theme. The theme's preset brings its IBL and grade; its key, fog and
+ * bloom are dropped (the scene's `sun-key` is the one shadowed key, the scene bloom node carries the theme bloom) and a
+ * hemisphere fill plus theme-tinted distance haze are added. Same camera, lanes and models as the 4.6 look.
+ */
+function buildVividLookGroup(ti: number) {
+  const th = THEMES[ti]!;
+  const V = VIVID_LOOKS[ti]!;
+  const lookId = th.look as Parameters<typeof looks.preset>[0];
+  const group = looks.preset(lookId, {
+    fogDensityScale: 0,
+    exposureEv: V.exposureEv,
+    grade: { contrast: V.grade.contrast, saturation: V.grade.saturation, temperature: V.grade.temperature },
+    rim: false
+  }).runtime(game.runtimeNode("look")).toJSON();
+  const children = group.children
+    .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
+    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
+    .map((child) => (child.kind === "environment" ? { ...child, intensity: V.environmentIntensity, background: false } : child))
+    .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: V.hemi.sky, groundColor: V.hemi.ground, intensity: V.hemi.intensity }).toJSON()])
+    // Distance haze only where the panel liked it (dusk, night); the day views read washed out with it (g14p3r2).
+    .concat(V.fog.density > 0 ? [effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()] : []);
+  return { ...group, background: V.sky.horizon, children };
+}
+
+/** The vivid look's painted sky: gradient, a low sun glow on the visible horizon, clouds by day, stars at night. */
+function buildVividSky(ti: number) {
+  const V = VIVID_LOOKS[ti]!;
+  return sky.gradient({
+    name: "cross-hop sky",
+    zenith: V.sky.zenith,
+    horizon: V.sky.horizon,
+    ground: V.sky.ground,
+    horizonGlow: V.sky.horizonGlow,
+    sun: { elevationDeg: V.sky.glow.elevationDeg, azimuthDeg: V.sky.glow.azimuthDeg, color: V.sky.glow.color, intensity: V.sky.glow.intensity, discSize: V.sky.glow.discSize },
+    ...(V.sky.stars ? { stars: { count: V.sky.stars.count, brightness: V.sky.stars.brightness } } : {}),
+    ...(V.sky.clouds ? { clouds: { coverage: V.sky.clouds.coverage, speed: V.sky.clouds.speed, color: V.sky.clouds.color } } : {}),
+    captureEnvironment: false,
+    affectsFog: false
+  }).runtime(game.runtimeNode("sky")).toJSON();
+}
+
+/** The vivid look's key: one shadowed sun from the camera's left, a little behind it (2 camera-fitted cascades). */
+function buildVividSunKey(ti: number) {
+  const V = VIVID_LOOKS[ti]!;
+  const v = sunVector(V.sun.elevationDeg, V.sun.azimuthDeg);
+  return lights.directional({
+    name: "cross-hop sun",
+    position: [v[0] * SUN_DIST, v[1] * SUN_DIST, v[2] * SUN_DIST],
+    target: [0, 0, 0],
+    color: V.sun.color,
+    intensity: V.sun.intensity,
+    shadow: { cascades: 2, filter: "pcss", mapSize: 2048, maxDistance: 40, lightSize: 0.8, fit: "camera" }
+  }).runtime(game.runtimeNode("sun-key"));
+}
+
+/** GU47 phase 3: the vivid scene, the 4.6 chase camera with the vivid light, sky, haze and a flat world floor. */
+function buildVividScene(): unknown {
+  const V0 = VIVID_LOOKS[0]!;
+  const s = scene()
+    .background(V0.sky.horizon)
+    .add(buildLookGroup(THEMES[0]))
+    .add(buildVividSky(0))
+    .add(buildVividSunKey(0))
+    .add(effects.contactShadows({ intensity: 0.6, length: 0.3 }))
+    .add(effects.bloom({ intensity: V0.bloom.intensity, threshold: V0.bloom.threshold, radius: 0.3 }))
+    .add(effects.vignette({ intensity: 0.18, smoothness: 0.6 }))
+    .camera(camera.perspective({
+      position: [0, CAM.y, CAM.back],
+      target: [0, CAM.targetY, -CAM.ahead],
+      fov: CAM.fov
+    }));
+  s.addMany(poolNodes(false, true, V0.floor) as never[]);
+  return s.toJSON();
+}
+
+function swapVividLook(ti: number): void {
+  if (!app) return;
+  const V = VIVID_LOOKS[ti]!;
+  const n0 = app.nodes as unknown as { remove(id: string): void; add(n: never): void; get(id: string): unknown; require(id: string): { setMaterial?(m: unknown): void } };
+  const attempt = (fn: () => void): void => { try { fn(); } catch { /* best-effort */ } };
+  attempt(() => n0.remove("look"));
+  attempt(() => n0.add(buildVividLookGroup(ti) as never));
+  attempt(() => n0.remove("sky"));
+  attempt(() => n0.add(buildVividSky(ti) as never));
+  attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: V.floor, roughness: 0.96, metalness: 0 })));
+  try {
+    (n0.get("sun-key") as LightHandleLike | undefined)?.setLight?.({ color: V.sun.color, intensity: V.sun.intensity, direction: sunDirection(V.sun.elevationDeg, V.sun.azimuthDeg) }, { transitionSeconds: reducedMotion ? 0 : 0.6 });
+  } catch { /* setLight needs A3D_QR_LIGHTING */ }
+  try { post()?.setEffect?.("bloom", { intensity: V.bloom.intensity, threshold: V.bloom.threshold }); } catch { /* post v2 only */ }
+  appliedLook = ti;
 }
 
 /** Tilt-shift band centre at boot (the player row sits low in the diorama frame); updated every frame. */
@@ -601,7 +696,7 @@ function ambientNode(ti: number): AuraSceneNode | null {
 }
 
 /** Instanced pools, the critters and the floor; `diorama` picks the GU47 materials and the surface pools. */
-function poolNodes(diorama: boolean) {
+function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   const th0 = THEMES[0];
   const groundMat = material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0.04 });
   const detailMat = material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.06 });
@@ -619,10 +714,10 @@ function poolNodes(diorama: boolean) {
     primitives.plane({
       name: "world-floor",
       size: [1, 1, 1],
-      material: material.pbr({ color: th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
+      material: material.pbr({ color: floorColor ?? th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
       castShadow: false,
       receiveShadow: true
-    }).position(0, -0.16, -20).rotate(diorama ? 0 : -Math.PI / 2, 0, 0).scale(diorama ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
+    }).position(0, -0.16, -20).rotate(flatFloor ? 0 : -Math.PI / 2, 0, 0).scale(flatFloor ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
@@ -1111,6 +1206,7 @@ function syncLamps(ti: number, force = false): void {
 
 function swapLook(ti: number): void {
   if (lookMode === "diorama") { swapDioramaLook(ti); return; }
+  if (lookMode === "vivid") { swapVividLook(ti); return; }
   if (!app) return;
   const th = THEMES[ti];
   try {
@@ -1260,8 +1356,10 @@ export function syncVisuals(alpha = 1): void {
       const ry = l.dir > 0 ? 0 : Math.PI;
       if (l.moverKind === "log") {
         // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
-        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#7a4a24", 0, Math.PI / 2);
-        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e2c08a", 0, Math.PI / 2);
+        // Vivid look: lacquered terracotta toy logs with butter-yellow ends (the PRD G14 palette), not bark brown.
+        const vivid = lookMode === "vivid";
+        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, vivid ? CROSS_HOP_PALETTE.terracotta : "#7a4a24", 0, Math.PI / 2);
+        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, vivid ? CROSS_HOP_PALETTE.butterYellow : "#e2c08a", 0, Math.PI / 2);
       }
       // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
       else if (l.moverKind === "pad") inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.92, PAD_H, 0.92, "#4f9e4f");
