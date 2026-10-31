@@ -95,8 +95,6 @@ export const islandInstancedSpec = (): CustomSpec => ({
 
 /** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
 export const flagInstancedSpec = (): CustomSpec => ({
-  /** GU47 phase 4: the depth pass runs the instanced vertex stage, so flags, posts and the pilgrim gates cast the sun shadow. */
-  castShadow: true,
   glsl: { vertex: FLAG_INSTANCED_VERTEX, fragment: FLAG_INSTANCED_FRAGMENT },
   uniforms: {
     flagTime: { type: "f32", value: 0 },
@@ -126,7 +124,17 @@ export const roadSpec = (): CustomSpec => ({
     roadJade: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.jade)] },
     roadSpine: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.spine)] },
     roadBelly: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.belly)] },
-    roadTime: { type: "f32", value: 0 }
+    roadTime: { type: "f32", value: 0 },
+    /**
+     * GU47 phase 4: analytic sun shadows of the pilgrim gates (world.ts GATE_*), since their shadow-map casts do not land on
+     * this custom road in software WebGL2. gateSun = (ground direction away from the sun along the road, across it, tan of
+     * the sun elevation); gateSpacing, post offset; gateSkip = road distances of the two nearest stage boards (no gate there).
+     * gateSun.z 0 (default, `?look=original`) draws nothing.
+     */
+    gateSun: { type: "vec3", value: [0, 0, 0] },
+    gateSpacing: { type: "f32", value: 54 },
+    gatePost: { type: "f32", value: 5.6 },
+    gateSkip: { type: "vec2", value: [-1e6, -1e6] }
   },
   side: "double"
 });
