@@ -310,9 +310,10 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "the regolith of a lunar mare",
     timeOfDay: "airless black-sky day under an earthrise",
     base: "space",
-    // GU47 phase 3: the starfield at 0.25 drew a flat black sky (darkFrac 0.39 vs the PRD LINKS-16 <= 0.35); 0.6 shows
-    // the Milky Way band
-    hdri: { id: "deep_space_starfield", intensity: 0.6, drawn: true, sunAzimuthInHdriDeg: null, want2k: true },
+    // GU47 phase 3: the starfield at 0.25 drew a flat black sky (darkFrac 0.39 vs the PRD LINKS-16 <= 0.35) and 0.6 still
+    // did (0.386, run g10p3-r4-2): the 1k file's median texel is 2e-4 and its 70th percentile 7e-3 linear, so the star
+    // field only reaches the frame at about 4x; its IBL stays a faint fill (mean texel about 0.01 x 4)
+    hdri: { id: "deep_space_starfield", intensity: 4, drawn: true, sunAzimuthInHdriDeg: null, want2k: true },
     sun: { azimuthDeg: 40, elevationDeg: 25 },
     key: { color: "#ffffff", intensity: 3.6, colorTemperatureK: 5900 },
     // earthshine: a faint blue fill from the Earth's side, no shadow (LINKS-16)
