@@ -1,6 +1,6 @@
 import { effects, game, lights } from "@aura3d/engine";
 import { venueLutUrl } from "./assets";
-import { BROADCAST_DOF } from "./camera";
+import { broadcastDofFor, type BroadcastCameraRig } from "./camera";
 import { FLOODLIGHTS, sunPosition, venueLook, type VenueLook, type VenueSun } from "./look";
 
 /**
@@ -118,7 +118,8 @@ export const POST_EFFECT = { bloom: "bloom", grade: "colorGrade", vignette: "vig
  * an `smaa` resolution (`compiler/postprocess.ts`, "SMAA is not implemented") and the node type does not accept it, so
  * authoring it would drop AA (handoff to E-C in the lane report).
  */
-export function postEffects(venueId?: string | null) {
+export function postEffects(venueId?: string | null, rig: Pick<BroadcastCameraRig, "id"> = { id: "v2" }) {
+  const dof = broadcastDofFor(rig);
   const look = venueLook(venueId);
   const g = look.grade;
   return [
@@ -128,7 +129,7 @@ export function postEffects(venueId?: string | null) {
     effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...lutFields(g) }),
     effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" }),
     // TT-P2: long-lens DOF (the engine's tier resolution runs it at High / Ultra only; no stage on Medium or Low).
-    effects.depthOfField({ focusDistance: BROADCAST_DOF.focusDistance, fStop: BROADCAST_DOF.fStop, focalLength: BROADCAST_DOF.focalLength })
+    effects.depthOfField({ focusDistance: dof.focusDistance, fStop: dof.fStop, focalLength: dof.focalLength })
   ];
 }
 

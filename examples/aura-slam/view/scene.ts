@@ -62,7 +62,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   } else {
     // TT-L1 / TT-L2 / TT-P1: one shadowed key + four floodlights (night court), the venue's grade, SMAA and contact shadows.
     for (const light of sceneLights(boot)) s.add(light);
-    for (const effect of postEffects(boot)) s.add(effect);
+    for (const effect of postEffects(boot, camRig)) s.add(effect);
     // TT-E1: the venue HDRI lights the court (fill) and shows where the sky does; it replaces the flat backdrop wall.
     s.add(environments.hdri({
       name: VENUE_ENVIRONMENT_NAME,
