@@ -25,11 +25,14 @@ import {
 import { createNinjaPresenter, viewOf } from "./presentation";
 import { EVENING_EXPOSURE, lookMode } from "./districtLook";
 import { atDistance, qaCrops } from "./qa";
+import { installPerfProbe } from "./perfProbe";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => { const v = Number(params.get(key)); return params.has(key) && Number.isFinite(v) ? v : fallback; };
 const daily = params.get("daily") === "1";
+// GU47 phase 2: `?perf=1|2` frame-cost probe for the software-WebGL2 runner (perfProbe.ts); off without the parameter.
+if (params.has("perf")) installPerfProbe(num("perf", 1));
 const config = {
   seed: (daily ? dailySeed() : num("seed", DEFAULT_SEED)) | 0,
   daily,
