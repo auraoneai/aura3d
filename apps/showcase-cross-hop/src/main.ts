@@ -3,6 +3,7 @@ import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
+import { defaultLookFor } from "./game/look";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -37,11 +38,12 @@ setReducedMotion(REDUCED_MOTION);
  * the diorama is opt-in through `?look=diorama`; `?look=original` still names the 4.6 look explicitly.
  */
 /**
- * GU47 phase 3 (4.7.1): the vivid look (the 4.6 chase camera with a shadowed sun, gradient sky, distance haze, flat
- * floor and per-theme grade) is the default; `?look=original` boots the 4.6 look and `?look=diorama` the tabletop.
+ * GU47 phase 3 (4.7.1): the vivid look (the 4.6 chase camera with a shadowed sun, gradient sky, flat floor and
+ * per-theme grade) is the default for the views a blind panel picked over 4.6.2 (`VIVID_DEFAULT_THEMES`, by starting
+ * theme); the rest boot the 4.6 look. `?look=vivid`, `?look=original` and `?look=diorama` force a look.
  */
-const LOOK_PARAM = params.get("look");
-setLookMode(LOOK_PARAM === "diorama" ? "diorama" : LOOK_PARAM === "original" ? "original" : "vivid");
+const THEME_PARAM = params.get("theme");
+setLookMode(defaultLookFor(params.get("look"), THEME_PARAM !== null ? parseInt(THEME_PARAM, 10) : null));
 const DIORAMA = getLookMode() === "diorama";
 if (DIORAMA) document.body.classList.add("ch-diorama");
 

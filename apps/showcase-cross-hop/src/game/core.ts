@@ -551,10 +551,9 @@ function buildVividLookGroup(ti: number) {
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
     .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
     .map((child) => (child.kind === "environment" ? { ...child, intensity: V.environmentIntensity, background: false } : child))
-    .concat([
-      lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: V.hemi.sky, groundColor: V.hemi.ground, intensity: V.hemi.intensity }).toJSON(),
-      effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()
-    ]);
+    .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: V.hemi.sky, groundColor: V.hemi.ground, intensity: V.hemi.intensity }).toJSON()])
+    // Distance haze only where the panel liked it (dusk, night); the day views read washed out with it (g14p3r2).
+    .concat(V.fog.density > 0 ? [effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()] : []);
   return { ...group, background: V.sky.horizon, children };
 }
 
