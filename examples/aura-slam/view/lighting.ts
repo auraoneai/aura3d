@@ -128,6 +128,10 @@ export function postEffects(venueId?: string | null, rig: Pick<BroadcastCameraRi
     // TT-P3: the venue's authored .cube on top of the contrast / saturation / white-balance grade.
     effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...lutFields(g) }),
     effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" }),
+    // GU47 phase 4 (rubric shadows / ibl_reflections): GTAO grounds the stands, bench, chair and boards (High+ tiers), and the
+    // screen-space reflection stage traces the sealed acrylic courts (surfaces.ts; rough turf, clay and dust fade out above 0.5).
+    effects.ambientOcclusion({ intensity: 0.9, radius: 0.9, falloff: 1 }),
+    effects.screenSpaceReflections({ intensity: 0.75, maxDistance: 28, roughness: 0.5, thickness: 0.3 }),
     // TT-P2: long-lens DOF (the engine's tier resolution runs it at High / Ultra only; no stage on Medium or Low).
     effects.depthOfField({ focusDistance: dof.focusDistance, fStop: dof.fStop, focalLength: dof.focalLength })
   ];

@@ -14,11 +14,14 @@ const flat = (nodes: Node[] = []): Node[] => nodes.flatMap((n) => [n, ...flat(n.
 const nodesOf = (venue: string, look?: "original") => flat((buildTennisScene(createPoseRig(), { venue, look }).toJSON() as unknown as { nodes: Node[] }).nodes);
 
 describe("GU47 TT-M1: hero court surfaces", () => {
-  it("acrylic courts (hard, desert, beach) carry a clearcoat (0.35; the floodlit hard court 0.6, phase 3) and a grain normal", () => {
+  it("acrylic courts (hard, desert, beach) carry a sealed clearcoat (1.0 at 0.06, phase 4; the apron a satin 0.7) and a grain normal", () => {
     for (const venue of ["hard", "desert", "beach"]) {
       expect(VENUE_SURFACE[venue]).toBe("acrylic");
       const court = surfaceMaterial(venue, "court");
-      expect(court.clearcoat, venue).toBe(venue === "hard" ? 0.6 : 0.35);
+      expect(court.clearcoat, venue).toBe(1);
+      expect(court.clearcoatRoughness, venue).toBeLessThanOrEqual(0.1);
+      expect(court.roughness, venue).toBeLessThan(0.5);
+      expect(surfaceMaterial(venue, "apron").clearcoat, venue).toBe(0.7);
       expect(court.normal).toBeDefined();
       expect(court.color).toBe(VENUE_PALETTES[venue]!.court);
     }
@@ -33,12 +36,13 @@ describe("GU47 TT-M1: hero court surfaces", () => {
     }
   });
 
-  it("turf has a 0.6 sheen, clay roughness 0.95, regolith on the Moon", () => {
+  it("turf has a 0.6 sheen, clay roughness 0.95, regolith on the Moon (its cobalt court sealed like acrylic since phase 4)", () => {
     expect(surfaceMaterial("grass", "court").sheen).toBe(0.6);
     expect(surfaceMaterial("clay", "court").roughness).toBe(0.95);
     expect(surfaceMaterial("clay", "alley").roughness).toBe(0.95);
     expect(VENUE_SURFACE.moon).toBe("regolith");
-    expect(surfaceMaterial("moon", "court").roughness).toBeGreaterThanOrEqual(0.95);
+    expect(surfaceMaterial("moon", "apron").roughness).toBeGreaterThanOrEqual(0.95);
+    expect(surfaceMaterial("moon", "court").clearcoat).toBe(1);
   });
 
   it("the boot venue's surface materials and the #fbfbf5 lines are authored; ?look=original keeps the flat 4.6.1 court", () => {
