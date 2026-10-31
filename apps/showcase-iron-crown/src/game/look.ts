@@ -125,7 +125,12 @@ export interface StageLookRow {
   readonly key: SunKey | FollowSpotKey;
   readonly backRim: BackRim;
   readonly panels: readonly RectPanel[];
-  readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
+  /**
+   * Linear range fog (GU47 phase 2): clear inside `near`, ramping to `maxOpacity` at `far`, never over the sky. A bare
+   * near/far override made the look emit a C-21 height fog at density 24/far with no opacity cap under the default-on
+   * A3D_QR_VFX_FOG, which buried the fighters (74 % at 6 m on the Colosseum, 93 % black on the Crown).
+   */
+  readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number; readonly maxOpacity: number };
   readonly fogDensityScale: number;
   readonly exposureEv: number;
   /**
@@ -161,7 +166,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     look: "arena-fight",
     post: "arena-fight",
     hdri: "warm_bar",
-    environmentIntensity: 0.25,
+    environmentIntensity: 0.55,
     environmentRotationDeg: 0,
     background: BLACK_IRON,
     accent: "#ff4d1f",
@@ -179,7 +184,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     },
     backRim: { ...RIM, intensity: 18 },
     panels: [],
-    fog: { color: "#140b0c", near: 7, far: 36 },
+    fog: { color: "#140b0c", near: 7, far: 36, maxOpacity: 0.5 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.22, saturation: 1.08, temperature: 0.12, tint: 0.02 },
@@ -209,7 +214,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
       { name: "neo-tokyo magenta panel", color: "#ff3fa4", position: [-4.7, 2.6, -1.9], target: [-1.2, 1.1, 0], width: 1.1, height: 2.6, intensity: 7 },
       { name: "neo-tokyo cyan panel", color: "#3fe0ff", position: [4.7, 2.4, -1.9], target: [1.2, 1.1, 0], width: 1.1, height: 2.4, intensity: 6 }
     ],
-    fog: { color: "#0b1020", near: 10, far: 64 },
+    fog: { color: "#0b1020", near: 10, far: 64, maxOpacity: 0.55 },
     fogDensityScale: 1,
     exposureEv: 0.35,
     grade: { contrast: 1.12, saturation: 1.15, temperature: -0.12, tint: 0.06 },
@@ -235,7 +240,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ff9a52", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#c47a4e", near: 18, far: 120 },
+    fog: { color: "#c47a4e", near: 18, far: 120, maxOpacity: 0.45 },
     fogDensityScale: 1,
     exposureEv: 0.05,
     grade: { contrast: 1.1, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
@@ -259,7 +264,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 9 },
     panels: [],
-    fog: { color: "#c9a46a", near: 8, far: 70 },
+    fog: { color: "#c9a46a", near: 8, far: 70, maxOpacity: 0.4 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.18, saturation: 0.92, temperature: 0.18, tint: 0, lut: assets.ironcrownLutColosseumOchre },
@@ -282,7 +287,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#b8724a", near: 15, far: 110 },
+    fog: { color: "#b8724a", near: 15, far: 110, maxOpacity: 0.45 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.14, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
@@ -305,7 +310,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 10 },
     panels: [],
-    fog: { color: "#b9c8d8", near: 14, far: 90 },
+    fog: { color: "#b9c8d8", near: 14, far: 90, maxOpacity: 0.5 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.04, saturation: 0.9, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
@@ -350,7 +355,12 @@ export function stageLookOverrides(row: StageLookRow): AuraLookOverrides {
         }
       : {}),
     rim: false,
-    fog: row.fog,
+    fog: {
+      color: row.fog.color,
+      near: row.fog.near,
+      far: row.fog.far,
+      height: { mode: "linear", near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity, affectsBackground: false }
+    },
     grade: row.grade,
     post: { bloom: row.bloom }
   };
