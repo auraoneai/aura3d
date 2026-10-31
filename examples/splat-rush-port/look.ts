@@ -158,7 +158,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       bounceIntensity: 0.42,
       bounceDirection: [0.2, -0.35, 1],
       rim: { color: "#ffb27a", intensity: 0.55, threshold: 0.62 },
-      fogDensity: 0.0062,
+      fogDensity: 0.0055,
       gloss: { ball: 0.55, fresh: 0.7, drySeconds: 2, shininess: 48 },
       canvas: { weave: 0.05, streak: 0.06 },
       skyReflect: 0.8,
@@ -200,7 +200,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     post: {
       bloom: { intensity: 0.6, threshold: 0.88, scatter: 0.6 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.1, saturation: 1.14, temperature: 0.06, gain: 1.4 },
+      grade: { contrast: 1.14, saturation: 1.14, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
@@ -208,7 +208,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     cloudSea: { y: -22, color: "#a99bc9", scroll: 0.35 },
     vfx: true,
     ribbon: { points: 12, width: 0.42, alpha: 0.55 },
-    camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -9 },
+    camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -6 },
     streaks: { color: "#ffe2c6", alpha: 0.24 },
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },

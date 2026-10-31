@@ -92,6 +92,7 @@ describe("GU47 phase 3: sky reflection and deck contact (presentation uniforms)"
     const toon = LOOKS.carnival.toon!;
     expect(u({ contact: true }).crContact?.value).toEqual([toon.contact.height, toon.contact.strength]);
     expect(u({}).crSkyReflect?.value).toBe(toon.skyReflect);
+    expect(u({ reflect: false }).crSkyReflect?.value).toBe(0);
     expect(LOOKS.original.streaks).toEqual({ color: "#ffffff", alpha: 0.4 });
     expect(LOOKS.original.camera).toBeNull();
   });

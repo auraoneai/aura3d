@@ -116,12 +116,14 @@ export interface CarnivalSurface {
   readonly wobble?: boolean;
   /** GU47 phase 3 contact darkening where the prop meets the deck (ball, rails, gates, bunting). */
   readonly contact?: boolean;
+  /** GU47 phase 3 sky reflection on (default); off on flat splatters, whose reflected ray hits the warm band and shifts the player colour. */
+  readonly reflect?: boolean;
 }
 
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true } = surface;
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
     glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone) },
@@ -135,7 +137,7 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crShininess: { type: "f32", value: look.toon.gloss.shininess },
       crDry: { type: "vec3", value: [0, 1, drySeconds] },
       crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] },
-      crSkyReflect: { type: "f32", value: look.toon.skyReflect },
+      crSkyReflect: { type: "f32", value: reflect ? look.toon.skyReflect : 0 },
       crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
@@ -770,7 +772,7 @@ export function buildWorld(options: WorldOptions): World {
   ]);
   const splats = new Batch(splatMesh, POOL.splatters, hexLinear(COLORS[0] as string));
   splatVertexCount = splats.vertsPer;
-  addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0 }));
+  addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
 
   /* particles (world space, rewritten while any is alive), clouds (drift frame), streaks (rewritten per frame), shield */
   const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles, [1, 1, 1]);
