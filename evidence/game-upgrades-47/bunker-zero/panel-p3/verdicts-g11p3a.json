@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor is flat, untextured grey; the hall reads as a little low-contrast and hazy in the distance; the wall concrete texture is faint but present.",
+     "The concrete wall texture is subtle. The floor is still mostly flat and the overall image is beige and low-contrast. Distant enemies are small.",
+     "Floor is flat and untextured, which looks plain. Distant enemies are small and low-contrast. The red barrel and blue crate look a bit plasticky."
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor texture is a little blurry and smeared up close, and the distant hall is somewhat hazy; otherwise it has better material detail on both walls and floor.",
+     "The floor texture is blurry and low-res, like a smeared noise pattern. Overall the scene is somewhat muddy and beige.",
+     "Floor texture is somewhat noisy and blurry. Distant enemies are small and low-contrast."
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Foreground floor is flat and untextured, and the pit is dark; no enemies are visible. The stone-wall texture adds strong material detail.",
+     "The scene is dark teal and murky. The far area is a black pit or void slab that reads oddly. The floor near the camera is flat.",
+     "The teal pit still reads as an odd flat slab. The foreground floor is plain. No clear enemy or subject is visible, and the overall frame is dim and monochrome."
+    ]
+   },
+   {
+    "variant": "floor3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor texture looks blurry and smeared, and the frame is still very monochrome orange. It has better surface detail than A.",
+     "The floor texture is blurry and smeary. The scene is monochrome orange-brown and somewhat muddy.",
+     "Floor texture is blurry and noisy. Orange monotone cast. Sparse area with no enemies."
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor texture is somewhat blurry, and the frame is dim and low-saturation overall; the wood cubicle textures add detail.",
+     "The floor texture is blurry and low-res. The palette is a dim olive monochrome.",
+     "Floor texture is blurry and smeared. The wood-panel blocks are somewhat repetitive. Sparse, with no enemies."
+    ]
+   },
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Walls are still mostly flat, and the floor texture is subtle; the enemy is more readable and grounded than in A.",
+     "The scene is mostly flat blue-grey with only a faint floor texture. It is somewhat bland.",
+     "Floor texture is subtle and a little blurry. Walls are still flat. Overall it is only marginally better than A."
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor texture is blurry and noisy up close, and the ceiling is very dark; there is otherwise better material detail and contrast.",
+     "The floor texture is blurry and smeared, and the scene is somewhat brown and muddy.",
+     "Floor texture is noisy and blurry. The enemy on the crate looks slightly floaty."
+    ]
+   }
+  ]
+ }
+]

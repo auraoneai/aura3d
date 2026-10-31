@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-s1280/screens-1280--1280-03-action.jpg",
+      "sha256": "a8cbfafa7c0559d1c0db926a173fbd1b8f5b27d1323433e5c803d31069f4bfea"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "74c7d026e5666e71f43c25725aecebd8753dda8f04d2aab3a99d7d1c92447a64"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "d6829580497b18849780f963c1f61f141dd85331104d0feb8f2556b6f4185cdd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor3/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "9cafa55c003d1dc9907fc1c0c2c4fa43be1c096f9bfb0ff0db302ad854bfdfdc"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 3,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Ceiling strip lights produce soft glows on the back walls and a warm pool on the floor in frame 4, but the walls are mostly flat-lit with weak falloff. Frame 3 is murky teal with low contrast."
+    },
+    {
+      "category": "shadows",
+      "seen": "Wall-floor junctions have no contact shadows or AO, and the enemy statues cast no visible shadows. The corridors read as unshadowed boxes."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The water plane in the flooded cellars is a flat opaque teal slab with no reflection or refraction. The floors show only a faint highlight blob."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Levels are long rectangular box corridors with yellow baseboard strips and no props, pipes, doors or bunker detail. The 'B-3 FORGE HALLS' floor decal is the only set dressing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is slight distance haze and bloom-like light glare, plus some sparkle particles in frame 2. There is no dust, steam, or volumetric light."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The stone wall texture in the cellars is decent but stretched and repeats. The concrete walls in frame 1 are low-frequency smudge with no normal detail, and the floors are blurry noise."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pistol viewmodel is detailed with emissive accents, but enemies are distant dark silhouettes. A white floor quad in frame 1 looks like a misplaced placeholder."
+    },
+    {
+      "category": "composition",
+      "seen": "Symmetric corridor framing gives a clear vanishing point, but frames lack focal interest. Frames 1 and 2 have no viewmodel at all."
+    },
+    {
+      "category": "camera",
+      "seen": "The FOV is reasonable. The weapon sits oddly low-right and floats detached from any hand, and the HUD frames lack a viewmodel entirely."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the lights and a light vignette. Grading is monochrome per level, and frame 3 looks crushed and muddy."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

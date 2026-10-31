@@ -25,3 +25,16 @@ Status per acceptance line, phase 1 (code on `gu47/g11`). "phase 2" = needs remo
 | BZ-16 | bars on every floor change; reduced-motion test | letterbox bars 2.5 s on floor change, death roll 12 deg + fade, reduced-motion unit test (done); no sprint in sim so no sprint FOV |
 | BZ-17 | font DIN Pro; labels >= 11 px; arc within 45 deg | DIN Pro WOFF self-hosted, labels 11 px, stencil olive/hazard plate with lamp accent, damage arc, blueprint minimap (done); computed font and judge: phase 2 |
 | BZ-18 | LUT on F3 shifts hue >= 10 deg | done in code: 6 generated split-tone 17^3 .cube LUTs swapped per floor, `?lut=0` for the on/off A/B, CA pulse on hits >= 18 damage (off under reduced flash) (`lut.test.ts`); hue shift: phase 2 |
+
+## Phase 3 (4.7.1)
+
+| Row | Phase-3 status |
+|---|---|
+| BZ-04 | the surface maps render now: the refs lacked `kind: "aura-asset-ref"`, so the compiler never resolved their URLs (every phase-1/2 frame was untextured). Maps are 512 px detail maps (per-channel mean 0.8) with a palette-compensated base colour; the boot floor is built first so its maps upload first. Lit wall stddev and texture/material judge: see the lane report |
+| BZ-06 | F2 water lifted from `#0b1714` (read as a black hole) to `#1f3a36` |
+| BZ-08 | AO 0.9/1.2, contrast 1.2, vignette 0.42 (rubric round) |
+| BZ-01 | carried lamp reach 14 m, decay 2 (was 32 m / 1.15, which lit every wall evenly) |
+| BZ-14 | hostile rim 0.6 (was 0.35) |
+| camera | FOV 66 (was 72), render only |
+| BZ-11, BZ-12, BZ-13 | still blocked on WP-36 Meshy assets |
+| panel | phase-3 frames vs the phase-2 (current default) frames, 3 blind judges: see the lane report |
