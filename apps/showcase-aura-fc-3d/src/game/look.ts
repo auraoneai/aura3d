@@ -249,15 +249,15 @@ export interface FcHybridLayer {
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
-    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.06, tint: 0 },
-    rim: { color: "#8fc8ff", intensity: 0.6, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.5, pools: 0.16, coneIntensity: 0.55, mirror: null,
+    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.02, tint: 0 },
+    rim: { color: "#8fc8ff", intensity: 0.35, azimuthDeg: 200 }, flares: true, weather: "rain",
+    surface: "grass", turfRoughness: 0.4, pools: 0.16, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
-    rim: { color: "#ff8fbd", intensity: 0.45, azimuthDeg: 160 }, flares: true, weather: "drizzle",
+    rim: { color: "#ff8fbd", intensity: 0.3, azimuthDeg: 160 }, flares: true, weather: "drizzle",
     surface: "grass", turfRoughness: 0.62, pools: 0.14, coneIntensity: 0.5, mirror: null,
     bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
   },

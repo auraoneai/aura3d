@@ -59,12 +59,13 @@ export function originalBroadcastPose(followX: number, ballX: number, ballZ: num
 
 /**
  * Phase 3 hybrid rig: the 4.6.2 side-follow rig 1 m higher with a 34 degree lens aimed nearer the play, so the
- * players read larger (the 38 degree frame left a third of the screen as empty near touchline) and the view looks
- * down about 25 degrees instead of 22. Same easing toward near-side play.
+ * players read larger (the 38 degree frame left a third of the screen as empty near touchline). The aim point sits
+ * 2 m up so the view still looks down about 22 degrees and the stands and gantry stay in frame (round 1 aimed at
+ * 0.7 m and cropped the bowl to one tier). Same easing toward near-side play.
  */
 export function hybridBroadcastPose(followX: number, ballX: number, ballZ: number): ShotPose {
   const clampN = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  return { eye: [followX, 10.5, 20 + clampN(ballZ * 0.55, -5.5, 5.5)], target: [ballX, 0.7, -0.5 + clampN(ballZ * 0.32, -4, 4)], fov: 34 };
+  return { eye: [followX, 10.5, 20 + clampN(ballZ * 0.55, -5.5, 5.5)], target: [ballX, 2.0, -0.5 + clampN(ballZ * 0.32, -4, 4)], fov: 34 };
 }
 
 /** Rail control points (eye) from the players' tunnel mouth on the near touchline up to the gantry over the centre spot. */

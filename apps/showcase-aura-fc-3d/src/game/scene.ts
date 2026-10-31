@@ -73,6 +73,11 @@ function domeOn(search: string = typeof location === "undefined" ? "" : location
 }
 
 /** `?mirror=off` drops the Uyuni mirror (QA fallback, FC47-M3); always on outside a browser. */
+/** Hybrid night venues cast the main-flood spot shadow unless `?spotShadow=off`. */
+export function hybridSpotShadow(search: string = typeof location === "undefined" ? "" : location.search): boolean {
+  return new URLSearchParams(search).get("spotShadow") !== "off";
+}
+
 export function mirrorEnabled(search: string = typeof location === "undefined" ? "" : location.search): boolean {
   return new URLSearchParams(search).get("mirror") !== "off";
 }
@@ -233,14 +238,15 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
 /** The 4.6.2 floods: a pylon, an unshadowed spot and a 0.3 cone on each of the four towers (hybrid: spots x `scale`). */
-function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0): any[] {
+function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
       model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
         .position(x, 0, z)
         .rotate(0, Math.atan2(-x, -z), 0),
-      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90 }),
+      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
+        ...(i === shadowTower ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {}) } as any),
       effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: coneIntensity, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
         .runtime(gameRuntime(`flood-cone-${i}`))
     );
@@ -263,7 +269,10 @@ function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[
   if (m === "original") return originalFloodNodes(v);
   if (m === "hybrid") {
     const hl = HYBRID_LAYERS[v.id];
-    return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0);
+    // phase 3: at night the main-stand spot casts the players' shadows (PCSS 2048), so the flood reads as the key. The
+    // engine defect behind the `spotShadow` gate is fixed in 90bbc7c2e, so the hybrid path opts in by default
+    // (`?spotShadow=off` keeps the 4.6.2 shadowless spots).
+    return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1);
   }
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
