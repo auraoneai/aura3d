@@ -198,8 +198,13 @@ export function parseAt(raw: string | null | undefined): number | undefined {
  * because the shift look without its HDRI glared the wet road white ahead of the courier by the 60 s frame (two
  * capture rounds, worse than 4.6.2); `?look=shift` still forces it.
  */
-export const parseLook = (raw: string | null | undefined, env = true): LookMode =>
-  raw === "original" ? "original" : raw === "shift" || env ? "shift" : "original";
+/**
+ * Blind-panel fix pass: only the blue-hour pin (`?at=` at or past `SHIFT_LOOK_FROM`) was judged better than 4.6.2, so
+ * the default run, golden (`at=10`) and sunset (`at=120`) fall back to the 4.6.2 look; `?look=shift` still forces it.
+ */
+export const SHIFT_LOOK_FROM = 150;
+export const parseLook = (raw: string | null | undefined, env = true, at?: number): LookMode =>
+  raw === "original" ? "original" : raw === "shift" || (env && at !== undefined && at >= SHIFT_LOOK_FROM) ? "shift" : "original";
 
 /* ------------------------------------------------------------------ blending */
 
