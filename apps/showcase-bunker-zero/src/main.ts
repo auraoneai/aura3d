@@ -97,10 +97,11 @@ const BZ_PIPES = [{ d: 0.16, off: 0.14, drop: 0.3 }, { d: 0.09, off: 0.1, drop: 
 const BZ_PIPE_COLOR = "#4b5136";
 /** GU47 phase 4: floor gloss per slot so the screen-space reflections catch the lamps (cutoff 0.5), wetter on F2 / F6. */
 const BZ_FLOOR_ROUGHNESS = (slot: number) => 0.34 - (BZ_WETNESS[slot] ?? 0) * 0.16;
-const BZ_BLOB = { y: 0.008, opacity: 0.22, rings: [{ scale: 1 }, { scale: 0.62 }, { scale: 0.34 }] } as const;
+const BZ_BLOB = { y: 0.008, opacity: 0.3, rings: [{ scale: 1 }, { scale: 0.62 }, { scale: 0.34 }] } as const;
 /** GU47 phase 4: decal tints. Round g11p4-r1 drew the scorches as white shapes (alpha from the map, white from the tint),
  *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
 const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
+const BZ_GLINT = { core: 0.9, coreOpacity: 0.45, halo: 0.35, haloOpacity: 0.16 } as const;
 const BZ_SSR = { intensity: 0.85, maxDistance: 16, roughness: 0.5, thickness: 0.35 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -192,6 +193,8 @@ function buildScene() {
     const faltInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const stripInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const ceilInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const glintInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const glintHalo: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoNear: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoFar: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const pipeInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -212,6 +215,12 @@ function buildScene() {
       // Ceiling work lights over open corridor cells.
       if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) {
         ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
+        // GU47 phase 4: the lamp's mirror image on standing water and wet floors (rubric: the flood read as an opaque slab)
+        if (ch === "," && slot === 1 || (BZ_WETNESS[slot] ?? 0) > 0) {
+          const y = ch === "," ? 0.083 : 0.005;
+          glintInst.push({ position: [wx, y, wz], scale: [1.7, 0.002, 0.34] });
+          glintHalo.push({ position: [wx, y + 0.001, wz], scale: [2.6, 0.002, 1.1] });
+        }
       }
     }
 
@@ -318,6 +327,18 @@ function buildScene() {
         castShadow: false,
         receiveShadow: false
       }).runtime(staticNode(slot, "work-lights")));
+    }
+    if (glintInst.length) {
+      nodes.push(
+        primitives.plane({
+          name: `f${slot} lamp glints`, instances: glintInst, castShadow: false, receiveShadow: false,
+          material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: BZ_GLINT.core, roughness: 0.1, opacity: BZ_GLINT.coreOpacity })
+        }).runtime(staticNode(slot, "glints")),
+        primitives.plane({
+          name: `f${slot} lamp glint halo`, instances: glintHalo, castShadow: false, receiveShadow: false,
+          material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: BZ_GLINT.halo, roughness: 0.1, opacity: BZ_GLINT.haloOpacity })
+        }).runtime(staticNode(slot, "glint-halo"))
+      );
     }
     if (faltInst.length) {
       nodes.push(primitives.box({
