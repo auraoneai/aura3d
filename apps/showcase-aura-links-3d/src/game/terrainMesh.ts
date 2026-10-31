@@ -156,3 +156,21 @@ export function discOnTerrain(
   }
   return { kind: "aura-custom-geometry", positions, normals, uvs, indices };
 }
+
+/**
+ * GU47 phase 3: a flat rectangular pad (the tee deck) as one quad, uv0 in world metres, normal +Y. Laid on top of the
+ * 4.6.2 tee box so the deck carries the course's tight-mow texture instead of a flat colour slab.
+ */
+export function flatPad(cx: number, y: number, cz: number, width: number, depth: number): CustomGeometrySpec {
+  const x0 = cx - width / 2, x1 = cx + width / 2, z0 = cz - depth / 2, z1 = cz + depth / 2;
+  const positions: [number, number, number][] = [[x0, y, z0], [x1, y, z0], [x0, y, z1], [x1, y, z1]];
+  const up: [number, number, number] = [0, 1, 0];
+  return {
+    kind: "aura-custom-geometry",
+    positions,
+    normals: [up, up, up, up],
+    uvs: positions.map(([x, , z]) => [x, z] as [number, number]),
+    // CCW viewed from +Y (same winding as terrainToMeshSpec)
+    indices: [0, 2, 1, 1, 2, 3]
+  };
+}

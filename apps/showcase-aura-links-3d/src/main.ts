@@ -96,7 +96,7 @@ import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { linksQaCrops } from "./game/qaCrops";
-import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
+import { discOnTerrain, flatPad, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
 import { turfTexture } from "./game/turfTextures";
 import { coverWind, groundCover } from "./game/groundCover";
@@ -247,6 +247,16 @@ function surfaceMaterial(course: CourseSpec, slot: LinksSurfaceSlot, color: stri
     ...(normal && s.normal ? { normal: normal as any, normalScale: s.normal.scale } : {}),
     ...(s.sheen > 0 ? { sheen: s.sheen, sheenRoughness: 0.6, sheenColor: shade(color, 1.35) } : {})
   });
+}
+
+/**
+ * The aim line. GU47 phase 3: the 4.6.2 white bar at emissive 1.35 crossed the bloom threshold on every course and read
+ * as a glowing light-sabre over the fairway (Neon Bay worst); on the GU47 look it is a softer broadcast guide line.
+ */
+function aimLineMaterial() {
+  return turfOn
+    ? material.emissive({ color: "#f4f7fa", emissive: "#f4f7fa", emissiveIntensity: 0.62, opacity: 0.72 })
+    : material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 });
 }
 
 /* ------------------------------------------------------------------ *
@@ -829,6 +839,12 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
     primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
   );
+  // GU47 phase 3 (rubric: the tee deck filled a third of every address frame as one flat colour): the deck carries the
+  // course's mown fairway surface (mow bands, blade normals, sheen) on a quad just above the box top; `?look=original`
+  // keeps the 4.6.2 slab.
+  if (turfOn) {
+    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "fairway", pal.teeBox, 0.82) }));
+  }
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
   lay.bunkers.forEach((b, i) => {
@@ -893,7 +909,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
     primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
     // Crisp white aim line + predicted landing ring (aim phase only)
-    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 }) }).runtime(game.runtimeNode("aim-line")),
+    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: aimLineMaterial() }).runtime(game.runtimeNode("aim-line")),
     primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
     // putt-aim helper
     primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }) }).runtime(game.runtimeNode("cup-pulse"))
