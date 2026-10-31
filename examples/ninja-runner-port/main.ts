@@ -634,8 +634,17 @@ function jumpTo(metres: number): void {
   presenter.reset();
   updateHud();
   runtime?.resetCamera();
-  // A few real-time frames so the look, the lantern pool and the scarf settle before the first shot.
-  for (let i = 0; i < 30; i++) { renderTime += 1 / 60; render(1 / 60); }
+  // A few real-time frames so the look, the lantern pool and the scarf settle before the first shot. One frame per task
+  // (GU47 phase 3): a software-WebGL2 frame of this course takes ~40 s, and 30 frames in one task blocked the page for
+  // ~20 min, past the capture's 7-min ready wait (g20p3-r1 rooftops).
+  let settle = 30;
+  const next = (): void => {
+    if (settle-- <= 0) return;
+    renderTime += 1 / 60;
+    render(1 / 60);
+    setTimeout(next, 0);
+  };
+  setTimeout(next, 0);
 }
 
 function reportError(error: unknown): void {

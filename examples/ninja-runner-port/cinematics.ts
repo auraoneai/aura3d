@@ -18,7 +18,7 @@ export type Vec3 = [number, number, number];
 export interface ShotPose { readonly eye: Vec3; readonly look: Vec3; readonly fov: number }
 
 /** Height of the intro shot above the runner's ground (m): over the runner's shoulder, under the eaves. */
-export const INTRO_HEIGHT = 3.2;
+export const INTRO_HEIGHT = 3.7;
 /** Lane-change roll cap (degrees) and how fast it follows (halflife, s). */
 export const ROLL_MAX_DEG = 3;
 export const ROLL_HALFLIFE = 0.12;
@@ -31,12 +31,12 @@ const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a
 export const easeShot = (k: number): number => { const t = Math.max(0, Math.min(1, k)); return t * t * t * (t * (t * 6 - 15) + 10); };
 
 /**
- * The title-card shot at course distance `s` (the runner idles at 0): 6 m behind and 2.4 m to the right of the runner at
+ * The title-card shot at course distance `s` (the runner idles at 0): 7.5 m behind and 2 m to the right of the runner at
  * shoulder-over height, looking down the street to the village gate, drifting slowly with `time`.
  */
 export function introPose(s: number, time: number): ShotPose {
   const drift = Math.sin(time * 0.12) * 0.6;
-  return { eye: at(s - 6, 2.4 + drift, INTRO_HEIGHT), look: at(s + 30, -0.6, 2.1), fov: 52 };
+  return { eye: at(s - 7.5, 2.0 + drift, INTRO_HEIGHT), look: at(s + 30, -0.3, 1.4), fov: 52 };
 }
 
 /**
