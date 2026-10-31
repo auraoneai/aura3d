@@ -182,7 +182,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     // "heavy grey-white fog, muddy, grass desaturated"). Blind-panel fix: the kloppenheim_06 pure sky (blue sky, low
     // cold sun, peak 19.6 at 4.9 deg elevation, brightest texel u 0.612 = 57.8 deg in the engine frame).
     hdri: { id: "kloppenheim_06_puresky", intensity: 1.0, drawn: true, sunAzimuthInHdriDeg: 57.8, want2k: false },
-    sun: { azimuthDeg: 95, elevationDeg: 14 },
+    sun: { azimuthDeg: 95, elevationDeg: 12 },
     key: { color: "#ffe0bd", intensity: 3.1, colorTemperatureK: 4200 },
     rim: { color: "#b8d2e6", intensity: 0.22, azimuthDeg: 275 },
     exposureEv: 0,
