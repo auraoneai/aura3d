@@ -175,10 +175,12 @@ describe("GU47 pass-4 game-lane handoff targets", () => {
     // Ninja Runner (G20, PRD D11): the 4.6.2 look is the default and `?look=evening` opts in; `?look=original` still names it.
     expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/params\.get\("look"\) === "evening" \? "evening" : "original"/);
     expect(src("examples/roadster-hours-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
-    expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
+    // Duneglide (G24, PRD D11): `?look=original` / `?look=inked` force a look; without one the chapter picks it.
+    expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/const look = params\?\.get\("look"\);\s+if \(look === "original"\) return "original";/);
     expect(src("examples/last-train-port/main.ts")).toMatch(/params\.get\("title"\) !== "0"/);
     expect(src("examples/where-the-wind-wanders-port/daylight.ts")).toMatch(/value === "bell"/);
-    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "original"/);
+    // Cross Hop (G14, PRD D11): the 4.6 look is the default and `?look=diorama` opts in; `?look=original` still names it.
+    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "diorama" \? "diorama" : "original"/);
   });
 });
 

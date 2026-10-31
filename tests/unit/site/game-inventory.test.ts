@@ -9,7 +9,8 @@ const inventory = JSON.parse(readFileSync(resolve(root, "docs/workflows/game-inv
   liveVariantCount: number;
   genreCounts: Record<string, number>;
   games: Array<{ slug: string; appFolder: string; title: string; url: string; status: string; genre: string }>;
-  variants: Array<{ appFolder: string; parent: string; status: string }>;
+  /** Retired with the V2 builds in 4.3.7 (0dbfb13e3); kept optional so a reintroduced list is still checked. */
+  variants?: Array<{ appFolder: string; parent: string; status: string }>;
 };
 
 function run(script: string, ...args: string[]) {
@@ -29,7 +30,7 @@ describe("game inventory (single source of the public game count)", () => {
     const live = inventory.games.filter((g) => g.status === "live");
     expect(live.length).toBe(inventory.liveGameCount);
     for (const game of live) expect(served).toContain(game.appFolder);
-    for (const variant of inventory.variants) expect(live.some((g) => g.appFolder === variant.parent)).toBe(true);
+    for (const variant of inventory.variants ?? []) expect(live.some((g) => g.appFolder === variant.parent)).toBe(true);
     expect(Object.values(inventory.genreCounts).reduce((a, b) => a + b, 0)).toBe(inventory.liveGameCount);
   });
 
