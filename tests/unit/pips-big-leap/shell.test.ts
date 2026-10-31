@@ -61,10 +61,20 @@ describe("pips-big-leap shell", () => {
   it("C19: every NPC is a camera obstacle", () => {
     for (const id of ["academy", "w1", "w2"] as const) {
       const spec = worldSpec(id);
-      const built = buildWorld(spec);
+      const built = buildWorld(spec, { look: "original" });
       for (const n of spec.npcs) {
         expect(built.cameraObstacles.some((o) => o.x === n.x && o.z === n.z), `${id} ${n.id}`).toBe(true);
       }
+    }
+  });
+
+  it("GU47 phase 4: the diorama draws no voxel NPCs (PBL-A3 villagers replace them)", () => {
+    for (const id of ["academy", "w1", "w2"] as const) {
+      const spec = worldSpec(id);
+      const nodes = (buildWorld(spec).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes;
+      expect(nodes.some((n) => /^npc:/.test(n.name ?? "")), id).toBe(false);
+      const original = (buildWorld(spec, { look: "original" }).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes;
+      expect(original.some((n) => /^npc:/.test(n.name ?? "")), id).toBe(true);
     }
   });
 

@@ -83,6 +83,19 @@ html, body {
   white-space: nowrap;
 }
 
+/* GU47 phase 4: short storybook key chips instead of the all-caps controls string (rubric: clutter). */
+.aura3d-controls-hint kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 1px 5px;
+  margin: 0 1px;
+  border-radius: 4px;
+  font: 600 11px/1.3 Graphik, sans-serif;
+  text-align: center;
+  color: var(--pbl-ink, #2a1c0e);
+  background: rgba(255, 246, 224, 0.88);
+}
+
 /* ------------------------------------------------------------------ HUD */
 
 .pbl-hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
