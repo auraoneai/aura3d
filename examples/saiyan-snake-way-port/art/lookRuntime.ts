@@ -57,6 +57,13 @@ const hex = (c: Rgb): string => {
 /** Tiers that run the High-only post (god rays, lens flare, motion blur; PRD §6.4, SSR-19). */
 export const HIGH_POST_TIERS: ReadonlySet<string> = new Set(["high", "ultra"]);
 
+/**
+ * GU47 phase 2: the volumetric god-ray pass stays off. On the sun-ahead stages (1, 2, 3, 8) it laid a pink/copper veil
+ * over the road, rider and cloud sea (4.6.2 was crisp) and left a hard diagonal edge across the sky at stage 2. The sun
+ * flare node still marks the god-ray stages (`godRaysOn`).
+ */
+export const VOLUMETRIC_SHAFTS = false;
+
 export function createLookDriver(app: LookAppLike, node: (id: string) => LookNodeHandle | undefined): LookDriver {
   const last = new Map<string, number | readonly number[]>();
   let writes = 0;
@@ -147,14 +154,15 @@ export function createLookDriver(app: LookAppLike, node: (id: string) => LookNod
       if (moved("exposure", look.exposure, 5e-3)) { app.setOutput?.({ exposure: look.exposure }); writes++; }
       const tier = app.quality?.tier ?? "high";
       godRaysOn = HIGH_POST_TIERS.has(tier) && look.godRays > 0.5;
-      if (godRaysOn !== godRaysState) {
-        app.post?.setEffectEnabled("volumetricFog", godRaysOn);
-        godRaysState = godRaysOn;
+      const shafts = VOLUMETRIC_SHAFTS && godRaysOn;
+      if (shafts !== godRaysState) {
+        app.post?.setEffectEnabled("volumetricFog", shafts);
+        godRaysState = shafts;
         writes++;
       }
       const eye = frame.eye ?? [0, 0, 0];
       const lightPosition = [eye[0] + dir[0] * 4000, eye[1] + dir[1] * 4000, eye[2] + dir[2] * 4000].map((v) => Math.round(v / 20) * 20);
-      if (godRaysOn && moved("rays", [...lightPosition, look.godRays], 1e-3)) {
+      if (shafts && moved("rays", [...lightPosition, look.godRays], 1e-3)) {
         app.post?.setEffect("volumetricFog", { godRayDensity: 0.35 * look.godRays, color: hex(look.sunColor), lightPosition });
         writes++;
       }

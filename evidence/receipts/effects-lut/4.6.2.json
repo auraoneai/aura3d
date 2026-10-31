@@ -1,0 +1,33 @@
+{
+  "capability": "effects-lut",
+  "version": "4.6.2",
+  "gitSha": "abddd22f1",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/post-receipts.ts body(): grey floor (glossy for SSR), emissive white wall (left), warm emissive lamp sphere (right), grey crate (runtime id mover), one shadow-casting sun, camera (0, 2.2, 5.2) -> (0, 0.8, 0), 480x270; colorGrade without vs with lut teal-orange-33.cube",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-lut/lut-off.png",
+      "sha256": "6388d60abbeb060122ae0ac3ed8cc0db9f27123cdce8076c83feb5bdb37c4019",
+      "meanLuma": 81.79916205234375,
+      "nonBlackRatio": 1,
+      "label": "lut-off"
+    },
+    {
+      "file": "evidence/receipts/effects-lut/lut-teal-orange.png",
+      "sha256": "abdc3da79e56fffc9bea86f0c1ba163a372e53ce07cdec7be575ff3519ea8213",
+      "meanLuma": 90.65330959296872,
+      "nonBlackRatio": 1,
+      "label": "lut-teal-orange"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/ec/lut.test.ts"
+  ],
+  "date": "2026-10-31T06:47:45.923Z",
+  "checks": {
+    "meanAbsDeltaRgb": 21.622850260546887,
+    "changedFraction": 0.99515234375,
+    "meanAbsDeltaRgbAtLeast": 6,
+    "lumaRatio": 1.1082425212981908
+  }
+}

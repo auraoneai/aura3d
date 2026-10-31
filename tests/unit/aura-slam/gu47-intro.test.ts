@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { CAMERA_V2 } from "../../../examples/aura-slam/view/camera";
 import {
-  CHANGEOVER_SECONDS, CHANGEOVER_SHOTS, INTRO_SECONDS, INTRO_SHOTS, createBroadcastDirector, introParam, shotAt
+  CHANGEOVER_SECONDS, CHANGEOVER_SHOTS, CUT_WALL_SLACK, INTRO_SECONDS, INTRO_SHOTS, createBroadcastDirector, introParam, shotAt
 } from "../../../examples/aura-slam/view/intro";
 
 const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
@@ -48,6 +48,24 @@ describe("GU47 TT-C2: match intro and changeover", () => {
     let f = null;
     for (let i = 0; i < 6; i++) f = d.step({ mode: "menu", phase: "menu" }, 0.25, false);
     expect(f?.shot).toBe("far-baseline");
+  });
+
+  it("a slow renderer (seconds per frame) ends the cut after CUT_WALL_SLACK x its length in wall-clock time", () => {
+    const d = createBroadcastDirector();
+    d.start("intro");
+    // Software WebGL2 pace: frame dt clamps to 0.05 s, but each frame takes 3 s of real time.
+    let f = d.step(serve(), 0.05, false, 3);
+    expect(f).not.toBeNull();
+    for (let i = 0; i < 2; i++) f = d.step(serve(), 0.05, false, 3);
+    expect(f).toBeNull();
+    expect(d.active).toBeNull();
+    expect(3 * 3).toBeGreaterThan(INTRO_SECONDS * CUT_WALL_SLACK);
+    // At 60 fps the wall clock matches the frame clock, so the whole intro still plays.
+    const e = createBroadcastDirector();
+    e.start("intro");
+    let frames = 0;
+    while (e.step(serve(), DT, false, DT)) { frames += 1; expect(frames).toBeLessThan(400); }
+    expect(frames).toBeGreaterThanOrEqual(Math.floor(INTRO_SECONDS / DT) - 2);
   });
 
   it("skip ends the cut on the next frame; the ball in play ends it too", () => {
