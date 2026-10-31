@@ -136,6 +136,9 @@ describe("heatsink HS-17 camera", () => {
     const title = shotPose({ kind: "title" }, drone, false)!;
     expect(title.position).toEqual([drone[0] + TITLE_OFFSET[0], drone[1] + TITLE_OFFSET[1], drone[2] + TITLE_OFFSET[2]]);
     expect(Math.hypot(title.position[0], title.position[1] - CHASE.y, title.position[2] - CHASE.z)).toBeGreaterThanOrEqual(4);
+    // GU47 phase 3: the title looks down the track (-Z), where the skyline, arch and rivals are, with the drone in front.
+    expect(title.target[2]).toBeLessThan(drone[2] - 10);
+    expect(title.position[2]).toBeGreaterThan(drone[2]);
   });
 });
 
