@@ -90,10 +90,38 @@ export function installPerfProbe(level: number): void {
     };
   }
 
+  // Non-draw GL work by kind (uploads, readbacks, blits, clears, mip generation), finished in place on `?perf=2`.
+  const kinds: Record<string, { ms: number; n: number }> = {};
+  const KIND: Record<string, string> = {
+    texImage2D: "up", texSubImage2D: "up", texImage3D: "up", texSubImage3D: "up", texStorage2D: "up", bufferData: "buf", bufferSubData: "buf",
+    readPixels: "rd", getBufferSubData: "rd", clientWaitSync: "rd", blitFramebuffer: "blit", clear: "clr", clearBufferfv: "clr", generateMipmap: "mip",
+    copyTexSubImage2D: "copy", invalidateFramebuffer: "inv"
+  };
+  for (const [name, kind] of Object.entries(KIND)) {
+    const orig = (proto as unknown as Record<string, ((...args: unknown[]) => unknown) | undefined>)[name];
+    if (typeof orig !== "function") continue;
+    (proto as unknown as Record<string, unknown>)[name] = function (this: WebGL2RenderingContext, ...args: unknown[]) {
+      const t = performance.now();
+      const out = orig.apply(this, args);
+      if (level >= 2) this.finish();
+      const k = kinds[kind] ??= { ms: 0, n: 0 };
+      k.ms += performance.now() - t; k.n++;
+      return out;
+    };
+  }
+  // Time inside every other requestAnimationFrame callback (the engine frame on the main thread).
+  let jsMs = 0;
+  const origRaf = globalThis.requestAnimationFrame.bind(globalThis);
+  const wrapped = (cb: FrameRequestCallback): number => origRaf((t) => { const a = performance.now(); try { cb(t); } finally { jsMs += performance.now() - a; } });
+  globalThis.requestAnimationFrame = wrapped;
+
   const report = (): void => {
     const now = performance.now();
     const f = Math.max(1, frames);
     console.error(`NR_PERF f=${frames} ms=${(frameMs / f).toFixed(0)} d=${(draws / f).toFixed(0)} fb=${(fbBinds / f).toFixed(1)} c=${linked} cms=${linkMs.toFixed(0)} t=${((now - windowStart) / 1000).toFixed(0)}`);
+    console.error(`NR_GL js=${(jsMs / f).toFixed(0)} ${Object.entries(kinds).map(([k, v]) => `${k}=${(v.ms / f).toFixed(0)}/${(v.n / f).toFixed(0)}`).join(" ")}`);
+    jsMs = 0;
+    for (const k of Object.values(kinds)) { k.ms = 0; k.n = 0; }
     if (level >= 2) {
       const merged = new Map<string, { ms: number; n: number }>();
       for (const s of stats) { const m = merged.get(s.tag) ?? { ms: 0, n: 0 }; m.ms += s.ms; m.n += s.draws; merged.set(s.tag, m); s.ms = 0; s.draws = 0; }
@@ -107,7 +135,7 @@ export function installPerfProbe(level: number): void {
     frameMs += t - last;
     last = t;
     if (t - windowStart > 20_000) report();
-    requestAnimationFrame(tick);
+    origRaf(tick);
   };
-  requestAnimationFrame(tick);
+  origRaf(tick);
 }

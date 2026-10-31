@@ -49,7 +49,10 @@ const config = {
   lanterns: params.get("lanterns") !== "0",
   scarf: params.get("scarf") !== "0",
   godRays: params.get("godrays") === "1",
-  cones: params.get("cones") !== "0"
+  cones: params.get("cones") !== "0",
+  vfx: params.get("vfx") !== "0",
+  ink: params.get("ink") !== "0",
+  grain: params.get("grain") !== "0"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
 if (config.at !== null) config.manual = true;
@@ -590,7 +593,7 @@ async function boot(): Promise<void> {
   const status = $("loading-status");
   actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
   status.textContent = "Building the village…";
-  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
