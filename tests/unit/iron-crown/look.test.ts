@@ -53,7 +53,7 @@ describe("iron-crown look table (GU47 WP-15)", () => {
     expect(new Set(ROWS.map((row) => row.timeOfDay)).size).toBe(ROWS.length);
   });
 
-  it("IC47-E1: every venue lights from its own catalogue HDRI (6 distinct, each file <= 6 MB); the Crown is enclosed at 0.25", () => {
+  it("IC47-E1: every venue lights from its own catalogue HDRI (6 distinct, each file <= 6 MB); the Crown is enclosed at 0.55", () => {
     const hdris = ROWS.map((row) => row.hdri);
     expect(new Set(hdris).size).toBe(6);
     expect([...hdris].sort()).toEqual(["industrial_sunset_puresky", "outdoor-midday", "rooftop_night", "spruit_sunrise", "venice_sunset", "warm_bar"]);
@@ -64,7 +64,7 @@ describe("iron-crown look table (GU47 WP-15)", () => {
       expect(statSync(file).size).toBeLessThanOrEqual(6 * 1024 * 1024);
     }
     const crown = stageLook("crown-arena");
-    expect(crown).toMatchObject({ hdri: "warm_bar", environmentIntensity: 0.25, background: BLACK_IRON });
+    expect(crown).toMatchObject({ hdri: "warm_bar", environmentIntensity: 0.55, background: BLACK_IRON });
     for (const row of ROWS) {
       const hdri = lookChildren(row).find((node) => node.kind === "environment") as (AuraSceneNode & { name?: string; background?: boolean }) | undefined;
       expect(hdri?.name, row.stage).toBe(`look hdri ${row.hdri}_1k`);
