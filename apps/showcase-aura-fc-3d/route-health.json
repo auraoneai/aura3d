@@ -60,7 +60,7 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.diamondStadium",
+      "typedRef": "assets.fcStandModuleMeshy",
       "quality": "candidate",
       "role": "setDressing"
     },

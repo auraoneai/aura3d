@@ -64,8 +64,9 @@ export default defineArtDirection({
     { role: "world", assetKey: "fcScoreboardGantryMeshy", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "world", assetKey: "fcGlacierDomeMeshy", maxTriangles: 14000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "fcHeroTrophyMeshy", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
-    // borrowed until WP-36 delivers the football kit (fcStandModule, fcDugout, fcBallCart): see the lane report
-    { role: "backdrop", assetKey: "diamondStadium", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // WP-36 (phase 4): the game's own stand module, four instances in one draw; Meshy UV seams stop the simplifier at 45.6k
+    { role: "backdrop", assetKey: "fcStandModuleMeshy", maxTriangles: 46000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // borrowed until WP-36 delivers the football dugout and ball cart (pitchDugout; no cart row): see the lane report
     { role: "set-dressing", assetKey: "diamondDugout", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],

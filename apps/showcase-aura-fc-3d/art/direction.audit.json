@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "8ff5d6434707c524258e8d5588efea9bb1790be69435dd5e3a9b551ee281c463",
+  "sourceSha256": "b5ecffa012c469c253b66182296953348a3f51dd826610e12360c83a40540ee6",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -137,7 +137,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondStadium",
+        "assetKey": "fcStandModuleMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1013,8 +1013,8 @@
       },
       {
         "role": "backdrop",
-        "assetKey": "diamondStadium",
-        "maxTriangles": 16000,
+        "assetKey": "fcStandModuleMeshy",
+        "maxTriangles": 46000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
