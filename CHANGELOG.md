@@ -85,7 +85,7 @@ Every view of every game was judged blind. Three independent model judges compar
 | Gridlock Courier | blue hour | default, golden hour, sunset | `?look=shift`, `?look=original` |
 | Ion Circuit | none | default (the judges saw no difference) | `?look=twilight` |
 | Shadowstep Gauntlet | none | every district (the evening look lost twice and cost about twice the frame time) | `?look=evening` |
-| Lamplight Line | default and bands A to E (default, A, B and D judged better; the C and E captures did not finish, and the look is chosen once for the whole game) | none | `?look=original` |
+| Lamplight Line | default and bands A to E (all judged better) | none | `?look=original` |
 | Saltwind Highway | Halo, Redline, Sunbreak | none | `?look=original` |
 | The Bellkeeper's Walk | bell, epilogue (dusk and night) | the default and found-bell daytime views | `?look=gu47`, `?look=original` |
 | Duneglide | chapters 0-3, 5 and 6 | the bare entry and chapter 4 | `?look=inked`, `?look=original` |
