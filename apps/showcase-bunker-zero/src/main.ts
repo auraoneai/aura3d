@@ -62,6 +62,11 @@ const LOOK_ID = "bunker-practicals" as const;
 const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
+/**
+ * GU47 phase 2: the F6 moon shaft (S4 volumetric fog) is opt-in with `?godrays=1`. On software WebGL2 it drew no shaft and
+ * washed the silo in pink beacon inscatter (fix run g11fix1, floor6 frame); the dark lamp haze reads better (PRD D11).
+ */
+const BZ_GOD_RAYS = bootParams.get("godrays") === "1";
 /** BZ-18: `?lut=0` turns the per-floor LUT off (the LUT on/off A/B); cosmetic only. */
 const LUT_ON = bootParams.get("lut") !== "0";
 const floorLut = (slot: number) => (LUT_ON ? lutOfSlot(slot) : null);
@@ -515,7 +520,7 @@ function buildScene() {
     // GU47 phase 2: a mounted volumetric-fog node replaces the scene fog's colour and density in the forward program and
     // adds the dominant spot's inscatter on every floor (setEffectEnabled only drops the post pass), which washed F1-F5
     // and the Kill House in pale lamp-coloured haze (recap2 frames). Off every other floor, the per-floor dark haze rules.
-    .addMany(BOOT_SLOT === 5 ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
+    .addMany(BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
@@ -657,7 +662,7 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   const lut = floorLut(slot);
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint, lut: lut ? lutUrlOfSlot(slot) : "", lutIntensity: lut ? 1 : 0 }); } catch { /* post runtime not mounted */ }
-  try { app.post?.setEffectEnabled("volumetricFog", shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
+  try { app.post?.setEffectEnabled("volumetricFog", BZ_GOD_RAYS && shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
   startAtmosphere(slot);
   placeFloorDecals(slot);

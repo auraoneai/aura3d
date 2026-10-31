@@ -49,7 +49,7 @@ describe("Bunker Zero F6 hatch set piece (BZ-07)", () => {
     expect(spec.godRayDensity).toBeGreaterThanOrEqual(0.05);
     expect(spec.godRayDensity).toBeLessThanOrEqual(1);
     expect([0, 1, 2, 3, 4, 5, 6].filter(shaftOnSlot)).toEqual([5]);
-    expect(MAIN).toContain("BOOT_SLOT === 5 ? [effects.volumetricFog(hatchShaftSpec(");
-    expect(MAIN).toContain('setEffectEnabled("volumetricFog", shaftOnSlot(slot))');
+    expect(MAIN).toContain("BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(");
+    expect(MAIN).toContain('setEffectEnabled("volumetricFog", BZ_GOD_RAYS && shaftOnSlot(slot))');
   });
 });
