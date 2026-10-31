@@ -57,9 +57,9 @@ export interface ChapterLook {
    */
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
   /**
-   * Scene clear colour behind the sky node. GU47 phase 3: a mid sky colour on the day rows; in the g12p3r1/r2 software
-   * WebGL2 frames the day sky node (gradient + cloud layer) never drew and this colour was the whole sky, so the cloud
-   * layer is off and the clear colour is a sky blue (sunset: warm rose) instead of a pale grey horizon.
+   * Scene clear colour behind the sky node. GU47 phase 3: a mid sky colour on the day rows and no cloud layer. Round
+   * g12p3r3 (software WebGL2) still drew the day sky as a flat pale grey-blue, so neither this colour nor the clouds
+   * decide the visible day sky there; the cause is open (engine sky/background path, handoff in the g12 lane report).
    */
   readonly horizon: AuraColor;
   readonly sky: AuraSkySpec;
