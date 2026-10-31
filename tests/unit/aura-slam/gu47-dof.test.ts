@@ -19,7 +19,7 @@ describe("GU47 TT-P2: broadcast depth of field", () => {
     }
     expect(fromEye(-14, 4)).toBeGreaterThan(r.far);
     expect(BROADCAST_DOF.fStop).toBe(4);
-    expect(CUT_DOF_FSTOP).toBe(2);
+    expect(CUT_DOF_FSTOP).toBe(8);
   });
 
   it("the World Tour chain authors one depth-of-field node with the metric fields", () => {

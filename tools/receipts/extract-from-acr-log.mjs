@@ -24,7 +24,9 @@ for (const line of readFileSync(logPath, "utf8").split(/\r?\n/)) {
   const [index, total] = part.split("/").map(Number);
   if (!path.startsWith("evidence/receipts/") || path.includes("..")) continue;
   const entry = files.get(path) ?? { total, parts: new Map() };
-  entry.parts.set(index, chunk);
+  // The json reporter repeats each stdout line JSON-escaped (trailing `\n",`): keep the first copy, base64 run only.
+  const clean = /^[A-Za-z0-9+/=]*/.exec(chunk)[0];
+  if (!entry.parts.has(index)) entry.parts.set(index, clean);
   files.set(path, entry);
 }
 

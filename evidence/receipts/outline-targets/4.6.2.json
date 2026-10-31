@@ -1,0 +1,43 @@
+{
+  "capability": "outline-targets",
+  "version": "4.6.2",
+  "gitSha": "unknown-in-image",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/outline-targets-harness.ts outlineScene(): sky #8fc3ea, ground plane 40 m, target sphere \"rider\" at (-0.9, 1, 0), non-target box \"crate\" at (1.4, 0.5, -0.5), camera (0, 2.2, 7) -> (0, 0.6, 0) fov 45, 480x270",
+  "frames": [
+    {
+      "file": "evidence/receipts/outline-targets/4.6.2/plain.png",
+      "sha256": "f93499eb1ad4f8c12ac20744544e82fb22199457f02b6a226a3406d065422c4f",
+      "label": "no outline"
+    },
+    {
+      "file": "evidence/receipts/outline-targets/4.6.2/targets.png",
+      "sha256": "95bd6f92e5baf9fda0f9eda8b4c243d3312651fd2fc8364da041f14d9096c383",
+      "label": "outline({ targets: [\"rider\"] })"
+    },
+    {
+      "file": "evidence/receipts/outline-targets/4.6.2/full.png",
+      "sha256": "3c834b40d189737d1194d9c93fdce3a28e1a55f461db85816c2fa9b3bff2b01b",
+      "label": "outline() full frame (today)"
+    }
+  ],
+  "tests": [
+    "tests/browser/gu47/outline-targets.spec.ts",
+    "tests/unit/gu47/ee/outline-targets.test.ts",
+    "tests/unit/gu47/ee/outline-targets-engine.test.ts"
+  ],
+  "date": "2026-10-31T06:41:41.625Z",
+  "checks": {
+    "cleanRuntime": true,
+    "framesDrew": true,
+    "targetPerimeterInkedAtLeast60pc": true,
+    "skyEdgesBelowHalfPercent": true,
+    "nonTargetUninked": true,
+    "noTargetSkip": true,
+    "fullOutlineStillInksTheCrate": true,
+    "riderPerimeterInked": 0.9343971631205674,
+    "skyEdgeFraction": 0,
+    "cratePerimeterInked": 0,
+    "fullCratePerimeterInked": 1
+  }
+}

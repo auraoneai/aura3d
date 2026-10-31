@@ -97,3 +97,16 @@ Rendering (`packages/rendering/src`, internal unless re-exported by the renderin
 - Pre-existing failures (also fail on the base, unrelated): `tests/unit/rendering/shader-library.test.ts` (2 tests: packaged direct-PBR shader files out of sync; verified on base by stashing), `tests/qr/prd04/unit/typed-glb-actor-snapshot.test.ts` "material variants" (fixture `fixtures/asset-corpus/materials-variants-shoe.glb` missing in the worktree), `tests/unit/public-api-contracts.test.ts` "keeps examples on public package barrels" (`examples/custom-shader-webgpu-lab/main.ts` imports engine internals).
 - Shader-compile suites of all ports (`tests/unit/*/shaders-compile.test.ts`, 10 files, 183 tests): pass on the branch.
 - Lint: `eslint` clean on every touched file.
+
+## Phase-2 fixes (2)
+
+Receipts `material-rim` and `outline-targets` (remote software WebGL2, `tools/remote-acr/run.sh`). Both pass; receipts and frames committed under `evidence/receipts/{material-rim,outline-targets}/4.6.2*`.
+
+| fix | commit | what |
+|---|---|---|
+| material-rim `edgeBrightensBy6` | 633fc41f7, a1bfb0f83 | No engine defect: `primitives.sphere` is unit-diameter, so the receipt's silhouette band (0.80..0.97 of a radius-1 projection) sat on the backdrop. Sphere scaled to radius 1 (unit test pins radius and scale). Run gu47-ed-rcpt: changed 22.1%, band luma +121.1, warmth +126.9, centre +0.30. |
+| custom pass declaring depth gets the forward depth texture | a3abee16d | With `effects.toon({ inkSource: "depth" })` as the only depth reader, the v2 HDR driver recorded `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED` and skipped every stage. `postprocessRequiresDepthTexture` reads registered custom passes. Unit: `tests/unit/gu47/ed/custom-pass-depth.test.ts` (5). Scenes without a depth-reading custom pass are unchanged. |
+| `REGISTRY_DUPLICATE:prd03.custom.receipt-toon` | 3d1364001, 1fa9c41d9 | Engine contract kept (names stay unique, no idempotent re-registration): `app.dispose()` releases the app's passes and its RP-03 direct-path vetoes (unit `app-dispose-post-pass.test.ts`, 2). Harness: one pass name per variant and `waitForPass` on the stage trace (captures right after `addPostPass` read the canvas mid-remount, all black). |
+| toon-depth checks | ff2973ce7, 1fa9c41d9 | The depth ink is a 1 px line each side of a depth step, zero on planes. Old checks (2 px outer ring >= 60%, bottom quarter changed more than top) were unreachable by design. Now: silhouette carries the line on either side 0.93 (>= 0.6), sky edges 0, flat bottom quarter 0, `fadeDistance: 4` leaves the 7 m rider un-inked (0). Run gu47-ed-rcpt4: 3/3. |
+
+Gates: typecheck delta `NEW_ERRORS 0`; eslint clean on touched files; the two new unit files pass. No game captures (no game scene changed; byte-identical paths for scenes without rim or depth-reading custom passes). Not fixed / open: `effects.toon` colour variant in the harness passes `size: [480, 270]` on a 600x400 canvas (colour Sobel texel off; no check reads it); depth toon at `after-tonemap` still depends on handoff E-E H2.
