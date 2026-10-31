@@ -21,7 +21,7 @@ import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
-import { ENVIRONMENT_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
+import { ENVIRONMENT_GAIN, EVENING_FILL, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
@@ -236,6 +236,9 @@ export interface WorldOptions {
   /** `?scarf=0`: no scarf ribbon (NR-15 comparison). */ readonly scarf?: boolean;
   /** `?godrays=1`: volumetric god rays (NR-07; off by default since GU47 phase 2, see main.ts). */ readonly godRays?: boolean;
   /** `?cones=0`: no gate light cones (NR-16 comparison). */ readonly cones?: boolean;
+  /** `?vfx=0`: no runtime VFX pack, ambients or scarf (GU47 phase 2 frame-cost ablation). */ readonly vfx?: boolean;
+  /** `?ink=0` / `?grain=0`: drop the evening ink line / film grain (GU47 phase 2 frame-cost ablation). */ readonly ink?: boolean;
+  readonly grain?: boolean;
 }
 
 export interface WorldRuntime {
@@ -290,10 +293,10 @@ export function buildWorld(options: WorldOptions): World {
     builder
       .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation }))
-      .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, smoothness: post.vignette.smoothness }))
-      .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
+      .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, smoothness: post.vignette.smoothness }));
+    if (options.ink !== false) builder.add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
     // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
-    if (high) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
+    if (high && options.grain !== false) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
     // NR-07: god rays only in Rooftop Run and the forest entry (switched by distance at runtime); High only (§6.4).
     if (high && options.godRays === true) builder.add(effects.volumetricFog({ name: "god rays", density: 0.08, color: "#ffb48a", intensity: 0.45, godRayDensity: 0.35 }));
     builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
@@ -520,7 +523,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   /* GU47 evening look state */
   const evening = (options.mode ?? "evening") === "evening";
   const quality = options.quality === "low" ? "low" : "high";
-  const vfx: NinjaVfx | null = evening ? registerNinjaVfx(app.effects, { reducedMotion: options.reducedMotion === true, quality }) : null;
+  const vfx: NinjaVfx | null = evening && options.vfx !== false ? registerNinjaVfx(app.effects, { reducedMotion: options.reducedMotion === true, quality }) : null;
   const lightPool = lanternPoolSize({ mode: evening ? "evening" : "original", quality, shadow: true, lanterns: options.lanterns !== false });
   const pickupOrder = pickups.map((p, i) => ({ s: p.s, i })).sort((a, b) => a.s - b.s);
   const poolShown = new Array<string>(lightPool.amber + lightPool.cyan).fill("");
@@ -563,6 +566,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       lastLookS = s;
       node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
       app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN);
+      node("evening fill").setLight?.({ intensity: EVENING_FILL.intensity * look.environmentIntensity });
       app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
       const rays = godRaysAuthored && godRaysAt(s);
       if (godRaysAuthored && rays !== godRaysOn) { godRaysOn = rays; app.post?.setEffectEnabled("volumetricFog", rays); }
