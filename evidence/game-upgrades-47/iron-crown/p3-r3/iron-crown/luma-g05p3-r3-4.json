@@ -1,0 +1,62 @@
+[
+ {
+  "target": "ic-card",
+  "id": "card-2x",
+  "canvasOnly": false,
+  "mean": 26.25,
+  "p5": 2,
+  "p50": 12,
+  "p95": 116,
+  "darkFrac": 0.512,
+  "clipFrac": 0.0703,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 141577,
+   "evalMs": 44182
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 96,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 61,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.0131733333333353,
+    "clip": "jump",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 0.754613333333336,
+    "clip": "jump",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ }
+]

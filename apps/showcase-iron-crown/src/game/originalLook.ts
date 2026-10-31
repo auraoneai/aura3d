@@ -28,14 +28,18 @@ export const ORIGINAL_LOOKS: Readonly<Record<StageId, OriginalLook>> = {
   "crown-arena": { lookId: "arena-fight", overrides: { accent: "#ffd76a", exposureEv: 0.08, fogDensityScale: 0.7 } }
 };
 
-/** Per-venue default after the blind panel (2026-10-31): only the venues judged better keep the GU47 look. */
+/**
+ * Per-venue default. The blind panel (2026-10-31) judged the first GU47 look better on Neo-Tokyo and the Dock only; the
+ * other four carry the refined GU47 look (refinedLook.ts, phase 3), which the blind panel judged better than the 4.6.2
+ * frame: Colosseum and Airstrip 3/0 (g05p3r2), Crown 3/0 (g05p3r3c), Monastery 3/0 (g05p3r3m).
+ */
 export const VENUE_LOOK_DEFAULT: Readonly<Record<StageId, VenueLookMode>> = {
   "neo-tokyo-rooftop": "gu47",
   "bangkok-dock": "gu47",
-  "colosseum-ruins": "original",
-  "desert-airbase": "original",
-  "himalayan-monastery": "original",
-  "crown-arena": "original"
+  "colosseum-ruins": "gu47",
+  "desert-airbase": "gu47",
+  "himalayan-monastery": "gu47",
+  "crown-arena": "gu47"
 };
 
 /** The venue's look: `?look=original` / `?look=gu47` win over the per-venue default. */

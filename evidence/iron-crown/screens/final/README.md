@@ -1,5 +1,7 @@
 # Iron Crown: final screenshots after the UI and content fixes
 
+**Retaken 2026-10-31 (GU47 phase 3, 4.7.1 candidate):** every frame (1280 and 390, 01-title to 06-results) and the card come from `tests/browser/audit-fix/iron-crown.spec.ts` (`@g7` screens, `ic-card`) on the remote ACR runner (crmmeprodacr, runs g05p3-r3-3 and g05p3-r3-4, software WebGL2), Crown Arena in its refined look (blind panel g05p3r3c 3/0/0 better than 4.6.2). `card-1x.jpg` is the 2x frame downscaled; posters rebuilt with `tools/site/build-card-images.mjs`. The text below describes the earlier capture.
+
 Route: `apps/showcase-iron-crown`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
 
 **Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-iron-crown.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.

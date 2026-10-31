@@ -1,0 +1,722 @@
+[
+ {
+  "target": "ic-screens-1280",
+  "id": "01-title",
+  "canvasOnly": false,
+  "mean": 35.12,
+  "p5": 3,
+  "p50": 24,
+  "p95": 124,
+  "darkFrac": 0.3077,
+  "clipFrac": 0.0356,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 111836,
+   "evalMs": 32379
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 98,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 46,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -2.2,
+    "clip": "idle",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 2.2,
+    "clip": "idle",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-1280",
+  "id": "02-early",
+  "canvasOnly": false,
+  "mean": 34.63,
+  "p5": 3,
+  "p50": 24,
+  "p95": 124,
+  "darkFrac": 0.3033,
+  "clipFrac": 0.0342,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 96874,
+   "evalMs": 32590
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 98,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 86,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -2.2,
+    "clip": "idle",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 2.2,
+    "clip": "idle",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-1280",
+  "id": "03-action",
+  "canvasOnly": false,
+  "mean": 29.75,
+  "p5": 2,
+  "p50": 17,
+  "p95": 119,
+  "darkFrac": 0.4247,
+  "clipFrac": 0.1049,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 93849,
+   "evalMs": 33553
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 92,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 141,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.916666666666667,
+    "clip": "idle",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 0.3103100000000024,
+    "clip": "jump",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-1280",
+  "id": "04-mid",
+  "canvasOnly": false,
+  "mean": 54.8,
+  "p5": 16,
+  "p50": 48,
+  "p95": 130,
+  "darkFrac": 0.0366,
+  "clipFrac": 0.0004,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 93167,
+   "evalMs": 34044
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 93,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 196,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.8175000000000001,
+    "clip": "idle",
+    "health": 100,
+    "meter": 13
+   },
+   "cpu": {
+    "x": 0.5904133333333357,
+    "clip": "idle",
+    "health": 74.56,
+    "meter": 6.9552000000000005
+   },
+   "stats": {
+    "p1Hits": 1,
+    "cpuHits": 0,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-1280",
+  "id": "05-modes",
+  "canvasOnly": false,
+  "mean": 23.91,
+  "p5": 9,
+  "p50": 16,
+  "p95": 56,
+  "darkFrac": 0.2556,
+  "clipFrac": 0,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 97179,
+   "evalMs": 33041
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 94,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 246,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.8079533333333337,
+    "clip": "idle",
+    "health": 94.72,
+    "meter": 15.376000000000001
+   },
+   "cpu": {
+    "x": -0.08225999999999764,
+    "clip": "walk",
+    "health": 74.56,
+    "meter": 16.1552
+   },
+   "stats": {
+    "p1Hits": 1,
+    "cpuHits": 1,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-1280",
+  "id": "06-results",
+  "canvasOnly": false,
+  "mean": 18.35,
+  "p5": 0,
+  "p50": 15,
+  "p95": 46,
+  "darkFrac": 0.2701,
+  "clipFrac": 0.175,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 89018,
+   "evalMs": 31404
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 77,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 311,
+   "mode": "quick",
+   "phase": "boutEnd",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.8079533333333337,
+    "clip": "win",
+    "health": 94.72,
+    "meter": 15.376000000000001
+   },
+   "cpu": {
+    "x": -0.32142666666666425,
+    "clip": "ko",
+    "health": 0,
+    "meter": 16.1552
+   },
+   "stats": {
+    "p1Hits": 1,
+    "cpuHits": 1,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 2,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": "VICTORY"
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "01-title",
+  "canvasOnly": false,
+  "mean": 29.07,
+  "p5": 2,
+  "p50": 13,
+  "p95": 135,
+  "darkFrac": 0.4923,
+  "clipFrac": 0.0795,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 29705,
+   "evalMs": 9038
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 113,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 47,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -2.2,
+    "clip": "idle",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 2.2,
+    "clip": "idle",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "02-early",
+  "canvasOnly": false,
+  "mean": 29.05,
+  "p5": 2,
+  "p50": 13,
+  "p95": 135,
+  "darkFrac": 0.4928,
+  "clipFrac": 0.0794,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 27347,
+   "evalMs": 9028
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 113,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 87,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -2.2,
+    "clip": "idle",
+    "health": 100,
+    "meter": 0
+   },
+   "cpu": {
+    "x": 2.2,
+    "clip": "idle",
+    "health": 88,
+    "meter": 0
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 0,
+    "maxCombo": 0,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "03-action",
+  "canvasOnly": false,
+  "mean": 32.26,
+  "p5": 2,
+  "p50": 16,
+  "p95": 127,
+  "darkFrac": 0.4694,
+  "clipFrac": 0.1184,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 26322,
+   "evalMs": 12375
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 90,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 162,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.5100000000000005,
+    "clip": "hitstun",
+    "health": 94.72,
+    "meter": 2.3760000000000003
+   },
+   "cpu": {
+    "x": 0.18061333333333598,
+    "clip": "idle",
+    "health": 88,
+    "meter": 9.2
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 1,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "04-mid",
+  "canvasOnly": false,
+  "mean": 41.96,
+  "p5": 12,
+  "p50": 23,
+  "p95": 132,
+  "darkFrac": 0.0501,
+  "clipFrac": 0.0004,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 26373,
+   "evalMs": 10296
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 92,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 242,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.4136666666666664,
+    "clip": "walk",
+    "health": 84.16,
+    "meter": 7.128000000000001
+   },
+   "cpu": {
+    "x": 0.12253000000000264,
+    "clip": "walk",
+    "health": 88,
+    "meter": 24.15
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 2,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "05-modes",
+  "canvasOnly": false,
+  "mean": 29.85,
+  "p5": 8,
+  "p50": 20,
+  "p95": 99,
+  "darkFrac": 0.2702,
+  "clipFrac": 0,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 25511,
+   "evalMs": 9794
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 96,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 292,
+   "mode": "quick",
+   "phase": "fight",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.8079999999999996,
+    "clip": "idle",
+    "health": 78.88,
+    "meter": 9.504000000000001
+   },
+   "cpu": {
+    "x": 0.15328000000000264,
+    "clip": "guard",
+    "health": 88,
+    "meter": 33.349999999999994
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 3,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 0,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": null
+  }
+ },
+ {
+  "target": "ic-screens-390",
+  "id": "06-results",
+  "canvasOnly": false,
+  "mean": 20.91,
+  "p5": 0,
+  "p50": 15,
+  "p95": 53,
+  "darkFrac": 0.2615,
+  "clipFrac": 0.1825,
+  "timing": {
+   "styleMs": 0,
+   "shotMs": 28642,
+   "evalMs": 9776
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 56,
+   "optionIgnored": 0,
+   "contactShadows": {
+    "passExecuted": false,
+    "depthSource": "none",
+    "unavailable": "no-shadow-casting-directional-light"
+   }
+  },
+  "state": {
+   "frame": 362,
+   "mode": "quick",
+   "phase": "boutEnd",
+   "stage": "crown-arena",
+   "p1": {
+    "x": -1.8079999999999996,
+    "clip": "win",
+    "health": 78.88,
+    "meter": 9.504000000000001
+   },
+   "cpu": {
+    "x": 0.15328000000000264,
+    "clip": "ko",
+    "health": 0,
+    "meter": 33.349999999999994
+   },
+   "stats": {
+    "p1Hits": 0,
+    "cpuHits": 3,
+    "maxCombo": 1,
+    "throws": 0,
+    "specials": 0
+   },
+   "pips": {
+    "p1": 2,
+    "cpu": 0
+   },
+   "round": 1,
+   "paused": false,
+   "result": "VICTORY"
+  }
+ }
+]

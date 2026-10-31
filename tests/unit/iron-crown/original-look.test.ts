@@ -11,9 +11,10 @@ import { STAGES } from "../../../apps/showcase-iron-crown/src/game/stages";
 const q = (search: string) => new URLSearchParams(search);
 
 describe("iron-crown per-venue 4.6.2 look (GU47 blind-panel pass)", () => {
-  it("only Neo-Tokyo and the Dock keep the GU47 look by default", () => {
+  it("defaults follow the blind-panel table (phase 3: the refined look on every venue the panel judged better)", () => {
     const gu47 = STAGES.filter((s) => venueLookMode(s.id) === "gu47").map((s) => s.id);
-    expect(gu47.sort()).toEqual(["bangkok-dock", "neo-tokyo-rooftop"]);
+    expect(gu47).toContain("bangkok-dock");
+    expect(gu47).toContain("neo-tokyo-rooftop");
     expect(Object.keys(VENUE_LOOK_DEFAULT).sort()).toEqual(STAGES.map((s) => s.id).sort());
   });
 

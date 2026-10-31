@@ -70,7 +70,7 @@ describe("iron-crown art direction (GU47 WP-15)", () => {
     it(`${stage.id}: the mounted venue audits clean against the art direction`, () => {
       const snapshot = venueSnapshot(stage);
       const violations = auditArtDirection(direction, snapshot);
-      expect(violations).toEqual([]);
+      expect(violations, JSON.stringify(violations)).toEqual([]);
       expect(snapshot.hasAmbient).toBe(false);
       expect(snapshot.environment.kind).not.toBe("none");
       expect(snapshot.lights.filter((light) => light.shadow)).toHaveLength(1);

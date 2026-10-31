@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/p3-r3/iron-crown/frames/g05p3-r3-4/ic-card--card-2x.jpg",
+      "sha256": "e6dc188fce5c6743d01dd14f03dbb85df6590b7a761ab141538abc99267e7545"
+    },
+    {
+      "path": "evidence/iron-crown/screens/final/1280-04-mid.jpg",
+      "sha256": "3770fd15497a17ee7e4bd0ce471f57c8e75c0387818ba823d793185f40a4809a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/p3-r2/iron-crown/frames/g05p3-r2-1/iron-crown--colosseum-ruins--settle-60s.jpg",
+      "sha256": "730c06e858b508d97187d48320bde9d25e7064c0a9bcdebae22d62b2b4c6eb12"
+    },
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/p3-r3/iron-crown/frames/g05p3-r3-2/iron-crown--himalayan-monastery--settle-60s.jpg",
+      "sha256": "5b5669dc0b786a5cbf8c8e39b6008f3be2c513d12562f3d8e0103b6465fc9a3d"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 4.5,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Crown Arena frames are washed in a flat orange-brown wash with no clear top-down key spot. Frames 3-4 use flat overcast daylight with no rim light separating the fighters from the background."
+    },
+    {
+      "category": "shadows",
+      "seen": "Fighters have almost no contact shadows. The feet float on the floor rings, and the jumping Mara Volt in frame 1 casts no visible ground shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The glossy dark floor in frame 1 shows faint gold ring reflections. Otherwise surfaces in frames 3-4 read flat and unlit by the environment."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Venues are varied: a throne with crown, dragon statues, a castle gate, and a festival shrine. They read as kitbashed props on a flat stage with no crowd and no ropes. The background shrine in frame 4 is semi-transparent and ghosted."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Small white floating particles appear in frames 2 and 4. There is no haze cone, no volumetric spot, and no depth fog for arena atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The gi and leather outfit look like baked photogrammetry-style textures with no specular response. The floor is a flat vector-like decal."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Character meshes are lumpy, with low-res faces and stiff hands. Props are decent but stylistically mismatched: toon wooden houses next to realistic dragons."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 the throne dominates the center and the opponent is cropped at the top while airborne. In frames 3-4 the fighters sit at the far edges with a large empty center gap and are small in the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "The side-on follow view is correct. Framing jumps between a tight low shot (frame 1) and a wide pulled-back shot (frames 3-4), and the jump in frame 1 exits the frame top."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible bloom on gold or spot highlights and no vignette or grading for arena mood. The warm frames look muddy rather than graded."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Poses are stiff and generic. The jumping pose in frame 1 has limbs splayed awkwardly, and frames 3-4 show identical idle stances."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean fighting HUD with health bars, super meters, round pips, and a centered clock, plus a readable control strip. HUD styling is consistent with the gold theme."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
