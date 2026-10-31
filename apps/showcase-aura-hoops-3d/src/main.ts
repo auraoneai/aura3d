@@ -759,7 +759,8 @@ function buildMarkerPoolNodes(): any[] {
   const pool = (kind: "cylinder" | "torus", name: string, capacity: number, opts: Record<string, unknown>) =>
     (instances as any)[kind]({ name, transforms: parkedTransforms(capacity), castShadow: false, ...opts }).runtime(game.runtimeNode(name));
   return [
-    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }),
+    // GU47 phase 4: the key casts real shadows now, so the foot disc is a faint occlusion pad (0.24 read as a decal, rubric).
+    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.5, 0.008, 0.5], material: material.pbr({ color: "#000000", opacity: 0.1, roughness: 1 }) }),
     pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.82, 0.82, 0.34], material: ringMat(home) }),
     pool("torus", "marker-rings-away", AWAY_IDS.length, { size: [0.86, 0.86, 0.34], params: { tubularSegments: 4 }, material: ringMat(away) }),
     pool("cylinder", "marker-auras", MARKER_ATHLETES, { size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }),

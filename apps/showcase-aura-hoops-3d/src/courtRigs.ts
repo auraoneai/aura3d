@@ -198,10 +198,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "golden-hour",
     hdri: "belfast_sunset_puresky",
     hdri2k: true,
-    environmentIntensity: 0.55,
+    environmentIntensity: 0.45, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 250,
     sun: { elevationDeg: 7, azimuthDeg: 250 },
-    key: { color: "#ff9e64", intensity: 1.5 },
+    key: { color: "#ff9e64", intensity: 2.4 },
     // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
     // GU47 phase 3: the haze is gone, so the extra stop would only lift the black point: 1.0 -> 0.6.
     exposureEv: 0.6,
@@ -235,13 +235,13 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "golden-hour",
     hdri: "venice_sunset",
     hdri2k: true,
-    environmentIntensity: 0.95,
+    environmentIntensity: 0.72, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key"); Venice also read washed out
     environmentRotationDeg: 185,
     // Behind the hoop: the court attacks -Z, so azimuth 185 puts the low sun over the backboard, facing the camera.
     sun: { elevationDeg: 5, azimuthDeg: 185 },
-    key: { color: "#ffad66", intensity: 2.6 },
+    key: { color: "#ffad66", intensity: 3.6 },
     // GU47 phase 2: +0.55 EV for p95 >= 215 (4.6 frame p95 180).
-    exposureEv: 0.6,
+    exposureEv: 0.42,
     fog: { color: "#d8a47c", near: 40, far: 260 },
     post: "daylight-outdoor",
     grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0.01 },
@@ -267,10 +267,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "outdoor-day",
     hdri: "outdoor-midday",
     hdri2k: true,
-    environmentIntensity: 1.0,
+    environmentIntensity: 0.8, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 150,
     sun: { elevationDeg: 64, azimuthDeg: 150 },
-    key: { color: "#fff6ea", intensity: 4.2 },
+    key: { color: "#fff6ea", intensity: 5.2 },
     // GU47 phase 2: +0.5 EV for p95 >= 215 once the fog wash is gone (4.6 frame p95 178).
     exposureEv: 0.38,
     fog: { color: "#cbd8e2", near: 60, far: 320 },
@@ -302,11 +302,11 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "interior-warm",
     hdri: "indoor-workshop",
     hdri2k: true,
-    environmentIntensity: 0.7,
+    environmentIntensity: 0.6, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 20,
     // Cool daylight through the roof gap (the god-ray source of H47-V2); the bulbs carry the warm side.
     sun: { elevationDeg: 62, azimuthDeg: 20 },
-    key: { color: "#c9d5e6", intensity: 1.4 },
+    key: { color: "#c9d5e6", intensity: 2.1 },
     // GU47 phase 2: +0.45 EV for p95 >= 215 (after-capture p95 182-192).
     exposureEv: 0.7,
     fog: { color: "#2b2620", near: 24, far: 140 },
