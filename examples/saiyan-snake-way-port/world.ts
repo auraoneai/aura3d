@@ -207,6 +207,8 @@ export interface WorldRuntime {
   setRunnerStyle(style: RunnerStyle): void;
   /** Reduced motion (C9): no camera shake and no speed FOV widening. */
   setReducedMotion(on: boolean): void;
+  /** GU47 phase 2: title screen (no run started); the camera holds the chase framing instead of the intro's first pose. */
+  setTitle?(on: boolean): void;
   /** `setVisible` calls the last `update` made (pooled slots only change when they change state). */
   readonly visibilityWrites: number;
   readonly nodeCount: number;
@@ -465,7 +467,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.bloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, radius: 0.5 }))
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
-      .add(effects.volumetricFog({ name: "god rays", density: 0.02, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
       // GU47 SSR-07: motion blur above 60 m/s (High only), aberration pulses, outro DOF; art/cinePost.ts disables them
       // on the first frame and enables each only when its moment comes.
       .add(effects.motionBlur({ name: "motion blur", intensity: 0.25, shutter: 0.5, maxBlur: 12 }))
@@ -499,6 +501,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       let prevPulse = 0;
       let burstT = 1;
       let reducedMotion = false;
+      let title = false;
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
@@ -899,7 +902,7 @@ export function buildWorld(options: WorldOptions = {}): World {
 
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
-        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion }) ?? null;
+        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
         const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
         const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
@@ -931,6 +934,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
+        setTitle(on: boolean) { title = on; },
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {

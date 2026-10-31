@@ -19,6 +19,15 @@ describe("serpentine-sky-run camera shots (SSR-15)", () => {
     expect(d.step(input(S({ time: INTRO_SECONDS }))).name).toBe("chase");
   });
 
+  it("holds the chase framing on the title screen (GU47 phase 2)", () => {
+    const d = createShotDirector();
+    const title = d.step(input(S({ time: 0, s: 0 }), { title: true }));
+    expect(title.name).toBe("chase");
+    expect(title.intro).toBe(0);
+    expect(title.bars).toBe(0);
+    expect(d.step(input(S({ time: 0, s: 0 }))).intro).toBe(1);
+  });
+
   it("pushes in for 1.2 s after each stage boundary", () => {
     const from = (STAGES[1] as { from: number }).from;
     expect(secondsSinceStageStart(from - 1, 40)).toBe(Number.POSITIVE_INFINITY);
