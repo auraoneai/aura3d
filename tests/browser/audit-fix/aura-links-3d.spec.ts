@@ -34,9 +34,9 @@ interface Target {
   run?(page: Page, name: string): Promise<void>;
 }
 
-async function lumaStats(page: Page, png: Buffer) {
-  return page.evaluate(async (b64) => {
-    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
+async function lumaStats(page: Page, png: Buffer, mime = "image/png") {
+  return page.evaluate(async ([b64, type]) => {
+    const blob = await (await fetch(`data:${type};base64,${b64}`)).blob();
     const bmp = await createImageBitmap(blob);
     const c = document.createElement("canvas");
     c.width = bmp.width; c.height = bmp.height;
@@ -54,7 +54,7 @@ async function lumaStats(page: Page, png: Buffer) {
     }
     const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
     return { w: c.width, h: c.height, mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95), darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4) };
-  }, png.toString("base64"));
+  }, [png.toString("base64"), mime] as const);
 }
 
 async function gameInfo(page: Page) {
@@ -74,10 +74,11 @@ async function gameInfo(page: Page) {
 async function grab(page: Page, target: string, id: string, extra: Record<string, unknown> = {}, withHud = false): Promise<void> {
   const handle = withHud ? null : await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
-  const png = await page.screenshot({ type: "png" });
+  // one screenshot per shot (a software-GL screenshot costs minutes; the PNG + JPEG pair ran the 11-shot screens target
+  // past the 50 min test timeout, run g10p3-r1-1): luma stats come from the JPEG itself
   const jpg = await page.screenshot({ type: "jpeg", quality: 70 });
   await handle?.evaluate((el) => el.remove());
-  const stats = await lumaStats(page, png);
+  const stats = await lumaStats(page, jpg, "image/jpeg");
   log(`GL_META ${JSON.stringify({ target, id, hud: withHud, ...extra, ...stats, info: await gameInfo(page) })}`);
   const b64 = jpg.toString("base64");
   const n = Math.ceil(b64.length / CHUNK);
