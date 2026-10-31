@@ -246,6 +246,10 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
     float weave = sin(vLocal.x * 31.0) * sin(vLocal.z * 29.0);
     float streak = sin(vLocal.x * 2.3 + sin(vLocal.z * 0.61) * 2.4 + vLocal.z * 0.17);
     base *= 1.0 + crCanvas.x * weave + crCanvas.y * streak;
+    /* GU47 phase 3: painted rail shadows on the deck top (u runs across the deck): a wide band inside the left rail, whose
+     * shadow the low sun (azimuth -35, ahead-left) throws onto the deck, and a thin contact band inside the right rail. */
+    float railShade = max(1.0 - band(vUv.x, 0.085), band(vUv.x, 0.972)) * step(0.5, N.y);
+    base *= 1.0 - 0.3 * railShade;
   }
   float d = dot(N, crSunDir);
   float lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
@@ -262,7 +266,8 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec3 R = reflect(-V, N);
   float skyWin = band(R.y, 0.42) * (1.0 - band(fres, 0.7));
   float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
-  c += (vec3(0.82, 0.86, 1.0) * 0.55 * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
+  vec3 skyRefl = mix(crFogColor * 0.8, vec3(0.78, 0.84, 1.0) * 0.6, band(R.y, 0.72));
+  c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
   c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;

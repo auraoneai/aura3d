@@ -743,7 +743,7 @@ export function buildWorld(options: WorldOptions): World {
   const gateShadows = look.gateShadow && look.toon
     ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
     : null;
-  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.16, 0.06, 0.2] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.12, 0.04, 0.16] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -896,8 +896,10 @@ export function buildWorld(options: WorldOptions): World {
         }
         const lift = Math.max(0, p.y - CONFIG.BALL_RADIUS * p.scale);
         const shadow = node("ball-shadow");
-        shadow.setVisible(p.visible).setPosition(p.x - 0.5 * p.y, 0.05, p.z - 0.5 * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
-        shadow.setUniform?.("alpha", 0.3 / (1 + 0.25 * lift));
+        /* GU47 phase 3: in carnival the blob falls away from the low sun (towards the camera and right, like the gate shadows) */
+        const sh = look.gateShadow ? { dx: 0.45, dz: 0.65, alpha: 0.42 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
+        shadow.setVisible(p.visible).setPosition(p.x + sh.dx * p.y, 0.05, p.z + sh.dz * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
+        shadow.setUniform?.("alpha", sh.alpha / (1 + 0.25 * lift));
         /* shield bubble */
         const shield = node("shield");
         shield.setVisible(o.shieldActive && p.visible);

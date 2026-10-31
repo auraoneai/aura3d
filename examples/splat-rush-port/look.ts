@@ -198,7 +198,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     environment: { kind: "hdri", id: "kloppenheim_06_puresky", intensity: 0.65, rotationDeg: 145, fallback: "sunset" },
     backdropLights: "from-toon",
     post: {
-      bloom: { intensity: 0.7, threshold: 0.8, scatter: 0.6 },
+      bloom: { intensity: 0.6, threshold: 0.88, scatter: 0.6 },
       vignette: { intensity: 0.22, color: "#3a2440" },
       grade: { contrast: 1.1, saturation: 1.14, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
@@ -208,12 +208,12 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     cloudSea: { y: -22, color: "#a99bc9", scroll: 0.35 },
     vfx: true,
     ribbon: { points: 12, width: 0.42, alpha: 0.55 },
-    camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -6 },
+    camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -9 },
     streaks: { color: "#ffe2c6", alpha: 0.24 },
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
     spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
-    gateShadow: { length: 1.7, alpha: 0.34 },
+    gateShadow: { length: 1.8, alpha: 0.5 },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };
