@@ -17,6 +17,7 @@ import {
   lights,
   looks,
   material,
+  primitives,
   sky,
   weather,
   world,
@@ -138,6 +139,17 @@ export interface CourtRig {
   readonly skylineDistance: number;
   readonly backdrop: string;
   readonly surface: CourtSurface;
+  /**
+   * GU47 phase 3 (blind panel: "floating seats", "stray pillar", "flat white void"): a ground plane to the horizon under
+   * the court, its seating and its light poles, so nothing stands over the clear colour. Courts without it keep the
+   * judged phase-2 look.
+   */
+  readonly surround?: { readonly color: AuraColor; readonly roughness: number };
+  /**
+   * GU47 phase 3: grounded stepped bleachers built from instanced boxes replace the borrowed stadium-seat GLB (which
+   * floats over the court edge on every court). The WP-36 `hoopsBleacher` model replaces them once it is admitted.
+   */
+  readonly bleachers?: { readonly color: AuraColor; readonly seat: AuraColor };
   /** H47-V3: spray-tag paint colour on this court (the tag textures are WP-36 assets). */
   readonly sprayTag: { readonly color: AuraColor; readonly opacity: number; readonly size: number };
 }
@@ -184,26 +196,29 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     sun: { elevationDeg: 7, azimuthDeg: 250 },
     key: { color: "#ff9e64", intensity: 1.5 },
     // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
-    exposureEv: 1.0,
+    // GU47 phase 3: the haze is gone, so the extra stop would only lift the black point: 1.0 -> 0.6.
+    exposureEv: 0.6,
     fog: { color: "#46506a", near: 28, far: 210 },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 0.92, temperature: -0.08, tint: 0.02 },
-    bloom: { intensity: 0.6, threshold: 0.8 },
+    // GU47 phase 3: 0.6 / 0.8 bloomed the sodium heads and the sunset sky into a veil over the left half of the frame
+    // (the 4.6.2 cinematic-film bloom is far lower); only the lamp heads cross 1.1 now.
+    bloom: { intensity: 0.22, threshold: 1.1 },
     night: true,
     grain: true,
     // H47-L2: four sodium spots. The PRD casts the two behind the hoop (sun + local-0 + local-1 = 3 shadow rows on
     // High); the C-35 audit caps basketball at one shadowed light, so they stay unshadowed until that rule moves.
     practicals: [ruckerSpot(-11, -7, false), ruckerSpot(11, -7, false), ruckerSpot(-11, 13, false), ruckerSpot(11, 13, false)],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
-    lensFlare: [
-      { name: "rucker-flood-flare-w", position: [-10.1, 9.0, 12.0], intensity: 0.55 },
-      { name: "rucker-flood-flare-e", position: [10.1, 9.0, 12.0], intensity: 0.55 }
-    ],
+    // GU47 phase 3: the two camera-facing flood flares are off (they veiled the chase frame; blind panel).
+    lensFlare: [],
     preethamSky: false,
     water: "none",
     skylineDistance: 92,
     backdrop: "brick walk-ups behind a 4 m chain-link fence",
     surface: { name: "cracked asphalt", floor: "#2b2e33", paint: "#8e3f1c", line: "#ece4cf", apron: "#1f2227", roughness: 0.9, puddles: 0, pbrSet: "hoopsCourtAsphaltCracked" },
+    surround: { color: "#25282d", roughness: 0.92 },
+    bleachers: { color: "#8a9199", seat: "#c2662d" },
     sprayTag: { color: SODIUM, opacity: 0.86, size: 2.4 }
   },
   venice: {
@@ -253,17 +268,22 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     fogOff: true,
     post: "daylight-outdoor",
     grade: { contrast: 1.16, saturation: 0.86, temperature: 0.02, tint: 0 },
-    bloom: { intensity: 0.85, threshold: 1.2 },
+    // GU47 phase 3: the fog-off capture still drew a white-out; at noon the 0.85 bloom spreads the sky over the court
+    // (the 4.6.2 daylight-outdoor bloom is 0.08). Bloom stays just above it, and the Preetham sky is off below.
+    bloom: { intensity: 0.12, threshold: 1.5 },
     night: false,
     grain: false,
     practicals: [],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
     lensFlare: [],
-    preethamSky: true,
+    // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); the outdoor-midday HDRI is the sky.
+    preethamSky: false,
     water: "none",
     skylineDistance: 100,
     backdrop: "whitewashed hillside and rooftop parapets",
     surface: { name: "blue-white acrylic", floor: "#3c5f8f", paint: "#e9eef3", line: "#f7f5ee", apron: "#d9d4c8", roughness: 0.68, puddles: 0, pbrSet: "hoopsCourtAcrylicBlue" },
+    surround: { color: "#8c8579", roughness: 0.9 },
+    bleachers: { color: "#e6e1d6", seat: "#1f6fd1" },
     sprayTag: { color: "#1f6fd1", opacity: 0.8, size: 2.2 }
   },
   manila: {
@@ -351,7 +371,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     fog: { color: "#0b1120", near: 70, far: 420 },
     post: "space",
     grade: { contrast: 1.1, saturation: 0.9, temperature: -0.12, tint: 0 },
-    bloom: { intensity: 0.6, threshold: 0.8 },
+    // GU47 phase 3: lower bloom so the rib strips glow without veiling the deck.
+    bloom: { intensity: 0.35, threshold: 1.0 },
     night: true,
     grain: false,
     // H47-L3: station rib rect lights replace the orbit point fill.
@@ -368,6 +389,9 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 120,
     backdrop: "station viewport ribs and the Earth",
     surface: { name: "polished composite", floor: "#151b2e", paint: "#243b66", line: "#7dfcff", apron: "#0b0e1a", roughness: 0.3, puddles: 0, pbrSet: "hoopsCourtCompositeDeck" },
+    // GU47 phase 3: the station deck ends at a 60 m disc (space beyond it); the crumpled dome GLB is gone on the new look.
+    surround: { color: "#1a2030", roughness: 0.55 },
+    bleachers: { color: "#4b5468", seat: "#7dfcff" },
     sprayTag: { color: "#7dfcff", opacity: 0.78, size: 2.2 }
   }
 };
@@ -496,9 +520,12 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
 // GU47 phase 2: volumetric density is extinction per metre (sigma ~1.6-2x density). 0.08 / 0.12 left ~2 % of the court
 // visible from the 20-25 m broadcast camera (Rucker grey veil, Manila white-out); 0.006 / 0.005 keep a thin haze
 // (Manila 0.008 still laid an olive veil over the brown court in round 1).
+const RUCKER_HAZE = false;
 export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [];
-  if (rig.id === "rucker") {
+  // GU47 phase 3: Rucker's flood cones and haze are off. Even at density 0.006 the froxel haze, lit by the floods,
+  // washed the chase frame white (round g07p2r2; blind panel: "flat white void"). RUCKER_HAZE keeps the rig for a retry.
+  if (rig.id === "rucker" && RUCKER_HAZE) {
     for (const p of rig.practicals) {
       if (p.kind !== "spot") continue;
       const dir: AuraVec3 = [p.target[0] - p.position[0], p.target[1] - p.position[1], p.target[2] - p.position[2]];
@@ -638,4 +665,59 @@ export function courtIdentityRow(rig: CourtRig): { readonly court: CourtId; read
     practicals: rig.practicals.length,
     shadowedPracticals: rig.practicals.filter((p) => p.kind === "spot" && p.shadow).length
   };
+}
+
+/**
+ * GU47 phase 3: the ground to the horizon (a 60 m deck disc on Orbit), 6 cm under the apron so the court, the light
+ * poles and the bleachers stand on something instead of the clear colour. One draw; courts without `surround` add none.
+ */
+export function courtSurroundNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  if (!rig.surround) return [];
+  const mat = material.pbr({ color: rig.surround.color, roughness: rig.surround.roughness, metalness: rig.id === "orbit" ? 0.35 : 0 });
+  const node = rig.id === "orbit"
+    ? primitives.cylinder({ name: "court-surround", size: [60, 0.2, 60], material: mat, receiveShadow: true } as Parameters<typeof primitives.cylinder>[0]).position(0, -0.18, 4)
+    : primitives.plane({ name: "court-surround", size: [320, 1, 320], material: mat, receiveShadow: true } as Parameters<typeof primitives.plane>[0]).position(0, -0.06, 4);
+  return [node as unknown as AuraNodeBuilder<AuraSceneNode>];
+}
+
+/** Bleacher stands as [x, z, yaw]: behind the far baseline and along both sidelines, outside the light poles. */
+export const BLEACHER_STANDS: readonly (readonly [number, number, number])[] = [[0, -15.5, 0], [-17.5, 4, Math.PI / 2], [17.5, 4, -Math.PI / 2]];
+const BLEACHER_ROWS = 5;
+/**
+ * GU47 phase 3: grounded stepped bleachers (5 rows, 10 m wide) from two instanced draws per court (risers and seat
+ * planks), replacing the borrowed stadium-seat GLB that floated over the court edge. Row r rises 0.45 m and steps 0.8 m
+ * back, away from the court.
+ */
+export function courtBleacherNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  if (!rig.bleachers) return [];
+  const risers: { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 }[] = [];
+  const planks: { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 }[] = [];
+  for (const [x, z, yaw] of BLEACHER_STANDS) {
+    // the stand's "back" points away from the court centre (0, 4)
+    const bx = -Math.sin(yaw), bz = -Math.cos(yaw);
+    for (let r = 0; r < BLEACHER_ROWS; r++) {
+      const h = 0.45 * (r + 1);
+      const d = 0.8 * r;
+      risers.push({ position: [x + bx * d, h / 2, z + bz * d], rotation: [0, yaw, 0], scale: [10, h, 0.8] });
+      planks.push({ position: [x + bx * (d + 0.12), h + 0.04, z + bz * (d + 0.12)], rotation: [0, yaw, 0], scale: [9.6, 0.08, 0.34] });
+    }
+  }
+  return [
+    instances.box({ name: "bleacher-risers", transforms: risers, castShadow: true, receiveShadow: true, material: material.pbr({ color: rig.bleachers.color, roughness: 0.45, metalness: 0.55 }) } as Parameters<typeof instances.box>[0]) as unknown as AuraNodeBuilder<AuraSceneNode>,
+    instances.box({ name: "bleacher-planks", transforms: planks, castShadow: false, material: material.pbr({ color: rig.bleachers.seat, roughness: 0.6 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>
+  ];
+}
+
+/**
+ * GU47 phase 3 (Orbit): the station ribs as geometry. The four rib rect lights (H47-L3) get emissive strips, one
+ * instanced draw, so the deck has a lit frame against the starfield where the crumpled dome GLB stood.
+ */
+export function courtRibNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  if (rig.id !== "orbit") return [];
+  const ribs = rig.practicals.filter((p): p is CourtPracticalRect => p.kind === "rect").map((p) => ({
+    // floor to the top of the light strip, so the rib stands on the deck
+    position: [p.position[0], (p.position[1] + p.height / 2) / 2, p.position[2]] as AuraVec3,
+    scale: [p.width * 0.5, p.position[1] + p.height / 2, p.width * 0.5] as AuraVec3
+  }));
+  return [instances.box({ name: "orbit-ribs", transforms: ribs, castShadow: false, material: material.emissive({ color: "#0b1626", emissive: "#7dfcff", emissiveIntensity: 3.5, bloom: 1.5 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }

@@ -85,14 +85,13 @@ describe("Aura Hoops 3D GU47 look table", () => {
 
 describe("Aura Hoops 3D GU47 atmosphere (H47-V2)", () => {
   const json = (id: (typeof COURT_IDS)[number], reduced = false) => courtAtmosphereNodes(COURT_RIGS[id], reduced).map((n) => n.toJSON() as { effect?: string; name?: string; maxParticles?: number; godRayDensity?: number });
-  it("puts flood cones and haze on Rucker, god rays and motes on Manila, nothing elsewhere, within +12 nodes", () => {
-    expect(json("rucker").filter((n) => n.effect === "volumetric-fog")).toHaveLength(1);
-    expect(json("rucker").length).toBe(5);
+  it("puts god rays and motes on Manila, nothing elsewhere (Rucker haze off since GU47 phase 3), within +12 nodes", () => {
+    expect(json("rucker")).toEqual([]);
     const manila = json("manila");
     expect(manila.find((n) => n.effect === "volumetric-fog")?.godRayDensity).toBeGreaterThan(0.3);
     for (const id of COURT_IDS) {
       expect(json(id).length).toBeLessThanOrEqual(12);
-      if (id !== "rucker" && id !== "manila") expect(json(id)).toEqual([]);
+      if (id !== "manila") expect(json(id)).toEqual([]);
     }
   });
   it("halves the Manila motes under reduced motion", () => {
