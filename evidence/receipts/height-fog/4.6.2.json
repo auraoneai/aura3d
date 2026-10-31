@@ -1,0 +1,45 @@
+{
+  "capability": "height-fog",
+  "version": "4.6.2",
+  "gitSha": "acd2d27e0",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/world-receipts.ts body(): ground strip 40x60 m, columns at 4/12/28 m, one shadow-casting sun, camera (0, 2, 6) -> (0, 1.4, -10), fov 55, 480x270; atmosphere.setFog height (density 0.05, heightDensity 0.4, falloff 0.3) vs none, flags vfx.fog; fog amount against an exp density-50 reference frame",
+  "frames": [
+    {
+      "file": "evidence/receipts/height-fog/fog-off.png",
+      "sha256": "91ff8491b7b50c4b69ef667452c02ce69abb69eafac74092730de9b29e819094",
+      "meanLuma": 61.085621359375,
+      "nonBlackRatio": 0.99975,
+      "label": "fog-off"
+    },
+    {
+      "file": "evidence/receipts/height-fog/fog-height.png",
+      "sha256": "efbf3cdc5375833c543d0854c9e54b41153468871229432d0508f315effa5154",
+      "meanLuma": 108.9739483984375,
+      "nonBlackRatio": 1,
+      "label": "fog-height"
+    },
+    {
+      "file": "evidence/receipts/height-fog/fog-solid.png",
+      "sha256": "0f786b4d612f05497a8ccab5fd7043c0a8d8aea5263543f6c808c46e20b9827b",
+      "meanLuma": 114.3136546453125,
+      "nonBlackRatio": 1,
+      "label": "fog-solid"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/eg/flag-promotion-noop.test.ts",
+    "tests/unit/gu47/eg/height-fog-distance.test.ts"
+  ],
+  "date": "2026-10-31T06:09:40.588Z",
+  "checks": {
+    "farFogAmount": 0.9985308958176765,
+    "nearFogAmount": 0.7863921534235162,
+    "amountMargin": 0.15,
+    "farAmountPixels": 1290,
+    "nearAmountPixels": 30720,
+    "farMeanAbsDeltaRgb": 12.743072411003258,
+    "nearMeanAbsDeltaRgb": 93.44940321180727,
+    "farDeltaAtLeast": 6
+  }
+}

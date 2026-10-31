@@ -42,7 +42,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
-import { beginPostStageTrace, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
+import { beginPostStageTrace, clearPostSkipped, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -189,9 +189,12 @@ function displayLutBinding(host: WebGL2DeviceHost, state: PostV2State, lut: unkn
   if (!lut || typeof lut !== "object") return null;
   const bag = lut as PostLutBag;
   if (typeof bag.source !== "string" || (typeof bag.cube !== "string" && !bag.data)) {
+    if (bag.status === "failed") clearPostSkipped(`LUT_PENDING:${String(bag.source)}`);
     recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${String(bag.source)}`);
     return null;
   }
+  // The load settled: the first frames' `LUT_PENDING` no longer describes it.
+  clearPostSkipped(`LUT_PENDING:${bag.source}`);
   if (state.lutFailed.has(bag.source)) return null;
   const gl = host.gl;
   state.lutCache ??= new DisplayLutCache<WebGLTexture>(
@@ -319,6 +322,11 @@ export function resolveSsrOptions(ssr: unknown): { readonly intensity: number; r
 /** GU47 E-C (EC-8): S4 `u_density` — the authored god-ray density clamped to [0.05, 1]; omitted or invalid = 1 (full march). */
 export function godRayDensity(density: unknown): number {
   return typeof density === "number" && Number.isFinite(density) ? Math.min(1, Math.max(0.05, density)) : 1;
+}
+
+/** GU47 phase 2: S4 `u_medium` — the shaft medium per metre clamped to [0, 1]; omitted or invalid = 0 (no depth scaling). */
+export function godRayMedium(medium: unknown): number {
+  return typeof medium === "number" && Number.isFinite(medium) ? Math.min(1, Math.max(0, medium)) : 0;
 }
 
 /**
@@ -1069,6 +1077,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_diskInner"), 0.02);
       // GU47 E-C (EC-8): `godRayDensity`; omitted keeps the full march (1).
       g.uniform1f(g.getUniformLocation(godProg, "u_density"), godRayDensity(god.density));
+      // GU47 phase 2: distance-scaled shaft medium; omitted (0) keeps the unscaled shaft.
+      g.uniform1f(g.getUniformLocation(godProg, "u_medium"), godRayMedium(god.medium));
     });
     // Additive blend onto the working HDR target.
     const blended = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
@@ -1464,6 +1474,12 @@ export function runV2LdrTail(
   const bindLut = (g: WebGL2RenderingContext, prog: WebGLProgram): void => {
     g.activeTexture(g.TEXTURE1);
     g.bindTexture(g.TEXTURE_3D, lut?.texture ?? state.identityLut);
+    // GU47 phase 2 (receipt effects-lut, LUT frame all black): the forward pass
+    // leaves material sampler objects bound on low units (webgl2/Samplers.ts);
+    // a mipmapped one overrides the LUT's LINEAR filter, the mip-less
+    // TEXTURE_3D is then incomplete and every fetch returns black. The
+    // identity LUT is never fetched (u_hasLut 0), so only LUT frames change.
+    g.bindSampler(1, null);
     g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
     g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), lut ? 1 : 0);
     g.uniform1i(g.getUniformLocation(prog, "u_lutLattice"), lut ? 1 : 0);

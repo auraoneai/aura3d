@@ -27,12 +27,20 @@ export interface SkyFogState {
 
 let fullscreen: Geometry | null = null;
 
+/**
+ * GU47 phase 2: the sky vertex stage reads `in vec2 a_pos`. `VertexFormat.P3`
+ * names its attribute `a_position` / `position`, which the device could not
+ * match to `a_pos`, so the input stayed unbound, every vertex read (0, 0, 0, 1)
+ * and the triangle was degenerate: no sky (stars, clouds, gradient) ever drew.
+ */
+const SKY_FORMAT = new VertexFormat([{ semantic: "position", components: 2, offset: 0, shaderName: "a_pos" }]);
+
 function fullscreenTriangle(): Geometry {
   if (fullscreen) return fullscreen;
-  const vertices = new VertexBuffer(VertexFormat.P3, 3);
-  vertices.setAttribute(0, "position", [-1, -1, 0]);
-  vertices.setAttribute(1, "position", [3, -1, 0]);
-  vertices.setAttribute(2, "position", [-1, 3, 0]);
+  const vertices = new VertexBuffer(SKY_FORMAT, 3);
+  vertices.setAttribute(0, "position", [-1, -1]);
+  vertices.setAttribute(1, "position", [3, -1]);
+  vertices.setAttribute(2, "position", [-1, 3]);
   fullscreen = new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
   return fullscreen;
 }

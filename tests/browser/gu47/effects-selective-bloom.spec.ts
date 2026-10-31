@@ -24,6 +24,8 @@ test.describe(`${CAPABILITY} receipt`, () => {
     const on = await session.render("bloom-selective");
     const lamp = await session.compare("bloom-off", "bloom-selective", REGIONS.lamp);
     const wall = await session.compare("bloom-off", "bloom-selective", REGIONS.wall);
+    // Logged before the checks so a failing run still says what it measured (GU47 phase 2).
+    console.log(`[effects-selective-bloom] measured ${JSON.stringify({ lamp: lamp.region, wall: wall.region, skipped: on.skipped })}`);
     expect(on.errors).toEqual([]);
     expect(lamp.region!.meanLumaDelta).toBeGreaterThanOrEqual(LAMP_LUMA_GAIN_AT_LEAST);
     expect(wall.region!.p95AbsDelta).toBeLessThanOrEqual(WALL_P95_AT_MOST);

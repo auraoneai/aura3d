@@ -150,3 +150,16 @@ describe("GU47 ED-1 rim on model materials (override path)", () => {
     expect(mats.map((m) => materialRimIntensity(m))).toEqual([0, 0]);
   });
 });
+
+describe("GU47 phase 2: the material-rim receipt harness geometry", () => {
+  it("primitives.sphere is unit-diameter, so the harness scales it by 2 for its radius-1 band maths", async () => {
+    const { createPrimitiveGeometry } = await import("../../../../packages/rendering/src/geometry/Primitives");
+    const bounds = createPrimitiveGeometry("sphere", undefined, { primitiveSegments: "full" } as never).bounds;
+    expect(bounds.max[0]).toBeCloseTo(0.5, 5);
+    expect(bounds.min[0]).toBeCloseTo(-0.5, 5);
+    const { readFileSync } = await import("node:fs");
+    const harness = readFileSync(new URL("../../../browser/gu47/material-rim-harness.ts", import.meta.url), "utf8");
+    expect(harness).toContain("const SPHERE_SCALE = SPHERE_RADIUS * 2;");
+    expect(harness).toContain(".scale([SPHERE_SCALE, SPHERE_SCALE, SPHERE_SCALE])");
+  });
+});
