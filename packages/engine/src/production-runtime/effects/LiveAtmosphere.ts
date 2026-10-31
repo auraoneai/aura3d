@@ -196,16 +196,18 @@ export class LiveAtmosphere {
   /**
    * Fog nodes that may supply the scene fog. GU47 phase 2 (haze wash): a
    * `volumetric-fog` node is the light-shaft medium; its `density` (0.06 to
-   * 0.12 in the GU47 looks) is a per-metre shaft medium, not the scene's
-   * distance haze. When it was the last fog node it replaced the scene's own
-   * `effects.fog` (density ~0.002) with an uncapped exp2 fog at its density,
-   * a flat wash past ~20 m (drift-and-deliver-port, aura-hoops-3d, last-train,
-   * heatsink-port, ninja-runner, bunker-zero). A scene with a plain fog node
-   * keeps it; a volumetric node is the scene fog only when there is none.
+   * 0.2 in the GU47 looks and receipts) is a per-metre medium the S4 god-ray
+   * stage scales its shafts by (`1 - exp(-density · depth)`), not the scene's
+   * distance haze. As a scene-fog node it became an uncapped exp2 forward fog
+   * at that density, a flat wash past a few metres: beside an `effects.fog`
+   * (density ~0.002) it replaced it when it was last (drift-and-deliver-port,
+   * aura-hoops-3d, last-train, heatsink-port, ninja-runner, bunker-zero), and
+   * alone it buried the god-rays receipt scene. Only plain fog nodes supply
+   * the scene fog; a scene whose only fog is volumetric renders like a
+   * node-free scene (no fog unless `app.atmosphere.setFog`).
    */
   private sceneFogCandidates(): readonly EffectNodeLike[] {
-    const plain = this.fogNodes.filter((node) => !isVolumetricFogNode(node));
-    return plain.length > 0 ? plain : this.fogNodes;
+    return this.fogNodes.filter((node) => !isVolumetricFogNode(node));
   }
 
   /** Last *visible* scene-fog node in scene order (§6.6; plain fog before volumetric fog, see `sceneFogCandidates`). */
@@ -226,7 +228,7 @@ export class LiveAtmosphere {
    * or `null` = the scene fog cleared until the next override).
    */
   private fogTarget(): AuraHeightFogSpec | null {
-    if (this.fogNodes.length > 0) {
+    if (this.sceneFogCandidates().length > 0) {
       if (this.sceneFogCleared) return null;
       const node = this.activeFogNode();
       return node ? this.fogStates.get(node as object)?.spec ?? null : null;
@@ -236,7 +238,7 @@ export class LiveAtmosphere {
 
   /**
    * GU47 E-B: `overrideSceneFog` default — true when every scene-fog candidate is a plain `effects.fog` (GU47 phase 2:
-   * a volumetric-fog node beside an `effects.fog` no longer turns the default off; it does not supply the scene fog).
+   * volumetric-fog nodes are never candidates, so one beside an `effects.fog` no longer turns the default off).
    */
   private sceneFogIsPlainFog(): boolean {
     const candidates = this.sceneFogCandidates();
@@ -300,7 +302,7 @@ export class LiveAtmosphere {
       : null;
     // GU47 E-B: on a scene with fog nodes, `overrideSceneFog` (default: the scene's only fog is effects.fog) merges
     // the spec into the active node's live spec (the C-37 `handle.setFog` path) or, for `null`, clears the scene fog.
-    if (this.fogNodes.length > 0 && (o?.overrideSceneFog ?? this.sceneFogIsPlainFog())) {
+    if (this.sceneFogCandidates().length > 0 && (o?.overrideSceneFog ?? this.sceneFogIsPlainFog())) {
       if (spec === null) {
         this.sceneFogCleared = true;
       } else {

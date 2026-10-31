@@ -16,9 +16,10 @@ import { CAMERA, fakeHost, fakeTarget, recordingGl } from "./recordingGl";
  * GU47 phase 2: the volumetric-fog haze wash. drift-and-deliver-port (density 0.06), aura-hoops-3d
  * athens/manila (0.08/0.12), last-train-port (0.12), heatsink-port and ninja-runner-port (0.08)
  * rendered a flat beige/white wash where `?look=original` was clean. Two engine causes:
- *   1. the volumetric-fog node, tracked as a scene-fog node, was the LAST fog node, so it replaced
- *      the game's own `effects.fog` haze (density ~0.002) with an uncapped exp2 fog at the shaft
- *      medium density (0.06 to 0.12 per metre: 76 % to 99 % opaque at 20 m);
+ *   1. the volumetric-fog node, tracked as a scene-fog node, supplied the forward scene fog: as the
+ *      LAST fog node it replaced the game's own `effects.fog` haze (density ~0.002), and alone it was
+ *      the scene fog, an uncapped exp2 fog at the shaft medium density (0.06 to 0.12 per metre: 76 %
+ *      to 99 % opaque at 20 m; the receipt's 0.2 buried the whole scene);
  *   2. the S4 march was an unnormalised sum (about 14 x intensity^2 times the emitter radiance at
  *      32 samples) in which every sky pixel emitted, so a bright sky added several HDR units to
  *      every pixel whose ray crossed it.
@@ -61,11 +62,21 @@ describe("scene fog: a volumetric-fog node never replaces the scene's effects.fo
     expect(atmosphere.resolveFog(0)).toBeNull();
   });
 
-  it("a scene whose only fog is volumetric keeps it as the scene fog (unchanged contract)", () => {
+  it("a scene whose only fog is volumetric has no scene fog (the receipt scene: 0.2 per metre buried it)", () => {
     const atmosphere = new LiveAtmosphere();
     atmosphere.trackFogNodes([rays()]);
     atmosphere.updateFogVisibility(visibleAll("rays"));
-    expect(atmosphere.resolveFog(0)?.density).toBe(0.06);
+    expect(atmosphere.resolveFog(0)).toBeNull();
+  });
+
+  it("beside only a volumetric node, app.atmosphere.setFog applies as on a node-free scene", () => {
+    const atmosphere = new LiveAtmosphere();
+    atmosphere.trackFogNodes([rays()]);
+    atmosphere.updateFogVisibility(visibleAll("rays"));
+    atmosphere.setFog({ density: 0.003, color: "#c9d6dc" });
+    expect(atmosphere.resolveFog(0)?.density).toBe(0.003);
+    atmosphere.setFog({ density: 0.004 }, { overrideSceneFog: true });
+    expect(atmosphere.resolveFog(0.1)?.density).toBe(0.004);
   });
 
   it("app.atmosphere.setFog reaches the effects.fog by default beside a volumetric node (drift, ninja, bunker-zero call it per phase)", () => {
