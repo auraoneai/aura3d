@@ -147,7 +147,8 @@ void main() {
   col = mix(col, haze, floorHaze * 0.85);
   // aerial perspective: far towers fade toward the haze/horizon mix, so the rows separate in depth
   float dist = length(cameraPosition - vW);
-  vec3 air = mix(haze, a3dSrgbToLinear(glassHorizon), 0.18);
+  // cool air: the row's haze leaning to the dome's upper colour (the warm horizon mix browned the dark glass)
+  vec3 air = mix(haze, a3dSrgbToLinear(glassSky), 0.4);
   col = mix(col, air, (1.0 - exp(-max(dist - 40.0, 0.0) / 240.0)) * 0.62);
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
@@ -155,9 +156,9 @@ void main() {
 /** Curtain-wall glass for one variant (body tint differs per variant so the three read as a kit, not clones). */
 export function towerGlassSpec(variant: TowerVariant): CustomSpec {
   const body: Record<TowerVariant, [number, number, number]> = {
-    slab: [0.16, 0.2, 0.27],
-    stepped: [0.2, 0.21, 0.24],
-    blade: [0.13, 0.18, 0.28]
+    slab: [0.24, 0.31, 0.42],
+    stepped: [0.29, 0.31, 0.36],
+    blade: [0.2, 0.28, 0.42]
   };
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },

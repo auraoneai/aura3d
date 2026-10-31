@@ -703,7 +703,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   }
   s.addMany([
     instances
-      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#ffc928", emissive: "#ff9e00", emissiveIntensity: 0.68 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
+      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#f2a23c", emissive: "#ff8a3d", emissiveIntensity: 0.5 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
       .runtime(game.runtimeNode(poolId("carrier-ramps"))),
     instances
       .box({ name: "traffic-brake-lights", size: [1.58, 0.16, 0.09], material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 }), castShadow: false, transforms: parked(BRAKE_BAR_CAPACITY) })

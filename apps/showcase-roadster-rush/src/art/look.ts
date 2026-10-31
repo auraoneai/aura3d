@@ -99,7 +99,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     fill: { color: "#8ea2e0", intensity: 0.6 },
     fog: { color: "#c98a6a", ...APEX_FOG_RANGE },
     post: "cinematic-film",
-    grade: { ...APEX_GRADE, temperature: 0.24, tint: 0.02 },
+    grade: { ...APEX_GRADE, temperature: 0.18, tint: 0.02 },
     bloom: { ...APEX_BLOOM },
     dome: { horizon: "#ff8a3d", mid: "#6a4fa8", top: "#1f3fa8", sun: "#ffb066", glow: "#ff7a3a" },
     signature: { hazeColor: "#6f6a86", windowSpecks: 0.25, sodium: 0, headlights: 0, tailGain: 1 }
