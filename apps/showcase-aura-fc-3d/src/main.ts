@@ -966,12 +966,12 @@ function boot(): void {
       appReady = true;
       document.body.dataset.aura3dReady = "true";
       // QA settle flag for the screens spec (readyGlobals): on software WebGL2 the turf texture lands 25-60 s after
-      // ready, and the card frame taken 10 s after ready showed the untextured mint tint. Set once 40 s and 30 frames
-      // have passed since ready; gameplay never reads it.
+      // ready, and the card frame taken 10 s after ready showed the untextured mint tint. Set once 40 s and 5 frames
+      // have passed since ready (software GL presents about one frame every few seconds); gameplay never reads it.
       {
         const readyAt = performance.now(), readyFrame = framesRendered;
         const settle = window.setInterval(() => {
-          if (performance.now() - readyAt >= 40_000 && framesRendered - readyFrame >= 30) {
+          if (performance.now() - readyAt >= 40_000 && framesRendered - readyFrame >= 5) {
             (window as unknown as Record<string, unknown>).__AURA_FC_SETTLED__ = true;
             window.clearInterval(settle);
           }
