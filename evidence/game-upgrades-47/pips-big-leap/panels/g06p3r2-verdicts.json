@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Stretched, streaky shadow artifacts across the lawn in the foreground and on the right; some aliasing on the tree edges.",
+     "Smeared, stretched shadow and texture streaks across the foreground grass, on the bottom right. Slightly darker overall. Otherwise richer materials, an island edge and better depth.",
+     "Streaky smeared shadow artifacts on the near grass; slightly dim foreground"
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Streaky, stretched shadow artifacts on the lawn; slight aliasing on the trees.",
+     "Smeared, stretched shadow and texture streaks across the foreground grass. A little dark in the lower corners.",
+     "Streaky shadow artifacts across the near grass"
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background is very hazy and grey; heavy fog washes out the distant landmarks; the orange ground is a bit monochrome.",
+     "Grey, overcast haze washes out the sky and background, giving low contrast in the distance. The foreground is a large expanse of plain brown ground.",
+     "Heavy grey haze in the sky; the windmill and tower float in the haze"
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Still pale and somewhat hazy with low floor contrast, but it has bevelled platforms, detail and better depth.",
+     "Pale lavender-grey ground and haze give a fairly low-contrast, washed look. A floating rock sits at the left.",
+     "Hazy and greyish with low contrast; floating rocks; a faint streaky reflection on the floor"
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Fairly dark, monochrome reddish-brown grade; the background is somewhat murky, but the moody lighting and ember particles add atmosphere.",
+     "Dark, somewhat muddy brown tone. The foreground floor is dim and low in detail.",
+     "Somewhat dark and muddy brown cast; the companion's shading is a little flat"
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy monochrome amber tint; the player's orange blends somewhat into the warm palette; the background is a flat dark brown.",
+     "Strong monochrome orange-brown cast. The foreground floor is a bit flat.",
+     "Monochrome orange cast; dark background; the player blends somewhat into the warm palette"
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overall somewhat dark with a heavy vignette and some bloom blur; the reflective floor is a little noisy; the NPC is slightly dim.",
+     "Overall dim, with soft blur and a darkening around the edges of the frame. A bright bloom hotspot sits behind the player. The NPC is slightly washed.",
+     "Dim, slightly muddy overall exposure; the strong blue tint lowers contrast; a blown-out bloom spot behind the player"
+    ]
+   }
+  ]
+ }
+]

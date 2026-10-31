@@ -102,7 +102,10 @@ export interface SurfacePair {
   readonly top: AuraMaterialSpec;
 }
 
-const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color });
+// GU47 phase 3: a fine, faint nap. The preset's fabric normal (scale 48, strength 0.28) tiled
+// once per slab read as a grid of bands across the big felt tops in the blind-panel frames.
+const FELT_NAP = { kind: "aura-procedural-texture", texture: "fabric-normal", scale: 180, strength: 0.07, contrast: 0.4 } as const;
+const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color, sheen: 0.35, normal: FELT_NAP });
 const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
 
 /**
@@ -111,7 +114,7 @@ const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
  * The platform tile kit (PBL-A1, WP-36) replaces these slabs on the same colliders.
  */
 export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
-  grass: { body: clay("#6b4c35"), top: felt(PIP_PALETTE.moss) },
+  grass: { body: clay("#6b4c35"), top: felt("#6a9a48") },
   earth: { body: clay("#5c3f28"), top: felt("#7d6243") },
   mushroom: { body: clay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.32 }) },
   leaf: { body: felt("#2f6333"), top: felt("#4f8e45") },
@@ -123,7 +126,8 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   stone: { body: clay("#4a4541"), top: clay("#736a61") },
   ember: { body: clay("#3f271d"), top: clay("#8a4a2c") },
   metal: { body: material.brushedMetal({ color: "#5a5e6a" }), top: material.brushedMetal({ color: "#868c9c" }) },
-  marble: { body: clay("#a89d8e"), top: material.ceramic({ color: "#cfc4b0", roughness: 0.4 }) },
+  // Matte honey stone: the glazed-ceramic top mirrored the palace HDRI as floor glare (phase 3).
+  marble: { body: clay("#a89d8e"), top: material.matteClay({ color: "#d9c7a4", roughness: 0.7 }) },
   gold: { body: material.metal({ color: "#7c5f26", roughness: 0.42 }), top: material.metal({ color: "#c9a24a", roughness: 0.3 }) },
   crystal: { body: material.clearcoat({ color: "#4f3f85", roughness: 0.25 }), top: material.clearcoat({ color: "#8a7ad0", roughness: 0.18 }) },
   starlight: { body: felt("#322c58"), top: felt("#9d8fd8") }
@@ -408,7 +412,7 @@ export function vignetteNode(look: WorldLook): DioramaNode {
 
 /**
  * PBL-P2 signature miniature lens: thin-lens DOF focused on Pip (about 4.6 m on desktop),
- * f/2, 50 mm, maxBlur 4. The runtime follows Pip with `app.post.setEffect("depthOfField",
+ * f/4, 50 mm, maxBlur 2 (phase 3; f/2 and 4 px before). The runtime follows Pip with `app.post.setEffect("depthOfField",
  * { focusDistance })`. The engine tier table drops DOF below High (PRD 6.4).
  */
 export function miniatureDofNode(): DioramaNode {

@@ -562,7 +562,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));
-  builder.add(miniatureDofNode());
+  if (look.lens !== "none") builder.add(miniatureDofNode());
   builder.add(ambientEmitterNode(look, scale, nodeName.hero, 4700 + spec.order));
   return base.top;
 }
@@ -621,7 +621,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const diorama = mode === "diorama";
   const look = worldLook(spec.id);
   const scale = presentationScale(options.reducedMotion === true);
-  const builder = scene().background(diorama ? look.background : (spec.background ?? "#1e4d78"));
+  const builder = scene().background(diorama && !look.hdriSky ? look.background : (spec.background ?? "#1e4d78"));
   const baseTop = diorama ? addDioramaAtmosphere(builder, spec, look, baseDepthFor(spec), options, scale) : null;
   if (!diorama) addOriginalAtmosphere(builder, spec, options);
 

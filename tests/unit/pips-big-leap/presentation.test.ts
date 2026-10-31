@@ -29,11 +29,12 @@ function fakeApp() {
     trails: [] as { target: string; stopped: boolean }[],
     plays: [] as { id: string; skipped: boolean }[],
     kicks: [] as { channel: string; offset: number }[],
-    shakes: [] as number[]
+    shakes: [] as number[],
+    sky: [] as unknown[]
   };
   const app = {
     setOutput: (o: unknown) => { calls.output.push(o); },
-    atmosphere: { setFog: (spec: unknown) => { calls.fog.push(spec); } },
+    atmosphere: { setFog: (spec: unknown) => { calls.fog.push(spec); }, setSky: (spec: unknown) => { calls.sky.push(spec); } },
     post: { setEffect: (name: string, patch: Record<string, unknown>) => { calls.post.push({ name, patch }); } },
     effects: {
       registerPreset: (kind: string) => { calls.presets.push(kind); },
@@ -101,6 +102,35 @@ describe("pips-big-leap runtime presentation", () => {
     expect(calls.plays).toHaveLength(1);
   });
 
+  it("follows the mounted world's look: a 4.6.2-look world after a diorama world gets exposure 1, no app fog and no shimmer (phase 3)", () => {
+    const { app, calls } = fakeApp();
+    let removed = 0;
+    (app as { post: Record<string, unknown> }).post.addPostPass = () => () => { removed += 1; };
+    const p = createDioramaPresentation(app, options());
+    p.worldMounted(buildWorld(worldSpec("w4")));
+    expect(p.evidence().heatShimmer).toBe(true);
+    const original = buildWorld(worldSpec("w1"), { look: "original" });
+    p.worldMounted(original);
+    expect(removed).toBe(1);
+    expect(calls.output.at(-1)).toEqual({ exposure: 1 });
+    expect(calls.fog.at(-1)).toBeNull();
+    expect(p.evidence()).toMatchObject({ mode: "original", heatShimmer: false });
+    // The previous world's live sky is cleared (the engine never clears a sky node's spec on setScene).
+    expect(calls.sky.at(-1)).toBeNull();
+    const skies = calls.sky.length;
+    p.worldMounted(buildWorld(worldSpec("w6")));
+    expect(calls.sky.length).toBe(skies);
+    // The original world gets no DOF writes or VFX.
+    const posts = calls.post.length;
+    p.frame(frame(), original, nodes().lookup);
+    expect(calls.post.length).toBe(posts);
+    // Booting straight into an original world touches no app-level state.
+    const fresh = fakeApp();
+    createDioramaPresentation(fresh.app, { ...options(), mode: "original" }).worldMounted(original);
+    expect(fresh.calls.output).toEqual([]);
+    expect(fresh.calls.fog).toEqual([]);
+  });
+
   it("keeps the fly-over above the course (or beyond its near end) until it settles on the follow pose", () => {
     for (const id of ["academy", "w1", "w2", "w3", "w4", "w5", "w6"] as const) {
       const built = buildWorld(worldSpec(id));
@@ -116,7 +146,7 @@ describe("pips-big-leap runtime presentation", () => {
   it("follows Pip with the DOF focus and writes it only when it moves 5 cm (PBL-P2)", () => {
     const { app, calls } = fakeApp();
     const p = createDioramaPresentation(app, options());
-    const built = buildWorld(worldSpec("w1"));
+    const built = buildWorld(worldSpec("w4"));
     const n = nodes();
     p.frame(frame(), built, n.lookup);
     p.frame(frame({ clearance: 0.995 }), built, n.lookup);

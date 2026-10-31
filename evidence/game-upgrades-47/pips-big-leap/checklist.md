@@ -71,3 +71,16 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | Look contract | `art/direction.ts` + audit, look table, VFX pack, identity, budget, checklist | done | `art/direction.audit.json` (0 violations) |
 | PRD 6.3 | reduced motion: sequences skipped, no shake, motion <= 30%, emission halved | done | `looks.test.ts`, `presentation.test.ts`, `vfx.test.ts`, `diorama.test.ts` |
 | PRD 6.4 | Low tier keeps palette, sky, fog, vignette | done (authored), phase 2 (frames) | DOF/S4 dropped by the engine tier table |
+
+## Phase 3 (4.7.1, 2026-10-31)
+
+| Row | Status | Where |
+|---|---|---|
+| Default look per view (PRD 6.5) | done: academy, w1, w2, w3, w4, w5 and w6 open in the diorama; the blind panel rated each better than 4.6.2 (round 3 `g06p3r3`: 3/0/0, w4 2/1/0) | `WORLD_DEFAULT_LOOK` (`src/game/looks.ts`), `panels/` |
+| `?look=` switches both ways | done | `looks.test.ts`, `presentation.test.ts` (diorama-to-original reset) |
+| PBL-E2 sky | changed: the daylight worlds draw a pure-sky HDRI (autumn_field / industrial_sunset), w6 a starry gradient; a world without a sky clears the live sky | `diorama.test.ts`, `presentation.test.ts` |
+| PBL-P2 miniature DOF | changed: w4 and w6 only, f/4 with a 2 px cap (the panel named the blur over the course elsewhere) | `diorama.test.ts`, `looks.test.ts` |
+| Rubric of every category >= 7 (PRD 1.2) | not met: minimum 3.5-4.5 (4.6.2 default: 4.5); material and modeling blocked (WP-36) | `look-judgement*.json`, lane report |
+| L1 luma bands | warn (14 rows); bands not widened, gaps explained in the lane report | `luma-after.json` (round-3 build) |
+| screens-fresh | done (results frames kept from 2026-10-29) | `evidence/pips-big-leap/screens/final/README.md` |
+| kits | done (`installQaHooks`) | `src/main.ts` |

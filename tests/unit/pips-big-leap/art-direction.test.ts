@@ -34,7 +34,7 @@ describe("pips-big-leap art direction (PRD 3.2)", () => {
     expect(direction.palette.reservedObjective).toBe("#ffc23d");
     expect(direction.signatureEffect).toMatch(/miniature lens/i);
     expect(direction.lighting.fill).toBe("ibl");
-    expect(direction.lighting.environment.background).toBe("enclosed");
+    expect(direction.lighting.environment).toEqual({ hdri: "autumn_field_puresky", background: "hdri" });
   });
 
   it("audits clean on every world's diorama scene and writes the audit record", () => {

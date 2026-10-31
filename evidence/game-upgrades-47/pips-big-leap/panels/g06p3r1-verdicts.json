@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat white-grey sky makes the background look hazy and washed out. Distant platforms and the goal arch fade into the haze, so depth contrast is low. Banding and aliasing on the foreground grass.",
+     "The sky is washed out to near-white and haze lowers contrast across the scene; the foreground grass is overexposed and smeared, with banding/stepping artifacts at the bottom right.",
+     "Heavy white haze washes out the sky and the far course. The ground is smeared with blurry light and banded shadow, and the blocky NPC looks pale and partly see-through. Overall low contrast."
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat white sky and haze wash out the background. Distant course has low contrast. Foreground grass shows heavy banding and aliasing streaks.",
+     "The sky is washed out to near-white and haze lowers contrast across the scene; the foreground grass is overexposed and smeared, with banding/stepping artifacts at the bottom right.",
+     "Heavy white haze and a grey sky wash out the scene. The ground has smeary bloom and banded shadows, the NPC is pale and see-through, and the image is muddy and low in contrast."
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy haze washes out the windmill, tower and distant platforms. The image is very low contrast and monochrome orange. The NPC is faded and translucent at the bottom. The floor shows banding.",
+     "Heavy cream haze washes out the background, and the windmill and tower are faded. Contrast is low and the scene looks muddy and monochrome orange; the player is somewhat washed out.",
+     "Thick beige fog washes out the background: the windmill and tower fade into it and the sky is blank. The NPC is pale and partly see-through. Low contrast and muddy."
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Badly washed out: white/pink haze everywhere, so floor, platforms and sky merge with almost no contrast. The NPC looks faded and translucent. The background is a blank grey void.",
+     "Almost everything is white-on-white with heavy haze. Platforms blend into the sky, so the play area is hard to read and contrast is very low.",
+     "The whole frame is a pinkish-white haze, so the floor, platforms and sky blur together with almost no contrast. The NPC is see-through and the frame looks washed out."
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dim and a bit muddy, with brown tones and dark corners. The NPC is somewhat faded. Even so, it has better mood, depth and warmth than A.",
+     "Dark, sepia-muddy foreground and a slightly dim overall image; the background is a beige haze.",
+     "Murky brown, muddy grade with low contrast, a dark vignette and a flat beige sky. The NPC is see-through and cut off, and the towers lose definition."
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Somewhat hazy warm sky. A few floating platforms. Overall richer warm lighting, better material detail and more depth.",
+     "Strong warm sepia haze and a slightly washed-out sky; the floor has low detail.",
+     "The warm haze softens the sky a little, but the golden grade is cohesive, the platforms have detail and the player reads well."
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Somewhat blurry, with strong depth-of-field and bloom. The floor reflection is slightly smeared. The player is a little soft but still readable. Starry sky and aurora give better atmosphere.",
+     "Vignetting is dim, and blur/bloom softens the foreground; the player is somewhat low-contrast against the floor.",
+     "Some bloom and a dark vignette, the NPC is slightly see-through, and the far course is a little busy. Still, the stars, aurora and glossy floor give much more atmosphere and polish."
+    ]
+   }
+  ]
+ }
+]

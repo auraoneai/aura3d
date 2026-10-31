@@ -174,7 +174,11 @@ interface AppSlice {
     setEffect?(name: string, patch: Parameters<NonNullable<AuraApp["post"]>["setEffect"]>[1]): void;
     addPostPass?(pass: AuraCustomPostPass): () => void;
   };
-  readonly atmosphere?: { setFog(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[0], opts?: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[1]): unknown };
+  readonly atmosphere?: {
+    setFog(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[0], opts?: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[1]): unknown;
+    /** `null` clears the live sky (LiveAtmosphere stores the spec as given; the frame draws no sky when it is null). */
+    setSky?(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setSky"]>[0] | null): unknown;
+  };
   readonly camera?: {
     play?(sequence: CameraSequenceArg): AuraCameraSequencePlayback;
     readonly fovKick?: { set?(channel: string, offsetDeg: number, seconds?: number): unknown };
@@ -187,7 +191,10 @@ interface AppSlice {
 type CameraSequenceArg = Parameters<NonNullable<AuraApp["camera"]>["play"]>[0];
 
 export function createDioramaPresentation(app: AppSlice, options: PresentationOptions): DioramaPresentation {
-  const diorama = options.mode === "diorama";
+  // GU47 phase 3: the look is chosen per world (`worldLookMode`), so the runtime follows the
+  // mounted world's mode; it starts on the boot world's mode.
+  let diorama = options.mode === "diorama";
+  let outputTouched = false;
   const scale = presentationScale(options.reducedMotion);
   const fx = app.effects as PipEffectsLike | undefined;
   let vfx: PipVfxController | null = null;
@@ -241,8 +248,42 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
     },
 
     worldMounted(built) {
-      if (!diorama) return;
+      diorama = built.presentation.mode === "diorama";
+      // GU47 phase 3: the engine copies a mounted scene's sky node onto the live atmosphere but
+      // never clears it, so the previous world's sky (w6 stars, a daylight dome) kept drawing
+      // over a world that has none (round-1 w4/w5 showed w1's sky as a grey wall). A world
+      // without its own sky node clears it.
+      if (!(diorama && built.presentation.look.sky)) {
+        try {
+          app.atmosphere?.setSky?.(null);
+        } catch {
+          // A stub atmosphere has no live sky.
+        }
+      }
+      if (!diorama) {
+        // A 4.6.2-look world after a diorama world: undo the diorama's app-level state. The
+        // output exposure defaults to 1 (Renderer.executeOutputPass), the app-level fog only
+        // applies to node-free scenes and is cleared without touching the new scene's fog
+        // nodes, and the w4 shimmer pass and any running trail or FOV kick end here.
+        removeShimmer?.();
+        removeShimmer = null;
+        vfx?.stopTrails();
+        setKick(null);
+        playback?.skip();
+        playback = null;
+        if (outputTouched) {
+          app.setOutput?.({ exposure: 1 });
+          try {
+            app.atmosphere?.setFog(null, { overrideSceneFog: false, transitionSeconds: 0 });
+          } catch {
+            // A stub atmosphere has nothing to clear.
+          }
+          outputTouched = false;
+        }
+        return;
+      }
       const look = built.presentation.look;
+      outputTouched = true;
       counts.mounted += 1;
       // PBL-P1: the look declares its post id, but nothing applies the look's output
       // preset on this build, so the world's preset is set after every setScene. The
@@ -337,7 +378,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       if (!diorama) return;
       // PBL-P2: the DOF focus follows the real lens-to-Pip distance (5 cm hysteresis).
       const target = Number(focusDistanceFor(miniatureFramingFor(f.aspect), f.clearance).toFixed(2));
-      if (Math.abs(target - focus) >= 0.05) {
+      if (built.presentation.look.lens !== "none" && Math.abs(target - focus) >= 0.05) {
         focus = target;
         try {
           app.post?.setEffect?.("depthOfField", { focusDistance: target });
@@ -420,7 +461,8 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
 
     evidence() {
       return {
-        mode: options.mode,
+        mode: diorama ? "diorama" : "original",
+        bootMode: options.mode,
         reducedMotion: options.reducedMotion,
         focusDistance: focus,
         heroScaleY: Number(heroScaleY.toFixed(3)),

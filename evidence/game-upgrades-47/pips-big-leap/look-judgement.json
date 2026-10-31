@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-8/d1280--03-action.jpg",
+      "sha256": "5e53ad1ada7ac40f4b7c131e56724aa73918dc1cdf73a3c5d74939664044f015"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-8/d1280--05-modes.jpg",
+      "sha256": "8db6ef4964a1b7b1e11ad49dce5af9190d20be5ce235e9c085a2e05a5971e785"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-3/pips-big-leap--w2--settle-60s.jpg",
+      "sha256": "1b0a2eef2500b4879e2705614a5a9d6f7dadcc3ade6b8350fd7aa7c7697c0049"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-5/pips-big-leap--w4--settle-60s.jpg",
+      "sha256": "1464ef585a85f9006fb86d8c145b758a45d4a35253ca77f81e6d96e36b67a347"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 4,
+    "camera": 4.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Forest frame has a readable daylight key with soft fill. The wharf and ember frames are flat and monochrome orange-brown, with little key/fill separation on the characters."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows under Pip and the blocky NPC are soft blobs that ground them weakly. The large foreground pine casts no visible shadow, and there is no clear sun-direction shadow in the ember scene."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Pip's acorn cap and the metal cage towers show almost no environment reflection. Surfaces read as uniformly diffuse, and the blue crystal portal lacks specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Floating island platforms with a gate, windmill and pagoda give clear destinations. Ground planes are large, empty, untextured brown/green slabs. The wharf deck is a bare brown surface."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The ember level has floating spark particles and a warm haze. Distance fog in the forest is mild. The wharf sky is a flat grey overcast with little depth layering."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Low-poly pines carry visible noisy triangle texturing. The voxel NPC is unlit-looking flat color. Wood crates are decent. The ember floor is smeared flat brown with no material definition."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Pip is a charming, well-modeled character, and the gate, windmill and cage props are detailed. However, the Minecraft-style blocky companion clashes stylistically with the smooth hero and the faceted trees."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 a blocky NPC sits dead center, occluding the hero's path, and a giant pine eats the right third. The NPC also crowds Pip in the other frames. Pip occupies roughly 10–15% of the frame, under the 18–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "Camera is a behind-the-back chase cam, not the side-on follow the recipe calls for. In frame 1 foreground tree geometry clips in close to the lens."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Some bloom on the ember glows and a soft tone curve are visible. The wharf frame is low contrast and washed. Aliasing is visible on tree edges."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Pip is caught in a mid-stride run pose with reasonable limb extension. The NPC appears static and T-like."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD has clean pill-shaped counters, hearts and an objective text box, plus a well-styled Atlas modal with a world grid. However, a dense top tab bar and a long controls string at the bottom clutter the screen."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

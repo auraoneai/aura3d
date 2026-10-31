@@ -87,13 +87,12 @@ describe("pips-big-leap diorama scene", () => {
     }
   });
 
-  it("adds a real sky only in w2 (Preetham), w3 (gradient) and w6 (gradient + stars), never capturing the environment (PBL-E2)", () => {
+  it("adds a starry gradient sky node in w6 only, never capturing the environment (the daylight worlds draw their HDRI; phase 3)", () => {
     const skyOf = (id: (typeof WORLD_IDS)[number]) => sceneOf(id).find((n) => n.kind === "sky");
-    expect(skyOf("w2")?.spec?.model).toBe("preetham");
-    expect(skyOf("w3")?.spec?.model).toBe("gradient");
     expect(skyOf("w6")?.spec?.stars).toBeDefined();
-    for (const id of ["w2", "w3", "w6"] as const) expect(skyOf(id)?.captureEnvironment).toBe(false);
-    for (const id of ["academy", "w1", "w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
+    expect(skyOf("w6")?.captureEnvironment).toBe(false);
+    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(skyOf(id), id).toBeUndefined();
+    for (const id of ["w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
   });
 
   it("hangs the aurora curtain in the w6 night garden only (PBL-V3, aurora half)", () => {
@@ -118,13 +117,18 @@ describe("pips-big-leap diorama scene", () => {
     expect(rate(true)).toBeCloseTo(rate(false) / 2, 5);
   });
 
-  it("drops the authored extra bloom and adds the vignette and the f/2 miniature DOF (PBL-P1, PBL-P2)", () => {
+  it("drops the authored extra bloom and adds the vignette and the f/4 miniature DOF where the world keeps it (PBL-P1, PBL-P2)", () => {
     for (const id of WORLD_IDS) {
       const effects = sceneOf(id).filter((n) => n.kind === "effect");
       expect(effects.filter((n) => n.effect === "bloom"), id).toHaveLength(1);
       expect(effects.some((n) => n.name === dioramaName.vignette)).toBe(true);
       const dof = effects.find((n) => n.effect === "depth-of-field");
-      expect(dof?.fStop).toBe(2);
+      if (WORLD_LOOKS[id].lens === "none") {
+        // Phase 3: the blind panel named the miniature blur over the course in these worlds.
+        expect(dof, id).toBeUndefined();
+        continue;
+      }
+      expect(dof?.fStop).toBe(4);
       expect(dof?.focusDistance).toBeCloseTo(4.63, 1);
     }
   });

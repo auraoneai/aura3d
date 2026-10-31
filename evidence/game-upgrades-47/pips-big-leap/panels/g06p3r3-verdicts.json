@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player partly hidden behind its own oversized acorn cap from behind; ground texture slightly blurry in the foreground; light sky haze in the distance",
+     "Some blur and smearing on the near ground. A faint light streak and seam lines cross the floor at the right. Trees are a little dark, but materials, bevelled platforms and depth are much richer.",
+     "Faint white diagonal streak/line artifact across the right ground; slightly dull desaturated foliage"
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player seen from behind with the face hidden by the cap; foreground ground slightly blurry; a bit of distant haze",
+     "Mild blur on the near ground and a faint diagonal streak across the floor at the right. Otherwise the platforms are bevelled and textured and the contrast is good.",
+     "Faint white diagonal streak artifact on the right ground; foliage slightly muted"
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Ground is a strongly saturated orange-brown that is a bit heavy; overcast grey sky; some floating platforms and props, but the island terrain adds grounding",
+     "The large brown foreground floor takes up a lot of the frame and is slightly muddy. Sky is grey and overcast. Still, the terrain, hill and platform materials have detail, and the depth is good.",
+     "Overcast grey sky is a bit dull; foreground ground is heavily orange and saturated"
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Still a pale, low-saturation palette with some haze; floating rocks; but has more platform detail, rim geometry and better player contrast",
+     "Pale, low-saturation lavender floor with some haze and a slightly grey cast. The streaky reflection on the floor is a little odd.",
+     "Still a pale, low-contrast palette with a hazy horizon; a streak on the floor at left"
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat untextured grey floor against a blank white void background; sterile greybox look with no atmosphere; floating box platforms and acorns",
+     "Strong brown-orange haze flattens the background and the colour range is narrow. The NPC looks faded by fog.",
+     "Almost all one brown/orange colour; NPC looks slightly washed/translucent; background is a flat brown wall"
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark brown background is low-contrast and a bit muddy; player is orange on an orange-tan floor with reduced separation; but it has warm lighting, atmosphere and textured platforms",
+     "Almost monochrome amber-brown cast and a bright, low-contrast cream floor. The player blends somewhat into the warm palette. No NPC is visible.",
+     "Monochrome sepia grading; dark flat background wall; player blends somewhat into the warm palette"
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some bloom glare on a mid platform; foreground floor slightly reflective/blurry; otherwise strong starry night mood, depth and material detail",
+     "Bloom and haze on the glossy floor wash it out a bit, and the floor reflections are slightly noisy. Otherwise the starry night has good mood and depth.",
+     "Bloom/glare haze on the reflective floor slightly softens the image; the floor edge rim looks a little odd"
+    ]
+   }
+  ]
+ }
+]
