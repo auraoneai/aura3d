@@ -61,12 +61,19 @@ function interpolateFogSpec(from: AuraHeightFogSpec, to: AuraHeightFogSpec, t: n
     const b = (to as Record<string, unknown>)[key];
     if (typeof a === "number" && typeof b === "number") out[key] = lerp(a, b, t);
     else if (typeof a === "number") out[key] = a;
-    else out[key] = b;
+    else if (b !== undefined) out[key] = b;
+    // GU47 phase 2: a key neither spec sets stays absent. An own `undefined` overrode the defaults that later
+    // `{ ...defaults, ...spec }` merges supply, so the packed fog density turned NaN mid-transition and the frame threw.
+    else delete out[key];
   }
   const ca = colorToLinear(from.color);
   const cb = colorToLinear(to.color);
   if (ca && cb) out.color = [lerp(ca[0], cb[0], t), lerp(ca[1], cb[1], t), lerp(ca[2], cb[2], t)];
-  else out.color = t < 1 ? from.color : to.color;
+  else {
+    const color = t < 1 ? (from.color ?? to.color) : (to.color ?? from.color);
+    if (color !== undefined) out.color = color;
+    else delete out.color;
+  }
   if (Array.isArray(from.absorption) && Array.isArray(to.absorption)) {
     out.absorption = [lerp(from.absorption[0], to.absorption[0], t), lerp(from.absorption[1], to.absorption[1], t), lerp(from.absorption[2], to.absorption[2], t)];
   }

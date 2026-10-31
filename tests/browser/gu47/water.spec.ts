@@ -20,9 +20,11 @@ test.describe(`${CAPABILITY} receipt`, () => {
     const off = await session.render("water-off");
     const on = await session.render("water-lake");
     const lake = await session.compare("water-off", "water-lake", WORLD_REGIONS.lake);
+    // Printed before the checks so a failing run still says what it measured.
+    console.log(`@@WATER ${JSON.stringify({ lake: lake.region, whole: lake.meanAbsDeltaRgb, drawCallsOff: off.drawCalls, drawCallsOn: on.drawCalls, errors: on.errors, consoleProblems: session.consoleProblems, warnings: session.consoleWarnings.filter((w) => /water|prd10|FRAME_|program/i.test(w)).slice(0, 12) })}`);
     expect(on.errors).toEqual([]);
-    expect(on.drawCalls).toBeGreaterThan(off.drawCalls);
     expect(lake.region!.meanAbsDeltaRgb).toBeGreaterThanOrEqual(LAKE_DELTA_AT_LEAST);
+    expect(on.drawCalls).toBeGreaterThan(off.drawCalls);
     session.write(CAPABILITY, `${WORLD_HARNESS_SCENE}; world.water lake (circle r 7 m at z -8, calm) vs none, flags world.water only`,
       [session.save(CAPABILITY, off), session.save(CAPABILITY, on)],
       ["tests/unit/gu47/eg/flag-promotion-noop.test.ts", "tests/unit/contracts/impl/prd10-water.test.ts"],

@@ -1,7 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraTransformSpec, AuraPrimitiveOptions, AuraRootLodLevelSpec, AuraLodGroupSpec, AuraAnimationSpec, AuraCharacterRigSpec, AuraSceneNode, AuraPrimitiveNode, AuraGroupNode, AuraNodeInput } from "./types.js";
-import { AuraNodeBuilder } from "./builder.js";
+import { AuraNodeBuilder, toSceneNode } from "./builder.js";
 import { animation } from "./animation.js";
 import { character } from "./character.js";
 import { flattenSceneNodes } from "../sceneMath.js";
@@ -12,7 +12,7 @@ import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { tagLodLevel, type AuraLodRootSpec } from "../lodMarkers.js";
 
 function sceneNodeFromInput(node: AuraNodeInput): AuraSceneNode {
-  return node instanceof AuraNodeBuilder ? node.toJSON() : node;
+  return toSceneNode(node);
 }
 
 export function group(

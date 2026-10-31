@@ -41,8 +41,14 @@ export function createPerformanceEvidence(snapshot: AuraSceneSnapshot): AuraScen
   };
 }
 
+/** A node's name for helper matching; anything that is not a string (an unwrapped builder's `name()` method) matches nothing. */
+function nodeName(node: AuraSceneNode): string {
+  const name = "name" in node ? (node as { readonly name?: unknown }).name : undefined;
+  return typeof name === "string" ? name : "";
+}
+
 function collectHelperPerformanceBudgets(nodes: readonly AuraSceneNode[]): readonly AuraHelperPerformanceBudget[] {
-  const nodeNames = nodes.map((node) => "name" in node ? node.name ?? "" : "");
+  const nodeNames = nodes.map(nodeName);
   const hasName = (needle: string) => nodeNames.some((name) => name.includes(needle));
   const helpers = new Set<AuraHelperBudgetId>();
   if (hasName("visible rigid body cube") || hasName("physics collider debug line")) helpers.add("physicsPlayground");
@@ -66,7 +72,7 @@ function collectHelperPerformanceBudgets(nodes: readonly AuraSceneNode[]): reado
 }
 
 function helperNodeCount(nodes: readonly AuraSceneNode[], helper: AuraHelperBudgetId): number {
-  const names = nodes.map((node) => "name" in node ? node.name ?? "" : "");
+  const names = nodes.map(nodeName);
   const count = (predicate: (name: string) => boolean) => names.filter(predicate).length;
   if (helper === "physicsPlayground") return count((name) => name.includes("rigid body cube") || name.includes("physics") || name.includes("collision"));
   if (helper === "particleFountain") return count((name) => name.includes("particle") || name.includes("fountain") || name.includes("emission"));
