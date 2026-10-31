@@ -22,7 +22,7 @@ import { FESTOON, festoonBulbs, festoonIntensity } from "./festoons";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintRoadMarkings } from "./roadPaint";
-import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
+import { paintFacade, paintLaneMarkings, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
 import type { Solid } from "./sim";
 
@@ -137,6 +137,8 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
   if (look === "shift") {
     paintRoadMarkings(road.g, roadPx);
     wetRoad(road.g, roadPx);
+    // GU47 phase 2: lane paint sits on top of the wet asphalt (the multiply pass greyed it out)
+    paintLaneMarkings(road.g, roadPx);
     const rough = canvas(roadPx / 2, roadPx / 2);
     paintWetRoughness(rough.g, roadPx / 2);
     roadRoughness = repeating(texture.canvas({ canvas: rough.c, colorSpace: "linear" }));
