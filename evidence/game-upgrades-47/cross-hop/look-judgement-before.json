@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/cross-hop/screens/final/1280-03-action.jpg",
+      "sha256": "f491e53a043c427014270f76f7a04e500d30fb052f6239b31e85a5bd16c79f84"
+    },
+    {
+      "path": "evidence/cross-hop/screens/final/1280-04-mid.jpg",
+      "sha256": "8e3e8bd844d54499747fce1f38836d38bc26a61c3f518c1e2b00746a79752919"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/cross-hop/frames/gu47-before-cross-hop-2/cross-hop--theme2--settle-60s.jpg",
+      "sha256": "509b4093b52a5753e542c96e34030c4478d89521f3cfc5de1bcaaa0281e171e3"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/cross-hop/frames/gu47-before-cross-hop-3/cross-hop--theme4--settle-60s.jpg",
+      "sha256": "0d963fad2ac07953d97c210ca31db7617d4a484d15cdc9c5c997858479e0781e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 4,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, low-contrast lighting with a dim grey-blue cast across the frames. The vehicles get some form shading, but the terrain gets no visible directional sun modelling, and there is no warm key against cool fill."
+    },
+    {
+      "category": "shadows",
+      "seen": "Vehicles and the frog cast almost no visible contact shadows onto the road or grass, so the cars look like they float. Logs and trees cast no ground shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Car paint shows soft broad highlights, but there are no crisp environment reflections on windows or chrome. The truck boxes read as a matte grey-white gradient."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is a repeated set of flat green strips, asphalt lanes, blue water bands and cylinder logs, with sparse lollipop trees at the edges. Neon adds pink and cyan box buildings, but the lanes otherwise feel like an untextured grey-box."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant lanes show no meaningful fog or aerial perspective, so far traffic is as sharp as near traffic. The sky is a flat gradient with a blurry disc sun."
+    },
+    {
+      "category": "material_quality",
+      "seen": "There is a stark mismatch between styles: the photoscanned vehicles and frog are richly textured, while the flat-shaded logs, grass and water have no texture."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The scanned vehicles, trains, trams and frog are detailed. The logs are simple cylinders and the trees are primitive sphere-on-stick shapes, so asset fidelity is inconsistent."
+    },
+    {
+      "category": "composition",
+      "seen": "In frames 1–2 dense traffic fills most of the screen and occludes the frog; in frame 2 the frog is hidden behind a truck. The frog is roughly 8–10% of the frame, below target, and the horizon is crowded."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase view behind the frog rather than side-on. Near vehicles crop the frame edges and block the player."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image is washed out and slightly desaturated. There is no visible bloom, tonemapping punch or color grading toward saturated daylight."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The frog holds a similar stiff hunched pose across frames. The '+10 coin' popup gives motion feedback, but stills show little squash or hop arc."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean HUD with a score card, a level pill, coins and best score, a pause button and a control hint. Readable, though the level tab bar looks like a dev menu."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
