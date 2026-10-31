@@ -180,8 +180,8 @@ export const FLOORS: readonly FloorDef[] = [
     subtitle: "the Iron Warden guards the last door",
     par: 420,
     palette: {
-      wall: "#4c3f2e", wallAlt: "#63513a", floor: "#32291e", floorAlt: "#413425",
-      ceil: "#201a12", accent: "#ffc95e"
+      wall: "#827c6e", wallAlt: "#6e6858", floor: "#544f45", floorAlt: "#625c50",
+      ceil: "#3c3a33", accent: "#ffc95e"
     },
     rows: [
       "######################",
