@@ -381,6 +381,7 @@ void main() {
   }
 
   gToonShadow = a3dSunShadowAuto(vWorld, N);
+  float gateShade = 0.0;
   // GU47 phase 4 (rubric: shadows): the pilgrim gates' sun shadows on the plates and flanks, traced analytically from the
   // gates' boxes (posts 9.6 m, tie 7.72-8.07 m, lintel 9.15-9.75 m, ridge 9.79-10.01 m) along the ground direction away from
   // the sun. Penumbra widens with distance from the caster, like the PCSS key.
@@ -403,7 +404,7 @@ void main() {
       float lintel = (smoothstep(9.15 - hb, 9.15, h) - smoothstep(10.01, 10.01 + hb, h)) * (1.0 - smoothstep(gatePost + 1.5, gatePost + 1.8 + pen, abs(xr)));
       gate = max(gate, clamp(max(post, max(tie, lintel)), 0.0, 1.0));
     }
-    gToonShadow = min(gToonShadow, 1.0 - 0.85 * gate);
+    gateShade = gate;
   }
   vec3 col = toon(albedo, N);
   col += mix(vec3(1.0, 0.82, 0.9), lookSunColor, lookMode) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.16, lookMode) * top;
@@ -421,11 +422,11 @@ void main() {
   vec3 bodyRefl = mix(mix(lookHemiSky, lookFogColor, 0.5), lookSunColor, pow(rs, 3.0)) * mix(vec3(1.0), roadJade * 1.8, 0.45);
   col = mix(col, bodyRefl, (0.02 + 0.16 * fres) * bodyMask);
   col += lookSunColor * (pow(rs, 24.0) * 0.55 + pow(rs, 6.0) * 0.1) * bodyMask * mix(0.25, 1.0, gToonShadow);
-  // GU47 phase 4 (rubric: shadows): under a low sun the toon band only drops ~0.58 -> 0.40 in shadow and the fresnel sky
-  // mirror above repaints it, so the sun shadow (shadow map plus gate traces) also shades the finished colour, cool and
-  // violet like the stage hemisphere, including the reflections a shadowed surface would not show.
+  // GU47 phase 4 (rubric: shadows): the gate traces shade the finished colour, cool and violet like the stage hemisphere,
+  // reflections included. The shadow-map term stays in the toon band only: in the g17p4-r3 software WebGL2 frames it
+  // reported the whole road as shadowed under the low stage suns (no contrast to add), so the base keeps the phase-3 look.
   vec3 shadeTint = mix(lookHemiSky * 0.55, vec3(0.30, 0.26, 0.46), 0.5);
-  col = mix(col, col * shadeTint, (1.0 - gToonShadow) * 0.62 * lookMode);
+  col = mix(col, col * shadeTint, gateShade * 0.6 * lookMode);
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;
