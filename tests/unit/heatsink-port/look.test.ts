@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOOKS, districtFog, fogApproach, lookFromSearch, lowTier, postToggles, reducedMotionLook } from "../../../examples/heatsink-port/art/look";
+import { DEFAULT_LOOK, LOOKS, districtFog, fogApproach, lookFromSearch, lowTier, postToggles, reducedMotionLook } from "../../../examples/heatsink-port/art/look";
 import { SPORE_BOX, bankRoll, createIonWake, createSporeField, sporeField } from "../../../examples/heatsink-port/art/wake";
 import { HEATSINK_VFX_MAX_LIVE, HEATSINK_VFX_PRESETS, registerHeatsinkVfx, vfxScale } from "../../../examples/heatsink-port/art/vfx";
 import { allProgramSpecs } from "../../../examples/heatsink-port/materials";
@@ -18,10 +18,10 @@ const hueDeg = (c: readonly number[]): number => {
 
 describe("heatsink-port look table (GU47 WP-29)", () => {
   it("boots twilight by default and keeps ?look=original", () => {
-    expect(lookFromSearch("").id).toBe("original");
+    expect(lookFromSearch("").id).toBe(DEFAULT_LOOK);
     expect(lookFromSearch("?look=twilight").id).toBe("twilight");
     expect(lookFromSearch("?look=original").id).toBe("original");
-    expect(lookFromSearch("?look=nope").id).toBe("original");
+    expect(lookFromSearch("?look=nope").id).toBe(DEFAULT_LOOK);
   });
 
   it("IC-01: twilight lit() scale 0.45 and road albedo in 0.30-0.38; original keeps 0.26 and no new terms", () => {
@@ -156,7 +156,7 @@ describe("heatsink-port spores (IC-20)", () => {
   it("IC-07 sun flare on twilight High only", () => {
     const has = (q: string, quality: "high" | "low" = "high") => nodes(q, quality).some((n) => n.name === "sun-flare");
     expect(has("?look=twilight")).toBe(true);
-    expect(has("")).toBe(false);
+    expect(has("")).toBe(DEFAULT_LOOK === "twilight");
     expect(has("?look=twilight", "low")).toBe(false);
     expect(has("?look=original")).toBe(false);
   });

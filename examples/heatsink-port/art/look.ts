@@ -106,7 +106,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     key: { position: TWILIGHT_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true },
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.7, rotationDeg: SUN_AZIMUTH_DEG },
-    lit: { scale: 0.45, bounce: [0.30, 0.13, 0.06], topFill: [0.16, 0.12, 0.34], roadAlbedo: 0.34 },
+    lit: { scale: 0.45, bounce: [0.30, 0.12, 0.05], topFill: [0.11, 0.09, 0.27], roadAlbedo: 0.34 },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.3, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.7, seams: 1 },
@@ -141,12 +141,15 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
   }
 };
 
-/** `?look=original|twilight`; anything else (or no param) is the default `original` (the 4.6.2 look) */
+/** the look with no `?look=` param (GU47 phase 3 switches it back to twilight only after a blind panel calls it better) */
+export const DEFAULT_LOOK: HeatsinkLookId = "twilight";
+
+/** `?look=original|twilight`; anything else (or no param) is `DEFAULT_LOOK` */
 export function lookFromSearch(search: string | null | undefined): HeatsinkLookRow {
   const id = new URLSearchParams(search ?? "").get("look");
-  /* GU47 phase 2 (PRD D11): after two remote rounds the twilight frame (software WebGL2) still read flatter than 4.6.2
-   * (pastel causeway, hazy rocks, planet lost), so the 4.6.2 look is the default again and twilight is opt-in via ?look=twilight */
-  return id === "twilight" ? LOOKS.twilight : LOOKS.original;
+  /* GU47 phase 2 (PRD D11) made 4.6.2 the default after two remote rounds; phase 3 fixed the menu backdrop (drone at the
+   * world origin under an arch), the near dash and the pastel causeway, and re-runs the blind panel on the twilight default */
+  return id === "twilight" || id === "original" ? LOOKS[id] : LOOKS[DEFAULT_LOOK];
 }
 
 /**
