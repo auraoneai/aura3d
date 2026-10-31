@@ -25,7 +25,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 5.2
+        "intensity": 7
       },
       {
         "type": "point",
