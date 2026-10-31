@@ -299,15 +299,17 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     hdri2k: true,
     // GU47 phase 2: more HDRI fill and less contrast lift the shadows for H47-L3 darkFrac <= 0.1 (4.6: 0.15-0.22)
     // while +0.2 EV keeps the mean inside 45-65 (4.6: 54-56).
-    environmentIntensity: 0.85,
+    // GU47 phase 2 round 2: the fixed build drew the wet court near black under a 0.8 key (players lost against the
+    // asphalt) and bloomed the night sky into a glare: key 0.8 -> 1.5, fill 0.85 -> 1.0, bloom threshold 0.7 -> 1.0.
+    environmentIntensity: 1.0,
     environmentRotationDeg: 300,
     sun: { elevationDeg: 48, azimuthDeg: 220 },
-    key: { color: "#9db4ff", intensity: 0.8 },
+    key: { color: "#9db4ff", intensity: 1.5 },
     exposureEv: 0.55,
     fog: { color: "#151b2b", near: 18, far: 150 },
     post: "neon-night",
     grade: { contrast: 1.06, saturation: 1.15, temperature: -0.15, tint: 0.05 },
-    bloom: { intensity: 0.6, threshold: 0.7 },
+    bloom: { intensity: 0.5, threshold: 1.0 },
     night: true,
     grain: false,
     // H47-L3: sign rect lights replace the two neon point fills; left cyan and right magenta keep the columns apart.
@@ -486,7 +488,8 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
  * and stills the motes (PRD §6.3); the Low tier drops volumetric fog in the engine (forward fog only).
  */
 // GU47 phase 2: volumetric density is extinction per metre (sigma ~1.6-2x density). 0.08 / 0.12 left ~2 % of the court
-// visible from the 20-25 m broadcast camera (Rucker grey veil, Manila white-out); 0.006 / 0.008 keep a thin haze.
+// visible from the 20-25 m broadcast camera (Rucker grey veil, Manila white-out); 0.006 / 0.005 keep a thin haze
+// (Manila 0.008 still laid an olive veil over the brown court in round 1).
 export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [];
   if (rig.id === "rucker") {
@@ -501,7 +504,7 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
     const el = (rig.sun.elevationDeg * Math.PI) / 180;
     const az = (rig.sun.azimuthDeg * Math.PI) / 180;
     const gap: AuraVec3 = [Math.sin(az) * Math.cos(el) * 30, 9.2 + Math.sin(el) * 30, Math.cos(az) * Math.cos(el) * 30 + 4];
-    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.008, color: "#8f8a80", intensity: 0.35, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.005, color: "#8f8a80", intensity: 0.25, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
     out.push(effects.particles({
       name: "manila-dust-motes",
       position: [0, 3.2, 4],
