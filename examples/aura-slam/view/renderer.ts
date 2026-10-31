@@ -379,8 +379,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.bleachers = req(STATIC_RUNTIME_IDS.bleachers);
       h.sponsorTrim = req(STATIC_RUNTIME_IDS.sponsorTrim);
       h.grandstand = req("stadium-grandstand-rear");
-      const gantry = optionalNode(app as unknown as VenueRuntimeApp, "stadium-scoreboard-gantry");
-      if (gantry) h.gantry = gantry;
+      try { h.gantry = req("stadium-scoreboard-gantry"); } catch { /* optional set dressing */ }
       try { app.camera?.shake.configure({ maxOffset: 0.18, maxAngleDeg: 0.35, frequency: 18, decayPerSecond: 2.6 }); } catch { /* optional */ }
       net = installSafetyNet({
         safety: options.safety ?? true,

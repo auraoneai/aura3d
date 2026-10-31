@@ -44,7 +44,7 @@ const grain = (kind: SurfaceKind) => {
  * court is a cobalt acrylic inside a pale regolith apron on a darker charcoal plain: three clear value steps.
  */
 export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPart, string>>>> = {
-  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#a3a7ab", ground: "#383c42" }
+  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#9a9ea3", ground: "#2f3237" }
 };
 
 /** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */
@@ -54,7 +54,9 @@ export function surfaceMaterial(venue: string | null | undefined, part: CourtPar
   const kind = VENUE_SURFACE[key] ?? "acrylic";
   const color = (part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground);
   // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
-  if (part === "ground") return kind === "regolith" ? material.planet("moon", { color, roughness: 0.98 }) : material.pbr({ color, roughness: 0.94 });
+  // GU47 phase 3: the engine's moon planet preset keeps its own pale #cbd5e1 whatever colour it is given, which washed the lunar
+  // plain out to a flat light grey; a plain PBR regolith in the palette charcoal keeps the court the brightest thing in frame.
+  if (part === "ground") return kind === "regolith" ? material.pbr({ color, roughness: 0.98, normal: grain(kind) }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
     case "acrylic":
       return material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
