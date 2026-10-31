@@ -575,7 +575,7 @@ function buildVividSky(ti: number) {
   }).runtime(game.runtimeNode("sky")).toJSON();
 }
 
-/** The vivid look's key: one shadowed sun from behind the camera's left shoulder (2 camera-fitted cascades). */
+/** The vivid look's key: one shadowed sun from the camera's left, a little behind it (2 camera-fitted cascades). */
 function buildVividSunKey(ti: number) {
   const V = VIVID_LOOKS[ti]!;
   const v = sunVector(V.sun.elevationDeg, V.sun.azimuthDeg);
@@ -744,7 +744,7 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), ...(diorama ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
     instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
-    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", diorama || flatFloor) })
+    model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", diorama) })
       .position(0, 0.17, 0).rotate(0, Math.PI, 0)
       .animate({ clip: "Idle", loop: true })
       .runtime(game.runtimeNode("player")),
@@ -1786,7 +1786,7 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode !== "original") })
+      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode === "diorama") })
         .position(st.playerCol * COL_W, py, pz).rotate(0, Math.PI, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode("player"))

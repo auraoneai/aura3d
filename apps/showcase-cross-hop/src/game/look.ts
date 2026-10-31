@@ -247,7 +247,7 @@ export function keyAt(theme: number, next: number | null, row: number): { color:
 /**
  * GU47 phase 3 (4.7.1): the "vivid" look. It keeps the 4.6 perspective chase camera, lanes and models (the blind panel
  * rejected the diorama's steep camera) and replaces only light, sky, haze, palette of the floor and post:
- * one shadowed sun from behind the camera's left shoulder (front-lit traffic, shadows fall away from the viewer),
+ * one shadowed sun from the camera's left, a little behind it (cast shadows fall to the right of each car),
  * a hemisphere fill instead of the flat ambient, a gradient sky with a low sun glow on the horizon instead of the
  * two flat boxes, theme-tinted distance haze for depth and a per-theme grade. Pure data, read by core.ts and tests.
  */
@@ -272,69 +272,69 @@ export interface VividLook {
 
 export const VIVID_LOOKS: readonly VividLook[] = [
   { // 0 Meadow Roads: clear morning
-    sun: { elevationDeg: 44, azimuthDeg: -38, color: "#ffe6c4", intensity: 1.9 },
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#ffe6c4", intensity: 1.9 },
     hemi: { sky: "#cfe4ff", ground: "#5f8a45", intensity: 0.55 },
     environmentIntensity: 0.5,
-    sky: { zenith: "#3f7cc8", horizon: "#d6ecf7", ground: "#9fc4a0", horizonGlow: 0.45, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 1.2, discSize: 0.05 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
-    fog: { color: "#cfe2ee", density: 0.0095 },
-    floor: "#4f9a50",
+    sky: { zenith: "#2a64b8", horizon: "#78b0e4", ground: "#9fc4a0", horizonGlow: 0.25, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 1.2, discSize: 0.05 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
+    fog: { color: "#a8cbe8", density: 0.0045 },
+    floor: "#58a75c",
     grade: { contrast: 1.1, saturation: 1.12, temperature: 0.03 },
     bloom: { intensity: 0.12, threshold: 0.95 },
     exposureEv: -0.05
   },
   { // 1 Downtown Trams: bright overcast noon
-    sun: { elevationDeg: 56, azimuthDeg: -28, color: "#f6f2ea", intensity: 1.6 },
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#f6f2ea", intensity: 1.6 },
     hemi: { sky: "#e4e9ef", ground: "#727866", intensity: 0.7 },
     environmentIntensity: 0.55,
-    sky: { zenith: "#6f90b8", horizon: "#e2e8ee", ground: "#a2a898", horizonGlow: 0.25, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
-    fog: { color: "#d8dee5", density: 0.0095 },
-    floor: "#7d8a72",
+    sky: { zenith: "#4f78ac", horizon: "#9fbcdc", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
+    fog: { color: "#b8cadc", density: 0.0045 },
+    floor: "#7ba05b",
     grade: { contrast: 1.12, saturation: 1.1, temperature: -0.02 },
     bloom: { intensity: 0.1, threshold: 1.0 },
     exposureEv: -0.05
   },
   { // 2 Riverbend: amber golden hour
-    sun: { elevationDeg: 30, azimuthDeg: -52, color: "#ffc583", intensity: 2.0 },
+    sun: { elevationDeg: 30, azimuthDeg: -62, color: "#ffc583", intensity: 2.0 },
     hemi: { sky: "#ffd9b0", ground: "#5f6a36", intensity: 0.5 },
     environmentIntensity: 0.45,
-    sky: { zenith: "#4a6fae", horizon: "#ffc890", ground: "#b0a070", horizonGlow: 0.9, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 1.4, discSize: 0.06 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
-    fog: { color: "#f0cfa4", density: 0.01 },
-    floor: "#6f9a42",
+    sky: { zenith: "#3f62a6", horizon: "#ffa860", ground: "#b0a070", horizonGlow: 0.9, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 1.4, discSize: 0.06 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
+    fog: { color: "#f2b884", density: 0.005 },
+    floor: "#7caa54",
     grade: { contrast: 1.1, saturation: 1.12, temperature: 0.12 },
     bloom: { intensity: 0.16, threshold: 0.9 },
     exposureEv: -0.05
   },
   { // 3 Emberline: lava-lit dusk
-    sun: { elevationDeg: 26, azimuthDeg: -42, color: "#ff9a66", intensity: 1.7 },
-    hemi: { sky: "#9a6a8c", ground: "#40302a", intensity: 0.7 },
-    environmentIntensity: 0.45,
+    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ff9a66", intensity: 1.7 },
+    hemi: { sky: "#b07a90", ground: "#4a3a30", intensity: 0.9 },
+    environmentIntensity: 0.55,
     sky: { zenith: "#2c2850", horizon: "#ff8a52", ground: "#4a3028", horizonGlow: 1.0, glow: { elevationDeg: 2, azimuthDeg: 200, color: "#ff7a3c", intensity: 1.5, discSize: 0.07 } },
-    fog: { color: "#8a5048", density: 0.011 },
-    floor: "#5a4636",
+    fog: { color: "#a85a44", density: 0.006 },
+    floor: "#4e5548",
     grade: { contrast: 1.12, saturation: 1.12, temperature: 0.1 },
     bloom: { intensity: 0.32, threshold: 0.8 },
     exposureEv: 0.1
   },
   { // 4 Neon District: lamplit night under a blue moon
-    sun: { elevationDeg: 50, azimuthDeg: -30, color: "#b4c4ff", intensity: 1.1 },
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#b4c4ff", intensity: 1.1 },
     hemi: { sky: "#5a6ab0", ground: "#22263c", intensity: 0.85 },
     environmentIntensity: 0.5,
     sky: { zenith: "#0a1236", horizon: "#4a3f96", ground: "#1c1a34", horizonGlow: 0.6, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ff5ad2", intensity: 0.9, discSize: 0 }, stars: { count: 1200, brightness: 1.1 } },
-    fog: { color: "#2a2c66", density: 0.0095 },
-    floor: "#2c3a4a",
+    fog: { color: "#2e2c6e", density: 0.005 },
+    floor: "#3f5a52",
     grade: { contrast: 1.12, saturation: 1.18, temperature: -0.08 },
     bloom: { intensity: 0.4, threshold: 0.82 },
     exposureEv: 0.2
   },
   { // 5 Critter Core: pastel studio toybox
-    sun: { elevationDeg: 50, azimuthDeg: -32, color: "#fff4ea", intensity: 1.8 },
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#fff4ea", intensity: 1.8 },
     hemi: { sky: "#fbe8f2", ground: "#b6a6d8", intensity: 0.6 },
     environmentIntensity: 0.5,
-    sky: { zenith: "#7fb2ea", horizon: "#fde2ef", ground: "#d8c8ee", horizonGlow: 0.4, glow: { elevationDeg: 4, azimuthDeg: 200, color: "#fff2f8", intensity: 1.0, discSize: 0.05 }, clouds: { coverage: 0.3, speed: 0.3, color: "#ffffff" } },
-    fog: { color: "#f3e2f2", density: 0.0075 },
-    floor: "#86cf86",
-    grade: { contrast: 1.08, saturation: 1.12, temperature: 0 },
+    sky: { zenith: "#5a98e2", horizon: "#9cc8f2", ground: "#d8c8ee", horizonGlow: 0.2, glow: { elevationDeg: 4, azimuthDeg: 200, color: "#fff2f8", intensity: 1.0, discSize: 0.05 }, clouds: { coverage: 0.3, speed: 0.3, color: "#ffffff" } },
+    fog: { color: "#c4d6f2", density: 0.004 },
+    floor: "#8fd67c",
+    grade: { contrast: 1.12, saturation: 1.14, temperature: 0 },
     bloom: { intensity: 0.12, threshold: 0.95 },
-    exposureEv: -0.05
+    exposureEv: -0.1
   }
 ];
