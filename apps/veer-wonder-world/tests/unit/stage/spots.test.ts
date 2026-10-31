@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   CAMERA_PRESETS,
   CORE_SPOTS,
@@ -740,6 +740,27 @@ describe("createStage (headless engine, no canvas)", () => {
       expect(stage.diagnostics().world).toBe(b.world);
     } finally {
       stage.dispose();
+    }
+  });
+
+  it("stops the engine's frames while a story's models download, and runs them again after (07 B41)", async () => {
+    let stage: WonderStage | null = null;
+    const pausedAtFetch: boolean[] = [];
+    vi.stubGlobal("fetch", async () => {
+      if (stage) pausedAtFetch.push(stage.game().runtime.paused);
+      throw new Error("offline");
+    });
+    try {
+      stage = await createStage({ target: null, reducedMotion: true, models: true, modelTimeoutMs: 50, mountTimeoutMs: 50 });
+      expect(stage.game().runtime.running).toBe(true);
+      await stage.load(probe);
+      expect(pausedAtFetch.length).toBeGreaterThan(0);
+      expect(pausedAtFetch.every(Boolean)).toBe(true);
+      expect(stage.game().runtime.running).toBe(true);
+      expect(nodeOf(stage, "momo").drawnAs).toBe("stand-in");
+    } finally {
+      stage?.dispose();
+      vi.unstubAllGlobals();
     }
   });
 

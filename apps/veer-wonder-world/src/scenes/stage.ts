@@ -57,7 +57,7 @@ import { modelRef, type ModelKey } from "../aura-assets.js";
 import { CHARACTERS, isGesture, type CharacterProfile } from "../characters/character-registry.js";
 import { SONGS, songCueTimesMs, songLengthSec } from "../content/songs.js";
 import { calmGesture, createAnimationDirector, propAnimationProfile, type AnimationDirector } from "../runtime/animation-director.js";
-import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelSummaryStatus } from "../runtime/asset-preloader.js";
+import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelSummaryStatus, type PreloadResult } from "../runtime/asset-preloader.js";
 import type {
   CameraPresetId,
   CharacterId,
@@ -1960,6 +1960,31 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     return mountFailed(app) ? "failed" : "ok";
   };
 
+  /**
+   * Stops the engine's own frames until the returned function runs (07 B41). A story's models load behind the opaque
+   * veil, where nothing new needs drawing, so a slow device spends its main thread on reading and checking them instead
+   * of on frames nobody sees. On software WebGL2 those frames held the thread long enough that a model the server sent
+   * in milliseconds missed the 10 s wait and was drawn as its stand-in for the whole story (B21). A no-op when the
+   * engine is not running, and safe after dispose.
+   */
+  const pauseDrawing = (): (() => void) => {
+    const runtime = gameHandle?.runtime;
+    if (!runtime || !runtime.running) return () => undefined;
+    try {
+      runtime.pause();
+    } catch {
+      return () => undefined;
+    }
+    return () => {
+      if (disposed || runtime.disposed || !runtime.paused) return;
+      try {
+        runtime.resume();
+      } catch {
+        // disposed meanwhile: nothing to draw
+      }
+    };
+  };
+
   /** One story load. Loads run one at a time (see `stage.load`); a newer request makes an older one stop at its next check. */
   const load = async (next: StorySpec, seq: number): Promise<void> => {
     if (seq !== loadSeq || disposed) return;
@@ -1967,7 +1992,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     await setVeil(1);
     if (seq !== loadSeq || disposed) return;
     const keys = storyModelKeys(next);
-    const pre = await preloader.preload(keys);
+    const resumeDrawing = pauseDrawing();
+    let pre: PreloadResult;
+    try {
+      pre = await preloader.preload(keys);
+    } finally {
+      resumeDrawing();
+    }
     if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
     let built = buildStory(next, (key) => pre.available.has(key), aspectPose);

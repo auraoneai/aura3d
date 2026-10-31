@@ -9,6 +9,7 @@ import {
   hdriUrl,
   lookPlan,
   lookTableHexes,
+  parkLookVariant,
   parkPracticals,
   resolveDiamondTier,
   resolveLookVariant,
@@ -60,7 +61,7 @@ describe("aura-diamond look table (GU47 WP-18)", () => {
     expect([PARK_LOOKS.sandlot.sun.elevationDeg, PARK_LOOKS.sandlot.sun.azimuthDeg]).toEqual([9, 250]);
     expect([PARK_LOOKS.canyon.sun.elevationDeg, PARK_LOOKS.canyon.sun.azimuthDeg]).toEqual([72, 20]);
     expect([PARK_LOOKS.ivy.sun.elevationDeg, PARK_LOOKS.ivy.sun.azimuthDeg]).toEqual([24, 110]);
-    expect([PARK_LOOKS.lunar.sun.elevationDeg, PARK_LOOKS.lunar.sun.azimuthDeg]).toEqual([18, 300]);
+    expect([PARK_LOOKS.lunar.sun.elevationDeg, PARK_LOOKS.lunar.sun.azimuthDeg]).toEqual([42, 300]);
     expect(PARK_ORDER.map((p) => PARK_LOOKS[p].post.preset)).toEqual(["cinematic-film", "neon-night", "daylight-outdoor", "daylight-outdoor", "arena-fight", "space"]);
     expect(PARK_ORDER.filter((p) => PARK_LOOKS[p].post.toneMapping === "agx")).toEqual(["sandlot", "ivy"]);
     for (const p of PARK_ORDER) {
@@ -149,6 +150,14 @@ describe("aura-diamond look plan", () => {
     expect(lookPlan("skyline", "gu47", "low").weather?.density).toBeCloseTo((PARK_LOOKS.skyline.weather?.density ?? 0) / 2);
     expect(lookPlan("sandlot", "gu47", "low").sky).toEqual(lookPlan("sandlot", "gu47", "high").sky);
     expect(lookPlan("sandlot", "gu47", "low").overrides).toEqual(lookPlan("sandlot", "gu47", "high").overrides);
+  });
+
+  it("plays Lunar Park in its 4.6.2 look and every other park in the GU47 look, unless ?look= names one", () => {
+    for (const id of PARK_ORDER) expect(parkLookVariant(id, "")).toBe(id === "lunar" ? "original" : "gu47");
+    expect(parkLookVariant("lunar", "?park=lunar")).toBe("original");
+    expect(parkLookVariant("lunar", "?look=gu47")).toBe("gu47");
+    expect(parkLookVariant("sandlot", "?look=original")).toBe("original");
+    expect(parkLookVariant("canyon", "?look=bogus")).toBe("gu47");
   });
 
   it("reads the variant, tier and sky params from the URL", () => {

@@ -22,6 +22,8 @@ RH-01 is listed with no severity because the owner withdrew it. Of the 555 done 
 
 ### Not done
 
+Attempted 2026-10-30 04:00-04:45 UTC: Azure has no GPU quota in any region; GCP needs an interactive re-login; AWS through the gated runner template launched g6.xlarge and g6.2xlarge (NVIDIA L4) in us-west-2d, but the runner subnet's only egress is the allowlisted package proxy, so the NVIDIA image's SSM agent timed out on ssm.us-west-2.amazonaws.com and no probe could run; both instances terminated, 0 volumes left. The probe is ready to run (tools/real-gpu, plus the IC-07/LIVE-1/P-3 probe in evidence/real-gpu/2026-10-30/probe.mjs) on any GPU machine with internet (`evidence/real-gpu/2026-10-30/README.md`). Also tried after that: `az-auraone-gchahal` (the only Azure subscription with GPU quota, NVSv4) across 18 regions, where the size was either not offered to the subscription or out of capacity; and an AWS CodeBuild `LINUX_GPU_CONTAINER` build on `auraone-pr-validation`, which timed out in the queue without a GPU. Every attempt was cleaned up (0 Azure groups, 0 AWS instances).
+
 - **IC-07 (Iron Crown)**, P2: needs a real-GPU check (`?vfx=on&vfxdebug=1`); the remote runner is software GL, so the override stays; owner runs `tools/real-gpu/run.sh`
 - **LIVE-1 (Aura Diamond 3D)**, P2: needs a 15-minute real-GPU session; the software-GL runner cannot reproduce a renderer crash (park-switch heap measured at 468 MB, no page errors)
 - **P-3 (Serpentine Sky Run)**, P3: the fix asks for a real-GPU re-judge first and the lane has only software GL; on software GL the runner crop is back at the 4.3.7 contrast (193.4 against 206.0)

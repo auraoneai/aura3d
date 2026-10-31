@@ -95,9 +95,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@loaders.gl/textures", "/node_modules/@loaders.gl/textures/dist/index.js"],
   ["@loaders.gl/worker-utils", "/node_modules/.pnpm/@loaders.gl+worker-utils@4.4.1_@loaders.gl+core@4.4.1/node_modules/@loaders.gl/worker-utils/dist/index.js"],
   ["@math.gl/types", "/node_modules/.pnpm/@math.gl+types@4.1.0/node_modules/@math.gl/types/dist/index.js"],
-  ["@probe.gl/env", "/node_modules/.pnpm/@probe.gl+env@4.1.2/node_modules/@probe.gl/env/dist/index.js"],
-  ["@probe.gl/log", "/node_modules/.pnpm/@probe.gl+log@4.1.2/node_modules/@probe.gl/log/dist/index.js"],
-  ["@probe.gl/stats", "/node_modules/.pnpm/@probe.gl+stats@4.1.2/node_modules/@probe.gl/stats/dist/index.js"],
+  ["@probe.gl/env", "/node_modules/.pnpm/@probe.gl+env@4.1.1/node_modules/@probe.gl/env/dist/index.js"],
+  ["@probe.gl/log", "/node_modules/.pnpm/@probe.gl+log@4.1.1/node_modules/@probe.gl/log/dist/index.js"],
+  ["@probe.gl/stats", "/node_modules/.pnpm/@probe.gl+stats@4.1.1/node_modules/@probe.gl/stats/dist/index.js"],
   ["apache-arrow", "/node_modules/.pnpm/apache-arrow@21.1.0/node_modules/apache-arrow/Arrow.dom.mjs"],
   ["@dimforge/rapier3d-compat", "/node_modules/@dimforge/rapier3d-compat/dist/rapier.mjs"],
   ["recast-navigation/generators", "/node_modules/.pnpm/recast-navigation@0.43.1/node_modules/recast-navigation/generators.mjs"],
@@ -148,6 +148,11 @@ export function rewriteImportMetaUrl(source: string, urlPath: string): string {
   return source.replace(/\bimport\.meta\.url\b/g, `new URL(${JSON.stringify(urlPath)}, self.location.href).href`);
 }
 
+/** Mapped package entry points whose file is missing under `root`; their imports 404 and the page never boots. */
+export function missingPackageEntryPoints(root = process.cwd()): Array<[string, string]> {
+  return [...packageEntryPoints].filter(([, target]) => !existsSync(join(root, target)));
+}
+
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
   // Transforms are deterministic per (file, mtime); engine graphs pull ~1,300
   // modules through this handler and re-running ts.transpileModule plus the
@@ -156,7 +161,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
   // #865: a mapped entry point that does not exist on disk is rewritten into a
   // 404 module URL, which surfaces only as a module-graph load failure (a
   // spec timeout). Name every missing mapping once, at startup.
-  const missingEntryPoints = [...packageEntryPoints].filter(([, target]) => !existsSync(join(root, target)));
+  const missingEntryPoints = missingPackageEntryPoints(root);
   if (missingEntryPoints.length > 0) {
     console.error(`[example-dev-server] mapped package entry points missing on disk (imports of these will 404): ${missingEntryPoints.map(([specifier, target]) => `${specifier} -> ${target}`).join("; ")}`);
   }

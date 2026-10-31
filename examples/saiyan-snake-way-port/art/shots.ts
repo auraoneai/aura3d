@@ -30,6 +30,11 @@ export interface ShotInput {
   /** Seconds since the run left the `run` phase. */
   readonly outro: number;
   readonly reducedMotion: boolean;
+  /**
+   * GU47 phase 2: the title screen (no run started yet). The title holds the chase framing of 4.6.2 instead of the
+   * intro's first pose (40 m ahead, 14 m up), which left the runner a small faded figure on every title frame.
+   */
+  readonly title?: boolean;
 }
 
 export interface Shot {
@@ -71,8 +76,8 @@ export function createShotDirector(): ShotDirector {
   let prevSurge: string | null = null;
   return {
     get shot() { return shot; },
-    step({ S, dt, lean, outro, reducedMotion }) {
-      const running = S.phase === "run";
+    step({ S, dt, lean, outro, reducedMotion, title = false }) {
+      const running = S.phase === "run" && !title;
       if (prevSurge !== null && running && S.surge !== "off" && prevSurge === "off") kick = 1;
       prevSurge = S.surge;
       kick = Math.max(0, kick - dt / FOV_KICK_SECONDS);

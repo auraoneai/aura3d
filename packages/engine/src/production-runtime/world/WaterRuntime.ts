@@ -145,22 +145,33 @@ function shapeCenter(record: WaterRecord): readonly [number, number] {
   return [sx / Math.max(1, pts.length), sz / Math.max(1, pts.length)];
 }
 
-/** Distance to the shape edge (m) for the §8.6 Low shore term. */
-function shoreDistance(record: WaterRecord, x: number, z: number): number {
+/**
+ * Signed distance to the shape edge (m): positive inside, negative outside (capped at 8 m on both sides of a polygon,
+ * 8 m outside a circle). It feeds the §8.6 Low shore term and clips the square grid to the shape: the water programs
+ * discard fragments where the interpolated value is negative. Before GU47 phase 2 the outside of a polygon read the
+ * distance to its nearest vertex as "inside" fallback and the outside of a circle read 0, so polygon and circle water
+ * drew the whole square grid (aura-diamond-3d's 220 x 80 m harbor drew 220 x 220 m; the part past the bay refracted
+ * the far plane and came out black).
+ */
+export function waterShoreDistance(record: WaterRecord, x: number, z: number): number {
   const s = record.options.shape;
   if (s.kind === "infinite" || s.kind === "spline") return 8; // open water: always "deep"
-  if (s.kind === "circle") return Math.max(0, s.radius - Math.hypot(x - s.center[0], z - s.center[1]));
+  if (s.kind === "circle") return Math.max(-8, s.radius - Math.hypot(x - s.center[0], z - s.center[1]));
   const pts = shapePoints(record);
+  if (pts.length < 3) return 8;
   let inside = false;
+  let best = Infinity;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
     const [xi, zi] = pts[i]!;
     const [xj, zj] = pts[j]!;
     if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+    const ex = xj - xi, ez = zj - zi;
+    const len2 = ex * ex + ez * ez;
+    const t = len2 > 0 ? Math.min(1, Math.max(0, ((x - xi) * ex + (z - zi) * ez) / len2)) : 0;
+    best = Math.min(best, Math.hypot(x - (xi + t * ex), z - (zi + t * ez)));
   }
-  if (inside) return 8;
-  let best = Infinity;
-  for (const [px, pz] of pts) best = Math.min(best, Math.hypot(x - px, z - pz));
-  return -Math.min(8, best);
+  const d = Math.min(8, best);
+  return inside || d < 1e-6 ? d : -d;
 }
 
 /** Grid over the shape extent; `a_shore` = shoreDistance per vertex. */
@@ -177,7 +188,7 @@ function buildGrid(record: WaterRecord, res = 64): { vertices: Float32Array; ind
       verts[o] = x;
       verts[o + 1] = 0;
       verts[o + 2] = z;
-      verts[o + 3] = shoreDistance(record, x + cx, z + cz);
+      verts[o + 3] = waterShoreDistance(record, x + cx, z + cz);
     }
   }
   const idx = new Uint32Array((res - 1) * (res - 1) * 6);
@@ -245,10 +256,17 @@ function programFor(device: RenderDevice, ds: WaterDeviceState, key: string, mak
     p = make();
     ds.programs.set(key, p);
     return p;
-  } catch {
+  } catch (error) {
+    // GU47 E-G phase 2: a failed water program used to skip the draw silently.
+    if (!warnedProgramKeys.has(key) && typeof console !== "undefined") {
+      warnedProgramKeys.add(key);
+      console.warn(`prd10.water: water program "${key}" failed to build; the water surface is not drawn. ${error instanceof Error ? error.message : String(error)}`);
+    }
     return null;
   }
 }
+
+const warnedProgramKeys = new Set<string>();
 
 function reflectionRequest(st: WaterGpuState, tier: AuraWorldQualityTier): ReflectionRequest | null {
   const mode = resolveTierValue<"ibl" | "ssr" | "planar">(st.record.options.reflection ?? { low: "ibl", medium: "ibl", high: "planar", ultra: "planar" }, tier);

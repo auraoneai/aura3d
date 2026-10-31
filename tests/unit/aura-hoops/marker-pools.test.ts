@@ -59,8 +59,8 @@ describe("Aura Hoops marker pools (H47-PF1)", () => {
   });
 
   it("main.ts pools markers on the new look and keeps the primitives on ?look=original", () => {
-    expect(MAIN).toMatch(/const POOLED_MARKERS = !LOOK_ORIGINAL;/);
-    expect(MAIN).toMatch(/POOLED_MARKERS \? \[\] : buildAthleteAccessories/);
+    expect(MAIN).toMatch(/const pooledMarkers = \(\): boolean => !LOOK_ORIGINAL;/);
+    expect(MAIN).toMatch(/pooledMarkers\(\) \? \[\] : buildAthleteAccessories/);
     expect(MAIN).toMatch(/frameBoundary\.run\(flushMarkerPools\)/);
   });
 });

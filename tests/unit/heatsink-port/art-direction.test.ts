@@ -31,8 +31,8 @@ function snapshotOf(search: string): ArtDirectionSnapshot {
 }
 
 describe("heatsink-port art direction (GU47 WP-29)", () => {
-  it("passes auditArtDirection on the default twilight scene and writes the audit record", () => {
-    const snapshot = snapshotOf("");
+  it("passes auditArtDirection on the twilight scene (?look=twilight) and writes the audit record", () => {
+    const snapshot = snapshotOf("?look=twilight");
     const violations = auditArtDirection(direction, snapshot);
     writeArtDirectionAudit("examples/heatsink-port/art/direction.ts", { direction, snapshot, violations });
     expect(violations).toEqual([]);

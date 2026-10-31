@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "e6a8b2d0ef74d815a916f963c7b884827906e913c343805a0feadcd5e55064cd",
+  "sourceSha256": "02d16aa06e95396ea2da522e02391805bb431ff25baf4941646e7a11afabd313",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -16,7 +16,7 @@
     "reservedObjective": "#ff4d3d"
   },
   "environment": {
-    "hdri": "spruit_sunrise",
+    "hdri": "kloppenheim_06_puresky",
     "background": "hdri"
   },
   "violations": [],
@@ -25,12 +25,12 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.9
+        "intensity": 3.1
       },
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 0.24
+        "intensity": 0.22
       }
     ],
     "hasAmbient": false,
@@ -222,16 +222,16 @@
     "lighting": {
       "key": {
         "type": "directional",
-        "colorTemperatureK": 3600,
+        "colorTemperatureK": 4200,
         "shadow": true
       },
       "fill": "ibl",
       "practicals": 4,
       "environment": {
-        "hdri": "spruit_sunrise",
+        "hdri": "kloppenheim_06_puresky",
         "background": "hdri"
       },
-      "exposureEV": 0.2
+      "exposureEV": 0
     },
     "framing": {
       "rig": "shoulder",

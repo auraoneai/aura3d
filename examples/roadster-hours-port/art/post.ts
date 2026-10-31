@@ -48,5 +48,5 @@ export function streakFor(speed: number, nitro: boolean, reducedMotion: boolean)
 
 /** Halo's auto-exposure (S8 runs on Medium and up); the coast routes keep a fixed exposure. */
 export function autoExposureFor(row: SaltwindLookRow | null): false | AuraAutoExposureOptions {
-  return row?.post.autoExposure ? { minEv: -0.5, maxEv: 1.5, speedUp: 1.5, speedDown: 0.8, meteringMask: "center-weighted", compensationEv: 0.25 } : false;
+  return row?.post.autoExposure ? { minEv: -0.5, maxEv: 1.5, speedUp: 1.5, speedDown: 0.8, meteringMask: "center-weighted", compensationEv: -0.25 } : false;
 }

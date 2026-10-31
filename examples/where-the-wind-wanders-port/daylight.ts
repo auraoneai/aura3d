@@ -178,6 +178,18 @@ export function parseFoundParam(value: string | null): number | null {
   return Number(value);
 }
 
+/**
+ * GU47 blind-panel fallback: the panel judged the GU47 look better only at the bell (lilac dusk) and the epilogue
+ * (moonlit voyage); every daylight beat (found0..3, the default boot) read worse than 4.6.2. So the game boots the 4.6
+ * look unless `?look=gu47` asks for the new one, and a capture pinned to the bell or the epilogue (`?found=bell|epilogue`)
+ * keeps the GU47 look. `?look=original` always wins.
+ */
+export function resolveLook(lookParam: string | null, foundKey: number | null): "original" | "gu47" {
+  if (lookParam === "original") return "original";
+  if (lookParam === "gu47") return "gu47";
+  return foundKey !== null && foundKey >= 4 ? "gu47" : "original";
+}
+
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 const mix3 = (a: Rgb, b: Rgb, t: number): Rgb => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
 const smooth = (t: number): number => t * t * (3 - 2 * t);

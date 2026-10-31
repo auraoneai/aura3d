@@ -12,7 +12,7 @@ import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
+import { LINE_COLOR, buildGrassStripesNodes, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
 import { buildNetMeshNode } from "./net";
 
@@ -62,7 +62,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   } else {
     // TT-L1 / TT-L2 / TT-P1: one shadowed key + four floodlights (night court), the venue's grade, SMAA and contact shadows.
     for (const light of sceneLights(boot)) s.add(light);
-    for (const effect of postEffects(boot)) s.add(effect);
+    for (const effect of postEffects(boot, camRig)) s.add(effect);
     // TT-E1: the venue HDRI lights the court (fill) and shows where the sky does; it replaces the flat backdrop wall.
     s.add(environments.hdri({
       name: VENUE_ENVIRONMENT_NAME,
@@ -133,8 +133,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .runtime(game.runtimeNode("court-singles-surface"))
     );
 
-  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as one vertex-coloured mesh.
-  if (!original) s.add(buildGrassStripesNode());
+  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as two meshes (one per colour).
+  if (!original) for (const stripes of buildGrassStripesNodes()) s.add(stripes);
   for (let i = 0; original && i < 8; i++) {
     const stripeZ = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
     s.add(

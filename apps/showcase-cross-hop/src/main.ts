@@ -31,8 +31,12 @@ const PROBE = params.get("probe") ? parseInt(params.get("probe")!, 10) : 0;
 const REDUCED_MOTION = params.get("reducedMotion") === "1" ||
   (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
 setReducedMotion(REDUCED_MOTION);
-/** GU47 WP-24: `?look=original` keeps the 4.6 look for before/after captures; the default is the tabletop diorama. */
-setLookMode(params.get("look") === "original" ? "original" : "diorama");
+/**
+ * GU47 phase 2 (blind panel): the 4.6 look is the default again. A three-judge blind panel preferred the 4.6.2 frames
+ * over the tabletop diorama for all seven variants (steep top-down camera, no horizon, haze band, muddy palettes), so
+ * the diorama is opt-in through `?look=diorama`; `?look=original` still names the 4.6 look explicitly.
+ */
+setLookMode(params.get("look") === "diorama" ? "diorama" : "original");
 const DIORAMA = getLookMode() === "diorama";
 if (DIORAMA) document.body.classList.add("ch-diorama");
 

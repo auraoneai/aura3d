@@ -51,6 +51,12 @@ export function broadcastPose(followX: number, ballX: number, ballZ: number): Sh
   return { eye: [followX, BROADCAST_HEIGHT, target[2] + back + clampN(ballZ * 0.25, -2.5, 2.5)], target, fov: BROADCAST_FOV };
 }
 
+/** PRD D11 original look path: the 4.6.2 broadcast rig (eye 9.5 m up, 20 m back, easing toward near-side play; FOV 38). */
+export function originalBroadcastPose(followX: number, ballX: number, ballZ: number): ShotPose {
+  const clampN = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  return { eye: [followX, 9.5, 20 + clampN(ballZ * 0.55, -5.5, 5.5)], target: [ballX, 0.9, -1 + clampN(ballZ * 0.3, -4, 4)], fov: 38 };
+}
+
 /** Rail control points (eye) from the players' tunnel mouth on the near touchline up to the gantry over the centre spot. */
 export const INTRO_RAIL: readonly Vec3[] = [[-3, 1.7, 20.5], [-9, 4.5, 23], [-6, 10, 25], [0, BROADCAST_HEIGHT, -1 + (BROADCAST_HEIGHT - 0.9) / Math.tan((BROADCAST_PITCH_DEG * Math.PI) / 180)]];
 const INTRO_LOOK: readonly Vec3[] = [[-1, 1.4, 14], [0, 1.2, 4], [0, 0.9, -1]];

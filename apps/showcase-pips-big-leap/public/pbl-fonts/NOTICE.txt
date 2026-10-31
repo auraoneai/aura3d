@@ -1,0 +1,18 @@
+HUD theme fonts (apps/showcase-pips-big-leap/public/pbl-fonts, copied from packages/game/src/fonts) - licensed web cuts, not open source
+
+Every .woff2 file in this directory is an unmodified copy of a WOFF2 web cut
+from the AuraOne licensed font library (paths below are relative to that
+library). They are commercial fonts licensed for web self-hosting on
+AuraOne-served pages only:
+
+- Do not install them as desktop fonts, convert them to other formats, subset
+  or modify them, or redistribute them outside AuraOne-served game routes.
+- They are not part of the npm tarball: tools/finalize-dist copies no .woff2.
+- A game copies the files its theme needs into its own app folder and
+  registers them with registerGameFonts(baseUrl, document).
+- Build and run time never read the font library; these copies are the source.
+
+
+file | family (CSS weight) | foundry | library source | bytes | sha256
+gt-walsheim-400.woff2 | GT Walsheim (400) | Grilli Type | sans/GT-Walsheim/GT-Walsheim-Regular.woff2 | 40000 | d5833892a75ef71b7fad7d1ca40d9ab88651fd8c80023476718dfd5d6fbbbeff
+canela-400.woff2 | Canela (400) | Commercial Type | display/Canela/Canela-Regular.woff2 | 31756 | c5db098e47f0113d6d8b75bdb3b216ad36918fc7156848754e4e2cf8b5fd847a

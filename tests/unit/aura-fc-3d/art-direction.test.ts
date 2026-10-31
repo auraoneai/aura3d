@@ -11,9 +11,11 @@ import type { VenueId } from "../../../apps/showcase-aura-fc-3d/src/game/types";
  * (snapshotForAudit on the scene graph: lights, environment, models, materials), and the Munich record (the default
  * venue) is written to apps/showcase-aura-fc-3d/art/direction.audit.json for the `art-direction` and `look-identity`
  * game-checks (docs/prds/game-upgrades-47/lanes/ei.md). Draw calls are a phase-2 measurement (0 here: no renderer).
+ * Phase 2: the contract is the GU47 look path (`?look=gu47`, with the authored PCSS key, `?spotShadow=on`); venues whose
+ * GU47 frame could not beat 4.6.2 default to the original look (PRD D11, look.ts DEFAULT_LOOK_MODE).
  */
 function venueSnapshot(venue: VenueId): ArtDirectionSnapshot {
-  const nodes = (buildFcScene(venue).toJSON() as unknown as { nodes: unknown[] }).nodes;
+  const nodes = (buildFcScene(venue, { lookMode: "gu47", engineGates: { spotShadow: true } }).toJSON() as unknown as { nodes: unknown[] }).nodes;
   return snapshotForAudit({ scene: { nodes } } as never, { assets: {} });
 }
 

@@ -80,11 +80,11 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // pebbled clay; without a DOM (unit tests) the same materials fall back to plain colour.
   const tex = gu47 ? turfTextures() : null;
   const grass = gu47
-    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: 0.6 } : {}) })
+    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: turf.normalScale?.grass ?? 0.6 } : {}) })
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
+    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex && (turf.normalScale?.clay ?? 0.5) > 0 ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
@@ -451,7 +451,9 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       const W = HARBOR_WATER;
       nodes.push(
         model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
-        gu47 ? harborWater() : primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
+        // GU47 blind panel: world.water's swell read as glittery blue pixel noise at this distance (software WebGL2), so
+        // the bay is the calm 4.6.2 plane again, a touch deeper and smoother in GU47 to hold the sunset.
+        primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr(gu47 ? { color: "#2a5470", roughness: 0.22, metalness: 0.2 } : { color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
         model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
         model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
         model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
@@ -521,8 +523,10 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       break;
     }
     case "dome": {
-      nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
-      if (gu47) nodes.push(domeInfieldProbe());
+      // GU47 blind panel: the typhoon-dome GLB's UVs are broken (smeared multicolour field, torn roof, smeared walls; the
+      // same in 4.6.2), so GU47 draws the park's own field under the rafters, banners and truss panels instead.
+      if (!gu47) nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
+      if (gu47 && DOME_PROBE_ENABLED) nodes.push(domeInfieldProbe());
       if (gu47) {
         // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
         // and the crowd's gold, tinting the emissive too.
@@ -597,17 +601,28 @@ export function wallNameNode(park: ParkSpec): any {
   // The glyph mesh starts at the origin (bottom-left) and scales with size; measure it at size 1.
   const widthOf = (node: ReturnType<typeof build>): number =>
     (((node.toJSON() as any).geometry?.positions ?? []) as readonly (readonly number[])[]).reduce((m, q) => Math.max(m, q[0] ?? 0), 0);
-  const segDeg = (2 * FOUL_DEG) / park.fenceSegments;
-  const segLen = 2 * fenceRadius(park, WALL_NAME_THETA) * Math.tan((segDeg * Math.PI) / 360);
-  const size = Math.min(0.9, park.wallH * 0.5, (segLen - 0.8) / Math.max(widthOf(build(1)), 1e-6));
+  // The wall is a chain of flat chords (scene wall loop); the radius shrinks toward the foul lines, so the chord is not
+  // square to the radial. The letters sit on the chord of the segment centred on WALL_NAME_THETA, parallel to it
+  // (a radial yaw buried the left half of the name in the wall: "ON RIM", "LASSIC").
+  const { centre, yaw, length } = wallNameChord(park);
+  const size = Math.min(0.9, park.wallH * 0.5, (length - 1.2) / Math.max(widthOf(build(1)), 1e-6));
   const node = build(size);
   const width = widthOf(node);
-  const rad = (WALL_NAME_THETA * Math.PI) / 180;
-  const face = fencePoint(park, WALL_NAME_THETA, 0, -0.32);
-  const yaw = -rad; // +z (the glyphs' front) turned to face home plate
   return node
-    .position(face[0] - (width / 2) * Math.cos(yaw), (park.wallH - size) / 2, face[2] + (width / 2) * Math.sin(yaw))
+    .position(centre[0] - (width / 2) * Math.cos(yaw), (park.wallH - size) / 2, centre[2] + (width / 2) * Math.sin(yaw))
     .rotate(0, yaw, 0);
+}
+
+/** DIA-V2: the wall chord the park name sits on: its face centre 0.32 m toward home, the glyph yaw and the chord length. */
+export function wallNameChord(park: ParkSpec): { centre: Vec3; yaw: number; length: number } {
+  const segDeg = (2 * FOUL_DEG) / park.fenceSegments;
+  const p0 = fencePoint(park, WALL_NAME_THETA - segDeg / 2, 0);
+  const p1 = fencePoint(park, WALL_NAME_THETA + segDeg / 2, 0);
+  const pm = fencePoint(park, WALL_NAME_THETA, 0);
+  const dx = p1[0] - p0[0], dz = p1[2] - p0[2];
+  const length = Math.hypot(dx, dz);
+  const yaw = Math.atan2(-dz, dx); // local +x along the chord (left to right from home), local +z toward home
+  return { centre: [pm[0] + 0.32 * Math.sin(yaw), 0, pm[2] + 0.32 * Math.cos(yaw)], yaw, length };
 }
 
 /**
@@ -615,6 +630,13 @@ export function wallNameNode(park: ParkSpec): any {
  * panels and banners instead of the HDRI hangar. Captured once at mount (6 faces at 128 px, about +2 draws' worth of
  * work on the first frame only); the parallax box is the dome interior around the diamond. A3D_QR_LIGHTING (default-on).
  */
+/**
+ * GU47 phase 2: off. On the freeze build's software WebGL2 capture the probe's once-captured cube smeared the scene over
+ * the whole Dome floor (grass included) and pulled the frame out of its luma band (p50 46, rb 0.89). The Dome falls back
+ * to the hangar HDRI's IBL on the sealed infield until the probe capture is fixed in the engine (lane report handoff).
+ */
+export const DOME_PROBE_ENABLED = false;
+
 export function domeInfieldProbe(): any {
   return probes.reflection({
     name: "dome-infield-probe",
@@ -646,7 +668,10 @@ export function harborWater(): any {
       deepColor: "#173a52",
       waves: "calm",
       reflection: { low: "ibl", medium: "ibl", high: "ibl", ultra: "planar" },
-      refraction: { low: false, medium: false, high: true, ultra: true }
+      // GU47 phase 2: refraction off on every tier. Refraction needs the after-opaque scene copy, and on the freeze build
+      // that pass fails to compile (its vertex shader lacks the `prd10.sceneCopy` marker), so Harbor never drew. The
+      // calm bay keeps IBL reflection; refraction comes back when the engine fix lands (lane report handoff).
+      refraction: { low: false, medium: false, high: false, ultra: false }
     })
     .toJSON();
 }
@@ -840,6 +865,10 @@ function skyNode(plan: DiamondLookPlan): any | null {
     ground: s.ground,
     ...(s.sun ? { sun: s.sun } : {}),
     ...(s.stars ? { stars: s.stars } : {}),
+    // GU47 phase 2 fallback: one zero-intensity band. The freeze build's SkyBackgroundPass uploads u_bandParams from
+    // the band list, and an empty list (length 0) fails the mount (RENDERER_MOUNT_FAILED on Canyon and Lunar). One band
+    // uploads a vec4 + vec3 and adds nothing (intensity 0). Drop it once the engine pads the band arrays.
+    bands: [{ elevationDeg: 0, widthDeg: 1, color: s.horizon, intensity: 0 }],
     captureEnvironment: false,
     affectsFog: false
   });

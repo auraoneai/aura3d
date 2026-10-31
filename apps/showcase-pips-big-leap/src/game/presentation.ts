@@ -245,8 +245,10 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       const look = built.presentation.look;
       counts.mounted += 1;
       // PBL-P1: the look declares its post id, but nothing applies the look's output
-      // preset on this build, so the world's preset is set after every setScene.
-      app.setOutput?.({ preset: look.post.preset });
+      // preset on this build, so the world's preset is set after every setScene. The
+      // exposure rides along explicitly (GU47 phase 2: the first capture measured every
+      // world 2-3 EV under its band, so the world EV is written as the output multiplier).
+      app.setOutput?.({ preset: look.post.preset, exposure: Math.pow(2, look.exposureEv) });
       // PBL-E1: keep the live fog on the base height fog after the swap.
       if (built.presentation.baseTop !== null) {
         try {

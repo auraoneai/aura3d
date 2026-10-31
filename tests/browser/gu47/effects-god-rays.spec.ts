@@ -28,7 +28,7 @@ test.describe(`${CAPABILITY} receipt`, () => {
     expect(on.meanLuma).toBeGreaterThan(off.meanLuma);
     expect(added.changedFraction).toBeGreaterThan(0.01);
     expect(density.changedFraction).toBeGreaterThan(0.001);
-    session.write(CAPABILITY, `${HARNESS_SCENE}; volumetricFog absent / density 0.2 / + godRayDensity 0.5`,
+    session.write(CAPABILITY, `${HARNESS_SCENE}; volumetricFog absent / density 0.2 + lightPosition [0.8, 3, -10] / + godRayDensity 0.5`,
       [session.save(CAPABILITY, off), session.save(CAPABILITY, on), session.save(CAPABILITY, half)],
       ["tests/unit/gu47/ec/tilt-shift-god-ray-density.test.ts", "tests/unit/gu47/ec/hdr-grade-and-stage-trace.test.ts"],
       { meanLumaDelta: on.meanLuma - off.meanLuma, changedFraction: added.changedFraction, densityChangedFraction: density.changedFraction });

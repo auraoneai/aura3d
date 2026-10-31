@@ -79,6 +79,7 @@ import {
 } from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
+import { ORIGINAL_VIGNETTE, venueLookMode } from "./game/originalLook";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
@@ -260,7 +261,9 @@ function buildArena(cfg: BoutConfig) {
     rivalStart: RIVAL_START,
     contactShadows: contactShadowsOn,
     reducedMotion,
-    lowTier
+    lowTier,
+    // GU47 blind-panel pass: the venues the panel did not judge better default to their 4.6.2 look (`?look=` overrides).
+    lookMode: venueLookMode(cfg.stage.id, params)
   });
 }
 
@@ -340,7 +343,9 @@ const app = fightingGame.app;
 const vfxComfort = { reducedMotion, reducedFlash, lowTier };
 const vfxLive = installIronCrownVfx(app.effects, vfxComfort, params.get("vfx"));
 /** IC47-V2: the venue's ambient embers, motes or dust (one-shot bursts on a fixed cadence; reset per bout). */
-let ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[DEFAULT_STAGE], vfxComfort);
+/** The venue's ambient emitters; none on a venue in its 4.6.2 look (4.6.2 had no runtime VFX). */
+const ambientEmittersFor = (id: StageId) => (venueLookMode(id, params) === "original" ? [] : AMBIENT_EMITTERS[id]);
+let ambientVfx = createAmbientVfx(ambientEmittersFor(DEFAULT_STAGE), vfxComfort);
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
@@ -433,7 +438,7 @@ app.camera?.use({
       const slam = hudSlamFor(lastShotName, shot?.name ?? null);
       lastShotName = shot?.name ?? null;
       if (slam) hud.slam(slam);
-      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, stageLook(state.config.stage.id).vignette, reducedMotion));
+      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, (venueLookMode(state.config.stage.id, params) === "original" ? ORIGINAL_VIGNETTE : stageLook(state.config.stage.id).vignette), reducedMotion));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }
     const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
@@ -687,7 +692,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   newBout(config);
   playStageAmbience(config.stage.id);
   currentStageId = config.stage.id;
-  ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[config.stage.id], vfxComfort);
+  ambientVfx = createAmbientVfx(ambientEmittersFor(config.stage.id), vfxComfort);
   studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
   if (sig !== mountedArenaSig) {

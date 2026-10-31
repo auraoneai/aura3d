@@ -6,7 +6,7 @@ import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
 import { slamQaCrops, type QaCrop } from "./qaCrops";
 import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
-import { BROADCAST_DOF, CAMERA_FAR, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
+import { BROADCAST_DOF, CAMERA_FAR, broadcastDofFor, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { POST_EFFECT, QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
@@ -21,7 +21,7 @@ import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { GRASS_STRIPES_ID, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+import { GRASS_STRIPE_NODE_IDS, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
@@ -205,7 +205,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
     standText?.setVisible(audienceVisible);
-    h.grandstand?.setVisible(audienceVisible);
+    // Phase 2: the World Tour's lower broadcast eye frames the rear seats GLB (fitted to 24 m, each seat reads about 5 m tall)
+    // as giant chairs floating over the far stand, so it shows only in `?look=original`, whose top-down eye never frames it.
+    h.grandstand?.setVisible(audienceVisible && !worldTour);
     h.bleachers?.setVisible(audienceVisible);
   }
 
@@ -239,17 +241,21 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     syncCutDof();
   }
 
+  let lastDirectorMs = Number.NaN;
   /** TT-C2: advances the director; the pose is re-sent every frame of a cut and once when it ends. */
   function stepDirector(state: Readonly<MatchState>, dt: number | undefined): void {
     if (!director) return;
     const was = cutFrame;
-    cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
+    const nowMs = typeof performance !== "undefined" ? performance.now() : Number.NaN;
+    const wallSeconds = Number.isFinite(lastDirectorMs) && Number.isFinite(nowMs) ? (nowMs - lastDirectorMs) / 1000 : undefined;
+    lastDirectorMs = nowMs;
+    cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion(), wallSeconds);
     letterbox?.show(cutFrame !== null);
     if (cutFrame || was) pushCameraPose();
     syncCutDof();
   }
 
-  /** TT-P2: cut-aways open the lens to f/2 focused on the shot's target; the broadcast DOF returns when the cut ends. */
+  /** TT-P2: cut-aways focus at CUT_DOF_FSTOP on the shot's target; the broadcast DOF returns when the cut ends. */
   let dofShot: string | null = null;
   function syncCutDof(): void {
     const shot = cutFrame?.shot ?? null;
@@ -258,7 +264,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     const post = (app as unknown as VenueRuntimeApp | null)?.post;
     const patch = cutFrame
       ? { focusDistance: Math.hypot(cutFrame.pose.target[0] - cutFrame.pose.eye[0], cutFrame.pose.target[1] - cutFrame.pose.eye[1], cutFrame.pose.target[2] - cutFrame.pose.eye[2]), fStop: CUT_DOF_FSTOP, focalLength: BROADCAST_DOF.focalLength }
-      : { ...BROADCAST_DOF };
+      : broadcastDofFor(cameraRig);
     try { post?.setEffect?.(POST_EFFECT.depthOfField, patch); } catch { /* post surface optional */ }
   }
 
@@ -359,7 +365,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.umpireHead = req("umpire-head");
       h.faultLeft = req("net-fault-left");
       h.faultRight = req("net-fault-right");
-      grassStripes = worldTour ? [req(GRASS_STRIPES_ID)] : Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
+      grassStripes = worldTour ? GRASS_STRIPE_NODE_IDS.map((id) => req(id)) : Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
       spectators = req(crowd ? crowd.bodies.nodeIds[0]! : "spectators");
       if (crowd) spectatorHeads = req(crowd.heads.nodeIds[0]!);
       particles = req("hit-particles");

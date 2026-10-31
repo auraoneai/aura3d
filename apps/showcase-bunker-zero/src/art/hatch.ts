@@ -66,7 +66,8 @@ export function hatchShaftSpec(fogDensity: number) {
     name: "f5 hatch moon inscatter",
     // with the live-fog runtime bound the forward fog reads app.atmosphere, not this node; phase 2 checks F1-F5 haze hue
     color: BZ_MOON.color, density: fogDensity,
-    intensity: 0.6, godRayDensity: 0.55
+    // GU47 phase 2: 0.6 -> 0.3; the dominant spot on F6 is the red beacon, so the forward inscatter tinted the silo pink
+    intensity: 0.3, godRayDensity: 0.55
   };
 }
 

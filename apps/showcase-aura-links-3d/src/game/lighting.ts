@@ -89,7 +89,7 @@ export function contactShadowIntensity(course: CourseSpec): number {
 
 /** The E-A catalogue HDRIs this game uses (members of `AuraHdriId`, served at `/hdri/<id>_1k.hdr`). */
 export type LinksHdriId =
-  | "spruit_sunrise"
+  | "kloppenheim_06_puresky"
   | "autumn_field_puresky"
   | "industrial_sunset_puresky"
   | "outdoor-midday"
@@ -177,21 +177,27 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "marram dunes and a lighthouse on a cold northern shore",
     timeOfDay: "cold sunrise, sea haar rolling in",
     base: "outdoor-day",
-    hdri: { id: "spruit_sunrise", intensity: 0.92, drawn: true, sunAzimuthInHdriDeg: 54.3, want2k: false },
+    // GU47 phase 2: spruit_sunrise drew a pylon skyline behind the dunes and its 161k sun texel blew the trees out to
+    // white; belfast_sunset_puresky then read as a grey-pink overcast under the haar (blind panel 0-3 vs 4.6.2:
+    // "heavy grey-white fog, muddy, grass desaturated"). Blind-panel fix: the kloppenheim_06 pure sky (blue sky, low
+    // cold sun, peak 19.6 at 4.9 deg elevation, brightest texel u 0.612 = 57.8 deg in the engine frame).
+    hdri: { id: "kloppenheim_06_puresky", intensity: 1.0, drawn: true, sunAzimuthInHdriDeg: 57.8, want2k: false },
     sun: { azimuthDeg: 95, elevationDeg: 12 },
-    key: { color: "#ffd6ae", intensity: 2.9, colorTemperatureK: 3600 },
-    rim: { color: "#b8d2e6", intensity: 0.24, azimuthDeg: 275 },
-    exposureEv: 0.2,
-    background: "#b9c7d0",
-    fog: { color: "#c4cfd6", mode: "height", density: 0.004, maxOpacity: 0.62, heightDensity: 0.05, heightFalloff: 0.16, heightReference: 0 },
+    key: { color: "#ffe0bd", intensity: 3.1, colorTemperatureK: 4200 },
+    rim: { color: "#b8d2e6", intensity: 0.22, azimuthDeg: 275 },
+    exposureEv: 0,
+    background: "#9fb8cc",
+    // blind-panel fix: the haar is only a low ground breath now (any visible fog washed the trees, sky and tee out)
+    fog: { color: "#a9bfcf", mode: "height", density: 0.0005, maxOpacity: 0.1, heightDensity: 0.004, heightFalloff: 0.2, heightReference: 0 },
     godRays: null,
-    grade: { contrast: 0.97, saturation: 0.86, temperature: -0.12, tint: 0.02 },
-    bloom: { intensity: 0.3, threshold: 0.8, scatter: 0.6 },
-    vignette: { intensity: 0.1, color: "#0d1a22" },
+    grade: { contrast: 1.08, saturation: 1.12, temperature: -0.04, tint: 0 },
+    bloom: { intensity: 0.22, threshold: 0.86, scatter: 0.6 },
+    vignette: { intensity: 0.14, color: "#0d1a22" },
     grain: null,
     accent: "#4fd6a0",
     palette: ["#5f7d6a", "#c4cfd6", "#d6c39a"],
-    ambientParticles: "wisps",
+    // phase 2: no wisps; 0.18-0.42 m soft sprites riding the ball read as white floating dots in the tee frame
+    ambientParticles: null,
     sunFlare: true,
     flagFlutter: 0.28
   },

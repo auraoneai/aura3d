@@ -15,7 +15,7 @@ describe("pips-big-leap storybook HUD (PBL-H1)", () => {
     const faces = hudThemeFontFaces("storybook");
     expect(faces.map((f) => f.file).sort()).toEqual(["canela-400.woff2", "gt-walsheim-400.woff2"]);
     for (const face of faces) {
-      const bytes = readFileSync(app(`src/fonts/${face.file}`));
+      const bytes = readFileSync(app(`public/pbl-fonts/${face.file}`));
       const sha = createHash("sha256").update(bytes).digest("hex");
       expect(notice, face.file).toContain(sha);
       expect(bytes.length).toBeLessThanOrEqual(40 * 1024);

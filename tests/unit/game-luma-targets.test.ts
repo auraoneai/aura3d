@@ -169,14 +169,18 @@ describe("GU47 pass-4 game-lane handoff targets", () => {
     expect(src("examples/drift-and-deliver-port/main.ts")).toMatch(/params\.get\("look"\)/);
     expect(src("examples/heatsink-port/art/look.ts")).toMatch(/get\("look"\)/);
     const ninja = src("examples/ninja-runner-port/main.ts");
-    expect(ninja).toMatch(/params\.get\("lanterns"\) !== "0"/);
+    // Phase-2 second pass: the pooled lantern lights are opt-in (`?lanterns=1`); `?lanterns=0` still reads as off.
+    expect(ninja).toMatch(/params\.get\("lanterns"\) === "1"/);
     expect(ninja).toMatch(/params\.get\("cones"\) !== "0"/);
-    expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/params\.get\("look"\) === "original"/);
+    // Ninja Runner (G20, PRD D11): the 4.6.2 look is the default and `?look=evening` opts in; `?look=original` still names it.
+    expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/params\.get\("look"\) === "evening" \? "evening" : "original"/);
     expect(src("examples/roadster-hours-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
-    expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
+    // Duneglide (G24, PRD D11): `?look=original` / `?look=inked` force a look; without one the chapter picks it.
+    expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/const look = params\?\.get\("look"\);\s+if \(look === "original"\) return "original";/);
     expect(src("examples/last-train-port/main.ts")).toMatch(/params\.get\("title"\) !== "0"/);
     expect(src("examples/where-the-wind-wanders-port/daylight.ts")).toMatch(/value === "bell"/);
-    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "original"/);
+    // Cross Hop (G14, PRD D11): the 4.6 look is the default and `?look=diorama` opts in; `?look=original` still names it.
+    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "diorama" \? "diorama" : "original"/);
   });
 });
 

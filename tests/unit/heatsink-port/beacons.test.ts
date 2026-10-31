@@ -17,7 +17,7 @@ describe("heatsink-port IC-24 lane beacons", () => {
   });
   it("twilight mounts one beacons node (+1 draw); original none", () => {
     const names = (q: string) => (buildWorld(track, "high", q).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes.map((n) => n.name);
-    expect(names("").filter((n) => n === "beacons")).toHaveLength(1);
+    expect(names("?look=twilight").filter((n) => n === "beacons")).toHaveLength(1);
     expect(names("?look=original")).not.toContain("beacons");
   });
 
