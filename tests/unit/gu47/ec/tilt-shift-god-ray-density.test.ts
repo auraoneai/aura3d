@@ -113,6 +113,22 @@ describe("S6 tilt-shift band and S4 density uniforms", () => {
     runV2HdrStages(fakeHost(rec2.gl), fakeTarget(), { ...BASE, godRays } as never, CAMERA);
     expect(rec2.draws.find((d) => d.fragment.includes("u_density"))!.uniforms.u_density).toEqual([1]);
   });
+
+  // Phase-2 receipt (shaft changed fraction 0): the harness sun pointed down and away from the
+  // camera, so its projected point sat behind the eye and the shader's step(0, w) fade zeroed
+  // every shaft, whatever the density. An authored world point in view keeps S4 live.
+  it("a light behind the camera projects with clip w < 0 (S4 fades it out); an authored point in view does not", () => {
+    const godRays = { samples: 32, decay: 0.94, weight: 0.7, intensity: 0.7, color: [1, 0.9, 0.8] };
+    const behind = recordingGl();
+    runV2HdrStages(fakeHost(behind.gl), fakeTarget(), { ...BASE, godRays: { ...godRays, lightDirection: [0, 0.6, 0.8] } } as never, CAMERA);
+    expect(behind.draws.find((d) => d.fragment.includes("u_density"))!.uniforms.u_lightClipW![0]).toBeLessThan(0);
+    const inView = recordingGl();
+    runV2HdrStages(fakeHost(inView.gl), fakeTarget(), { ...BASE, godRays: { ...godRays, lightDirection: [0, 0.6, 0.8], lightWorld: [0, 1, -20] } } as never, CAMERA);
+    const draw = inView.draws.find((d) => d.fragment.includes("u_density"))!;
+    expect(draw.uniforms.u_lightClipW![0]).toBeGreaterThan(0);
+    expect(draw.uniforms.u_lightUv![0]).toBeCloseTo(0.5, 5);
+    expect(draw.uniforms.u_lightUv![1]).toBeCloseTo(0.5, 5);
+  });
 });
 
 describe("CPU mirror of the band CoC (tiltShiftCocPx)", () => {
