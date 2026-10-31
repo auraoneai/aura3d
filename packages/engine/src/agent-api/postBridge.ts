@@ -1237,6 +1237,14 @@ export function createRootPostPipeline(
   if (mbNode && !mbEnabled) tierDisabled("S7-motion-blur", "motion blur off below High");
   const ssrEnabled = tierResolution === undefined || tierResolution.ssr.enabled;
   if (ssrNode && !ssrEnabled) tierDisabled("S3-ssr", "SSR off below High");
+  // GU47 phase 2 (receipt effects-ssr): S3 has no per-pixel material inputs.
+  if (ssrNode && ssrEnabled) {
+    diagnostics.push({
+      code: "POST_SSR_MATERIAL_INPUTS_UNAVAILABLE",
+      effect: "screen-space-reflections",
+      message: "S3 reflects with dielectric F0 0.04 and the node roughness for the whole frame: the forward pass writes no per-pixel metalness or roughness, so metallic surfaces reflect weaker than their material."
+    });
+  }
   const grainEnabled = tierResolution === undefined || tierResolution.allowsFilmGrain;
   if (grainNode && !grainEnabled) tierDisabled("S12-film-grain", "grain off on Low");
   const caEnabled = tierResolution === undefined || tierResolution.allowsChromaticAberration;
