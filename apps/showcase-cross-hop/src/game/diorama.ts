@@ -183,3 +183,31 @@ export function ambientEmitter(kind: CrossHopAmbient, reducedMotion: boolean): A
 
 /** Column x for a column index (the sim's spacing). */
 export function colX(col: number): number { return col * COL_W; }
+
+/**
+ * GU47 phase 2 (CH47-11 horizon): the painted backdrop flat at the far edge of the tabletop. The high camera
+ * (pitch about 38 deg, half-fov 16 deg) never sees the sky, so a toy-diorama backdrop stands BACKDROP_DIST ahead of
+ * the camera and fills the top ~22 % of the frame: a strip of distant hills, the horizon glow, then two sky bands.
+ * Band heights follow the ray at the frame top, so the bands keep their screen share through the intro crane.
+ */
+export const BACKDROP_DIST = 17;
+export const BACKDROP_WIDTH = 90;
+/** Band tops as fractions of the frame-top height on the flat; the last band runs well past the frame top. */
+export const BACKDROP_BANDS = [0.16, 0.42, 0.72, 4] as const;
+export interface BackdropBand { readonly y: number; readonly height: number }
+export function backdropFlat(position: readonly number[], target: readonly number[], fovDeg: number, floorY: number): { x: number; z: number; bands: BackdropBand[] } {
+  const dz = position[2]! - target[2]!;
+  const dy = position[1]! - target[1]!;
+  const pitch = Math.atan2(dy, Math.max(1e-3, Math.hypot(dz, position[0]! - target[0]!)));
+  const topDown = pitch - (fovDeg * Math.PI) / 360;
+  const camH = position[1]! - floorY;
+  const top = topDown > 0.02 ? Math.max(0.5, camH - BACKDROP_DIST * Math.tan(topDown)) : camH + 6;
+  const bands: BackdropBand[] = [];
+  let lo = 0;
+  for (const f of BACKDROP_BANDS) {
+    const hi = top * f;
+    bands.push({ y: floorY + (lo + hi) / 2, height: hi - lo });
+    lo = hi;
+  }
+  return { x: position[0]!, z: position[2]! - BACKDROP_DIST, bands };
+}

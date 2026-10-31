@@ -10,6 +10,15 @@ export function recordPostSkipped(reason: string): void {
   postSkippedReasonsSet.add(reason);
 }
 
+/**
+ * Withdraws a transient reason once its condition has resolved (GU47: a
+ * `LUT_PENDING:<url>` recorded while a `.cube` loads must not outlive the
+ * load; the registry is otherwise cumulative for the page).
+ */
+export function clearPostSkipped(reason: string): void {
+  postSkippedReasonsSet.delete(reason);
+}
+
 export function postSkippedReasons(): readonly string[] {
   return [...postSkippedReasonsSet];
 }

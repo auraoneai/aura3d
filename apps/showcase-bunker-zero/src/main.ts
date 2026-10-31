@@ -28,7 +28,7 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
@@ -62,6 +62,11 @@ const LOOK_ID = "bunker-practicals" as const;
 const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
+/**
+ * GU47 phase 2: the F6 moon shaft (S4 volumetric fog) is opt-in with `?godrays=1`. On software WebGL2 it drew no shaft and
+ * washed the silo in pink beacon inscatter (fix run g11fix1, floor6 frame); the dark lamp haze reads better (PRD D11).
+ */
+const BZ_GOD_RAYS = bootParams.get("godrays") === "1";
 /** BZ-18: `?lut=0` turns the per-floor LUT off (the LUT on/off A/B); cosmetic only. */
 const LUT_ON = bootParams.get("lut") !== "0";
 const floorLut = (slot: number) => (LUT_ON ? lutOfSlot(slot) : null);
@@ -77,6 +82,8 @@ const ENEMY_TRACERS = 8;
 const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
 /** BZ-04: base colour under the texture sets (slightly warm white; the lamps carry each floor's colour). */
 const BZ_SURFACE_WHITE = "#ece8df";
+/** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
+const BZ_WALL_LIFT = 0.1, BZ_FLOOR_LIFT = 0.08;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -129,7 +136,7 @@ function buildScene() {
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
     ...buildLightRig({ lights, runtimeNode: game.runtimeNode }, boot),
     environments.hdri({
-      name: "bunker ibl", intensity: BZ_ENV_INTENSITY, background: false,
+      name: "bunker ibl", intensity: boot.environmentIntensity, background: false,
       texture: { type: "texture", format: "hdr", url: BZ_HDRI_URL } as never
     })
   ];
@@ -144,8 +151,12 @@ function buildScene() {
     const tex = BZ_FLOOR_TEXTURES[slot]!;
     const wallTex = bunkerTexture(tex.wall), altTex = bunkerTexture(tex.accent), floorTex = bunkerTexture(tex.floor);
     const metalWall = tex.wall.startsWith("metal");
-    const wallMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
-    const altMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
+    // GU47 phase 2: base colours from the floor palette (the 4.6.2 tones) instead of near white. The CC0 colour maps do not
+    // show in the software WebGL2 capture (fix run g11fix1: flat walls), so the #ece8df base read as white plaster lit
+    // evenly by the rig: luma ~145-200 on every wall and floor. The palette keeps each floor dark and its own hue.
+    const wallBase = shade(def.palette.wall, BZ_WALL_LIFT), altBase = shade(def.palette.wallAlt, BZ_WALL_LIFT), floorBase = shade(def.palette.floor, BZ_FLOOR_LIFT);
+    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
+    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
     const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
@@ -197,7 +208,7 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
-        color: BZ_SURFACE_WHITE, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
       }) }).runtime(staticNode(slot, "floor")),
       // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
@@ -505,8 +516,11 @@ function buildScene() {
     }))
     // BZ-18: chromatic aberration at rest 0, pulsed on heavy hits (S10; the engine drops it on Low)
     .add(effects.chromaticAberration({ intensity: 0 }))
-    // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up); disabled off F6 by applyFloorLook.
-    .add(effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density)))
+    // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up), mounted only when the scene boots on F6.
+    // GU47 phase 2: a mounted volumetric-fog node replaces the scene fog's colour and density in the forward program and
+    // adds the dominant spot's inscatter on every floor (setEffectEnabled only drops the post pass), which washed F1-F5
+    // and the Kill House in pale lamp-coloured haze (recap2 frames). Off every other floor, the per-floor dark haze rules.
+    .addMany(BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
@@ -644,11 +658,11 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   const look = lookOfSlot(slot);
   lightRig.applyFloor(slot);
   try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
-  try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
+  try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / lookOfSlot(BOOT_SLOT).environmentIntensity); } catch { /* lighting runtime not mounted */ }
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   const lut = floorLut(slot);
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint, lut: lut ? lutUrlOfSlot(slot) : "", lutIntensity: lut ? 1 : 0 }); } catch { /* post runtime not mounted */ }
-  try { app.post?.setEffectEnabled("volumetricFog", shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
+  try { app.post?.setEffectEnabled("volumetricFog", BZ_GOD_RAYS && shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
   startAtmosphere(slot);
   placeFloorDecals(slot);

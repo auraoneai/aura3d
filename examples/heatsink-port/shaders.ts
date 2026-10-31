@@ -116,7 +116,9 @@ void main() {
   vec2 hc = abs(fract(vec2(hx.x + 0.5 * floor(hx.y), hx.y)) - 0.5);
   float seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
   float pulse = 0.5 + 0.5 * sin(s * 0.09 - u_time * ionSpeed * 0.09);
-  color = mix(color, color * 0.55 + mirror * (0.35 + 1.6 * fres), glass);
+  // GU47 phase 2: the reflection was mirror * (0.35 + 1.6 * fres) over color * 0.55, which turned the chase view of the
+  // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
+  color = mix(color, color * 0.42 + mirror * (0.16 + 0.7 * fres), glass);
   color += vRoad * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.5) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass;
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;

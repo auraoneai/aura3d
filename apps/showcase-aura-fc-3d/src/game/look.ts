@@ -83,23 +83,23 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   // Munich: storm navy night, cold-white floods, lime accent, rain slanting through the shafts.
   munich: {
     look: "night-city", timeOfDay: "21:30 storm night",
-    background: "#0a1422", nightIbl: { source: "night-2k", intensity: 0.22, rotationDeg: 35 },
-    exposureEv: 0.15, sun: { elevationDeg: 40, azimuthDeg: 15 }, key: { color: "#9fb4d6", intensity: 0.4, shadowed: false },
+    background: "#0a1422", nightIbl: { source: "night-2k", intensity: 0.7, rotationDeg: 35 },
+    exposureEv: 0.6, sun: { elevationDeg: 40, azimuthDeg: 15 }, key: { color: "#9fb4d6", intensity: 1.0, shadowed: false },
     flood: 3.8, floodColor: "#e4f0ff", floodShadow: true,
     rim: { color: "#8fc8ff", intensity: 1.1, azimuthDeg: 200 },
-    fog: 1.3, fogColor: "#16243a",
+    fog: 0.45, fogColor: "#16243a",
     post: "arena-fight", grade: { contrast: 1.12, saturation: 0.92, temperature: -0.18, tint: 0 },
     bloom: { intensity: 0.24, threshold: 0.8 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "rain", shafts: 0.35, cones: 0.5, turfRoughness: 0.35, surface: "grass", mirror: null
+    weather: "rain", shafts: 0, cones: 0.5, turfRoughness: 0.35, surface: "grass", mirror: null
   },
   // Kyoto: lantern red and magenta in drizzle.
   kyoto: {
     look: "night-city", timeOfDay: "22:00 drizzle",
-    background: "#120814", nightIbl: { source: "cobblestone_street_night", intensity: 0.18, rotationDeg: 210 },
-    exposureEv: 0.1, sun: { elevationDeg: 45, azimuthDeg: 340 }, key: { color: "#d9a3c8", intensity: 0.4, shadowed: false },
+    background: "#120814", nightIbl: { source: "cobblestone_street_night", intensity: 0.65, rotationDeg: 210 },
+    exposureEv: 0.6, sun: { elevationDeg: 45, azimuthDeg: 340 }, key: { color: "#d9a3c8", intensity: 1.0, shadowed: false },
     flood: 3.4, floodColor: "#ffe2d0", floodShadow: true,
     rim: { color: "#ff5fa2", intensity: 0.9, azimuthDeg: 160 },
-    fog: 1.0, fogColor: "#2a1020",
+    fog: 0.4, fogColor: "#2a1020",
     post: "neon-night", grade: { contrast: 1.08, saturation: 1.12, temperature: 0.05, tint: 0.18 },
     bloom: { intensity: 0.3, threshold: 0.75 }, vignette: 0.25, grain: 0, chromaticAberration: 0.0015,
     weather: "drizzle", shafts: 0, cones: 0.5, turfRoughness: 0.35, surface: "grass", mirror: null
@@ -107,11 +107,11 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   // Favela: sodium floods and dust in a walled cage.
   favela: {
     look: "night-city", timeOfDay: "20:45 dry heat",
-    background: "#140d07", nightIbl: { source: "rooftop_night", intensity: 0.16, rotationDeg: 120 },
-    exposureEv: 0.12, sun: { elevationDeg: 50, azimuthDeg: 30 }, key: { color: "#e0a868", intensity: 0.4, shadowed: false },
+    background: "#140d07", nightIbl: { source: "rooftop_night", intensity: 0.65, rotationDeg: 120 },
+    exposureEv: 0.6, sun: { elevationDeg: 50, azimuthDeg: 30 }, key: { color: "#e0a868", intensity: 1.0, shadowed: false },
     flood: 3.5, floodColor: "#ffb066", floodShadow: true,
     rim: { color: "#ffc27a", intensity: 0.8, azimuthDeg: 190 },
-    fog: 0.8, fogColor: "#3a2814",
+    fog: 0.35, fogColor: "#3a2814",
     post: "arena-fight", grade: { contrast: 1.1, saturation: 1.05, temperature: 0.32, tint: -0.05 },
     bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.25, grain: 0.05, chromaticAberration: 0,
     weather: "dust", shafts: 0, cones: 0.5, turfRoughness: 0.9, surface: "plain", mirror: null
@@ -120,7 +120,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   lagos: {
     look: "golden-hour", timeOfDay: "18:40 copper sunset",
     background: "#c27a4a",
-    exposureEv: -0.35, sun: { elevationDeg: 8, azimuthDeg: 250 }, key: { color: "#ff9a52", intensity: 2.4, shadowed: true },
+    exposureEv: 1.35, sun: { elevationDeg: 16, azimuthDeg: 250 }, key: { color: "#ff9a52", intensity: 2.4, shadowed: true },
     flood: 0.9, floodColor: "#ffcf9e", floodShadow: false,
     rim: null,
     fog: 0.15, fogColor: "#c98a5a",
@@ -128,34 +128,76 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     bloom: { intensity: 0.08, threshold: 0.96 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "none", shafts: 0, cones: 0, turfRoughness: 0.95, surface: "plain", mirror: null
   },
-  // Uyuni: pale dawn on a mirror flat (spruit_sunrise drawn as the sky, low warm cascaded key, exposure -0.9).
+  // Uyuni: pale dawn on a mirror flat (spruit_sunrise drawn as the sky, low warm cascaded key). Phase 2: the PRD's
+  // exposure -0.9 measured mean 29 on software WebGL2 (band 150-190), so the exposure is tuned from the capture.
   uyuni: {
     look: "outdoor-day", timeOfDay: "06:40 pale dawn",
     background: "#c9d4e0", skyHdri: "spruit_sunrise",
-    exposureEv: -0.9, sun: { elevationDeg: 7, azimuthDeg: 100 }, key: { color: "#ffd0a0", intensity: 2.2, shadowed: true },
+    exposureEv: 1.45, sun: { elevationDeg: 22, azimuthDeg: 100 }, key: { color: "#ffd0a0", intensity: 2.2, shadowed: true },
     flood: 0, floodColor: "#f4f8ff", floodShadow: false,
     rim: null,
     fog: 0.15, fogColor: "#d6dde6",
     post: "daylight-outdoor", grade: { contrast: 1.0, saturation: 0.92, temperature: 0.12, tint: 0 },
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain", mirror: { resolution: 256, tint: "#d6e0ea" }
+    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain", mirror: { resolution: 256, tint: "#eef3f8" }
   },
   // Glacier: polar night under a live aurora, with snow; real star sky.
   glacier: {
     look: "polar-night", timeOfDay: "23:00 polar night",
-    background: "#050b14", nightIbl: { source: "night-2k", intensity: 0.2, rotationDeg: 300 },
+    background: "#050b14", nightIbl: { source: "night-2k", intensity: 0.65, rotationDeg: 300 },
     starSky: { hour: 23, starLimit: 120 },
-    exposureEv: 0.1, sun: { elevationDeg: 35, azimuthDeg: 10 }, key: { color: "#8fb0d8", intensity: 0.4, shadowed: false },
+    exposureEv: 0.6, sun: { elevationDeg: 35, azimuthDeg: 10 }, key: { color: "#8fb0d8", intensity: 1.0, shadowed: false },
     flood: 3.6, floodColor: "#cfe8ff", floodShadow: true,
     rim: { color: "#7fe8c9", intensity: 0.9, azimuthDeg: 170 },
-    fog: 1.2, fogColor: "#0b1a26",
+    fog: 0.4, fogColor: "#0b1a26",
     post: "cinematic-film", grade: { contrast: 1.06, saturation: 0.95, temperature: -0.22, tint: -0.04 },
     bloom: { intensity: 0.26, threshold: 0.78 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "snow", shafts: 0.3, cones: 0.5, turfRoughness: 0.3, surface: "ice", mirror: null
+    weather: "snow", shafts: 0, cones: 0.5, turfRoughness: 0.3, surface: "ice", mirror: null
   }
 };
 
 /** Night venues: the main-stand flood is the shadowed key (FC47-L2). */
 export function isNightVenue(id: VenueId): boolean {
   return VENUE_LOOKS[id].floodShadow;
+}
+
+/* ---------------- Phase 2 (PRD D11): the 4.6.2 look path, `?look=original` ---------------- */
+
+/**
+ * Look path of a page load: "gu47" = the WP-19 look table above; "original" = the shipped 4.6.2 look (one
+ * interior-industrial / golden-hour / outdoor-day preset per venue with only its fog scale and exposure overridden, four
+ * unshadowed tower spots with their cones, flat turf, no weather, flares, mirror, rim or venue post). PRD D11: a venue
+ * whose GU47 frame cannot beat its 4.6.2 frame defaults to "original".
+ */
+export type FcLookMode = "gu47" | "original";
+
+/** The 4.6.2 venue looks (apps/showcase-aura-fc-3d/src/game/scene.ts at 4.6.2, VENUE_LOOKS). */
+export interface FcOriginalLook {
+  readonly look: "interior-industrial" | "golden-hour" | "outdoor-day";
+  readonly background: string;
+  readonly exposureEv: number;
+  /** Intensity of each of the four tower spots. */
+  readonly flood: number;
+  readonly fog: number;
+  readonly bloom: { readonly intensity: number; readonly threshold: number };
+}
+
+export const ORIGINAL_LOOKS: Readonly<Record<VenueId, FcOriginalLook>> = {
+  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: -0.35, flood: 0.9, fog: 0.15, bloom: { intensity: 0.08, threshold: 0.96 } },
+  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.5, flood: 0.5, fog: 0.15, bloom: { intensity: 0.06, threshold: 0.97 } },
+  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } }
+};
+
+/** Default look path per venue (phase-2 verdict from the remote captures; see the g09 lane report). */
+export const DEFAULT_LOOK_MODE: Readonly<Record<VenueId, FcLookMode>> = {
+  munich: "original", kyoto: "original", favela: "original", lagos: "original", uyuni: "original", glacier: "original"
+};
+
+/** `?look=original` / `?look=gu47` override the venue default. */
+export function fcLookMode(venue: VenueId, search: string = typeof location === "undefined" ? "" : location.search): FcLookMode {
+  const q = new URLSearchParams(search).get("look");
+  return q === "original" || q === "gu47" ? q : DEFAULT_LOOK_MODE[venue];
 }

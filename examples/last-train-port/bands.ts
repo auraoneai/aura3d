@@ -50,7 +50,7 @@ export interface BandRow {
   /** LT-03: hemisphere bounce, the lit cloud sea under the islands. */
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
   readonly fog: { readonly color: string; readonly density: number };
-  /** LT-07: output exposure (linear multiplier ahead of agx). */
+  /** LT-07: exposure on the grade node (linear multiplier; output tone mapping is none since phase 2). */
   readonly exposure: number;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   /** LT-07: E-C S10 white balance (temperature/tint, -1..1) is the split tone: warm highlights in A/B, blue shadows in D/E. */
@@ -124,7 +124,8 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     skySunElevationDeg: -4,
     hemisphere: { sky: "#4b5aa0", ground: "#8a6a7c", intensity: 0.28 },
     fog: { color: "#2f3a6e", density: 0.00018 },
-    exposure: 1.1,
+    // phase 2 (tone mapping none, software WebGL2): 1.1 read mean luma 40.4, 2.42 read 61 and lost the blue hour
+    exposure: 1.6,
     bloom: { intensity: 0.85, threshold: 0.62 },
     grade: { contrast: 1.1, saturation: 1.02, temperature: -0.16, tint: 0.03 },
     vignette: 0.3,
@@ -139,7 +140,8 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     skySunElevationDeg: 38,
     hemisphere: { sky: "#29336a", ground: "#3d3550", intensity: 0.22 },
     fog: { color: "#161d3e", density: 0.00018 },
-    exposure: 1.0,
+    // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9 (under the 28..40 band), 3.0 read 44.5; 2.0 ~35
+    exposure: 2.0,
     bloom: { intensity: 0.85, threshold: 0.6 },
     grade: { contrast: 1.1, saturation: 0.95, temperature: -0.22, tint: 0.0 },
     vignette: 0.34,

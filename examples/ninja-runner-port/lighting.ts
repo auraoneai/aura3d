@@ -7,7 +7,7 @@
  * `?look=original` returns the pre-GU47 rig unchanged (neutral-room IBL, hemisphere sky fill, cool rim, 2 cascades).
  */
 import { defineAuraAssets, environments, lights } from "@aura3d/engine";
-import { DISTRICT_LOOKS, EVENING_HDRI, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
+import { DISTRICT_LOOKS, ENVIRONMENT_GAIN, EVENING_HDRI, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
 
 const HDRI_LICENSE = "CC0 1.0, Poly Haven";
 export const SKY_ASSETS = defineAuraAssets({
@@ -52,11 +52,11 @@ export function lightRig(o: RigOptions) {
   }
   const village = DISTRICT_LOOKS[0]!;
   const shadow = o.shadow
-    ? (o.quality === "low" ? { cascades: 1, maxDistance: 70, filter: "pcf" } : { cascades: 3, maxDistance: 110, filter: "pcss", lightSize: 2 })
+    ? (o.quality === "low" ? { cascades: 1, maxDistance: 70, filter: "pcf" } : { cascades: 2, maxDistance: 90 })
     : false;
   const pool = lanternPoolSize(o);
   const rig = [
-    environments.hdri({ name: "evening ibl", intensity: village.environmentIntensity, background: false, texture: SKY_ASSETS.evening as never }),
+    environments.hdri({ name: "evening ibl", intensity: village.environmentIntensity * ENVIRONMENT_GAIN, background: false, texture: SKY_ASSETS.evening as never }),
     lights.directional({ name: "sun", position: initialKeyPosition(), target: [0, 0, 0], intensity: village.key.intensity, color: village.key.color, shadow: shadow as never }).runtime({ id: "sun" })
   ];
   // Pooled points start parked below the course at zero intensity; `world.ts` places them each frame (+0 draws).

@@ -112,7 +112,10 @@ export interface ResolvedLook {
 /** `?look=original` keeps today's midday look; everything else is the evening. */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  return params.get("look") === "original" ? "original" : "evening";
+  // GU47 phase 2 (PRD D11, no regression ships): the default is the 4.6.2 look. In software WebGL2 the evening look
+  // never produced a frame that beat it (god-ray wash, then a village ~5 EV dark, then no frame within 25 min), so
+  // it is opt-in with `?look=evening`; `?look=original` still names the default explicitly.
+  return params.get("look") === "evening" ? "evening" : "original";
 }
 
 /** District band a distance belongs to (the five stops; the Backstreets share the village row). */
@@ -209,6 +212,14 @@ export const ORIGINAL_SKY = {
   sunDirection: [-0.45, 0.68, -0.4] as const
 };
 
+/**
+ * GU47 phase 2: the evening HDRI (a sunset pure sky) is a dim fill; the district table keeps its relative steps and the
+ * rig multiplies them by this gain (software WebGL2 frames of the village read about 5 EV under the 4.6.2 frame).
+ */
+export const ENVIRONMENT_GAIN = 1.6;
+/** GU47 phase 2: output exposure of the evening look (agx); `?look=original` keeps 1. */
+export const EVENING_EXPOSURE = 1.2;
+
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
   toneMapping: "agx" as const,
@@ -216,7 +227,7 @@ export const WOODBLOCK_POST = {
   grade: { contrast: 1.14, saturation: 1.04 },
   vignette: { intensity: 0.3, smoothness: 0.65 },
   grain: { intensity: 0.025 },
-  outline: { color: PALETTE.ink, width: 1, threshold: 0.12 }
+  outline: { color: PALETTE.ink, width: 1, threshold: 0.3 }
 };
 
 /** Pooled lantern lights (NR-03 within the C-35 cap of 6 practicals): amber lantern points plus cyan spirit points. */

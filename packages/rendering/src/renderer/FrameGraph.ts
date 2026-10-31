@@ -9,7 +9,7 @@
 // With zero registered contributors every entry point is a no-op: no passes are
 // added, no draws happen, and the frame is pixel-identical.
 
-import { Scene, identityMat4, type Mat4 } from "@aura3d/scene";
+import { Scene, identityMat4, invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import type { RenderGraph } from "../RenderGraph";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
@@ -67,12 +67,49 @@ export function withRendererQrFlags<T>(device: RenderDevice, fn: () => T): T {
 export interface ResolvedCameraInput {
   readonly viewProjectionMatrix: Mat4;
   readonly viewMatrix?: Mat4;
+  /** The camera's own projection when it carries one (CameraLike objects that are not `Camera` instances). */
+  readonly projectionMatrix?: Mat4;
+  /**
+   * The engine's shader view / projection (`compiler/renderInput.ts` CameraLike carries only these and the
+   * view-projection). Used when the camera has no `viewMatrix` / `projectionMatrix` of its own.
+   */
+  readonly shaderViewMatrix?: Mat4;
+  readonly shaderProjectionMatrix?: Mat4;
   readonly camera?: unknown;
   readonly cameraPosition?: readonly [number, number, number];
 }
 
 const toF32 = (value: Float32Array | readonly number[]): Float32Array =>
   value instanceof Float32Array ? value : Float32Array.from(value);
+
+/**
+ * The frame camera's projection: the camera's own matrix, else P = VP · V⁻¹ from the view-projection and view the
+ * resolver always has. GU47 phase 2: cameras that are not `Camera` instances (the app cameras) fell through to the
+ * identity, which made the planar-reflection oblique clip throw every frame (aura-hoops-3d `world.water`) and fed
+ * an identity projection to GTAO, the SSR trace, contact shadows and volumetric fog.
+ */
+function frameProjection(own: Mat4 | undefined, viewProjection: Mat4, view: Mat4 | undefined): Mat4 {
+  if (own) return own;
+  if (!view) return identityMat4();
+  const derived = multiplyMat4(viewProjection, invertMat4(view));
+  return derived.every(Number.isFinite) ? derived : identityMat4();
+}
+
+/** Near/far of a column-major OpenGL perspective projection (m[11] = -1, m[15] = 0); undefined for other shapes. */
+function perspectiveClip(p: Mat4): { near: number; far: number } | undefined {
+  if (Math.abs(p[11]! + 1) > 1e-4 || Math.abs(p[15]!) > 1e-4) return undefined;
+  const near = p[14]! / (p[10]! - 1);
+  const far = p[14]! / (p[10]! + 1);
+  return Number.isFinite(near) && Number.isFinite(far) && near > 0 && far > near ? { near, far } : undefined;
+}
+
+/** Near/far of a column-major OpenGL orthographic projection (m[11] = 0, m[15] = 1); undefined for other shapes. */
+function orthographicClip(p: Mat4): { near: number; far: number } | undefined {
+  if (Math.abs(p[11]!) > 1e-4 || Math.abs(p[15]! - 1) > 1e-4 || p[10] === 0) return undefined;
+  const near = (p[14]! + 1) / p[10]!;
+  const far = (p[14]! - 1) / p[10]!;
+  return Number.isFinite(near) && Number.isFinite(far) && far > near ? { near, far } : undefined;
+}
 
 /** Best-effort FrameCamera for the PR 0b stub; PRD 01 publishes real history later. */
 export function toFrameCamera(
@@ -87,14 +124,23 @@ export function toFrameCamera(
     readonly far?: number;
     readonly projection?: "perspective" | "orthographic";
   } | undefined;
+  const viewProjection = cameraViewProjection ?? resolvedCamera.viewProjectionMatrix;
+  // GU47 phase 2 (receipt effects-ssr): app cameras reach here as the engine's CameraLike, which carries only the
+  // shader view / projection; without them the frame camera had an identity view and projection (the S3 trace
+  // projected every ray off screen) and the 0.1/1000 clip guess instead of the engine's planes (S1 linear depth,
+  // and with it DOF, GTAO, S4 and TAA disocclusion, read about 2x too far).
+  const view = resolvedCamera.viewMatrix ?? resolvedCamera.shaderViewMatrix;
+  const projection = frameProjection(cam?.projectionMatrix ?? resolvedCamera.projectionMatrix ?? resolvedCamera.shaderProjectionMatrix, viewProjection, view);
+  const ortho = cam?.projection === undefined ? orthographicClip(projection) : undefined;
+  const clip = cam?.near === undefined || cam?.far === undefined ? perspectiveClip(projection) ?? ortho : undefined;
   return {
-    viewMatrix: resolvedCamera.viewMatrix ? toF32(resolvedCamera.viewMatrix) : toF32(identityMat4()),
-    projectionMatrix: cam?.projectionMatrix ? toF32(cam.projectionMatrix) : toF32(identityMat4()),
-    viewProjectionMatrix: toF32(cameraViewProjection ?? resolvedCamera.viewProjectionMatrix),
+    viewMatrix: view ? toF32(view) : toF32(identityMat4()),
+    projectionMatrix: toF32(projection),
+    viewProjectionMatrix: toF32(viewProjection),
     previousViewProjectionMatrix: null,
-    near: cam?.near ?? 0.1,
-    far: cam?.far ?? 1000,
-    projection: cam?.projection ?? "perspective",
+    near: cam?.near ?? clip?.near ?? 0.1,
+    far: cam?.far ?? clip?.far ?? 1000,
+    projection: cam?.projection ?? (ortho ? "orthographic" : "perspective"),
     position: cameraPosition ?? resolvedCamera.cameraPosition ?? [0, 0, 0]
   };
 }

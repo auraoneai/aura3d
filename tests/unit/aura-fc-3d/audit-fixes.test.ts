@@ -438,12 +438,14 @@ describe("HUD possession bar layout", () => {
 });
 
 describe("FC-21 day venues are not washed out", () => {
-  it("Lagos and Uyuni run lighter fog, softer bloom and lower exposure than the night venues", () => {
+  // GU47 phase 2: the exposure guard moved to the measured luma bands (evidence/game-upgrades-47/aura-fc-3d/
+  // luma-bands.json, clipFrac <= 0.02 on both day venues); on the GU47 engine the old negative exposures measured
+  // mean 24 (Lagos) and 29 (Uyuni) on software WebGL2.
+  it("Lagos and Uyuni run lighter fog and softer bloom than the night venues", () => {
     for (const v of ["lagos", "uyuni"] as const) {
       expect(VENUE_LOOKS[v].fog).toBeLessThan(VENUE_LOOKS.munich.fog);
       expect(VENUE_LOOKS[v].bloom.intensity).toBeLessThan(VENUE_LOOKS.munich.bloom.intensity);
       expect(VENUE_LOOKS[v].bloom.threshold).toBeGreaterThan(VENUE_LOOKS.munich.bloom.threshold);
-      expect(VENUE_LOOKS[v].exposureEv).toBeLessThan(0);
       const bloom = flat(v).nodes.find((n) => n.type === "effect" && /bloom/.test(String(n.effect ?? n.kind ?? n.name ?? "")) && n.name !== "look bloom");
       if (bloom) expect(JSON.stringify(bloom)).toContain(String(VENUE_LOOKS[v].bloom.threshold));
     }

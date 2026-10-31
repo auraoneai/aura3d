@@ -50,8 +50,6 @@ export function paintRoadTile(g: Ctx2D, px: number): RoadTileLayout {
     g.fillRect(m(x), m(y), m(w), m(h));
     g.globalAlpha = 1;
   };
-  let stripes = 0;
-  let dashes = 0;
 
   rect(0, 0, TILE_M, TILE_M, "#b3a58a");
   // sidewalks: two bands beside each border street, with paving joints
@@ -116,6 +114,25 @@ export function paintRoadTile(g: Ctx2D, px: number): RoadTileLayout {
     else rect(c + across, along, h, w, "#4a444a", 0.45);
   }
 
+  return paintLaneMarkings(g, px);
+}
+
+/**
+ * The lane paint of the road tile: centre dashes, edge lines, crosswalks, stop lines, yellow boxes and lane arrows.
+ * `paintRoadTile` calls it last; the shift look calls it again after its wet multiply pass (GU47 phase 2: the wet
+ * pass dimmed the white paint to 43% grey, so the street lost its lines against the 4.6.2 frame).
+ */
+export function paintLaneMarkings(g: Ctx2D, px: number): RoadTileLayout {
+  const S = px / TILE_M;
+  const m = (v: number): number => v * S;
+  const rect = (x: number, y: number, w: number, h: number, color: string, alpha = 1): void => {
+    g.globalAlpha = alpha;
+    g.fillStyle = color;
+    g.fillRect(m(x), m(y), m(w), m(h));
+    g.globalAlpha = 1;
+  };
+  let stripes = 0;
+  let dashes = 0;
   const white = "#efeadc";
   const yellow = "#e6b23a";
   for (const c of [0, TILE_M]) {

@@ -39,7 +39,7 @@ import { createOrbitPresenter, viewOf } from "./presentation";
 import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
 import { GOUACHE_LIVERIES, buildWorld, type WorldRuntime } from "./world";
-import { lookFromSearch } from "./art/look";
+import { lookExposure, lookFromSearch } from "./art/look";
 import { barsWanted } from "./art/director";
 import { mountOrbitHud } from "./art/hud";
 
@@ -627,7 +627,7 @@ async function boot(): Promise<void> {
     pixelRatio: 1,
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
-    output: { toneMapping: "aces", dither: false },
+    output: { toneMapping: "aces", exposure: lookExposure(config.look), dither: false },
     scene: world.scene
   });
   await app.ready();

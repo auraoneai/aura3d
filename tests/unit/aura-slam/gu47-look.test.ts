@@ -120,7 +120,7 @@ describe("GU47 TT-E1: one venue HDRI each", () => {
 });
 
 describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
-  it("fog: desert strongest with the volumetric stage at High+ only; no fog on the Moon", () => {
+  it("fog: desert strongest, no volumetric stage on any venue (phase 2: it washed the desert out); no fog on the Moon", () => {
     const densities = VENUE_LOOK_ORDER.filter((v) => VENUE_LOOKS[v].fog).map((v) => VENUE_LOOKS[v].fog!.density);
     expect(VENUE_LOOKS.desert.fog!.density).toBe(Math.max(...densities));
     expect(VENUE_LOOKS.desert.fog!.color).toBe("#e8d2b0");
@@ -128,16 +128,16 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     expect(VENUE_LOOKS.hard.fog!.lightCones).toBe(4);
     expect(venueRuntimePlan(VENUE_LOOKS.moon).fog).toBeNull();
     expect(sceneNodes("moon").some((n) => n.kind === "effect" && n.effect === "fog")).toBe(false);
-    expect(venueRuntimePlan(VENUE_LOOKS.desert, "high").volumetricFog).toBe(true);
-    expect(venueRuntimePlan(VENUE_LOOKS.desert, "medium").volumetricFog).toBe(false);
-    for (const v of VENUE_LOOK_ORDER.filter((id) => id !== "desert")) expect(venueRuntimePlan(VENUE_LOOKS[v], "ultra").volumetricFog, v).toBe(false);
+    for (const v of VENUE_LOOK_ORDER) expect(venueRuntimePlan(VENUE_LOOKS[v], "ultra").volumetricFog, v).toBe(false);
+    // Phase 2: the broadcast eye sits about 45 m out; exp2 fog at that range stays under 15% so the court reads.
+    for (const v of VENUE_LOOK_ORDER.filter((id) => VENUE_LOOKS[id].fog)) expect(1 - Math.exp(-((VENUE_LOOKS[v].fog!.density * 45) ** 2)), v).toBeLessThan(0.15);
     expect(isHighTier("ultra") && isHighTier("high") && !isHighTier("low")).toBe(true);
   });
 
-  it("output presets per venue (hard arena-fight, grass daylight, clay cinematic, desert daylight x1.3, beach cinematic, moon space)", () => {
+  it("output presets per venue (hard arena-fight, grass daylight, clay cinematic, desert daylight x1.1, beach cinematic, moon space)", () => {
     const presets = VENUE_LOOK_ORDER.map((v) => venueRuntimePlan(VENUE_LOOKS[v]).output.preset);
     expect(presets).toEqual(["arena-fight", "daylight-outdoor", "cinematic-film", "daylight-outdoor", "cinematic-film", "space"]);
-    expect(venueRuntimePlan(VENUE_LOOKS.desert).output.exposure).toBeCloseTo(1.3, 9);
+    expect(venueRuntimePlan(VENUE_LOOKS.desert).output.exposure).toBeCloseTo(1.1, 9);
     expect(venueRuntimePlan(VENUE_LOOKS.moon).output.toneMapping).toBe("aces");
     expect(venueRuntimePlan(VENUE_LOOKS.grass).output.toneMapping).toBe("agx");
   });

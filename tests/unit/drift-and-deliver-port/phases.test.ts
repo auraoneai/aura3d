@@ -74,6 +74,10 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(parseAt(null)).toBeUndefined();
     expect(parseLook("original")).toBe("original");
     expect(parseLook(null)).toBe("shift");
+    // GU47 phase 2 (D11): the lights-only diagnostic defaults to the original look; ?look=shift forces the shift
+    expect(parseLook(null, false)).toBe("original");
+    expect(parseLook("shift", false)).toBe("shift");
+    expect(parseLook("original", true)).toBe("original");
   });
 
   it("keeps today's look as the original row and blends colours in linear light", () => {

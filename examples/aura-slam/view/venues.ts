@@ -64,8 +64,8 @@ export const VENUE_PALETTES: Record<string, VenuePalette> = {
   },
   moon: {
     name: "LUNAR COURT",
-    court: "#394e60",
-    alley: "#324555",
+    court: "#5b6f82",
+    alley: "#4e6173",
     apron: "#747a7e",
     ground: "#52575c",
     background: "#050911",

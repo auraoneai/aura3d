@@ -161,7 +161,10 @@ registerNodeHandler({
       out.feature(light.light === "spot" ? "shadows.spot" : light.light === "point" ? "shadows.point" : "shadows.directional");
     }
   },
-  update(node, handle, ctx, _out, timeSeconds) {
+  update(node, handle, ctx, _out, frameTime) {
+    // GU47 phase 2: the production renderer passes its frame time in milliseconds (`render(runtimeTime * 1000)`, the
+    // unit camera and batched handlers already use); setLight blends run in seconds.
+    const timeSeconds = frameTime / 1000;
     const frame = ctx as unknown as Prd02FrameContext;
     const lights = frame.collectedLights ?? [];
     // GU47 E-B: the light follows its runtime handle (setPosition, setVisible, setLight blends) every frame.
@@ -198,7 +201,9 @@ registerNodeHandler({
     out.feature("environment.ibl");
     if (resolution.background !== false && resolution.background.visible) out.feature("environment.background");
   },
-  update(node, _handle, ctx, out, timeSeconds) {
+  update(node, _handle, ctx, out, frameTime) {
+    // GU47 phase 2: frame time arrives in milliseconds (see the light handler); the crossfade runs in seconds.
+    const timeSeconds = frameTime / 1000;
     // GU47 E-B: runtime environment control. The swap (crossfade + texture override the `prd02.explicit` source lays
     // over this node) advances here, before the probe bind reads the environment scale; the frame's yaw rides on the
     // source as `environmentProbeRotation` (radians) for the renderer's probe / IBL sampling and background.

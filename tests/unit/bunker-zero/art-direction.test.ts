@@ -113,16 +113,17 @@ describe("Bunker Zero look table (BZ-01, BZ-02, BZ-05, BZ-08, BZ-20)", () => {
     expect(new Set(BZ_LOOK.map((r) => r.lamp.color)).size).toBe(BZ_LOOK.length);
   });
 
-  it("sets the fog at 30% of the lamp value and the IBL per floor around 0.35 (BZ-02, BZ-05)", () => {
+  it("sets the fog at 30% of the lamp value and the IBL per floor at 0.04-0.15 (BZ-02, BZ-05)", () => {
     expect(FOG_LAMP_FRACTION).toBe(0.3);
     for (const r of BZ_LOOK) {
       expect(r.fog.color, r.variant).toBe(fogFromLamp(r.lamp.color));
       expect(r.fog.color).toBe(scaleColor(r.lamp.color, 0.3));
       expect(r.fog.density).toBeGreaterThan(0);
-      expect(r.environmentIntensity).toBeGreaterThanOrEqual(0.2);
-      expect(r.environmentIntensity).toBeLessThanOrEqual(0.5);
+      // GU47 phase 2: fill only (0.35 washed every floor evenly in the recap2 frames)
+      expect(r.environmentIntensity).toBeGreaterThanOrEqual(0.04);
+      expect(r.environmentIntensity).toBeLessThanOrEqual(0.15);
     }
-    expect(BZ_ENV_INTENSITY).toBe(0.35);
+    expect(BZ_ENV_INTENSITY).toBe(0.07);
     expect(BZ_HDRI_URL).toBe("/hdri/hangar_interior_1k.hdr");
     expect(scaleColor("#ffad5c", 0.3)).toBe("#4d341c");
   });

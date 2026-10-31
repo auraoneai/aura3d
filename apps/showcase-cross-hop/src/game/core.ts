@@ -10,8 +10,8 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { THEME_LOOKS, keyAt, sunVector, sunDirection, type ThemeLook } from "./look";
-import { CAM_DIORAMA, ambientEmitter, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
+import { THEME_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
 
@@ -547,15 +547,33 @@ function buildDioramaScene(): unknown {
     .add(buildSunKey(0))
     .add(effects.contactShadows({ intensity: 0.55, length: 0.3 }))
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
-    .add(effects.vignette({ intensity: 0.22, smoothness: 0.6 }))
+    .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
     .camera(camera.perspective({ position: pose.position, target: pose.target, fov: pose.fov }));
   if (!reducedMotion) {
     s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: L0.tiltShift.maxBlur, tiltShift: { bandCenter: TILT_CENTER0, bandWidth: L0.tiltShift.bandWidth } }));
   }
   const amb = ambientNode(0);
   if (amb) s.add(amb);
+  const flat = backdropFlat(pose.position, pose.target, pose.fov, FLOOR_Y);
+  backdropColors(0).forEach((c, i) => {
+    const b = flat.bands[i]!;
+    s.add(primitives.plane({ name: `cross-hop backdrop ${i}`, size: [1, 1, 1], material: backdropMaterial(c), castShadow: false, receiveShadow: false })
+      .position(flat.x, b.y, flat.z).rotate(Math.PI / 2, 0, 0).scale([BACKDROP_WIDTH, 1, b.height]).runtime(game.runtimeNode(`backdrop-${i}`)));
+  });
   s.addMany(poolNodes(true) as never[]);
   return s.toJSON();
+}
+
+/** Backdrop flat colours, bottom to top: distant hills, horizon glow, mid sky, zenith (CH47-11 horizon). */
+function backdropColors(ti: number): string[] {
+  const k = THEME_LOOKS[ti]!.sky;
+  return [k.ground, k.horizon, mixHex(k.horizon, k.zenith, 0.5), k.zenith];
+}
+
+/** The backdrop is a lit painted flat (a practical, like a theatre cyclorama): self-lit so the low sun does not shade
+ *  it, and kept under the bloom threshold. */
+function backdropMaterial(color: string) {
+  return material.pbr({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.96, metalness: 0, practical: true });
 }
 
 /** GU47 CH47-14: the theme's ambient particle emitter, following the player through the `ambient` runtime node. */
@@ -594,13 +612,16 @@ function poolNodes(diorama: boolean) {
   const out = [
     // A wide meadow/ground plane beneath the lane strips so the course reads
     // as one landscape rather than separate floating bands. Theme re-tints it.
+    // primitives.plane already lies in XZ: the original look keeps its 4.6 transform (rotated upright into a 1 m
+    // strip, so the sky colour showed below the lanes); the diorama lays it flat as the felt tabletop that fills the
+    // frame bottom behind the start row (GU47 phase 2).
     primitives.plane({
       name: "world-floor",
       size: [1, 1, 1],
       material: material.pbr({ color: th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
       castShadow: false,
       receiveShadow: true
-    }).position(0, -0.16, -20).rotate(-Math.PI / 2, 0, 0).scale([220, 220, 1]).runtime(game.runtimeNode("world-floor")),
+    }).position(0, -0.16, -20).rotate(diorama ? 0 : -Math.PI / 2, 0, 0).scale(diorama ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
@@ -651,9 +672,9 @@ function poolNodes(diorama: boolean) {
     out.push(
       // CH47-07: felt meadow, matte asphalt (lacquer dashes ride the detail pool), glossy clearcoat water,
       // gravel railbed and emissive lava, each one instanced pool (+5 draws).
-      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheenColor: "#ffffff" }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.06, envMapIntensity: 0.3 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
       instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92, metalness: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
-      instances.box({ name: "s-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.3 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.box({ name: "s-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.08, envMapIntensity: 0.55 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
       instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.97, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
       instances.box({ name: "s-lava", size: [1, 1, 1], material: material.emissive({ color: "#ffffff", emissive: "#ff6a2a", emissiveIntensity: L0.surfaces.lavaEmissive, roughness: 0.6 }), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false, instanceColorTarget: "both" }).runtime(game.runtimeNode("pool-lava"))
     );
@@ -1017,6 +1038,7 @@ function swapDioramaLook(ti: number): void {
   if (amb) attempt(() => n0.add(amb as never));
   const terrain = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy" ? th.palette.dressingA : th.palette.dressingB;
   attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 })));
+  backdropColors(ti).forEach((c, i) => attempt(() => n0.require(`backdrop-${i}`)?.setMaterial?.(backdropMaterial(c))));
   // Only the HDRI and the post preset snap; the key blends (CH47-19).
   const key = keyAt(ti, null, st.playerRow);
   try {
@@ -1134,7 +1156,7 @@ function swapLook(ti: number): void {
 const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
 
 /** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
-const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB"];
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB", "felt", "asphalt", "water", "gravel", "lava"];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
 let staticKey = "";
 /** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
@@ -1194,6 +1216,13 @@ function syncDioramaCamera(px: number, pz: number, py: number, warn: number): vo
   const fov = p.fov + (reducedMotion ? 0 : warn * 3);
   app.camera?.setPose({ position: p.position, target: p.target, fov });
   dioramaView.position = p.position; dioramaView.target = p.target; dioramaView.fov = fov;
+  const flat = backdropFlat(p.position, p.target, fov, FLOOR_Y);
+  for (let i = 0; i < flat.bands.length; i++) {
+    const h = app.nodes?.get(`backdrop-${i}`);
+    if (!h) continue;
+    h.setPosition(flat.x, flat.bands[i]!.y, flat.z);
+    h.setScale([BACKDROP_WIDTH, 1, flat.bands[i]!.height]);
+  }
   if (reducedMotion) return;
   const band = screenY([px, py + 0.4, pz], p.position, p.target, fov);
   if (band === null || Math.abs(band - lastBand) < 0.004) return;

@@ -2,6 +2,20 @@
 
 import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraSceneNode, AuraNodePhysicsSpec } from "./types.js";
 
+/**
+ * GU47 E-G phase 2: unwrap a node builder to its plain node. `AuraNodeBuilder`
+ * is the common case; `world.*` builders (`AuraWorldNodeBuilder`, which cannot
+ * extend this class without an import cycle) carry `toJSON()` and no `kind`.
+ * Pushing such a builder as-is left its `name()` method where a node name
+ * belongs and the compiler never saw `kind: "water"`.
+ */
+export function toSceneNode(node: AuraNodeBuilder<AuraSceneNode> | AuraSceneNode): AuraSceneNode {
+  if (node instanceof AuraNodeBuilder) return node.toJSON();
+  const candidate = node as unknown as { readonly toJSON?: unknown };
+  if (typeof candidate.toJSON === "function" && !("kind" in node)) return (candidate.toJSON as () => AuraSceneNode).call(node);
+  return node;
+}
+
 export class AuraNodeBuilder<TNode extends AuraSceneNode> {
   constructor(private readonly value: TNode) {}
 

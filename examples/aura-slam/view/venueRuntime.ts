@@ -3,7 +3,7 @@
  * - TT-L1 / TT-L2: the directional key is retuned with `setLight` (colour, intensity, position) and the floodlights are
  *   shown on the night court only (`setVisible`: a hidden light keeps its slot, so no shader rebuild);
  * - TT-E1: `app.lighting.setEnvironment` swaps the venue HDRI with a short dip cross-fade (only the active file is fetched);
- * - TT-E2: `app.atmosphere.setFog` sets or clears the venue fog; the desert's volumetric stage is enabled at High+ only;
+ * - TT-E2: `app.atmosphere.setFog` sets or clears the venue fog; a venue's volumetric stage (none since phase 2) runs at High+ only;
  * - TT-P1: `app.setOutput` carries the preset's tone-map operator and the venue exposure, `app.post.setEffect` the grade,
  *   bloom and vignette (E-C runtime post control).
  * Presentation only: nothing here reads or writes sim state.

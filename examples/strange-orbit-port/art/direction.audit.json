@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/strange-orbit-port/art/direction.ts",
-  "sourceSha256": "363dd867dcbb8585c8555e74d6aa810eb458a6dec4ebe508a6dab86b1f80edcd",
+  "sourceSha256": "7c09286121c0be5665597f2e4bde50847d5696d4bd75c3b1555943393ecb82f1",
   "id": "strange-orbit-port",
   "genre": "racing",
   "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
@@ -25,7 +25,7 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.75
+        "intensity": 0.95
       },
       {
         "type": "directional",
@@ -597,7 +597,7 @@
         "preset": "capture:nebula-gas-giant",
         "background": "sky"
       },
-      "exposureEV": 0
+      "exposureEV": 1.75
     },
     "framing": {
       "rig": "chase",
