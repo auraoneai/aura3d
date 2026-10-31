@@ -32,7 +32,7 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
       "spruit_sunrise", "outdoor-midday", "spruit_sunrise", "kloppenheim_06_puresky", "belfast_sunset_puresky", "deep_space_starfield"
     ]);
     expect(new Set(CHAPTER_LOOKS.map((r) => r.hdri ?? r.preset)).size).toBeGreaterThanOrEqual(4);
-    expect(CHAPTER_LOOKS[2]!.environmentIntensity).toBe(1.3);
+    expect(CHAPTER_LOOKS[2]!.environmentIntensity).toBe(1.0);
     expect(CHAPTER_LOOKS[5]!.environmentIntensity).toBe(1.8);
   });
 
@@ -76,10 +76,10 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
       expect(r.flare).toBe(false);
       expect(r.weather === "mist" || r.weather === "drizzle").toBe(false);
       expect(r.worldWater && r.rockTexture && r.solidBlocks).toBe(false);
-      expect(r.rockTexture && r.solidBlocks && !r.worldWater).toBe(true);
+      expect(r.rockTexture && r.solidBlocks && !r.worldWater && !r.skyFog).toBe(true);
     }
     const night = CHAPTER_LOOKS[5]!;
-    expect([night.worldWater, night.rockTexture, night.solidBlocks]).toEqual([true, false, false]);
+    expect([night.worldWater, night.rockTexture, night.solidBlocks, night.skyFog]).toEqual([true, false, false, true]);
   });
 });
 

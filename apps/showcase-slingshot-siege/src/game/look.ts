@@ -87,6 +87,12 @@ export interface ChapterLook {
    * box half extents) instead of the scaled stone-bridge GLB, whose open arches read as floating domes.
    */
   readonly solidBlocks: boolean;
+  /**
+   * GU47 phase 3: whether the look fog tints the sky node. With fog on, a sky at infinite distance takes the full fog
+   * colour, which is why the GU47 day skies read as a flat grey-beige wall (blind panel p2b); the day rows draw the
+   * gradient and clouds unfogged.
+   */
+  readonly skyFog: boolean;
 }
 
 /** Brand palette (PRD WP-22 identity). */
@@ -132,9 +138,9 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     timeOfDay: "crisp morning",
     preset: "outdoor-day",
     hdri: "spruit_sunrise",
-    environmentIntensity: 1.25,
+    environmentIntensity: 1.0,
     environmentRotationDeg: 330,
-    exposureEv: -0.1,
+    exposureEv: -0.35,
     sun: { elevationDeg: 38, azimuthDeg: 325, color: "#ffe6c8", intensity: 3.0 },
     shadowSoftness: 1.2,
     fog: { color: "#d8e6f0", near: 400, far: 4000 },
@@ -160,17 +166,18 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: DAY_ISLAND,
     worldWater: false,
     rockTexture: true,
-    rockTint: "#e8e2d4",
-    solidBlocks: true
+    rockTint: "#ffffff",
+    solidBlocks: true,
+    skyFog: false
   },
   {
     chapter: 1,
     timeOfDay: "bright noon",
     preset: "outdoor-day",
     hdri: "outdoor-midday",
-    environmentIntensity: 1.2,
+    environmentIntensity: 1.0,
     environmentRotationDeg: 340,
-    exposureEv: -0.15,
+    exposureEv: -0.4,
     sun: { elevationDeg: 62, azimuthDeg: 340, color: "#fff6e6", intensity: 3.2 },
     shadowSoftness: 0.9,
     fog: { color: "#d4e2ee", near: 400, far: 4000 },
@@ -196,17 +203,18 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: { ...DAY_ISLAND, turf: "#5b9140" },
     worldWater: false,
     rockTexture: true,
-    rockTint: "#efe4cc",
-    solidBlocks: true
+    rockTint: "#ffffff",
+    solidBlocks: true,
+    skyFog: false
   },
   {
     chapter: 2,
     timeOfDay: "breezy late morning after rain",
     preset: "outdoor-day",
     hdri: "spruit_sunrise",
-    environmentIntensity: 1.3,
+    environmentIntensity: 1.0,
     environmentRotationDeg: 315,
-    exposureEv: -0.05,
+    exposureEv: -0.3,
     sun: { elevationDeg: 48, azimuthDeg: 315, color: "#f4f6ff", intensity: 2.8 },
     shadowSoftness: 2.0,
     fog: { color: "#d2e2ec", near: 400, far: 4000 },
@@ -232,17 +240,18 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: { ...DAY_ISLAND, turf: "#438a45" },
     worldWater: false,
     rockTexture: true,
-    rockTint: "#e2e4dc",
-    solidBlocks: true
+    rockTint: "#ffffff",
+    solidBlocks: true,
+    skyFog: false
   },
   {
     chapter: 3,
     timeOfDay: "golden hour",
     preset: "golden-hour",
     hdri: "kloppenheim_06_puresky",
-    environmentIntensity: 1.2,
+    environmentIntensity: 1.0,
     environmentRotationDeg: 300,
-    exposureEv: -0.05,
+    exposureEv: -0.3,
     sun: { elevationDeg: 22, azimuthDeg: 300, color: "#ffc183", intensity: 3.0 },
     shadowSoftness: 1.4,
     fog: { color: "#f0c9a2", near: 400, far: 4000 },
@@ -268,17 +277,18 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: DAY_ISLAND,
     worldWater: false,
     rockTexture: true,
-    rockTint: "#f2dcc0",
-    solidBlocks: true
+    rockTint: "#ffffff",
+    solidBlocks: true,
+    skyFog: false
   },
   {
     chapter: 4,
     timeOfDay: "red sunset",
     preset: "golden-hour",
     hdri: "belfast_sunset_puresky",
-    environmentIntensity: 1.3,
+    environmentIntensity: 1.0,
     environmentRotationDeg: 295,
-    exposureEv: -0.1,
+    exposureEv: -0.35,
     sun: { elevationDeg: 16, azimuthDeg: 295, color: "#ff9a62", intensity: 3.0 },
     shadowSoftness: 1.6,
     fog: { color: "#d99a86", near: 400, far: 4000 },
@@ -304,8 +314,9 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: DAY_ISLAND,
     worldWater: false,
     rockTexture: true,
-    rockTint: "#f0d2bc",
-    solidBlocks: true
+    rockTint: "#ffffff",
+    solidBlocks: true,
+    skyFog: false
   },
   {
     chapter: 5,
@@ -341,7 +352,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     terrain: ISLAND,
     worldWater: true,
     rockTexture: false,
-    solidBlocks: false
+    solidBlocks: false,
+    skyFog: true
   }
 ];
 

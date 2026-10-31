@@ -256,7 +256,7 @@ export function chapterLookNode(row: ChapterLook): StageNode {
 /** The chapter's visible sky (SS47-E2): gradient by day, Preetham at golden hour and sunset, stars at night. */
 export function chapterSkyNode(row: ChapterLook): StageNode {
   const { model: skyModel, ...spec } = row.sky as { model: string } & Record<string, unknown>;
-  const options = { name: `siege sky ch${row.chapter}`, captureEnvironment: false, affectsFog: true, ...spec };
+  const options = { name: `siege sky ch${row.chapter}`, captureEnvironment: false, affectsFog: row.skyFog, ...spec };
   return skyModel === "preetham"
     ? sky.preetham(options as unknown as Parameters<typeof sky.preetham>[0])
     : sky.gradient(options as unknown as Parameters<typeof sky.gradient>[0]);
