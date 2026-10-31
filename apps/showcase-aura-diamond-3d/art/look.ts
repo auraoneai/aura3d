@@ -320,6 +320,19 @@ export const ORIGINAL_LOOKS: Readonly<Record<ParkId, { readonly baseLook: Diamon
   lunar: { baseLook: "polar-night", exposureEv: 0.16 }
 };
 
+/**
+ * GU47 phase 2 (lunar blind panel): parks that play in their 4.6.2 look unless `?look=` names a look. The blind panel
+ * judged the new Lunar Park worse than 4.6.2, so the Moon keeps the old look in normal play; every other park is GU47.
+ */
+export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>(["lunar"]);
+
+/** The look variant a park plays in: an explicit `?look=original|gu47` wins, otherwise the park's own default. */
+export function parkLookVariant(park: ParkId, search: string): DiamondLookVariant {
+  const look = new URLSearchParams(search).get("look");
+  if (look === "original" || look === "gu47") return look;
+  return ORIGINAL_LOOK_PARKS.has(park) ? "original" : "gu47";
+}
+
 /** `?look=original` restores the 4.6.2 look; anything else (or nothing) is the GU47 look. */
 export function resolveLookVariant(search: string): DiamondLookVariant {
   return new URLSearchParams(search).get("look") === "original" ? "original" : "gu47";
