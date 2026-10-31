@@ -136,7 +136,9 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     // maps settled at 25 s, 50.2 at 60 s, software WebGL2).
     environmentIntensity: 1.1,
     environmentRotationDeg: 35,
-    key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.6 },
+    // GU47 phase 3: 2.2 (was 2.6): round 6 read 70.6 at 25 s with the deck still sunlit (the low-sun shadow maps settle
+    // later on the software runner) and 49.3 at 60 s; a softer sun trims the lit frame and barely moves the shadowed one.
+    key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.2 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#8a5a2e", density: 0.02 },
     volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.4, godRayDensity: 0.45 },

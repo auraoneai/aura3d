@@ -17,7 +17,7 @@ describe("heatsink look table", () => {
 
   it("carries the HS-01 key rows, the cyan counter-rim and the VESPER-only up-fill", () => {
     expect(CIRCUIT_LOOKS.grand.key).toEqual({ color: "#ffb070", elevationDeg: 28, azimuthDeg: 120, intensity: 1.6 });
-    expect(CIRCUIT_LOOKS.dustfall.key).toEqual({ color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.6 });
+    expect(CIRCUIT_LOOKS.dustfall.key).toEqual({ color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.2 });
     expect(CIRCUIT_LOOKS.vesper.key).toEqual({ color: "#b9a4ff", elevationDeg: 18, azimuthDeg: 300, intensity: 1 });
     for (const id of CIRCUIT_ORDER) expect(CIRCUIT_LOOKS[id].rim).toEqual({ color: PALETTE.coolantCyan, intensity: 0.35 });
     expect(CIRCUIT_ORDER.filter((id) => CIRCUIT_LOOKS[id].upFill)).toEqual(["vesper"]);
