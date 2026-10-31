@@ -287,7 +287,7 @@ void main() {
     float t = clamp(dot(v, blobDir), 0.0, blobCast);
     float r = length(v - blobDir * t) / (blobRadius * mix(0.42, 0.62, t / blobCast));
     float k = t / blobCast;
-    float castA = (1.0 - smoothstep(0.35, 1.0, r)) * mix(1.0, 0.25, k * k);
+    float castA = (1.0 - smoothstep(0.55, 1.0, r)) * mix(1.0, 0.45, k * k);
     float feet = 1.0 - smoothstep(0.0, 0.55, length(v) / blobRadius);
     a = max(castA, feet) * blobAlpha;
   }
@@ -388,7 +388,7 @@ void main() {
   vec3 skyRefl = mix(lookFogColor, lookSunColor, pow(rs, 4.0));
   float plateMask = top * mix(0.35, 1.0, joint) * lookMode;
   col = mix(col, skyRefl, (0.06 + 0.3 * fres) * plateMask);
-  col += lookSunColor * (pow(rs, 60.0) * 0.55 + pow(rs, 12.0) * 0.08) * plateMask;
+  col += lookSunColor * (pow(rs, 40.0) * 0.6 + pow(rs, 8.0) * 0.12) * plateMask;
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;
