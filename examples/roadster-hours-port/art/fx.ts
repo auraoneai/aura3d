@@ -114,7 +114,8 @@ export function registerSaltwindFx(effects: SaltwindPresetRegistry | undefined, 
 }
 
 /** The signal-red nitro trail on the roadster (E-F `app.effects.trail`); narrower at low speed. */
-export const NITRO_TRAIL: AuraTrailOptions = { width: 0.5, life: 0.35, color: SALTWIND_PALETTE.signalRed, widthOverSpeed: [20, 70] };
+// phase 3: 0.5 m x 0.35 s drew a signal-red slab from the car to the frame edge at speed; now a thin short streak
+export const NITRO_TRAIL: AuraTrailOptions = { width: 0.14, life: 0.16, color: SALTWIND_PALETTE.signalRed, widthOverSpeed: [20, 70] };
 
 /** Presets the step's events burst, in order (one per mapped event). */
 export function fxForEvents(events: readonly { readonly type: string }[]): SaltwindFxKind[] {

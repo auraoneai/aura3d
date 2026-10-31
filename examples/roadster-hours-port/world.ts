@@ -563,7 +563,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- road, kickers, roofline shortcuts ---- */
   const road = strip(level, 0, level.length + 80, 3, laterals, () => 0, (mid) => !inGap(level, mid), width);
-  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.92, 0.9, 0.82], glow)) }).runtime({ id: "road" }));
+  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.92, 0.9, 0.82], look.row ? [0.8, 0.77, 0.69] : glow)) }).runtime({ id: "road" }));
   level.lineups.forEach((lineup, i) => {
     const k = lineup.kicker;
     const wedge = strip(level, k.s, k.s + k.len, 1.5, [-k.w, -k.w / 2, 0, k.w / 2, k.w], (s) => {
@@ -621,7 +621,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const data = meshyGeometry("roadster")!;
     builder.add(geometry.custom(
       geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
-      { name: "car-body", material: meshyMaterial("roadster", row ? { roughness: 0.34, metallic: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.08 } : { roughness: 0.42, metallic: 0.18 }) }
+      { name: "car-body", castShadow: true, material: meshyMaterial("roadster", row ? { roughness: 0.34, metallic: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.08 } : { roughness: 0.42, metallic: 0.18 }) }
     ).runtime({ id: "car-body" }));
   }
 

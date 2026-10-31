@@ -152,8 +152,10 @@ void main() {
   albedo = mix(albedo, mix(vec3(0.34, 0.33, 0.31), vec3(0.5, 0.18, 0.14), rumble * 0.6), curb);
   rough = mix(rough, 0.85, curb);
   float neon = max(lineMask(lat, 0.915, 0.021, aaL), lineMask(lat, -0.915, 0.021, aaL));
-  albedo = mix(albedo, glowColor * 0.35, neon);
-  vec3 emis = glowColor * neon * 2.6;
+  // edge line: ?look=original keeps today's cyan neon (paint 0.35, glow 2.6); GU47 phase 3 paints a reflective salt-white
+  // edge line with a faint sheen (the cyan neon was the top "same game" tell against the other racers)
+  albedo = mix(albedo, glowColor * neonPaint, neon);
+  vec3 emis = glowColor * neon * neonGain;
 
   // detail normal (0 on ?look=original): phase 3 halves it, the 1.2 strength read as rippled water (rubric materials)
   vec3 N = normalize(normalize(vNormal) + vec3(dt.y, 0.0, -dt.z) * 0.55 * (1.0 - paint) * (1.0 - curb));
@@ -167,6 +169,12 @@ void main() {
     ? (1.0 - smoothstep(-2.8, -1.6, along)) * exp(min(along + 2.2, 0.0) / 2.4) * exp(-sq(side / 1.15))
     : step(along, 0.0) * exp(along / 7.0) * exp(-sq(side / 2.2))) * beamAmt * tailAmt;
   emis += albedo * vec3(1.0, 0.92, 0.75) * beam * 2.6 + vec3(1.0, 0.1, 0.05) * tail * 0.5;
+  // GU47 phase 3 (Halo, lampPool > 0): mercury street-lamp pools under the poles (every 64 m from s = 90, alternating
+  // sides) plus a faint city-glow wash, so the asphalt behind the car reads at blue hour; 0 elsewhere and on ?look=original
+  float dLamp = mod(arc - 90.0 + 32.0, 64.0) - 32.0;
+  float lampSide = mod(floor((arc - 90.0 + 32.0) / 64.0), 2.0) < 0.5 ? 0.85 : -0.85;
+  float pool = exp(-sq(dLamp / 13.0)) * exp(-sq((lat - lampSide) / 0.9));
+  emis += albedo * vec3(0.78, 0.88, 1.0) * lampPool * (0.35 + 2.2 * pool);
 
   gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo, N, V, rough, 0.0, emis);
@@ -460,8 +468,25 @@ void main() {
   vec3 sharp = warm * win * on * 1.25 * facade;
   vec3 avg = warm * 0.5 * 0.38 * 0.6 * 1.25 * facade;
   vec3 emis = mix(avg, sharp, fade);
+  vec3 body = vec3(0.035, 0.042, 0.07);
+  float bodyRough = 0.6;
+  if (towerStyle > 0.5) {
+    // GU47 phase 3 (Halo identity: mercury-white and sea-glass, no amber): sea-glass curtain walls with continuous ribbon
+    // windows per floor, lit in long runs, plus white spandrel bands; replaces the punched amber/blue window grid
+    float floorY = uvw.y / 3.6;
+    float fy = fract(floorY);
+    float run = floor(uvw.x / 14.0);
+    float litRun = step(0.45, rhHash(vec2(run, floor(floorY)) + 5.0)) * (0.6 + 0.4 * rhHash(vec2(run, floor(floorY)) + 9.0));
+    float ribbon = smoothstep(0.22, 0.3, fy) * (1.0 - smoothstep(0.78, 0.86, fy));
+    vec3 tone = mix(vec3(0.78, 0.9, 0.95), vec3(0.55, 0.85, 0.8), rhHash(vec2(run, 2.0)));
+    vec3 sharpG = tone * ribbon * litRun * 1.1 * facade;
+    vec3 avgG = tone * 0.6 * 0.5 * 1.1 * facade;
+    emis = mix(avgG, sharpG, fade);
+    body = mix(vec3(0.16, 0.2, 0.22), vec3(0.06, 0.12, 0.13), ribbon);
+    bodyRough = mix(0.5, 0.15, ribbon);
+  }
   gSunShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = lightSurface(vec3(0.035, 0.042, 0.07), N, V, 0.6, 0.25, emis);
+  vec3 lit = lightSurface(body, N, V, bodyRough, 0.25, emis);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
 

@@ -78,6 +78,8 @@ export interface SaltwindLookRow {
     readonly beam: number;
     /** GU47 phase 3: red tail-lamp glow on the road behind the car (soft, about 2 m long); `?look=original` keeps today's 7 m pool. */
     readonly tail: number;
+    /** GU47 phase 3: street-lamp pools and city-glow wash on the asphalt (Halo only). */
+    readonly lampPool: number;
     /** RH47-10: CC0 detail maps (asphalt plus one rock set) and their strength on the custom road and terrain surfaces. */
     readonly detail: { readonly rock: "limestone" | "sandstone"; readonly amount: number };
   };
@@ -119,12 +121,12 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0.12,
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0.12, lampPool: 0,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
     post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0.025, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
-    grade: { exposure: 1.14, contrast: 1.1, saturation: 1.08, temperature: 0.06, tint: 0 },
+    grade: { exposure: 1.24, contrast: 1.1, saturation: 1.08, temperature: 0.06, tint: 0 },
     shadow: SHADOW,
     spray: { kind: "salt", color: "#eef1ee", alpha: 0.38, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
     wind: [6, -1.5]
@@ -141,17 +143,17 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     fill: { kind: "violet-rim", color: "#8a72c8", intensity: 0.85, elevationDeg: 18, azimuthDeg: 150 },
     gantryPoints: null,
     sky: { zenith: "#3b4f86", horizon: "#f2a66e", band: "#e9b98c", bandAmount: 0.4, clouds: [0.35, 0.25], night: 0 },
-    ambient: { sky: "#9aa2cc", skyGain: 0.72, ground: "#c47c4e", groundGain: 0.5 },
+    ambient: { sky: "#9aa2cc", skyGain: 0.95, ground: "#c47c4e", groundGain: 0.7 },
     fog: { color: "#ecb488", near: 120, far: 1700, density: 0.00055 },
     surfaces: {
-      asphalt: [0.11, 0.09, 0.082], roadGloss: 0.6,
+      asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0.14,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0.14, lampPool: 0,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
     post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0.75, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
-    grade: { exposure: 1.3, contrast: 1.08, saturation: 1.06, temperature: 0.12, tint: 0.03 },
+    grade: { exposure: 1.5, contrast: 1.06, saturation: 1.06, temperature: 0.12, tint: 0.03 },
     shadow: SHADOW,
     spray: { kind: "sand", color: "#e2b88a", alpha: 0.3, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
     wind: [5, 0.5]
@@ -171,14 +173,14 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     ambient: { sky: "#6680bc", skyGain: 0.46, ground: "#8fb3bd", groundGain: 0.42 },
     fog: { color: "#3c5084", near: 110, far: 1500, density: 0.0006 },
     surfaces: {
-      asphalt: [0.08, 0.086, 0.104], roadGloss: 0.42,
+      asphalt: [0.1, 0.106, 0.124], roadGloss: 0.42,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0.3,
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0.3, lampPool: 0.9,
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
     post: { bloom: { intensity: 0.45, threshold: 1.05, scatter: 0.6 }, flare: 0, grain: 0.03, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.22 },
-    grade: { exposure: 1.12, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
+    grade: { exposure: 1.02, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
     shadow: SHADOW,
     spray: { kind: "mist", color: "#c9dbe6", alpha: 0.12, density: 0.5, windSpeed: 5, size: [0.15, 0.6], height: [0.5, 8] },
     wind: [3.5, -0.5]

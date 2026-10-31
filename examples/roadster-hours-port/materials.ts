@@ -34,6 +34,8 @@ export const roadSpec = (look: Look, line: Rgb, glow: Rgb): CustomSpec => ({
   uniforms: {
     asphalt: c3(look.asphalt), lineColor: c3(line), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
     carPos: v3([0, -1000, 0]), carDir: { type: "vec2" as const, value: [0, -1] as [number, number] }, beamAmt: f32(look.beam),
+    neonPaint: f32(look.row ? 1 : 0.35), neonGain: f32(look.row ? 0.12 : 2.6),
+    lampPool: f32(look.row?.surfaces.lampPool ?? 0),
     tailAmt: f32(look.row ? look.row.surfaces.tail : 0.25), tailSoft: f32(look.row ? 1 : 0),
     roadDetail: { type: "texture2d" as const, value: DETAIL_ASSETS.asphalt }, detailAmt: f32(detailAmount(look)), detailTiles: v2(DETAIL_TILES.road),
     ...atmosphereUniforms(look)
@@ -87,7 +89,7 @@ export const terrainSpec = (look: Look): CustomSpec => ({
 export const towerSpec = (look: Look): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: TOWER_FRAGMENT },
-  uniforms: { ...atmosphereUniforms(look) },
+  uniforms: { towerStyle: f32(look.row ? 1 : 0), ...atmosphereUniforms(look) },
   side: "double"
 });
 
