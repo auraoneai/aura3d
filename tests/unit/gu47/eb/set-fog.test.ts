@@ -47,6 +47,22 @@ describe("GU47 E-B setFog on scenes with fog nodes", () => {
     expect(atmosphere.resolveFog(3)?.density).toBeCloseTo(0.3, 6);
   });
 
+  it("a blend leaves keys neither spec sets absent, so merged defaults stay finite (phase 2, roadster-rush NaN fog)", () => {
+    const atmosphere = new LiveAtmosphere();
+    atmosphere.trackFogNodes([fogNode("f", { density: 0.1, color: "#808080" })]);
+    atmosphere.updateFogVisibility(visibleAll("f"));
+    atmosphere.resolveFog(0);
+    atmosphere.setFog({ density: 0.3, color: "#204060" }, { transitionSeconds: 2, overrideSceneFog: true });
+    atmosphere.resolveFog(1);
+    const mid = atmosphere.resolveFog(2)!;
+    expect(mid.density).toBeCloseTo(0.2, 6);
+    for (const key of ["heightDensity", "heightFalloff", "heightReference", "start", "near", "far"]) {
+      expect(Object.prototype.hasOwnProperty.call(mid, key)).toBe(false);
+    }
+    const merged = { heightDensity: 0.04, heightFalloff: 0.2, ...mid };
+    expect(Number.isFinite(merged.heightDensity * merged.heightFalloff)).toBe(true);
+  });
+
   it("a height-fog scene keeps its node unless overrideSceneFog is true", () => {
     const atmosphere = new LiveAtmosphere();
     atmosphere.trackFogNodes([fogNode("h", { mode: "height", heightDensity: 0.02 }, "height-fog")]);

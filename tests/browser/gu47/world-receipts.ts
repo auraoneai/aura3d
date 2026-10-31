@@ -11,7 +11,7 @@ import { atmosphere, camera, createAuraApp, lights, material, primitives, scene,
 
 export type Gu47WorldVariant =
   | "sky-none" | "sky-day-clouds" | "sky-night-stars"
-  | "fog-off" | "fog-height"
+  | "fog-off" | "fog-height" | "fog-solid"
   | "water-off" | "water-lake";
 
 export interface Gu47WorldFrame {
@@ -33,6 +33,20 @@ export interface Gu47WorldComparison {
   readonly meanAbsDeltaRgb: number;
   readonly changedFraction: number;
   readonly region?: { readonly meanAbsDeltaRgb: number; readonly meanLumaDelta: number };
+}
+
+/**
+ * How far a region moved toward the fog colour, 0 (untouched) .. 1 (fully
+ * fogged): per pixel, the projection of (fogged - off) onto (solid - off),
+ * where `solid` is the same scene under fog dense enough to paint every
+ * surface the fog colour. Pixels the solid fog leaves alone (the colour
+ * background, which only a sky pass fogs) are skipped. Unlike a raw RGB delta
+ * this does not depend on how far a surface's own colour is from the fog
+ * colour, so a pale far column and the dark near ground compare fairly.
+ */
+export interface Gu47FogAmount {
+  readonly meanAmount: number;
+  readonly pixels: number;
 }
 
 export interface Gu47RegionStats {
@@ -71,6 +85,7 @@ function variantScene(id: Gu47WorldVariant) {
     case "sky-none":
     case "fog-off":
     case "fog-height":
+    case "fog-solid":
     case "water-off":
       return body();
     case "sky-day-clouds":
@@ -157,6 +172,10 @@ async function render(id: Gu47WorldVariant): Promise<Gu47WorldFrame> {
     if (id === "fog-height") {
       atmosphere.setFog(app, { mode: "height", color: "#a9b8c8", density: 0.05, heightDensity: 0.4, heightFalloff: 0.3, heightReference: 0, affectsBackground: true });
     }
+    if (id === "fog-solid") {
+      // Reference for fogAmount(): every surface reaches the fog colour (start 0, no height term, tau >= 50 at 1 m).
+      atmosphere.setFog(app, { mode: "exp", color: "#a9b8c8", density: 50, start: 0, affectsBackground: true });
+    }
     await settle(app, 6);
     return await capture(app, id);
   } finally {
@@ -214,4 +233,24 @@ function compare(a: string, b: string, rect?: Rect): Gu47WorldComparison {
   };
 }
 
-(window as unknown as { __GU47_WORLD_RECEIPTS__: unknown }).__GU47_WORLD_RECEIPTS__ = { render, compare, stats };
+function fogAmount(off: string, fogged: string, solid: string, rect: Rect, minContrast = 12): Gu47FogAmount {
+  const a = region(off, rect), b = region(fogged, rect), c = region(solid, rect);
+  if (a.image.width !== b.image.width || a.image.width !== c.image.width) throw new Error(`fogAmount(${off}, ${fogged}, ${solid}): mismatched frames`);
+  let sum = 0, pixels = 0;
+  for (let y = a.y0; y < a.y1; y += 1) for (let x = a.x0; x < a.x1; x += 1) {
+    const i = (y * a.image.width + x) * 4;
+    let dot = 0, len2 = 0;
+    for (let k = 0; k < 3; k += 1) {
+      const base = a.image.data[i + k]!;
+      const toFog = c.image.data[i + k]! - base;
+      dot += (b.image.data[i + k]! - base) * toFog;
+      len2 += toFog * toFog;
+    }
+    if (Math.sqrt(len2) < minContrast) continue;
+    sum += Math.min(Math.max(dot / len2, 0), 1);
+    pixels += 1;
+  }
+  return { meanAmount: pixels > 0 ? sum / pixels : 0, pixels };
+}
+
+(window as unknown as { __GU47_WORLD_RECEIPTS__: unknown }).__GU47_WORLD_RECEIPTS__ = { render, compare, stats, fogAmount };
