@@ -1,6 +1,6 @@
 # Craterline GP: final screenshots (after the UI and render fixes)
 
-- **Build:** head of `origin/game-rework` at `0d965903c` (fetched at the start of this capture; includes the group B UI fixes, the Gridlock first-frame fix and the athlete repaint). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-orbit.spec.ts` (unchanged from the earlier retake).
+- **Build:** GU47 phase 3 (4.7.1) `gu47/g15` at `619a21232`, remote run `g15p3-r8-2..5` (tag `g15p3r8-1324`, picassostagingacr); capture code `tests/browser/shotsb-lib.ts` + `tests/browser/shotsb-orbit.spec.ts` (unchanged). Previous retake: `origin/game-rework` `0d965903c`.
 - **Runner:** remote Azure ACR task `finb-orbit` (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac.
 - **Viewports:** 1280x720 and 390x844 (touch emulation, scale 1). Card images: `card.jpg` is 720x450 (downscaled from `card@2x.jpg`, 1440x900 captured at 1x device scale).
 - **Method:** states are driven through the game QA hooks (manual stepping) so frames are deterministic; the title frame is taken from the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors (empty for every pass).

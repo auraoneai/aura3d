@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p3-r8/strange-orbit-port/frames/g15p3-r8-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "a593f39b0fc6d2b0e75606a5d1330c66ba014301dd5f99f77da634f740855112"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/boost-1280.jpg",
+      "sha256": "95ad10aba57d7b5453bd9c973881226d0de0122ce648fc1704d99b2734ff1da8"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/mid-action-1280.jpg",
+      "sha256": "4d7ed288322597ed34744bd6c754c08ebaf946fcce890a124aa54b3de60db288"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/start-1280.jpg",
+      "sha256": "6995f881c7b3d1e020719374b19458f92ef290947c67af0141f5684d402f3ca1"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 5.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 4,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The bike and astronaut read as near-uniform white-cyan with blown highlights and almost no form shading. There is no directional key from a low sun. Ambient fill dominates every frame, so the 'golden-hour' recipe is absent."
+    },
+    {
+      "category": "shadows",
+      "seen": "The bike shows only a faint purple smudge under it on the terracotta ground in frame 1. Rocks, posts and the track ribbon cast no visible shadows, so objects float with no grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The white and teal fairing is fully matte, with no environment reflection of the nebula sky or the moon. The chrome-looking wheel hub has no specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stylized setting has a nebula skybox, a large pale moon, a beaded ribbon track on stilts, and floating low-poly boulders over a starfield void. It reads as a coherent concept. However, the ground plane is a smeared, blurry terracotta texture with no surface detail, and the world feels sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant mountains and the track carry slight haze. There is no real depth fog falloff: mid and far boulders hold the same contrast. There is no dust, trails or particles behind the bike, despite the 'stardust' theme."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The bike reads as flat plastic. The ground texture is low-resolution and smeared. Rocks are flat-shaded facets with simple color variation. There is no roughness or metal differentiation anywhere."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The astronaut and sidecar bike are a reasonable hero asset. The rocks are basic icosphere chunks, and the poles and posts are plain tapered cylinders scattered without design intent."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 2 the subject is centered at roughly 15% of the frame, which is acceptable. In frame 4 the countdown '3' overlaps the moon, and the HUD panels collide with the letterbox. In frame 2, the 'Leave a little stardust' text sits directly over the bike."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase framing at an FOV near 60 works in frame 2. In frame 3 the bike rolls and drifts low in frame during zero-G, losing a readable horizon."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy soft bloom and haze wash out contrast across all frames. The letterbox bars in frame 4 crop the HUD itself: the position, lap and speed panels are cut off, and the speed digit is sliced. There is no film grade, vignette or warm tone curve."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The dark rounded HUD panels are clean and readable, showing position, lap, race time, standings, the stardust bar and speed. However, the center-screen tutorial text overlays the bike. The cinematic bars clip the panels during the countdown."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

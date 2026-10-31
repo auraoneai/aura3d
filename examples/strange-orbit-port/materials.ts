@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import {
   ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
-  TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
+  RIDER_SHADOW_FRAGMENT, RIDER_SHADOW_VERTEX, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
 } from "./shaders";
 import type { OrbitLook } from "./art/look";
 
@@ -80,6 +80,16 @@ export const atmosphereSpec = (color: Rgb): CustomSpec => ({
   blending: "additive"
 });
 
+/** GU47 phase 3: the soft rider shadow quad (gouache only). */
+export const riderShadowSpec = (strength = 0.7): CustomSpec => ({
+  glsl: { vertex: RIDER_SHADOW_VERTEX, fragment: RIDER_SHADOW_FRAGMENT },
+  uniforms: { shadowStrength: { type: "f32", value: strength } },
+  transparent: true,
+  depthWrite: false,
+  side: "double",
+  blending: "normal"
+});
+
 /** One of each distinct program the scene uses (solid/mineral/points have two variants each; lit ones also per look). */
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "track-original", spec: trackSpec("original") },
@@ -96,5 +106,6 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "points-normal", spec: pointsSpec(false) },
   { name: "veil", spec: veilSpec() },
   { name: "sky", spec: skySpec() },
-  { name: "atmosphere", spec: atmosphereSpec([1, 0.7, 0.55]) }
+  { name: "atmosphere", spec: atmosphereSpec([1, 0.7, 0.55]) },
+  { name: "rider-shadow", spec: riderShadowSpec() }
 ];

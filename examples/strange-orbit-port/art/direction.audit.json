@@ -1,10 +1,10 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/strange-orbit-port/art/direction.ts",
-  "sourceSha256": "7c09286121c0be5665597f2e4bde50847d5696d4bd75c3b1555943393ecb82f1",
+  "sourceSha256": "cd71e4990cd9ba94cc206b402f1df2d5590a4c72d7ea97a66dedbfdf299d17b9",
   "id": "strange-orbit-port",
   "genre": "racing",
-  "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
+  "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
   "palette": {
     "primary": [
       "#d98464",
@@ -30,7 +30,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3
+        "intensity": 3.5
       },
       {
         "type": "directional",
@@ -382,14 +382,6 @@
         "practical": false
       },
       {
-        "node": "planet-ring",
-        "practical": false
-      },
-      {
-        "node": "planet-ring-edge",
-        "practical": false
-      },
-      {
         "node": "second-moon",
         "practical": false
       },
@@ -543,6 +535,30 @@
         "practical": false
       },
       {
+        "node": "rider-shadow-0",
+        "practical": false
+      },
+      {
+        "node": "rider-shadow-1",
+        "practical": false
+      },
+      {
+        "node": "rider-shadow-2",
+        "practical": false
+      },
+      {
+        "node": "rider-shadow-3",
+        "practical": false
+      },
+      {
+        "node": "rider-shadow-4",
+        "practical": false
+      },
+      {
+        "node": "rider-shadow-5",
+        "practical": false
+      },
+      {
         "node": "gravity-halo",
         "practical": false
       }
@@ -564,9 +580,9 @@
       },
       {
         "file": "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md#references",
-        "source": "generic reference: retro space-age planetary illustration with a banded ringed gas giant on the horizon",
+        "source": "generic reference: retro space-age planetary illustration with a banded gas giant on the horizon",
         "licence": "reference-only",
-        "why": "A huge banded peach planet with a ring filling one side of the sky, painted rather than photographic"
+        "why": "A huge banded peach planet filling one side of the sky, painted rather than photographic"
       },
       {
         "file": "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md#references",
@@ -732,7 +748,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
+    "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
     "criticalCategories": [
       "lighting",
       "shadows",

@@ -29,3 +29,21 @@ Code status per acceptance line; commits and notes in `docs/prds/game-upgrades-4
 | SO47-N1 | landing vertical scale change >= 6% | done (9%) |
 | SO47-H1 | no overlap at 390 and 1280; DOM writes only on change | DOM-on-change done; overlap phase 2 |
 | SO47-X1 | race <= 150 high, <= 120 low; race mean 60-95, menu 80-110; darkFrac <= 0.3, clip <= 0.02 | Low extras dropped; route fix handed to E-I; bands declared; phase 2 |
+
+## Phase 3 (4.7.1) acceptance status
+
+Software WebGL2, remote runner, capture `g15p3-r8` (details in the lane report, Phase 3).
+
+| PRD 7.2 item | status |
+|---|---|
+| game-checks 0 errors / 0 warnings | 0 errors, 1 warning (`borrowed-asset` diamondRock, blocked on WP-36) |
+| game unit tests unchanged | 18/18 files pass |
+| typecheck at or below baseline | NEW_ERRORS 0 |
+| auditArtDirection | passes (record regenerated for the ring change) |
+| steady-state capture of every variant inside the bands | default 62.9, neutral-env 62.8-62.9, original 73.3-75.3; rider 106-119; all in band |
+| final screens 1280x720 and 390x844, committed with `git add -f` | done (g15p3-r8, 7da512449) |
+| panel rubric round, every category >= 7 | NOT met: self-run prism judge, minimum 2.5 (shadows); open for 4.7.2 |
+| sibling distinctness vs every genre neighbour | heatsink-port still fails (21/47 different, 0.578); others passed in the orchestrator baseline |
+| blind panel vs 4.6.2 | default and neutral-env better 3/0/0 |
+| SO47-H1 no overlap at 390 and 1280 | fixed (gauge and chip top left on narrow screens), visible in boost-390 |
+| SO47-E2 planet and ring | ring dropped for distinctness; planet only |

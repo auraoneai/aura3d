@@ -28,7 +28,7 @@ import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
-import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { atmosphereSpec, mineralSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
@@ -95,6 +95,10 @@ function dynamicFrom(m: MeshData, withPigments: boolean) {
 /** The look `buildWorld` is building (set once at its start; the material helpers below bake the matching shader variant). */
 let activeLook: OrbitLook = "gouache";
 const trackMaterial = () => material.custom(trackSpec(activeLook));
+/** GU47 phase 3: rider shadow quads (player + 5 rivals), length and width in metres at scale 1. */
+const RIDER_SHADOWS = 6;
+const SHADOW_LENGTH = 4.2;
+const SHADOW_WIDTH = 1.5;
 const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra, activeLook));
 const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal, activeLook));
 const pointsMaterial = (additive: boolean) => material.custom(pointsSpec(additive));
@@ -291,10 +295,11 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
-  builder.add(geometry.custom(dynamicFrom(course.track, true), { name: "track", material: trackMaterial() }));
-  builder.add(geometry.custom(dynamicFrom(course.rails, false), { name: "rails", material: solidMaterial(hexLinear("#e5e4b9"), hexLinear("#9ebdae"), 0.22) }));
+  builder.add(geometry.custom(dynamicFrom(course.track, true), { name: "track", material: trackMaterial() }).runtime({ id: "track" }));
+  // GU47 phase 3 (distinctness: "teal glowing track edges" read as Thermal Drift): gouache rails glow chalk-amber.
+  builder.add(geometry.custom(dynamicFrom(course.rails, false), { name: "rails", material: solidMaterial(hexLinear("#e5e4b9"), hexLinear(look === "gouache" ? "#ecb75f" : "#9ebdae"), 0.22) }));
   builder.add(geometry.custom(dynamicFrom(buildIslands(), true), { name: "islands", material: mineralMaterial(hexLinear("#b9c5e1"), true) }));
-  builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }));
+  builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }).runtime({ id: "ramps" }));
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
   /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
@@ -307,7 +312,7 @@ export function buildWorld(options: WorldOptions): World {
     position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
-    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#d9895f"), 0, look === "original" ? 0.045 : 0.026)
+    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#c8683f"), 0, look === "original" ? 0.045 : 0.034)
   }).runtime({ id: "planet" }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
@@ -435,11 +440,13 @@ export function buildWorld(options: WorldOptions): World {
       receiveShadow: false,
       material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
     }));
-    builder.add(instances.cone({
+    // GU47 phase 3 (distinctness vs Thermal Drift: "spiky crystal cones"): the spires are eroded terracotta hoodoos
+    // (truncated 7-sided columns, warm umber/ochre), not crystal spikes; still one instanced draw.
+    builder.add(instances.cylinder({
       name: "rim-spires",
-      params: { radius: 0.5, height: 1, radialSegments: 5 },
+      params: { radiusTop: 0.24, radiusBottom: 0.5, radialSegments: 7 },
       transforms: scatter.spires.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
-      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#6f5a74" : "#9a6650")),
+      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#7a4f3e" : i % 3 === 1 ? "#b06e4e" : "#c9925f")),
       castShadow: false,
       receiveShadow: false,
       material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
@@ -559,8 +566,8 @@ export function buildWorld(options: WorldOptions): World {
       // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
       const tint = look === "gouache"
         ? [{
-          ...(i === 0 ? { clearcoat: 0.6, clearcoatRoughness: 0.25 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
-          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.5 : 0.35 }
+          ...(i === 0 ? { clearcoat: 1, clearcoatRoughness: 0.12 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
+          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
       builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
@@ -622,6 +629,19 @@ export function buildWorld(options: WorldOptions): World {
       : primitives.capsule({ name: "ghost-rider", size: [0.5, 1.5, 0.5], material: solidMaterial(hexLinear("#9fe8ff"), hexLinear("#5fd8ff"), 0.8, 0, { transparent: true, blending: "additive", depthWrite: false }) }).runtime({ id: "ghost-rider" }));
   }
 
+  /* ---- GU47 phase 3 (gouache): soft rider shadow quads (+6 draws; unit quad in local xz, scaled per frame) ---- */
+  const riderShadows = look === "gouache" && !off.has("shadows");
+  if (riderShadows) {
+    for (let i = 0; i < RIDER_SHADOWS; i++) {
+      builder.add(geometry.custom(geometry.dynamic({
+        positions: f32([-0.5, 0, -0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, -0.5, 0, 0.5]),
+        normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
+        uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
+        indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
+      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.85 : 0.65)) }).runtime({ id: `rider-shadow-${i}` }));
+    }
+  }
+
   /* ---- gravity halo ---- */
   builder.add(primitives.ring({
     name: "gravity-halo",
@@ -632,7 +652,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights") });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows });
     }
   };
 }
@@ -650,6 +670,7 @@ interface BindInput {
   readonly look: OrbitLook;
   readonly high: boolean;
   readonly headlight: boolean;
+  readonly riderShadows: boolean;
 }
 
 interface Pose { position: Vec3; forward: Vec3; up: Vec3 }
@@ -795,6 +816,37 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     riderShown[index] = true;
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
   };
+  /**
+   * GU47 phase 3 (gouache): a soft shadow quad under each shown rider, its long axis laid away from the key along the
+   * road (presentation only; the quads never touch the sim).
+   */
+  const sunDir = new Vec3(...row.key.position).normalize();
+  const shadowShown: boolean[] = Array.from({ length: RIDER_SHADOWS }, () => true);
+  /** Riders on the road this frame (airborne, zero-G and loop riders drop their shadow quad). */
+  const riderGrounded: boolean[] = Array.from({ length: RIDER_SHADOWS }, () => true);
+  const updateRiderShadows = (scale: number): void => {
+    if (!input.riderShadows) return;
+    for (let i = 0; i < RIDER_SHADOWS; i++) {
+      const h = node(`rider-shadow-${i}`);
+      const show = riderShown[i]! && riderGrounded[i]!;
+      if (show !== shadowShown[i]) { h.setVisible(show); shadowShown[i] = show; }
+      if (!show) continue;
+      const up = riderUp[i]!;
+      const ground = riderAt[i]!.clone().addScaledVector(up, -0.8 * scale);
+      const away = sunDir.clone().multiplyScalar(-1);
+      away.addScaledVector(up, -away.dot(up));
+      if (away.lengthSq() < 1e-6) away.copy(riderFwd[i]!);
+      away.normalize();
+      const across = new Vec3().crossVectors(away, up).normalize();
+      const len = SHADOW_LENGTH * scale;
+      // uv.x 0.3 (the blob) sits under the bike: the quad starts 0.3 of its length behind the ground point.
+      const centre = ground.addScaledVector(away, len * 0.2).addScaledVector(up, 0.045);
+      const e = euler(basisMatrix(away, up, across));
+      h.setPosition(centre.x, centre.y, centre.z);
+      h.setRotation(e[0], e[1], e[2]);
+      h.setScale([len, 1, SHADOW_WIDTH * scale]);
+    }
+  };
   /** SO47-L4: headlight 0.6 m ahead aimed 6 m down the road; tail points behind the nearest visible rivals. */
   const updateRiderLights = (menu: boolean): void => {
     if (!input.headlight) return;
@@ -815,6 +867,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
   function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void {
     const menu = state.phase === "menu";
+    // GU47 phase 3 (gouache): the parked grid idles on its hover pads (a few cm, none on reduced motion; presentation only).
+    const menuHover = (i: number): number => (input.look === "gouache" && !input.reducedMotion ? 0.07 * (1 + Math.sin(time * 2.1 + i * 1.7)) : 0);
     const sForPlayer = menu ? 35 : state.s;
     const scale = menu ? 1.3 : 1.15;
 
@@ -826,7 +880,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     } else if (state.loop) {
       playerPose = loopFramePose(state);
     } else {
-      const ground = menu ? 0 : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
+      const ground = menu ? menuHover(0) : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
       // SO47-N1 (gouache): the drawn rider leans up to ~25 degrees (1.8x the sim's 0.24 rad lean; presentation only).
       playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : state.lean * (input.look === "gouache" ? LEAN_GAIN : 1));
     }
@@ -854,6 +908,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       rebound.t = Math.max(0, rebound.t - dt);
     }
     placeRider(0, playerPose, scale, pitch, roll);
+    riderGrounded[0] = !state.flight && !state.loop && !state.air;
 
     /* time-trial ghost */
     if (input.ghost) {
@@ -878,11 +933,13 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       showRider(i + 1);
       const s = menu ? 35 + 10 + i * 5 : rival.s;
       const lane = menu ? (i % 3 - 1) * 3 : rival.lane;
-      const ground = menu ? 0 : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
+      const ground = menu ? menuHover(i + 1) : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
       placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : rival.lean ?? 0), scale);
+      riderGrounded[i + 1] = menu || !rival.air;
     }
 
     updateRiderLights(menu);
+    updateRiderShadows(scale);
 
     /* camera */
     const frame = routeFrame(sForPlayer, menu ? "main" : state.route);
@@ -910,6 +967,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       eye = frame.p.clone().addScaledVector(fwd, m.forward).addScaledVector(frame.side, m.side).addScaledVector(frame.up, m.height);
       look = frame.p.clone().addScaledVector(fwd, m.lookForward).addScaledVector(frame.side, m.lookSide).addScaledVector(frame.up, m.lookHeight);
       fov = m.fov;
+    } else if (menu && input.look === "gouache") {
+      // GU47 phase 3 (rubric composition/camera): a lower, slowly drifting grid shot. The eye sits nearer the road so the
+      // crater rim, the planet and the course fill the top half instead of empty road; the drift (none under reduced
+      // motion) keeps the menu a moving painting.
+      const m = menuLandscapeCamera(time, input.reducedMotion);
+      eye = frame.p.clone().addScaledVector(fwd, m.forward).addScaledVector(frame.side, m.side).addScaledVector(frame.up, m.height);
+      look = frame.p.clone().addScaledVector(fwd, m.lookForward).addScaledVector(frame.side, m.lookSide).addScaledVector(frame.up, m.lookHeight);
+      fov = m.fov;
     } else if (menu) {
       eye = frame.p.clone().addScaledVector(fwd, 4.5).addScaledVector(frame.side, -7).addScaledVector(frame.up, 2.7);
       look = frame.p.clone().addScaledVector(frame.side, 3.8).addScaledVector(frame.up, 1.1);
@@ -929,9 +994,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     } else if (input.look === "gouache" && state.phase === "finished") {
       // SO47-C2 results orbit around the player, held well off the chase axis.
       const a = resultsOrbitAngle(time, input.reducedMotion);
-      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * 7).addScaledVector(cs, Math.sin(a) * 7).addScaledVector(cu, 2.4);
-      look = origin.clone().addScaledVector(cu, 0.9);
-      fov = 50;
+      // GU47 phase 3: portrait stands further back and wider (at 390x844 the 7 m / fov 50 orbit filled the screen with
+      // a cropped wheel behind the results card).
+      const portrait = aspect < 0.85;
+      // The results card sits mid-screen, so the aim point rides above the bike and the bike lands in the lower third.
+      const r = portrait ? 12 : 7.5;
+      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * r).addScaledVector(cs, Math.sin(a) * r).addScaledVector(cu, portrait ? 3.4 : 1.8);
+      look = origin.clone().addScaledVector(cu, portrait ? 4.2 : 2.6);
+      fov = portrait ? 64 : 50;
     } else {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
       if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);
@@ -1105,6 +1175,17 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     },
     get nodeCount() { return handles.size; }
   };
+}
+
+/**
+ * GU47 phase 3: gouache menu camera for landscape screens, in the menu frame's axes (metres along the track, across it
+ * and up from it). The 4.6.1 shot (4.5 / -7 / 2.7 looking at 0 / 3.8 / 1.1, fov 48) spent the lower half on bare road;
+ * this one is lower and a little wider and drifts +-0.6 m sideways and +-0.15 m up over ~21 s (still on reduced motion).
+ */
+export function menuLandscapeCamera(time: number, reducedMotion: boolean): { forward: number; side: number; height: number; lookForward: number; lookSide: number; lookHeight: number; fov: number } {
+  const drift = reducedMotion ? 0 : Math.sin(time * 0.3);
+  const bob = reducedMotion ? 0 : Math.sin(time * 0.47 + 1.1);
+  return { forward: 4.2 + drift * 0.5, side: -6.6 + drift * 0.6, height: 1.75 + bob * 0.15, lookForward: 0.6, lookSide: 3.8, lookHeight: 1.45, fov: 50 };
 }
 
 /**

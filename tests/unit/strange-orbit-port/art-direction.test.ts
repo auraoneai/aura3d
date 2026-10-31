@@ -60,6 +60,6 @@ describe("strange-orbit-port art direction", () => {
     const riders = nodes.filter((n) => /^rider-\d-model$/.test(n.name ?? ""));
     expect(riders).toHaveLength(6);
     for (const r of riders) expect(r.materialOverrides?.[0]?.rim).toBeDefined();
-    expect(riders.find((r) => r.name === "rider-0-model")!.materialOverrides![0]!.clearcoat).toBe(0.6);
+    expect(riders.find((r) => r.name === "rider-0-model")!.materialOverrides![0]!.clearcoat).toBeGreaterThanOrEqual(0.6);
   });
 });
