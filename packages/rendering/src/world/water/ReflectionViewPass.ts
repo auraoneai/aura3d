@@ -60,7 +60,14 @@ export function planReflection(ctx: FrameContributorContext, request: Reflection
   const up: Vector3 = [v[1]!, v[5]!, v[9]!];
   const target: Vector3 = [eye[0] + fwd[0], eye[1] + fwd[1], eye[2] + fwd[2]];
   const mirror = computePlanarMirrorCamera(eye, target, up, request.planeY);
-  const oblique = computeObliqueClipProjection(camera.projectionMatrix, mirror.clipPlane, 0);
+  let oblique: ReturnType<typeof computeObliqueClipProjection>;
+  try {
+    oblique = computeObliqueClipProjection(camera.projectionMatrix, mirror.clipPlane, 0);
+  } catch {
+    // GU47 phase 2: a projection the oblique clip cannot use skips this frame's reflection (the water falls back to
+    // its environment reflection) instead of throwing out of the frame and drawing nothing.
+    return null;
+  }
   const view = computePlanarViewMatrix(mirror.eye, mirror.target, mirror.up);
   const mirrorViewProjection = multiplyPlanarMatrices(Float32Array.from(oblique.projectionMatrix), view);
   // Screen-space coverage proxy: water half-extent over view half-extent at the
