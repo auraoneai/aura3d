@@ -320,13 +320,24 @@ function titlePose(): Pose {
   return { position: [x + Math.sin(a) * 30, y + 9 + Math.sin(a * 0.7) * 2, z + Math.cos(a) * 30], target: [x, y + 1, z], up: [0, 1, 0], fov: 55 };
 }
 
+/* GU47 phase 2: the intro rail and finish orbit advance on wall-clock time as well as the loop's clamped frame time, so
+ * a slow device (software WebGL2 at a few frames per second) never sits in a 4 s rail for minutes with sequence DOF on. */
+let lastRenderWallMs: number | null = null;
+function sequenceStep(dt: number): number {
+  const now = performance.now();
+  const wall = lastRenderWallMs === null ? dt : (now - lastRenderWallMs) / 1000;
+  lastRenderWallMs = now;
+  return Math.max(dt, wall);
+}
+
 function render(dt: number): void {
   if (!app || !runtime) return;
+  const seqDt = sequenceStep(dt);
   const live = mode === "play" && !config.manual && !drawLatest;
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), drawLatest);
   let pose = overridePose ?? (mode === "title" ? titlePose() : null);
   if (!pose && mode === "play" && railLeft > 0) {
-    railLeft = Math.max(0, railLeft - dt);
+    railLeft = Math.max(0, railLeft - seqDt);
     const eye = runtime.cameraEye()?.eye ?? [sim.state.x, sim.state.y + 5, sim.state.z + 13];
     const { x, y, z, yaw } = sim.state;
     const chase = { position: [eye[0], eye[1], eye[2]] as [number, number, number], target: [x - Math.sin(yaw) * 14, y + 1.2, z - Math.cos(yaw) * 14] as [number, number, number] };
@@ -337,7 +348,7 @@ function render(dt: number): void {
   // DG-P4: sequence DOF only while the intro rail runs
   runtime.setSequence(mode === "play" && (railLeft > 0 || (finishLeft !== null && finishLeft > 0)));
   if (!pose && mode === "play" && finishLeft !== null && finishLeft > 0) {
-    finishLeft = Math.max(0, finishLeft - dt);
+    finishLeft = Math.max(0, finishLeft - seqDt);
     const orbit = finishOrbitPose(sim, FINISH_ORBIT.seconds - finishLeft);
     pose = { position: [...orbit.position], target: [...orbit.target], up: [0, 1, 0], fov: orbit.fov };
   }

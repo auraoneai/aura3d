@@ -13,10 +13,23 @@ import type { AuraHdriId } from "@aura3d/engine";
 
 export type SiltLookMode = "inked" | "original";
 
-/** `?look=original` is today's look (PRD §6.1 ports keep it); anything else is the inked poster look. */
+/**
+ * GU47 phase 2 (PRD D11, no regression ships): chapters whose inked frame did not beat the 4.6.2 frame after two
+ * remote capture rounds (software WebGL2) open in the original look by default; `?look=inked` still opts in.
+ */
+export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 6]);
+
+/**
+ * `?look=original` is today's look (PRD §6.1 ports keep it); `?look=inked` is the inked poster look. Without a `look`
+ * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS.
+ */
 export function siltLookMode(search: string | URLSearchParams | undefined): SiltLookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  return params?.get("look") === "original" ? "original" : "inked";
+  const look = params?.get("look");
+  if (look === "original") return "original";
+  if (look === "inked") return "inked";
+  const chapter = Math.trunc(Number(params?.get("chapter") ?? 0));
+  return ORIGINAL_DEFAULT_CHAPTERS.has(Number.isFinite(chapter) ? chapter : 0) ? "original" : "inked";
 }
 
 export type AmbientMotes = "sand" | "fireflies" | "wick-glow" | "pollen" | "embers";
@@ -82,7 +95,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.55 },
     hdri: "belfast_sunset_puresky", environmentIntensity: 0.9, environmentRotationDeg: 250, practicals: 0, pcss: true,
     sky: { top: "#6d7ca6", horizon: "#f2a35c", discSize: 0.035, glow: 0.9, cirrus: 0.75, dust: 0.7, storm: 0, stars: 0 },
-    fog: { color: "#e6b07c", density: 0.0011, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.85 },
+    fog: { color: "#e6b07c", density: 0.00066, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.55 },
     grade: { exposure: 1.0, contrast: 1.08, saturation: 1.14, temperature: 0.12 },
     bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#e8b678", rate: 140 }, motes: { kind: "sand", color: "#f0c58a" },
@@ -90,12 +103,12 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
   },
   {
     chapter: 1, hour: "white-hot noon (12:40)", night: false,
-    key: { elevationDeg: 64, azimuthDeg: 160, color: "#fff3df", intensity: 3.4 },
+    key: { elevationDeg: 64, azimuthDeg: 160, color: "#fff3df", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.45 },
     hdri: "outdoor-midday", environmentIntensity: 1.0, environmentRotationDeg: 160, practicals: 0, pcss: false,
-    sky: { top: "#78acd6", horizon: "#f4ead8", discSize: 0.028, glow: 0.6, cirrus: 0.45, dust: 0.85, storm: 0, stars: 0 },
-    fog: { color: "#efe2c8", density: 0.0008, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.8 },
-    grade: { exposure: 0.92, contrast: 1.0, saturation: 0.84, temperature: 0.04 },
+    sky: { top: "#5f9ad0", horizon: "#e6d2aa", discSize: 0.028, glow: 0.6, cirrus: 0.45, dust: 0.4, storm: 0, stars: 0 },
+    fog: { color: "#d9c39a", density: 0.0003, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.35 },
+    grade: { exposure: 0.85, contrast: 1.14, saturation: 1.06, temperature: 0.08 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "sand", color: "#f4e2c0" },
     rain: false, godRays: false, lensFlare: false
@@ -106,7 +119,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.35 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
     sky: { top: "#0b1131", horizon: "#2a3470", discSize: 0.02, glow: 0.5, cirrus: 0.3, dust: 0.15, storm: 0, stars: 1 },
-    fog: { color: "#26305e", density: 0.0016, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
+    fog: { color: "#26305e", density: 0.00096, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.55 },
     grade: { exposure: 1.3, contrast: 1.06, saturation: 1.0, temperature: -0.18 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#8ea6d8", rate: 110 }, motes: { kind: "fireflies", color: "#d9f06a" },
@@ -118,8 +131,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
     hdri: "industrial_sunset_puresky", environmentIntensity: 0.8, environmentRotationDeg: 290, practicals: 0, pcss: true,
     sky: { top: "#1f4f62", horizon: "#e48c5c", discSize: 0.032, glow: 0.8, cirrus: 0.6, dust: 0.4, storm: 0, stars: 0.2 },
-    fog: { color: "#3f7d82", density: 0.0012, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
-    grade: { exposure: 1.05, contrast: 1.06, saturation: 1.1, temperature: -0.04 },
+    fog: { color: "#4f8a86", density: 0.00055, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
+    grade: { exposure: 1.18, contrast: 1.1, saturation: 1.12, temperature: -0.02 },
     bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "wick-glow", color: "#ffbf6a" },
     rain: false, godRays: false, lensFlare: false
@@ -130,8 +143,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
     hdri: "kloppenheim_02", environmentIntensity: 0.85, environmentRotationDeg: 200, practicals: 0, pcss: false,
     sky: { top: "#3b4455", horizon: "#8c9198", discSize: 0.022, glow: 0.2, cirrus: 0.2, dust: 0.3, storm: 1, stars: 0 },
-    fog: { color: "#7b838e", density: 0.0015, heightFalloff: 0.04, heightReference: 0, maxOpacity: 0.9 },
-    grade: { exposure: 1.1, contrast: 1.1, saturation: 0.9, temperature: -0.08 },
+    fog: { color: "#7b838e", density: 0.0007, heightFalloff: 0.04, heightReference: 0, maxOpacity: 0.45 },
+    grade: { exposure: 1.2, contrast: 1.15, saturation: 0.98, temperature: -0.06 },
     bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#a39c90", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
     rain: true, godRays: false, lensFlare: false
@@ -142,7 +155,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.3 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
     sky: { top: "#191233", horizon: "#4c3b70", discSize: 0.024, glow: 0.55, cirrus: 0.35, dust: 0.1, storm: 0, stars: 1 },
-    fog: { color: "#3e3360", density: 0.0015, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
+    fog: { color: "#3e3360", density: 0.0009, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.55 },
     grade: { exposure: 1.3, contrast: 1.05, saturation: 1.05, temperature: -0.1 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#a79ad0", rate: 110 }, motes: { kind: "embers", color: "#ff9c5a" },
@@ -153,10 +166,10 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     key: { elevationDeg: 6, azimuthDeg: 80, color: "#ffad9a", intensity: 2.3 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
     hdri: "spruit_sunrise", environmentIntensity: 0.85, environmentRotationDeg: 80, practicals: 0, pcss: true,
-    sky: { top: "#8b98c4", horizon: "#f3a8a0", discSize: 0.034, glow: 0.85, cirrus: 0.7, dust: 0.55, storm: 0, stars: 0 },
-    fog: { color: "#e9b3a6", density: 0.0011, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.85 },
-    grade: { exposure: 1.0, contrast: 1.06, saturation: 1.12, temperature: 0.08 },
-    bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
+    sky: { top: "#7d8cc0", horizon: "#f0a090", discSize: 0.034, glow: 0.55, cirrus: 0.7, dust: 0.3, storm: 0, stars: 0 },
+    fog: { color: "#d9a08e", density: 0.0004, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.3 },
+    grade: { exposure: 0.94, contrast: 1.18, saturation: 1.15, temperature: 0.06 },
+    bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
     rain: false, godRays: false, lensFlare: true
   }
@@ -223,7 +236,7 @@ export function inkPassOptions(chapter: number, size: readonly [number, number])
   return {
     name: "silt-cel",
     bands: look.ink.bands,
-    bandMix: look.night ? 0.55 : 0.7,
+    bandMix: look.night ? 0.45 : 0.5,
     outline: 0.85,
     inkSource: "both" as const,
     fadeDistance: INK_FADE_METRES,
