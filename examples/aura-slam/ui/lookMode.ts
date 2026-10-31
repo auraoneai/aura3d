@@ -4,7 +4,7 @@
  * `?venue=` boots the hard court) falls back to the 4.6.2 look: the blind-panel fix pass restores it on any variant whose
  * World Tour frame was not judged better. Shared by the shell (HUD) and the view (scene, camera) so they cannot drift.
  */
-export const ORIGINAL_LOOK_VENUES: ReadonlySet<string> = new Set<string>([]);
+export const ORIGINAL_LOOK_VENUES: ReadonlySet<string> = new Set<string>(["moon"]);
 
 export function lookMode(search?: string): "world-tour" | "original" {
   const raw = search ?? (typeof location !== "undefined" ? location.search : "");
