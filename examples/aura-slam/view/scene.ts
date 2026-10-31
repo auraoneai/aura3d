@@ -12,7 +12,7 @@ import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
+import { LINE_COLOR, buildGrassStripesNodes, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
 import { buildNetMeshNode } from "./net";
 
@@ -133,8 +133,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .runtime(game.runtimeNode("court-singles-surface"))
     );
 
-  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as one vertex-coloured mesh.
-  if (!original) s.add(buildGrassStripesNode());
+  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as two meshes (one per colour).
+  if (!original) for (const stripes of buildGrassStripesNodes()) s.add(stripes);
   for (let i = 0; original && i < 8; i++) {
     const stripeZ = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
     s.add(

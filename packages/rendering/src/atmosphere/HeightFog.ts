@@ -107,6 +107,16 @@ export function resolvePrd07FogSpec(spec: Prd07FogSpec | null | undefined): Reso
     if (spec.affectsBackground === undefined) base.affectsBackground = false;
   } else if (!authoredSemantic) {
     base.mode = PRD07_FOG_DEFAULTS.mode;
+  } else if (
+    spec.mode === undefined && (spec.near !== undefined || spec.far !== undefined) &&
+    spec.heightDensity === undefined && spec.heightFalloff === undefined && spec.heightReference === undefined &&
+    spec.absorption === undefined
+  ) {
+    // GU47 phase 2 (uniform haze): an authored range with no mode is the linear fog the range describes
+    // (`looks.nodes` writes `{ density: 24/far, near, far }` for every look fog override). It fell to the height
+    // default, which read the 24/far density as a per-metre σd at maxOpacity 1 and washed the whole view
+    // (aura-hoops-3d athens 0.075/m: 78% fog colour on the court 20 m away).
+    base.mode = "linear";
   }
   if (spec.legacyOpacityCap) {
     // §11 restore: legacy cap 0.25 + intensity·0.55 clamped to 0.92.
