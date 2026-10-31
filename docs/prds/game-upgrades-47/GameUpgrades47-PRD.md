@@ -8,7 +8,27 @@ Aura3D is a standalone engine. Nothing in this PRD, its commits, release notes o
 
 ---
 
-## 0. Execution status and handoff (updated 2026-10-30 03:40 PDT; see 0.0 for the later state)
+## 0. Execution status and handoff (updated 2026-10-31; see 0.00 for the outcome)
+
+### 0.00 Outcome 2026-10-31: released as Aura3D 4.7.0
+
+- **Released.** Release commit `a85b7dea8` (branch `release/4.7.0` from `gu47/integration` `d0db5c27c`), tag `v4.7.0`, main fast-forwarded (PR #1402). All 24 packages are on npm at 4.7.0 and every earlier version is deprecated. The GitHub release is Latest and the 46 older releases point at it. Production deploy `dpl_H29PzYwWa7kRDE69QejJmBdu8tku` serves aura3d.auraone.ai: 25 of 25 game URLs return 200, `verify-asset-urls` checks 295 URLs OK, and the live scan finds 0 stale pages out of 44.
+- **How "better" was decided.** Lane self-reports were wrong for Cross Hop and Thermal Drift, so a blind panel replaced them: three independent model judges per game compared each new 60 s frame with the 4.6.2 frame on neutral A/B copies. "Better" means at least 2 of 3 judges preferred the new frame. Tools are in `/tmp/gu47-judge/` (outside the repo), and the record is in `/Users/gurbakshchahal/platforms/aura3d-gu47/STATE.md`. Every view that did not win opens in its 4.6.2 look, and the new look stays opt-in.
+- **Per-game outcome.** See the CHANGELOG 4.7.0 Games table:
+  - **New look on every judged view (13 games):** Apex Overdrive, Grid Dispatch, Aura FC 3D (hybrid look), Aura Links 3D, Bunker Zero, Glint Courier, Craterline GP, Chroma Roll, Serpentine Sky Run, Lamplight Line, Saltwind Highway, Cumulus Dash, Aura Diamond 3D (except Lunar).
+  - **Mixed (7 games):** Aura Slam 3D (moon keeps 4.6.2), Iron Crown (2 of 6 venues new), Aura Hoops 3D (3 of 6 courts new; the boot court Rucker keeps 4.6.2), Slingshot Siege (chapter 5 only), Gridlock Courier (blue hour only), The Bellkeeper's Walk (bell and epilogue only), Duneglide (6 of 7 chapters).
+  - **4.6.2 look by default (5 games):** Thermal Drift, Pip's Big Leap, Cross Hop, Ion Circuit, Shadowstep Gauntlet.
+- **Fixed during the final checks.**
+  - The engine default `9001eb1f8` (a colour `background` override hides the look HDRI) had turned the 4.6.2-look skies of Pip's Big Leap, Cross Hop and Slingshot Siege into flat colour. Fixed in `f8edcb5a1` and `a4e567509`.
+  - Thermal Drift's restored 4.6.2 path had lost its HUD and minimap to the foundry title-card rule (`83216bc17`).
+  - The Aura Slam 3D moon court had drifted from its 4.6.2 colours (`18b43bdc0`).
+- **Left (next pass):**
+  - **Owner only:** Meshy assets (WP-36; 23 funded accounts answer 402, so 115 game rows wait on them) and real-GPU runs.
+  - **Retune from the judges' notes:** the views kept on their 4.6.2 look.
+  - **Unmerged by choice:**
+    - `gu47/g02` and `gu47/g04` post-panel tunes, which have no verification capture.
+    - `gu47/wp38` before-capture evidence (342 files; the before frames are read in place).
+  - **Existing failures, not fixed:** the port-page sync check reports serpentine, drift and ninja STALE (lane font-link edits; do not run the write without re-checking). The receipts gate still fails 30/41.
 
 ### 0.0 Update 2026-10-30 (afternoon PDT): CODE_COMPLETE_GO
 
