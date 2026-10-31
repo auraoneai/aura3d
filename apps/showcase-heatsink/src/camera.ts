@@ -78,12 +78,12 @@ export const BANK = { perMetrePerSecond: 0.02, max: (6 * Math.PI) / 180, seconds
 export const RESULTS_ORBIT = { radius: 9, height: 2.6, speed: 0.3 } as const;
 /**
  * Title: low rear three-quarter pose relative to the drone (more than 4 m from the chase pose), aimed down the track at
- * `TITLE_AIM`. GU47 phase 3: the old front three-quarter pose looked back along +Z, where the world has no skyline, arch
+ * `TITLE_AIM` (the drone about 12 degrees right of centre, uncropped). GU47 phase 3: the old front three-quarter pose looked back along +Z, where the world has no skyline, arch
  * or rivals (the city is authored ahead of the drone), so the card frame showed an empty sky and a wall.
  */
-export const TITLE_OFFSET: readonly [number, number, number] = [-2.6, 1.4, 4.8];
+export const TITLE_OFFSET: readonly [number, number, number] = [-1.6, 1.2, 4.2];
 /** Title aim point relative to the drone: down the track past the drone, so the start gantry, arch and skyline frame it. */
-export const TITLE_AIM: readonly [number, number, number] = [0.4, 0.6, -16];
+export const TITLE_AIM: readonly [number, number, number] = [1.4, 0.6, -16];
 /** Countdown shots relative to the drone, by digit: low front three-quarter, flank, high behind. */
 export const COUNTDOWN_SHOTS: Readonly<Record<number, { readonly offset: readonly [number, number, number]; readonly fov: number }>> = {
   3: { offset: [-4.8, 0.6, -6.2], fov: 50 },
@@ -108,7 +108,7 @@ export function shotPose(shot: CameraShot, drone: readonly [number, number, numb
       return { position: [drone[0] + Math.sin(a) * RESULTS_ORBIT.radius, drone[1] + RESULTS_ORBIT.height, drone[2] + Math.cos(a) * RESULTS_ORBIT.radius], target, fov: 50 };
     }
     case "title":
-      return { position: [drone[0] + TITLE_OFFSET[0], drone[1] + TITLE_OFFSET[1], drone[2] + TITLE_OFFSET[2]], target: [drone[0] + TITLE_AIM[0], drone[1] + TITLE_AIM[1], drone[2] + TITLE_AIM[2]], fov: 52 };
+      return { position: [drone[0] + TITLE_OFFSET[0], drone[1] + TITLE_OFFSET[1], drone[2] + TITLE_OFFSET[2]], target: [drone[0] + TITLE_AIM[0], drone[1] + TITLE_AIM[1], drone[2] + TITLE_AIM[2]], fov: 58 };
     default:
       return null;
   }
