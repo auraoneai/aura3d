@@ -359,8 +359,8 @@ const BANGKOK = makeStage(
     modelProp(stageAssets.showcaseTeaHouse, "bk-shrine", [0, 0, -3.5], 3.6, 0),
     modelProp(stageAssets.courierDeliveryKioskMeshy, "bk-kiosk-l", [-2.1, 0, -1.8], 1.7, 0.3),
     modelProp(stageAssets.courierDeliveryKioskMeshy, "bk-kiosk-r", [2.1, 0, -1.8], 1.7, -0.3),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
+    modelProp(assets.ironcrownBrazierPylon, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
+    modelProp(assets.ironcrownBrazierPylon, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
     modelProp(stageAssets.gullsiegeCrateMeshy, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
     modelProp(stageAssets.gullsiegeBarrelMeshy, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
   ]
@@ -422,8 +422,8 @@ const MONASTERY = makeStage(
     modelProp(stageAssets.showcaseTeaHouse, "mo-monastery", [0, 0, -3.4], 4.2, 0),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
+    modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
+    modelProp(assets.ironcrownBrazierPylon, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
     modelProp(stageAssets.propPineTree, "mo-pine-l", [-4.3, 0, -2.6], 3.2, 0.2),
     modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
     modelProp(stageAssets.propBoulder, "mo-peak-l", [-3.5, 0, -4.4], 2.8, 0.3),
@@ -626,8 +626,8 @@ const CROWN = makeStage(
     modelProp(stageAssets.clashDragonStatueMeshy, "cr-dragon-l", [-2.2, 0, -2.1], 2.1, 0.45),
     modelProp(stageAssets.clashDragonStatueMeshy, "cr-dragon-r", [2.2, 0, -2.1], 2.1, -0.45),
     // Corner fire braziers
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
+    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
+    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
     // Trophy cabinets & speaker towers at the arena wings
     ...buildTrophyCabinets(),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),

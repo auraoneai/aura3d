@@ -64,8 +64,9 @@ export default defineArtDirection({
     { ...FIGHTER, assetKey: "ironcrownJinx", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
     { ...FIGHTER, assetKey: "ironcrownSovereign", animated: { clips: ["Combat_Stance", "Walk_Fight_Forward", "Left_Jab_from_Guard", "Dead"] } },
     { role: "prop", assetKey: "ironcrownCrown", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 2048 },
+    // WP-36 (IC47-A1): the Iron Crown brazier pillar replaces the borrowed aura-clash brazier on the Dock, Monastery and Crown.
+    { role: "prop", assetKey: "ironcrownBrazierPylon", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // Borrowed today (IC47-A1 replaces each with an Iron Crown key; WP-36).
-    { ...MESHY_PROP, assetKey: "auraClashCornerBrazierPylonMeshy" },
     { ...MESHY_PROP, assetKey: "auraClashStageSpeakerTowerMeshy" },
     { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
     { role: "set-dressing", assetKey: "auroraPadBeacon", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },

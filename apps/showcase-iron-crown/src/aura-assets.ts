@@ -3,6 +3,7 @@ import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
   readonly "ironcrownBoulder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownBrazierPylon": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownCrown": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownJinx": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownKenji": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -798,6 +799,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "manual-inspection",
         "sha256": "sha256-d5eb65ae02b6230012407e8a25d0dd1c3b4d4ca46f5a6fe1fa1418a576a78087",
         "checkedAt": "2026-10-17T09:38:56.950Z"
+      }
+    },
+  },
+  "ironcrownBrazierPylon": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownBrazierPylon.9d1932bd.glb",
+    hash: "sha256-9d1932bd5fea048f381eb7a9f242b7d9338587eca954d958a7afe16eaf654ebf",
+    bounds: [
+      0.826,
+      1.904,
+      0.832
+    ],
+    sizeBytes: 1601664,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownBrazierPylon.9d1932bd.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-30 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, iron-crown/crownBrazierPylon). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-30T08:57:28.080Z",
+        "evidence": [
+          "aura-evidence/meshy/ironcrownBrazierPylon.rights.c83bd5271fff.json",
+          "aura-evidence/meshy/ironcrownBrazierPylon.metadata.7e50315f7b89.json",
+          "public/aura-assets/ironcrownBrazierPylon.meshy-candidate.ce9a16f1.png"
+        ],
+        "checkedAt": "2026-10-30T08:57:28.080Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownBrazierPylon.9d1932bd.glb",
+      "outputPath": "public/aura-assets/ironcrownBrazierPylon.9d1932bd.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.414,
+          -0.952,
+          -0.417
+        ],
+        "max": [
+          0.413,
+          0.951,
+          0.415
+        ],
+        "size": [
+          0.826,
+          1.904,
+          0.832
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownBrazierPylon.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/ironcrownBrazierPylon.meshy-candidate.ce9a16f1.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ce9a16f11fdff87f60efdce9cd803bf21df4ea5da8aad677f95d74820c8575e9",
+        "checkedAt": "2026-10-31T21:49:51.490Z"
       }
     },
   },
