@@ -1,6 +1,6 @@
 # Serpentine Sky Run: final screenshots (GU47 phase 3, 4.7.1, 2026-10-31)
 
-- **Retake (4.7.1):** branch `gu47/g17` at d4b565cd1 + 3b22bb312 (the colour-script look with the phase-3 rubric pass: sun-aligned runner cast shadow, road sky reflection and glint, prayer-flag posts and cords, VIOLET runner on a first visit). Remote ACR run `g17p3-r2-shots` (`tests/browser/shotsb-serpentine.spec.ts`), software WebGL2 (SwiftShader), 1280x720 and 390x844; card 1440x900. Console errors: none in every pass. Index posters rebuilt with `node tools/site/build-card-images.mjs` (only this game's webp files kept). The early, jump and roll states fall inside the 4 s intro shot (cinebars), by design (SSR-15).
+- **Retake (4.7.1):** branch `gu47/g17` at 51cce9f92 (the colour-script look with the phase-3 rubric pass: sun-aligned runner cast shadow, road sky reflection and glint, prayer-flag posts and cords, VIOLET runner on a first visit). Remote ACR run `g17p3-r4-shots` (`tests/browser/shotsb-serpentine.spec.ts`), software WebGL2 (SwiftShader), 1280x720 and 390x844; card 1440x900. Console errors: none in every pass. Index posters rebuilt with `node tools/site/build-card-images.mjs` (only this game's webp files kept). The early, jump and roll states fall inside the 4 s intro shot (cinebars), by design (SSR-15).
 
 ## Earlier take (audit lane G17, 2026-10-29)
 
