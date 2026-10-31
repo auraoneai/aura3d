@@ -15,7 +15,7 @@ import type { FruitKind } from "./grid.js";
 import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
-  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, LAMP, LAMP_HAZE, LENS, LOOK_HDRI, MACRO_DOF,
+  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, FRAME_PULL_BACK, LAMP, LAMP_HAZE, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
   LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
@@ -268,6 +268,8 @@ export function buildScene(): unknown {
     .add(effects.chromaticAberration({ intensity: LENS.chromaticAberration }))
     .add(effects.filmGrain({ intensity: LENS.grain }))
     .add(effects.colorGrade(gradeOf(look)))
+    // Phase 3 (4.7.1): FXAA over the thin traces and chip edges.
+    .add(effects.antiAlias({ mode: "fxaa" }))
     // DD47-P1 signature macro DOF: metric lens focused on the board centre; the post tiers run it on High and Ultra
     // only (PostQualityTiers dof), so Medium and Low stay sharp. The focus follows the aspect pull-back (syncFocus).
     .add(effects.depthOfField({ name: "macro dof", focusDistance: BASE_FOCUS_DISTANCE, fStop: MACRO_DOF.fStop, focalLength: MACRO_DOF.focalLength, maxBlur: MACRO_DOF.maxBlur }))
@@ -378,6 +380,8 @@ export function buildScene(): unknown {
       .runtime(game.runtimeNode("school-beam"))
   ]);
 
+  s.addMany(roomNodes());
+
   // DD47-W1 silkscreen and mounting holes (+3 draws): two SDF labels laid flat on the mask in the board's silk ink and
   // four gold plated mounting rings in one instanced draw, inside the board margin clear of the maze and the kit.
   const silk = material.pbr({ color: look.silk, roughness: 0.7, metalness: 0 });
@@ -398,6 +402,37 @@ export function buildScene(): unknown {
     })
   ]);
   return s.toJSON();
+}
+
+/** Phase 3 (4.7.1): the workshop wall, pegboard (one instanced hole draw) and shelf behind the bench. */
+function roomNodes() {
+  const w = ROOM.wall, pb = ROOM.pegboard, h = ROOM.holes, sh = ROOM.shelf, g = ROOM.matGrid;
+  const matTop = BENCH.mat.y + BENCH.mat.size[1] / 2;
+  const grid: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  const [mw, , md] = BENCH.mat.size;
+  for (let x = -mw / 2 + g.pitch; x < mw / 2; x += g.pitch) grid.push({ position: [x, matTop + 0.004, 0], scale: [g.width, 0.006, md] });
+  for (let z = -md / 2 + g.pitch; z < md / 2; z += g.pitch) grid.push({ position: [0, matTop + 0.004, z], scale: [mw, 0.006, g.width] });
+  const benchTop = BENCH.wood.y + BENCH.wood.size[1] / 2;
+  const faceZ = w.z + 0.5;
+  const holes: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let r = 0; r < h.rows; r++) {
+    for (let c = 0; c < h.cols; c++) {
+      holes.push({
+        position: [pb.x + (c - (h.cols - 1) / 2) * h.pitch, benchTop + pb.y + (r - (h.rows - 1) / 2) * h.pitch, faceZ + 0.22],
+        rotation: [Math.PI / 2, 0, 0], scale: [0.16, 0.02, 0.16]
+      });
+    }
+  }
+  return [
+    primitives.box({ name: "workshop wall", size: [180, w.height, 1], material: material.pbr({ color: w.color, roughness: w.roughness, metalness: 0 }), castShadow: false, receiveShadow: true })
+      .position(0, benchTop + w.height / 2, w.z),
+    primitives.box({ name: "pegboard", size: [pb.width, pb.height, 0.2], material: material.pbr({ color: pb.color, roughness: pb.roughness, metalness: 0 }), castShadow: false, receiveShadow: true })
+      .position(pb.x, benchTop + pb.y, faceZ + 0.1),
+    instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0 }), transforms: holes, castShadow: false }),
+    instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
+    primitives.box({ name: "wall shelf", size: [44, 0.35, sh.depth], material: material.pbr({ color: sh.color, roughness: sh.roughness, metalness: 0 }), castShadow: true, receiveShadow: true })
+      .position(pb.x, benchTop + sh.y, faceZ + sh.depth / 2)
+  ];
 }
 
 /** Unit vector from the desk lamp to its target (the lamp-haze cone axis). */
@@ -808,7 +843,7 @@ export function syncVisuals(dt: number): void {
   const aspect = viewAspect();
   if (Math.abs(aspect - fitAspect) > 1e-3) {
     fitAspect = aspect;
-    fitK = fitDistanceScale({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect);
+    fitK = fitDistanceScale({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect) * FRAME_PULL_BACK;
   }
   const rig = scalePose({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, fitK);
   const pp2 = normPos(m);

@@ -66,9 +66,27 @@ export const BOARD_PROBE = {
  * and the HUD read through them.
  */
 export const LAMP_HAZE = {
-  fog: { density: 0.004, color: "#5a4632", intensity: 0.28, heightFalloff: 0.18, godRayDensity: 0.32 },
-  cone: { color: "#ffd9a8", intensity: 0.07, length: 23, softness: 0.85 }
+  fog: { density: 0.008, color: "#6a5238", intensity: 0.4, heightFalloff: 0.16, godRayDensity: 0.45 },
+  cone: { color: "#ffd9a8", intensity: 0.18, length: 24, softness: 0.85 }
 } as const;
+
+/**
+ * Phase 3 (4.7.1) room: the bench meets a painted wall behind the board with a pegboard and a shelf, so the top of
+ * the frame is a workshop instead of a void (rubric: environment). Primitives only (no generated assets; the bench
+ * props stay WP-36). The desktop camera looks steeply down, so it sees the foot of the wall and the pegboard; phones
+ * (which pull back) see more of it.
+ */
+export const ROOM = {
+  wall: { z: -19, height: 26, color: "#4a4038", roughness: 0.92 },
+  pegboard: { x: 2, y: 2.4, width: 30, height: 4.4, color: "#8a7255", roughness: 0.85 },
+  holes: { cols: 29, rows: 4, pitch: 1, color: "#2a221c" },
+  shelf: { y: 5.4, depth: 1.6, color: "#6a4630", roughness: 0.6 },
+  /** Printed grid on the anti-static mat (every 2 units), so the margin reads as a mat rather than a flat slab. */
+  matGrid: { pitch: 2, width: 0.05, color: "#8a9cab" }
+} as const;
+
+/** Phase 3 (4.7.1): the board sits a little smaller in frame so the bench and the room show around it. */
+export const FRAME_PULL_BACK = 1.06;
 
 export const MACRO_DOF = { fStop: 2, focalLength: 85, maxBlur: 6 } as const;
 /** Camera-to-board-centre distance of the base rig ([0, 17.2, 13.8] -> origin), before the aspect pull-back. */
@@ -145,7 +163,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the deep purple mask read flat and dark around black chips; a pale lilac mask (garden's
     // white-mask recipe, which the panel preferred) lets the lamp model the board and the chips stand out.
     mask: "#c6b8e2", maskRoughness: 0.4, copper: "#c99a3e", silk: "#3a2856", led: "#ff6fd0", traceGlow: "#ffc24a",
-    lamp: { color: "#fff0dc", intensity: 3000, temperatureK: 3900 },
+    lamp: { color: "#fff0dc", intensity: 2600, temperatureK: 3900 },
     grade: { contrast: 1.1, saturation: 1.04, temperature: 0.04, tint: 0.06, lut: "/luts/dot-dash-3d/spiral.cube" }
   }),
   twin: row({
@@ -154,14 +172,14 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the navy mask read flat and dark; a pale blue-white mask (garden's recipe) with gold
     // traces gives the lamp something to model and makes the cyan courier read.
     mask: "#b9cbe4", maskRoughness: 0.4, copper: "#cda04a", silk: "#1c3058", led: "#2fd6ff", traceGlow: "#4fe3ff",
-    lamp: { color: "#fff2e0", intensity: 3000, temperatureK: 4100 },
+    lamp: { color: "#fff2e0", intensity: 2600, temperatureK: 4100 },
     grade: { contrast: 1.07, saturation: 1.02, temperature: -0.04, tint: -0.02, lut: "/luts/dot-dash-3d/twin.cube" }
   }),
   garden: row({
     board: "garden",
     pcb: "white-mask LED lighting board, ENIG gold",
     mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#8dff6a", traceGlow: "#c4ff7a",
-    lamp: { color: "#fff0d8", intensity: 2900, temperatureK: 4000 },
+    lamp: { color: "#fff0d8", intensity: 2600, temperatureK: 4000 },
     grade: { contrast: 1.06, saturation: 1.08, temperature: 0, tint: -0.04, lut: "/luts/dot-dash-3d/garden.cube" }
   }),
   foundry: row({
@@ -188,7 +206,7 @@ export const BOARD_PARTS = {
   pin: { color: "#c9ced6", roughness: 0.22, metalness: 1 },
   /** Walnut bench and anti-static mat (DD47-E2). */
   walnut: { color: "#7a4c2e", roughness: 0.55 },
-  mat: { color: "#34495a", roughness: 0.8 },
+  mat: { color: "#3a4752", roughness: 0.8 },
   /** Surge cells are capacitor cans with glowing vents (DD47-M3). */
   can: { color: "#2b2d33", roughness: 0.3, metalness: 0.8 },
   vent: "#ffb23e"
