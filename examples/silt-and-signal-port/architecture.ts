@@ -340,7 +340,7 @@ export function inkedTerrainColors(positions: readonly number[]): number[] {
  */
 export function orchardTerrainColors(positions: readonly number[]): number[] {
   const out: number[] = [];
-  const lush: Rgb = [0.78, 1.08, 0.56], gold: Rgb = [1.32, 1.14, 0.62], hollow: Rgb = [0.5, 0.7, 0.46];
+  const lush: Rgb = [0.95, 1.3, 0.62], gold: Rgb = [1.5, 1.3, 0.7], hollow: Rgb = [0.62, 0.86, 0.52];
   for (let i = 0; i < positions.length; i += 3) {
     const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
     const dry = smooth(0.5, 0.68, fbm(x * 0.0065 + 11.3, z * 0.0065 - 4.1, 4));

@@ -108,8 +108,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.55 },
     hdri: "belfast_sunset_puresky", environmentIntensity: 0.9, environmentRotationDeg: 250, practicals: 0, pcss: true,
     sky: { top: "#6d7ca6", horizon: "#f2a35c", discSize: 0.035, glow: 0.9, cirrus: 0.75, dust: 0.7, storm: 0, stars: 0 },
-    fog: { color: "#dcb58e", density: 0.00052, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
-    grade: { exposure: 1.0, contrast: 1.14, saturation: 1.16, temperature: 0.05 },
+    fog: { color: "#d8b898", density: 0.00048, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
+    grade: { exposure: 1.02, contrast: 1.2, saturation: 1.16, temperature: 0.03 },
     bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#e8b678", rate: 140 }, motes: { kind: "sand", color: "#f0c58a" },
     ground: "sand", rain: false, godRays: true, lensFlare: true
@@ -154,12 +154,12 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     chapter: 4, hour: "slate storm in the orchard (15:00)", night: false,
     // phase 3: storm light, a warm sun breaking under the slate deck onto rain-green orchard grass, the deck lifting
     // into a bright horizon gap behind dark ridges (no pale plateau band, no grey wash)
-    key: { elevationDeg: 40, azimuthDeg: 200, color: "#ffdcaa", intensity: 2.3 },
+    key: { elevationDeg: 40, azimuthDeg: 200, color: "#ffe2b4", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
     hdri: "kloppenheim_02", environmentIntensity: 0.75, environmentRotationDeg: 200, practicals: 0, pcss: false,
-    sky: { top: "#26324a", horizon: "#d9c8a4", discSize: 0.022, glow: 0.45, cirrus: 0.2, dust: 0.15, storm: 1, stars: 0 },
-    fog: { color: "#7c8aa0", density: 0.00042, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.3 },
-    grade: { exposure: 1.08, contrast: 1.2, saturation: 1.18, temperature: 0.03 },
+    sky: { top: "#2c3a56", horizon: "#cfd6d6", discSize: 0.022, glow: 0.45, cirrus: 0.2, dust: 0.15, storm: 1, stars: 0 },
+    fog: { color: "#8a97aa", density: 0.00036, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.26 },
+    grade: { exposure: 1.18, contrast: 1.2, saturation: 1.2, temperature: 0.02 },
     bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#b8b39a", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
     ground: "orchard", ridge: "#3c4860",
