@@ -106,7 +106,7 @@ export const puffSpec = (): CustomSpec => ({
   depthWrite: false
 });
 
-export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; /** Hemisphere fill multiplier (default 1). */ fill?: number; transparent?: boolean }
+export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; /** Hemisphere fill multiplier (default 1). */ fill?: number; /** Albedo multiplier on rows with a `scenery.tones` entry for this key (GU47 phase 3). */ tone?: "grass";  transparent?: boolean }
 const unit = (d: Rgb): number[] => { const l = Math.hypot(d[0], d[1], d[2]) || 1; return [d[0] / l, d[1] / l, d[2] / l]; };
 /**
  * Lit scenery driven by a per-vertex `tone` attribute (the geometry must supply it). On rows with `scenery.receiveShadow`
@@ -122,6 +122,8 @@ export const scenerySpec = (o: SceneryOptions = {}, row: CumulusLookRow = ACTIVE
     hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density },
     mapMix: { type: "f32", value: o.map ? o.mapMix ?? 0.75 : 0 }, mapScale: { type: "f32", value: o.mapScale ?? 1 },
     opacity: { type: "f32", value: o.opacity ?? 1 },
+    toneTint: { type: "vec3", value: [...((o.tone && row.scenery.tones?.[o.tone]) ?? [1, 1, 1])] },
+    shadowFloor: { type: "f32", value: row.scenery.shadowFloor ?? 0.32 },
     surfaceMap: { type: "texture2d" as const, ...(o.map ? { value: o.map as never } : {}) }
   },
   side: "double",

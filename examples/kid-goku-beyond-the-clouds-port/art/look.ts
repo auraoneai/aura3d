@@ -69,7 +69,7 @@ export interface CumulusLookRow {
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number } | null;
   readonly rim: { readonly color: string; readonly intensity: number; readonly azimuthDeg: number } | null;
   /** Scenery shader light (direction toward the sun, colour, rim tint, hemisphere fill). */
-  readonly scenery: { readonly sunDir: Vec3; readonly sunColor: Rgb; readonly rimColor: Rgb; readonly skyFill: Rgb; readonly groundFill: Rgb; readonly receiveShadow: boolean };
+  readonly scenery: { readonly sunDir: Vec3; readonly sunColor: Rgb; readonly rimColor: Rgb; readonly skyFill: Rgb; readonly groundFill: Rgb; readonly receiveShadow: boolean; /** Lit share left inside the sun shadow (default 0.32). */ readonly shadowFloor?: number; /** Albedo multipliers per surface (GU47 phase 3: rain-washed sage meadow). */ readonly tones?: { readonly grass?: Rgb } };
   readonly fog: { readonly color: string; readonly haze: Rgb; readonly density: number; readonly lookScale: number; readonly gorgeHeight: { readonly heightDensity: number; readonly heightFalloff: number; readonly heightReference: number } | null };
   readonly sky: CumulusSkyRow;
   readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature?: number; readonly tint?: number; readonly lift?: Rgb; readonly gain?: Rgb };
@@ -104,7 +104,7 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     authoredSunPos: null,
     hemisphere: null,
     rim: { color: CUMULUS_PALETTE.rim, intensity: 0.8, azimuthDeg: STORM_SUN.azimuthDeg + 180 },
-    scenery: { sunDir: STORM_DIR, sunColor: [1.0, 0.86, 0.68], rimColor: lin(0.62, 0.78, 1.0), skyFill: lin(0.5, 0.62, 0.8), groundFill: lin(0.5, 0.4, 0.3), receiveShadow: true },
+    scenery: { sunDir: STORM_DIR, sunColor: [1.0, 0.86, 0.68], rimColor: lin(0.62, 0.78, 1.0), skyFill: lin(0.5, 0.62, 0.8), groundFill: lin(0.5, 0.4, 0.3), receiveShadow: true, shadowFloor: 0.22, tones: { grass: [0.94, 0.84, 0.9] } },
     fog: { color: CUMULUS_PALETTE.haze, haze: linHex(CUMULUS_PALETTE.haze), density: 0.0032, lookScale: 1, gorgeHeight: { heightDensity: 0.05, heightFalloff: 0.12, heightReference: -12 } },
     sky: {
       top: linHex(CUMULUS_PALETTE.cobalt), mid: lin(0.36, 0.6, 0.86), horizon: linHex(CUMULUS_PALETTE.horizon),

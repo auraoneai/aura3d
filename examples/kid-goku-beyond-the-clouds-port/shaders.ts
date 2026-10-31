@@ -393,6 +393,7 @@ void main() {
   if (!gl_FrontFacing) n = -n;
   vec3 albedo = vTone;
   if (mapMix > 0.001) albedo *= mix(vec3(1.0), texture(surfaceMap, vUv * mapScale).rgb * 1.9, mapMix);
+  albedo *= toneTint;
   float ndl = dot(n, sunDirW);
   float wrap = clamp(ndl * 0.5 + 0.5, 0.0, 1.0);
   float lit = 0.62 * wrap * wrap + 0.38 * max(ndl, 0.0);
@@ -420,10 +421,11 @@ void main() {
   if (!gl_FrontFacing) n = -n;
   vec3 albedo = vTone;
   if (mapMix > 0.001) albedo *= mix(vec3(1.0), texture(surfaceMap, vUv * mapScale).rgb * 1.9, mapMix);
+  albedo *= toneTint;
   float ndl = dot(n, sunDirW);
   float wrap = clamp(ndl * 0.5 + 0.5, 0.0, 1.0);
   float lit = 0.62 * wrap * wrap + 0.38 * max(ndl, 0.0);
-  lit *= mix(0.32, 1.0, a3dSunShadow(vW, n, sunDirW));
+  lit *= mix(shadowFloor, 1.0, a3dSunShadow(vW, n, sunDirW));
   vec3 hemi = mix(groundFill, skyFill, n.y * 0.5 + 0.5);
   vec3 col = albedo * (sunColor * lit * sunStrength + hemi);
   vec3 vdir = normalize(cameraPosition - vW);

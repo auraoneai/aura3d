@@ -14,7 +14,7 @@ import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
-import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
+import { launchFovKick, titleFlyover, titleHold, traumaFor } from "./art/camera";
 import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
@@ -205,7 +205,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
   ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
-  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
+  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2, tone: "grass" })));
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
   scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL.trees));
@@ -466,7 +466,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const k = Math.sin(Math.min(1, (0.9 - (s.grabTimer ?? 0)) / 0.9) * Math.PI) * 3.2;
         pos = at(s.s, s.lane, h + k);
       }
-      if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
+      if (phase === "menu" && cinematic) {
+        // GU47 phase 3: the storm title hold stands on the sun side; the runner turns three-quarters toward it, front-lit
+        const sd = ACTIVE_LOOK.sky.sunDir, sl = Math.hypot(sd[0], sd[2]) || 1;
+        yaw = yawOf([(sd[0] * 8.4 - sd[2] * 3.5) / sl, 0, (sd[2] * 8.4 + sd[0] * 3.5) / sl]) + 0.5 + Math.sin(clock * 0.3) * 0.08;
+      } else if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
       if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
       if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
       const finaleRun = phase === "finale" && (g.finale?.t ?? 0) < 4;
@@ -706,6 +710,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       if (fly) {
         wantEye = [fly.eye[0], fly.eye[1], fly.eye[2]]; wantLook = [fly.look[0], fly.look[1], fly.look[2]];
         fov = fly.fov; cut = !eye || titleT === 0;
+      } else if (phase === "menu" && cinematic) {
+        const hold = titleHold(clock, pos, ACTIVE_LOOK.sky.sunDir, g.reducedMotion);
+        wantEye = [hold.eye[0], hold.eye[1], hold.eye[2]]; wantLook = [hold.look[0], hold.look[1], hold.look[2]];
+        fov = hold.fov; cut = !eye;
       } else if (phase === "menu") {
         const a = clock * 0.18 + 0.2;
         wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);

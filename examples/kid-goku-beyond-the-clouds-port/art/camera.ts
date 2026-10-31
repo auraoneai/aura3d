@@ -35,6 +35,23 @@ export function titleFlyover(t: number, hero: V3, sunDir: V3, reducedMotion: boo
   return { eye, look, fov: mix(58, 40, k), bars };
 }
 
+/**
+ * GU47 phase 3: the storm row's title hold after the flyover (and the whole title on reduced motion). The eye stays on the
+ * sun side of the runner, low, looking past the runner into the antisolar sky, so the title frame always carries the
+ * look's signature (rainbow arc, storm towers, rain curtains) with the runner front-lit in the lower third. A slow sway
+ * (none on reduced motion) replaces the old full orbit, which spent most of its loop looking down the track.
+ */
+export function titleHold(clock: number, hero: V3, sunDir: V3, reducedMotion: boolean): { eye: V3; look: V3; fov: number } {
+  const l = Math.hypot(sunDir[0], sunDir[2]) || 1;
+  const u: V3 = [sunDir[0] / l, 0, sunDir[2] / l];
+  const v: V3 = [-u[2], 0, u[0]];
+  const sway = reducedMotion ? 0 : Math.sin(clock * 0.15);
+  const along = 8.4, side = 3.5 + 1.1 * sway, up = 2.4;
+  const eye: V3 = [hero[0] + u[0] * along + v[0] * side, hero[1] + up, hero[2] + u[2] * along + v[2] * side];
+  const look: V3 = [hero[0] - u[0] * 6 + v[0] * 0.6 * sway, hero[1] + 1.6, hero[2] - u[2] * 6 + v[2] * 0.6 * sway];
+  return { eye, look, fov: 40 };
+}
+
 /** Trauma to add this frame for an impact that rose from `before` to `now` (0 on reduced motion or no rise). */
 export function traumaFor(before: number, now: number, reducedMotion: boolean): number {
   if (reducedMotion) return 0;
