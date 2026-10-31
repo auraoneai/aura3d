@@ -66,8 +66,11 @@ describe("GU47 TT-P3: venue LUTs", () => {
       // Effect builders serialise to their node (toJSON), as the compiler reads them.
       const grade = (JSON.parse(JSON.stringify(postEffects(venue))) as Record<string, unknown>[]).find((n) => n.effect === "color-grade")!;
       expect(grade.lut).toBe(url);
-      expect(grade.lutIntensity).toBe(1);
-      expect(venueRuntimePlan(VENUE_LOOKS[venue]).post.grade).toMatchObject({ lut: url, lutIntensity: 1 });
+      // Each venue declares its own LUT strength (the New York night grade runs at 0.7 since the blind-panel fix 43d083e9b).
+      const lutIntensity = VENUE_LOOKS[venue].grade.lutIntensity;
+      expect(lutIntensity).toBeGreaterThan(0);
+      expect(grade.lutIntensity).toBe(lutIntensity);
+      expect(venueRuntimePlan(VENUE_LOOKS[venue]).post.grade).toMatchObject({ lut: url, lutIntensity });
     }
     expect(venueLutUrl(null)).toBeNull();
     expect(venueLutUrl("nope")).toBeNull();
