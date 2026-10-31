@@ -21,7 +21,10 @@ export const MESHY_ASSETS = defineModelAssets({
   clockTower: entry("clock-tower.glb", "2655ad824c490d3965273acfab2c12292fc8a1af82b328d85a749f09f42437be"),
   lighthouse: entry("lighthouse.glb", "d950164609a9857961db4e5bb1862066d502b7b43417c44e65d91d80039982ae"),
   crates: entry("crates.glb", "e037dd6cb054c0f67e03521f6e992ac920852b11467a1c7801706af5d3c3dc46"),
-  lamp: entry("lamp.glb", "66bb1e5bc3780484e52f5836034afe53fdcd08872720984c78672ac9abe77204")
+  lamp: entry("lamp.glb", "66bb1e5bc3780484e52f5836034afe53fdcd08872720984c78672ac9abe77204"),
+  /** GU47 WP-36 lamplightTramEnamel (LT-11): Meshy retexture of tram.glb (cherry enamel, cream band, brass, teak; metallic and
+   * roughness maps), task 01a18c0d-2132-746a-8858-14d692c19fd1. Band look only; `?look=original` keeps tram.glb. */
+  tramEnamel: entry("tram-enamel.glb", "05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33")
 }, { license: LICENSE, queryParam: null }).refs;
 
 export const MESHY_ENABLED = !(typeof location !== "undefined" && /[?&]procedural=1\b/.test(location.search));
@@ -38,6 +41,10 @@ export const TRAM = {
   /** standing floor inside the tram, tram-local metres */
   floorY: 0.8
 };
+
+/** tram-enamel.glb is normalised to a longest side of 2.0 (tram.glb: 1.902), so the band look scales it by 0.951 to keep the
+ * tram's world size (collision and seats unchanged). */
+export const TRAM_ENAMEL_SCALE = TRAM.scale.map((v) => v * 0.951) as unknown as readonly [number, number, number];
 
 export const PAX_SCALE = 0.85;
 

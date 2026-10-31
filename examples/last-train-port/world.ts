@@ -15,7 +15,7 @@ import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION } from "./lights";
 import { probes } from "@aura3d/engine/lanes";
-import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
+import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
@@ -268,6 +268,13 @@ const FX = new Set((QUERY.get("fx") ?? "").split(","));
 /** GU47 LT-01: `?band=A..E` pins a band; `?look=original` keeps today's day / night look. */
 export const PINNED_BAND = parseBand(QUERY.get("band"));
 export const LOOK = parseLook(QUERY.get("look"));
+/**
+ * GU47 phase 4 (4.7.2): the band look uses the engine's 4.3.0 sun-shadow fit (`__A3D_SHADOW_FIT__ = "current"`). The default
+ * 4.2.0 fit widens every cascade to the bounds of every caster, and this route's merged facades, roofs, rails, sleepers and
+ * pylon beams span every town and leg, so each cascade covered the whole line and no shadow shape drew (rubric shadows 4.5:
+ * "only a soft smudge under the tram"). `?shadowfit=legacy` restores the 4.2.0 fit; `?look=original` never sets it.
+ */
+if (LOOK === "bands" && !FX.has("noshadow")) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
 /** GU47 LT-07: the tilt-shift band (screen rows in focus) and the grain; DOF and god rays drop below High in the engine's post tiers. */
 export const TILT_SHIFT = { bandCenter: 0.56, bandWidth: 0.34, angleDeg: 0 } as const;
@@ -604,7 +611,8 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: cast }));
 
   /* ---- tram and passengers (flat top-level nodes, moved from the runtime) ---- */
-  if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...TRAM.scale] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
+  // GU47 phase 4 (WP-36 lamplightTramEnamel, LT-11): the band look carries the enamel retexture; ?look=original keeps tram.glb.
+  if (MESHY_ENABLED) b.add(model(row ? MESHY_ASSETS.tramEnamel : MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...(row ? TRAM_ENAMEL_SCALE : TRAM.scale)] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
   else for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
   SEATS.forEach((_, i) => {
     if (MESHY_ENABLED) {
