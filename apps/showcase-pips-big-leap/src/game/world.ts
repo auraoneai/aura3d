@@ -510,11 +510,10 @@ function animatedDecorNode(d: DecorSpec): SceneNodeArg {
 function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: BuildWorldOptions): void {
   const skyColor = spec.background ?? "#1e4d78";
   // Look preset — fog itself is authored below so its color tracks the sky
-  // exactly instead of the preset's generic haze tint.
-  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
-    fogDensityScale: 0,
-    background: skyColor
-  });
+  // exactly instead of the preset's generic haze tint. No `background` override: since
+  // GU47 E-A (9001eb1f8) a colour background hides the look's HDRI, and that HDRI is the
+  // light sky 4.6.2 drew behind every world (the override turned it into a flat navy wall).
+  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], { fogDensityScale: 0 });
   if (options.ambientOcclusion === false) {
     const group = look.toJSON();
     builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });
