@@ -95,7 +95,7 @@ const config = {
   /** `props=0` leaves the street furniture without colliders (diagnostics) */
   props: params.get("props") !== "0",
   /** GU47 WP-28: `look=original` keeps the 4.6.1 look; default is the time-of-day shift look */
-  look: parseLook(params.get("look")),
+  look: parseLook(params.get("look"), params.get("env") !== "0"),
   /** GU47 WP-28: `at=N` pins the time-of-day clock at N seconds of 180 (visual only; golden 10, sunset 120, bluehour 170) */
   at: parseAt(params.get("at")),
   /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */

@@ -190,7 +190,13 @@ export function parseAt(raw: string | null | undefined): number | undefined {
   return Number.isFinite(n) ? Math.max(0, Math.min(SHIFT_CLOCK, n)) : undefined;
 }
 
-export const parseLook = (raw: string | null | undefined): LookMode => (raw === "original" ? "original" : "shift");
+/**
+ * `?look=` to a look mode. GU47 phase 2 (PRD D11): the lights-only diagnostic (`env=0`) defaults to the original look,
+ * because the shift look without its HDRI glared the wet road white ahead of the courier by the 60 s frame (two
+ * capture rounds, worse than 4.6.2); `?look=shift` still forces it.
+ */
+export const parseLook = (raw: string | null | undefined, env = true): LookMode =>
+  raw === "original" ? "original" : raw === "shift" || env ? "shift" : "original";
 
 /* ------------------------------------------------------------------ blending */
 
