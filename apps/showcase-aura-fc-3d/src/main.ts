@@ -26,7 +26,7 @@ import { ORIGINAL_LOOKS, fcLookMode } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
-import { fitCameraToAspect, broadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
+import { fitCameraToAspect, broadcastPose, originalBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
 import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
 import { bindScoreboardText, shownScore } from "./game/scoreboard3d";
 import { loadSave } from "./game/save";
@@ -313,7 +313,8 @@ function boot(): void {
   let prevModeTag = "";
   // FC47-C1 broadcast package: tunnel-to-gantry intro once per match (`?intro=off`; reduced motion cuts straight to the
   // gantry), goal replay from the render-side ring buffer (`?replay=off`), full-time orbit, a hard cut on shot changes.
-  const introOff = bootParams.get("intro") === "off" || reducedMotion;
+  // PRD D11: the original look path keeps the 4.6.2 camera too (no rail, the 9.5 m side-follow broadcast rig).
+  const introOff = bootParams.get("intro") === "off" || reducedMotion || bootOriginal;
   const replayOff = bootParams.get("replay") === "off";
   let introPlayed = false;
   // Phase 2: the rail runs on wall-clock time as well as frame time. Frame dt is clamped to 0.1 s, so on a slow
@@ -406,7 +407,7 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
-      const shot = broadcastPose(cam.followX, b.x, b.z);
+      const shot = fcLookMode(sceneVenue) === "original" ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;

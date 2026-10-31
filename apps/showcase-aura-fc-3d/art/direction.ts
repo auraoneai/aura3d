@@ -45,8 +45,9 @@ export default defineArtDirection({
     // Night venues: the main-stand flood is the one shadowed key (PCSS spot); day venues use a cascaded sun.
     key: { type: "spot", colorTemperatureK: 5600, shadow: true },
     fill: "ibl",
-    // look key (0.4 front fill) + cool rim + one unshadowed flood on the sunset venue: at most 2 non-key lights
-    practicals: 2,
+    // look key (0.4 front fill) + cool rim + one unshadowed flood on the sunset venue; phase 2 relit the night venues
+    // with the three other tower banks as unshadowed spots (look key + rim + 3 banks): at most 5 non-key lights
+    practicals: 5,
     environment: { hdri: "night-2k", background: "sky" },
     exposureEV: 0.15
   },

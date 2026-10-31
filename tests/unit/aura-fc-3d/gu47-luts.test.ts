@@ -29,7 +29,7 @@ describe("aura-fc-3d GU47 venue LUTs (FC47-P2)", () => {
   });
 
   const gradeOf = (venue: (typeof VENUE_ORDER)[number], lut: boolean) => {
-    const nodes = (buildFcScene(venue, { engineGates: { lut } }).toJSON() as unknown as { nodes: { name?: string; children?: { name?: string; lut?: { url?: string } }[] }[] }).nodes;
+    const nodes = (buildFcScene(venue, { engineGates: { lut }, lookMode: "gu47" }).toJSON() as unknown as { nodes: { name?: string; children?: { name?: string; lut?: { url?: string } }[] }[] }).nodes;
     return nodes.flatMap((n) => [n, ...(n.children ?? [])]).find((n) => n.name === "look color grade") as { lut?: { url?: string } } | undefined;
   };
 
