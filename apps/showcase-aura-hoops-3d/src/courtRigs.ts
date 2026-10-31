@@ -136,6 +136,8 @@ export interface CourtRig {
   /**
    * GU47 phase 3: a painted gradient sky behind the court (the HDRI keeps lighting it). Rucker and Athens drew a flat,
    * washed pale strip above the horizon (blind panel round g07p3r1); a sky with a real zenith and horizon gives depth.
+   * Unused since round 3 (trap): a sky node mounted on the boot court stayed in the atmosphere after the court swap,
+   * and the next court's fog painted it over that court's HDRI backdrop (Manila drew a flat brown void, rounds g07p3r2/r3).
    */
   readonly gradientSky?: { readonly zenith: AuraColor; readonly horizon: AuraColor; readonly ground: AuraColor; readonly horizonGlow: number; readonly clouds?: number };
   /** H47-E3: real water (Venice surf, Shanghai river). */
@@ -218,8 +220,6 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 3: the two camera-facing flood flares are off (they veiled the chase frame; blind panel).
     lensFlare: [],
     preethamSky: false,
-    // blue hour: deep indigo zenith down to the last sunset glow over the walk-ups
-    gradientSky: { zenith: "#101a3e", horizon: "#c8714a", ground: "#25282d", horizonGlow: 0.6 },
     water: "none",
     skylineDistance: 92,
     backdrop: "brick walk-ups behind a 4 m chain-link fence",
@@ -285,9 +285,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     practicals: [],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
     lensFlare: [],
-    // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); a painted noon gradient is the sky.
+    // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); the outdoor-midday HDRI is the sky.
     preethamSky: false,
-    gradientSky: { zenith: "#2d6cc4", horizon: "#9fc4e8", ground: "#8c8579", horizonGlow: 0.2, clouds: 0.25 },
     water: "none",
     skylineDistance: 100,
     backdrop: "whitewashed hillside and rooftop parapets",
