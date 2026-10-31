@@ -485,6 +485,8 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
  * Draws: Rucker +4 cones (+ the fog stage), Manila +1 motes (+ the fog stage); +12 max per PRD. Reduced motion halves
  * and stills the motes (PRD §6.3); the Low tier drops volumetric fog in the engine (forward fog only).
  */
+// GU47 phase 2: volumetric density is extinction per metre (sigma ~1.6-2x density). 0.08 / 0.12 left ~2 % of the court
+// visible from the 20-25 m broadcast camera (Rucker grey veil, Manila white-out); 0.006 / 0.008 keep a thin haze.
 export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [];
   if (rig.id === "rucker") {
@@ -494,12 +496,12 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
       const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
       out.push(effects.lightCone({ name: `${p.name}-cone`, position: p.position, direction: [dir[0] / len, dir[1] / len, dir[2] / len], color: p.color, intensity: 0.22, length: 11, coneAngle: p.angle * 0.8, softness: 0.7 } as Parameters<typeof effects.lightCone>[0]) as AuraNodeBuilder<AuraSceneNode>);
     }
-    out.push(effects.volumetricFog({ name: "rucker flood haze", density: 0.08, color: "#5a5048", intensity: 0.45, lightPosition: [0, 9, -7], heightFalloff: 0.12, godRayDensity: 0.2 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "rucker flood haze", density: 0.006, color: "#5a5048", intensity: 0.3, lightPosition: [0, 9, -7], heightFalloff: 0.12, godRayDensity: 0.2 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
   } else if (rig.id === "manila") {
     const el = (rig.sun.elevationDeg * Math.PI) / 180;
     const az = (rig.sun.azimuthDeg * Math.PI) / 180;
     const gap: AuraVec3 = [Math.sin(az) * Math.cos(el) * 30, 9.2 + Math.sin(el) * 30, Math.cos(az) * Math.cos(el) * 30 + 4];
-    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.12, color: "#c9d5e6", intensity: 0.6, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.008, color: "#8f8a80", intensity: 0.35, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
     out.push(effects.particles({
       name: "manila-dust-motes",
       position: [0, 3.2, 4],
