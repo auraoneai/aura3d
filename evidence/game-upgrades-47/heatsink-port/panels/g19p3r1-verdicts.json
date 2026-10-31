@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mountains are greyish and hazy, so they lack contrast. A translucent rectangular slab and a see-through planet overlap the sky at upper left and center, which looks like a blending artifact. White squiggle decals on the grid floor are a little noisy. Otherwise the frame is vivid and colourful: the purple aurora sky, the gate and the track all read clearly, and the drone stands out well.",
+     "Haze slightly washes out the left mountains and the mid-ground. Dark diamonds float in the sky. The white squiggle lines on the grid floor look a little noisy. Overall it is vivid, with good colour separation, a readable track and a clearly lit drone.",
+     "Haze washes out the mountains somewhat and makes the cliffs look flat and grey-white. Dark diamond shapes float in the sky without clear purpose. The white squiggle decals on the grid floor look a bit noisy. Otherwise the drone reads clearly against a vivid purple grid and an aurora sky with good depth."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A. The sky haze is a touch lighter, but the defects are the same: occluding overhead beam, dark muddy foreground, white floor patch.",
+     "The two images look identical. A dark gate beam blocks the top of the frame. The dark floor in the bottom half has low contrast and the teal palette looks muddy. A diamond floats in the sky.",
+     "The frames are essentially identical. A dark overhead bar blocks the top, the foreground is very dark and empty, the teal palette is monotone with low contrast, and there is a stray bright strip next to the drone."
+    ]
+   }
+  ]
+ }
+]

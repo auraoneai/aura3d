@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mountains are somewhat flat and lightly washed out by haze. The large rock overhang on the right looks a little odd. The floating purple diamonds read as collectibles, not a glitch.",
+     "The mountains are slightly hazy and washed out, with a soft pastel cast, and the planet looks a little flat. Otherwise the frame is clear and vibrant: the grid floor gives strong depth and perspective, the purple and teal palette is rich, the drone reads well against the floor, and the gate and track are visible.",
+     "Mild haze softens the distant mountains and the large overhanging rock on the right. The planet in the sky is a bit washed out. The ground grid is somewhat flat and busy. Otherwise the drone is clear, the colours are rich, and depth and composition are good."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A. A dark gantry bar cuts across the top of the frame, the track is very dark with little texture, and the scene has a monotone teal palette with low contrast.",
+     "Pixel-identical to B. A dark overhead beam occludes the top of the frame, the lower floor is dark and empty with low contrast, and the teal palette is monotone.",
+     "Practically identical to A: the same overhead band across the top, the same dark, muddy ground and the same muted palette."
+    ]
+   }
+  ]
+ }
+]

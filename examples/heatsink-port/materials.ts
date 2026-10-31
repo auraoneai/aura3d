@@ -124,7 +124,7 @@ export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec
   uniforms: {
     ...lightUniforms(),
     snowLine: { type: "f32", value: snowLine },
-    terrainTint: { type: "color3", value: [...tint] }
+    terrainTint: { type: "color3", value: [tint[0] * shading.lit.rockTint[0], tint[1] * shading.lit.rockTint[1], tint[2] * shading.lit.rockTint[2]] }
   },
   side: "double"
 });

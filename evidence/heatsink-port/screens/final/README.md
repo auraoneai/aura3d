@@ -1,4 +1,12 @@
-# Ion Circuit: final screenshots (audit-fix retake, 2026-10-29)
+# Ion Circuit: final screenshots (GU47 phase-3 retake, 2026-10-31)
+
+- **Build:** branch `gu47/g19` at b967a20f2 (Aura3D 4.7.0 plus the phase-3 twilight default: panel-verified better than 4.6.2 in rounds g19p3r1..r3, 3/0/0 each). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`, remote run `g19p3-scr-2` (picassostagingacr), decoded with `tools/shots/decode-shotsb.mjs`.
+- **Runner:** headless Chromium on SwiftShader: software WebGL2, not a GPU. `quality=low` as before (no GTAO, motion blur, CA, grain or lens flare; one shadow cascade).
+- **Card:** `card@2x.jpg` is the strike state at 1440x900 (`strike-card2x` in the log), `card.jpg` is it downscaled to 720x450; previews rebuilt with `node tools/site/build-card-images.mjs`.
+- **Known:** in the 390 frames the two-line objective touches the district banner; the `max-width: 500px` rule that moves the banner to 172 px landed after this capture and is not in these frames.
+
+## Previous set (audit-fix retake, 2026-10-29)
+
 
 - **Build:** branch `audit-fix/g19` (4.5.0 engine plus the lane G19 fixes: GO banner, HUD, touch controls, contact shadow, strip bounds, LIGHT-01 environment). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`.
 - **Runner:** remote Azure ACR task `g19-w3-screens` (`tools/remote-acr/run.sh`), headless Chromium on SwiftShader: software WebGL2, not a GPU. The owner should confirm the look on real hardware.

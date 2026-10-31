@@ -30,3 +30,15 @@ Status: done = code in phase 1; P2 = needs a phase-2 capture, judge or measureme
 | IC-24 | 2.5x scenery, beacons, violet rift, art direction | partial: art direction done (audit passes); scatter density, beacons, rift not done |
 | IC-25 | budget rows, quality by pointer and fps | partial: budget.json done; fps < 30 drops post at runtime; measurement P2 |
 | IC-26 | captures, sibling judge, card | P2 |
+
+## Phase 3 (4.7.1, 2026-10-31)
+
+| Item | Status |
+|---|---|
+| Default view vs 4.6.2 (blind 3-judge panel) | new twilight look kept: better 3/0/0 in g19p3r1, g19p3r2, g19p3r3 (head = r3 code); `?look=original` = 4.6.2 (same 0/0/3) |
+| Menu backdrop at the world origin (judges' "overhead beam" / "bright patch") | fixed for twilight: menu drawn from the grid slot (read-only view, sim untouched) |
+| IC-01 / IC-05 / IC-08 luma bands (`luma-bands.json`, `luma-after.json` from r3) | pass except frame mean 77.2 vs 62-75 (band not widened; reported) |
+| IC-12 heat | intensities halved (0.12..0.95) after the mid-action frame |
+| IC-23 banner | no longer overlaps the objective line (<= 900 px: 152 px; <= 500 px: 172 px) |
+| IC-26 final screens and card | retaken on the phase-3 build (g19p3-scr-2), previews rebuilt; rubric in `look-judgement.json` (min 3.5 shadows; see the lane report) |
+| IC-26 sibling judge | 2 of 5 neighbours pass on the r3 frame (roadster-rush, teleoperator); the rest wait on WP-36 assets (drone retexture, rib arch) |

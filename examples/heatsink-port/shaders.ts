@@ -101,6 +101,10 @@ void main() {
   // long pale dashed lane lines near the edges, short centre dashes
   float edgeLine = (1.0 - smoothstep(0.0, 0.018, abs(abs(u) - 0.80))) * step(0.22, fract(s / 55.0));
   float dash = step(0.5, fract(s / 14.0)) * (1.0 - smoothstep(0.0, 0.025, abs(u)));
+  // GU47 phase 3 (glass = 0 under ?look=original): the near centre dash read as a hard white slab next to the drone;
+  // on the obsidian causeway the dashes get soft ends and a narrower soft core and fade out over the first 18 m
+  float dashSoft = smoothstep(0.5, 0.56, fract(s / 14.0)) * (1.0 - smoothstep(0.94, 1.0, fract(s / 14.0))) * (1.0 - smoothstep(0.004, 0.018, abs(u)));
+  dash = mix(dash, dashSoft * smoothstep(8.0, 26.0, length(vWorld - cameraPosition)), glass);
   float curb = smoothstep(0.93, 0.985, abs(u));
   vec3 neon = mix(vRoad, vec3(0.80, 0.95, 1.0), 0.7);
   gSun = a3dSunShadowAuto(vWorld, N);
@@ -111,16 +115,20 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0);
   vec3 Rv = reflect(-V, N);
-  vec3 mirror = mix(vec3(0.06, 0.16, 0.18), mix(vec3(0.42, 0.20, 0.36), vec3(0.16, 0.12, 0.36), smoothstep(0.0, 0.3, Rv.y)), smoothstep(-0.05, 0.08, Rv.y));
+  vec3 mirror = mix(vec3(0.04, 0.12, 0.14), mix(vec3(0.36, 0.16, 0.30), vec3(0.12, 0.09, 0.30), smoothstep(0.0, 0.3, Rv.y)), smoothstep(-0.05, 0.08, Rv.y));
   vec2 hx = vec2(u * 9.0, s * 0.22);
   vec2 hc = abs(fract(vec2(hx.x + 0.5 * floor(hx.y), hx.y)) - 0.5);
   float seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
   float pulse = 0.5 + 0.5 * sin(s * 0.09 - u_time * ionSpeed * 0.09);
   // GU47 phase 2: the reflection was mirror * (0.35 + 1.6 * fres) over color * 0.55, which turned the chase view of the
   // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
-  color = mix(color, color * 0.42 + mirror * (0.16 + 0.7 * fres), glass);
+  // GU47 phase 3: darker obsidian (0.34 / 0.10 + 0.5 fres) and a warm grazing glint of the sunset band along the sun azimuth
+  float glint = pow(max(dot(Rv, normalize(sunDir)), 0.0), 18.0);
+  // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen;
+  // round g19p3-r3 lifts the near floor a little (r2 bottom corner cells 39.5 vs the IC-01 floor of 40)
+  color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
   color += vRoad * seam * 0.12 * seams;
-  color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.5) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass;
+  color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
   color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;
   color += vec3(0.75, 0.9, 1.0) * dash * 0.28;
@@ -210,8 +218,12 @@ void main() {
   float sunAz = cos(az - atan(sd.z, sd.x)) * 0.5 + 0.5;
   float bandW = pow(sunAz, 2.2) * (1.0 - smoothstep(0.0, 0.32, h)) * smoothstep(-0.06, 0.02, h);
   vec3 band = mix(bandLow, bandHigh, smoothstep(0.0, 0.2, h));
-  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.25, 0.9, h)), smoothstep(-0.02, 0.18, h));
-  twSky += band * bandW * 0.85 + vec3(0.10, 0.08, 0.22) * (1.0 - smoothstep(0.0, 0.5, abs(h)));
+  // GU47 phase 3: the teal-to-violet turn was smoothstep(-0.02, 0.18, h); the teal-fogged cliffs then stood as pale ghosts on
+  // violet (round g19p3-r1). The sky now stays teal behind the canyon walls and turns violet above them
+  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
+  // GU47 phase 3: the lavender lift was vec3(0.10, 0.08, 0.22) over |h| < 0.5 and washed the planet into the sky; it now
+  // hugs the horizon (|h| < 0.22) so the violet upper sky stays deep and the planet and aurora read against it
+  twSky += band * bandW * 0.95 + vec3(0.04, 0.06, 0.10) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
   sky = mix(sky, twSky, twilight);
   // cloud layer hugging the horizon
   float cl = fbm(vec2(az * 2.4 + u_time * 0.008, h * 6.0));
@@ -238,12 +250,14 @@ void main() {
   vec2 sunP = normalize(vec2(dot(sd, pr), dot(sd, pu)) + vec2(1e-4, 0.0));
   float crescent = mix(1.0, 0.25 + 1.4 * smoothstep(-0.2, 0.7, dot(pp, sunP)), twilight);
   float ringShadow = mix(1.0, 1.0 - 0.7 * step(q.y, 0.0) * (1.0 - smoothstep(0.7, 1.05, abs(q.x))), twilight);
-  vec3 planet = mix(vec3(0.12, 0.08, 0.22), vec3(0.50, 0.34, 0.52), fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent + vec3(0.55, 0.50, 0.62) * ring * 0.55 * ringShadow;
+  vec3 planet = mix(vec3(0.12, 0.08, 0.22), vec3(0.50, 0.34, 0.52), fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent * (1.0 + 0.45 * twilight) + vec3(0.55, 0.50, 0.62) * ring * 0.55 * ringShadow * (1.0 + 0.35 * twilight);
   float moonMask = 1.0 - smoothstep(0.022, 0.026, acos(clamp(dot(d, normalize(moonDir)), -1.0, 1.0)));
   float sun = pow(max(dot(d, normalize(sunDir)), 0.0), 160.0);
   vec2 g = floor(d.xz * 700.0 + d.y * 300.0);
   float star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h) * (1.0 - twilight * 0.5 * (0.5 + 0.5 * sin(u_time * 3.0 + hash21(g + 7.0) * 40.0)));
-  vec3 color = sky + aur + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
+  // twilight: the planet disk occludes the aurora behind it (additive, it washed out into the violet band)
+  vec3 behind = mix(sky + aur, sky * 0.35, disk * twilight * 0.85);
+  vec3 color = behind + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
   outColor = vec4(color, 1.0);
 }`;
 

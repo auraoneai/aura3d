@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/heatsink-port/screens/final/card@2x.jpg",
+      "sha256": "fdbbf0d35568d926007a16663cee1bd57ed64e5433588a9a707d4f4194511adf"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/mid-action-640.jpg",
+      "sha256": "ffa1d635d8ff3213a8bde49287cfb2373f327cac62637d3396e1ef35482153c7"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/results-640.jpg",
+      "sha256": "ecf53a7e9752c33cd8492fccb22750c895e08c299b35f0d8be46774e15a6b82d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/heatsink-port/p3-r3/heatsink-port/frames/g19p3-r3-1/heatsink-port--default--settle-60s.jpg",
+      "sha256": "148998cff4e11af83128fdf7dadccfec00c20e6b7557ef5f9b69578f3da410cb"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 6,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, even ambient lighting over the purple track and teal cliffs with no directional key or low sun. It reads as overcast twilight rather than the golden hour the recipe expects. The drone has some specular on its orange canopy, but the scene has little light shaping."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is no visible contact shadow under the hovering drone on the track grid, and the gate arches cast no shadow. The cliffs show no cast shadow, so the drone floats without grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The drone cockpit dome and orange shell pick up a soft environment sheen. The track surface is matte, with no reflection of the sky or neon lines."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Stylized alien canyon with a ringed planet, purple floating crystals, mushrooms, coral and teal spikes along the rails, which gives a coherent theme. However, the cliff meshes are low-detail with smeared contour textures, and the track's tiled grid and white squiggle decals repeat noticeably."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far cliffs and the end of the track, and the purple and teal aurora sky adds mood. There are no volumetrics or light shafts, and the haze is uniform."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The drone has a decent PBR-like orange metal and dark carbon look. The cliffs use stretched striated textures, and the track is a flat emissive grid with little roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone model is reasonably detailed, with rotor arms, landing legs and a camera pod. The gate is a plain black box frame, and the roadside props are simple primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "The drone is centered and fills roughly 15–20% of the frame, within the target range, with a strong vanishing point down the track. In frame 1, the HUD bar and the stacked title and target banners clutter the top center."
+    },
+    {
+      "category": "camera",
+      "seen": "Low chase cam behind the drone with a sensible FOV. In frame 2, the high-speed boost tilts the view and the trail obscures the screen, which reads as chaotic."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a speed-line burst during boost and a bright cyan trail bloom. The palette is purple and teal with an orange accent rather than the warm cinematic grade the recipe calls for, and there is no film grain or vignette. In frame 2, the boost trail blows out the right side of the frame."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Speed lines and the afterburner trail suggest motion, and the drone banks in frame 2. The stills give limited evidence beyond that."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean, readable dark-panel HUD with score, multiplier, kills, lap, time, hull and resource bars. At the 640px size in frame 2, the panels cover a large share of the screen, and the results modal is plain text-wall styling."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -148,7 +148,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   const arches = buildArches(track);
   b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
   b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
-  b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
+  b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(look.wake.enabled ? solidSpec(hexLinear("#1e1a34"), hexLinear("#6a48e0"), 0.55) : solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
   /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
   if (look.dressing.beacons) b.add(geometry.custom(dynamicFrom(buildBeacons(track)), { name: "beacons", material: material.custom(beaconSpec()), castShadow: false }).runtime({ id: fogTracked("beacons", "beacons") }));
@@ -411,10 +411,26 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     }
   }
 
+  /*
+   * GU47 phase 3: before the first sim step the drone's visual position is still (0, 0, 0) (`Vehicle.updateVisual` runs
+   * only inside `race.frame`), so the menu backdrop drew the drone and the chase camera at the world origin, under a
+   * gantry arch beside a centre dash, not on the grid. The twilight look draws the menu from the grid slot instead; a
+   * read-only view, the sim's own player is untouched (PRD D8). `?look=original` keeps the 4.6.2 menu frame.
+   */
+  const menuView = { player: null as Race["player"] | null, position: { x: 0, y: 0, z: 0 } };
+  function menuPlayer(race: Race): Race["player"] {
+    const p = race.player;
+    if (!twilight || race.frames > 0) return p;
+    const g = track.frame(p.s, scratchFrame);
+    menuView.position.x = g.x + g.rx * p.x; menuView.position.y = p.yW; menuView.position.z = g.z + g.rz * p.x;
+    if (!menuView.player || Object.getPrototypeOf(menuView.player) !== p) menuView.player = Object.create(p, { position: { value: menuView.position } }) as Race["player"];
+    return menuView.player;
+  }
+
   const rotationOf = (e: readonly [number, number, number]) => multiplyMat3(multiplyMat3(axisRotation("z", e[2]), axisRotation("y", e[1])), axisRotation("x", e[0]));
 
   function update(race: Race, hud: HudValues, dt: number, time: number, aspect: number): void {
-    const p = race.player;
+    const p = menuPlayer(race);
     const fr = track.frame(p.s, frame);
     /* drone */
     const euler = droneEuler(fr, p.theta, p.pitch, p.lean);
