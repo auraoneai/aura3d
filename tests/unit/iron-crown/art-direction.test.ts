@@ -50,13 +50,13 @@ function venueSnapshot(stage: IronStage): ArtDirectionSnapshot {
 }
 
 describe("iron-crown art direction (GU47 WP-15)", () => {
-  it("defines the Royal Forge identity: core palette, enclosed studio-lit boot venue, one shadowed spot key", () => {
+  it("defines the Royal Forge identity: core palette, enclosed warm_bar boot venue, one shadowed spot key", () => {
     expect(direction.id).toBe("showcase-iron-crown");
     expect(direction.genre).toBe("fighting");
     expect(direction.palette.primary).toEqual(["#0e0b0d", "#d9a441", "#9e1b22"]);
     expect(direction.lighting.key).toMatchObject({ type: "spot", shadow: true });
     expect(direction.lighting.fill).toBe("ibl");
-    expect(direction.lighting.environment).toEqual({ hdri: "studio_small_08", background: "enclosed" });
+    expect(direction.lighting.environment).toEqual({ hdri: "warm_bar", background: "enclosed" });
     expect(direction.signatureEffect).toMatch(/follow-spot/);
     expect(direction.signatureEffect).toMatch(/letterbox/);
   });
@@ -87,7 +87,7 @@ describe("iron-crown art direction (GU47 WP-15)", () => {
     const violations = auditArtDirection(direction, snapshot);
     const record = writeArtDirectionAudit(DIRECTION_FILE, { direction, snapshot, violations });
     expect(record.violations).toEqual([]);
-    expect(record.environment).toEqual({ hdri: "studio_small_08", background: "enclosed" });
+    expect(record.environment).toEqual({ hdri: "warm_bar", background: "enclosed" });
     expect(record.signatureEffect).toBe(direction.signatureEffect);
   });
 });

@@ -61,23 +61,23 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
   },
   "crown-arena": {
     lookId: "arena-fight",
-    hdri: "studio_small_08",
+    hdri: "warm_bar",
     background: "#141519",
     overrides: {
       accent: "#ffd76a",
-      exposureEv: 0.12,
+      exposureEv: 0.16,
       fogDensityScale: 0.7,
-      environmentIntensity: 0.85,
-      grade: { contrast: 1.14, saturation: 1.06, temperature: -0.02, tint: 0 }
+      environmentIntensity: 0.6,
+      grade: { contrast: 1.14, saturation: 1.06, temperature: -0.06, tint: 0 }
     },
     rim: { color: "#d8e6ff", intensity: 10 },
-    ringKey: { color: "#ffe9cc", intensity: 9 },
+    ringKey: { color: "#ffe9cc", intensity: 8 },
     ringFill: { color: "#e4ecff", intensity: 5 },
     cones: true,
     vignette: 0.22,
     bloom: { intensity: 0.26, threshold: 0.88 },
-    followSpot: { color: "#fff1dc", intensity: 22 },
-    mirror: 0.3
+    followSpot: { color: "#fff1dc", intensity: 30 },
+    mirror: 0.35
   },
   "desert-airbase": {
     lookId: "overcast",
@@ -107,7 +107,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       exposureEv: 0.04,
       fogDensityScale: 0.3,
       environmentIntensity: 0.75,
-      environmentRotationDeg: 120,
+      environmentRotationDeg: 300,
       sun: { elevationDeg: 24, azimuthDeg: 40 },
       key: { color: "#ffe2c4", intensity: 3, shadow: { filter: "pcf", mapSize: 2048 } },
       grade: { contrast: 1.15, saturation: 1.04, temperature: -0.04, tint: 0 }
