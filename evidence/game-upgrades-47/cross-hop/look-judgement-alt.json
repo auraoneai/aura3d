@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-03-action.jpg",
+      "sha256": "ccdcf2faa7bcdb7acd17b5c56d1ec6acfdba2a0d2157fa6c6d38fd454e5d90dc"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme1.jpg",
+      "sha256": "4419e4e6a681e5fca7084734b227074cddb1f8aae1558b6e38c8676a442b6270"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme3.jpg",
+      "sha256": "713b6b4fee0a00b10dd5ba7ee2dae8e926103ff2036e0f76f32c4257dace1ac6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme4.jpg",
+      "sha256": "696f945d15d5baec13dffc096b6b0618f0177834d606a6eb5d24170bff6a4ba4"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 4,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 4,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "animation_quality": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Meadow is flat and evenly lit with no clear key direction. Emberline has a warm sunset glow, but the foreground frog and grass sit in a dull, low-contrast midtone."
+    },
+    {
+      "category": "shadows",
+      "seen": "Vehicles and the frog have almost no readable contact shadows. Trucks and trams float on the asphalt, and the frog shows only a faint dark patch underneath."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Car paint has some baked glossy highlights from photo-scanned textures. Roads, water strips and logs show no environment reflection; the water is a flat blue band."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is a flat checker of grass, road, water and rail strips with sparse lollipop trees and blocky building silhouettes. Lily pads and logs are simple discs and half-cylinders."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far lanes in Meadow and Downtown. The sun disc is a blurry blob, and the Neon sky is a flat purple gradient."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Vehicles use photogrammetry-style textures that look rich but blotchy, like smeared baked albedo. Ground and logs use untextured flat colors with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Mixed fidelity: detailed scanned trams, locomotives and trucks sit beside primitive logs, cylinder lily pads and low-poly trees. The frog model is decent but its texture is mushy."
+    },
+    {
+      "category": "composition",
+      "seen": "Upper half is crammed with overlapping vehicles across many lanes, making a cluttered wall with poor lane readability. Huge oversized logs crop the bottom edge."
+    },
+    {
+      "category": "camera",
+      "seen": "Low behind-the-player chase angle rather than a clean elevated view. Far lanes stack and occlude each other; the frog sits at roughly 15% of the frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Mild bloom on the sun and a warm grade in Emberline. Little color grading or AO elsewhere; Meadow looks washed and grey-blue."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Small dust puffs on hops. The frog's pose looks stiff mid-hop, and vehicles packed bumper to bumper suggest crude spawning."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean score panel, coin and best pills, level badge and controls hint. The floating '+10 coin' / 'Quick Play' toast text is small and has a soft shadow."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

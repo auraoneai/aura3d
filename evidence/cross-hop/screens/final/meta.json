@@ -1,20 +1,21 @@
 {
-  "retaken": "2026-10-29",
-  "branch": "audit-fix/g14",
+  "retaken": "2026-10-31",
+  "branch": "gu47/g14",
   "runner": "remote ACR, headless Chromium, SwiftShader WebGL2",
   "spec": "tests/browser/audit-fix/cross-hop.spec.ts",
   "runs": {
-    "1280-01-title.jpg": "g14after-c sc-screens-1280/1280-01-title",
-    "1280-02-early.jpg": "g14after-c sc-screens-1280/1280-02-early",
-    "1280-03-action.jpg": "g14after-c sc-screens-1280/1280-03-action",
-    "1280-04-mid.jpg": "g14after-a sa-desk-play/settle-90s-hud",
-    "390-01-title.jpg": "g14after-c sc-screens-390/390-01-title",
-    "390-02-early.jpg": "g14after-c sc-screens-390/390-02-early",
-    "390-03-action.jpg": "g14after-c sc-screens-390/390-03-action",
-    "390-04-mid.jpg": "g14after-a sa-phone-play/settle-90s-hud",
-    "card-2x.jpg": "g14after-card sc-screens-card/card-2x",
+    "1280-01-title.jpg": "g14p3s1 sc-screens-1280/1280-01-title",
+    "1280-02-early.jpg": "g14p3s1 sc-screens-1280/1280-02-early",
+    "1280-03-action.jpg": "g14p3s1 sc-screens-1280/1280-03-action",
+    "1280-04-mid.jpg": "g14p3s1 sc-screens-1280/1280-04-mid",
+    "390-01-title.jpg": "g14p3s1 sc-screens-390/390-01-title",
+    "390-02-early.jpg": "g14p3s1 sc-screens-390/390-02-early",
+    "390-03-action.jpg": "g14p3s1 sc-screens-390/390-03-action",
+    "390-04-mid.jpg": "g14p3s1 sc-screens-390/390-04-mid",
+    "card-2x.jpg": "g14p3s1 sc-screens-card/card-2x",
     "card-1x.jpg": "card-2x.jpg downscaled to 720x450 (sips)"
   },
   "errors": [],
-  "incomplete": []
+  "incomplete": [],
+  "look": "4.6 look (Quick Play starts on Meadow, which keeps the 4.6 look after the GU47 phase-3 blind panel)"
 }
