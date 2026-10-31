@@ -473,9 +473,10 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   nodes.push(
     primitives.cylinder({ name: "stage-ground", material: islandSurface("turf", groundColor, 0.78, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.175, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
-    // Chalk cliff lip peeks above the turf at the island edge so the disc reads as a sea stack, not a decal.
+    // Chalk cliff lip around the turf at the island edge so the disc reads as a sea stack, not a decal. GU47 phase 2:
+    // its top sits 2 cm under the turf (it was 1 cm over, so the wider chalk disc covered the whole island white).
     primitives.cylinder({ name: "stage-ground-rim", material: islandSurface("wetRock", rimColor, 0.88, textured), castShadow: false, receiveShadow: true })
-      .position(1.5, -0.17, 0).scale([18.5, 0.36, 14.5]),
+      .position(1.5, -0.2, 0).scale([18.5, 0.36, 14.5]),
     // Bleached-sand beach ring above the waterline.
     primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
       .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
