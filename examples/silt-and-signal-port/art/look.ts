@@ -16,19 +16,23 @@ export type SiltLookMode = "inked" | "original";
 /**
  * GU47 phase 2 (PRD D11, no regression ships): chapters whose inked frame did not beat the 4.6.2 frame after two
  * remote capture rounds (software WebGL2) open in the original look by default; `?look=inked` still opts in.
+ * Blind-panel fix pass: ch4 storm (grey, muddy, horizon halo) and the bare entry URL (no `chapter` param: sepia wash,
+ * tiny rider) were judged worse than 4.6.2, so both ship the 4.6.2 look; `?chapter=0&start=1` keeps the inked look.
  */
-export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 6]);
+export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 4, 6]);
 
 /**
  * `?look=original` is today's look (PRD §6.1 ports keep it); `?look=inked` is the inked poster look. Without a `look`
- * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS.
+ * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS; the bare entry URL (no `chapter`) is original.
  */
 export function siltLookMode(search: string | URLSearchParams | undefined): SiltLookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
   const look = params?.get("look");
   if (look === "original") return "original";
   if (look === "inked") return "inked";
-  const chapter = Math.trunc(Number(params?.get("chapter") ?? 0));
+  const raw = params?.get("chapter");
+  if (raw === null || raw === undefined) return "original";
+  const chapter = Math.trunc(Number(raw));
   return ORIGINAL_DEFAULT_CHAPTERS.has(Number.isFinite(chapter) ? chapter : 0) ? "original" : "inked";
 }
 
