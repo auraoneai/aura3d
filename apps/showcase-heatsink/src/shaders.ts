@@ -208,7 +208,9 @@ export function skylineFacadeMaterial(o: SkylineFacadeOptions): AuraMaterialSpec
 /** GU47 phase 3 contact shadow: a dark disc with a soft radial falloff on a flat instanced box (one draw for all drones). */
 const CONTACT_SHADOW_VERTEX_GLSL = `out vec2 vTdDisc;
 void main() {
-  vTdDisc = position.xz / u_radius;
+  // Instance-local metres (the box size rides in the instance scale, as for the molten veins); round 4 drew squares
+  // from the raw unit-box position.
+  vTdDisc = (mat3(modelMatrix) * (mat3(instanceMatrix) * position)).xz / u_radius;
   gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
 }`;
 
@@ -220,7 +222,7 @@ void main() {
   outColor = vec4(0.0, 0.0, 0.0, a);
 }`;
 
-/** `radius` is half the box footprint in metres (the box geometry carries its size in its positions). */
+/** `radius` is half the box footprint in metres. */
 export function contactShadowMaterial(opacity: number, radius: number): AuraMaterialSpec {
   return material.custom({
     glsl: { vertex: CONTACT_SHADOW_VERTEX_GLSL, fragment: CONTACT_SHADOW_FRAGMENT_GLSL },

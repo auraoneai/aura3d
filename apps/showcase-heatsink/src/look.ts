@@ -143,7 +143,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     // GU47 phase 2: the after capture measured mean 94.2 (band 45-70, software WebGL2); the dust inscatter washed the frame
     // and hid the drone. Round 1 (-1 EV, inscatter 0.5) landed 68.8, too close to the ceiling; round 2 thins the dust further.
     // GU47 phase 3: with the boot fixed, round 1 measured mean 54 at -1.1 and 64 at -0.6 (software WebGL2); the frame read murky.
-    exposureEv: -0.9,
+    // Round 4: 73.0 at 25 s (lit deck before the low-sun shadow maps settle) and 52.1 at 60 s at -0.9 (software WebGL2).
+    exposureEv: -1.05,
     // Round 2 panel: "muddy brown monochrome, low contrast": more contrast and colour, a little less warmth.
     grade: { contrast: 1.16, saturation: 1.02, temperature: 0.24, tint: 0.03 },
     lutIntensity: 0.4,
