@@ -25,7 +25,7 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.32
+        "intensity": 0.42
       },
       {
         "type": "directional",
