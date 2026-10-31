@@ -983,7 +983,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         }
       }
       lastX = state.x;
-      const bars = state.phase === "won" || (introBlend !== null && introBlend < 1);
+      // Bars frame the countdown blend and the win shots; the title card itself stays full frame (GU47 phase 3).
+      const bars = state.phase === "won" || (introBlend !== null && introBlend > 0 && introBlend < 1);
       if (cinematic && bars !== barsShown) { barsShown = bars; document.documentElement.classList.toggle("shot-bars", bars); }
       cameraController.setPose({ position: shot.eye, target: shot.look, fov: shot.fov }, { cut: false });
       if (cinematic && roll !== lastRoll) { lastRoll = roll; cameraController.setRoll(roll, { halflife: ROLL_HALFLIFE }); }
