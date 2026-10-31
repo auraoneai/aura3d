@@ -25,12 +25,12 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.4000000000000004
+        "intensity": 2.72
       },
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 0.7040000000000001
+        "intensity": 1.344
       }
     ],
     "hasAmbient": false,

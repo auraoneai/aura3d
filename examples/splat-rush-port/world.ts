@@ -114,12 +114,14 @@ export interface CarnivalSurface {
   readonly canvas?: readonly [number, number];
   /** CR-AN1 drip wobble vertex (gates only; needs `tone`). */
   readonly wobble?: boolean;
+  /** GU47 phase 3 contact darkening where the prop meets the deck (ball, rails, gates, bunting). */
+  readonly contact?: boolean;
 }
 
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false } = surface;
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
     glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone) },
@@ -133,6 +135,8 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crShininess: { type: "f32", value: look.toon.gloss.shininess },
       crDry: { type: "vec3", value: [0, 1, drySeconds] },
       crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] },
+      crSkyReflect: { type: "f32", value: look.toon.skyReflect },
+      crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
     side: "double"
@@ -588,7 +592,7 @@ export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "s
 /** Carnival toon nodes whose light uniforms follow the time of day. */
 export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "spires"] as const;
 /** CR-M2 plum enamel rails (carnival). */
-export const RAIL_PLUM = "#6a3a6c";
+export const RAIL_PLUM = "#8a5592";
 /** CR-S2 cloud-sea disc radius (inside the 120 m sky dome). */
 const SEA_RADIUS = 112;
 
@@ -692,7 +696,7 @@ export function buildWorld(options: WorldOptions): World {
   addBackdrop(builder, look);
 
   /* player ball: sphere r 0.55, painted map x player colour */
-  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0 }));
+  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true }));
 
   /* soft contact shadow under the ball */
   add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
@@ -702,7 +706,7 @@ export function buildWorld(options: WorldOptions): World {
   const rails = new Batch(sphereMesh(1, 8, 6), MAX_SEG * 2);
   const dashes = new Batch(boxMesh(0.15, 0.02, 1.2), DASH_MAX);
   addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const } : {}) }));
-  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.35 : 0 }));
+  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.4 : 0, contact: true }));
   addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1]));
 
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
@@ -713,7 +717,7 @@ export function buildWorld(options: WorldOptions): World {
   const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.2 : 0, wobble: look.gates !== null }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.35 : 0, wobble: look.gates !== null, contact: true }));
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -727,7 +731,7 @@ export function buildWorld(options: WorldOptions): World {
 
   /* CR-W1 bunting poles every `spacing` segments on both deck edges (carnival only, +1 draw) */
   const bunting = carnival && look.bunting ? (() => { const b = buntingMesh(); return new Batch(b.mesh, BUNTING_MAX, b.tones); })() : null;
-  if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true }));
+  if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true, contact: true }));
 
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
@@ -756,7 +760,7 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 30; i < CLOUDS; i++) clouds.setTone(i, lowCloud);
   addBatch("clouds", clouds, carnival ? carnivalCloudSpec(look) : toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   const streaks = new Batch(boxMesh(0.08, 0.08, 4), STREAKS);
-  addBatch("streaks", streaks, flatSpec([1, 1, 1], 0.4));
+  addBatch("streaks", streaks, flatSpec(hexLinear(look.streaks.color), look.streaks.alpha));
   add("shield", sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
 
   /* CR-P1 / CR-P2 post: bloom on the sun, gems and flashes (threshold above the shouldered surfaces), warm vignette,
@@ -1041,7 +1045,7 @@ export function buildWorld(options: WorldOptions): World {
         const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);
         const layers = view.cameraLayers === true && !view.reducedMotion && look.camera !== null && o.phase === "playing";
         const cam = layers && look.camera ? cameraLayers(look.camera, roadYaw(-(o.distance - back)), simNow.speedRatio) : { rollDeg: 0, fovDeg: 0 };
-        const fov = baseFov + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
+        const fov = baseFov + (look.camera?.fovOffsetDeg ?? 0) + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
         const up = cam.rollDeg === 0 ? [0, 1, 0] as const : rolledUp([c.x, c.y, c.z], [c.lookX, c.lookY, c.lookZ], cam.rollDeg);
         controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [...up], fov }, { cut: false });
         /* CR-P3: depth of field only on the title, focused on the ball; the play frames never run it */
