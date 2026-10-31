@@ -24,7 +24,7 @@ export default defineArtDirection({
       file: "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",
       source: "generic reference: desert canyon highway at last light with heat shimmer over the asphalt",
       licence: "reference-only",
-      why: "A 7-degree orange sun with a violet rim on the far side, heat shimmer beyond 40 m and blown sand crossing the road"
+      why: "A low 15-degree orange sun with a violet rim on the far side, heat shimmer beyond 40 m and blown sand crossing the road"
     },
     {
       file: "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",

@@ -36,7 +36,7 @@ void main() {
   float size = mix(spSize.x, spSize.y, sph(sd.z * 23.0 + cyc));
   // GU47 phase 2: a cap of 28 px keeps every grain a fleck of spray; the 160 px cap let points near the lens read as
   // out-of-focus discs over the whole frame (r1 capture, all three routes).
-  gl_PointSize = clamp(size * projectionMatrix[1][1] * u_resolution.y * 0.5 / max(clip.w, 0.1), 1.0, 28.0);
+  gl_PointSize = clamp(size * projectionMatrix[1][1] * u_resolution.y * 0.5 / max(clip.w, 0.1), 1.0, 34.0);
   // alive fraction (density x amount) and a fade in from the cliff base and out on the far side
   float alive = step(sd.y, spAmount);
   vAlpha = alive * spAlpha * smoothstep(0.0, 0.12, ph) * (1.0 - smoothstep(0.7, 1.0, ph)) * smoothstep(spWindow.y, spWindow.y - 40.0, along)
@@ -51,7 +51,8 @@ in float vLift;
 out vec4 outColor;
 void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
-  c.y *= 1.6;
+  // phase 3: thin streaks along the drift (4:1) so the sheet reads as wind-blown spray, not snowflakes (rubric atmosphere)
+  c.y *= 4.0;
   float d = dot(c, c);
   if (d > 1.0) discard;
   float soft = (1.0 - d) * (1.0 - d);

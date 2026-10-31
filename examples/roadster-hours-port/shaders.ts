@@ -155,12 +155,17 @@ void main() {
   albedo = mix(albedo, glowColor * 0.35, neon);
   vec3 emis = glowColor * neon * 2.6;
 
-  vec3 N = normalize(normalize(vNormal) + vec3(dt.y, 0.0, -dt.z) * 1.2 * (1.0 - paint) * (1.0 - curb));
+  // detail normal (0 on ?look=original): phase 3 halves it, the 1.2 strength read as rippled water (rubric materials)
+  vec3 N = normalize(normalize(vNormal) + vec3(dt.y, 0.0, -dt.z) * 0.55 * (1.0 - paint) * (1.0 - curb));
   vec2 dl = vWorld.xz - carPos.xz;
   float along = dot(dl, carDir);
   float side = dl.x * carDir.y - dl.y * carDir.x;
   float beam = smoothstep(0.5, 4.0, along) * exp(-along / 44.0) * exp(-sq(side / (1.5 + along * 0.2))) * beamAmt;
-  float tail = step(along, 0.0) * exp(along / 7.0) * exp(-sq(side / 2.2)) * beamAmt * 0.25;
+  // tail-lamp pool: ?look=original keeps today's 7 m pool with a hard edge at the bumper (tailSoft 0); the GU47 looks draw a
+  // short soft glow that fades in behind the bumper (phase 3: the hard-edged pool read as a red/purple slab to the frame edge)
+  float tail = (tailSoft > 0.5
+    ? (1.0 - smoothstep(-2.8, -1.6, along)) * exp(min(along + 2.2, 0.0) / 2.4) * exp(-sq(side / 1.15))
+    : step(along, 0.0) * exp(along / 7.0) * exp(-sq(side / 2.2))) * beamAmt * tailAmt;
   emis += albedo * vec3(1.0, 0.92, 0.75) * beam * 2.6 + vec3(1.0, 0.1, 0.05) * tail * 0.5;
 
   gSunShadow = a3dSunShadowAuto(vWorld, N);
