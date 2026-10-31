@@ -43,11 +43,12 @@ export const APEX_SUN = { elevationDeg: 7, azimuthDeg: 175 } as const;
 /**
  * GU47 phase 4 (rubric shadows): the shadowed key stands higher than the drawn disc. A 7 deg key grazes the deck (sin 7 deg =
  * 0.12 of its irradiance reaches the asphalt), so under the IBL and the camera-side fill its shadows were invisible in every
- * software WebGL2 capture. At 17 deg (sin = 0.29) the key still comes from ahead, still backlights the traffic, and every car
- * throws a readable shadow about 3x its height long toward the camera. Disc, corona, lens flare, sky and tower glint stay on
- * APEX_SUN (the classic "sun cheat": the light is not where the sun is drawn). Per row: `key` below.
+ * software WebGL2 capture. At 21 deg (sin = 0.36) the key still comes from ahead, still backlights the traffic, and every car
+ * throws a readable shadow about 2.6x its height long toward the camera (17 deg stretched them 3.3x and stair-stepped their
+ * edges). Disc, corona, lens flare, sky and tower glint stay on APEX_SUN (the classic "sun cheat": the light is not where the
+ * sun is drawn). Per row: `key` below.
  */
-export const APEX_KEY = { elevationDeg: 17, azimuthDeg: 168 } as const;
+export const APEX_KEY = { elevationDeg: 21, azimuthDeg: 168 } as const;
 export const APEX_FOG_DENSITY_SCALE = 0.7;
 /** golden-hour fog range 30/180 divided by the 0.7 density scale (AO-E3: near 43, far 257). */
 export const APEX_FOG_RANGE = { near: 30 / APEX_FOG_DENSITY_SCALE, far: 180 / APEX_FOG_DENSITY_SCALE } as const;

@@ -300,7 +300,7 @@ function apexLookNode(): AuraSceneNode {
   const sunset = APEX_LOOK[0];
   const look = looks
     .preset("golden-hour", {
-      // GU47 phase 4: the shadowed key stands at APEX_KEY (17 deg), above the 7 deg disc the dome draws (art/look.ts)
+      // GU47 phase 4: the shadowed key stands at APEX_KEY (21 deg), above the 7 deg disc the dome draws (art/look.ts)
       sun: APEX_KEY,
       fogDensityScale: APEX_FOG_DENSITY_SCALE,
       hdri: APEX_IBL_HDRI,
