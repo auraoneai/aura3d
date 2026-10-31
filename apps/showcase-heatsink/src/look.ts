@@ -71,8 +71,18 @@ export interface CircuitLook {
   readonly accents: { readonly primary: string; readonly secondary: string; readonly lanes: string };
   /** Signature heat haze parameters (HS-11): base refraction strength and the ambient shimmer of hot air. */
   readonly haze: { readonly strength: number; readonly ambient: number; readonly tint: string };
-  /** Skyline silhouettes (HS-04): soot colour and window/seam glow. */
-  readonly skyline: { readonly color: string; readonly glow: string };
+  /**
+   * Skyline (HS-04): soot body colour and seam glow; GU47 phase 3 facades: the warm glow at each block's foot, two window
+   * colours, the share of lit bays and their HDR brightness (shaders.ts `skylineFacadeMaterial`).
+   */
+  readonly skyline: {
+    readonly color: string;
+    readonly glow: string;
+    readonly foot: string;
+    readonly windows: readonly [string, string];
+    readonly lit: number;
+    readonly windowGlow: number;
+  };
   /** HS-15 molten shader (slag gutters along the walls, the pool under the lava curtain): vein colour, crust, HDR glow. */
   readonly molten: { readonly hot: string; readonly crust: string; readonly glow: number };
   /**
@@ -97,7 +107,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     key: { color: "#ffb070", elevationDeg: 28, azimuthDeg: 120, intensity: 1.6 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#2a1d14", density: 0.011 },
-    exposureEv: 0.35,
+    // GU47 phase 3 (forward title pose, cobblestone night sky): round 1 measured mean 41 at +0.35 and 50 at +0.8 (band 45-70, software WebGL2).
+    exposureEv: 0.6,
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.18, tint: -0.03 },
     lutIntensity: 0.6,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ffb070" },
@@ -110,7 +121,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#120e0c",
     accents: { primary: PALETTE.moltenAmber, secondary: PALETTE.slagRed, lanes: "#d9a066" },
     haze: { strength: 1, ambient: 0.15, tint: "#ff9a3c" },
-    skyline: { color: "#17120f", glow: "#ff8a1f" },
+    skyline: { color: "#2a2630", glow: "#ff8a1f", foot: "#5a2a10", windows: ["#ffb46a", "#ffe2b8"], lit: 0.32, windowGlow: 3 },
     molten: { hot: PALETTE.moltenAmber, crust: "#241812", glow: 6 },
     local: { headlight: { color: "#ffe2b8", intensity: 60 }, sodium: { color: "#ffa640", intensity: 34 }, strip: { color: "#ffb870", intensity: 6 } }
   },
@@ -126,7 +137,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.4, godRayDensity: 0.45 },
     // GU47 phase 2: the after capture measured mean 94.2 (band 45-70, software WebGL2); the dust inscatter washed the frame
     // and hid the drone. Round 1 (-1 EV, inscatter 0.5) landed 68.8, too close to the ceiling; round 2 thins the dust further.
-    exposureEv: -1.1,
+    // GU47 phase 3: with the boot fixed, round 1 measured mean 54 at -1.1 and 64 at -0.6 (software WebGL2); the frame read murky.
+    exposureEv: -0.9,
     grade: { contrast: 1.06, saturation: 0.9, temperature: 0.32, tint: 0.03 },
     lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
@@ -139,7 +151,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#4a3220",
     accents: { primary: PALETTE.moltenAmber, secondary: "#ffb347", lanes: "#e8c28a" },
     haze: { strength: 1.25, ambient: 0.35, tint: "#ffb060" },
-    skyline: { color: "#3a2a1c", glow: "#ff9a4a" },
+    skyline: { color: "#4a3424", glow: "#ff9a4a", foot: "#6a3a18", windows: ["#ffb050", "#ffd8a0"], lit: 0.2, windowGlow: 2 },
     molten: { hot: "#ff9a2a", crust: PALETTE.oxidisedIron, glow: 5 },
     local: { headlight: { color: "#fff0d8", intensity: 40 }, sodium: { color: "#ffb25a", intensity: 18 }, strip: { color: "#ffc890", intensity: 4 } }
   },
@@ -154,7 +166,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     upFill: { color: "#ff7a2e", intensity: 0.45 },
     fog: { color: "#2a2348", density: 0.008 },
     // GU47 phase 2: the after capture measured mean 73.3 (band 45-70, software WebGL2), mostly the bright pre-dawn sky.
-    exposureEv: -0.25,
+    // GU47 phase 3: round 1 measured mean 98 at -0.25 (software WebGL2, sun glare in the old backward title pose).
+    exposureEv: -0.7,
     grade: { contrast: 1.1, saturation: 1.08, temperature: -0.12, tint: 0.12 },
     lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },
@@ -167,7 +180,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#16121f",
     accents: { primary: "#b9a4ff", secondary: PALETTE.moltenAmber, lanes: "#c9b8ff" },
     haze: { strength: 1, ambient: 0.2, tint: "#ff8a4a" },
-    skyline: { color: "#1a1626", glow: "#ff7a2e" },
+    skyline: { color: "#2c2644", glow: "#ff7a2e", foot: "#7a3418", windows: ["#ff9a52", "#d8c4ff"], lit: 0.3, windowGlow: 3 },
     molten: { hot: "#ff6a26", crust: "#1e1418", glow: 6.5 },
     local: { headlight: { color: "#f2e6ff", intensity: 55 }, sodium: { color: "#ff9a52", intensity: 30 }, strip: { color: "#d8c4ff", intensity: 5 } }
   }

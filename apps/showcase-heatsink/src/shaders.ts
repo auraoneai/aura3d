@@ -131,3 +131,76 @@ export function chevronHeatMaterial(color: string, intensity: number, reducedMot
 export function quantisedHeat(heat01: number): number {
   return Math.round(Math.min(1, Math.max(0, heat01)) * 256) / 256;
 }
+
+/**
+ * GU47 phase 3 skyline facades (HS-04 presentation): the blind panel read the flat skyline boxes as featureless black
+ * blocks. Each instanced block now draws lit window bays on its sides (a per-block hashed grid in object-space metres, so
+ * a block keeps its pattern and blocks of the same size differ), a soot body that darkens upwards, and a warm foundry glow
+ * rising from its foot. Unlit (the skyline is far and unshadowed), fogged with the scene, one instanced draw per layer.
+ */
+const SKYLINE_VERTEX_GLSL = `out vec3 vTdBox;
+out vec3 vTdN;
+out vec2 vTdSeed;
+void main() {
+  vec3 s = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
+  vTdBox = position * s + vec3(0.0, 0.5 * s.y, 0.0);
+  vTdN = normal;
+  vTdSeed = instanceMatrix[3].xz;
+  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
+}`;
+
+export const SKYLINE_FRAGMENT_GLSL = `in vec3 vTdBox;
+in vec3 vTdN;
+in vec2 vTdSeed;
+out vec4 outColor;
+float tdCellHash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+void main() {
+  vec3 n = normalize(vTdN);
+  float v = vTdBox.y;
+  vec3 body = u_body * mix(1.25, 0.7, smoothstep(0.0, 90.0, v));
+  vec3 color = body + u_foot * exp(-v / 14.0);
+  if (abs(n.y) < 0.5) {
+    float u = abs(n.z) > 0.5 ? vTdBox.x : vTdBox.z;
+    vec2 cell = vec2(u / u_cell.x, (v - 2.0) / u_cell.y);
+    vec2 id = floor(cell);
+    vec2 f = fract(cell);
+    float pane = step(0.2, f.x) * step(f.x, 0.8) * step(0.28, f.y) * step(f.y, 0.78) * step(0.0, cell.y);
+    float pick = tdCellHash(id + vTdSeed * 0.173 + n.xz * 7.1);
+    float lit = step(1.0 - u_lit, pick);
+    float tone = tdCellHash(id.yx * 1.7 + vTdSeed * 0.311);
+    vec3 window = mix(u_window, u_window2, tone) * u_glow * (0.6 + 0.4 * fract(pick * 13.0));
+    color += window * pane * lit;
+  } else {
+    color *= 0.6;
+  }
+  outColor = vec4(color, 1.0);
+}`;
+
+export interface SkylineFacadeOptions {
+  readonly body: string;
+  readonly foot: string;
+  readonly window: string;
+  readonly window2: string;
+  /** Window bay size in metres [width, storey height]. */
+  readonly cell: readonly [number, number];
+  /** Share of bays lit (0..1). */
+  readonly lit: number;
+  /** HDR window brightness. */
+  readonly glow: number;
+}
+
+export function skylineFacadeMaterial(o: SkylineFacadeOptions): AuraMaterialSpec {
+  return material.custom({
+    glsl: { vertex: SKYLINE_VERTEX_GLSL, fragment: SKYLINE_FRAGMENT_GLSL },
+    uniforms: {
+      u_body: { type: "vec3", value: linearRgb(o.body) },
+      u_foot: { type: "vec3", value: linearRgb(o.foot) },
+      u_window: { type: "vec3", value: linearRgb(o.window) },
+      u_window2: { type: "vec3", value: linearRgb(o.window2) },
+      u_cell: { type: "vec2", value: [o.cell[0], o.cell[1]] },
+      u_lit: { type: "f32", value: o.lit },
+      u_glow: { type: "f32", value: o.glow }
+    },
+    fog: true
+  });
+}

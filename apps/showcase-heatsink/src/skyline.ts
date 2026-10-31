@@ -11,6 +11,10 @@
 import { game, instances, material, type AuraNodeBuilder, type AuraSceneNode, type AuraTransformSpec } from "@aura3d/engine";
 import type { CircuitSpec, SkylineLayerSpec } from "./data";
 import type { CircuitLook } from "./look";
+import { skylineFacadeMaterial } from "./shaders";
+
+/** Window bay size per layer (metres; wider far away so a bay stays a few pixels wide). */
+export const SKYLINE_WINDOW_CELLS: readonly (readonly [number, number])[] = [[3.2, 3.6], [4.6, 5.2], [6.4, 7.2]];
 
 /** Ground level of the plain below the elevated road (the abyss floor's top). */
 export const SKYLINE_BASE_Y = -8.5;
@@ -90,7 +94,7 @@ export function skylineNodes(circuit: CircuitSpec, look: CircuitLook): AuraNodeB
     const { bodies, seams } = skylineTransforms(skylineLayout(layer, index === 0));
     const flat = { castShadow: false, receiveShadow: false, frustumCulled: false } as const;
     out.push(
-      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: material.pbr({ color: look.skyline.color, roughness: 0.95, metalness: 0.05 }), transforms: bodies, ...flat })
+      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: skylineFacadeMaterial({ body: look.skyline.color, foot: look.skyline.foot, window: look.skyline.windows[0], window2: look.skyline.windows[1], cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!, lit: look.skyline.lit, glow: look.skyline.windowGlow - index * 0.5 }), transforms: bodies, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-bodies`)),
       instances.box({ name: `td skyline ${index} seams`, size: [1, 1, 1], material: material.emissive({ color: look.skyline.glow, emissive: look.skyline.glow, emissiveIntensity: 1.3 - index * 0.25 }), transforms: seams, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-seams`))
