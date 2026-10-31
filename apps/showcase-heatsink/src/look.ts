@@ -132,7 +132,9 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     circuit: "dustfall",
     timeOfDay: "ochre dust-storm sunset, 9-degree burnt sun",
     hdri: "industrial_sunset_puresky",
-    environmentIntensity: 0.9,
+    // GU47 phase 3: a stronger sky fill lifts the deck inside the long low-sun shadows (round 3: 73.6 before the shadow
+    // maps settled at 25 s, 50.2 at 60 s, software WebGL2).
+    environmentIntensity: 1.1,
     environmentRotationDeg: 35,
     key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.6 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
@@ -150,7 +152,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     grain: 0,
     boostMotionBlur: 0.35,
     weather: "dust",
-    road: { color: "#ffd08a", colorAlt: "#f2c27e", roughness: 0.7, metalness: 0.02 },
+    road: { color: "#e8ba80", colorAlt: "#dcae76", roughness: 0.7, metalness: 0.02 },
     reflections: { probe: false, ssr: 0 },
     ground: "#4a3220",
     accents: { primary: PALETTE.moltenAmber, secondary: "#ffb347", lanes: "#e8c28a" },

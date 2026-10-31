@@ -24,7 +24,7 @@ describe("heatsink look table", () => {
   });
 
   it("carries the HS-03 environment intensities and the HS-05 fog rows; volumetric fog on DUSTFALL only", () => {
-    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.8, 0.9, 0.7]);
+    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.8, 1.1, 0.7]);
     expect(CIRCUIT_LOOKS.grand.fog).toEqual({ color: "#2a1d14", density: 0.011 });
     expect(CIRCUIT_LOOKS.dustfall.fog).toEqual({ color: "#8a5a2e", density: 0.02 });
     expect(CIRCUIT_LOOKS.vesper.fog).toEqual({ color: "#2a2348", density: 0.008 });

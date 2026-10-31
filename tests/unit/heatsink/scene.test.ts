@@ -21,7 +21,7 @@ describe("heatsink scene", () => {
     expect(JSON.stringify(snapshot.nodes)).not.toContain("aura-look:");
     const skies = (id: keyof typeof CIRCUITS) => sceneOf(id).filter((n) => n.kind === "environment") as unknown as { environment: string; background: boolean; intensity: number; texture: { url: string } }[];
     expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.8, "/hdri/kloppenheim_02_1k.hdr"]]);
-    expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[0.9, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
+    expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[1.1, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
     expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
   });
   it("has no backdrop wall, no horizon bands, and no point lights besides the HS-02 sodium lamps (HS-01, HS-03)", () => {
