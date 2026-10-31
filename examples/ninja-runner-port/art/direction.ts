@@ -1,11 +1,11 @@
 // examples/ninja-runner-port/art/direction.ts — GU47 WP-30 art direction (PRD §3.2, NR-21).
-// Fantasy: a woodblock-print gauntlet whose time of day moves with distance, ending cool and inked.
+// Fantasy: a woodblock-print gauntlet whose time of day moves with distance, from golden afternoon to sunset afterglow.
 import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "showcase-ninja-runner-port",
   genre: "rhythm-runner",
-  fantasy: "A woodblock-print gauntlet run through one evening: gold village, vermilion rooftops, blue-hour forest, starlit gate.",
+  fantasy: "A woodblock-print gauntlet run through one evening: golden village, warm rooftops, golden-hour river, sunset forest, afterglow gate.",
   rebuildTier: "S-presentation",
   wave: 4,
   references: [
@@ -19,7 +19,7 @@ export default defineArtDirection({
       file: "references/evening-colour-script.json",
       source: "generic reference: animated-film colour scripts that move one evening across sequences",
       licence: "reference-only",
-      why: "Time of day advancing with distance: golden hour to vermilion sunset to dusk to blue hour to first stars"
+      why: "Time of day advancing with distance: golden afternoon to golden hour to sunset to afterglow with the first stars"
     },
     {
       file: "references/lantern-town-runner.json",
@@ -34,7 +34,7 @@ export default defineArtDirection({
     reservedObjective: "#51dfff"
   },
   lighting: {
-    // One shadowed key: the sun (22 to 4 degrees) hands over to a 25-degree moon key in the forest.
+    // One shadowed key: the sun, sinking from 32 to 10 degrees behind the chase camera's shoulder (GU47 phase 3).
     key: { type: "directional", colorTemperatureK: 3200, shadow: true },
     fill: "ibl",
     // Pooled lantern and spirit-flame points (NR-03): 4 amber + 2 cyan on High, 2 + 1 on Low.

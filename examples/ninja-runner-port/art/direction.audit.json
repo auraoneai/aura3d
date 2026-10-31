@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/ninja-runner-port/art/direction.ts",
-  "sourceSha256": "06dc4b328aeca9c05ea95f390c570862deda57fd860755e259e1fa19fecde88f",
+  "sourceSha256": "043f6f2dcfc2e5915ae9dca91c235361d9c4b492a965f43603bdc2f22b872ad8",
   "id": "showcase-ninja-runner-port",
   "genre": "rhythm-runner",
   "signatureEffect": "scarf-trail: a vermilion scarf ribbon streaming from the runner's upper spine under an indigo woodblock ink outline, the evening sinking with distance.",
@@ -189,7 +189,7 @@
   "direction": {
     "id": "showcase-ninja-runner-port",
     "genre": "rhythm-runner",
-    "fantasy": "A woodblock-print gauntlet run through one evening: gold village, vermilion rooftops, blue-hour forest, starlit gate.",
+    "fantasy": "A woodblock-print gauntlet run through one evening: golden village, warm rooftops, golden-hour river, sunset forest, afterglow gate.",
     "rebuildTier": "S-presentation",
     "wave": 4,
     "references": [
@@ -203,7 +203,7 @@
         "file": "references/evening-colour-script.json",
         "source": "generic reference: animated-film colour scripts that move one evening across sequences",
         "licence": "reference-only",
-        "why": "Time of day advancing with distance: golden hour to vermilion sunset to dusk to blue hour to first stars"
+        "why": "Time of day advancing with distance: golden afternoon to golden hour to sunset to afterglow with the first stars"
       },
       {
         "file": "references/lantern-town-runner.json",
