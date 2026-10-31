@@ -535,9 +535,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   /* ---- traveller and contact shadow ---- */
   if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: lit("traveller") }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
-  if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
-  addAnimatedModels(builder, set, LETTERS.length, shadows, !original);
-  builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
+  // WW47-A1 (GU47 phase 4): the GU47 look flies the WP-36 paper kite in place of the wisp; `?look=original` keeps the wisp
+  const kite = !original && set.kite === true;
+  if (!set.wisp && !kite) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
+  addAnimatedModels(builder, { ...set, kite }, LETTERS.length, shadows, !original);
+  if (!kite) builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
 
   /* ---- floating pollen ---- */
   {
@@ -602,6 +604,27 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let bellAngle = 0;
       let swayTime = 0, lastTime = 0;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
+      /** WW47-A1/AN1: the kite rides downwind of the traveller, its face turned toward the view, bobbing and rolling with the gust. */
+      const kitePos = { x: Number.NaN, y: 0, z: 0 };
+      const poseKite = (hx: number, hy: number, hz: number, t: number): void => {
+        const g = gustAt(hx, hz, t);
+        const m = motion();
+        const reach = KITE_FLIGHT.downwind * (0.85 + 0.1 * g);
+        const tx = hx + WIND_DIR[0] * reach + 0.5 * m * Math.sin(t * 0.7);
+        const tz = hz + WIND_DIR[1] * reach;
+        const ty = hy + KITE_FLIGHT.up + 0.35 * m * Math.sin(t * 1.3) + 0.25 * (g - 1);
+        if (Number.isNaN(kitePos.x)) { kitePos.x = tx; kitePos.y = ty; kitePos.z = tz; }
+        else { kitePos.x += (tx - kitePos.x) * 0.06; kitePos.y += (ty - kitePos.y) * 0.06; kitePos.z += (tz - kitePos.z) * 0.06; }
+        const upwindYaw = Math.atan2(-WIND_DIR[0], -WIND_DIR[1]);
+        const yawK = upwindYaw + Math.sign(-upwindYaw) * (KITE_FLIGHT.towardViewDeg * Math.PI) / 180 + 0.1 * m * Math.sin(t * 0.9);
+        node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(-0.35 - 0.06 * m * Math.sin(t * 1.7), yawK, 0.14 * m * Math.sin(t * 1.1 + 0.4 * g));
+        // the string: hand to the kite's bridle (a little below its centre)
+        const ax = hx + KITE_FLIGHT.hand[0], ay = hy + KITE_FLIGHT.hand[1], az = hz + KITE_FLIGHT.hand[2];
+        const bx = kitePos.x, by = kitePos.y - 0.15 * KITE_HEIGHT, bz = kitePos.z;
+        const dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.max(0.01, Math.hypot(dx, dy, dz));
+        node("kite-string").setPosition((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2)
+          .setRotation(-Math.asin(dy / len), Math.atan2(dx, dz), 0).setScale(0.028, 0.028, len);
+      };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream", "terrain"];
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
       const daylight = createDaylightDriver({ original });
@@ -739,10 +762,13 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           // the companion wisp drifts after the traveller
           const wk = 1 - Math.exp(-3.5 * dt);
           wisp.x += (x - 1.1 - wisp.x) * wk; wisp.z += (z + 0.6 - wisp.z) * wk; wisp.y += (y + hop * 0.6 + 2.0 + 0.18 * Math.sin(time * 2.4) - wisp.y) * wk;
-          node("wisp").setPosition(wisp.x, wisp.y, wisp.z);
-          const wg = node("wisp-glow");
-          wg.setPosition(wisp.x, wisp.y, wisp.z);
-          wg.setUniform?.("windTime", time);
+          if (kite) poseKite(x, y + hop * 0.4, z, swayTime);
+          else {
+            node("wisp").setPosition(wisp.x, wisp.y, wisp.z);
+            const wg = node("wisp-glow");
+            wg.setPosition(wisp.x, wisp.y, wisp.z);
+            wg.setUniform?.("windTime", time);
+          }
           // WW47-AN1: the sails turn with the gust at the hub (calm 0.38 rad/s, up to 2.5x in a gust; 0.3x under reduced motion)
           if (original) sailAngle = time * 0.38;
           else sailAngle += Math.max(0, Math.min(0.25, dt)) * 0.38 * gustAt(sc.windmillHub.x, sc.windmillHub.z, time) * motion();
