@@ -145,7 +145,10 @@ function buildScene() {
     })
   ];
 
-  for (const { def, slot } of ALL_FLOORS) {
+  // GU47 phase 3: the boot floor is built first so its surface maps queue first. Software WebGL2 uploads a few textures
+  // per presented frame (one frame every 5-10 s), and in slot order a `?floor=2..6` boot still had untextured walls at 60 s.
+  const buildOrder = [...ALL_FLOORS.filter((f) => f.slot === BOOT_SLOT), ...ALL_FLOORS.filter((f) => f.slot !== BOOT_SLOT)];
+  for (const { def, slot } of buildOrder) {
     const rows = def.rows;
     const h = rows.length, w = rows[0].length;
     const wallH = SLOT_WALL_H[slot]!;
