@@ -193,7 +193,7 @@ export const ORIGINAL_LOOKS: Readonly<Record<VenueId, FcOriginalLook>> = {
 
 /** Default look path per venue (phase-2 verdict from the remote captures; see the g09 lane report). */
 export const DEFAULT_LOOK_MODE: Readonly<Record<VenueId, FcLookMode>> = {
-  munich: "hybrid", kyoto: "hybrid", favela: "hybrid", lagos: "original", uyuni: "original", glacier: "hybrid"
+  munich: "hybrid", kyoto: "hybrid", favela: "hybrid", lagos: "hybrid", uyuni: "original", glacier: "hybrid"
 };
 
 /** `?look=original` / `?look=gu47` / `?look=hybrid` override the venue default. */
