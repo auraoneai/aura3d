@@ -58,7 +58,7 @@ export const BZ_TEXTURE_FILES = {
 export type BunkerTextureFile = keyof typeof BZ_TEXTURE_FILES;
 
 const ref = (file: BunkerTextureFile): AuraAssetRef<"texture"> =>
-  ({ type: "texture", format: "jpg", url: `/aura-assets/textures/${file}`, hash: BZ_TEXTURE_FILES[file].sha256, metadata: { license: "CC0-1.0 (ambientCG)" } }) as unknown as AuraAssetRef<"texture">;
+  ({ kind: "aura-asset-ref", type: "texture", format: "jpg", url: `/aura-assets/textures/${file}`, hash: BZ_TEXTURE_FILES[file].sha256, metadata: { license: "CC0-1.0 (ambientCG)" } }) as unknown as AuraAssetRef<"texture">;
 
 export interface BunkerTextureRefs { readonly color: AuraAssetRef<"texture">; readonly normal: AuraAssetRef<"texture"> }
 export const bunkerTexture = (set: BunkerTextureSet): BunkerTextureRefs => ({
@@ -70,12 +70,45 @@ export const bunkerTexture = (set: BunkerTextureSet): BunkerTextureRefs => ({
 export const BZ_FLOOR_TEXTURES: readonly { readonly wall: BunkerTextureSet; readonly accent: BunkerTextureSet; readonly floor: BunkerTextureSet; readonly floorAlt: BunkerTextureSet | null }[] = [
   { wall: "concrete034", accent: "bricks075a", floor: "concrete047a", floorAlt: null },
   { wall: "bricks075a", accent: "concrete034", floor: "concrete047a", floorAlt: null },
-  { wall: "metal046b", accent: "concrete034", floor: "concrete047a", floorAlt: "metal063" },
+  { wall: "metal063", accent: "bricks075a", floor: "concrete047a", floorAlt: "metal063" },
   { wall: "paintedplaster017", accent: "wood096", floor: "concrete047a", floorAlt: null },
-  { wall: "metal049a", accent: "metal046b", floor: "metal063", floorAlt: null },
+  { wall: "metal049a", accent: "concrete034", floor: "metal063", floorAlt: null },
   { wall: "concrete034", accent: "wood096", floor: "concrete047a", floorAlt: null },
   { wall: "tiles141", accent: "concrete034", floor: "concrete047a", floorAlt: null }
 ];
+
+/**
+ * GU47 phase 3: mean linear albedo of each colour map (256x256 resample of the shipped JPG, per channel). The renderer
+ * multiplies material colour by the sampled map, so a material colour of `target / mean` puts the textured surface at the
+ * palette tone the blind panel approved while the map adds the board marks, joints and stains. Metal046B (mean 0.05)
+ * cannot reach any palette tone and is no longer mapped to a wall slot.
+ */
+export const BZ_TEXTURE_MEAN_LINEAR: Readonly<Record<BunkerTextureSet, readonly [number, number, number]>> = {
+  concrete034: [0.482, 0.482, 0.482],
+  bricks075a: [0.273, 0.232, 0.161],
+  metal046b: [0.05, 0.05, 0.05],
+  paintedplaster017: [0.515, 0.519, 0.496],
+  wood096: [0.457, 0.342, 0.235],
+  metal049a: [0.972, 0.963, 0.923],
+  tiles141: [0.654, 0.598, 0.547],
+  concrete047a: [0.282, 0.245, 0.173],
+  metal063: [0.158, 0.155, 0.146]
+};
+
+const toLinear = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const toSrgb = (c: number): number => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+
+/**
+ * Material colour (sRGB hex) that makes `set`'s map average to `target` (sRGB hex) times `gain` (linear), clamped to
+ * white per channel (a map darker than the target leaves that channel at white, so the surface ends darker).
+ */
+export function compensatedBase(target: string, set: BunkerTextureSet, gain = 1): string {
+  const n = parseInt(target.slice(1), 16);
+  const mean = BZ_TEXTURE_MEAN_LINEAR[set];
+  const ch = (v: number, i: number) => Math.round(255 * toSrgb(Math.min(1, (toLinear(v / 255) * gain) / Math.max(1e-3, mean[i]!))));
+  const r = ch((n >> 16) & 255, 0), g = ch((n >> 8) & 255, 1), b = ch(n & 255, 2);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
 
 /** Upper bound of decoded texture memory for every set (RGBA8 plus mips, 4/3), in bytes. */
 export function textureMemoryBytes(): number {

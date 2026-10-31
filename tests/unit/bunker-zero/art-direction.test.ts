@@ -128,10 +128,10 @@ describe("Bunker Zero look table (BZ-01, BZ-02, BZ-05, BZ-08, BZ-20)", () => {
     expect(scaleColor("#ffad5c", 0.3)).toBe("#4d341c");
   });
 
-  it("carries the BZ-08 post numbers", () => {
+  it("carries the BZ-08 post numbers (GU47 phase 3 AO, contrast and vignette)", () => {
     expect(BZ_POST).toEqual({
-      ao: { intensity: 0.65, radius: 0.9 }, bloom: { threshold: 0.82, intensity: 0.45 }, grade: { contrast: 1.14, saturation: 0.82 },
-      vignette: 0.34, grain: 0.04, toneMapping: "aces"
+      ao: { intensity: 0.9, radius: 1.2 }, bloom: { threshold: 0.82, intensity: 0.45 }, grade: { contrast: 1.2, saturation: 0.82 },
+      vignette: 0.42, grain: 0.04, toneMapping: "aces"
     });
   });
 

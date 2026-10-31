@@ -28,10 +28,10 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_FOV, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
-import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
+import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 import {
@@ -84,6 +84,10 @@ const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
 const BZ_SURFACE_WHITE = "#ece8df";
 /** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
 const BZ_WALL_LIFT = 0.1, BZ_FLOOR_LIFT = 0.08;
+/** GU47 phase 3: linear gain on the palette tone per surface (walls and floor a little darker for pools; the ceiling lifted out of the void). */
+const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.8 } as const;
+/** GU47 phase 3: the ceiling slab's map on every sealed ceiling. */
+const BZ_CEIL_TEXTURE = "concrete034" as const;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -101,7 +105,7 @@ const hash2 = (x: number, z: number) => {
 // BZ-14: hostiles read by light, not glow: no emissive lift and no eye spheres; a faint cool rim (E-D) separates the
 // silhouette from the walls between the lamp pools.
 const HOSTILE_OVERRIDES = [
-  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.66, metallic: 0.08, rim: { color: "#9fb4c8", power: 3.2, intensity: 0.35 } }
+  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.66, metallic: 0.08, rim: { color: "#9fb4c8", power: 3.2, intensity: 0.6 } }
 ];
 
 // Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
@@ -154,9 +158,16 @@ function buildScene() {
     // GU47 phase 2: base colours from the floor palette (the 4.6.2 tones) instead of near white. The CC0 colour maps do not
     // show in the software WebGL2 capture (fix run g11fix1: flat walls), so the #ece8df base read as white plaster lit
     // evenly by the rig: luma ~145-200 on every wall and floor. The palette keeps each floor dark and its own hue.
-    const wallBase = shade(def.palette.wall, BZ_WALL_LIFT), altBase = shade(def.palette.wallAlt, BZ_WALL_LIFT), floorBase = shade(def.palette.floor, BZ_FLOOR_LIFT);
-    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
-    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
+    // GU47 phase 3: the maps now load (the refs lacked `kind: "aura-asset-ref"`, so the compiler never resolved their URLs);
+    // each material colour is the palette tone divided by its map's mean albedo, at BZ_SURFACE_GAIN, so the lit tone
+    // stays the panel-approved one and the map adds the detail.
+    const wallBase = compensatedBase(shade(def.palette.wall, BZ_WALL_LIFT), tex.wall, BZ_SURFACE_GAIN.wall);
+    const altBase = compensatedBase(shade(def.palette.wallAlt, BZ_WALL_LIFT), tex.accent, BZ_SURFACE_GAIN.wall);
+    const floorBase = compensatedBase(shade(def.palette.floor, BZ_FLOOR_LIFT), tex.floor, BZ_SURFACE_GAIN.floor);
+    const ceilBase = compensatedBase(shade(def.palette.ceil, 0.1), BZ_CEIL_TEXTURE, BZ_SURFACE_GAIN.ceiling);
+    const ceilTex = bunkerTexture(BZ_CEIL_TEXTURE);
+    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.25 : 0 });
+    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.25 : 0 });
     const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
@@ -208,13 +219,17 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
-        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.62, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
       }) }).runtime(staticNode(slot, "floor")),
       // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
       def.id === 5
         ? primitives.box({ name: `f${slot} ceil`, instances: hatchCeiling(w, h, wallH), material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil"))
-        : primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil")),
+        : primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({
+          // GU47 phase 3: board-formed concrete slab, one repeat per cell, so the lamps light a ceiling instead of a black void
+          color: ceilBase, texture: ceilTex.color, normal: ceilTex.normal, normalScale: 0.8, roughness: 0.92, metalness: 0,
+          texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
+        }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({
         name: `f${slot} wall-trim`,
         // BZ-01: the glowing baseboard is gone; a painted hazard-yellow kick strip only reads where a lamp reaches it
@@ -523,7 +538,7 @@ function buildScene() {
     .addMany(BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
-    .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
+    .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: BZ_FOV }));
 }
 
 // crack cue faces the first open neighbor
@@ -1104,7 +1119,7 @@ function syncScenePose(inp: SimInput) {
     position: [p.x + ox, eyeY + p.pitch * 0.4, p.z],
     target: [p.x + ox + fx, eyeY + Math.tan(p.pitch), p.z + fz],
     roll: deathRoll(sinceDeath, reducedMotion()),
-    fov: 72
+    fov: BZ_FOV
   });
   deathFadeLevel = deathFade(sinceDeath, reducedMotion());
   try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }

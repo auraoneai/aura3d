@@ -40,15 +40,22 @@ export const BZ_HDRI_URL = `/hdri/${BZ_HDRI}_1k.hdr` as const;
  */
 export const BZ_ENV_INTENSITY = 0.07;
 
-/** BZ-08 post: AO 0.65/0.9, bloom threshold 0.82 / intensity 0.45, grade contrast 1.14 / saturation 0.82, vignette 0.34, grain 0.04, ACES. */
+/**
+ * BZ-08 post: AO, bloom threshold 0.82 / intensity 0.45, grade contrast / saturation 0.82, vignette, grain 0.04, ACES.
+ * GU47 phase 3 (rubric: "no contact shadows at the wall/floor seams", "slightly washed out"): AO 0.65/0.9 -> 0.9/1.2,
+ * contrast 1.14 -> 1.2, vignette 0.34 -> 0.42.
+ */
 export const BZ_POST = {
-  ao: { intensity: 0.65, radius: 0.9 },
+  ao: { intensity: 0.9, radius: 1.2 },
   bloom: { threshold: 0.82, intensity: 0.45 },
-  grade: { contrast: 1.14, saturation: 0.82 },
-  vignette: 0.34,
+  grade: { contrast: 1.2, saturation: 0.82 },
+  vignette: 0.42,
   grain: 0.04,
   toneMapping: "aces"
 } as const;
+
+/** GU47 phase 3: the first-person field of view (was 72; the rubric found the enemies too small in frame). Render only. */
+export const BZ_FOV = 66;
 
 /** BZ-01: the carried lamp drops from 5.6 to 1.2 (it only keeps the player's hands readable between pools). */
 export const BZ_PLAYER_LIGHT = { color: "#fff1d6", intensity: 1.2, distance: 32, decay: 1.15 } as const;
