@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-title.jpg",
+      "sha256": "71a00e9fbf7cd8a1dd8b04ffff101ce48fae793d4adca823fcd7f7b4306685cb"
+    },
+    {
+      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-play-0060.jpg",
+      "sha256": "74e9d5f914c3772ba1613a4d0be5075175609dbb5e2b72635903b9975e59f5aa"
+    },
+    {
+      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-play-0520.jpg",
+      "sha256": "632e23359603d7f738c3aadcf23264594dddf54a1d20b474973e87f2ad0e1d12"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 4.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "animation_quality": 6,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Daylight reads well on the cliffs and grass. The rolling log is lit flat and muddy brown with no clear sun-side highlight. In frame 3 the path is washed out to a pale beige with a bright hot spot near the horizon."
+    },
+    {
+      "category": "shadows",
+      "seen": "The character casts only a faint blob, barely visible on the path in frame 3. Trees, boulders and the log show no clear cast shadows on the ground, so objects float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The boulders and log show little environment response. The log's specular is a soft vertical sheen with no sky tint or rim. Foliage looks unlit-flat."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Canyon walls, trees, boulders, distant mesas and the sky make a coherent ridge-run world. However, the far water/haze plane cuts in as a hard horizontal band in frame 1, and the bush clusters are repetitive."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the background mesas and trees nicely. In frame 1 a grey haze strip sits unnaturally across the horizon. The cloud plume in frames 2–3 looks like a painted sprite."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cracked boulder textures read well. The log is a plain gradient cylinder with seam lines and no bark detail. The frame 3 path has lost its texture and looks like flat beige plaster."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly trees and pines are decent. The log is a low-segment cylinder with visible faceting on its ends. The bushes are simple blobs, and the ground triangles are scattered confetti."
+    },
+    {
+      "category": "composition",
+      "seen": "The subject is small, roughly 8–10% of frame height, against a recipe of 18–25%. The log fills the lower third in frames 1–2 and dominates over the character."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a chase cam directly behind the player, not side-on. The long-run framing is readable, but in frame 2 the low log occludes the player's feet."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the progress marker and the path hot spot. Frame 3 is overexposed on the path. Grading is warm but slightly hazy and low-contrast overall."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The running pose reads in frames 2–3. In frame 1 the character stands stiffly on the log with feet slightly sunk or sliding."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean: hearts, pearl counter, progress bar, score, a sky cloud meter and a tutorial banner. Menu buttons and the key legend are tidy. The 'Checkpoint' toast overlaps the play area near the player."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
