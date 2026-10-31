@@ -128,7 +128,7 @@ describe("GU47 E-B runtime environment reaches the frame", () => {
     const before = updateCompiledScene(compiled, snapshot, owner as never, 0) as FrameSource;
     expect(before.environmentProbeRotation).toBeUndefined();
     new Prd02LightingRuntime(FLAGS, owner).setEnvironmentRotation(Math.PI / 2);
-    const after = updateCompiledScene(compiled, snapshot, owner as never, 1 / 60) as FrameSource;
+    const after = updateCompiledScene(compiled, snapshot, owner as never, 1000 / 60) as FrameSource;
     expect(after.environmentProbeRotation).toBeCloseTo(Math.PI / 2, 9);
     compiled.dispose();
   });
@@ -151,15 +151,15 @@ describe("GU47 E-B runtime environment reaches the frame", () => {
     expect(probeOf()).toEqual({ hdri: "/hdri/venice_sunset_1k.hdr" });
     const runtime = new Prd02LightingRuntime(FLAGS, owner);
     runtime.setEnvironment(hdr("/hdri/rooftop_night_1k.hdr"), { crossfadeSeconds: 1, background: false });
-    updateCompiledScene(compiled, snapshot, owner as never, 1);
-    const fading = updateCompiledScene(compiled, snapshot, owner as never, 1.25) as FrameSource;
+    updateCompiledScene(compiled, snapshot, owner as never, 1000);
+    const fading = updateCompiledScene(compiled, snapshot, owner as never, 1250) as FrameSource;
     expect(fading.environmentProbeDiffuseIntensity).toBeCloseTo(0.5, 6);
     expect(probeOf()).toEqual({ hdri: "/hdri/venice_sunset_1k.hdr" });
-    updateCompiledScene(compiled, snapshot, owner as never, 1.5);
+    updateCompiledScene(compiled, snapshot, owner as never, 1500);
     const resolution = resolveEnvironment(snapshot, "high", FLAGS);
     expect(resolution.probe).toEqual({ hdri: "/hdri/rooftop_night_1k.hdr" });
     expect(resolution.background).toBe(false);
-    const dark = updateCompiledScene(compiled, snapshot, owner as never, 1.6) as FrameSource;
+    const dark = updateCompiledScene(compiled, snapshot, owner as never, 1600) as FrameSource;
     expect(dark.environmentProbeDiffuseIntensity).toBe(0);
     compiled.dispose();
   });

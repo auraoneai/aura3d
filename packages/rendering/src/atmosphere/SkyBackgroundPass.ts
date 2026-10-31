@@ -14,6 +14,7 @@ import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame 
 import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "./sky.glsl";
 import type { PackedFogUniforms } from "./HeightFog";
 import { starVisibilityAtSunElevation } from "./StarField";
+import { SKY_BAND_CAPACITY } from "./GradientSky";
 
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
@@ -241,8 +242,17 @@ export function skyUniforms(
   uniforms.set("u_horizonGlow", grad?.horizonGlow ?? 0.35);
   const bands = grad?.bands ?? [];
   uniforms.set("u_bandCount", bands.length);
-  uniforms.set("u_bandParams", bands.flatMap((b) => [b.elevationDeg, b.widthDeg, b.intensity, 0]));
-  uniforms.set("u_bandColors", bands.flatMap((b) => [b.color[0], b.color[1], b.color[2]]));
+  // GU47 phase 2: always upload the full declared arrays (vec4[4], vec3[4]).
+  // A sky with no bands (sky-night-stars) used to send zero-length arrays,
+  // which the device rejects; unused slots are zero and u_bandCount gates them.
+  const bandParams = new Float32Array(SKY_BAND_CAPACITY * 4);
+  const bandColors = new Float32Array(SKY_BAND_CAPACITY * 3);
+  bands.slice(0, SKY_BAND_CAPACITY).forEach((b, i) => {
+    bandParams.set([b.elevationDeg, b.widthDeg, b.intensity, 0], i * 4);
+    bandColors.set([b.color[0], b.color[1], b.color[2]], i * 3);
+  });
+  uniforms.set("u_bandParams", bandParams);
+  uniforms.set("u_bandColors", bandColors);
   uniforms.set("u_intensity", frame.intensity);
   uniforms.set("u_showSunDisc", pre?.showSunDisc ?? 1);
   uniforms.set("u_time", time);

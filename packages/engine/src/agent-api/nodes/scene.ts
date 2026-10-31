@@ -3,7 +3,7 @@
 import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from "./types.js";
 import { applyOverrideMaterial, assertAuraOverrideMaterial } from "./overrideMaterial.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
-import { AuraNodeBuilder } from "./builder.js";
+import { AuraNodeBuilder, toSceneNode } from "./builder.js";
 import { camera } from "./camera.js";
 import { applyOrbitInteraction } from "./orbitInteraction.js";
 import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
@@ -114,7 +114,7 @@ export class AuraSceneBuilder {
   }
 
   add(node: AuraNodeBuilder<AuraSceneNode> | AuraSceneNode): this {
-    this.nodes.push(node instanceof AuraNodeBuilder ? node.toJSON() : node);
+    this.nodes.push(toSceneNode(node));
     return this;
   }
 
