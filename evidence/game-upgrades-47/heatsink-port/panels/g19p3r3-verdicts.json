@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Distant mountains look slightly hazy and flat, and the big planet in the sky is a bit washed out. The grid floor and lane markings make the play area easy to read. Small decorations hang in the air, but they look like deliberate collectibles.",
+     "The mountains are slightly hazy and flat, and the far left cliff looks a little washed out. Otherwise the purple grid track, the planet and aurora sky, and the orange drone give strong colour, depth and readability.",
+     "Distant mountains and sky are a bit pastel and hazy, which flattens the depth. The cliff on the right has a slightly odd overhanging shape. Purple diamond pickups float with no clear grounding. The track grid looks flat and synthetic. Even so, the drone reads clearly, the colours are lively, and the planet backdrop composes well."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks identical to A. It has the same overhead beam blocking the top, the same dark floor with little detail and the same low-contrast teal palette.",
+     "Identical to B. A dark gate beam occludes the top of the frame, the lower half is flat, dark and featureless, and the teal palette has low contrast.",
+     "Looks the same as A, with the same flaws: a dark, muddy lower half, a dark band blocking the top of the frame, a flat teal palette, and a hard-edged road stripe."
+    ]
+   }
+  ]
+ }
+]

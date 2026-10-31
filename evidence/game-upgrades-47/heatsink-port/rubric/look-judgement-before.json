@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/heatsink-port/screens/final/card@2x.jpg",
+      "sha256": "3f706127a568139804fb7f4de0bf84bba1e8d86a8aae0c1189c60f9a0f282dc9"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/mid-action-640.jpg",
+      "sha256": "c96648ddc99181622d3f4dd03a181ff4b33b166bfac446363d11c79a8411b4d3"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/results-640.jpg",
+      "sha256": "fc5bbb5c50229073a2a721339ee969caeb0c209796dc47005edf290b0ab4f6fa"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/heatsink-port/frames/gu47-before-heatsink-port/heatsink-port--default--settle-60s.jpg",
+      "sha256": "03652e9c081953abc1b58f672a0551623b529ebe917869c994d42afe3fe71297"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "animation_quality": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The scene uses flat teal ambient-dominant lighting under an aurora/ringed-planet sky, with no low golden-hour key. The cliffs read evenly lit with little directional modelling. The drone's orange shell has a decent rim/spec highlight."
+    },
+    {
+      "category": "shadows",
+      "seen": "The drone casts no visible contact shadow on the asphalt in frames 1 and 4. The gate arch and rock overhangs produce no readable shadow on the track, so the vehicle looks like it floats detached."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The drone canopy shows a grey environment-ish sheen, but the track surface is matte and shows no reflection of sky, gates or muzzle flashes. The metal props lack env reflections."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has a coherent alien canyon: tall teal cliffs, a ringed planet, an aurora, glowing crystal spikes, pink mushroom trees and red coral props along the barriers. However, the rock textures are low-frequency and smeared, and the road is a flat dark plane with teal river-like lines."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some distance haze tints the far cliffs teal and the aurora adds sky interest. There is no volumetric light, no dust or spray from the drone, and fog doesn't layer between the near and mid canyon. The speed lines in frames 1 and 2 are the main atmosphere cue."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The drone has textured orange paint, black plastic and a camera gimbal that read as PBR. The rock cliffs use stretched, blurry textures, and the asphalt is a uniform dark navy with no grain, roughness variation or wet/dry breakup."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone model is detailed: rotor arms, landing legs and a camera pod. Gates are plain black rectangular slabs, track-edge crystals are simple cones, and the cliffs are coarse low-poly masses."
+    },
+    {
+      "category": "composition",
+      "seen": "The drone is centred at roughly 15–20% of the frame with the gate framing it in frame 1, which is good. In frame 2 the drone is pushed into a busy mid-frame and the HUD panels eat about half the screen at that resolution."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the drone with a sensible FOV. Frame 2 shows banking and speed streaks, but the camera feels rigidly locked to the vehicle with little lag. Frame 4's camera clips close under the gate beam."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image is clean with no film grain, vignette or meaningful bloom beyond the small muzzle-flash glow. There is no colour grading toward a cinematic look, and the image reads flat and slightly washed teal."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Speed-line streaks and muzzle flashes convey motion, and the drone tilts during a turn in frame 2. Rotors show no visible motion blur, and there are no exhaust or afterburner VFX despite the 610 km/h reading."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and consistent: dark translucent panels for score, multiplier, kills, lap, time and hull, plus a speed readout and colour-coded resource bars. At smaller resolutions the panels dominate the top third. The results modal is plain text-wall styling."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
