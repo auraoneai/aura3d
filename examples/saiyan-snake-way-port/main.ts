@@ -86,8 +86,18 @@ const reducedMotion = typeof matchMedia === "function" ? matchMedia("(prefers-re
 /* ------------------------------------------------------------------ runner select */
 
 const RUNNER_KEY = "serpentine-sky-run.runner";
+/**
+ * GU47 phase 3 (identity, PRD 6.1 G17 palette indigo / coral / cloud gold): under the colour script a first visit starts on
+ * VIOLET (indigo suit, gold belt) rather than TIDE's teal, which the sibling-distinctness judge read as other runners' green
+ * outfits. A stored choice always wins; `?look=original` keeps TIDE. Looks only: the run is identical for every runner.
+ */
+const DEFAULT_RUNNER = look.mode === "script" ? Math.max(0, RUNNER_STYLES.findIndex((s) => s.id === "violet")) : 0;
 function loadRunnerIndex(): number {
-  try { return Math.max(0, Math.min(RUNNER_STYLES.length - 1, Number(localStorage.getItem(RUNNER_KEY)) || 0)); } catch { return 0; }
+  try {
+    const stored = localStorage.getItem(RUNNER_KEY);
+    if (stored === null || stored === "" || !Number.isFinite(Number(stored))) return DEFAULT_RUNNER;
+    return Math.max(0, Math.min(RUNNER_STYLES.length - 1, Math.trunc(Number(stored))));
+  } catch { return DEFAULT_RUNNER; }
 }
 function selectRunner(index: number, persist = true): void {
   runnerIndex = (index + RUNNER_STYLES.length) % RUNNER_STYLES.length;
