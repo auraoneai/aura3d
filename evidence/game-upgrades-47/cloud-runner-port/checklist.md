@@ -26,3 +26,11 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 | CD-20 | +6 draws at s=60; edge cells stddev >= 30 | partial (cairns, cord poles, hollow moss and flowers, 1 draw); arches blocked (WP-36); pixels phase 2 |
 | CD-21 | values within the row at s=60/520/1100/1420/1700 | code (earlier culling, budget.json); measurements phase 2 |
 | CD-22 | same_game false >= 0.8 every pair; every category >= 7, lighting/environment/atmosphere >= 8; portrait saturation >= 0.18 | code (art direction + audit record); judge and portrait phase 2 |
+
+## Phase 3 (4.7.1)
+
+- Default views: storm-washed look kept on title and gameplay (phase-2 blind panel win); `?look=original` unchanged.
+- CD-22 rubric: `look-judgement.json`, minimum 4 (shadows), 7+ bar not met; open for 4.7.2 (see lane report). modeling_assets 5.5 and material_quality 5.5 blocked on WP-36 Meshy assets.
+- CD-22 sibling: ninja-runner-port 0.828 pass, cross-hop 0.932 pass, serpentine-sky-run-port 0.746 fail (`distinct/`).
+- CD-13, CD-06, CD-17 birds, CD-20 arches: still blocked on WP-36 (no borrowed or invented assets).
+- Final screens: retaken on the 4.7.1 lane build (capture g25p3-r3, software WebGL2).
