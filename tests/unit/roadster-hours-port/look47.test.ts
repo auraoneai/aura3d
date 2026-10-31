@@ -27,7 +27,7 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(SALTWIND_VARIANTS).toEqual(["sunbreak", "redline", "halo"]);
     // phase 3 (4.7.1 rubric pass): sunbreak's side sun swings behind the left shoulder, Redline's last light rises to 15 deg so
     // the sunlit wall rakes into shade, Halo's moon key rises to 0.8 (WP-32 started at 20 deg / 7 deg / 0.6)
-    expect(SALTWIND_LOOK.sunbreak.sun).toMatchObject({ elevationDeg: 22, azimuthDeg: -112, color: "#ffdcaa", intensity: 3.8 });
+    expect(SALTWIND_LOOK.sunbreak.sun).toMatchObject({ elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 });
     expect(SALTWIND_LOOK.redline.sun).toMatchObject({ elevationDeg: 15, azimuthDeg: -58, color: "#ff9e5e", intensity: 4.2 });
     expect(SALTWIND_LOOK.halo.sun.intensity).toBe(0.8);
     expect(SALTWIND_LOOK.sunbreak.fill.kind).toBe("sea-bounce");
@@ -85,12 +85,12 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(outputFor("original").pixelRatio).toBe(1);
   });
 
-  it("mounts the row's rig: 3 PCSS cascades over 260 m, the route IBL, no ambient light (RH47-02/03/04)", () => {
+  it("mounts the row's rig: one PCSS cascade over the near 110 m, the route IBL, no ambient light (RH47-02/03/04)", () => {
     SALTWIND_VARIANTS.forEach((id, i) => {
       const all = nodes(buildWorld(i, "gu47").scene);
       const lightsOf = all.filter((n) => n.kind === "light");
       const sun = lightsOf.find((n) => n.name === "sun")!;
-      expect(sun.shadow).toMatchObject({ cascades: 3, maxDistance: 260, filter: "pcss" });
+      expect(sun.shadow).toMatchObject({ cascades: 1, maxDistance: 110, filter: "pcss" });
       expect(lightsOf.filter((n) => n.shadow && n.shadow !== false).length).toBe(1);
       expect(lightsOf.some((n) => n.light === "ambient")).toBe(false);
       const env = all.find((n) => n.kind === "environment")!;
