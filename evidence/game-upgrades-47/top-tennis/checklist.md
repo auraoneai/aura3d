@@ -58,3 +58,17 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 | TT-H3 | same_game false >= 0.8 vs diamond, hoops and others; every category >= 7 | phase 2 (sibling judge, look judge) |
 | TT-W1 | >= 8 distinct models per venue; <= 10 draws; grounding checks clean | blocked (WP-36 props) |
 | TT-PF1 | draws within budget per venue; venue download <= 18 MB; render spec passes | phase 2 (stripe boxes pending TT-M1; trail spheres removed; volumetric fog High+ only) |
+
+## Phase 3 (4.7.1)
+
+| Item | Status |
+|---|---|
+| Moon better than 4.6.2 (blind panel, >= 2 of 3) | done: 3/0/0 (g01p3r1, g01p3r3); default look switched to World Tour (`ORIGINAL_LOOK_VENUES` empty) |
+| Every other variant still better than 4.6.2 | done: default, grass, clay, desert, beach 3/0/0 each (g01p3r3) |
+| Live 4.7.0 404 (`image/png;base64` without `data:`) | fixed: `emittedAssetUrl` in view/assets.ts + unit test; confirm on the live smoke after deploy |
+| Rubric every category >= 7 (PRD 1.2 goal 1) | not met: min 2.5 (ibl_reflections), ui_hud 7; material_quality / modeling_assets blocked on WP-36 (`look-judgement.json`) |
+| Sibling distinctness vs aura-diamond-3d >= 0.8 | not met: 0.794 (was 0.766); crowd and athlete models are the tells (WP-36) |
+| game-checks 0 errors | done |
+| page-parity, look-identity, screens-fresh | fixed |
+| borrowed-asset (3) | waiting on WP-36 Meshy assets |
+| luma-band | round-3 rows; bands not widened (see lane report: default band predates the panel-verified HDRI swap) |

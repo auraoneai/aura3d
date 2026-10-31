@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T17:17:22.289Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "top-tennis--beach",
+      "top-tennis--clay",
+      "top-tennis--default",
+      "top-tennis--desert",
+      "top-tennis--grass",
+      "top-tennis--moon"
+    ],
+    "framesB": [
+      "aura-diamond-3d--canyon",
+      "aura-diamond-3d--dome",
+      "aura-diamond-3d--ivy",
+      "aura-diamond-3d--lunar",
+      "aura-diamond-3d--sandlot",
+      "aura-diamond-3d--skyline"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.794,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 40,
+    "confidentDifferentRate": 0.8333333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.794,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Different rendering style: flat, clean low-poly shading vs textured, hazy, noisy surfaces",
+        "Different camera and setting: fixed overhead tennis view vs behind-batter stadium view with a city skyline"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with realistic green grass and orange rock formations; Image B is a tennis court on a flat sand-colored surround",
+        "Different sports and venue styles, with a stylized blocky crowd in B versus small distant stands in A",
+        "Different lighting and palette: A has muted overcast sky and earthy tones, B has flat beige and teal colors"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a baseball field with fielders, bat and mitt, while Image B is a tennis court with a net and scoreboard",
+        "Different art style: A has smooth, desaturated blue-gray terrain with a pale, flat look, while B has blocky voxel crowds and saturated colors",
+        "Different camera and HUD: A uses a low behind-the-batter view with a ring reticle, while B uses a high overhead angle with a text scoreboard and a moon"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with a dark night palette, Image B is a tennis court with green daylight",
+        "Different character styles: smooth white-uniformed players vs. blocky voxel crowd and tennis players",
+        "Different camera and scene setups: low behind-batter view vs. high-angle court view with scoreboard text"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Baseball field vs tennis court, different sports",
+        "Different rendering style: realistic dramatic lighting vs flat low-poly colorful stylized look",
+        "Different camera and scenery: low behind-the-batter view vs high overhead angle with voxel crowd"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "baseball vs tennis gameplay",
+        "daytime canyon vs night moon arena",
+        "similar low-poly white humanoid figures and crowd stands"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with blocky voxel-style crowds and flat, dark lighting",
+        "Image B is a baseball field with textured, painterly surfaces and a city skyline backdrop",
+        "Different sports, rendering styles and camera setups"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with voxel-style colorful crowd and a score banner; Image B is a baseball field in a dome",
+        "Image B has blurry photographic backdrop and grey dirt infield, not seen in A",
+        "Different character styles and HUD: A has blocky spectators and text banners, B has smooth white-uniformed fielders"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Tennis frame uses blocky voxel-style crowd and characters, baseball frame uses smoother humanoid figures",
+        "Different lighting and sky: dark orange-red clay scene vs green grass with dramatic cloudy sky"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "tennis court vs baseball field",
+        "voxel-style colorful crowd in A vs distant small stands in B",
+        "different lighting and camera: flat, warm, top-down vs realistic outdoor with sky and rocks"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a baseball field with a dramatic dark sky and realistic-leaning lighting",
+        "Image B is a tennis court with flat low-poly voxel crowds and a plain beige ground",
+        "Different sports, art styles, and HUD/scoreboard text"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field and Image B a tennis court, so the sport differs",
+        "Image A is daylit with a gray-orange sky; Image B is a dark night scene with a moon",
+        "Crowd styles differ: A has small colorful bleacher blocks, B has blocky spectator figures in tiered stands"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Image A is a dark, low-lit night scene; Image B is a brighter indoor dome with a blurred background",
+        "Both use similar blocky white humanoid figures and crowd stands, which suggests a shared engine or studio"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: tennis court vs baseball diamond",
+        "Image A has blocky voxel-style crowd and flat, clean shading; Image B has painterly textured grass and a dramatic stormy sky",
+        "Different camera and HUD: A uses a top-down view with an in-world scoreboard, B has a behind-batter view with a reticle ring"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with smooth low-poly white-clad players; Image B is a tennis court with voxel-style blocky crowds",
+        "Different cameras: A uses a low behind-the-batter perspective, B a high-angle view of the court",
+        "Different palettes and sports: A is desaturated blue-grey with a black sky; B is saturated green and blue with colorful stands and 'AURA SLAM / WORLD TOUR' signs"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright tennis court with a beige ground and colorful blocky crowd",
+        "Image B is a dark blue-lit night baseball field with realistic white-uniformed players",
+        "Different sports, lighting, palette and camera framing"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with flat, clean low-poly shading and blocky voxel-style crowds",
+        "Image B is a baseball field with textured, moody night lighting and a city skyline backdrop",
+        "The two frames differ in sport, palette (beige and teal vs dark purple and pink) and rendering style"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different sports: baseball diamond vs tennis court",
+        "Different environments: daylight canyon with red boulders vs dark green stadium with voxel crowd",
+        "Different art styles and HUD: smooth humanoid figures vs blocky voxel spectators with a scoreboard text banner"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is baseball in a dome with muted, realistic-ish lighting and a blurry photo backdrop",
+        "Image B is tennis with voxel-style blocky crowd and flat saturated blue court",
+        "Different camera and art style: low perspective view vs high top-down angle"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with flat, blocky voxel-style crowd and clean low-poly shading, while Image B is a baseball game with textured, noisy ground and a detailed city skyline",
+        "Different sports, camera framing and HUD: A has pixel-font banners, B has a batting reticle and a stadium billboard",
+        "Both share a teal-green ground and dark navy surroundings, but the material detail and lighting differ strongly"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a baseball field with a cool blue night palette and white humanoid players",
+        "Image B is a warm orange clay tennis court with blocky voxel-style crowd and a tennis HUD",
+        "Different art styles: smooth low-poly figures in A, chunky colorful voxel spectators in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: baseball field vs tennis court",
+        "Different rendering style: smooth low-poly baseball field with a bright daytime sky vs blocky voxel crowd under dark dramatic lighting",
+        "Different HUD and text: 'Harbor Sandlot' wall sign vs 'Paris / Aura Slam / World Tour' scoreboard"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "tennis on clay court vs baseball field",
+        "different art style: blocky voxel crowd vs smoother realistic figures",
+        "different lighting and palette: warm orange dusk vs green and gray daylight dome"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with bright warm tan surroundings and colorful voxel crowd stands",
+        "Image B is a baseball field with a dark night sky and a cool monochrome blue-gray palette",
+        "Different sports, camera angles and HUD: A has a high overhead view with banner text; B has a low behind-batter view with a targeting ring"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Image A is a dark night indoor arena with blocky voxel crowds; Image B is bright daylight outdoors with a sky and large rock formations",
+        "Both use stylized low-poly characters and multicolored crowd blocks, so a shared engine or series is possible"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Different sports: baseball field vs tennis court",
+        "Baseball frame has a stylized teal and pink palette; tennis frame has a darker green, realistic-looking lighting",
+        "Different crowd and character styles: tiny pastel stands vs blocky voxel spectators"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with flat low-poly voxel crowds and a beige ground; Image B is a baseball game with a textured dirt infield and green grass",
+        "Different rendering styles: A uses simple flat shading, B uses a textured, hazy, realistic-leaning look",
+        "Different camera and HUD: A has a high fixed overhead view with a scoreboard banner; B has a behind-the-batter view with a ring reticle"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Image A uses flat, blocky voxel-style rendering; Image B uses textured, realistic lighting with a dramatic sky",
+        "Different camera and HUD style: top-down banner signage vs low behind-batter view with a stadium scoreboard"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Different sports: tennis court vs baseball field",
+        "Different rendering: dark, flat voxel-like crowd and shadows vs textured teal and pink field with city skyline",
+        "Different camera and HUD: elevated tennis scoreboard vs baseball batter view with hit ring"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with realistic daylight, green grass and rock formations",
+        "Image B is a tennis court with a dark, dramatic orange-red scene and blocky voxel crowds",
+        "Different sports, lighting and art styles, with different HUD text styling"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat, bright tennis court with blocky voxel-style crowds and a sandy beige ground",
+        "Image B is a moody baseball field with soft shadows, a dark gray infield and realistic-looking stadium lighting",
+        "The two frames use different sports, palettes, lighting and rendering styles"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: baseball field vs tennis court",
+        "Different lighting: hazy daylight with a gray sky vs a dark night arena with a spotlight",
+        "Different art style: smooth low-poly figures with textured dirt vs blocky voxel crowd and flat court"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "tennis court vs baseball field: different sports",
+        "A has flat, saturated, voxel-style crowd and warm beige surroundings",
+        "B has a blurry, realistic indoor dome, green turf and muted lighting"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "baseball vs tennis sport and venue",
+        "different lighting: dusk orange glow vs dark moonlit night",
+        "similar white humanoid figures but different scenery and camera"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field and Image B is a tennis court, so the sports differ",
+        "Image A has a hazy gray sky with orange dirt and low-poly rocks, while Image B has dark green surroundings with voxel-style crowds",
+        "The HUD and scoreboard styles differ, with a 'HARBOR SANDLOT' wall sign in A and 'LONDON 0-0' text banners in B"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field and Image B is a tennis court, so the sports differ",
+        "Image A has a hazy grey sky and green grass; Image B has a warm beige ground with a blue court and no sky",
+        "Image A uses a low perspective with smooth stylized figures; Image B uses a high top-down view with blocky voxel crowds"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: baseball field vs tennis court",
+        "Baseball frame is realistic and moody with a stormy sky; tennis frame is flat, low-poly and pastel",
+        "Different camera and scenery: low behind-the-batter view vs high overhead view with blocky voxel crowd"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a bluish monochrome night look, Image B is a tennis court with a colorful crowd",
+        "Different character styles: smooth white fielders vs. blocky voxel spectators and tennis players",
+        "Different camera and scene setup: low behind-batter view vs. high-angle court view with a moon and score text"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with a dark, blocky voxel-style arena and a high-angle camera",
+        "Image B is a baseball field with a hazy sky, textured dirt and a low behind-the-batter camera",
+        "Different art styles: flat, stylized voxel crowds in A versus a more realistic outdoor stadium with a scoreboard in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "top-tennis--beach",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "tennis vs baseball sports",
+        "different camera: fixed high-angle vs low behind-batter perspective",
+        "different environment style: voxel-like crowd and flat court vs textured dirt field with open sky and outfield scenery"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball diamond with dark moody dome lighting and blurred background",
+        "Image B is a tennis court with flat bright beige palette and blocky voxel crowd",
+        "Different characters and rendering: realistic-ish figures vs. simple low-poly with different HUD/text style"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with flat low-poly voxel crowds and a beige ground",
+        "Image B is a baseball game with textured orange dirt, green grass and a realistic horizon",
+        "Different camera, lighting and rendering styles (flat shading vs textured and shaded)"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "top-tennis--grass",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball diamond in a dome with gray dirt and low-poly humanoid players",
+        "Image B is a tennis court with blocky voxel-style crowd and a teal-green palette",
+        "Different sports, scoreboard styles and camera setups"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daylight baseball field with an orange dirt infield, Image B is a night tennis court with a moon",
+        "Different lighting and palette: hazy grey sky with warm tones vs. dark high-contrast scene with blue court",
+        "Different sports and character setups, though both use low-poly crowds and white-clad figures"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright, flat-shaded tennis court with a beige ground and a colorful blocky crowd",
+        "Image B is a dark, blue-tinted night baseball field with realistic white player models",
+        "The two have different sports, lighting, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a baseball field in a dome with a blurry real-world backdrop, while Image B is a tennis court at night with a moon",
+        "Different scenery and lighting: soft daylight-style dome lighting versus a dark, high-contrast night scene",
+        "Similar low-poly white humanoid figures, but the games differ in sport, HUD text and camera framing"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "top-tennis--clay",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis clay court with blocky voxel crowd, Image B is a baseball field with smooth models",
+        "Warm orange palette versus cold blue night palette",
+        "Different character styles and HUD (scoreboard text vs none)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "top-tennis--default",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different sports (tennis vs baseball)",
+        "night flat-lit arena vs bright daytime desert with rocks",
+        "different rendering style and textures"
+      ]
+    }
+  ]
+}

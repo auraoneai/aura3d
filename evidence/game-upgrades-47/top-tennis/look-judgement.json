@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/aura-slam/screens/final/1280-04-mid.jpg",
+      "sha256": "a7013c42e3b2dad855789e4760582da2f317f0a2f6f8f076568429e68c4fd5ab"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-1/top-tennis--moon--settle-60s.jpg",
+      "sha256": "26542036d364e663b8fa4ca8d95546e0b1895289c3457113b5557d6b67ef7c05"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-4/top-tennis--clay--settle-60s.jpg",
+      "sha256": "de832258f3ead4e12275cdd21663d8e6730aa62fa5c131b263ef73d2d152a325"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-3/top-tennis--grass--settle-60s.jpg",
+      "sha256": "3ea8cbaf08f567e3cdabeb0f3900e83f8c655f53b19a4a3d095be0539611e967"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5.5,
+    "ibl_reflections": 2.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 3,
+    "material_quality": 3.5,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 3.5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single flat directional key lights every scene. The Moon frame is mostly black with no fill, so the stands and floor fall into murk. The NY frame has a soft central spotlight bloom on the court, but the stands stay dim and uniform."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players and the umpire chair cast hard directional shadows, with a long diagonal shadow on Paris clay. There is no contact occlusion under the stands or bench. The net shadow is a plain dark band. In the NY frame the player shadows are offset blobs."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No environment reflections are visible. The hard court, grass and clay are all fully matte. The Moon helmets show only a faint gold sheen."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Voxel-like crowd stands repeat the same seat/person tiles. Distant backdrops (stadium structure, the Moon sphere) are low-res cards on a flat plane. The surface colors are themed per venue, but the arena shell is identical every time."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is no indoor haze, dust or volumetric light. The only depth cue is a vague dark falloff. The blurred top background in Paris and London reads as a texture, not fog."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are mostly single flat albedo. The grass stripes are a simple tint. Clay has no granular texture or skid marks. The net is a solid black slab with no mesh transparency. The stands are untextured boxes."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Low-poly players with simple limbs. The crowd is blocky L-shaped figures, readable but primitive. The umpire chair and bench are plain boxes. The ad boards ('AURA SLAM', 'WORLD TOUR') are clipped and pixelated."
+    },
+    {
+      "category": "composition",
+      "seen": "The court fills roughly 35–45% of the frame, close to target. In the wide shots the court is centered with symmetric stands. In NY the near-side HUD panels crowd the corners, and the stands are cropped at the edges."
+    },
+    {
+      "category": "camera",
+      "seen": "The broadcast high-angle perspective is broadly on recipe. It is perspective, not orthographic. The NY camera sits much closer and steeper, so framing is inconsistent between modes. The far player is small and hard to read in the wide shots."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a mild vignette and some edge aliasing on the court lines and net. There is no tonemapping punch, color grade or bloom on the highlights. The Moon frame looks underexposed rather than graded."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The NY serve pose shows the arm raised with the ball toss. The other frames show idle ready stances. The poses read clearly but stiffly."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The NY frame has a clean scoreboard with a lime accent, a ball speed gauge, a power bar, mode chips and a controls strip, all coherent and legible. The in-world score boards in the other frames are low-res bitmap text."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

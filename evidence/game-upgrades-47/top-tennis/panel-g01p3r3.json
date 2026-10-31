@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "beach",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat sand surround with little depth; dark heavy net band; crowd blocks look generic",
+     "Sand and court colours are a bit muted and flat with low contrast. The net is an opaque black slab and the colourful voxel crowd is cut off at the frame edges. Otherwise readable and on theme.",
+     "The beach theme is weak: it is just a pinkish sand-coloured surround with the same blue hard court, and there is no sea, sky or other beach cues. The flat surround reads a little washed out. The net band is very dark and heavy."
+    ]
+   },
+   {
+    "variant": "clay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Background tower and sky are dark and muddy; players are small in frame; dark vignetting on the outer clay",
+     "Players are small in the wider shot. The background stadium model looks pasted on and slightly blurred. The net is a solid black bar and the outer edges get dark. Otherwise the warm clay mood, crowd and long shadows are strong.",
+     "The tighter camera makes the players small. The background is a blurry grey backdrop with a dim stand structure. The outer clay is very saturated and a bit heavy. The scoreboard text overlaps the net-side signage."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Patchy washed-out light pools on the side walls look like haze artifacts; somewhat dim edges",
+     "The net is an opaque black slab. There are odd hazy light blobs on the floor near the left and right stands, and the court colour is a little flat. The crowd and signage add detail and life.",
+     "The light pools on the side stands look slightly blown out and hazy. The net is a solid dark slab. The court surface is slightly flat."
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly flat and pale overall with weak shadows; background tower is greyish and a little washed out",
+     "Flat lighting with fairly low contrast; the sand and pale teal court are slightly washed. The opaque net and the floating-looking background stadium model don't fit well. Small players.",
+     "Contrast is fairly flat: the beige surround is somewhat washed out and the teal court is low-contrast. The players are small, and the background stand structure is greyish."
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Background is a dark muddy olive band; players are small; green-on-green is slightly low contrast",
+     "The overall palette is somewhat dark green with limited contrast, and the background is a blurry dark backdrop. Opaque black net and small players. Otherwise good mood, shadows and court striping.",
+     "The background is a blurry, dim, out-of-focus backdrop. The players are small at this camera distance. The outer green is slightly dark."
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very dark surround with black sky; right stand is heavily shadowed; grey ground is a little flat",
+     "Very dark surroundings and harsh black shadows hide part of the right stand. The net is an opaque black bar and the players are small. Still, the moon backdrop, the astronaut players and the court are clearly readable.",
+     "The right stand is largely lost in deep shadow. The sky is a flat black void, and the crowd on Earth-style stands breaks the moon theme slightly. The players are small, though their white suits read well."
+    ]
+   }
+  ]
+ }
+]

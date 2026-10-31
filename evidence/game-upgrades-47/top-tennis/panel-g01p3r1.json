@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Net is a solid opaque black slab that hides the court behind it; the court lighting is a bit flat and dim at the edges; the service-box highlight looks washed out.",
+     "The court colour is a little desaturated and hazy compared with A. The net is drawn as a solid opaque black band, so it reads heavy and hides the court surface behind it. The far player is small. Otherwise it is polished: full colourful crowd stands, readable AURA SLAM and WORLD TOUR banners, proper cast shadows and good depth.",
+     "Flat green surround and somewhat dark corners; the stand boxes are plain dark blocks; the service-box highlight is a flat cream fill."
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Players are smaller and less readable at the wider camera distance; the grey regolith floor is flat and slightly washed out; the station structure in the top-center is dark and hard to read; the sign text is partly clipped ('AURA SL..').",
+     "The camera is pulled far back, so the players are small and a lot of the frame is flat empty grey floor. The black sky is very dark. A cluttered dark structure at the top centre is cut off by the frame edge and hard to make out. The net is an opaque dark band. Still, it has a clear lunar mood: a planet in the sky, a full crowd, a THE MOON scoreboard, strong shadows and a readable court.",
+     "Large flat grey empty ground with a lot of dead space; the players are small in the frame; the background structure at the top is dark and hard to read; the 'AURA SLAM' banner is partly hidden behind the far player; the sky is mostly black."
+    ]
+   }
+  ]
+ }
+]
