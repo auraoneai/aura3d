@@ -200,8 +200,9 @@ export function godRayNodes(look: SkyLook) {
  */
 export function groundingNodes() {
   return [
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
-    effects.ambientOcclusion({ name: "grid ao", intensity: 0.45, radius: 0.8, density: 0.6, color: "#05080d" })
+    // GU47 phase 3 round 3: longer, darker contact shadows and stronger AO (rubric: cars sit on the road without contact shadow).
+    effects.contactShadows({ length: 0.55, thickness: 0.08, steps: 12, intensity: 1, lights: "shadowed" }),
+    effects.ambientOcclusion({ name: "grid ao", intensity: 0.75, radius: 0.8, density: 0.6, color: "#05080d" })
   ];
 }
 
@@ -324,7 +325,8 @@ type CarOverrides = readonly AuraModelMaterialOverride[];
  * to be whole-model swaps). The fare-lit teal strip needs a strip material on the pod: GU47(WP-36) pod retexture.
  */
 export const POD_MATERIALS: CarOverrides = [
-  { target: "veh-body", color: "#eef1f4", colorMode: "replace", roughness: 0.32, metallic: 0.12, clearcoat: 1, clearcoatRoughness: 0.08 },
+  // GU47 phase 3 round 3: glossier pearl (roughness 0.32 -> 0.2, metallic 0.12 -> 0.28, a hair darker) so the IBL reads on the body (rubric: "matte clay").
+  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.06 },
   { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.06, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.02 },
   { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
 ];

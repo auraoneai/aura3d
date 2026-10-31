@@ -125,7 +125,8 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     marine: { base: 30, top: 48, color: "#4d6672", opacity: 0.88, reach: 240 },
     // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
     // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
-    output: { toneMapping: "agx", fallback: "aces", exposure: 1.3 },
+    // GU47 phase 3 round 3: r2 still mean 67 / p95 144 at exposure 1.3: 1.3 -> 1.55.
+    output: { toneMapping: "agx", fallback: "aces", exposure: 1.55 },
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
     grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02 },
     vignette: 0.26,
@@ -148,7 +149,8 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     fog: { color: "#a9c3d6", density: 0.001, heightDensity: 0.0008, heightFalloff: 0, heightReference: 70, start: 30, maxOpacity: 0.45, sunInscatter: 0.1 },
     marine: { base: 70, top: 110, color: "#c4d3dc", opacity: 0.3, reach: 320 },
     // GU47 phase 3: recap2 noon mean 84 (band 95-120): exposure 1.0 -> 1.12, IBL 0.85 -> 1.0.
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.12 },
+    // GU47 phase 3 round 3: r2 noon mean 92 at 1.12 -> 1.2.
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.2 },
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
     bloom: { intensity: 0.18, threshold: 0.95, radius: 0.35 },
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.02, tint: 0 },
@@ -168,15 +170,15 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
-    // GU47 phase 3 round 2: r1 (god rays 0.16, fog 0.0048) lost the fog (mean 72, band 105-135): the engine fog carries
-    // the bank now (0.0075, start 8; still < 0.3 at 40 m), god rays 0.24, exposure 1.05 -> 1.25.
-    fog: { color: MARINE_FOG, density: 0.0075, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 8, maxOpacity: 0.96, sunInscatter: 0.1 },
+    // GU47 phase 3 round 3: back to the panel-verified bank (r1 and r2 thinned it to mean 72, band 105-135, and the view
+    // stopped reading as fog): density 0.006 from 6 m, god rays 0.35, exposure 1.05.
+    fog: { color: MARINE_FOG, density: 0.006, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 6, maxOpacity: 0.96, sunInscatter: 0.1 },
     marine: { base: 12, top: 26, color: "#6c8794", opacity: 0.97, reach: 160 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.25 },
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.05 },
     bloom: { intensity: 0.12, threshold: 0.9, radius: 0.4 },
     grade: { contrast: 0.96, saturation: 0.82, temperature: -0.06, tint: 0 },
     vignette: 0.22,
-    godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.24 },
+    godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.35 },
     grain: 0.05,
     street: { lampEmissive: 1.6, sodiumPoints: 2, sodiumPower: 600, lightPools: 0.2, windowGlow: 0.35, headlights: 1, asphalt: { color: "#272c33", roughness: 0.7 }, ground: "#334155", water: "#3b5266", drizzle: false },
     scanStrength: 0.9
@@ -185,9 +187,10 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "night",
     label: "Sodium night",
     timeOfDay: "night, moon behind a thin marine layer lit sodium from below",
-    // GU47 phase 3 round 2: r1 night facades still read sodium-orange from the warm night HDRI (mean 44, p95 132, band p95
-    // >= 180): IBL 0.45 -> 0.3 darkens the blocks; headlights 1.4 -> 1.8 carry the highlights (lamp 3.0 and bloom 0.55 stay the PRD GD-02/GD-08 values).
-    hdri: { id: "cobblestone_street_night", intensity: 0.3, rotationDeg: 210 },
+    // GU47 phase 3 round 3: r1/r2 cut the facade glow and the IBL; the blocks stayed sodium-orange (the sodium points light
+    // them) and the frame fell under its band (r2 mean 38, p95 118), so IBL 0.45, window glow 1 and vignette 0.22 are back
+    // (panel-verified); kept: exposure/contrast 1.18, headlights 1.4 -> 1.8 (lamp 3.0 and bloom 0.55 stay the PRD values).
+    hdri: { id: "cobblestone_street_night", intensity: 0.45, rotationDeg: 210 },
     sky: {
       model: "gradient", zenith: "#060a14", horizon: "#1b2638", ground: "#0b0e14", exponent: 1.8, horizonGlow: 0.2,
       bands: [{ elevationDeg: 2, widthDeg: 6, color: SODIUM, intensity: 0.35 }],
@@ -202,11 +205,10 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.18 },
     bloom: { intensity: 0.55, threshold: 0.72, radius: 0.55 },
     grade: { contrast: 1.18, saturation: 1.08, temperature: 0.08, tint: 0 },
-    vignette: 0.3,
+    vignette: 0.22,
     godRays: null,
     grain: 0.06,
-    // GU47 phase 3: windowGlow 1 -> 0.45: the whole-facade lift washed every block orange-beige (no window mask until WP-36).
-    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 0.45, headlights: 1.8, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
+    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 1, headlights: 1.8, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
     scanStrength: 1.25
   }
 };
@@ -241,7 +243,8 @@ export function hazeAt(look: SkyLook, distance: number): number {
 }
 
 /** GD-01: one shadowed key on every sky, 2048 map, 3 cascades, PCSS. */
-export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 120, softness: 1 } as const;
+/** GU47 phase 3 round 3: softness 1 -> 0.6 (crisper building shadow edges on the street). */
+export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 120, softness: 0.6 } as const;
 
 /** Next sky in the `T` key cycle. */
 export const nextSky = (sky: SkyId): SkyId => SKY_ORDER[(SKY_ORDER.indexOf(sky) + 1) % SKY_ORDER.length]!;
