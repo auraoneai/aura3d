@@ -3,11 +3,12 @@
  * mounts. Evening: the belfast_sunset_puresky 1k HDRI through a real asset ref (it loads; the pre-GU47 plain-object
  * texture never did), one shadowed key (sun, then the moon key from the forest on) with 3 PCSS cascades on High and
  * 1 PCF cascade on Low, and a pool of point lights that `world.ts` moves to the nearest lanterns and spirit flames.
- * No hemisphere, no ambient and no second directional: the HDRI is the fill (PRD §3.2 "fill: environment").
+ * No ambient and no second directional; the HDRI is the fill (PRD §3.2 "fill: environment") with a hemisphere under it
+ * (GU47 phase 2: the HDRI alone read ~5 EV dark).
  * `?look=original` returns the pre-GU47 rig unchanged (neutral-room IBL, hemisphere sky fill, cool rim, 2 cascades).
  */
 import { defineAuraAssets, environments, lights } from "@aura3d/engine";
-import { DISTRICT_LOOKS, EVENING_HDRI, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
+import { DISTRICT_LOOKS, ENVIRONMENT_GAIN, EVENING_FILL, EVENING_HDRI, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
 
 const HDRI_LICENSE = "CC0 1.0, Poly Haven";
 export const SKY_ASSETS = defineAuraAssets({
@@ -52,11 +53,14 @@ export function lightRig(o: RigOptions) {
   }
   const village = DISTRICT_LOOKS[0]!;
   const shadow = o.shadow
-    ? (o.quality === "low" ? { cascades: 1, maxDistance: 70, filter: "pcf" } : { cascades: 3, maxDistance: 110, filter: "pcss", lightSize: 2 })
+    ? (o.quality === "low" ? { cascades: 1, maxDistance: 70, filter: "pcf" } : { cascades: 2, maxDistance: 90 })
     : false;
   const pool = lanternPoolSize(o);
   const rig = [
-    environments.hdri({ name: "evening ibl", intensity: village.environmentIntensity, background: false, texture: SKY_ASSETS.evening as never }),
+    environments.hdri({ name: "evening ibl", intensity: village.environmentIntensity * ENVIRONMENT_GAIN, background: false, texture: SKY_ASSETS.evening as never }),
+    // GU47 phase 2 (second pass): a sky/ground fill under the HDRI. The sunset pure-sky HDRI alone left the village ~5 EV
+    // under the 4.6.2 frame (software WebGL2); the hemisphere is the 4.6.2 rig's fill, scaled per district by world.ts.
+    lights.hemisphere({ name: "evening fill", skyColor: EVENING_FILL.sky, groundColor: EVENING_FILL.ground, intensity: EVENING_FILL.intensity * village.environmentIntensity }).runtime({ id: "evening fill" }),
     lights.directional({ name: "sun", position: initialKeyPosition(), target: [0, 0, 0], intensity: village.key.intensity, color: village.key.color, shadow: shadow as never }).runtime({ id: "sun" })
   ];
   // Pooled points start parked below the course at zero intensity; `world.ts` places them each frame (+0 draws).

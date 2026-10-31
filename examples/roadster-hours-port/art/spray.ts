@@ -34,10 +34,14 @@ void main() {
   vec4 clip = projectionMatrix * viewMatrix * vec4(wp, 1.0);
   gl_Position = clip;
   float size = mix(spSize.x, spSize.y, sph(sd.z * 23.0 + cyc));
-  gl_PointSize = clamp(size * projectionMatrix[1][1] * u_resolution.y * 0.5 / max(clip.w, 0.1), 1.0, 160.0);
+  // GU47 phase 2: a cap of 28 px keeps every grain a fleck of spray; the 160 px cap let points near the lens read as
+  // out-of-focus discs over the whole frame (r1 capture, all three routes).
+  gl_PointSize = clamp(size * projectionMatrix[1][1] * u_resolution.y * 0.5 / max(clip.w, 0.1), 1.0, 28.0);
   // alive fraction (density x amount) and a fade in from the cliff base and out on the far side
   float alive = step(sd.y, spAmount);
-  vAlpha = alive * spAlpha * smoothstep(0.0, 0.12, ph) * (1.0 - smoothstep(0.7, 1.0, ph)) * smoothstep(spWindow.y, spWindow.y - 40.0, along);
+  vAlpha = alive * spAlpha * smoothstep(0.0, 0.12, ph) * (1.0 - smoothstep(0.7, 1.0, ph)) * smoothstep(spWindow.y, spWindow.y - 40.0, along)
+    // fade grains out within 22 m of the camera so the sheet reads in the mid-ground, never as blobs on the lens
+    * smoothstep(10.0, 22.0, clip.w);
   vLift = ph;
 }`;
 

@@ -129,16 +129,20 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
   }),
   spiral: row({
     board: "spiral",
-    pcb: "purple RF coil board, ENIG gold",
-    mask: "#3b2457", maskRoughness: 0.28, copper: "#d9a648", silk: "#f1e9ff", led: "#ff9ee0", traceGlow: "#ffd27a",
-    lamp: { color: "#ffcf9c", intensity: 3300, temperatureK: 3200 },
+    pcb: "lilac-mask RF coil board, ENIG gold",
+    // Blind-panel fix pass: the deep purple mask read flat and dark around black chips; a pale lilac mask (garden's
+    // white-mask recipe, which the panel preferred) lets the lamp model the board and the chips stand out.
+    mask: "#c6b8e2", maskRoughness: 0.4, copper: "#c99a3e", silk: "#3a2856", led: "#ff6fd0", traceGlow: "#ffc24a",
+    lamp: { color: "#fff0dc", intensity: 3000, temperatureK: 3900 },
     grade: { contrast: 1.1, saturation: 1.04, temperature: 0.04, tint: 0.06, lut: "/luts/dot-dash-3d/spiral.cube" }
   }),
   twin: row({
     board: "twin",
-    pcb: "blue power board, HASL tin",
-    mask: "#1c3a6e", maskRoughness: 0.32, copper: "#c9ced6", silk: "#f4f6fa", led: "#9ff7ff", traceGlow: "#bfeaff",
-    lamp: { color: "#ffe0bc", intensity: 3300, temperatureK: 3600 },
+    pcb: "pale-blue power board, ENIG gold",
+    // Blind-panel fix pass: the navy mask read flat and dark; a pale blue-white mask (garden's recipe) with gold
+    // traces gives the lamp something to model and makes the cyan courier read.
+    mask: "#b9cbe4", maskRoughness: 0.4, copper: "#cda04a", silk: "#1c3058", led: "#2fd6ff", traceGlow: "#4fe3ff",
+    lamp: { color: "#fff2e0", intensity: 3000, temperatureK: 4100 },
     grade: { contrast: 1.07, saturation: 1.02, temperature: -0.04, tint: -0.02, lut: "/luts/dot-dash-3d/twin.cube" }
   }),
   garden: row({

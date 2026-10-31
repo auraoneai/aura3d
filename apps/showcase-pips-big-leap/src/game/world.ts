@@ -4,7 +4,7 @@
 // (b) a plain-data collision world the player controller simulates against.
 // Both come from the same spec, so what you see is what you collide with.
 //
-// GU47 WP-16: the default presentation is the felt-and-clay diorama (`diorama.ts`,
+// GU47 WP-16: the opt-in presentation (`?look=diorama`) is the felt-and-clay diorama (`diorama.ts`,
 // per-world look table in `looks.ts`); `look: "original"` (`?look=original`) keeps the
 // pre-GU47 scene exactly. The collision world is identical in both.
 
@@ -446,7 +446,7 @@ export interface BuildWorldOptions {
    * can pair AO on and off at the same frame (LIGHT-06). Default true.
    */
   readonly ambientOcclusion?: boolean;
-  /** GU47 WP-16: the felt-and-clay diorama (default) or today's scene (`?look=original`). */
+  /** GU47 WP-16: the felt-and-clay diorama (`?look=diorama`) or today's scene (default since the blind-panel pass). */
   readonly look?: PipLookMode;
   /** PRD 6.3: halve the ambient emission and cap flora sway at 30%. */
   readonly reducedMotion?: boolean;
@@ -510,11 +510,10 @@ function animatedDecorNode(d: DecorSpec): SceneNodeArg {
 function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: BuildWorldOptions): void {
   const skyColor = spec.background ?? "#1e4d78";
   // Look preset — fog itself is authored below so its color tracks the sky
-  // exactly instead of the preset's generic haze tint.
-  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
-    fogDensityScale: 0,
-    background: skyColor
-  });
+  // exactly instead of the preset's generic haze tint. No `background` override: since
+  // GU47 E-A (9001eb1f8) a colour background hides the look's HDRI, and that HDRI is the
+  // light sky 4.6.2 drew behind every world (the override turned it into a flat navy wall).
+  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], { fogDensityScale: 0 });
   if (options.ambientOcclusion === false) {
     const group = look.toJSON();
     builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });

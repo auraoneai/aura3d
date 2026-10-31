@@ -8,20 +8,27 @@
  *     and the projection's focal terms; the normal from the cross product of
  *     the neighbouring view positions (the forward pass has no G-buffer);
  *   - a linear view-space march along reflect(V, N) of `AURA_SSR_STEPS`
- *     steps over `u_maxDistance` metres, then 4 binary refinement steps;
- *     a hit is a ray sample behind the depth buffer by less than
- *     `u_thickness`;
+ *     steps over `u_maxDistance` metres; where the ray crosses behind the
+ *     depth buffer, 4 binary refinement steps, and a hit is a refined point
+ *     behind it by less than `u_thickness` (GU47 phase 2: the unrefined test
+ *     missed surfaces thinner than one 0.75 m step);
  *   - the hit colour comes from the previous frame (TAA history, reprojected
  *     through `u_viewToPrevClip` = prevViewProj · inv(view)) when
  *     `u_reproject = 1`, else from this frame's HDR colour;
  *   - confidence = hit · Schlick fresnel (F0 0.04) · screen-edge fade ·
- *     march-distance fade · camera-facing fade · roughness gate
+ *     march-distance fade (refined hit distance) · camera-facing fade · roughness gate
  *     (`1 − smoothstep(0.35, 0.5, roughness)`, i.e. nothing above the 0.5
  *     cutoff). Where confidence falls to 0 the composite leaves the forward
  *     result, which already carries the nearest reflection probe's IBL — the
  *     reflection fades to the probe instead of to black.
  *
  * SSR_COMPOSITE_GLSL (full-res): `hdr + reflection · confidence · intensity`.
+ *
+ * Limit (GU47 phase 2, receipt effects-ssr): the forward pass writes no
+ * metalness, F0 or roughness, so the fresnel uses dielectric F0 0.04 and the
+ * node's `roughness` frame-wide. A metallic floor (real F0 ~0.3+) reflects
+ * several times weaker than its material; the bridge reports
+ * `POST_SSR_MATERIAL_INPUTS_UNAVAILABLE` whenever S3 is authored.
  */
 
 const HEADER = `#version 300 es
@@ -88,14 +95,19 @@ void main() {
   vec3 hitPos = p;
   vec2 hitUv = vec2(-1.0);
   float travelled = 0.0;
+  bool prevBehind = false;
   for (int i = 1; i <= AURA_SSR_STEPS; ++i) {
     vec3 q = p + r * (stepLength * float(i));
     vec2 quv = projectToUv(q);
     if (quv.x < 0.0 || quv.x > 1.0 || quv.y < 0.0 || quv.y > 1.0) break;
     float sceneZ = linearDepthAt(quv);
     float rayZ = -q.z;
-    if (rayZ > sceneZ && rayZ - sceneZ < u_thickness) {
-      // Binary refinement between the last miss and this hit.
+    bool behind = rayZ > sceneZ;
+    // A crossing (in front at the last sample, behind now) is refined first and
+    // the thickness test applies to the refined point: a step longer than
+    // u_thickness (24 steps over 18 m = 0.75 m) otherwise lands inside or past
+    // anything thinner than the step and the hit is lost.
+    if (behind && !prevBehind) {
       vec3 a = prev;
       vec3 b = q;
       for (int j = 0; j < 4; ++j) {
@@ -103,11 +115,17 @@ void main() {
         vec2 muv = projectToUv(m);
         if (-m.z > linearDepthAt(muv)) b = m; else a = m;
       }
-      hitPos = b;
-      hitUv = projectToUv(b);
-      travelled = float(i) / float(AURA_SSR_STEPS);
-      break;
+      vec2 buv = projectToUv(b);
+      if (-b.z - linearDepthAt(buv) < u_thickness) {
+        hitPos = b;
+        hitUv = buv;
+        // Refined distance, not the step index: the index quantised the fade into one band per step
+        // (drift-and-deliver-port's 60 m / 24-step wet road showed regular stripes; GU47 phase 2).
+        travelled = clamp(length(b - p) / u_maxDistance, 0.0, 1.0);
+        break;
+      }
     }
+    prevBehind = behind;
     prev = q;
   }
   if (hitUv.x < 0.0) { o_color = vec4(0.0); return; }

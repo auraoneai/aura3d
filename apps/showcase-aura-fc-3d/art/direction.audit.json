@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "54480bf9f1dd119baf42d5ac49f12b35d79a2452d483cbcf7c98cbbf3c97c41c",
+  "sourceSha256": "8ff5d6434707c524258e8d5588efea9bb1790be69435dd5e3a9b551ee281c463",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -25,7 +25,7 @@
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 0.4
+        "intensity": 1
       },
       {
         "type": "directional",
@@ -36,6 +36,21 @@
         "type": "spot",
         "shadow": true,
         "intensity": 3.8
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 2.28
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 2.28
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 2.28
       }
     ],
     "hasAmbient": false,
@@ -902,7 +917,7 @@
         "shadow": true
       },
       "fill": "ibl",
-      "practicals": 2,
+      "practicals": 5,
       "environment": {
         "hdri": "night-2k",
         "background": "sky"

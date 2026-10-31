@@ -103,6 +103,8 @@ export interface ParkLook {
     readonly track: string;
     readonly trackRoughness: number;
     readonly chalk: string;
+    /** Normal-map strength of the mown turf and the clay (defaults 0.6 and 0.5); Lunar's grazing sun needs them low. */
+    readonly normalScale?: { readonly grass: number; readonly clay: number };
   };
   /** Shirt colours of the instanced stands, one per section (7 sections). */
   readonly crowd: readonly string[];
@@ -131,11 +133,12 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "last light, sun 9 degrees above the sea",
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.9, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "preetham", turbidity: 6.5, rayleigh: 2.4 },
+    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
     sun: { elevationDeg: 9, azimuthDeg: 250, color: "#ff9a52", intensity: 2.5, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
-    fog: { color: "#e7b58b", density: 0.0032, intensity: 0.32 },
-    exposureEv: 0.1,
+    // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
+    fog: { color: "#d9a57c", density: 0.001, intensity: 0.08 },
+    exposureEv: 0.05,
     background: "#e0a070",
     accent: "#f08a4b",
     post: {
@@ -145,7 +148,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.85, intensity: 0.24 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.08, saturation: 1.08, temperature: 0.3, tint: 0.02 },
+      grade: { contrast: 1.2, saturation: 1.1, temperature: 0.22, tint: 0.02 },
       lut: "diamond-harbor-last-light.cube"
     },
     turf: { grass: "#41702f", stripe: "#4b7d35", clay: "#b86a42", track: "#7a4a33", trackRoughness: 0.92, chalk: "#efe4cc" },
@@ -159,21 +162,21 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Midtown Skyline in rain-wet blue hour under sodium and LED towers",
     timeOfDay: "blue hour after rain",
     baseLook: "night-city",
-    hdri: { id: "rooftop_night", intensity: 0.5, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 0.55, colorTemperatureK: 9000 },
+    hdri: { id: "rooftop_night", intensity: 1.6, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
+    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.0, colorTemperatureK: 9000 },
     rim: false,
-    fog: { color: "#1c2c44", density: 0.0045, intensity: 0.38 },
-    exposureEv: 0.18,
+    fog: { color: "#1c2c44", density: 0.0045, intensity: 0.24 },
+    exposureEv: 1.0,
     background: "#0b1422",
     accent: "#4fc3e8",
     post: {
       preset: "neon-night",
       toneMapping: "aces",
-      exposure: 1.1,
+      exposure: 2.4,
       bloom: { threshold: 0.65, intensity: 0.42 },
       grain: 0.03,
       vignette: 0.24,
-      grade: { contrast: 1.12, saturation: 1.04, temperature: -0.25, tint: 0.04 },
+      grade: { contrast: 1.2, saturation: 1.1, temperature: -0.2, tint: 0 },
       lut: "diamond-midtown-blue-hour.cube"
     },
     turf: { grass: "#2f5a36", stripe: "#376640", clay: "#7a4b37", track: "#3a2c26", trackRoughness: 0.28, chalk: "#e6e1d2" },
@@ -189,11 +192,12 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "high noon, sun 72 degrees",
     baseLook: "outdoor-day",
     hdri: { id: "outdoor-midday", intensity: 1.1, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "gradient", zenith: "#5d8fc4", horizon: "#e4e6df", ground: "#c9b28e" },
+    // Blind panel: the pale horizon blew the sky out to near white; a deep desert blue down to a dusty horizon.
+    sky: { model: "gradient", zenith: "#2f6db4", horizon: "#9dbad6", ground: "#c9b28e" },
     sun: { elevationDeg: 72, azimuthDeg: 20, color: "#fff6e6", intensity: 3.6, colorTemperatureK: 6000 },
     rim: false,
-    fog: { color: "#d7c4a6", density: 0.0012, intensity: 0.3, height: { density: 0.0025, falloff: 0.06, start: 20 } },
-    exposureEv: -0.05,
+    fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
+    exposureEv: -0.15,
     background: "#c7d3dc",
     accent: "#e3b448",
     post: {
@@ -217,7 +221,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Ivy Classic at spring sunrise",
     timeOfDay: "spring sunrise, sun 24 degrees",
     baseLook: "golden-hour",
-    hdri: { id: "spruit_sunrise", intensity: 0.95, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "spruit_sunrise", intensity: 0.95, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
     sun: { elevationDeg: 24, azimuthDeg: 110, color: "#ffd2a1", intensity: 2.3, colorTemperatureK: 3800 },
     rim: { color: "#b9cfe6", intensity: 0.35, elevationDeg: 30, azimuthDeg: 290 },
     fog: { color: "#e6d9c8", density: 0.003, intensity: 0.3 },
@@ -227,14 +231,16 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     post: {
       preset: "daylight-outdoor",
       toneMapping: "agx",
-      exposure: 1.0,
+      exposure: 1.4,
       bloom: { threshold: 0.85, intensity: 0.2 },
       grain: 0.03,
       vignette: 0.18,
       grade: { contrast: 1.04, saturation: 1.06, temperature: 0.15, tint: -0.03 },
       lut: "diamond-ivy-sunrise.cube"
     },
-    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf" },
+    // Blind panel: the 24-degree sun raked the clay normals into a camouflage pattern (still there at 0.15), so Ivy's
+    // clay has no normal map (scale 0 drops it); the turf keeps flatter blades.
+    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf", normalScale: { grass: 0.35, clay: 0 } },
     crowd: ["#6fbf6a", "#b23a2e", "#e8e2cf", "#2d4f8a", "#e6a640", "#5b3d2e", "#8fb8d6"],
     signature: { splinter: "#d6b282", flash: "#fff0d2", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
@@ -250,20 +256,21 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     rim: false,
     fog: { color: "#3a4256", density: 0.004, intensity: 0.34 },
     godRays: { density: 0.004, intensity: 0.55, color: "#c9d6f2", lightPosition: [12, 58, -30] },
-    exposureEv: 0.14,
+    exposureEv: 0.3,
     background: "#141820",
     accent: "#8f83f2",
     post: {
       preset: "arena-fight",
       toneMapping: "aces",
-      exposure: 1.0,
+      exposure: 1.6,
       bloom: { threshold: 0.65, intensity: 0.36 },
       grain: 0.03,
       vignette: 0.22,
-      grade: { contrast: 1.1, saturation: 0.98, temperature: 0, tint: 0.02 },
+      grade: { contrast: 1.1, saturation: 0.98, temperature: 0.1, tint: 0.02 },
       lut: "diamond-dome-storm.cube"
     },
-    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", clayRoughness: 0.42, track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc" },
+    // Blind panel round 2: the sealed infield read blotchy through the pebble normals; smooth synthetic, no clay normal.
+    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", clayRoughness: 0.42, track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc", normalScale: { grass: 0.6, clay: 0 } },
     crowd: ["#8f83f2", "#e4e3dc", "#f0b44a", "#2c3550", "#d0546b", "#4fa3a0", "#a7adbd"],
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
@@ -274,12 +281,12 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Lunar Park under a black sky with Earth rising",
     timeOfDay: "lunar day, black sky, Earth above the rim",
     baseLook: "space",
-    hdri: { id: "deep_space_starfield", intensity: 0.15, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "deep_space_starfield", intensity: 0.6, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
-    sun: { elevationDeg: 18, azimuthDeg: 300, color: "#f4f1ea", intensity: 3.4, colorTemperatureK: 5800 },
-    rim: { color: "#6f8fb8", intensity: 0.3, elevationDeg: 35, azimuthDeg: 160 },
+    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#f4f1ea", intensity: 3.4, colorTemperatureK: 5800 },
+    rim: { color: "#6f8fb8", intensity: 1.0, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
-    exposureEv: 0.0,
+    exposureEv: 0.45,
     background: "#020305",
     accent: "#c3cbd8",
     post: {
@@ -289,10 +296,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.65, intensity: 0.3 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.18, saturation: 0.82, temperature: -0.12, tint: 0 },
+      grade: { contrast: 1.14, saturation: 0.82, temperature: -0.12, tint: 0 },
       lut: "diamond-lunar-regolith.cube"
     },
-    turf: { grass: "#6b6a66", stripe: "#75736e", clay: "#8a8780", track: "#55534f", trackRoughness: 0.98, chalk: "#d9d6cc" },
+    turf: { grass: "#5c5a56", stripe: "#62605b", clay: "#7a766d", track: "#4a4844", trackRoughness: 0.98, chalk: "#e6e2d6", normalScale: { grass: 0, clay: 0 } },
     crowd: ["#c3cbd8", "#e9e6dc", "#d98a3a", "#3c4a66", "#9aa3b5", "#5e6878", "#b8a27a"],
     signature: { splinter: "#cbbf9f", flash: "#ffffff", flashIntensity: 1.1, gravityScale: 0.17 },
     landingFx: "diamond-regolith-arc",
@@ -312,6 +319,19 @@ export const ORIGINAL_LOOKS: Readonly<Record<ParkId, { readonly baseLook: Diamon
   dome: { baseLook: "interior-industrial", exposureEv: 0.14 },
   lunar: { baseLook: "polar-night", exposureEv: 0.16 }
 };
+
+/**
+ * GU47 phase 2 (lunar blind panel): parks that play in their 4.6.2 look unless `?look=` names a look. The blind panel
+ * judged the new Lunar Park worse than 4.6.2, so the Moon keeps the old look in normal play; every other park is GU47.
+ */
+export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>(["lunar"]);
+
+/** The look variant a park plays in: an explicit `?look=original|gu47` wins, otherwise the park's own default. */
+export function parkLookVariant(park: ParkId, search: string): DiamondLookVariant {
+  const look = new URLSearchParams(search).get("look");
+  if (look === "original" || look === "gu47") return look;
+  return ORIGINAL_LOOK_PARKS.has(park) ? "original" : "gu47";
+}
 
 /** `?look=original` restores the 4.6.2 look; anything else (or nothing) is the GU47 look. */
 export function resolveLookVariant(search: string): DiamondLookVariant {
@@ -351,7 +371,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
       [c * 0.5, 14, "#d9ecff", false]
     ];
     towers.forEach(([x, z, color, flare], i) => {
-      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 2.6, base: [x, z], angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
+      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 4.0, base: [x, z], angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
     });
   } else if (park.id === "dome") {
     for (let i = 0; i < 4; i++) {
@@ -362,7 +382,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
   } else if (park.id === "lunar") {
     const spots: readonly [number, number][] = [[-c * 0.7, -c * 0.55 - 6], [c * 0.7, -c * 0.55 - 6], [-c * 0.48, 16], [c * 0.48, 16]];
     spots.forEach(([x, z], i) => {
-      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 1.7, base: [x, z], angle: 0.48, penumbra: 0.35, distance: 190, cone: true, flare: false });
+      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 3.2, base: [x, z], angle: 0.56, penumbra: 0.35, distance: 190, cone: true, flare: false });
     });
   }
   return tier === "low" ? rig.slice(0, 4).map((p) => ({ ...p, flare: false })) : rig;

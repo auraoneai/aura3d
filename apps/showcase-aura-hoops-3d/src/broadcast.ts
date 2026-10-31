@@ -136,7 +136,8 @@ export function createBroadcast(options: BroadcastOptions): Broadcast {
     skip() { shot = null; },
     update(realSeconds) {
       if (!shot) return null;
-      shot.t += Math.max(0, Math.min(0.1, realSeconds));
+      // Wall-clock seconds, capped at 1 s a frame (GU47 phase 2: a 0.1 s cap stretched the 6 s intro to a minute at 1-2 fps).
+      shot.t += Math.max(0, Math.min(1, realSeconds));
       const end = shot.kind === "intro" ? INTRO_SECONDS : REPLAY_SECONDS;
       if (shot.t >= end) { shot = null; return null; }
       return shot;

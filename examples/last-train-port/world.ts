@@ -217,6 +217,9 @@ export const LOOK = parseLook(QUERY.get("look"));
 export const TILT_SHIFT = { bandCenter: 0.56, bandWidth: 0.34, angleDeg: 0 } as const;
 export const GRAIN = 0.03;
 
+/** GU47 LT-06, phase 2: the band-B god-ray extinction. 0.12 filled the golden-hour frame with an orange haze (recap2, software WebGL2). */
+export const GOD_RAY_DENSITY = 0.015;
+
 /** GU47 bands A-E (bands.ts): band HDRI, PCSS key, hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
 function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   const row = BANDS[band];
@@ -245,7 +248,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   // GU47 LT-07: tilt-shift miniature band (E-C S6 dof-tilt-shift); High only via the post tiers.
   if (!FX.has("nodof")) b.add(effects.depthOfField({ name: "tilt-shift", tiltShift: { ...TILT_SHIFT } }));
   // GU47 LT-06: god rays in band B only (High only in the post tiers); the sun flare in A/B, moved with the camera.
-  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: 0.12, color: row.key.color, intensity: 0.55, godRayDensity: 0.35 }));
+  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAY_DENSITY, color: row.key.color, intensity: 0.55, godRayDensity: 0.35 }));
   if (row.flare && !FX.has("noflare")) b.add(lights.lensFlare({ name: "sun-flare", position: keyPosition(row, 3000), intensity: 0.55, runtime: { id: "sun-flare" } }));
 }
 

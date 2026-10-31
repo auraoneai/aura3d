@@ -42,7 +42,10 @@ export interface VenueFog {
   readonly color: AuraColor;
   /** exp2 density (per metre; a bare density fog compiles to exp2). The broadcast camera sits about 45 m from the court centre. */
   readonly density: number;
-  /** Volumetric fog stage at High and above only (TT-E2: desert). */
+  /**
+   * Volumetric fog stage at High and above only (TT-E2). Phase 2: off on every venue; on software WebGL2 the stage only
+   * added extinction (no shafts) and washed the desert court and players out.
+   */
   readonly volumetricAtHigh: boolean;
   /** Visible floodlight cones (TT-E2: hard court, 4). */
   readonly lightCones: number;
@@ -150,16 +153,16 @@ export const EARTH = {
 } as const;
 
 /** The night court's shadowed key: the far floodlight bank, high and cold, casting short shadows toward the camera. */
-const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_COLOR, intensity: 1.2, lightSize: 1.4, colorTemperatureK: 6500 };
+const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_COLOR, intensity: 2.4, lightSize: 1.4, colorTemperatureK: 6500 };
 
 export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   hard: {
     id: "hard", city: "New York", timeOfDay: "floodlit night (21:30), cold-white floods on navy acrylic",
-    hdri: "rooftop_night", hdriSize: "1k", environmentIntensity: 0.35, environmentRotationDeg: 0, background: "hdri",
+    hdri: "rooftop_night", hdriSize: "1k", environmentIntensity: 0.28, environmentRotationDeg: 0, background: "hdri",
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
-    fog: { color: "#0b1426", density: 0.008, volumetricAtHigh: false, lightCones: 4 },
-    grade: { preset: "arena-fight", exposure: 1, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.24, lut: "slam-hard", lutIntensity: 1 },
+    fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
+    grade: { preset: "arena-fight", exposure: 1.3, contrast: 1.18, saturation: 1.06, temperature: -0.06, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.2, lut: "slam-hard", lutIntensity: 0.7 },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
   },
@@ -168,7 +171,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "kloppenheim_02", hdriSize: "1k", environmentIntensity: 0.9, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 40, azimuthDeg: 120, color: "#fff1dc", intensity: 2.6, lightSize: 0.9, colorTemperatureK: 5600 },
     floodlights: [],
-    fog: { color: "#cfdbe6", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
+    fog: { color: "#cfdbe6", density: 0.003, volumetricAtHigh: false, lightCones: 0 },
     grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, vignette: 0.14, lut: "slam-grass", lutIntensity: 1 },
     signature: { burst: "grass-flick", burstColor: particle("grass"), markColor: "#cfe0b4", markOpacity: 0.32, markLifetime: 12 },
     crowd: true, wind: 0.35
@@ -176,40 +179,40 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   clay: {
     id: "clay", city: "Paris", timeOfDay: "late afternoon (18:30), 18-degree golden raking light on terracotta",
     hdri: "venice_sunset", hdriSize: "1k", environmentIntensity: 0.8, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 3.1, lightSize: 0.6, colorTemperatureK: 3400 },
+    sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 4.6, lightSize: 0.6, colorTemperatureK: 3400 },
     floodlights: [],
-    fog: { color: "#e3a46a", density: 0.008, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.1, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: "slam-clay", lutIntensity: 1 },
+    fog: { color: "#e3a46a", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "cinematic-film", exposure: 1.5, contrast: 1.2, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: "slam-clay", lutIntensity: 1 },
     signature: { burst: "clay-puff", burstColor: particle("clay"), markColor: "#8e3e1f", markOpacity: 0.55, markLifetime: 900 },
     crowd: true, wind: 0.2
   },
   desert: {
     id: "desert", city: "Dubai", timeOfDay: "noon (12:30), white-hot sun through dust haze",
-    hdri: "outdoor-midday", hdriSize: "2k", environmentIntensity: 1.1, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4, lightSize: 0.4, colorTemperatureK: 6200 },
+    hdri: "outdoor-midday", hdriSize: "2k", environmentIntensity: 0.75, environmentRotationDeg: 0, background: "hdri",
+    sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4.6, lightSize: 0.4, colorTemperatureK: 6200 },
     floodlights: [],
-    fog: { color: "#e8d2b0", density: 0.016, volumetricAtHigh: true, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.04, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
+    fog: { color: "#e8d2b0", density: 0.006, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "daylight-outdoor", exposure: 1.1, contrast: 1.2, saturation: 1.12, temperature: 0.08, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("desert"), markColor: "#d7c19c", markOpacity: 0.4, markLifetime: 9 },
     crowd: true, wind: 0.5
   },
   beach: {
-    id: "beach", city: "Tropical Beach", timeOfDay: "sunset (19:10), magenta sky over the sea",
-    hdri: "sunset-dramatic", hdriSize: "2k", environmentIntensity: 0.85, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 8, azimuthDeg: 290, color: "#ff8f72", intensity: 2.4, lightSize: 0.8, colorTemperatureK: 2600 },
+    id: "beach", city: "Tropical Beach", timeOfDay: "golden hour (18:00), warm sun on pale sand",
+    hdri: "sunset-dramatic", hdriSize: "2k", environmentIntensity: 0.7, environmentRotationDeg: 0, background: "hdri",
+    sun: { elevationDeg: 22, azimuthDeg: 290, color: "#ffc596", intensity: 3.8, lightSize: 0.6, colorTemperatureK: 3600 },
     floodlights: [],
-    fog: { color: "#e09a86", density: 0.01, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.08, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: "slam-beach", lutIntensity: 1 },
+    fog: { color: "#f2dcc0", density: 0.003, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "cinematic-film", exposure: 1.2, contrast: 1.2, saturation: 1.14, temperature: 0.06, tint: 0, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.2, lut: "slam-beach", lutIntensity: 0.6 },
     signature: { burst: "hard-skid", burstColor: particle("beach"), markColor: "#b9e3df", markOpacity: 0.38, markLifetime: 9 },
     crowd: true, wind: 0.6
   },
   moon: {
     id: "moon", city: "The Moon", timeOfDay: "lunar day, one hard sun on grey regolith, Earth in view",
     hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.05, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 25, azimuthDeg: 60, color: "#ffffff", intensity: 4.4, lightSize: 0.05, colorTemperatureK: 5800 },
+    sun: { elevationDeg: 25, azimuthDeg: 60, color: "#ffffff", intensity: 7, lightSize: 0.05, colorTemperatureK: 5800 },
     floodlights: [],
     fog: null,
-    grade: { preset: "space", exposure: 1, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: "slam-moon", lutIntensity: 1 },
+    grade: { preset: "space", exposure: 1.25, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: "slam-moon", lutIntensity: 1 },
     signature: { burst: "regolith-drift", burstColor: particle("moon"), markColor: "#6f747a", markOpacity: 0.5, markLifetime: 30 },
     crowd: false, wind: 0
   }
@@ -234,8 +237,5 @@ export function venueHdriUrl(look: Pick<VenueLook, "hdri">): string {
   return `/hdri/${look.hdri}_1k.hdr`;
 }
 
-/** `?look=original` keeps today's look (the 4.6.1 frame) for before/after captures. */
-export function lookMode(search?: string): "world-tour" | "original" {
-  const raw = search ?? (typeof location !== "undefined" ? location.search : "");
-  return new URLSearchParams(raw).get("look") === "original" ? "original" : "world-tour";
-}
+/** `?look=original` keeps today's look (the 4.6.1 frame); see ui/lookMode.ts for the per-venue fallback. */
+export { lookMode } from "../ui/lookMode";

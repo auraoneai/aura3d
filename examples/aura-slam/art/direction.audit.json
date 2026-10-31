@@ -25,7 +25,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.2
+        "intensity": 2.4
       },
       {
         "type": "spot",
@@ -112,6 +112,10 @@
       },
       {
         "node": "grass-stripes",
+        "practical": false
+      },
+      {
+        "node": "grass-stripes-alt",
         "practical": false
       },
       {

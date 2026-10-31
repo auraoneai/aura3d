@@ -133,9 +133,9 @@ describe("bunker zero flow and wiring", () => {
       const a = albedo(def.palette.wall, k);
       expect(a / refAlbedo, def.name).toBeGreaterThan(0.43); // 45% before 8-bit rounding of the hex colours
       expect(a / refAlbedo, def.name).toBeLessThanOrEqual(1.0001);
-      // unscaled, the dark palettes sit far below
-      if (def.id === 5) expect(albedo(def.palette.wall, 1) / refAlbedo).toBeLessThan(0.15);
     }
+    // unscaled, F6's pre-fix-pass palette wall (#4c3f2e, replaced by a lighter concrete in the blind-panel fix pass) sat far below
+    expect(albedo("#4c3f2e", 1) / refAlbedo).toBeLessThan(0.15);
     expect(scaleHex("#808080", 1)).toBe("#808080");
   });
 });

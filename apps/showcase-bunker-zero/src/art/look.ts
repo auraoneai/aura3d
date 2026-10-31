@@ -8,7 +8,7 @@
  *
  * No ambient, no hemisphere, no directional fill and no look preset (BZ-01): the scene's light is the per-floor rig in
  * `lightRig.ts` (one shadowed key spot, one fill spot, the player's carried lamp at 1.2 and a pool of fixture points),
- * the hangar_interior IBL at 0.35 (BZ-05), fog at 30% of the lamp value (BZ-02) and the gunfire transient lights of the
+ * the hangar_interior IBL at 0.05-0.12 (BZ-05, lowered in phase 2), fog at 30% of the lamp value (BZ-02) and the gunfire transient lights of the
  * VFX pack (`vfx.ts`, BZ-03). Every value here is presentation only: nothing feeds the simulation (PRD D8).
  */
 import { CELL, FLOORS, KILL_HOUSE, SILO_H, WALL_H, type FloorDef } from "../maps";
@@ -34,7 +34,11 @@ export const BZ_PALETTE = {
 /** BZ-05: the one IBL, catalogue id of `public/hdri/<id>_1k.hdr` (E-A), never drawn as the background. */
 export const BZ_HDRI = "hangar_interior" as const;
 export const BZ_HDRI_URL = `/hdri/${BZ_HDRI}_1k.hdr` as const;
-export const BZ_ENV_INTENSITY = 0.35;
+/**
+ * GU47 phase 2: the IBL is fill only. At 0.35 the hangar_interior's bright overhead lit every floor and wall face evenly
+ * (luma mean ~125, lifted blacks, no pools, remote recap2 frames); 0.05-0.12 per floor leaves the practicals doing the work.
+ */
+export const BZ_ENV_INTENSITY = 0.07;
 
 /** BZ-08 post: AO 0.65/0.9, bloom threshold 0.82 / intensity 0.45, grade contrast 1.14 / saturation 0.82, vignette 0.34, grain 0.04, ACES. */
 export const BZ_POST = {
@@ -140,7 +144,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [3, 2], target: [4, 3], drop: 0.25, intensity: 70, distance: 14, angleDeg: 38, penumbra: 0.55 },
     fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 34, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 9, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.04, environmentIntensity: 0.35, exposure: 1.0, grade: { temperature: 0.12, tint: 0 },
+    fogDensity: 0.04, environmentIntensity: 0.07, exposure: 1.0, grade: { temperature: 0.12, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
@@ -149,7 +153,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [12, 2], target: [13, 2], drop: 0.25, intensity: 64, distance: 14, angleDeg: 40, penumbra: 0.5 },
     fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.05, environmentIntensity: 0.4, exposure: 1.0, grade: { temperature: -0.08, tint: -0.04 },
+    fogDensity: 0.05, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: -0.08, tint: -0.04 },
     reference: { cell: [8, 2], yawDeg: 90, pitchDeg: -6 }
   }),
   row({
@@ -158,7 +162,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [3, 2], target: [4, 2], drop: 0.25, intensity: 66, distance: 14, angleDeg: 40, penumbra: 0.5 },
     fill: { cell: [17, 14], target: [17, 13], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 10, distance: 8, height: "grate", flicker: 0.12 },
-    fogDensity: 0.045, environmentIntensity: 0.3, exposure: 1.0, grade: { temperature: 0.18, tint: 0.02 },
+    fogDensity: 0.045, environmentIntensity: 0.05, exposure: 1.0, grade: { temperature: 0.18, tint: 0.02 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -4 }
   }),
   row({
@@ -167,7 +171,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [3, 1], target: [4, 2], drop: 0.25, intensity: 62, distance: 13, angleDeg: 38, penumbra: 0.55 },
     fill: { cell: [17, 14], target: [18, 14], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.035, environmentIntensity: 0.32, exposure: 1.0, grade: { temperature: 0.1, tint: 0.03 },
+    fogDensity: 0.035, environmentIntensity: 0.08, exposure: 1.0, grade: { temperature: 0.1, tint: 0.03 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
@@ -176,18 +180,20 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [3, 2], target: [4, 2], drop: 0.25, intensity: 58, distance: 13, angleDeg: 40, penumbra: 0.5 },
     fill: { cell: [17, 14], target: [17, 13], drop: 0.1, intensity: 26, distance: 10, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0.35 },
-    fogDensity: 0.04, environmentIntensity: 0.45, exposure: 1.0, grade: { temperature: -0.16, tint: 0 },
+    fogDensity: 0.04, environmentIntensity: 0.1, exposure: 1.0, grade: { temperature: -0.16, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
     variant: "floor6", floorParam: "6", slot: 5, fixture: "alarm-beacon",
-    lamp: { color: "#ff2a1f", temperatureK: 1800 },
+    // Blind-panel fix pass: the red alarm lamp read as a muddy maroon cast; F6 now shares F1's warm work-light family.
+    lamp: { color: "#ffb870", temperatureK: 2900 },
     // F6's key is the moon through the hatch (lightRig.ts BZ_MOON); its spot becomes a sweeping alarm beacon.
     key: { cell: [4, 3], target: [4, 4], drop: 0.3, intensity: 40, distance: 12, angleDeg: 34, penumbra: 0.45 },
     fill: { cell: [20, 14], target: [20, 13], drop: 0.3, intensity: 26, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 7, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.05, environmentIntensity: 0.25, exposure: 1.0, grade: { temperature: 0.06, tint: 0.05 },
-    reference: { cell: [12, 13], yawDeg: 0, pitchDeg: 8 }
+    fogDensity: 0.04, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: 0.1, tint: 0 },
+    // The barrel-and-crate hall under the first lamps, looking -x past the gunner (was the empty cell [12, 13] pitched up).
+    reference: { cell: [13, 3], yawDeg: 270, pitchDeg: -3 }
   }),
   row({
     variant: "killhouse", floorParam: "kh", slot: 6, fixture: "flood",
@@ -195,7 +201,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     key: { cell: [11, 7], target: [11, 8], drop: 0.2, intensity: 72, distance: 15, angleDeg: 46, penumbra: 0.45 },
     fill: { cell: [2, 5], target: [2, 6], drop: 0.2, intensity: 34, distance: 12, angleDeg: 44, penumbra: 0.5 },
     fixtures: { intensity: 9, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.03, environmentIntensity: 0.4, exposure: 1.0, grade: { temperature: -0.04, tint: 0 },
+    fogDensity: 0.03, environmentIntensity: 0.12, exposure: 1.0, grade: { temperature: -0.04, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   })
 ];

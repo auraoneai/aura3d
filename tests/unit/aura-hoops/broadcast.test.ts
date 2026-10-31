@@ -89,11 +89,23 @@ describe("Aura Hoops broadcast camera (H47-C1 / H47-P2)", () => {
     expect(b.update(0.016)).toBeNull();
   });
 
+  it("the intro runs on wall-clock time at 1-2 fps (software WebGL2), capped at 1 s a frame", () => {
+    const b = createBroadcast({ disabled: false });
+    b.startIntro("orbit");
+    for (let i = 0; i < 11; i++) b.update(0.5);
+    expect(b.active).toBe(true);
+    expect(b.update(0.5)).toBeNull();
+    b.startIntro("orbit");
+    for (let i = 0; i < 5; i++) b.update(30);
+    expect(b.active).toBe(true);
+  });
+
   it("reduced motion and the measurement paths disable intros and replays", () => {
     const off = createBroadcast({ disabled: true });
     expect(off.startIntro("orbit")).toBe(false);
     expect(off.startReplay()).toBe(false);
-    expect(MAIN).toMatch(/const BROADCAST_OFF = [^;]*look"\) === "original"[^;]*intro"\) === "0"[^;]*diag"\) === "1"[^;]*simsteps[^;]*reducedMotion[^;]*prefers-reduced-motion/s);
+    expect(MAIN).toMatch(/LOOK_PARAM === "original" \|\|/);
+    expect(MAIN).toMatch(/const BROADCAST_OFF = BOOT_LOOK_ORIGINAL \|\|[^;]*intro"\) === "0"[^;]*diag"\) === "1"[^;]*simsteps[^;]*reducedMotion[^;]*prefers-reduced-motion/s);
   });
 
   it("the live lens is long (fov 30-34) and the replay only follows a Jam dunk", () => {

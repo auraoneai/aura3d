@@ -19,15 +19,16 @@ import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
-import { parseFoundParam } from "./daylight";
+import { parseFoundParam, resolveLook } from "./daylight";
 import { paperPass } from "./paper-pass";
 
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
-/** `?look=original` is the 4.6 look; `?found=0..3|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). */
-const originalLook = params.get("look") === "original";
+/** `?found=0..3|bell|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). The game boots the
+ * 4.6 look; `?look=gu47` opts into the GU47 look, which a bell or epilogue pin also keeps (`resolveLook`, blind-panel fallback). */
 const daylightKey = parseFoundParam(params.get("found"));
+const originalLook = resolveLook(params.get("look"), daylightKey) === "original";
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`where-the-wind-wanders-port: #${id} is missing`);

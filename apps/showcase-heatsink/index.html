@@ -119,12 +119,13 @@
         background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(210, 54, 28, 0.42) 100%);
       }
 
-      /* HS-18 title card: the race chrome hides behind the start card (card frame: scene + title only). */
-      body.td-card #hud,
-      body.td-card .touch-controls,
-      body.td-card .speed-lines,
-      body.td-card .heat-glaze,
-      body.td-card .damage-glaze { display: none; }
+      /* HS-18 title card: the race chrome hides behind the start card (card frame: scene + title only). Foundry look
+         only (`html.td-foundry`, set by src/entry.ts): the 4.6.2 default keeps its HUD and minimap under the card. */
+      html.td-foundry body.td-card #hud,
+      html.td-foundry body.td-card .touch-controls,
+      html.td-foundry body.td-card .speed-lines,
+      html.td-foundry body.td-card .heat-glaze,
+      html.td-foundry body.td-card .damage-glaze { display: none; }
 
       /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Thermal Drift sets accents. */
       :root {
@@ -1131,6 +1132,6 @@
       </div>
     </main>
 
-    <script type="module" src="./src/main.ts"></script>
+    <script type="module" src="./src/entry.ts"></script>
   </body>
 </html>

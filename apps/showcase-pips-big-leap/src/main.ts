@@ -15,8 +15,6 @@ import {
   type AuraSceneSnapshot
 } from "@aura3d/engine";
 import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hudThemeFontFaces, registerGameFonts, sfxUrl } from "@aura3d/engine/game";
-import gtWalsheimUrl from "./fonts/gt-walsheim-400.woff2?url";
-import canelaUrl from "./fonts/canela-400.woff2?url";
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -41,8 +39,8 @@ installBlackFrameGuard();
 
 // --------------------------------------------------------------------- boot
 
-// GU47 WP-16: the felt-and-clay diorama is the default; `?look=original` keeps the
-// pre-GU47 presentation. `?world=<id>` boots straight into a world (capture convenience).
+// GU47 WP-16: the felt-and-clay diorama is opt-in (`?look=diorama`); since the blind-panel
+// fix pass the pre-GU47 (4.6.2) presentation is the default (`?look=original` also selects it). `?world=<id>` boots straight into a world (capture convenience).
 const LOOK_MODE = lookModeFromSearch(window.location.search);
 const REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";
@@ -52,11 +50,12 @@ const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";
 // on parchment chips (styles.css, scoped by data-pbl-look). `?look=original` keeps today's HUD.
 document.documentElement.dataset.pblLook = LOOK_MODE;
 if (LOOK_MODE === "diorama") {
-  const fontUrls: Readonly<Record<string, string>> = { "gt-walsheim-400.woff2": gtWalsheimUrl, "canela-400.woff2": canelaUrl };
   // The DOM's FontFaceSet / FontFace are the registry at runtime; their lib.dom types do not
   // match E-J's narrow FontRegistry shape (handoff to E-J), hence the one cast.
   const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
-  void registerGameFonts("", registry, hudThemeFontFaces("storybook").map((face) => ({ ...face, file: fontUrls[face.file] ?? face.file })));
+  // Served from public/pbl-fonts/ (NOTICE.txt beside them): a `?url` font import breaks the
+  // example dev server bundle (no .woff2 loader), which left the route blank in captures.
+  void registerGameFonts(`${import.meta.env?.BASE_URL ?? "/"}pbl-fonts/`, registry, hudThemeFontFaces("storybook"));
 }
 
 interface WorldRuntime {

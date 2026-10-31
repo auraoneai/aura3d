@@ -145,9 +145,9 @@ void main() {
   if (inkLook > 0.5) {
     vec3 n = normalize(vec3((ripple - 0.5) * 0.35, 1.0, (fbm(flow * 5.0 + 1.3) - 0.5) * 0.35));
     vec3 r = reflect(-view, n);
-    float spec = pow(max(0.0, dot(r, normalize(sunDir))), 180.0);
-    c = mix(c, inkSky, fres * 0.55);
-    c += sunColor * spec * 3.0;
+    float spec = pow(max(0.0, dot(r, normalize(sunDir))), 420.0);
+    c = mix(c, inkSky, fres * 0.3);
+    c += sunColor * spec * 1.2;
     float streak = smoothstep(0.62, 0.9, vnoise(vec2(vWorld.x * 0.6, vWorld.z * 0.02 + siltTime * 0.9)));
     c = mix(c, vec3(0.86, 0.78, 0.62), streak * 0.18 + foam * 0.12);
   }

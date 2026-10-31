@@ -11,7 +11,7 @@ function flat(nodes: readonly Node[]): Node[] {
   return nodes.flatMap((n) => [n, ...flat(n.children ?? [])]);
 }
 function sceneNodes(venue: VenueId, reducedMotion = false): Node[] {
-  return flat((buildFcScene(venue, { reducedMotion }).toJSON() as unknown as { nodes: Node[] }).nodes);
+  return flat((buildFcScene(venue, { reducedMotion, lookMode: "gu47" }).toJSON() as unknown as { nodes: Node[] }).nodes);
 }
 const effectsOf = (nodes: Node[]) => nodes.filter((n) => n.kind === "effect").map((n) => n.effect);
 
@@ -43,10 +43,10 @@ describe("aura-fc-3d GU47 look table", () => {
     }
   });
 
-  it("FC47-S2: haze shafts with a light position on Munich and Glacier only", () => {
+  it("FC47-S2 (phase 2): the haze shafts are off on every venue (software WebGL2 frames: they buried the pitch)", () => {
     for (const v of VENUE_ORDER) {
       const haze = sceneNodes(v).filter((n) => n.effect === "volumetric-fog" && n.name === "fc-flood-haze");
-      expect({ v, n: haze.length }).toEqual({ v, n: v === "munich" || v === "glacier" ? 1 : 0 });
+      expect({ v, n: haze.length }).toEqual({ v, n: 0 });
     }
   });
 

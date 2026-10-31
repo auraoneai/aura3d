@@ -36,7 +36,7 @@ export interface HorizonBand {
 }
 
 /** Draws each park's horizon adds (one band each, Dome none). */
-export const HORIZON_DRAWS: Readonly<Record<ParkId, number>> = { sandlot: 1, skyline: 1, canyon: 1, ivy: 1, dome: 0, lunar: 1 };
+export const HORIZON_DRAWS: Readonly<Record<ParkId, number>> = { sandlot: 0, skyline: 1, canyon: 0, ivy: 0, dome: 0, lunar: 1 };
 
 /** Instances on Low tier keep every other piece (the silhouette stays; half the vertices). */
 export function horizonForTier(band: HorizonBand, low: boolean): HorizonBand {
@@ -74,8 +74,19 @@ function arc(count: number, r: number, fromDeg: number, toDeg: number, seed: num
   });
 }
 
-/** The park's horizon band, or null (the Dome). */
+/**
+ * The park's horizon band, or null. GU47 blind panel: Harbor's headland, Canyon's mesas and Ivy's rowhouses read as
+ * hard-edged gradient cards and blockout slabs under the fog, so only Midtown and Lunar keep a band
+ * (`HORIZON_BANDS_OFF`); the other rows stay below for when real set pieces replace them.
+ */
+export const HORIZON_BANDS_OFF: readonly ParkId[] = ["sandlot", "canyon", "ivy", "dome"];
+
 export function horizonBand(park: ParkId): HorizonBand | null {
+  if (HORIZON_BANDS_OFF.includes(park)) return null;
+  return horizonRow(park);
+}
+
+function horizonRow(park: ParkId): HorizonBand | null {
   switch (park) {
     case "sandlot":
       // A low wooded headland across the bay, right of centre where the water is (rules.ts HARBOR_WATER).

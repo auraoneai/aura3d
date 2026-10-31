@@ -15,7 +15,7 @@
     "check:version:registry": "node scripts/check-version.mjs --registry"
   },
   "dependencies": {
-    "@aura3d/engine": "4.6.2"
+    "@aura3d/engine": "4.7.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

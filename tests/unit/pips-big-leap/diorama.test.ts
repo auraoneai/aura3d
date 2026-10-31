@@ -129,7 +129,7 @@ describe("pips-big-leap diorama scene", () => {
     }
   });
 
-  it("adds sun shafts before the look group in w1, w2 and w5 only (PBL-P3)", () => {
+  it("adds sun shafts before the look group only where a world sets them (PBL-P3; none since phase 2)", () => {
     for (const id of WORLD_IDS) {
       const top = (buildWorld(worldSpec(id)).scene.toJSON() as unknown as { nodes: Node[] }).nodes;
       const shaftsAt = top.findIndex((n) => n.name === dioramaName.shafts);

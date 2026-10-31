@@ -149,7 +149,7 @@ import {
   buildParkScene,
   type DiamondSceneContext
 } from "./scene";
-import { PARK_LOOKS, hudAccent, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { PARK_LOOKS, hudAccent, lookPlan, parkLookVariant, resolveDiamondTier, resolveSkyMode } from "../art/look";
 import { BoardThrottle, boardModel, homeRunPhase } from "../art/board";
 import { cheerHop, earthYaw } from "../art/ambient";
 import { boardTexture } from "./boardTexture";
@@ -371,15 +371,17 @@ function boot(): void {
   const renderError = getEl("render-error");
   // GU47 (WP-18): `?look=original` keeps the 4.6.2 look, `?tier=` forces the quality tier, `?sky=hdri` the HDRI sky.
   const bootSearch = window.location.search;
-  const sceneCtx: DiamondSceneContext = {
-    variant: resolveLookVariant(bootSearch),
+  // Boot straight into the `?park=` park so a park link fetches only its own HDRI (DIA-E1), not Harbor's first.
+  const bootParkParam = new URLSearchParams(bootSearch).get("park") as ParkId | null;
+  const bootPark: ParkId = bootParkParam && PARKS[bootParkParam] ? bootParkParam : "sandlot";
+  // GU47 phase 2: the look variant follows the park (Lunar Park plays in its 4.6.2 look; an explicit `?look=` wins), and
+  // is re-resolved on every park switch (setPark), so every `sceneCtx.variant` read sees the current park's look.
+  let sceneCtx: DiamondSceneContext = {
+    variant: parkLookVariant(bootPark, bootSearch),
     tier: resolveDiamondTier(bootSearch, window.matchMedia?.("(pointer: coarse)")?.matches ?? false, window.innerWidth),
     skyMode: resolveSkyMode(bootSearch),
     reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false)
   };
-  // Boot straight into the `?park=` park so a park link fetches only its own HDRI (DIA-E1), not Harbor's first.
-  const bootParkParam = new URLSearchParams(bootSearch).get("park") as ParkId | null;
-  const bootPark: ParkId = bootParkParam && PARKS[bootParkParam] ? bootParkParam : "sandlot";
   let auraApp: ReturnType<typeof createAuraApp>;
   try {
     auraApp = createAuraApp("#app", {
@@ -666,7 +668,7 @@ function boot(): void {
         trail?: (target: string, o: { width: number; life: number; color?: string; widthOverSpeed?: readonly [number, number] }) => { clear(): void; stop(o?: { immediate?: boolean }): void };
       }
     | undefined;
-  const gu47Fx = sceneCtx.variant === "gu47";
+  let gu47Fx = sceneCtx.variant === "gu47";
   let vfxSeed = 1;
   function registerParkVfx(id: ParkId): void {
     if (!gu47Fx || typeof appFx?.registerPreset !== "function") return;
@@ -729,10 +731,17 @@ function boot(): void {
       }
     }
   } as any);
+  // The crack and home-run juice effects follow the current park's look variant (re-applied by setPark).
+  function crackFx(id: ParkId): Record<string, unknown> {
+    return gu47Fx ? { kind: juiceFxKind("crack", id) } : { kind: "spark", count: 14, color: "#ffd76a", speed: 4 };
+  }
+  function homerFx(): Record<string, unknown> | undefined {
+    return gu47Fx ? undefined : { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 };
+  }
   const JUICE_EVENTS: Record<string, any> = {
     // GU47: the crack is the signature splinter flash; the home-run celebration is fired at the ball (fireHrBurst).
-    crack: { fx: gu47Fx ? { kind: juiceFxKind("crack", bootPark) } : { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
-    homer: { ...(gu47Fx ? {} : { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 } }), cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
+    crack: { fx: crackFx(bootPark), cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
+    homer: { fx: homerFx(), cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
     strikeout: { cue: "strikeout", flash: { color: "#ff5252", peak: 0.12, ms: 130 } },
     pop: { cue: "pop", punch: { fovDeg: 1.2, ms: 140 } },
     foul: { cue: "foul", flash: { color: "#ff9f47", peak: 0.1, ms: 110 } },
@@ -1344,6 +1353,13 @@ function boot(): void {
     if (!PARKS[id] || G.park === id) return;
     G.park = id;
     try {
+      // GU47 phase 2: the park's own look variant (Lunar Park in its 4.6.2 look), then the effects that follow it.
+      sceneCtx = { ...sceneCtx, variant: parkLookVariant(id, bootSearch) };
+      gu47Fx = sceneCtx.variant === "gu47";
+      JUICE_EVENTS.crack.fx = crackFx(id);
+      JUICE_EVENTS.homer.fx = homerFx();
+      if (sceneCtx.variant !== "gu47") applyShotDof(false, 0);
+      if (sceneCtx.variant !== "gu47") applyShotBlur(false);
       app.setScene(buildParkScene(PARKS[id], sceneCtx));
       applyParkLook(id);
       registerParkVfx(id);

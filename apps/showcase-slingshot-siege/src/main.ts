@@ -29,7 +29,8 @@ import {
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
-import { chapterLook } from "./game/look";
+import { chapterLook, useOriginalLook } from "./game/look";
+import { buildSceneOriginal } from "./game/stageOriginal";
 import { SIGN_PARK, signTextNodeId, signTextPlacement } from "./game/sign";
 import {
   INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
@@ -52,8 +53,8 @@ const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVE
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
 /** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
 const AO = params.get("ao") !== "0";
-/** `?surfaces=0` evidence switch: flat island materials for the SS47-M2 before/after spread pair. */
-const SURFACES = params.get("surfaces") !== "0";
+/** `?surfaces=1` evidence switch: SS47-M2 CC0 detail maps on the island (GU47 phase 2: off by default, the mapped turf read white). */
+const SURFACES = params.get("surfaces") === "1";
 
 // ---------------------------------------------------------- persistence --
 
@@ -75,6 +76,8 @@ function persist(): void {
 // ------------------------------------------------------------------- app --
 
 const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
+/** GU47 blind-panel fix pass: the 4.6.2 look on chapters the panel did not judge better (`?look=original|gu47`). */
+const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
@@ -91,7 +94,9 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
+  scene: ORIGINAL_LOOK
+    ? buildSceneOriginal(chapter.id, { reducedMotion: REDUCED, ambientOcclusion: AO })
+    : buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
 });
 const app = gameApp.app;
 const input = gameApp.input;
@@ -302,6 +307,11 @@ let orbitT = 0;
 const intro = { t: 0, done: !introEnabled({ reducedMotion: REDUCED, demo: DEMO || autoPlay, param: params.get("intro") }), skipped: false, shot: "aim" as string };
 /** The next camera update cuts instead of easing (after the intro). */
 let cutNext = false;
+/**
+ * GU47 phase 2: wall-clock start of the intro (first frame with time). The intro used only the summed frame dt, and
+ * on a slow device (software WebGL2, about 2 M triangles) the clamped dt kept it on the fort wide for over 60 s.
+ */
+let introStartMs: number | null = null;
 function finishIntro(skipped: boolean): void {
   if (intro.done) return;
   intro.done = true;
@@ -322,7 +332,9 @@ const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, numbe
 
 function updateCamera(dt: number, elapsed: number): void {
   if (!intro.done) {
-    intro.t += dt;
+    if (dt > 0 && introStartMs === null) introStartMs = performance.now();
+    const wall = introStartMs === null ? 0 : (performance.now() - introStartMs) / 1000;
+    intro.t = Math.max(intro.t + dt, wall);
     if (intro.t >= INTRO_SECONDS || camState !== "aim") {
       finishIntro(false);
     } else {
@@ -1021,7 +1033,8 @@ function updateMiniatureFocus(): void {
     if (!q.behind) ys.push(q.y / h);
   }
   const band = tiltShiftBand(ys, LOOK_ROW.dof.bandWidth);
-  if (bandChanged(lastBand, band)) {
+  // The 4.6.2 look has no tilt-shift node: never add one.
+  if (!ORIGINAL_LOOK && bandChanged(lastBand, band)) {
     lastBand = band;
     try { app.post?.setEffect("depthOfField", { tiltShift: [band.bandCenter, band.bandWidth, 0] }); } catch { /* post is presentation only */ }
   }
@@ -1038,6 +1051,7 @@ function updateMiniatureFocus(): void {
   qa.crops = qaCrops;
   qa.tiltShift = band;
   qa.chapterLook = LOOK_ROW.chapter;
+  qa.look = ORIGINAL_LOOK ? "4.6.2" : "gu47";
 }
 
 // ------------------------------------------------------------------ hud --

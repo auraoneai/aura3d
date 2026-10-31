@@ -24,7 +24,7 @@ export const BZ_LUT_SPECS: readonly FloorLutSpec[] = [
   { slot: 2, file: "bz-f3-forge.cube", shadows: "#3a1206", highlights: "#ffa860", strength: 0.4 },
   { slot: 3, file: "bz-f4-brass.cube", shadows: "#2a2410", highlights: "#ffe8a0", strength: 0.3 },
   { slot: 4, file: "bz-f5-fluorescent.cube", shadows: "#1a2638", highlights: "#e8f4ff", strength: 0.28 },
-  { slot: 5, file: "bz-f6-alarm.cube", shadows: "#0c1430", highlights: "#ff6a50", strength: 0.34 }
+  { slot: 5, file: "bz-f6-alarm.cube", shadows: "#283444", highlights: "#ffcc94", strength: 0.28 }
 ];
 
 const rgb = (hex: string): [number, number, number] => {
@@ -62,7 +62,7 @@ export const BZ_LUT_SHA256: Readonly<Record<string, string>> = {
   "bz-f3-forge.cube": "622dafeafab7f7b7d2bfc79e62d64209e107961c4a1ca654768efdbb16468e2e",
   "bz-f4-brass.cube": "2002aa7659d7021ba7a13ba96d13775fc29c574108129302d1a713932db90d1c",
   "bz-f5-fluorescent.cube": "ac6c9721f7fded1d93c7f8eb4eb6e09e5cd1b3c7851a8bc6dbe5a39025dcf4c3",
-  "bz-f6-alarm.cube": "58fa1910685848a2ea90c6f426a520b74a166f0663ac4f85b6312f5e3b89fd4b"
+  "bz-f6-alarm.cube": "32671a94f9f4cd7fe36c91a51b6bd04b62cedc4bd5edda0ac655bb979b09398c"
 };
 
 /**

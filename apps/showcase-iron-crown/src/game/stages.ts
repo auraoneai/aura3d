@@ -5,6 +5,7 @@ import { stageLook } from "./look";
 import { venueBackdrop } from "./backdrop";
 import { floorDetailFields } from "./surfaces";
 import { CROWD_IDS } from "./ambientMotion";
+import { buildOriginalFloorDeck } from "./originalLook";
 
 /**
  * IRON CROWN venues.
@@ -50,6 +51,8 @@ export interface IronStage {
   readonly issues: readonly { readonly severity: string; readonly code: string; readonly message: string }[];
   readonly bounds: { readonly minX: number; readonly maxX: number };
   readonly dressing: readonly AuraSceneNode[];
+  /** The 4.6.2 dressing (its floor deck, the same props, no far backdrop) for the 4.6.2 look (originalLook.ts). */
+  readonly originalDressing: readonly AuraSceneNode[];
 }
 
 /**
@@ -312,7 +315,8 @@ function makeStage(
     })),
     bounds: { minX: stage.combatBounds.minX, maxX: stage.combatBounds.maxX },
     // IC47-W1: the far backdrop (10-60 m) sits behind the dressing.
-    dressing: [...buildArenaFloorDeck(id, palette), ...dressing, ...venueBackdrop(id)]
+    dressing: [...buildArenaFloorDeck(id, palette), ...dressing, ...venueBackdrop(id)],
+    originalDressing: [...buildOriginalFloorDeck(id, palette), ...dressing]
   };
 }
 

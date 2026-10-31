@@ -1,0 +1,39 @@
+{
+  "capability": "material-rim",
+  "version": "4.6.2",
+  "gitSha": "unknown-in-image",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/material-rim-harness.ts rimScene(): radius-1 sphere (primitives.sphere scale 2, #2a3140, roughness 0.6), dark backdrop, one directional key, camera z=4 fov 40; on frame adds rim { color #ffb347, power 2.5, intensity 1.5 }",
+  "frames": [
+    {
+      "file": "evidence/receipts/material-rim/4.6.2/rim-off.png",
+      "sha256": "aef1bfa0a0053f1288c9128c8683af535e4cdcdbee17c1df914f43fe46efef00",
+      "meanLuma": 9.337144770801245,
+      "nonBlackRatio": 0.18850416666666667,
+      "label": "rim off"
+    },
+    {
+      "file": "evidence/receipts/material-rim/4.6.2/rim-on.png",
+      "sha256": "1566a6bedfad9c6a37f56cb4c32aa77733bf5ca075583b40fb5fcf714e49bf45",
+      "meanLuma": 25.300735219256765,
+      "nonBlackRatio": 0.26425,
+      "label": "rim on"
+    }
+  ],
+  "tests": [
+    "tests/browser/gu47/material-rim.spec.ts"
+  ],
+  "date": "2026-10-31T06:07:54.540Z",
+  "checks": {
+    "cleanRuntime": true,
+    "bothFramesDrew": true,
+    "changedPixelFractionAtLeast1pc": true,
+    "edgeBrightensBy6": true,
+    "edgeWarms": true,
+    "centreStableWithin2": true,
+    "changedPixelFraction": 0.2211125,
+    "edgeLumaDelta": 121.09263795383046,
+    "edgeWarmthDelta": 126.85136411332633,
+    "centerLumaDelta": 0.3027419288298887
+  }
+}

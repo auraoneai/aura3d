@@ -101,6 +101,11 @@ export const ISLAND_BANDS = [
   { id: "islands-far", count: 18, spacing: 110, lateral: [180, 320], up: [20, 90], radius: [18, 34], height: [45, 90], fog: 0.55 }
 ] as const;
 /**
+ * GU47 phase 2: the spire bands stay unbuilt. In the captures the 7-sided cones read as flat pink/violet placeholder
+ * triangles hanging over the cloud sea (the 4.6.2 frame showed only the Meshy islands, which read better).
+ */
+export const SPIRE_BANDS_SHOWN = false;
+/**
  * GU47 SSR-17: TRAFFIC's soul column, souls spiralling up from the cloud sea beside the road (one instanced glow draw),
  * shown while it is within `SOUL_COLUMN.show` m ahead.
  */
@@ -207,6 +212,8 @@ export interface WorldRuntime {
   setRunnerStyle(style: RunnerStyle): void;
   /** Reduced motion (C9): no camera shake and no speed FOV widening. */
   setReducedMotion(on: boolean): void;
+  /** GU47 phase 2: title screen (no run started); the camera holds the chase framing instead of the intro's first pose. */
+  setTitle?(on: boolean): void;
   /** `setVisible` calls the last `update` made (pooled slots only change when they change state). */
   readonly visibilityWrites: number;
   readonly nodeCount: number;
@@ -433,7 +440,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
     }
     builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
-    for (const band of ISLAND_BANDS) {
+    for (const band of SPIRE_BANDS_SHOWN ? ISLAND_BANDS : []) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
     builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
@@ -465,7 +472,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.bloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, radius: 0.5 }))
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
-      .add(effects.volumetricFog({ name: "god rays", density: 0.02, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
       // GU47 SSR-07: motion blur above 60 m/s (High only), aberration pulses, outro DOF; art/cinePost.ts disables them
       // on the first frame and enables each only when its moment comes.
       .add(effects.motionBlur({ name: "motion blur", intensity: 0.25, shutter: 0.5, maxBlur: 12 }))
@@ -499,6 +506,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       let prevPulse = 0;
       let burstT = 1;
       let reducedMotion = false;
+      let title = false;
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
@@ -527,7 +535,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 16), rgba: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
-      const islandBufs = script ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
+      const islandBufs = script && SPIRE_BANDS_SHOWN ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
       /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
       const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
       if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
@@ -899,7 +907,7 @@ export function buildWorld(options: WorldOptions = {}): World {
 
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
-        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion }) ?? null;
+        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
         const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
         const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
@@ -931,6 +939,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
+        setTitle(on: boolean) { title = on; },
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {

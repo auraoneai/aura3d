@@ -106,7 +106,7 @@ export const puffSpec = (): CustomSpec => ({
   depthWrite: false
 });
 
-export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; transparent?: boolean }
+export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; /** Hemisphere fill multiplier (default 1). */ fill?: number; transparent?: boolean }
 const unit = (d: Rgb): number[] => { const l = Math.hypot(d[0], d[1], d[2]) || 1; return [d[0] / l, d[1] / l, d[2] / l]; };
 /**
  * Lit scenery driven by a per-vertex `tone` attribute (the geometry must supply it). On rows with `scenery.receiveShadow`
@@ -117,7 +117,7 @@ export const scenerySpec = (o: SceneryOptions = {}, row: CumulusLookRow = ACTIVE
   glsl: { vertex: SCENERY_VERTEX, fragment: row.scenery.receiveShadow ? SCENERY_SHADOWED_FRAGMENT : SCENERY_FRAGMENT },
   uniforms: {
     sunDirW: { type: "vec3", value: unit(row.scenery.sunDir) }, sunColor: { type: "vec3", value: [...row.scenery.sunColor] }, sunStrength: { type: "f32", value: o.sun ?? 1.15 },
-    skyFill: { type: "vec3", value: [...row.scenery.skyFill] }, groundFill: { type: "vec3", value: [...row.scenery.groundFill] },
+    skyFill: { type: "vec3", value: row.scenery.skyFill.map((c) => c * (o.fill ?? 1)) }, groundFill: { type: "vec3", value: row.scenery.groundFill.map((c) => c * (o.fill ?? 1)) },
     rimColor: { type: "vec3", value: [...row.scenery.rimColor] }, rimStrength: { type: "f32", value: o.rim ?? 0.28 },
     hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density },
     mapMix: { type: "f32", value: o.map ? o.mapMix ?? 0.75 : 0 }, mapScale: { type: "f32", value: o.mapScale ?? 1 },

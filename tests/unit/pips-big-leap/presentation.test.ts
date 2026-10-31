@@ -17,6 +17,7 @@ import {
 } from "../../../apps/showcase-pips-big-leap/src/game/presentation";
 import { courseBounds } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { PIP_VFX } from "../../../apps/showcase-pips-big-leap/src/game/vfx";
+import { WORLD_LOOKS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 
 function fakeApp() {
   const calls = {
@@ -88,7 +89,7 @@ describe("pips-big-leap runtime presentation", () => {
     const p = createDioramaPresentation(app, options());
     const w4 = buildWorld(worldSpec("w4"));
     p.worldMounted(w4);
-    expect(calls.output).toEqual([{ preset: "arena-fight" }]);
+    expect(calls.output).toEqual([{ preset: "arena-fight", exposure: Math.pow(2, WORLD_LOOKS.w4.exposureEv) }]);
     expect(calls.fog[0]).toMatchObject({ mode: "height", heightReference: w4.presentation.baseTop });
     expect(calls.presets).toEqual(Object.values(PIP_VFX));
     expect(calls.plays.map((c) => c.id)).toEqual(["pbl-flyover-w4"]);

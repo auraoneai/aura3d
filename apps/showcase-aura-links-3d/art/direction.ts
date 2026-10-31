@@ -38,11 +38,11 @@ export default defineArtDirection({
   },
   lighting: {
     // the boot course (St. Auroras); every course has one shadowed key from its own sun and an HDRI fill
-    key: { type: "directional", colorTemperatureK: 3600, shadow: true },
+    key: { type: "directional", colorTemperatureK: 4200, shadow: true },
     fill: "ibl",
     practicals: 4,
-    environment: { hdri: "spruit_sunrise", background: "hdri" },
-    exposureEV: 0.2
+    environment: { hdri: "kloppenheim_06_puresky", background: "hdri" },
+    exposureEV: 0
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.22, 0.6], fovDeg: [30, 58], mobile: "both" },
   assets: [

@@ -114,6 +114,11 @@ export interface CourtRig {
   readonly exposureEv: number;
   /** H47-E1: fog to the HDRI horizon (near/far in metres; the skyline sits at 60-120 m inside it). */
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
+  /**
+   * GU47 blind-panel pass: no fog at all (the colour stays the clear colour). Athens: with the engine's look fog now a
+   * range fog, the noon court drew as a white-out (players faded, hoop and backdrop gone; panel 0/3).
+   */
+  readonly fogOff?: boolean;
   readonly post: AuraPostPresetId;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
   /** H47-P1: bloom 0.85 day / 0.6 night (intensity), with a lower threshold at night so lamps and signs glow. */
@@ -178,7 +183,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     environmentRotationDeg: 250,
     sun: { elevationDeg: 7, azimuthDeg: 250 },
     key: { color: "#ff9e64", intensity: 1.5 },
-    exposureEv: 0.1,
+    // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
+    exposureEv: 1.0,
     fog: { color: "#46506a", near: 28, far: 210 },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 0.92, temperature: -0.08, tint: 0.02 },
@@ -212,7 +218,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // Behind the hoop: the court attacks -Z, so azimuth 185 puts the low sun over the backboard, facing the camera.
     sun: { elevationDeg: 5, azimuthDeg: 185 },
     key: { color: "#ffad66", intensity: 2.6 },
-    exposureEv: 0.05,
+    // GU47 phase 2: +0.55 EV for p95 >= 215 (4.6 frame p95 180).
+    exposureEv: 0.6,
     fog: { color: "#d8a47c", near: 40, far: 260 },
     post: "daylight-outdoor",
     grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0.01 },
@@ -240,8 +247,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     environmentRotationDeg: 150,
     sun: { elevationDeg: 64, azimuthDeg: 150 },
     key: { color: "#fff6ea", intensity: 4.2 },
-    exposureEv: -0.12,
+    // GU47 phase 2: +0.5 EV for p95 >= 215 once the fog wash is gone (4.6 frame p95 178).
+    exposureEv: 0.38,
     fog: { color: "#cbd8e2", near: 60, far: 320 },
+    fogOff: true,
     post: "daylight-outdoor",
     grade: { contrast: 1.16, saturation: 0.86, temperature: 0.02, tint: 0 },
     bloom: { intensity: 0.85, threshold: 1.2 },
@@ -269,7 +278,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // Cool daylight through the roof gap (the god-ray source of H47-V2); the bulbs carry the warm side.
     sun: { elevationDeg: 62, azimuthDeg: 20 },
     key: { color: "#c9d5e6", intensity: 1.4 },
-    exposureEv: 0.25,
+    // GU47 phase 2: +0.45 EV for p95 >= 215 (after-capture p95 182-192).
+    exposureEv: 0.7,
     fog: { color: "#2b2620", near: 24, far: 140 },
     post: "cinematic-film",
     grade: { contrast: 1.08, saturation: 0.95, temperature: 0.22, tint: 0.01 },
@@ -293,15 +303,19 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "night-city",
     hdri: "rooftop_night",
     hdri2k: true,
-    environmentIntensity: 0.6,
+    // GU47 phase 2: more HDRI fill and less contrast lift the shadows for H47-L3 darkFrac <= 0.1 (4.6: 0.15-0.22)
+    // while +0.2 EV keeps the mean inside 45-65 (4.6: 54-56).
+    // GU47 phase 2 round 2: the fixed build drew the wet court near black under a 0.8 key (players lost against the
+    // asphalt) and bloomed the night sky into a glare: key 0.8 -> 1.5, fill 0.85 -> 1.0, bloom threshold 0.7 -> 1.0.
+    environmentIntensity: 1.0,
     environmentRotationDeg: 300,
     sun: { elevationDeg: 48, azimuthDeg: 220 },
-    key: { color: "#9db4ff", intensity: 0.8 },
-    exposureEv: 0.35,
+    key: { color: "#9db4ff", intensity: 1.5 },
+    exposureEv: 0.55,
     fog: { color: "#151b2b", near: 18, far: 150 },
     post: "neon-night",
-    grade: { contrast: 1.18, saturation: 1.15, temperature: -0.15, tint: 0.05 },
-    bloom: { intensity: 0.6, threshold: 0.7 },
+    grade: { contrast: 1.06, saturation: 1.15, temperature: -0.15, tint: 0.05 },
+    bloom: { intensity: 0.5, threshold: 1.0 },
     night: true,
     grain: false,
     // H47-L3: sign rect lights replace the two neon point fills; left cyan and right magenta keep the columns apart.
@@ -326,12 +340,14 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "neon-arcade",
     hdri: "deep_space_starfield",
     hdri2k: true,
-    environmentIntensity: 0.4,
+    // GU47 phase 2: the starfield HDRI lights almost nothing (after-capture mean 3-24, darkFrac 0.85): brighter
+    // Earth-shine key, ribs and +0.6 EV for p95 >= 215 and darkFrac <= 0.6.
+    environmentIntensity: 1.0,
     environmentRotationDeg: 0,
     // Earth-shine from where the planet hangs ((-60, 130, -300) -> elevation 24, azimuth 191).
     sun: { elevationDeg: 24, azimuthDeg: 191 },
-    key: { color: "#9fc8ff", intensity: 1.3 },
-    exposureEv: 0.3,
+    key: { color: "#9fc8ff", intensity: 3.2 },
+    exposureEv: 0.9,
     fog: { color: "#0b1120", near: 70, far: 420 },
     post: "space",
     grade: { contrast: 1.1, saturation: 0.9, temperature: -0.12, tint: 0 },
@@ -340,10 +356,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     grain: false,
     // H47-L3: station rib rect lights replace the orbit point fill.
     practicals: [
-      { kind: "rect", name: "orbit-rib-nw", position: [-14, 7.5, -6], target: [0, 0, 4], color: "#7dfcff", intensity: 3.2, width: 0.6, height: 7 },
-      { kind: "rect", name: "orbit-rib-ne", position: [14, 7.5, -6], target: [0, 0, 4], color: "#7dfcff", intensity: 3.2, width: 0.6, height: 7 },
-      { kind: "rect", name: "orbit-rib-sw", position: [-14, 7.5, 14], target: [0, 0, 4], color: "#b9a6ff", intensity: 2.6, width: 0.6, height: 7 },
-      { kind: "rect", name: "orbit-rib-se", position: [14, 7.5, 14], target: [0, 0, 4], color: "#b9a6ff", intensity: 2.6, width: 0.6, height: 7 }
+      { kind: "rect", name: "orbit-rib-nw", position: [-14, 7.5, -6], target: [0, 0, 4], color: "#7dfcff", intensity: 6.5, width: 0.6, height: 7 },
+      { kind: "rect", name: "orbit-rib-ne", position: [14, 7.5, -6], target: [0, 0, 4], color: "#7dfcff", intensity: 6.5, width: 0.6, height: 7 },
+      { kind: "rect", name: "orbit-rib-sw", position: [-14, 7.5, 14], target: [0, 0, 4], color: "#b9a6ff", intensity: 5.5, width: 0.6, height: 7 },
+      { kind: "rect", name: "orbit-rib-se", position: [14, 7.5, 14], target: [0, 0, 4], color: "#b9a6ff", intensity: 5.5, width: 0.6, height: 7 }
     ],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
     lensFlare: [],
@@ -372,7 +388,11 @@ export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
     sun: rig.sun,
     key: { color: rig.key.color, intensity: rig.key.intensity, shadow: COURT_KEY_SHADOW },
     rim: false,
-    fog: { color: rig.fog.color, near: rig.fog.near, far: rig.fog.far },
+    // GU47 phase 2: the look's own fog node is dropped (fogDensityScale 0) and courtFogNode authors it instead. With
+    // A3D_QR_VFX_FOG on, a look fog that carries near/far but no mode resolves to height fog at 24/far density, which
+    // washed every court at 20 m (Athens p95 201, colours gone). Fallback until the engine height-fog fix lands.
+    ...(rig.fogOff ? {} : { fog: { color: rig.fog.color, near: rig.fog.near, far: rig.fog.far } }),
+    fogDensityScale: 0,
     grade: rig.grade,
     post: rig.post
   };
@@ -394,10 +414,25 @@ export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean }
     const json = node.toJSON() as { name?: string; effect?: string };
     return json.name !== LOOK_AO_NODE && json.name !== LOOK_BLOOM_NODE && json.effect !== "bloom";
   }) as AuraNodeBuilder<AuraSceneNode>[];
+  if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
   nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
   if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.08 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
   return nodes;
+}
+
+/** exp2 density that reaches 98 % at `far` (the renderer's linear-to-exp2 equivalent): the flag-off fallback path. */
+const linearFogExp2Density = (far: number): number => Number((Math.sqrt(-Math.log(0.02)) / Math.max(far, 1)).toFixed(5));
+
+/**
+ * H47-E1 fog to the HDRI horizon as an explicit linear fog (near/far in metres, the court clear inside `near`). The
+ * density is the exp2 equivalent for the legacy flag-off path; `intensity` 0.85 caps that path at 0.72 opacity.
+ */
+export function courtFogNode(rig: CourtRig): AuraNodeBuilder<AuraSceneNode> {
+  return effects.fog({
+    name: "court fog", mode: "linear", color: rig.fog.color, near: rig.fog.near, far: rig.fog.far,
+    density: linearFogExp2Density(rig.fog.far), intensity: 0.85
+  } as unknown as Parameters<typeof effects.fog>[0]) as AuraNodeBuilder<AuraSceneNode>;
 }
 
 /** The court's practical lights (H47-L2, H47-L3): sodium spots, tungsten bulb clusters, sign and rib rect lights. */
@@ -458,6 +493,9 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
  * Draws: Rucker +4 cones (+ the fog stage), Manila +1 motes (+ the fog stage); +12 max per PRD. Reduced motion halves
  * and stills the motes (PRD §6.3); the Low tier drops volumetric fog in the engine (forward fog only).
  */
+// GU47 phase 2: volumetric density is extinction per metre (sigma ~1.6-2x density). 0.08 / 0.12 left ~2 % of the court
+// visible from the 20-25 m broadcast camera (Rucker grey veil, Manila white-out); 0.006 / 0.005 keep a thin haze
+// (Manila 0.008 still laid an olive veil over the brown court in round 1).
 export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [];
   if (rig.id === "rucker") {
@@ -467,12 +505,12 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
       const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
       out.push(effects.lightCone({ name: `${p.name}-cone`, position: p.position, direction: [dir[0] / len, dir[1] / len, dir[2] / len], color: p.color, intensity: 0.22, length: 11, coneAngle: p.angle * 0.8, softness: 0.7 } as Parameters<typeof effects.lightCone>[0]) as AuraNodeBuilder<AuraSceneNode>);
     }
-    out.push(effects.volumetricFog({ name: "rucker flood haze", density: 0.08, color: "#5a5048", intensity: 0.45, lightPosition: [0, 9, -7], heightFalloff: 0.12, godRayDensity: 0.2 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "rucker flood haze", density: 0.006, color: "#5a5048", intensity: 0.3, lightPosition: [0, 9, -7], heightFalloff: 0.12, godRayDensity: 0.2 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
   } else if (rig.id === "manila") {
     const el = (rig.sun.elevationDeg * Math.PI) / 180;
     const az = (rig.sun.azimuthDeg * Math.PI) / 180;
     const gap: AuraVec3 = [Math.sin(az) * Math.cos(el) * 30, 9.2 + Math.sin(el) * 30, Math.cos(az) * Math.cos(el) * 30 + 4];
-    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.12, color: "#c9d5e6", intensity: 0.6, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.005, color: "#8f8a80", intensity: 0.25, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
     out.push(effects.particles({
       name: "manila-dust-motes",
       position: [0, 3.2, 4],

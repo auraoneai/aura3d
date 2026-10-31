@@ -122,8 +122,10 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.6 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#8a5a2e", density: 0.02 },
-    volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.65, godRayDensity: 0.45 },
-    exposureEv: 0,
+    volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.4, godRayDensity: 0.45 },
+    // GU47 phase 2: the after capture measured mean 94.2 (band 45-70, software WebGL2); the dust inscatter washed the frame
+    // and hid the drone. Round 1 (-1 EV, inscatter 0.5) landed 68.8, too close to the ceiling; round 2 thins the dust further.
+    exposureEv: -1.1,
     grade: { contrast: 1.06, saturation: 0.9, temperature: 0.32, tint: 0.03 },
     lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
@@ -150,7 +152,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     upFill: { color: "#ff7a2e", intensity: 0.45 },
     fog: { color: "#2a2348", density: 0.008 },
-    exposureEv: 0.25,
+    // GU47 phase 2: the after capture measured mean 73.3 (band 45-70, software WebGL2), mostly the bright pre-dawn sky.
+    exposureEv: -0.25,
     grade: { contrast: 1.1, saturation: 1.08, temperature: -0.12, tint: 0.12 },
     lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },

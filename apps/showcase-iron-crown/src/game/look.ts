@@ -125,7 +125,12 @@ export interface StageLookRow {
   readonly key: SunKey | FollowSpotKey;
   readonly backRim: BackRim;
   readonly panels: readonly RectPanel[];
-  readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
+  /**
+   * Linear range fog (GU47 phase 2): clear inside `near`, ramping to `maxOpacity` at `far`, never over the sky. A bare
+   * near/far override made the look emit a C-21 height fog at density 24/far with no opacity cap under the default-on
+   * A3D_QR_VFX_FOG, which buried the fighters (74 % at 6 m on the Colosseum, 93 % black on the Crown).
+   */
+  readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number; readonly maxOpacity: number };
   readonly fogDensityScale: number;
   readonly exposureEv: number;
   /**
@@ -161,7 +166,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     look: "arena-fight",
     post: "arena-fight",
     hdri: "warm_bar",
-    environmentIntensity: 0.25,
+    environmentIntensity: 0.55,
     environmentRotationDeg: 0,
     background: BLACK_IRON,
     accent: "#ff4d1f",
@@ -179,7 +184,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     },
     backRim: { ...RIM, intensity: 18 },
     panels: [],
-    fog: { color: "#140b0c", near: 7, far: 36 },
+    fog: { color: "#140b0c", near: 7, far: 36, maxOpacity: 0.5 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.22, saturation: 1.08, temperature: 0.12, tint: 0.02 },
@@ -204,21 +209,21 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     background: "look",
     accent: "#ff3fa4",
     key: { kind: "sun", elevationDeg: 52, azimuthDeg: 300, color: "#ffad5c", intensity: 2.6, filter: "pcf" },
-    backRim: RIM,
+    backRim: { ...RIM, intensity: 10 },
     panels: [
       { name: "neo-tokyo magenta panel", color: "#ff3fa4", position: [-4.7, 2.6, -1.9], target: [-1.2, 1.1, 0], width: 1.1, height: 2.6, intensity: 7 },
       { name: "neo-tokyo cyan panel", color: "#3fe0ff", position: [4.7, 2.4, -1.9], target: [1.2, 1.1, 0], width: 1.1, height: 2.4, intensity: 6 }
     ],
-    fog: { color: "#0b1020", near: 10, far: 64 },
+    fog: { color: "#0b1020", near: 10, far: 64, maxOpacity: 0.55 },
     fogDensityScale: 1,
     exposureEv: 0.35,
     grade: { contrast: 1.12, saturation: 1.15, temperature: -0.12, tint: 0.06 },
-    bloom: { intensity: 0.55, threshold: 0.95, knee: 0.55, scatter: 0.72 },
+    bloom: { intensity: 0.4, threshold: 1.15, knee: 0.5, scatter: 0.65 },
     vignette: 0.22,
     grain: 0,
     weather: { type: "rain", streakLimit: 90, particles: 900, color: "#b8c8ff" },
     shafts: [
-      { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.55, -0.7, 0.45], color: "#ffad5c", intensity: 0.14, length: 9, coneAngle: 0.26 }
+      { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.55, -0.7, 0.45], color: "#ffad5c", intensity: 0.07, length: 9, coneAngle: 0.26 }
     ],
     floor: { name: "wet concrete", base: "#0d1016", plank: "#141822", roughness: 0.14, metallic: 0.08, clearcoat: 0.8, inlay: "#ff3fa4", inlayGlow: 0.28, mirror: true }
   },
@@ -235,7 +240,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ff9a52", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#c47a4e", near: 18, far: 120 },
+    fog: { color: "#c47a4e", near: 18, far: 120, maxOpacity: 0.45 },
     fogDensityScale: 1,
     exposureEv: 0.05,
     grade: { contrast: 1.1, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
@@ -259,10 +264,10 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 9 },
     panels: [],
-    fog: { color: "#c9a46a", near: 8, far: 70 },
+    fog: { color: "#c9a46a", near: 22, far: 120, maxOpacity: 0.22 },
     fogDensityScale: 1,
     exposureEv: 0,
-    grade: { contrast: 1.18, saturation: 0.92, temperature: 0.18, tint: 0, lut: assets.ironcrownLutColosseumOchre },
+    grade: { contrast: 1.2, saturation: 1.02, temperature: 0.06, tint: 0, lut: assets.ironcrownLutColosseumOchre },
     bloom: { intensity: 0.2, threshold: 1.4, knee: 0.45, scatter: 0.6 },
     vignette: 0.16,
     grain: 0,
@@ -282,7 +287,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#b8724a", near: 15, far: 110 },
+    fog: { color: "#b8724a", near: 15, far: 110, maxOpacity: 0.45 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.14, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
@@ -303,18 +308,18 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     background: "look",
     accent: "#8fe3ff",
     key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf" },
-    backRim: { ...RIM, intensity: 10 },
+    backRim: { ...RIM, intensity: 6 },
     panels: [],
-    fog: { color: "#b9c8d8", near: 14, far: 90 },
+    fog: { color: "#b9c8d8", near: 14, far: 90, maxOpacity: 0.5 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.04, saturation: 0.9, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
-    bloom: { intensity: 0.26, threshold: 1.3, knee: 0.45, scatter: 0.62 },
+    bloom: { intensity: 0.14, threshold: 1.6, knee: 0.4, scatter: 0.55 },
     vignette: 0.18,
     grain: 0,
     weather: { type: "snow", streakLimit: 70, particles: 600, color: "#eef4ff" },
     shafts: [],
-    floor: { name: "frosted slate", base: "#5d6873", plank: "#6c7884", roughness: 0.62, metallic: 0.04, clearcoat: 0.25, inlay: "#8fe3ff", inlayGlow: 0.16, mirror: false }
+    floor: { name: "frosted slate", base: "#5d6873", plank: "#6c7884", roughness: 0.8, metallic: 0.04, clearcoat: 0, inlay: "#8fe3ff", inlayGlow: 0.16, mirror: false }
   }
 };
 
@@ -350,7 +355,12 @@ export function stageLookOverrides(row: StageLookRow): AuraLookOverrides {
         }
       : {}),
     rim: false,
-    fog: row.fog,
+    fog: {
+      color: row.fog.color,
+      near: row.fog.near,
+      far: row.fog.far,
+      height: { mode: "linear", near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity, affectsBackground: false }
+    },
     grade: row.grade,
     post: { bloom: row.bloom }
   };

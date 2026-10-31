@@ -493,7 +493,9 @@ export function createFighterNode(
   position: readonly [number, number, number],
   facing: 1 | -1,
   typedFighterAssets: TypedFighterAssets,
-  tint?: FighterPalette
+  tint?: FighterPalette,
+  /** false: the 4.6.2 fighter surface (no IC47-M2 rim or clearcoat) for the 4.6.2 venue look. */
+  surfaceExtras = true
 ) {
   const assetKey = fighter.asset;
   const asset = typedFighterAssets[assetKey];
@@ -515,11 +517,12 @@ export function createFighterNode(
               roughness: tint.roughness,
               metallic: tint.metallic,
               ...(tint.emissive ? { emissive: tint.emissive, emissiveIntensity: tint.emissiveIntensity } : {}),
-              ...surface.clearcoat,
-              rim: surface.rim
+              ...(surfaceExtras ? { ...surface.clearcoat, rim: surface.rim } : {})
             })
           }
-        : { materialOverrides: [{ rim: surface.rim }] })
+        : surfaceExtras
+          ? { materialOverrides: [{ rim: surface.rim }] }
+          : {})
     })
       .position(position[0], position[1], position[2])
       .rotate(0, yaw, 0)

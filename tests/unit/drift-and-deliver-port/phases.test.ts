@@ -51,7 +51,7 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(PHASES[2]!.windows).toBe(1.4);
     expect(phaseAt(30).lamps).toBeLessThan(0.05);
     expect(phaseAt(120).lamps).toBeGreaterThan(0.5);
-    expect(PHASES.map((p) => p.fog.color)).toEqual(["#c9d6dc", "#b88c86", "#2a3550"]);
+    expect(PHASES.map((p) => p.fog.color)).toEqual(["#efc896", "#d8967a", "#2a3550"]);
   });
 
   it("blends continuously (no jump larger than one 1 s step can show)", () => {
@@ -73,7 +73,16 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(parseAt("x")).toBeUndefined();
     expect(parseAt(null)).toBeUndefined();
     expect(parseLook("original")).toBe("original");
-    expect(parseLook(null)).toBe("shift");
+    // blind-panel fix pass: default, golden and sunset keep the 4.6.2 look; the blue-hour pin keeps the shift look
+    expect(parseLook(null)).toBe("original");
+    expect(parseLook(null, true, 10)).toBe("original");
+    expect(parseLook(null, true, 120)).toBe("original");
+    expect(parseLook(null, true, 170)).toBe("shift");
+    expect(parseLook(null, false, 170)).toBe("original");
+    // GU47 phase 2 (D11): the lights-only diagnostic defaults to the original look; ?look=shift forces the shift
+    expect(parseLook(null, false)).toBe("original");
+    expect(parseLook("shift", false)).toBe("shift");
+    expect(parseLook("original", true)).toBe("original");
   });
 
   it("keeps today's look as the original row and blends colours in linear light", () => {

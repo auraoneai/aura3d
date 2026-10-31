@@ -23,6 +23,41 @@ function integerUniformKind(type: string | undefined): "int" | "uint" | undefine
   return undefined;
 }
 
+type FloatUniformSetter = "1f" | "2f" | "3f" | "4f" | "mat3" | "mat4";
+
+/**
+ * GU47 phase 2: the float setter for a declared uniform type, from either the
+ * linked program (GL enum as a string, `getActiveUniform`) or source
+ * reflection (GLSL type name). `undefined` when the type is not a float type
+ * the binder knows, so the caller falls back to the length heuristic.
+ */
+function floatUniformSetter(type: string | undefined): FloatUniformSetter | undefined {
+  switch (type) {
+    case "float":
+    case "5126":
+      return "1f";
+    case "vec2":
+    case "35664":
+      return "2f";
+    case "vec3":
+    case "35665":
+      return "3f";
+    case "vec4":
+    case "35666":
+      return "4f";
+    case "mat3":
+    case "35675":
+      return "mat3";
+    case "mat4":
+    case "35676":
+      return "mat4";
+    default:
+      return undefined;
+  }
+}
+
+const FLOAT_SETTER_COMPONENTS: Readonly<Record<FloatUniformSetter, number>> = { "1f": 1, "2f": 2, "3f": 3, "4f": 4, mat3: 9, mat4: 16 };
+
 export class WebGL2DrawCallBinder {
   constructor(readonly host: WebGL2DeviceHost) {
     // `gl_DrawID` (`#extension GL_ANGLE_multi_draw`) needs WEBGL_multi_draw enabled before the program links, so request it now.
@@ -211,7 +246,19 @@ export class WebGL2DrawCallBinder {
         } else {
           valueCache.set(name, Float32Array.from(floatData as ArrayLike<number>));
         }
-        if (length === 16 || (length > 16 && length % 16 === 0 && /(?:Matrix|Matrices)$/.test(name))) {
+        // GU47 phase 2: dispatch on the declared type first. The length
+        // heuristic alone cannot tell vec4[4] (16 floats) from mat4, and it
+        // rejects short arrays such as vec4[2] (8) or vec3[4] (12).
+        const declared = floatUniformSetter(shader.reflection.uniformDetails.get(name)?.type);
+        if (declared !== undefined && length > 0 && length % FLOAT_SETTER_COMPONENTS[declared] === 0) {
+          const gl = this.host.gl;
+          if (declared === "mat4") gl.uniformMatrix4fv(location, false, floatData);
+          else if (declared === "mat3") gl.uniformMatrix3fv(location, false, floatData);
+          else if (declared === "4f") gl.uniform4fv(location, floatData);
+          else if (declared === "3f") gl.uniform3fv(location, floatData);
+          else if (declared === "2f") gl.uniform2fv(location, floatData);
+          else gl.uniform1fv(location, floatData);
+        } else if (length === 16 || (length > 16 && length % 16 === 0 && /(?:Matrix|Matrices)$/.test(name))) {
           this.host.gl.uniformMatrix4fv(location, false, floatData);
         } else if (length > 16 && length % 4 === 0) {
           this.host.gl.uniform4fv(location, floatData);

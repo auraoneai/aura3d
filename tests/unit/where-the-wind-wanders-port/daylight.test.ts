@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAYLIGHT_EASE_SECONDS, DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, parseFoundParam, srgbToLinear, sunDirection } from "../../../examples/where-the-wind-wanders-port/daylight";
+import { DAYLIGHT_EASE_SECONDS, DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, parseFoundParam, resolveLook, srgbToLinear, sunDirection } from "../../../examples/where-the-wind-wanders-port/daylight";
 
 const deg = (rad: number): number => (rad * 180) / Math.PI;
 
@@ -93,5 +93,16 @@ describe("where-the-wind-wanders-port daylight (WW47-L1)", () => {
   it("hex conversion round-trips", () => {
     for (const k of DAYLIGHT_KEYS) expect(linearToHex(srgbToLinear(k.sun))).toBe(k.sun);
     expect(sunDirection(90, 0)[1]).toBeCloseTo(1, 12);
+  });
+});
+
+describe("resolveLook (GU47 blind-panel fallback)", () => {
+  it("boots the 4.6 look for the daylight beats and keeps GU47 for bell and epilogue pins", () => {
+    expect(resolveLook(null, null)).toBe("original");
+    for (const k of [0, 1, 2, 3]) expect(resolveLook(null, k)).toBe("original");
+    expect(resolveLook(null, 4)).toBe("gu47");
+    expect(resolveLook(null, 5)).toBe("gu47");
+    expect(resolveLook("gu47", null)).toBe("gu47");
+    expect(resolveLook("original", 5)).toBe("original");
   });
 });

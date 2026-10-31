@@ -119,7 +119,7 @@ test("wonder world passes its content lint, builds with Vite and passes check-de
   // after the network first goes idle. With the welcome animating over that boot, the app's own model preloader once
   // aborted a stalled download at its 2-minute cap (ERR_ABORTED again); runs wonder-exp-{a,b,c}-20261029T222803Z traced
   // it there (a longer cap, or no animation, passed), and the preloader now caps a download at 15 minutes.
-  const check = run("npx", ["-y", "@aura3d/cli@4.5.0", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "600000"], app, 25 * 60_000);
+  const check = run("npx", ["-y", "@aura3d/cli@4.6.2", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "600000"], app, 25 * 60_000);
   const tail = check.out.split("\n").slice(-60).join("\n");
   console.log(tail);
   emitJson("check-deploy", { status: check.status, tail: tail.slice(-4000) });
