@@ -43,6 +43,17 @@ export function mountOrbitHud(root: HTMLElement): { update(input: OrbitHudInput)
   const wrap = document.createElement("div");
   wrap.className = "gouache-hud";
   Object.assign(wrap.style, { position: "absolute", right: "max(12px, env(safe-area-inset-right))", bottom: "64px", display: "flex", gap: "10px", alignItems: "flex-end", pointerEvents: "none" });
+  // GU47 phase 3 (SO47-H1 overlap at 390x844): on narrow screens the touch buttons own the bottom right, so the gauge
+  // and the sector chip move to the left edge, above the ride hint and the stardust panel.
+  const narrow = typeof matchMedia === "function" ? matchMedia("(max-width: 600px)") : null;
+  const place = (): void => {
+    const n = Boolean(narrow?.matches);
+    Object.assign(wrap.style, n
+      ? { right: "auto", left: "max(12px, env(safe-area-inset-left))", bottom: "150px" }
+      : { left: "auto", right: "max(12px, env(safe-area-inset-right))", bottom: "64px" });
+  };
+  place();
+  narrow?.addEventListener?.("change", place);
 
   const svg = (w: number, h: number): SVGSVGElement => {
     const el = document.createElementNS(SVG, "svg");
