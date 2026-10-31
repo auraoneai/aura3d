@@ -1,7 +1,8 @@
 /**
  * GU47 WP-21 BZ-04: board-formed concrete, brick, plate steel, plaster over wood and tile per floor, ambientCG CC0 sets
  * from the Aura3D library (`assets/library/textures/tiling/acg-<id>.zip`, entries in `aura.library.json`), served
- * app-locally from `public/aura-assets/textures/`. Colour maps are the 1K JPGs byte for byte; normal maps are the 1K
+ * app-locally from `public/aura-assets/textures/`. Colour maps are the 1K JPGs resized to 512 (sips -Z 512, quality 85; GU47 phase 3: the 1-1.6 MB maps were still uploading at
+ * the 60 s capture on software WebGL2, leaving the floor at its untextured base colour); normal maps are the 1K
  * NormalGL JPGs resized to half size (sips -Z 512, quality 88) to keep texture memory under the WP's 64 MB.
  * Provenance per file: `public/aura-assets/textures/ATTRIBUTION.md`. One repeat per 3 m cell; instance colours carry
  * only a +-6% jitter (main.ts).
@@ -36,23 +37,23 @@ export const BZ_TEXTURE_SOURCES: Readonly<Record<BunkerTextureSet, { readonly am
 
 /** Shipped files: sha256, bytes and pixel size (checked by tests/unit/bunker-zero/textures.test.ts). */
 export const BZ_TEXTURE_FILES = {
-  "bz-bricks075a-color.jpg": { sha256: "sha256-9e5e42ea1ec80a8657b52cd074738ba32752d610b2c16f9a5024ff2ac2ec3cb2", bytes: 846181, size: [1024, 512] },
+  "bz-bricks075a-color.jpg": { sha256: "sha256-fca4a977fb98eb79580b63f81a1e8f3c467e3243f835a81344ca28d1fff7efb7", bytes: 75499, size: [512, 256] },
   "bz-bricks075a-normal.jpg": { sha256: "sha256-9a11467412b630f10b8d41f12bb1218635ca704ef29a2c5548a027eb90e33520", bytes: 95514, size: [512, 256] },
-  "bz-concrete034-color.jpg": { sha256: "sha256-8ceb9186d990b31fce785e06fdc6974c160f1d27c43f6160266f164deba713aa", bytes: 269501, size: [1024, 512] },
+  "bz-concrete034-color.jpg": { sha256: "sha256-05898d31389d7909aab5e645d9d86237decc1aea3f806901cb22637ee338c067", bytes: 32552, size: [512, 256] },
   "bz-concrete034-normal.jpg": { sha256: "sha256-912d03a9ce337f3375e47dadddcf83e1fd84be3f2065e08c44596a4ba4545409", bytes: 48338, size: [512, 256] },
-  "bz-concrete047a-color.jpg": { sha256: "sha256-74cbb49d821ac1a26dde8adf54527d84400c07aaf4e49918aed060a8a4715071", bytes: 1596193, size: [1024, 1024] },
+  "bz-concrete047a-color.jpg": { sha256: "sha256-fab4e626408ec31edbac64b17f0af6fb15a280464add51e52d36f5a0b9e76e3b", bytes: 133709, size: [512, 512] },
   "bz-concrete047a-normal.jpg": { sha256: "sha256-81843129a924e83041cb83a1a5d5782680400c79a3a9f4d866bd67bbe1d1b0b3", bytes: 88232, size: [512, 512] },
-  "bz-metal046b-color.jpg": { sha256: "sha256-7caf8ddbd06aa730e41db993ff344eb60d872ff698e5da117b3527f09ba1877e", bytes: 706330, size: [1024, 1024] },
+  "bz-metal046b-color.jpg": { sha256: "sha256-5315f0cf09cf58c9f7f2df2de6d8f0d1f8b4630c8c4b205e5c8299ea454ef8d9", bytes: 91310, size: [512, 512] },
   "bz-metal046b-normal.jpg": { sha256: "sha256-c2f9cf6ef3277d3363f2bd97000f1e9328ac2f55cc5ef1fb613447696f22aba2", bytes: 44952, size: [512, 512] },
-  "bz-metal049a-color.jpg": { sha256: "sha256-cd7c77ceb830ebd343e0932a79eac6ce53bbea20bda4acbf90fc972e063c822a", bytes: 455982, size: [1024, 1024] },
+  "bz-metal049a-color.jpg": { sha256: "sha256-3254e8c211d50a11c488f167087493eca85aee872943103213814a16d8a23782", bytes: 24088, size: [512, 512] },
   "bz-metal049a-normal.jpg": { sha256: "sha256-4b3f4a94bd85483d88bf06ea1731f92de3a34d0f5758ba9cf15395a66920881e", bytes: 5209, size: [512, 512] },
-  "bz-metal063-color.jpg": { sha256: "sha256-d4122954971c26b529614f39fb12310de00005d44ce103430c35132f61fca077", bytes: 1259638, size: [1024, 1024] },
+  "bz-metal063-color.jpg": { sha256: "sha256-bed6f254a766c5ff2fc6e1dd4b04a6af9193de9d16da59a8b34c9298c12825f5", bytes: 91386, size: [512, 512] },
   "bz-metal063-normal.jpg": { sha256: "sha256-c091803a1b5519da39ae0bad68ae1e92a641ef995e340ec2d67ab9cde8d68219", bytes: 5181, size: [512, 512] },
-  "bz-paintedplaster017-color.jpg": { sha256: "sha256-ed8a69a6437de9d41d2cf380f7e6a216232fc4754f256c3405985c857547ffef", bytes: 378542, size: [1024, 512] },
+  "bz-paintedplaster017-color.jpg": { sha256: "sha256-51f30dc46b423745874bb5c109afa97b1ce3fe3000e12cf35bb3e9293c613104", bytes: 25874, size: [512, 256] },
   "bz-paintedplaster017-normal.jpg": { sha256: "sha256-290b7d5dcf76b96dee95f59ab3aea75edf404eec080cb9ea9953f694bd33f8b2", bytes: 76185, size: [512, 256] },
-  "bz-tiles141-color.jpg": { sha256: "sha256-5ad047e2b23efe633ed4654d7dc5856988e7d643ca66a7b1e7aaa97093dc3294", bytes: 1135438, size: [1024, 1024] },
+  "bz-tiles141-color.jpg": { sha256: "sha256-9c28d1c8d3ede29e76392ff14ab7b36d99fa17c527f7dd06b722fccfcbd78b8d", bytes: 103440, size: [512, 512] },
   "bz-tiles141-normal.jpg": { sha256: "sha256-fa79e074aee133c9b9cf2adec904306ccbd1440c0e92bccc9e10ad7cccc6751b", bytes: 22274, size: [512, 512] },
-  "bz-wood096-color.jpg": { sha256: "sha256-fa6b603dda286865a82a93a483c341a975a7d3062dd0f291b57800f7ac4d1b66", bytes: 914353, size: [1024, 1024] },
+  "bz-wood096-color.jpg": { sha256: "sha256-820c9d59d1a50ec9b6f53d01b7c68574e5135256e0c55d06dbe23d96a311f1d7", bytes: 58353, size: [512, 512] },
   "bz-wood096-normal.jpg": { sha256: "sha256-f12f5a2b9d2e283cd6cca762340a8373f40b67d58a4d553f5214ceec33e54124", bytes: 20573, size: [512, 512] }
 } as const;
 export type BunkerTextureFile = keyof typeof BZ_TEXTURE_FILES;
