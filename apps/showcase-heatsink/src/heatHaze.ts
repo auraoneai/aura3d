@@ -20,9 +20,10 @@ export const EDGE_RAMP_START = 0.8;
 
 const SOURCE_UNIFORMS = Array.from({ length: HEAT_HAZE_MAX_SOURCES }, (_, i) => `u_src${i}`);
 
-/** Fragment of the pass (u_color, v_uv and outColor come from the engine's pass wrapper). */
+/** Fragment of the pass. The engine prelude declares u_color, v_uv, outColor and u_time (customPassFragmentSource), so the
+ * pass keeps its own clock in `u_tdTime` (frozen on reduced motion); redeclaring `u_time` failed the compile and the boot. */
 export const HEAT_HAZE_GLSL = `${SOURCE_UNIFORMS.map((u) => `uniform vec4 ${u};`).join("\n")}
-uniform float u_time;
+uniform float u_tdTime;
 uniform float u_strength;
 uniform float u_motion;
 uniform float u_edge;
@@ -53,8 +54,8 @@ void main() {
   float road = u_ambient * (1.0 - smoothstep(0.08, 0.46, uv.y)) * smoothstep(0.0, 0.06, uv.y);
   float amount = (m + road) * u_strength * u_motion;
   vec2 n = vec2(
-    tdNoise(uv * vec2(42.0, 26.0) + vec2(0.0, -u_time * 2.4)),
-    tdNoise(uv * vec2(33.0, 21.0) + vec2(u_time * 0.8, -u_time * 1.7) + 17.0)
+    tdNoise(uv * vec2(42.0, 26.0) + vec2(0.0, -u_tdTime * 2.4)),
+    tdNoise(uv * vec2(33.0, 21.0) + vec2(u_tdTime * 0.8, -u_tdTime * 1.7) + 17.0)
   ) - 0.5;
   vec4 c = texture(u_color, uv + n * amount * 0.014);
   c.rgb = mix(c.rgb, c.rgb * u_tint, clamp(m * u_strength * 0.22, 0.0, 0.22));
@@ -84,7 +85,7 @@ export interface HeatHazeLook {
 /** The pass for a circuit (registered with `app.addPostPass`). */
 export function heatHazePass(look: HeatHazeLook, enabled = true): AuraCustomPostPass {
   const uniforms: Record<string, number | readonly number[]> = {
-    u_time: 0,
+    u_tdTime: 0,
     u_strength: look.strength,
     u_motion: 1,
     u_edge: 0,
@@ -111,9 +112,9 @@ export interface HazeFrameInput {
 }
 
 /** The scalar uniforms of one frame. Reduced motion: no distortion and frozen noise (static tint only). */
-export function hazeScalars(look: HeatHazeLook, input: HazeFrameInput): { u_time: number; u_strength: number; u_motion: number; u_edge: number; u_aspect: number; u_ambient: number } {
+export function hazeScalars(look: HeatHazeLook, input: HazeFrameInput): { u_tdTime: number; u_strength: number; u_motion: number; u_edge: number; u_aspect: number; u_ambient: number } {
   return {
-    u_time: input.reducedMotion ? 0 : input.timeSeconds % 600,
+    u_tdTime: input.reducedMotion ? 0 : input.timeSeconds % 600,
     u_strength: look.strength * (input.lowTier ? 0.5 : 1),
     u_motion: input.reducedMotion ? 0 : 1,
     u_edge: edgeRamp(input.heat01),
@@ -241,7 +242,7 @@ export class HeatHazeController {
     const set = this.app.setPassUniform;
     if (!set || !this.release) return;
     const scalars = hazeScalars(this.look, input);
-    set.call(this.app, HEAT_HAZE_PASS, "u_time", scalars.u_time);
+    set.call(this.app, HEAT_HAZE_PASS, "u_tdTime", scalars.u_tdTime);
     set.call(this.app, HEAT_HAZE_PASS, "u_strength", scalars.u_strength);
     set.call(this.app, HEAT_HAZE_PASS, "u_motion", scalars.u_motion);
     set.call(this.app, HEAT_HAZE_PASS, "u_edge", scalars.u_edge);

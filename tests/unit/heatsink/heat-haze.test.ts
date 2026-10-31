@@ -16,6 +16,7 @@ import {
   HeatHazeSources,
   tintVector
 } from "../../../apps/showcase-heatsink/src/heatHaze";
+import { customPassFragmentSource } from "../../../packages/rendering/src/post/v2Stages";
 import { CIRCUIT_LOOKS } from "../../../apps/showcase-heatsink/src/look";
 
 const pose = { position: [0, 4.2, 9.5] as const, target: [0, 1.8, -18] as const, fov: 68 };
@@ -31,13 +32,20 @@ describe("heatsink heat haze pass", () => {
       expect(pass.uniforms?.[`u_src${i}`]).toEqual([0, 0, 0, 0]);
       expect(HEAT_HAZE_GLSL).toContain(`uniform vec4 u_src${i};`);
     }
-    for (const u of ["u_time", "u_strength", "u_motion", "u_edge", "u_aspect", "u_ambient", "u_tint"]) {
+    for (const u of ["u_tdTime", "u_strength", "u_motion", "u_edge", "u_aspect", "u_ambient", "u_tint"]) {
       expect(pass.uniforms).toHaveProperty(u);
       expect(HEAT_HAZE_GLSL).toContain(u);
     }
     expect(HEAT_HAZE_GLSL).toContain("texture(u_color");
     expect(HEAT_HAZE_GLSL).toContain("outColor =");
     expect(heatHazePass(look, false).enabled).toBe(false);
+  });
+
+  it("never redeclares an engine prelude name (GU47 phase 3: a `u_time` redefinition failed the compile and the boot)", () => {
+    const prelude = customPassFragmentSource("");
+    const declared = [...prelude.matchAll(/^(?:uniform|in|out)\s+\w+\s+(\w+);/gm)].map((m) => m[1]!);
+    expect(declared).toEqual(expect.arrayContaining(["u_color", "u_time", "v_uv", "outColor"]));
+    for (const name of declared) expect(HEAT_HAZE_GLSL).not.toMatch(new RegExp(`^(?:uniform|in|out)\\s+\\w+\\s+${name};`, "m"));
   });
 
   it("ramps the screen edge only above 80% core heat", () => {
@@ -51,11 +59,11 @@ describe("heatsink heat haze pass", () => {
   it("reduced motion drops the distortion and freezes the noise: a static tint only", () => {
     const moving = hazeScalars(look, { heat01: 0.5, reducedMotion: false, lowTier: false, timeSeconds: 12.5, aspect: 16 / 9 });
     expect(moving.u_motion).toBe(1);
-    expect(moving.u_time).toBeCloseTo(12.5, 6);
+    expect(moving.u_tdTime).toBeCloseTo(12.5, 6);
     const still = [3, 7.25, 40].map((t) => hazeScalars(look, { heat01: 0.5, reducedMotion: true, lowTier: false, timeSeconds: t, aspect: 16 / 9 }));
     for (const s of still) {
       expect(s.u_motion).toBe(0);
-      expect(s.u_time).toBe(0);
+      expect(s.u_tdTime).toBe(0);
     }
     expect(still[0]).toEqual(still[2]);
   });
