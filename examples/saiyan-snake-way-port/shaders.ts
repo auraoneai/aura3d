@@ -278,10 +278,21 @@ in vec3 vWorld;
 in vec3 vCenter;
 out vec4 outColor;
 void main() {
-  float d = length(vWorld - vCenter) / blobRadius;
+  vec3 v = vWorld - vCenter;
+  float d = length(v) / blobRadius;
   float a = (1.0 - smoothstep(0.1, 1.0, d)) * blobAlpha;
+  // GU47 phase 3 (rubric: shadows): under the colour script the blob is the runner's cast shadow, a capsule from the feet
+  // along the ground away from the sun (blobCast metres long), darker at the feet and fading toward its tip.
+  if (blobCast > 0.0) {
+    float t = clamp(dot(v, blobDir), 0.0, blobCast);
+    float r = length(v - blobDir * t) / (blobRadius * mix(0.42, 0.62, t / blobCast));
+    float k = t / blobCast;
+    float castA = (1.0 - smoothstep(0.35, 1.0, r)) * mix(1.0, 0.25, k * k);
+    float feet = 1.0 - smoothstep(0.0, 0.55, length(v) / blobRadius);
+    a = max(castA, feet) * blobAlpha;
+  }
   if (a < 0.01) discard;
-  outColor = vec4(0.16, 0.06, 0.26, a);
+  outColor = vec4(blobShade, a);
 }`;
 
 /**
@@ -370,6 +381,14 @@ void main() {
   gToonShadow = a3dSunShadowAuto(vWorld, N);
   vec3 col = toon(albedo, N);
   col += mix(vec3(1.0, 0.82, 0.9), lookSunColor, lookMode) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.16, lookMode) * top;
+  // GU47 phase 3 (rubric: reflections): the lacquered plates mirror the sky. A fresnel sky tint (fog colour warming toward
+  // the sun) and a sun glint lane on the road ahead, both kept off the grout lines; script mode only.
+  vec3 Rv = reflect(-V, N);
+  float rs = max(dot(Rv, SUN_DIR), 0.0);
+  vec3 skyRefl = mix(lookFogColor, lookSunColor, pow(rs, 4.0));
+  float plateMask = top * mix(0.35, 1.0, joint) * lookMode;
+  col = mix(col, skyRefl, (0.06 + 0.3 * fres) * plateMask);
+  col += lookSunColor * (pow(rs, 60.0) * 0.55 + pow(rs, 12.0) * 0.08) * plateMask;
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;

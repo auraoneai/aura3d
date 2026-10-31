@@ -56,7 +56,7 @@ describe("serpentine-sky-run look driver (SSR-01, SSR-02, SSR-05, SSR-06)", () =
     expect(f.env).toBe(0.6);
     expect(f.effects.get("bloom")).toEqual({ intensity: 0.45, threshold: 0.85 });
     expect(f.effects.get("colorGrade")!.temperature).toBe(0.08);
-    expect(f.exposure).toBe(1.1);
+    expect(f.exposure).toBe(1.14); // GU47 phase 3: rose exposure 1.1 -> 1.14
     // GU47 phase 2: the stage is a god-ray stage (flare on) but the volumetric pass stays off (VOLUMETRIC_SHAFTS)
     expect(f.enabled.get("volumetricFog")).toBe(false);
     expect(driver.godRaysOn).toBe(true);

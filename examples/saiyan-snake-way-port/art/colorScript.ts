@@ -56,16 +56,18 @@ export const SERPENT_PALETTE = {
 /** Blend width at each stage boundary, metres (centred on `STAGES[i].from`). */
 export const STAGE_BLEND_METRES = 120;
 
+// GU47 phase 3 (rubric round): rose, amber, copper and sunburst lift the cloud under-deck (the dark blotches the judge read
+// as a noise texture), and rose / amber / copper / sunburst get a little more exposure and contrast (milky, low-contrast).
 export const STAGE_LOOK: readonly StageLook[] = [
   {
     id: "rose", stage: "CHECK-IN", timeOfDay: "sun 9 deg, rose evening",
     sun: { elevationDeg: 9, azimuthDeg: -12, color: "#ffc6a8", intensity: 2.4, disc: "#fff0dc", corona: 0.8 },
     fill: { color: "#8a6ad8", intensity: 0.6 }, hemisphere: { sky: "#e0a8d0", ground: "#8a5a3a", intensity: 0.6 }, environmentIntensity: 0.6,
     sky: { zenith: "#2a2166", upper: "#b0609e", horizon: "#ff9e8e", band: "#ffd6b8", stars: 0.15, moon: 0 },
-    cloud: { lit: "#ffdcae", mid: "#f0a088", dark: "#6c3a60" },
+    cloud: { lit: "#ffdcae", mid: "#f0a088", dark: "#b06a7c" },
     fog: { color: "#eaa2a8", near: 420, far: 1600 },
     road: { pearl: "#f6eef8", jade: "#86e2c8", spine: "#f6c25a", belly: "#5a3c7a" },
-    exposure: 1.1, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.08, tint: 0.06, saturation: 1.05, contrast: 1.05 },
+    exposure: 1.14, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.08, tint: 0.06, saturation: 1.1, contrast: 1.1 },
     godRays: true, weather: "clear"
   },
   {
@@ -73,10 +75,10 @@ export const STAGE_LOOK: readonly StageLook[] = [
     sun: { elevationDeg: 7, azimuthDeg: 10, color: "#ffb466", intensity: 2.6, disc: "#fff2c8", corona: 0.9 },
     fill: { color: "#7a62d0", intensity: 0.6 }, hemisphere: { sky: "#e8b07a", ground: "#7a4a22", intensity: 0.6 }, environmentIntensity: 0.6,
     sky: { zenith: "#1c1640", upper: "#a8603e", horizon: "#ffa444", band: "#ffd676", stars: 0.08, moon: 0 },
-    cloud: { lit: "#ffd676", mid: "#f2b33d", dark: "#704022" },
+    cloud: { lit: "#ffd676", mid: "#f2b33d", dark: "#b06a34" },
     fog: { color: "#eaa45c", near: 420, far: 1600 },
     road: { pearl: "#f8f0e6", jade: "#7fe0c4", spine: "#f2b33d", belly: "#4a3266" },
-    exposure: 1.08, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.18, tint: 0.02, saturation: 1.08, contrast: 1.06 },
+    exposure: 1.1, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.18, tint: 0.02, saturation: 1.08, contrast: 1.08 },
     godRays: true, weather: "clear"
   },
   {
@@ -86,10 +88,10 @@ export const STAGE_LOOK: readonly StageLook[] = [
     sun: { elevationDeg: 5, azimuthDeg: -6, color: "#ea8c54", intensity: 2.6, disc: "#ffd8b0", corona: 1.1 },
     fill: { color: "#6a5ab8", intensity: 0.6 }, hemisphere: { sky: "#c89070", ground: "#5a3424", intensity: 0.6 }, environmentIntensity: 0.55,
     sky: { zenith: "#2c3a5c", upper: "#7a6a6c", horizon: "#c87a52", band: "#eaa272", stars: 0.05, moon: 0 },
-    cloud: { lit: "#eab284", mid: "#b87a52", dark: "#4a2c2a" },
+    cloud: { lit: "#eab284", mid: "#b87a52", dark: "#94603e" },
     fog: { color: "#b8826a", near: 380, far: 1400 },
     road: { pearl: "#efe2d8", jade: "#78c8b0", spine: "#e89a40", belly: "#4a3048" },
-    exposure: 1.4, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.14, tint: -0.02, saturation: 0.94, contrast: 1.04 },
+    exposure: 1.4, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.14, tint: -0.02, saturation: 1.02, contrast: 1.08 },
     godRays: true, weather: "clear"
   },
   {
@@ -144,10 +146,10 @@ export const STAGE_LOOK: readonly StageLook[] = [
     sun: { elevationDeg: 10, azimuthDeg: 0, color: "#ffd890", intensity: 2.3, disc: "#fff4d8", corona: 0.7 },
     fill: { color: "#8a6ae0", intensity: 0.6 }, hemisphere: { sky: "#c89ad8", ground: "#8a5a2a", intensity: 0.6 }, environmentIntensity: 0.55,
     sky: { zenith: "#1e1660", upper: "#6a3ca8", horizon: "#ffa848", band: "#ffcc6a", stars: 0.05, moon: 0 },
-    cloud: { lit: "#ffd870", mid: "#f2b33d", dark: "#b8782e" },
+    cloud: { lit: "#ffd870", mid: "#f2b33d", dark: "#cc8c38" },
     fog: { color: "#d48e58", near: 480, far: 1800 },
     road: { pearl: "#efe4f6", jade: "#7fe0c4", spine: "#ffc840", belly: "#4a3266" },
-    exposure: 1.0, bloom: { intensity: 0.35, threshold: 0.9 }, grade: { temperature: 0.06, tint: 0.04, saturation: 1.16, contrast: 1.12 },
+    exposure: 1.07, bloom: { intensity: 0.35, threshold: 0.9 }, grade: { temperature: 0.06, tint: 0.04, saturation: 1.16, contrast: 1.12 },
     godRays: true, weather: "clear"
   }
 ];
