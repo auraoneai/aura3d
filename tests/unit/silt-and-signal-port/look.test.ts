@@ -25,6 +25,11 @@ describe("GU47 WP-34 look table", () => {
     expect(siltLookMode("?look=original")).toBe("original");
     expect(siltLookMode("?chapter=2&start=1")).toBe("inked");
     expect(siltLookMode(undefined)).toBe("inked");
+    // GU47 phase 2 (D11): ch1 noon and ch6 dawn open in the original look unless ?look=inked
+    expect(siltLookMode("?chapter=1&start=1")).toBe("original");
+    expect(siltLookMode("?chapter=1&start=1&look=inked")).toBe("inked");
+    expect(siltLookMode("?chapter=6&start=1")).toBe("original");
+    expect(siltLookMode("?chapter=0&start=1")).toBe("inked");
   });
 
   it("DG-L2: five day chapters use their catalogue HDRI for IBL only; the two night chapters keep neutral 0.35", () => {

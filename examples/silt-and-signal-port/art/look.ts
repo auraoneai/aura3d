@@ -13,10 +13,23 @@ import type { AuraHdriId } from "@aura3d/engine";
 
 export type SiltLookMode = "inked" | "original";
 
-/** `?look=original` is today's look (PRD §6.1 ports keep it); anything else is the inked poster look. */
+/**
+ * GU47 phase 2 (PRD D11, no regression ships): chapters whose inked frame did not beat the 4.6.2 frame after two
+ * remote capture rounds (software WebGL2) open in the original look by default; `?look=inked` still opts in.
+ */
+export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 6]);
+
+/**
+ * `?look=original` is today's look (PRD §6.1 ports keep it); `?look=inked` is the inked poster look. Without a `look`
+ * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS.
+ */
 export function siltLookMode(search: string | URLSearchParams | undefined): SiltLookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  return params?.get("look") === "original" ? "original" : "inked";
+  const look = params?.get("look");
+  if (look === "original") return "original";
+  if (look === "inked") return "inked";
+  const chapter = Math.trunc(Number(params?.get("chapter") ?? 0));
+  return ORIGINAL_DEFAULT_CHAPTERS.has(Number.isFinite(chapter) ? chapter : 0) ? "original" : "inked";
 }
 
 export type AmbientMotes = "sand" | "fireflies" | "wick-glow" | "pollen" | "embers";
