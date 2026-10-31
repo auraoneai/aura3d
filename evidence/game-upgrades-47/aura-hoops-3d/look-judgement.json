@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/hud-rucker-action.jpg",
+      "sha256": "584b46429bdf24f69220c837e379653ab9f18c7914828fa28a43c183027efdca"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/manila-settle-60s.jpg",
+      "sha256": "36114335e3d729d8b4473a37547b5e14aa2d5db07bf8065d9a8053e0788a9575"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/venice-settle-60s.jpg",
+      "sha256": "48f95ff72c95ba977878f930be390009c7a45bceb54872479d88ce81ccf7c47b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/shanghai-settle-60s.jpg",
+      "sha256": "7c2af1b2e8ff158feb6295125f8df1f81b857e8aadfa9f9bb9d07b6725178687"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 is a dim, blue-purple wash with no readable key direction despite the 'golden hour look' label. Frames 2 and 3 are flat and evenly lit. Frame 4 has the best night mood, with lamp posts, but the lamps cast little light onto the court."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players get soft blob or contact shadows that are faint and mostly directionless. Frame 4 has some cast shadows near the bleachers, but there is no consistent sun or flood shadow direction across frames."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The court surfaces are matte with no sheen or reflections, even under the wet rain in frame 4. Only the trophy in frame 1 shows a metallic gold response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The bleachers and ball cart are generic blocks. Backdrops are blurred photo-like planes (green interior, beige haze, treeline). The Venice palm floats unattached in the sky. Frame 1 has a giant pillar intersecting the court and the trophy oddly placed mid-court."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 has light rain streaks and frame 2 has dust particles near the hoop. Frame 3's beige haze is flat fog that washes out the far background rather than adding depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Clothing is flat color with no fabric response. Skin is smooth unlit-looking. Court paint is uniform, with no wear or grain except a faint noise overlay."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly stylized characters are readable, but faces are simplistic and hands are mitten-like. The court line decals at the paint have broken white swoosh artifacts near the feet. The hoop and backboard are decent."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 1 crops a player at the left edge and leaves a large empty foreground. Frames 2–4 cluster players mid-frame with the hoop cut off at the top right. The ball carrier is well emphasized by the orange ring."
+    },
+    {
+      "category": "camera",
+      "seen": "Low perspective camera rather than the broadcast high angle. Frame 1 is very close and oblique with no clear court read. Frames 2–4 use a consistent shallow sideline angle that hides court layout depth."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is background depth-of-field blur and a film grain or noise layer. Frame 1 is crushed and desaturated. There is no meaningful bloom on the lamps in frame 4."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The handler's dribble crouch varies across frames. Off-ball players stand in near-identical idle T-ish poses across all four shots. The players in frame 1 are mid-stride but stiff."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has a clean scoreboard, court tag, stamina bar and controls strip in a consistent orange/cyan style. The top mode bar is dense and debug-like, and frames 2–4 show no HUD at all."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

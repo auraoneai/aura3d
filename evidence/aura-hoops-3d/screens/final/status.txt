@@ -11,3 +11,4 @@
 @@SHOTSA aura-hoops-3d 390x844 done captured=3 signatures=3 late=true results=false errors=0
 @@SHOTSA aura-hoops-3d card 1x ok
 @@SHOTSA aura-hoops-3d card 2x ok
+@@G07P3 aura-hoops-3d 2026-10-31 run g07p3-f-scr 1280x720=10 390x844=6 card=2 errors=0 (software WebGL2)

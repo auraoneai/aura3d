@@ -63,6 +63,9 @@ import {
   courtPracticalNodes,
   courtSkyNodes,
   courtWeatherNodes,
+  courtSurroundNodes,
+  courtBleacherNodes,
+  courtRibNodes,
   lightningFlash
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
@@ -478,14 +481,14 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
 /**
- * GU47 phase 2 (PRD D11, no regression ships): courts whose new look lost to the 4.6.2 frame draw the original look;
- * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. Rucker: flood haze, cones and flare veil
- * the left half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2.
- * GU47 blind-panel pass: the look follows the court (`setVenue` re-reads it before the scene rebuild), so a normal launch
- * on Rucker still shows Manila, Shanghai and Venice in the new look once play moves there. Athens (panel 0/3, fog white-out)
- * draws the 4.6.2 look until a capture shows its fog-off rig beating the 4.6.2 frame.
+ * GU47 phase 2 (PRD D11, no regression ships): courts whose new look loses to the 4.6.2 frame draw the original look;
+ * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. The look follows the court (`setVenue`
+ * re-reads it before the scene rebuild).
+ * GU47 phase 3 (4.7.1): Rucker, Athens and Orbit were reworked (grounded surround and bleachers, Rucker haze off, lower
+ * bloom, Orbit without the dome GLB) and the blind panel picked all three over the 4.6.2 frame 3/0/0 (round g07p3r1),
+ * so every court now defaults to the new look. Add a court id here to send it back to the 4.6.2 look.
  */
-const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit", "athens"]);
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set<string>([]);
 const LOOK_PARAM = initialParams.get("look");
 const BOOT_COURT_PARAM = initialParams.get("court");
 const BOOT_COURT = BOOT_COURT_PARAM && BOOT_COURT_PARAM in VENUES ? BOOT_COURT_PARAM : "rucker";
@@ -774,7 +777,9 @@ function buildAthlete(id: string, team: TeamId): any[] {
   ];
 }
 
-function buildCrowd(_v: VenueSpec): any[] {
+function buildCrowd(v: VenueSpec): any[] {
+  // GU47 phase 3: courts with grounded bleachers (courtRigs.ts) drop the borrowed seat GLB on the new look.
+  if (!LOOK_ORIGINAL && COURT_RIGS[v.id].bleachers) return courtBleacherNodes(COURT_RIGS[v.id]);
   const nodes: any[] = [
     // Real 3D stadium seating grandstands surrounding the outer court perimeter
     model(assets.showcaseStadiumSeats, { name: "bleacher-north", targetMaxDimension: 12, scaleMode: "fit", castShadow: false, receiveShadow: true })
@@ -855,8 +860,11 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   if (v.id === "orbit") {
+    // GU47 phase 3: the dome GLB wraps the court in crumpled geometry (the chase eye sat inside it on both looks:
+    // stretched texture streaks, no players; blind panel). The new look draws the deck disc and rib strips instead.
+    if (LOOK_ORIGINAL) nodes.push(model(assets.hoopsOrbitArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4));
+    else nodes.push(...courtRibNodes(COURT_RIGS.orbit));
     nodes.push(
-      model(assets.hoopsOrbitArena, { name: "orbit-dome", targetMaxDimension: 64, castShadow: false, receiveShadow: false }).position(0, -0.4, 4),
       model(assets.hoopsCanopy, { name: "orbit-halo", targetMaxDimension: 46, castShadow: false, receiveShadow: false }).position(0, 14, -20),
       model(assets.hoopsEarth, { name: "planet-earth", targetMaxDimension: 210, castShadow: false, receiveShadow: false })
         .position(-60, 130, -300)
@@ -893,8 +901,11 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }
   }
 
-  // H47-H1: the court name painted on the far apron in the court's tag colour.
-  if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_Z1 + 1.3));
+  // H47-H1: the court name painted on the apron in the court's tag colour. GU47 phase 3: on the grounded courts it moves
+  // to the far apron behind the baseline (on the near apron the chase frame cut it off in the bottom-left corner).
+  if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_RIGS[v.id].surround ? COURT_Z0 - 3.2 : COURT_Z1 + 1.3));
+  // GU47 phase 3: ground to the horizon (a deck disc on Orbit) under the grounded courts.
+  if (!LOOK_ORIGINAL) nodes.push(...courtSurroundNodes(COURT_RIGS[v.id]));
 
   // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
