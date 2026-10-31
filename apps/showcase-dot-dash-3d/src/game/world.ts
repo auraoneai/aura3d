@@ -456,12 +456,41 @@ function roomNodes() {
       .position(pb.x, benchTop + pb.y, faceZ + 0.1),
     instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0 }), transforms: holes, castShadow: false }),
     instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
+    ...lampShaft(),
     primitives.box({ name: "wall shelf", size: [44, 0.35, sh.depth], material: material.pbr({ color: sh.color, roughness: sh.roughness, metalness: 0 }), castShadow: true, receiveShadow: true })
       .position(pb.x, benchTop + sh.y, faceZ + sh.depth / 2)
   ];
 }
 
 /** Unit vector from the desk lamp to its target (the lamp-haze cone axis). */
+/**
+ * Phase 4 round 2 lamp shaft (LAMP_HAZE.shaft): nested open additive cones, apex at the lamp head, opening along the
+ * lamp axis. The unit cone points +Y with its apex up, so each shell is rotated +Y -> (lamp - target).
+ */
+function lampShaft(): ReturnType<typeof primitives.cone>[] {
+  const a = lampAxis();
+  const up = [-a[0], -a[1], -a[2]] as const;
+  // quaternion taking +Y onto `up`: axis = Y x up, w = 1 + Y . up, normalised
+  const q = [up[2], 0, -up[0], 1 + up[1]] as const;
+  const ql = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  const quat: [number, number, number, number] = [q[0] / ql, q[1] / ql, q[2] / ql, q[3] / ql];
+  const sh = LAMP_HAZE.shaft;
+  const mid: [number, number, number] = [LAMP.position[0] + a[0] * sh.length / 2, LAMP.position[1] + a[1] * sh.length / 2, LAMP.position[2] + a[2] * sh.length / 2];
+  return sh.shells.map((shell, i) => {
+    const r = Math.tan(LAMP.angle * 0.62) * sh.length * shell.fraction;
+    return primitives.cone({
+      name: `lamp shaft ${i}`,
+      size: [2 * r, sh.length, 2 * r],
+      params: { radialSegments: 32, openEnded: true },
+      position: mid,
+      quaternion: quat,
+      castShadow: false,
+      receiveShadow: false,
+      material: material.pbr({ color: "#000000", emissive: sh.color, emissiveIntensity: 1, opacity: shell.opacity, blend: "additive", depthWrite: false, roughness: 1, metalness: 0, practical: true })
+    });
+  });
+}
+
 function lampAxis(): [number, number, number] {
   const d = [LAMP.target[0] - LAMP.position[0], LAMP.target[1] - LAMP.position[1], LAMP.target[2] - LAMP.position[2]] as const;
   const l = Math.hypot(d[0], d[1], d[2]) || 1;

@@ -82,14 +82,16 @@ export const BOARD_PROBE = {
  * bounds centre, so `scale` puts it 0.74 tall and `lift` stands it on the board top (-0.02). The core hovers over the
  * dome; a cyan rim and a little emissive keep the dark-green shell readable on the green mask.
  */
+// Round 2: 0.74 -> 0.92 tall and a stronger cyan rim and glow; at 0.74 with a faint rim the dark-green dome vanished
+// into the green mask in the round-1 frames.
 export const COURIER_POD = {
-  scale: 0.389,
-  lift: -0.02 + 0.951 * 0.389,
-  coreHeight: 0.98,
-  shell: 0.36,
-  rim: { color: "#7ff6ff", power: 2.4, intensity: 0.85 },
-  emissive: "#2fb8c8",
-  emissiveIntensity: 0.14
+  scale: 0.484,
+  lift: -0.02 + 0.951 * 0.484,
+  coreHeight: 1.08,
+  shell: 0.4,
+  rim: { color: "#8ff8ff", power: 1.8, intensity: 1.5 },
+  emissive: "#2fc8d8",
+  emissiveIntensity: 0.35
 } as const;
 
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
@@ -101,7 +103,13 @@ export const COURIER_POD = {
 export const LAMP_HAZE = {
   // Phase 4 (4.7.2): inscatter 0.4 -> 0.6, god rays 0.45 -> 0.6, cone 0.32 -> 0.6: the judge saw no haze at all.
   fog: { density: 0.008, color: "#6a5238", intensity: 0.6, heightFalloff: 0.16, godRayDensity: 0.6 },
-  cone: { color: "#ffd9a8", intensity: 0.6, length: 24, softness: 0.85 }
+  cone: { color: "#ffd9a8", intensity: 0.6, length: 24, softness: 0.85 },
+  /**
+   * Phase 4 round 2: a visible lamp shaft. Neither the inscatter nor the effect cone showed in the round-1 frames, so
+   * three nested open additive cone meshes (depth write off) run from the lamp head toward the board; nested radii
+   * give a soft edge. `fraction` is each shell's radius as a share of the lamp cone's.
+   */
+  shaft: { color: "#ffcf95", length: 19, shells: [{ fraction: 0.95, opacity: 0.035 }, { fraction: 0.7, opacity: 0.04 }, { fraction: 0.45, opacity: 0.05 }] }
 } as const;
 
 /**
@@ -171,6 +179,8 @@ export interface BoardLookRow {
 
 // Phase 3 (4.7.1): the dark-mask boards (classic, foundry, zerocore) take a brighter lamp (+25-35%) so their
 // steady-state frames reach the declared luma band (mean 42-60, p95 >= 200) instead of sitting at mean 32-40.
+// Phase 4 round 2: the HDRI fill drops 0.45 -> 0.38 so the lamp's shadow side reads darker than its lit side; the
+// dark-mask boards' lamps go +9% (classic 4700, foundry 4600, zerocore 5200) to hold their mean luma.
 // Phase 4 (4.7.2): the dark-mask boards' masks are glossier (classic 0.3 -> 0.22, foundry 0.34 -> 0.26, zerocore
 // 0.5 -> 0.36) so the screen-space reflections and the probe show in them; the pale boards keep their panel-judged sheen.
 const ROOM_FOG = "#1a120c";
@@ -180,7 +190,7 @@ const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> 
   return {
     ...rest,
     timeOfDay: "late night",
-    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.45, rotationDeg: 205 },
+    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.38, rotationDeg: 205 },
     fog: { color: ROOM_FOG, density: fogDensity ?? 0.006 },
     background: ROOM_FOG
   };
@@ -192,7 +202,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     board: "classic",
     pcb: "green FR-4 relay board, bare copper, silver pads",
     mask: "#1f4a38", maskRoughness: 0.22, copper: "#c8743a", silk: "#e9e6d6", led: "#5ff3ff", traceGlow: "#ffb070",
-    lamp: { color: "#ffc58a", intensity: 4300, temperatureK: 3000 },
+    lamp: { color: "#ffc58a", intensity: 4700, temperatureK: 3000 },
     grade: { contrast: 1.08, saturation: 1.06, temperature: 0.08, tint: 0, lut: "/luts/dot-dash-3d/classic.cube" }
   }),
   spiral: row({
@@ -224,14 +234,14 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     board: "foundry",
     pcb: "red heavy-copper power board",
     mask: "#7a2018", maskRoughness: 0.26, copper: "#d4834a", silk: "#f6efe4", led: "#ffd27a", traceGlow: "#ff9a5a",
-    lamp: { color: "#ffbe80", intensity: 4200, temperatureK: 2800 },
+    lamp: { color: "#ffbe80", intensity: 4600, temperatureK: 2800 },
     grade: { contrast: 1.1, saturation: 1.02, temperature: 0.1, tint: 0.02, lut: "/luts/dot-dash-3d/foundry.cube" }
   }),
   zerocore: row({
     board: "zerocore",
     pcb: "matte black reactor board, ENIG gold",
     mask: "#1f1f28", maskRoughness: 0.36, copper: "#d7a74e", silk: "#d8d2e6", led: "#ff5fdc", traceGlow: "#ff9cf0",
-    lamp: { color: "#ffd9b0", intensity: 4800, temperatureK: 3400 },
+    lamp: { color: "#ffd9b0", intensity: 5200, temperatureK: 3400 },
     grade: { contrast: 1.12, saturation: 1.05, temperature: 0.02, tint: 0.08, lut: "/luts/dot-dash-3d/zerocore.cube" }
   })
 };
