@@ -304,3 +304,16 @@ export function sunDirection(sun: Pick<ChapterSun, "elevationDeg" | "azimuthDeg"
   const az = (sun.azimuthDeg * Math.PI) / 180;
   return [Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)];
 }
+
+/**
+ * GU47 blind-panel fix pass: chapters whose default is the 4.6.2 look. Three blind judges picked the 4.6.2 frame
+ * over the GU47 look on default and chapters 0-4 (0/3 each); only the starry night (ch5) was judged better.
+ */
+export const ORIGINAL_LOOK_CHAPTERS: ReadonlySet<number> = new Set([0, 1, 2, 3, 4]);
+
+/** `?look=original` forces the 4.6.2 look, `?look=gu47` the look table; otherwise the per-chapter default. */
+export function useOriginalLook(chapter: number, param: string | null): boolean {
+  if (param === "original") return true;
+  if (param === "gu47" || param === "new") return false;
+  return ORIGINAL_LOOK_CHAPTERS.has(chapterLook(chapter).chapter);
+}
