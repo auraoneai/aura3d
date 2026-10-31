@@ -193,7 +193,9 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   desert: {
     id: "desert", city: "Dubai", timeOfDay: "noon (12:30), white-hot sun through dust haze",
     hdri: "outdoor-midday", hdriSize: "2k", environmentIntensity: 0.75, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4.6, lightSize: 0.4, colorTemperatureK: 6200 },
+    // GU47 phase 4 (p4-r1 frame: the 72-degree sun behind the camera left the athletes without a visible shadow): a 52-degree
+    // early-afternoon sun from beyond the far baseline throws short shadows toward the broadcast camera.
+    sun: { elevationDeg: 52, azimuthDeg: 160, color: "#fffaf0", intensity: 4.6, lightSize: 0.4, colorTemperatureK: 6200 },
     floodlights: [],
     fog: { color: "#e8d2b0", density: 0.0088, volumetricAtHigh: false, lightCones: 0 },
     grade: { preset: "daylight-outdoor", exposure: 1.1, contrast: 1.2, saturation: 1.12, temperature: 0.08, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
