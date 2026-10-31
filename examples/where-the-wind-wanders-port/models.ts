@@ -2,7 +2,7 @@
  * Meshy-generated model layer (text prompts only; prompts and task ids in assets/ATTRIBUTION.md).
  * Replaces the procedural cottages, trees, traveller, wisp and boat when the matching GLB is present.
  */
-import { instances, model, type AuraApp, type scene } from "@aura3d/engine";
+import { instances, material, model, primitives, type AuraApp, type scene } from "@aura3d/engine";
 import { createLocomotion } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
@@ -10,7 +10,7 @@ import { MODEL_ASSETS, hasModel } from "./model-assets";
 import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
 import type { ModelPlacement, Scenery } from "./scenery";
 
-export interface ModelSet { letter: boolean; bell: boolean; bellModel?: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; boat: boolean; stones: boolean; shrubs: boolean }
+export interface ModelSet { letter: boolean; bell: boolean; bellModel?: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; kite?: boolean; boat: boolean; stones: boolean; shrubs: boolean }
 
 /**
  * The bell is split out of belltower.glb (assets/models/belltower-bell.glb, see model-assets.ts) so it can swing. Both
@@ -49,6 +49,10 @@ export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
   hero: [{ roughness: 0.85, rim: { color: "#ffe6c4", power: 2.6, intensity: 0.65 } }]
 };
 
+/** WW47-A1 kite: height of the placed kite (m), and where it flies relative to the traveller (downwind, up). */
+export const KITE_HEIGHT = 1.5;
+export const KITE_FLIGHT = { downwind: 4.6, up: 5.2, hand: [0.35, 1.55, 0.1] as const, towardViewDeg: 25 } as const;
+
 export function availableModels(): ModelSet {
   return {
     letter: hasModel("letter"),
@@ -58,6 +62,7 @@ export function availableModels(): ModelSet {
     trees: hasModel("pine") && hasModel("oak"),
     hero: hasModel("hero"),
     wisp: hasModel("wisp"),
+    kite: hasModel("kite"),
     boat: hasModel("boat"),
     stones: hasModel("stones"),
     shrubs: hasModel("shrub")
@@ -96,7 +101,11 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
   const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
   if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { ...mo("letter"), name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
   if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
-  if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
+  if (set.kite) {
+    // WW47-A1: the paper kite (WP-36 bellKite) on a cream string from the traveller's hand; posed every frame by world.ts
+    builder.add(model(MODEL_ASSETS.kite, { name: "kite", targetHeight: KITE_HEIGHT, rotationOrder: "YXZ", castShadow, receiveShadow: false, collider: false, materialOverrides: [{ roughness: 0.78, metallic: 0, rim: { color: "#fff4dc", power: 2.4, intensity: 0.45 } }] }).runtime({ id: "kite" }));
+    builder.add(primitives.box({ name: "kite-string", size: [1, 1, 1], rotationOrder: "YXZ", material: material.pbr({ color: "#f3ead2", roughness: 0.9, metallic: 0 }), castShadow: false, receiveShadow: false }).runtime({ id: "kite-string" }));
+  } else if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
   if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }
 

@@ -11,14 +11,14 @@ import { camera, effects, environments, geometry, lights, material, scene, type 
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { createCameraSequencer, type SequenceId } from "./camera-seq";
-import { gustAt } from "./wind";
+import { WIND_DIR, gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
-import { addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
-import { SEA_LEVEL, STREAM_POINTS, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
+import { KITE_FLIGHT, KITE_HEIGHT, addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
+import { SEA_LEVEL, STREAM_POINTS, blobOcclusion, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 type Scene = ReturnType<typeof scene>;
@@ -58,12 +58,12 @@ export function writeDaylightUniforms(handle: { setUniform?(name: string, value:
 
 export const windSpec = (): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 }, heroShadowAmt: { type: "f32", value: 0 } },
   side: "double"
 });
 export const paintSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: PAINT_FRAGMENT },
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } }
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, heroShadowAmt: { type: "f32", value: 0 } }
 });
 export const seaSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
@@ -320,6 +320,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const lit = (id: string): string => { daylightIds.push(id); return id; };
   /** WW47-L2: the engine sun casts on High; Low and the original look draw no shadow rows (PRD §6.4). */
   const shadows = !original && options.quality !== "low";
+  /** GU47 phase 4: strength of the shader-traced traveller shadow (the engine shadow map does not reach the meadow). */
+  const heroShadow = shadows ? 0.85 : 0;
   /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
   const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
@@ -405,6 +407,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     const y = terrainHeight(x, z) - 0.04;
     const yaw = rand() * Math.PI;
     const phase = phaseOverride ?? rand() * 6.28;
+    // GU47 phase 4: the painted tree and cottage shadows the terrain bakes also darken the meadow cards standing in them
+    // (the grass hides the ground), so the cast shadows read on the High GU47 look; no rand() draw, so placement is unchanged
+    if (shadows) {
+      const occ = blobOcclusion(sc.blobs, x, z);
+      if (occ < 1) color = [color[0] * occ, color[1] * occ, color[2] * (occ * 0.5 + 0.5 * Math.sqrt(occ))];
+    }
     pushCard(f, x, y, z, w, h, yaw, color, sway, phase, kind);
     pushCard(f, x, y, z, w, h, yaw + Math.PI / 2 + (rand() - 0.5) * 0.4, color, sway, phase + 0.7, kind);
     cardCount += 2;
@@ -724,6 +732,10 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           for (const id of allUniformNodes) node(id).setUniform?.("windTime", id === "foliage" || id === "props" ? swayTime : time);
           node("foliage").setUniform?.("playerPos", [x, y, z]);
           node("props").setUniform?.("playerPos", [x, y, z]);
+          // GU47 phase 4: the traveller's traced shadow on the grass and the ground (High GU47 look only; 0 keeps 4.6)
+          node("terrain").setUniform?.("playerPos", [x, y, z]);
+          node("foliage").setUniform?.("heroShadowAmt", heroShadow);
+          node("terrain").setUniform?.("heroShadowAmt", heroShadow);
           // the companion wisp drifts after the traveller
           const wk = 1 - Math.exp(-3.5 * dt);
           wisp.x += (x - 1.1 - wisp.x) * wk; wisp.z += (z + 0.6 - wisp.z) * wk; wisp.y += (y + hop * 0.6 + 2.0 + 0.18 * Math.sin(time * 2.4) - wisp.y) * wk;
