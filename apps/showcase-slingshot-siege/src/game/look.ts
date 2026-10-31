@@ -137,7 +137,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     chapter: 0,
     timeOfDay: "crisp morning",
     preset: "outdoor-day",
-    hdri: "spruit_sunrise",
+    // GU47 phase 3: the warm spruit_sunrise image light bleached the props and turned the cliffs yellow (round g12p3r1).
+    hdri: "kloppenheim_06_puresky",
     environmentIntensity: 1.0,
     environmentRotationDeg: 330,
     exposureEv: -0.35,
@@ -211,7 +212,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     chapter: 2,
     timeOfDay: "breezy late morning after rain",
     preset: "outdoor-day",
-    hdri: "spruit_sunrise",
+    hdri: "outdoor-midday",
     environmentIntensity: 1.0,
     environmentRotationDeg: 315,
     exposureEv: -0.3,

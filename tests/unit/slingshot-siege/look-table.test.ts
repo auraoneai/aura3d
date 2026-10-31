@@ -29,7 +29,7 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
   it("names its own preset and environment per chapter, with at least 4 distinct environment sources", () => {
     expect(CHAPTER_LOOKS.map((r) => r.preset)).toEqual(["outdoor-day", "outdoor-day", "outdoor-day", "golden-hour", "golden-hour", "polar-night"]);
     expect(CHAPTER_LOOKS.map((r) => r.hdri ?? `${r.preset} default`)).toEqual([
-      "spruit_sunrise", "outdoor-midday", "spruit_sunrise", "kloppenheim_06_puresky", "belfast_sunset_puresky", "deep_space_starfield"
+      "kloppenheim_06_puresky", "outdoor-midday", "outdoor-midday", "kloppenheim_06_puresky", "belfast_sunset_puresky", "deep_space_starfield"
     ]);
     expect(new Set(CHAPTER_LOOKS.map((r) => r.hdri ?? r.preset)).size).toBeGreaterThanOrEqual(4);
     expect(CHAPTER_LOOKS[2]!.environmentIntensity).toBe(1.0);
