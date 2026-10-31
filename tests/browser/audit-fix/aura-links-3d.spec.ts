@@ -190,9 +190,12 @@ const roundOut = async (page: Page, name: string): Promise<void> => {
  * RH-05: retake of evidence/aura-links-3d/screens/final with the same file names and sizes. The player drives the
  * three-press swing with Space; logic advances through the ?qa=1 hook so each shot shows the state it is named for.
  */
-const screensRun = async (page: Page, name: string): Promise<void> => {
+const screensRun = async (page: Page, name: string, fromShot = 0): Promise<void> => {
   if (!(await hasQa(page))) { log(`GL_SKIP ${name} no __AURA_LINKS_QA__ (pre-fix build)`); return; }
-  const snap = async (id: string, ms = 12_000) => { await settleFrames(page, ms); await grab(page, name, id, {}, true); };
+  // `fromShot`: the tail targets replay the same held sequence but only settle and grab from shot `fromShot` on (the
+  // 11-shot sequence runs past the 50 min test timeout on software GL, run g10p3-r3-1)
+  let shot = 0;
+  const snap = async (id: string, ms = 12_000) => { if (shot++ < fromShot) return; await settleFrames(page, ms); await grab(page, name, id, {}, true); };
   await qa(page, "advance", 0.5);
   await snap("02-early", 20_000);
   await advanceUntil(page, "e.phase === 'address'", 10, 0.25);
@@ -282,6 +285,8 @@ const TARGETS: readonly Target[] = [
   { name: "links-shots-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: screensRun, tag: "@shots @final" },
   { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots @final" },
   { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots @final" },
+  { name: "links-tail-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: (page, name) => screensRun(page, name, 7), tag: "@shotstail" },
+  { name: "links-tail-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: (page, name) => screensRun(page, name, 7), tag: "@shotstail" },
   { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots @final" },
   { name: "links-figures-neonBay", url: `${APP}?course=neonBay&qa=1`, viewport: DESKTOP, run: figuresRun, tag: "@final" },
   { name: "links-diag-stAuroras", url: `${APP}?course=stAuroras`, viewport: DESKTOP, run: diagRun, tag: "@diag" },
