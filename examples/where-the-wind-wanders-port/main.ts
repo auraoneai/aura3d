@@ -19,7 +19,7 @@ import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
-import { parseFoundParam, resolveLook } from "./daylight";
+import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { paperPass } from "./paper-pass";
 
 const params = new URLSearchParams(location.search);
@@ -446,7 +446,7 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   // WW47-P3: the gouache paper pass (High only, not on the original look)
-  if (!originalLook && !lowQuality) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height));
+  if (!originalLook && !lowQuality) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height, lookPostFor(daylightKey ?? 0).paper));
   stopWatching();
   ready = true;
   $("loading").classList.add("hidden");

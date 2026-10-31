@@ -81,6 +81,7 @@ export const skySpec = (): CustomSpec => ({
     skyZenith: { type: "vec3", value: [...ORIGINAL.skyZenith] },
     cloudTint: { type: "vec3", value: [1, 1, 1] },
     starAmt: { type: "f32", value: 0 },
+    clearSky: { type: "f32", value: 0 },
     skyPainted: { type: "f32", value: 0 }
   },
   depthWrite: false,
@@ -275,10 +276,14 @@ export function followFraming(amount: number, aspect: number): { y: number; fov:
   return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : 43 + (40 - 43) * a, lead: a };
 }
 /** Applies one look post (DAY_POST / DUSK_POST) through the runtime post surface. */
-function applyLookPost(app: AuraApp, post: LookPost): void {
+function applyLookPost(app: AuraApp, post: LookPost, high: boolean): void {
   app.post?.setEffect?.("bloom", { ...post.bloom });
   app.post?.setEffect?.("colorGrade", { ...post.grade });
   app.post?.setEffect?.("vignette", { ...post.vignette });
+  // grain and the paper pass exist on High only; patching grain on Low would add the effect
+  if (!high) return;
+  app.post?.setEffect?.("filmGrain", { intensity: post.grain });
+  app.post?.setPassUniform?.("wind-gouache-paper", "u_paper", post.paper);
 }
 /** Epilogue camera height above its look target. */
 export const EPILOGUE_CAMERA_RISE = 6.4;
@@ -558,7 +563,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // painted every GLB (cottage, trees, traveller) as a flat cream silhouette while the custom-shader meadow stayed
       // clean (phase-2 A/B capture g23ab1, found0 = fog off only); the sun sits behind the follow camera, so no shafts
       // were visible either. `shaftPatch` stays as the per-key table for when the stage is re-enabled.
-      builder.add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
+      builder.add(effects.filmGrain({ name: "paper grain", intensity: post.grain }));
     }
   }
 
@@ -617,6 +622,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         sky.setUniform?.("skyZenith", f.skyZenith);
         sky.setUniform?.("cloudTint", f.cloudTint);
         sky.setUniform?.("starAmt", f.stars);
+        if (!original) sky.setUniform?.("clearSky", f.clearSky);
         if (original) return;
         // WW47-L4: the engine sun follows the day (E-B setLight); its direction is the uniform's, negated (light travel)
         node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });
@@ -625,7 +631,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const dusk = isDuskKey(daylight.target);
         if (dusk !== shownDusk) {
           shownDusk = dusk;
-          applyLookPost(app, lookPostFor(daylight.target));
+          applyLookPost(app, lookPostFor(daylight.target), options.quality !== "low");
           node("traveller-fill").setLight?.({ intensity: dusk ? 0 : TRAVELLER_FILL.intensity });
         }
         if (shafts) {

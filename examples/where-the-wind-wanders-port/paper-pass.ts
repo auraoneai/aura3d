@@ -27,11 +27,11 @@ void main() {
   outColor = vec4(c.rgb * k, c.a);
 }`;
 
-export function paperPass(width: number, height: number) {
+export function paperPass(width: number, height: number, strength: number = PAPER_STRENGTH) {
   return effects.shaderPass({
     name: "wind-gouache-paper",
     order: "after-tonemap",
     glsl: PAPER_GLSL,
-    uniforms: { u_paper: PAPER_STRENGTH, u_paperScale: [width / 3, height / 3] }
+    uniforms: { u_paper: strength, u_paperScale: [width / 3, height / 3] }
   });
 }
