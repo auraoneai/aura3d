@@ -108,13 +108,13 @@ const FELT_NAP = { kind: "aura-procedural-texture", texture: "fabric-normal", sc
 const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color, sheen: 0.35, normal: FELT_NAP });
 const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
 /**
- * GU47 phase 4: glazed clay for the platform bodies. A satin glaze (base roughness 0.55 under a
- * soft clearcoat) gives the slab sides a sky reflection; every rubric judgement scored the all-matte
+ * GU47 phase 4: glazed clay for the platform bodies. A satin glaze (base roughness 0.62 under a
+ * thin clearcoat; round 1's 0.55 coat read as grey metal) gives the slab sides a sky reflection; every rubric judgement scored the all-matte
  * felt-and-clay course lowest on image-based reflections. The felt tops stay matte (floor glare
  * lost the w5 panel in phase 3).
  */
 const glazedClay = (color: string): AuraMaterialSpec =>
-  material.lacquer({ name: "glazed clay", color, roughness: 0.55, clearcoat: 0.55, clearcoatRoughness: 0.22, envMapIntensity: 0.95 });
+  material.lacquer({ name: "glazed clay", color, roughness: 0.62, clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 0.6 });
 
 /**
  * Interim hand-made surfaces per platform kind (PBL-M1): felt tops on clay bodies,
@@ -126,8 +126,8 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   earth: { body: glazedClay("#5c3f28"), top: felt("#7d6243") },
   mushroom: { body: glazedClay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.32 }) },
   leaf: { body: felt("#2f6333"), top: felt("#4f8e45") },
-  dock: { body: glazedClay("#6b4c35"), top: glazedClay("#9e7344") },
-  wood: { body: glazedClay("#6b4c35"), top: glazedClay("#ad814c") },
+  dock: { body: glazedClay("#6b4c35"), top: clay("#9e7344") },
+  wood: { body: glazedClay("#6b4c35"), top: clay("#ad814c") },
   rope: { body: felt("#7d6140"), top: felt("#c49d62") },
   cloud: { body: felt("#b6aec0"), top: felt("#d6cab2") },
   sky: { body: felt("#7f8fb0"), top: felt("#a9b9d6") },
