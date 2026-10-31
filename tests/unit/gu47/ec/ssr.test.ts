@@ -146,6 +146,11 @@ describe("S3 hit test (CPU mirror of the trace loop)", () => {
     expect(marchHit(p, r, occluder, { refineCrossing: true })).toBeNull();
   });
 
+  it("the distance fade uses the refined hit distance, not the march step index (drift-and-deliver-port wet road: 2.5 m steps banded the fade into stripes)", () => {
+    expect(SSR_TRACE_GLSL).toContain("travelled = clamp(length(b - p) / u_maxDistance, 0.0, 1.0);");
+    expect(SSR_TRACE_GLSL).not.toContain("travelled = float(i) / float(AURA_SSR_STEPS);");
+  });
+
   it("the shader carries the crossing refinement", () => {
     expect(SSR_TRACE_GLSL).toContain("if (behind && !prevBehind)");
     expect(SSR_TRACE_GLSL).toContain("if (-b.z - linearDepthAt(buv) < u_thickness)");

@@ -16,7 +16,7 @@
  *     through `u_viewToPrevClip` = prevViewProj · inv(view)) when
  *     `u_reproject = 1`, else from this frame's HDR colour;
  *   - confidence = hit · Schlick fresnel (F0 0.04) · screen-edge fade ·
- *     march-distance fade · camera-facing fade · roughness gate
+ *     march-distance fade (refined hit distance) · camera-facing fade · roughness gate
  *     (`1 − smoothstep(0.35, 0.5, roughness)`, i.e. nothing above the 0.5
  *     cutoff). Where confidence falls to 0 the composite leaves the forward
  *     result, which already carries the nearest reflection probe's IBL — the
@@ -119,7 +119,9 @@ void main() {
       if (-b.z - linearDepthAt(buv) < u_thickness) {
         hitPos = b;
         hitUv = buv;
-        travelled = float(i) / float(AURA_SSR_STEPS);
+        // Refined distance, not the step index: the index quantised the fade into one band per step
+        // (drift-and-deliver-port's 60 m / 24-step wet road showed regular stripes; GU47 phase 2).
+        travelled = clamp(length(b - p) / u_maxDistance, 0.0, 1.0);
         break;
       }
     }
