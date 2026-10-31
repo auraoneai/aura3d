@@ -562,7 +562,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));
-  builder.add(miniatureDofNode());
+  if (look.lens !== "none") builder.add(miniatureDofNode());
   builder.add(ambientEmitterNode(look, scale, nodeName.hero, 4700 + spec.order));
   return base.top;
 }

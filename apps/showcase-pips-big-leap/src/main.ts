@@ -10,6 +10,7 @@ import {
   createFixedStepLoop,
   game,
   gameFeel,
+  installQaHooks,
   material,
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
@@ -30,7 +31,7 @@ import { framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
-import { MINIATURE_LIFT, lookModeFromSearch, miniatureFramingFor, worldFromSearch } from "./game/looks.js";
+import { MINIATURE_LIFT, lookModeFromSearch, miniatureFramingFor, worldFromSearch, worldLookMode } from "./game/looks.js";
 import { createDioramaPresentation, type QaCrop } from "./game/presentation.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -39,11 +40,14 @@ installBlackFrameGuard();
 
 // --------------------------------------------------------------------- boot
 
-// GU47 WP-16: the felt-and-clay diorama is opt-in (`?look=diorama`); since the blind-panel
-// fix pass the pre-GU47 (4.6.2) presentation is the default (`?look=original` also selects it). `?world=<id>` boots straight into a world (capture convenience).
-const LOOK_MODE = lookModeFromSearch(window.location.search);
+// GU47 phase 3: each world opens in the look that won its blind panel against 4.6.2
+// (`WORLD_DEFAULT_LOOK`: the felt-and-clay diorama or the pre-GU47 4.6.2 presentation);
+// `?look=diorama` / `?look=original` force one look everywhere. LOOK_MODE is the boot
+// world's look (HUD theme, fonts). `?world=<id>` boots straight into a world (capture convenience).
 const REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";
+const LOOK_MODE = lookModeFromSearch(window.location.search, BOOT_WORLD);
+const lookOf = (id: WorldId) => worldLookMode(id, window.location.search);
 
 // PBL-H1: the diorama HUD is the E-J `storybook` theme: licensed GT Walsheim text and
 // Canela display cuts (copied from packages/game/src/fonts, provenance in its NOTICE.txt)
@@ -71,7 +75,7 @@ function ensureWorld(id: WorldId): WorldRuntime {
   let w = cache.get(id);
   if (!w) {
     const spec = worldSpec(id);
-    const built = buildWorld(spec, { ambientOcclusion: !AO_OFF, look: LOOK_MODE, reducedMotion: REDUCED_MOTION });
+    const built = buildWorld(spec, { ambientOcclusion: !AO_OFF, look: lookOf(id), reducedMotion: REDUCED_MOTION });
     w = { spec, built, cert: certifyWorld(spec, built.motion) };
     cache.set(id, w);
   }
@@ -145,7 +149,7 @@ declare global {
   interface Window {
     __AURA3D_SHOWCASE_PIPS_BIG_LEAP__?: Record<string, unknown>;
     /** E-I crop contract: named rects (0..1, top-left origin) read at every steady-state shot. */
-    __AURA_QA__?: { crops: () => readonly QaCrop[] };
+    __AURA_QA__?: { crops: () => readonly QaCrop[] } & Record<string, unknown>;
   }
 }
 
@@ -923,8 +927,9 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const built = ensureWorld(run.world).built;
   // C18: portrait screens get a wider vertical FOV and a longer boom. GU47 PBL-C2: the
   // diorama look frames Pip from 1.7 m with fov 46 (the original keeps 2.25 m / 52).
-  const framing = LOOK_MODE === "diorama" ? miniatureFramingFor(viewAspect()) : framingFor(viewAspect());
-  const camY = p.y + (LOOK_MODE === "diorama" ? MINIATURE_LIFT : 2.25);
+  const worldDiorama = built.presentation.mode === "diorama";
+  const framing = worldDiorama ? miniatureFramingFor(viewAspect()) : framingFor(viewAspect());
+  const camY = p.y + (worldDiorama ? MINIATURE_LIFT : 2.25);
   const desiredX = p.x - camFwdX * framing.boom;
   const desiredZ = p.z - camFwdZ * framing.boom;
   const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
@@ -1388,9 +1393,10 @@ function publishEvidence(force = false): void {
     bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null,
     // GU47 WP-16: look mode, per-world look facts and the runtime presentation counters.
     diorama: {
-      look: LOOK_MODE,
+      look: built.presentation.mode,
+      bootLook: LOOK_MODE,
       hour: built.presentation.look.hour,
-      postPreset: LOOK_MODE === "diorama" ? built.presentation.look.post.preset : null,
+      postPreset: built.presentation.mode === "diorama" ? built.presentation.look.post.preset : null,
       baseTop: built.presentation.baseTop,
       floraCount: built.presentation.floraCount,
       instancedPlatforms: built.presentation.instancedPlatforms,
@@ -1426,7 +1432,13 @@ void app.ready().then(async () => {
   appReady = true;
   presentation.worldMounted(ensureWorld(run.world).built);
   // E-I crop contract, read at every steady-state shot (projected each read).
-  window.__AURA_QA__ = { crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]) };
+  // installQaHooks("qa") installs it as window.__AURA_QA__ with the standard hooks beside `crops`.
+  installQaHooks("qa", {
+    ready: () => appReady,
+    state: () => ({ world: run.world, look: ensureWorld(run.world).built.presentation.mode }),
+    app,
+    extras: { crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]) }
+  });
   publishEvidence(true);
   document.body.dataset.aura3dReady = "true";
   try {

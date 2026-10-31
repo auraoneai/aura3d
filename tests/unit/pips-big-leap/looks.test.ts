@@ -10,6 +10,8 @@ import {
   focusDistanceFor,
   heightFogFor,
   lookModeFromSearch,
+  worldLookMode,
+  WORLD_DEFAULT_LOOK,
   lookOverridesFor,
   miniatureFramingFor,
   presentationScale,
@@ -32,15 +34,15 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(backgrounds).not.toContain("#2a5c8a");
   });
 
-  it("uses the PRD sun angles and interior key intensities", () => {
+  it("keys the daylight worlds from behind the lens (phase 3: the panel saw a backlit Pip) and keeps w4/w6", () => {
     const angles = (id: keyof typeof WORLD_LOOKS) => [WORLD_LOOKS[id].key.elevationDeg, WORLD_LOOKS[id].key.azimuthDeg];
-    expect(angles("academy")).toEqual([42, 120]);
-    expect(angles("w1")).toEqual([18, 80]);
-    expect(angles("w2")).toEqual([10, 250]);
-    expect(angles("w3")).toEqual([24, 150]);
+    expect(angles("academy")).toEqual([48, 35]);
+    expect(angles("w1")).toEqual([40, 40]);
+    expect(angles("w2")).toEqual([24, 320]);
+    expect(angles("w3")).toEqual([40, 30]);
     expect(angles("w6")).toEqual([30, 300]);
     expect(WORLD_LOOKS.w4.key.intensity).toBe(1.1);
-    expect(WORLD_LOOKS.w5.key.intensity).toBe(0.9);
+    expect(WORLD_LOOKS.w5.key.intensity).toBe(1.4);
   });
 
   it("uses the PRD catalogue HDRIs and IBL strengths", () => {
@@ -49,7 +51,7 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(WORLD_LOOKS.w3.hdri.id).toBe("spruit_sunrise");
     expect(WORLD_LOOKS.w2.hdri.id).toBe("belfast_sunset_puresky");
     expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.6 });
-    expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.85 });
+    expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.6 });
     expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.55 });
     // Shared spruit_sunrise uses differ in rotation and intensity (PRD 6.1 secondary-use rule).
     const spruit = WORLD_IDS.filter((id) => WORLD_LOOKS[id].hdri.id === "spruit_sunrise").map((id) => `${WORLD_LOOKS[id].hdri.rotationDeg}/${WORLD_LOOKS[id].hdri.intensity}`);
@@ -98,8 +100,8 @@ describe("pips-big-leap look overrides on the merged E-A looks.preset", () => {
     }
   });
 
-  it("assigns the PRD post presets: daylight-outdoor x4, arena-fight, cinematic-film, space", () => {
-    expect(WORLD_IDS.map((id) => WORLD_LOOKS[id].post.preset)).toEqual(["daylight-outdoor", "daylight-outdoor", "daylight-outdoor", "daylight-outdoor", "arena-fight", "cinematic-film", "space"]);
+  it("assigns the post presets: daylight-outdoor x5 (w5 since phase 3: the film preset bloomed Pip out), arena-fight, space", () => {
+    expect(WORLD_IDS.map((id) => WORLD_LOOKS[id].post.preset)).toEqual(["daylight-outdoor", "daylight-outdoor", "daylight-outdoor", "daylight-outdoor", "arena-fight", "daylight-outdoor", "space"]);
   });
 
   it("pools the height fog at the base top", () => {
@@ -120,12 +122,11 @@ describe("pips-big-leap diorama base and atmosphere (PBL-E1, E2, E3, P3)", () =>
     }
   });
 
-  it("gives w2 a Preetham sky, w3 a peach-lilac gradient, w6 a starry gradient, and no other world a sky", () => {
-    expect(WORLD_LOOKS.w2.sky?.model).toBe("preetham");
-    expect(WORLD_LOOKS.w3.sky?.model).toBe("gradient");
+  it("gives every outdoor world a gradient sky (phase 3: a clear daylight sky), w6 a starry one, and the interiors none", () => {
+    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(WORLD_LOOKS[id].sky?.model, id).toBe("gradient");
     const w6 = WORLD_LOOKS.w6.sky;
     expect(w6?.model === "gradient" && w6.stars !== undefined && w6.stars.count > 0).toBe(true);
-    for (const id of ["academy", "w1", "w4", "w5"] as const) expect(WORLD_LOOKS[id].sky).toBeUndefined();
+    for (const id of ["w4", "w5"] as const) expect(WORLD_LOOKS[id].sky).toBeUndefined();
   });
 
   it("gives every world exactly one ambient kind, all different, within the 600-particle budget", () => {
@@ -164,11 +165,16 @@ describe("pips-big-leap miniature lens and framing (PBL-P2, PBL-C2)", () => {
 });
 
 describe("pips-big-leap variants and accessibility", () => {
-  it("reads ?look= and ?world= (4.6.2 look by default since the blind-panel pass)", () => {
+  it("reads ?look= and ?world= (each world opens in its panel-verified default; ?look= forces one look)", () => {
     expect(lookModeFromSearch("?look=original")).toBe("original");
     expect(lookModeFromSearch("?look=diorama")).toBe("diorama");
-    expect(lookModeFromSearch("")).toBe("original");
-    expect(lookModeFromSearch("?look=carnival")).toBe("original");
+    expect(lookModeFromSearch("")).toBe(WORLD_DEFAULT_LOOK.w1);
+    expect(lookModeFromSearch("?look=carnival", "w4")).toBe(WORLD_DEFAULT_LOOK.w4);
+    for (const id of WORLD_IDS) {
+      expect(worldLookMode(id, "?look=original")).toBe("original");
+      expect(worldLookMode(id, "?look=diorama")).toBe("diorama");
+      expect(worldLookMode(id, "")).toBe(WORLD_DEFAULT_LOOK[id]);
+    }
     expect(worldFromSearch("?world=w4")).toBe("w4");
     expect(worldFromSearch("?world=w9")).toBeNull();
   });

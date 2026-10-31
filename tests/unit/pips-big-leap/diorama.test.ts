@@ -87,13 +87,12 @@ describe("pips-big-leap diorama scene", () => {
     }
   });
 
-  it("adds a real sky only in w2 (Preetham), w3 (gradient) and w6 (gradient + stars), never capturing the environment (PBL-E2)", () => {
+  it("adds a real gradient sky in every outdoor world and w6 (stars), never capturing the environment (PBL-E2, phase 3)", () => {
     const skyOf = (id: (typeof WORLD_IDS)[number]) => sceneOf(id).find((n) => n.kind === "sky");
-    expect(skyOf("w2")?.spec?.model).toBe("preetham");
-    expect(skyOf("w3")?.spec?.model).toBe("gradient");
+    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(skyOf(id)?.spec?.model, id).toBe("gradient");
     expect(skyOf("w6")?.spec?.stars).toBeDefined();
-    for (const id of ["w2", "w3", "w6"] as const) expect(skyOf(id)?.captureEnvironment).toBe(false);
-    for (const id of ["academy", "w1", "w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
+    for (const id of ["academy", "w1", "w2", "w3", "w6"] as const) expect(skyOf(id)?.captureEnvironment).toBe(false);
+    for (const id of ["w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
   });
 
   it("hangs the aurora curtain in the w6 night garden only (PBL-V3, aurora half)", () => {
@@ -124,6 +123,11 @@ describe("pips-big-leap diorama scene", () => {
       expect(effects.filter((n) => n.effect === "bloom"), id).toHaveLength(1);
       expect(effects.some((n) => n.name === dioramaName.vignette)).toBe(true);
       const dof = effects.find((n) => n.effect === "depth-of-field");
+      if (WORLD_LOOKS[id].lens === "none") {
+        // Phase 3: the blind panel named the miniature blur over the course in these worlds.
+        expect(dof, id).toBeUndefined();
+        continue;
+      }
       expect(dof?.fStop).toBe(2);
       expect(dof?.focusDistance).toBeCloseTo(4.63, 1);
     }

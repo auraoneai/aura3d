@@ -102,6 +102,12 @@ export interface WorldLook {
   readonly millpond?: { readonly tint: string; readonly foam: string; readonly resolution: number };
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
+  /**
+   * PBL-P2 miniature lens. GU47 phase 3: "none" in the daylight and palace worlds, where the
+   * blind panel named the depth-of-field blur over the course as a defect; w4 and w6 (panel
+   * better) keep the shallow-focus lens. Absent = "miniature".
+   */
+  readonly lens?: "miniature" | "none";
 }
 
 /** Identity palette (PRD WP-16). Sun-seed gold is reserved for pickups and the Sun-Gate. */
@@ -171,72 +177,78 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "garden mid-morning",
     baseLook: "outdoor-day",
     hdri: { id: "spruit_sunrise", intensity: 0.85, rotationDeg: 120 },
-    key: { elevationDeg: 42, azimuthDeg: 120, color: "#fff0d4", intensity: 2.5, lightSize: 0.9, softness: 0.55 },
-    rim: { azimuthDeg: opposite(120), color: "#b8d2ff", intensity: 0.55 },
-    hemisphere: { skyColor: "#cfe0c4", groundColor: "#4a5a2e", intensity: 0.22 },
-    background: "#8fa673",
+    key: { elevationDeg: 48, azimuthDeg: 35, color: "#fff2dc", intensity: 2.6, lightSize: 0.9, softness: 0.55 },
+    rim: { azimuthDeg: opposite(35), color: "#b8d2ff", intensity: 0.5 },
+    hemisphere: { skyColor: "#d6e8f6", groundColor: "#5a6a34", intensity: 0.32 },
+    background: "#cfe3f1",
     exposureEv: 1.8,
-    fog: { color: "#a7b98c", density: 0.004, heightDensity: 0.09, heightFalloff: 0.42, maxOpacity: 0.78 },
-    base: { felt: "#5b7f3f", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#4f7a3a" },
-    post: { preset: "daylight-outdoor", contrast: 1.04, saturation: 1.04, temperature: 0.06, tint: 0, vignette: { intensity: 0.16, color: "#1c140b" } },
+    fog: { color: "#d4e4ee", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.42, maxOpacity: 0.28 },
+    base: { felt: "#5f8a3e", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#6a9a48" },
+    sky: { model: "gradient", zenith: "#5d9ae0", horizon: "#d8e9f4", ground: "#6a8a4a", exponent: 0.7, horizonGlow: 0.25 },
+    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.04, tint: 0, vignette: { intensity: 0.05, color: "#1c140b" } },
     ambient: { kind: "petals", color: "#f4d4d8", maxParticles: 260, rate: 34, size: [0.035, 0.07], lifetime: [6, 9], speed: [0.1, 0.32], gravity: -0.05, drag: 0.4, additive: false },
     practicals: [],
-    dust: "#c9b48a"
+    dust: "#c9b48a",
+    lens: "none"
   },
   w1: {
     id: "w1",
     hour: "canopy dawn shafts",
     baseLook: "outdoor-day",
     hdri: { id: "spruit_sunrise", intensity: 0.7, rotationDeg: 80 },
-    key: { elevationDeg: 18, azimuthDeg: 80, color: "#ffd9a8", intensity: 2.3, lightSize: 0.7, softness: 0.5 },
-    rim: { azimuthDeg: opposite(80), color: "#9fc2ff", intensity: 0.5 },
-    hemisphere: { skyColor: "#a9c7a0", groundColor: "#2f3f1e", intensity: 0.2 },
-    background: "#5a7a5c",
+    key: { elevationDeg: 40, azimuthDeg: 40, color: "#ffe2b8", intensity: 2.5, lightSize: 0.7, softness: 0.5 },
+    rim: { azimuthDeg: opposite(40), color: "#9fc2ff", intensity: 0.45 },
+    hemisphere: { skyColor: "#d2e4ee", groundColor: "#4a5a2a", intensity: 0.3 },
+    background: "#e6e4d2",
     exposureEv: 1.8,
-    fog: { color: "#6f8a6c", density: 0.006, heightDensity: 0.12, heightFalloff: 0.38, maxOpacity: 0.82 },
-    base: { felt: "#3f6a31", clay: "#5c4129", skirt: "#2a1d12", mound: "#4f7a3a" },
-    post: { preset: "daylight-outdoor", contrast: 1.04, saturation: 1.02, temperature: 0.12, tint: 0.02, vignette: { intensity: 0.18, color: "#120d07" } },
+    fog: { color: "#dfe4dc", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.38, maxOpacity: 0.3 },
+    base: { felt: "#4f7a36", clay: "#5c4129", skirt: "#2a1d12", mound: "#5f8a40" },
+    sky: { model: "gradient", zenith: "#6aa2dc", horizon: "#f4e6c6", ground: "#4f6a36", exponent: 0.65, horizonGlow: 0.35 },
+    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.08, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.06, color: "#120d07" } },
     ambient: { kind: "spores", color: "#e6eeb0", maxParticles: 320, rate: 40, size: [0.025, 0.05], lifetime: [7, 10], speed: [0.06, 0.2], gravity: 0.02, drag: 0.5, additive: true },
     practicals: [],
-    dust: "#a08a62"
+    dust: "#a08a62",
+    lens: "none"
   },
   w2: {
     id: "w2",
     hour: "millpond golden hour",
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 250 },
-    key: { elevationDeg: 10, azimuthDeg: 250, color: "#ffb36b", intensity: 2.4, lightSize: 0.8, softness: 0.5 },
-    rim: { azimuthDeg: opposite(250), color: "#a8c4ff", intensity: 0.5 },
-    hemisphere: { skyColor: "#f0c49a", groundColor: "#4a3420", intensity: 0.2 },
-    background: "#b9784a",
+    key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.6, lightSize: 0.8, softness: 0.5 },
+    rim: { azimuthDeg: opposite(320), color: "#a8c4ff", intensity: 0.45 },
+    hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.3 },
+    background: "#f6d4a8",
     exposureEv: 1.5,
-    fog: { color: "#c8946a", density: 0.005, heightDensity: 0.1, heightFalloff: 0.4, maxOpacity: 0.8 },
+    fog: { color: "#f2d6b2", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.4, maxOpacity: 0.3 },
     base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
-    sky: { model: "preetham", turbidity: 6, rayleigh: 1.6, exposure: 0.45, groundColor: "#5a3e26" },
-    post: { preset: "daylight-outdoor", contrast: 1.04, saturation: 1.06, temperature: 0.22, tint: 0.01, vignette: { intensity: 0.18, color: "#1e1208" } },
+    sky: { model: "gradient", zenith: "#5f8fd0", horizon: "#ffd29c", ground: "#5a4a2a", exponent: 0.6, horizonGlow: 0.45 },
+    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
     practicals: [],
     lensFlare: { intensity: 0.55 },
     millpond: { tint: "#b8d8c8", foam: "#f2ead8", resolution: 256 },
-    dust: "#b99a6a"
+    dust: "#b99a6a",
+    lens: "none"
   },
   w3: {
     id: "w3",
     hour: "dandelion-fluff dawn",
     baseLook: "alpine-snow",
     hdri: { id: "spruit_sunrise", intensity: 0.95, rotationDeg: 150 },
-    key: { elevationDeg: 24, azimuthDeg: 150, color: "#ffe2c8", intensity: 2.8, lightSize: 0.6, softness: 0.4 },
-    rim: { azimuthDeg: opposite(150), color: "#c6b8ff", intensity: 0.6 },
-    hemisphere: { skyColor: "#f2d6e2", groundColor: "#6a5a72", intensity: 0.24 },
-    background: "#d4b6c6",
-    exposureEv: 1.4,
-    fog: { color: "#e2c6cf", density: 0.004, heightDensity: 0.08, heightFalloff: 0.36, maxOpacity: 0.75 },
+    key: { elevationDeg: 40, azimuthDeg: 30, color: "#fff0e0", intensity: 2.6, lightSize: 0.6, softness: 0.4 },
+    rim: { azimuthDeg: opposite(30), color: "#c6b8ff", intensity: 0.5 },
+    hemisphere: { skyColor: "#e4e6fa", groundColor: "#7a6a86", intensity: 0.3 },
+    background: "#f4dcd2",
+    exposureEv: 1.2,
+    fog: { color: "#f2e0e0", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.36, maxOpacity: 0.25 },
     base: { felt: "#9a8a9a", clay: "#7a6476", skirt: "#3a2c3c", mound: "#b8a6b0" },
-    sky: { model: "gradient", zenith: "#a99ad6", horizon: "#f6c8b0", ground: "#6a5470", exponent: 0.8, horizonGlow: 0.35 },
-    post: { preset: "daylight-outdoor", contrast: 1.06, saturation: 0.98, temperature: 0.08, tint: 0.04, vignette: { intensity: 0.14, color: "#2a1c24" } },
+    sky: { model: "gradient", zenith: "#7f9fe2", horizon: "#f8d8cc", ground: "#8a7aa0", exponent: 0.7, horizonGlow: 0.3 },
+    post: { preset: "daylight-outdoor", contrast: 1.12, saturation: 1.08, temperature: 0.04, tint: 0.02, vignette: { intensity: 0.05, color: "#2a1c24" } },
     ambient: { kind: "fluff", color: "#fff4e4", maxParticles: 300, rate: 32, size: [0.04, 0.085], lifetime: [7, 10], speed: [0.12, 0.34], gravity: 0.03, drag: 0.45, additive: false },
     practicals: [],
-    dust: "#e6d6c0"
+    dust: "#e6d6c0",
+    lens: "none"
   },
   w4: {
     id: "w4",
@@ -259,28 +271,29 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-lava-glow-d", type: "point", position: [2.6, 1.7, -40], color: "#ff8a3a", intensity: 12, distance: 7, flicker: 0.3 }
     ],
     heatShimmer: { pixels: 1.6, band: 0.55, speed: 1 },
-    dust: "#5a4038"
+    dust: "#5a4038",
   },
   w5: {
     id: "w5",
     hour: "amber hollow-tree palace",
     baseLook: "interior-warm",
-    hdri: { id: "warm_bar", intensity: 0.85, rotationDeg: 200 },
-    key: { elevationDeg: 50, azimuthDeg: 25, color: "#ffd2a0", intensity: 0.9, lightSize: 1.0, softness: 0.65 },
+    hdri: { id: "warm_bar", intensity: 0.6, rotationDeg: 200 },
+    key: { elevationDeg: 50, azimuthDeg: 25, color: "#ffe6c8", intensity: 1.4, lightSize: 1.0, softness: 0.65 },
     rim: { azimuthDeg: 205, color: "#8fa8e8", intensity: 0.35 },
-    hemisphere: { skyColor: "#6a4a2a", groundColor: "#2a1a0e", intensity: 0.4 },
-    background: "#5a3a1c",
-    exposureEv: 1.3,
-    fog: { color: "#4a2e16", density: 0.007, heightDensity: 0.12, heightFalloff: 0.34, maxOpacity: 0.65 },
+    hemisphere: { skyColor: "#f0d6b0", groundColor: "#4a301a", intensity: 0.45 },
+    background: "#2e1c10",
+    exposureEv: 0.9,
+    fog: { color: "#3a2614", density: 0.002, heightDensity: 0.08, heightFalloff: 0.34, maxOpacity: 0.3 },
     base: { felt: "#4a3218", clay: "#5a3a1e", skirt: "#1e1208", mound: "#6a4a24" },
-    post: { preset: "cinematic-film", contrast: 1.04, saturation: 1.04, temperature: 0.2, tint: 0.02, vignette: { intensity: 0.22, color: "#0e0804" } },
+    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.04, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.1, color: "#0e0804" } },
     ambient: { kind: "dust", color: "#ecc68a", maxParticles: 240, rate: 28, size: [0.015, 0.035], lifetime: [7, 10], speed: [0.04, 0.14], gravity: 0.005, drag: 0.6, additive: true },
     practicals: [
       { name: "pbl-lantern-left", type: "point", position: [-2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
       { name: "pbl-lantern-right", type: "point", position: [2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
       { name: "pbl-throne-spot", type: "spot", position: [0, 10.5, -64], target: [0, 2.6, -69], color: "#ffd49a", intensity: 60, distance: 16, angle: 0.5, penumbra: 0.45, flicker: 0 }
     ],
-    dust: "#8a6a44"
+    dust: "#8a6a44",
+    lens: "none"
   },
   w6: {
     id: "w6",
@@ -303,7 +316,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-crystal-glow-c", type: "point", position: [4.6, 4.4, -42], color: "#5fd8ff", intensity: 14, distance: 7, flicker: 0.12 }
     ],
     aurora: { color: "#5fe8c0", colorTop: "#7a6ad8", intensity: 0.55 },
-    dust: "#5a6a9a"
+    dust: "#5a6a9a",
   }
 };
 
@@ -352,18 +365,38 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
 }
 
 /**
- * GU47 blind-panel fix pass (2026-10-31): the 4.6.2 look is the default again. Three blind
- * judges rated the diorama worse than 4.6.2 in academy, w1, w2, w3 and w5 (better only in w4
- * and w6), and the look is chosen once for the whole game, so `?look=diorama` opts in and
- * anything else (including `?look=original`) is today's presentation.
+ * GU47 blind-panel fix pass (2026-10-31): the 4.6.2 look became the default because three
+ * blind judges rated the diorama worse than 4.6.2 in academy, w1, w2, w3 and w5. GU47 phase 3
+ * (4.7.1) chooses the look per world: `WORLD_DEFAULT_LOOK` opens each world in the look that
+ * won its blind panel against the 4.6.2 frame. `?look=diorama` / `?look=original` force one
+ * look for every world (both switches keep working).
  */
 export const DEFAULT_LOOK_MODE: PipLookMode = "original";
 
-export function lookModeFromSearch(search: string): PipLookMode {
+export const WORLD_DEFAULT_LOOK: Readonly<Record<WorldId, PipLookMode>> = {
+  academy: "diorama",
+  w1: "diorama",
+  w2: "diorama",
+  w3: "diorama",
+  w4: "diorama",
+  w5: "diorama",
+  w6: "diorama"
+};
+
+/** The forced look (`?look=diorama|original`), or null when each world opens in its own default. */
+export function forcedLookFromSearch(search: string): PipLookMode | null {
   const value = new URLSearchParams(search).get("look");
-  if (value === "diorama") return "diorama";
-  if (value === "original") return "original";
-  return DEFAULT_LOOK_MODE;
+  return value === "diorama" || value === "original" ? value : null;
+}
+
+/** The look a world opens in: the forced look if the URL names one, else the world's default. */
+export function worldLookMode(world: WorldId, search: string): PipLookMode {
+  return forcedLookFromSearch(search) ?? WORLD_DEFAULT_LOOK[world];
+}
+
+/** The boot-time look (HUD theme, fonts): the forced look, else the boot world's default. */
+export function lookModeFromSearch(search: string, bootWorld: WorldId = "w1"): PipLookMode {
+  return worldLookMode(bootWorld, search);
 }
 
 /** `?world=<id>` boots straight into a world (capture convenience; the atlas cards stay the E-I path). */

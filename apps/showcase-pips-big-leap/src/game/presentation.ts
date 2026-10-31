@@ -187,7 +187,10 @@ interface AppSlice {
 type CameraSequenceArg = Parameters<NonNullable<AuraApp["camera"]>["play"]>[0];
 
 export function createDioramaPresentation(app: AppSlice, options: PresentationOptions): DioramaPresentation {
-  const diorama = options.mode === "diorama";
+  // GU47 phase 3: the look is chosen per world (`worldLookMode`), so the runtime follows the
+  // mounted world's mode; it starts on the boot world's mode.
+  let diorama = options.mode === "diorama";
+  let outputTouched = false;
   const scale = presentationScale(options.reducedMotion);
   const fx = app.effects as PipEffectsLike | undefined;
   let vfx: PipVfxController | null = null;
@@ -241,8 +244,31 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
     },
 
     worldMounted(built) {
-      if (!diorama) return;
+      diorama = built.presentation.mode === "diorama";
+      if (!diorama) {
+        // A 4.6.2-look world after a diorama world: undo the diorama's app-level state. The
+        // output exposure defaults to 1 (Renderer.executeOutputPass), the app-level fog only
+        // applies to node-free scenes and is cleared without touching the new scene's fog
+        // nodes, and the w4 shimmer pass and any running trail or FOV kick end here.
+        removeShimmer?.();
+        removeShimmer = null;
+        vfx?.stopTrails();
+        setKick(null);
+        playback?.skip();
+        playback = null;
+        if (outputTouched) {
+          app.setOutput?.({ exposure: 1 });
+          try {
+            app.atmosphere?.setFog(null, { overrideSceneFog: false, transitionSeconds: 0 });
+          } catch {
+            // A stub atmosphere has nothing to clear.
+          }
+          outputTouched = false;
+        }
+        return;
+      }
       const look = built.presentation.look;
+      outputTouched = true;
       counts.mounted += 1;
       // PBL-P1: the look declares its post id, but nothing applies the look's output
       // preset on this build, so the world's preset is set after every setScene. The
@@ -337,7 +363,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       if (!diorama) return;
       // PBL-P2: the DOF focus follows the real lens-to-Pip distance (5 cm hysteresis).
       const target = Number(focusDistanceFor(miniatureFramingFor(f.aspect), f.clearance).toFixed(2));
-      if (Math.abs(target - focus) >= 0.05) {
+      if (built.presentation.look.lens !== "none" && Math.abs(target - focus) >= 0.05) {
         focus = target;
         try {
           app.post?.setEffect?.("depthOfField", { focusDistance: target });
@@ -420,7 +446,8 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
 
     evidence() {
       return {
-        mode: options.mode,
+        mode: diorama ? "diorama" : "original",
+        bootMode: options.mode,
         reducedMotion: options.reducedMotion,
         focusDistance: focus,
         heroScaleY: Number(heroScaleY.toFixed(3)),
