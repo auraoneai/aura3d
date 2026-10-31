@@ -1,5 +1,6 @@
 import { camera } from "@aura3d/engine";
 import type { Vec3 } from "../contract/units";
+import { lookMode } from "../ui/lookMode";
 
 export const CAMERA_EYE: Vec3 = [0, 25.5, 37.1];
 export const CAMERA_TARGET: Vec3 = [0, 0, 0.7];
@@ -43,11 +44,23 @@ export const CAMERA_PAN_HALF_LIFE = 0.45;
 const NEAR_ATHLETE_Z = 8.8;
 const NEAR_ATHLETE_HALF_WIDTH = 7.3;
 
-/** `?cam=classic` or `?look=original` keep the 4.6.1 camera; the World Tour look uses v2. */
+/**
+ * GU47 blind-panel fix pass: venues whose World Tour frame keeps the 4.6.1 broadcast framing. The blind panel found the
+ * players too small and the scoreboard gantry floating over the stands in the v2 frame on the New York (hard) and beach
+ * courts, so those boot venues frame the court like 4.6.2 (big athletes, no sky band) and keep the World Tour light and grade.
+ */
+export const CLASSIC_FRAMING_VENUES: ReadonlySet<string> = new Set(["hard", "beach"]);
+
+/**
+ * `?cam=classic` or `?look=original` keep the 4.6.1 camera; the World Tour look uses v2, except on the boot venues in
+ * CLASSIC_FRAMING_VENUES (no `?venue=` boots the hard court). `?cam=v2` forces v2.
+ */
 export function cameraRigFor(search?: string): BroadcastCameraRig {
   const raw = search ?? (typeof location !== "undefined" ? location.search : "");
   const params = new URLSearchParams(raw);
-  return params.get("cam") === "classic" || params.get("look") === "original" ? CAMERA_CLASSIC : CAMERA_V2;
+  if (params.get("cam") === "classic" || lookMode(raw) === "original") return CAMERA_CLASSIC;
+  if (params.get("cam") === "v2") return CAMERA_V2;
+  return CLASSIC_FRAMING_VENUES.has(params.get("venue") || "hard") ? CAMERA_CLASSIC : CAMERA_V2;
 }
 
 /**
@@ -133,6 +146,13 @@ export function nextPunchT(punchT: number, aces: number, acesSeen: number, dt: n
  * shot's target at f/8 (phase 2: f/2 at 120 mm held about 1 m sharp and blurred the athletes and court lines out).
  */
 export const BROADCAST_DOF = { focusDistance: 34, fStop: 4, focalLength: 120 } as const;
+/**
+ * The broadcast DOF for a rig. The classic eye sits farther back (athletes about 36-55 m out), so it focuses 44 m out
+ * (sharp about 32-70 m at f/4) instead of 34 m.
+ */
+export function broadcastDofFor(rig: Pick<BroadcastCameraRig, "id">): { focusDistance: number; fStop: number; focalLength: number } {
+  return rig.id === "classic" ? { ...BROADCAST_DOF, focusDistance: 44 } : { ...BROADCAST_DOF };
+}
 export const CUT_DOF_FSTOP = 8;
 
 /** Sharp range of a thin lens (metres) for a focus distance, f-number and focal length (mm), circle of confusion 0.03 mm. */

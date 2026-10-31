@@ -9,6 +9,7 @@ import { byId, cachedMediaQuery, maybeById } from "../ui/dom";
 import { createCoach } from "../ui/coach";
 import { controlText, movementLabel } from "../ui/format";
 import { createHud, type Hud } from "../ui/hud";
+import { lookMode } from "../ui/lookMode";
 import { createMenu, type Menu } from "../ui/menu";
 import { createPauseUi } from "../ui/pause";
 import { createQuickBar } from "../ui/quickBar";
@@ -241,8 +242,8 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const hud = createHud({
     names: () => menu.names(), controls, hitKeyLabel, modernServe, serveFeedback: () => serveFeedback(),
     smashAvailable, strategicDifficulty: (s) => strategic(s), intentionalLobAllLevels, swipeActive, shot: engine.SHOT ?? SHOT_DEFAULTS,
-    // GU47 TT-H1: the World Tour scorebug additions (`?look=original` keeps the 4.6.1 HUD; same rule as view/look.ts lookMode).
-    broadcast: typeof location === "undefined" || new URLSearchParams(location.search).get("look") !== "original"
+    // GU47 TT-H1: the World Tour scorebug additions (the 4.6.2 look keeps the 4.6.1 HUD; same rule as the view, ui/lookMode.ts).
+    broadcast: typeof location === "undefined" || lookMode(location.search) !== "original"
   });
 
   const pause = createPauseUi({

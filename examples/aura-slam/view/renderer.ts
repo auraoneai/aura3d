@@ -6,7 +6,7 @@ import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
 import { slamQaCrops, type QaCrop } from "./qaCrops";
 import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
-import { BROADCAST_DOF, CAMERA_FAR, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
+import { BROADCAST_DOF, CAMERA_FAR, broadcastDofFor, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { POST_EFFECT, QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
@@ -264,7 +264,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     const post = (app as unknown as VenueRuntimeApp | null)?.post;
     const patch = cutFrame
       ? { focusDistance: Math.hypot(cutFrame.pose.target[0] - cutFrame.pose.eye[0], cutFrame.pose.target[1] - cutFrame.pose.eye[1], cutFrame.pose.target[2] - cutFrame.pose.eye[2]), fStop: CUT_DOF_FSTOP, focalLength: BROADCAST_DOF.focalLength }
-      : { ...BROADCAST_DOF };
+      : broadcastDofFor(cameraRig);
     try { post?.setEffect?.(POST_EFFECT.depthOfField, patch); } catch { /* post surface optional */ }
   }
 
