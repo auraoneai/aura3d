@@ -1,4 +1,11 @@
-# Glint Courier: final screenshots (4.5.0, audit lane G13)
+# Glint Courier: final screenshots (4.7.1, GU47 lane g13 phase 3)
+
+Retaken 2026-10-31 on `gu47/g13` (commit d7fed5422: the GU47 "night shift on the workbench" look plus the phase-3
+presentation pass) with runs `g13p3-r3-s1280`, `g13p3-r3-s390` and `g13p3-r3-scard` (one test per viewport), remote
+ACR on crmmeprodacr, software WebGL2 (SwiftShader). Decoded with
+`evidence/game-upgrades-47/dot-dash-3d/tools/decode-g13-jpg.mjs`. The history below is the 4.5.0 set these replace.
+
+## 4.5.0 set (history)
 
 Route: `apps/showcase-dot-dash-3d`. Built from `audit-fix/g13` merged with `audit-fix/e2` (the per-normal hemisphere the game's lighting is tuned for), on top of `origin/main` 31f8945ad. These frames replace the set built from `0d965903c`, which predated the Glint Courier rework (`b7503eaf1`) and showed the old arcade-clone look.
 

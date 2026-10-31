@@ -20,7 +20,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  *                           Escape/blur pause (DD-14), surge bar duration (DD-11), first-move prompt (DD-6)
  *   g13-shadow-on/-off      DD-10 shadow A/B (`?g13shadow=0` is read only by the measurement build)
  *   g13-dpr2                device scale factor 2 timing (the hf432 "dot-dash dpr2" timeout)
- *   g13-screens             RH-05 / DD-4 retake of evidence/dot-dash-3d/screens/final (same names and sizes)
+ *   g13-screens-<1280|390|card> RH-05 / DD-4 retake of evidence/dot-dash-3d/screens/final (same names and sizes)
  */
 const SETTLE_SECONDS = (process.env.G13_SETTLE ?? "30,75").split(",").map(Number);
 const CHUNK = 16000;
@@ -478,12 +478,18 @@ test.describe("g13 dot-dash-3d", () => {
     await ctx.close();
   }
 
-  test("g13-screens", async ({ browser }) => {
-    for (const profile of [
-      { name: "1280", width: 1280, height: 720, mobile: false },
-      { name: "390", width: 390, height: 844, mobile: true },
-      { name: "card", width: 1440, height: 900, mobile: false }
-    ]) await screens(browser, profile);
-    log("G13_DONE g13-screens");
-  });
+  // One test per viewport (GU47 phase 3): the three profiles in one test outran the 30 min test timeout on the
+  // software-GL runner. `--grep=g13-screens` still runs all three; `--grep=g13-screens-390` runs one.
+  for (const profile of [
+    { name: "1280", width: 1280, height: 720, mobile: false },
+    { name: "390", width: 390, height: 844, mobile: true },
+    { name: "card", width: 1440, height: 900, mobile: false }
+  ]) {
+    test(`g13-screens-${profile.name}`, async ({ browser }) => {
+      // five steady screens at 20-60 s each outran 30 min on a busy software-GL runner (the ACR step allows 60 min)
+      test.setTimeout(3_300_000);
+      await screens(browser, profile);
+      log(`G13_DONE g13-screens-${profile.name}`);
+    });
+  }
 });

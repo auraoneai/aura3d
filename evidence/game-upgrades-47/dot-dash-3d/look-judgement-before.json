@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/rubric-before/dot-dash-3d--default--settle-60s.jpg",
+      "sha256": "7a26b24cb2d6c717f0b46f21c463fbb65a2d9061d8611bccf0701d7f05c1db76"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/rubric-before/dot-dash-3d--foundry--settle-60s.jpg",
+      "sha256": "21de368f3db4b60ee27d3876ffb2c45b2b5112f0ff9094a4f5cf2046cc160d13"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/rubric-before/dot-dash-3d--garden--settle-60s.jpg",
+      "sha256": "e74eec8a542549df82bab8afcc8b723716ba750790ee7c22f237427ffbece685"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/rubric-before/dot-dash-3d--twin--settle-60s.jpg",
+      "sha256": "805717c70d067ab80d375983d6d7950b66e28f5c1eaa7d6751706166e916b088"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 4.5,
+    "animation_quality": 5,
+    "ui_hud": 2.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single overhead pool lights the board, and each frame uses a different board tint (green, red, white). The white boards wash out the center while the corners fall into heavy vignette darkness. The small orange corner lamps add little fill. There is no clear 55°/45° flood key."
+    },
+    {
+      "category": "shadows",
+      "seen": "Chip blocks cast soft, short contact shadows on the board. The off-board black pillars cast long, dark, blobby shadows that read as noise. Shadow direction is inconsistent with the overhead pool."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The faceted gems on pedestals show flat faceted shading with no environment reflections. The board and chips have no specular response or sheen."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The board floats on a dark blue slab in a black void. There is no interior-industrial room, crowd, or arena context, only scattered black pillars and PCB-style via dots around the edges."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze or volumetrics are visible. A faint bloom-like glow appears only around the player gem and the pellet trails."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Chips are plain dark plastic with tiny pins, and the board has thin gold traces. Gems are semi-transparent but flat. The white board variant looks like unlit paper."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Maze walls are repeated chip cubes, which is a clean and readable motif. Pellets are tiny white quads. The ghost/enemy pieces are small primitives (cone, cube, sphere) that read weakly at this scale."
+    },
+    {
+      "category": "composition",
+      "seen": "The board fills roughly 70% of the frame, well above the 25–40% target. The side gem columns frame it symmetrically, but the bottom title text is cropped off-frame."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a fixed perspective three-quarter top-down view with mild keystoning rather than an orthographic broadcast view. Readability is still good."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy vignette and a slight bloom are visible. There is no color grade unifying the shifting board palettes. Aliasing shows on thin traces and pellet edges."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Only position changes between frames are visible: the player gem moves and pellets disappear. No motion trails or squash are evident beyond a faint glow streak."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is no score, lives, or level HUD. The only text is tiny silkscreen labels (U1 J2 C14 R7) and the cut-off 'GLINT COURIER REV 1.7' at the bottom edge."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}
