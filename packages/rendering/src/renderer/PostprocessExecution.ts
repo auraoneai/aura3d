@@ -12,7 +12,7 @@ import { rendererQrFlags } from "./FrameGraph";
 import { qrCoreOutputOn } from "./qrSubFlags";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
-import type { PostPipelineOptions } from "../contracts/post";
+import { type PostPassDescriptor, type PostPipelineOptions, registeredPostPasses } from "../contracts/post";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
@@ -217,7 +217,7 @@ export function postprocessRequiresDepthTexture(postprocess: RendererPostProcess
     // PRD-03 §6.9: on the v2 route the legacy fields are not populated — the
     // depth-needing stages (S1 depth-prep feeding S2 GTAO / S4 god rays /
     // Phase-4 DOF+motion blur+SSR) live on the pipeline bag instead.
-    (postprocess.v2 === true && v2PipelineNeedsDepth(postprocess.pipeline))
+    (postprocess.v2 === true && (v2PipelineNeedsDepth(postprocess.pipeline) || v2CustomPassesNeedDepth(postprocess.pipeline)))
   );
 }
 
@@ -227,6 +227,20 @@ function v2PipelineNeedsDepth(pipeline: unknown): boolean {
   // S5 TAA reads linear Z for disocclusion and S1-C reads device depth for
   // camera velocity — the depth attachment is required on the forward target.
   return Boolean(bag.ao ?? bag.godRays ?? bag.dof ?? bag.motionBlur ?? bag.ssr ?? bag.taa) || bag.antiAliasing === "taa";
+}
+
+/**
+ * GU47 phase 2: a C-13 custom pass that declares a `depth` input (`effects.toon({ inkSource: "depth" })`,
+ * `effects.shaderPass({ inputs: ["color", "depth"] })`) reads the scene depth: the HDR anchors bind the S1 linear depth,
+ * the after-tonemap tail linearises `sceneDepth`. Both come from the forward target's depth texture, which only the
+ * effects above used to request, so in a scene whose only depth reader was the custom pass the HDR driver skipped every
+ * stage (`WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`) and the tail bound no depth. Same pass set as the v2 driver reads
+ * (`mergedCustomPasses`: the pipeline bag, then the page registry `app.post.addPostPass` fills).
+ */
+function v2CustomPassesNeedDepth(pipeline: unknown): boolean {
+  const bag = pipeline !== null && typeof pipeline === "object" ? (pipeline as { customPasses?: readonly PostPassDescriptor[] }).customPasses : undefined;
+  const wantsDepth = (pass: PostPassDescriptor): boolean => pass.inputs.includes("depth");
+  return Boolean(bag?.some(wantsDepth)) || registeredPostPasses().some(wantsDepth);
 }
 
 export function defaultPostprocessTargetFormat(

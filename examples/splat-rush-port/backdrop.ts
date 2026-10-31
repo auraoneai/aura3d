@@ -62,6 +62,9 @@ export const hdriAsset = (id: AuraHdriId): AuraAssetRef<"texture"> =>
 /** Distance of the engine key light from the origin along the sun direction. */
 const SUN_DISTANCE = 100;
 
+/** Runtime id of the carnival GLB key light (the time of day retints and re-aims it through `setLight`). */
+export const BACKDROP_KEY_ID = "backdrop-key";
+
 /**
  * Engine lights for the GLBs (the toon surfaces carry their own lighting). CR-L1: in the carnival look the key is the
  * same sun the toon shaders use (direction from `look.ts`, golden-stage colour and intensity scaled to the PBR path),
@@ -80,10 +83,13 @@ export function backdropLightRig(look: SplatLook) {
   const d = sunDirection(golden.sunElevationDeg, look.toon.sunAzimuthDeg);
   const b = look.toon.bounceDirection;
   return [
+    /* GU47 phase 2: the runtime id is what `app.nodes.require("backdrop-key")` resolves (world.ts drives the key through
+     * `setLight` as the time of day moves). Without it the first carnival update threw, boot stopped before `ready`, and
+     * every carnival capture showed the frozen boot frame (all backdrop pieces stacked at the origin, no ball). */
     lights.directional({
       name: "backdrop-key", position: [d[0] * SUN_DISTANCE, d[1] * SUN_DISTANCE, d[2] * SUN_DISTANCE], target: [0, 0, 0],
       intensity: BACKDROP_KEY_SCALE * golden.sunIntensity, color: golden.sunColor, shadow: { cascades: 1, maxDistance: 160 }
-    }),
+    }).runtime({ id: BACKDROP_KEY_ID }),
     lights.directional({ name: "backdrop-bounce", position: [b[0] * SUN_DISTANCE, b[1] * SUN_DISTANCE, b[2] * SUN_DISTANCE], target: [0, 0, 0], intensity: BACKDROP_KEY_SCALE * look.toon.bounceIntensity, color: golden.bounce })
   ];
 }

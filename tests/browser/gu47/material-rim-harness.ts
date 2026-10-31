@@ -3,7 +3,7 @@ import { camera, createAuraApp, lights, material, primitives, scene } from "@aur
 /**
  * GU47 E-D receipt harness: `material.pbr({ rim })` (PRD WP-4, receipt `material-rim`).
  *
- * Two frames whose only difference is the sphere's `rim` field: a unit sphere at the origin, a dark backdrop, one
+ * Two frames whose only difference is the sphere's `rim` field: a radius-1 sphere (scale 2) at the origin, a dark backdrop, one
  * directional key from the camera side, camera at z = 4 (fov 40). The rim term is `color * intensity * (1 - N·V)^power`,
  * so it must brighten the silhouette band and leave the sphere centre (N·V ≈ 1) unchanged.
  */
@@ -48,6 +48,12 @@ declare global {
 const CAMERA_DISTANCE = 4;
 const FOV_DEGREES = 40;
 const SPHERE_RADIUS = 1;
+/**
+ * `primitives.sphere` is a unit-DIAMETER sphere (radius 0.5; its size is `diameter (radius * 2)`), so a radius-1
+ * subject is scale 2. With scale 1 the measured silhouette band (0.80..0.97 of the radius-1 projection) fell on the
+ * backdrop and the centre disc reached 0.7 of the real sphere's radius, so the rim could never brighten the "edge".
+ */
+const SPHERE_SCALE = SPHERE_RADIUS * 2;
 const RIM = { color: "#ffb347", power: 2.5, intensity: 1.5 } as const;
 
 const pixels = new Map<RimVariant, { readonly data: Uint8ClampedArray; readonly width: number; readonly height: number }>();
@@ -72,7 +78,7 @@ function rimScene(id: RimVariant) {
     .add(primitives.sphere({
       name: "rim subject",
       material: material.pbr({ color: "#2a3140", roughness: 0.6, metallic: 0, ...(id === "rim-on" ? { rim: RIM } : {}) })
-    }).position(0, 0, 0).scale([SPHERE_RADIUS, SPHERE_RADIUS, SPHERE_RADIUS]))
+    }).position(0, 0, 0).scale([SPHERE_SCALE, SPHERE_SCALE, SPHERE_SCALE]))
     .add(lights.directional({ name: "rim key", position: [1.5, 2.5, 4], intensity: 1.6 }));
 }
 
