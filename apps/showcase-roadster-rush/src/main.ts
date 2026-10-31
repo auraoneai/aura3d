@@ -170,6 +170,8 @@ const BRAKE_BAR_CAPACITY = 48;
 const BLINKER_CAPACITY = 24;
 /** Brake bars and blinkers are small; draw them for traffic up to this far ahead. */
 const LIGHT_DETAIL_AHEAD = 140;
+/** GU47 phase 3: contact-occlusion ellipses under the near (shadow-casting) traffic; the near pools hold 96 at most. */
+const TRAFFIC_CONTACT_CAPACITY = 96;
 
 const LANE_DIVIDER_X: readonly number[] = [-5.4, -1.8, 1.8, 5.4];
 /** 24 dashes per divider at 14 m cover the deck to 322 m ahead (was 14, ending 182 m ahead). */
@@ -356,7 +358,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
-    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 24 }))
+    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 14 }))
     .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
   // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
   if (!REDUCED_MOTION) {
@@ -705,6 +707,11 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#f2a23c", emissive: "#ff8a3d", emissiveIntensity: 0.5 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
       .runtime(game.runtimeNode(poolId("carrier-ramps"))),
+    // GU47 phase 3 (rubric shadows: traffic read as floating): soft contact occlusion under the near traffic, the decal
+    // shader's contact ellipse on its own instanced plane (+1 draw, <= TRAFFIC_CONTACT_CAPACITY live, fades by 160 m)
+    instances
+      .plane({ name: "traffic-contact", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(TRAFFIC_CONTACT_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("traffic-contact"))),
     instances
       .box({ name: "traffic-brake-lights", size: [1.58, 0.16, 0.09], material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 }), castShadow: false, transforms: parked(BRAKE_BAR_CAPACITY) })
       .runtime(game.runtimeNode(poolId("brake-lights"))),
@@ -946,6 +953,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   }
   const rampPool = pool("carrier-ramps", POOL_CAPACITY.carrier);
   const brakePool = pool("brake-lights", BRAKE_BAR_CAPACITY);
+  const trafficContactPool = pool("traffic-contact", TRAFFIC_CONTACT_CAPACITY);
   const blinkerPool = pool("blinkers", BLINKER_CAPACITY);
   const skyCarPool = pool("sky-cars", POOL_CAPACITY.skyCar);
   const skyCarFarPool = pool("sky-cars-far", POOL_CAPACITY.skyCar);
@@ -1716,6 +1724,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const rawVehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
     assignGroundSlots(rawVehicles, pz, groundSlots);
     rampPool.begin();
+    trafficContactPool.begin();
     brakePool.begin();
     blinkerPool.begin();
     const blinkOn = (simTime * 2.8) % 1 < 0.55;
@@ -1753,6 +1762,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
           if (!target.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1)) continue;
           groundDrawn++;
+          if (part === 0) trafficContactPool.add(vx, ry(DECAL_Y + 0.003), vz, 0, vyaw, 0, vw * 1.3, contactScaleY(0), vl * 1.12);
 
           // Sloped golden launch ramp at the carrier's rear (+z end; the front points along -z)
           if (vType === "carrier") {
@@ -1777,6 +1787,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       far.commit();
     }
     rampPool.commit();
+    trafficContactPool.commit();
     brakePool.commit();
     blinkerPool.commit();
 
