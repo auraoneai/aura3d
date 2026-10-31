@@ -28,7 +28,7 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
@@ -129,7 +129,7 @@ function buildScene() {
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
     ...buildLightRig({ lights, runtimeNode: game.runtimeNode }, boot),
     environments.hdri({
-      name: "bunker ibl", intensity: BZ_ENV_INTENSITY, background: false,
+      name: "bunker ibl", intensity: boot.environmentIntensity, background: false,
       texture: { type: "texture", format: "hdr", url: BZ_HDRI_URL } as never
     })
   ];
@@ -505,8 +505,11 @@ function buildScene() {
     }))
     // BZ-18: chromatic aberration at rest 0, pulsed on heavy hits (S10; the engine drops it on Low)
     .add(effects.chromaticAberration({ intensity: 0 }))
-    // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up); disabled off F6 by applyFloorLook.
-    .add(effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density)))
+    // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up), mounted only when the scene boots on F6.
+    // GU47 phase 2: a mounted volumetric-fog node replaces the scene fog's colour and density in the forward program and
+    // adds the dominant spot's inscatter on every floor (setEffectEnabled only drops the post pass), which washed F1-F5
+    // and the Kill House in pale lamp-coloured haze (recap2 frames). Off every other floor, the per-floor dark haze rules.
+    .addMany(BOOT_SLOT === 5 ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
@@ -644,7 +647,7 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   const look = lookOfSlot(slot);
   lightRig.applyFloor(slot);
   try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
-  try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
+  try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / lookOfSlot(BOOT_SLOT).environmentIntensity); } catch { /* lighting runtime not mounted */ }
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   const lut = floorLut(slot);
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint, lut: lut ? lutUrlOfSlot(slot) : "", lutIntensity: lut ? 1 : 0 }); } catch { /* post runtime not mounted */ }
