@@ -41,7 +41,7 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 3600, shadow: true },
     fill: "ibl",
     practicals: 4,
-    environment: { hdri: "spruit_sunrise", background: "hdri" },
+    environment: { hdri: "belfast_sunset_puresky", background: "hdri" },
     exposureEV: 0.2
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.22, 0.6], fovDeg: [30, 58], mobile: "both" },
