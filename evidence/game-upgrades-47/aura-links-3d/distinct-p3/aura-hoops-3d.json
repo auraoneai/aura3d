@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T20:26:43.772Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-links-3d--cinderRim",
+      "aura-links-3d--cloudTerrace",
+      "aura-links-3d--mapleHollow",
+      "aura-links-3d--mareCourse",
+      "aura-links-3d--neonBay",
+      "aura-links-3d--stAuroras"
+    ],
+    "framesB": [
+      "aura-hoops-3d--athens",
+      "aura-hoops-3d--manila",
+      "aura-hoops-3d--orbit",
+      "aura-hoops-3d--rucker",
+      "aura-hoops-3d--shanghai",
+      "aura-hoops-3d--venice"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.817,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 47,
+    "sameGameYes": 1,
+    "differentRate": 0.9791666666666666,
+    "ci95": [
+      0.8910053086246883,
+      0.9963129840206002
+    ],
+    "confidentDifferent": 39,
+    "confidentDifferentRate": 0.8125,
+    "same_game": false,
+    "same_game_confidence": 0.817,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with a barren brown cobbled plain and overcast sky; Image B is a basketball court with a warm pastel sky",
+        "Character styles differ: A has low-poly golfers with white caps, B has more detailed, stylized basketball players with dreadlocks",
+        "Different environments, props and palettes: A has dark cones and orange embers, B has a palm tree, a blue court and a ball cart"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "A: bright pale-blue sky with a basketball court and many stylized characters",
+        "B: black sky, dark moon-like textured terrain, and a golf/putting theme",
+        "Different character models and lighting: A is cartoonish and evenly lit, B is dark and realistic"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an indoor basketball court with a flat grey backdrop; Image B is an outdoor golf course with a cloudy sky and trees",
+        "Different scenery and palette: dark navy and orange against green grass with muted blue-grey sky",
+        "Characters differ: A has stylized figures with dark hair, B has low-poly golfers in white caps. The two scenes are unrelated."
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a grey sky; Image B is a golf course under a night sky",
+        "Different environments and palettes: dark navy court with orange markings vs green grass and stylized trees",
+        "Characters share a low-poly stylized look, but the scenery and gameplay differ"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an icy cave with a basketball hoop and stretched textures",
+        "Image B is an open brown terrain under a cloudy sky with a low-poly golfer",
+        "different palettes and environments: cold blue vs warm brown"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with players and hoop, Image B is a golf course with trees",
+        "Different settings and palettes: dark gray court with blue paint vs green grass with cloudy sky",
+        "Character models are similar in style, but the scenery and gameplay differ clearly"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Different sports and settings: a golf tee box with green grass versus a blue basketball court on sand",
+        "Different character styles: low-poly golfers in blue shirts versus detailed basketball players with braided hair",
+        "Different lighting and palette: cool overcast sky with dark green trees versus warm pink-beige hazy sky"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night golf scene with stylized low-poly trees and a flat green field",
+        "Image B is an indoor basketball court with blurred depth of field and a gritty realistic palette",
+        "The character models differ: A has smooth golfers in caps, B has a different set of players with ground ring markers"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an outdoor golf course with green turf, pine trees and a golfer character",
+        "Image B is an icy cave interior with stretched blue textures, a basketball hoop and a red/black vehicle",
+        "The two frames share no palette, scenery or art style"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a golf scene with a brown barren plain and an overcast sky; Image B is a basketball court with a flat gray-blue sky",
+        "Character styles differ: A's figures have caps and low-poly bodies, B's have curly hair and ringed markers",
+        "Different palettes and lighting: A is warm and dusty with orange particles, B is cool and clean with a blue court"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: icy cave with stretched textures and a basketball hoop",
+        "Image B: dark lunar terrain with a golfer character under a black sky",
+        "Both have small red objects, but the settings and art style differ"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court at dusk with rain, Image B is a golf course in daylight",
+        "Different scenery and palette: dark navy court with lamps vs bright green fairway with low-poly trees",
+        "Characters are similar stylized humans, but the sport, objects and lighting differ"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an outdoor golf course; Image B is an indoor basketball court",
+        "Image B uses heavy depth-of-field blur and a muted, filmic palette; Image A is a clean, bright, stylized look",
+        "Character models differ: Image A has a blocky low-poly golfer; Image B has more detailed, proportioned players"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night golf course with stylized low-poly trees and a golfer character",
+        "Image B: icy cave with stretched blue textures and a basketball hoop",
+        "Completely different palettes and settings (dark teal night vs pale icy blue)"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an indoor basketball court with a gray void backdrop and dark floor",
+        "Image B is an outdoor golf course with blue sky, green grass and stylized autumn trees",
+        "Character models and lighting differ: A has stylized figures with ground ring markers, B has a more realistic golfer and soft sunlit lighting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark lunar-style scene with a black sky and a realistic golfer",
+        "Image B is a bright basketball court with stylized cartoon characters and a pale gray sky",
+        "The two frames differ in lighting, palette and art style"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dark lunar setting with a black sky, while Image B: bright sunset beach court",
+        "Different character styles: realistic dark-blue golfer vs stylized basketball players with ground rings",
+        "Different sports and art direction: moon-surface golf vs colorful basketball court"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a daytime grey-blue sky, Image B is a night golf course",
+        "Different scenery and props: hoop, ball cart and court lines versus stylized trees and a tee box",
+        "Both use similar stylized human characters with soft lighting, but the settings and gameplay differ"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an indoor basketball court with a blurry depth-of-field background; Image B is an outdoor golf tee with a clear sky",
+        "Different subjects and gameplay: basketball players, hoop and ball cart versus a golfer and stylized trees",
+        "Different lighting and palette: dim, muted greens and grays versus bright saturated greens and autumn colors"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Golf course vs basketball court: different sports and settings",
+        "Stylized low-poly trees and bright daylight vs hazy warm sunset sky with palm tree",
+        "Different character styles: simple golfer figure vs detailed basketball players with orange ground rings"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an indoor basketball court with a flat grey backdrop; Image B is an outdoor golf course with a cloudy sky and pine trees",
+        "The characters share a low-poly look, but the scenes differ in lighting, palette and environment",
+        "Different sports and camera setups, with no shared HUD or UI"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court at dusk with rain, while Image B is a golf course in daylight",
+        "The character models, lighting and palettes differ (dark navy and orange vs. bright green and pale sky)",
+        "The scenery has no overlap: lamps, a tower and hoops vs. snowy pines and a tee box"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Golf course outdoors vs indoor basketball gym",
+        "Different rendering: flat bright daylight vs blurred depth-of-field cinematic look",
+        "Different character models and sports gameplay"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "similar low-poly stylized characters (gray shirts, simple faces)",
+        "similar soft rendering and shadows",
+        "different sports and environments"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports and settings: golf tee on a grass field vs basketball court",
+        "Character models look similar (lowpoly stylized humans with similar proportions and shading)",
+        "Different environments and palettes: bright green with autumn trees vs dark gray court with blue paint"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a basketball court at dusk, Image B is a golf tee at night",
+        "Different palettes: warm peach sky and blue court vs. deep navy sky and teal grass",
+        "Character styles differ somewhat: dreadlocked players with orange ground rings vs. cap-wearing golfers with no rings"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dark lunar-style scene with a black sky and a golfer in a blue cap",
+        "Image B is a bright basketball court at dusk with stylized players and a rain effect",
+        "The two frames differ in character style, palette, lighting and environment, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is an outdoor golf course with stylized autumn trees and a golfer",
+        "B is a blue icy cave with a basketball hoop and stretched textures",
+        "completely different palettes, settings and art styles"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Golf course with pine trees versus basketball court with palm tree",
+        "Different character models and proportions (golfer in white cap vs. braided-hair basketball players with orange ground rings)",
+        "Different lighting and palette (cool blue-sky green fairway vs. warm pinkish haze with tan ground)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a basketball court with a gray sky and dark flat ground; Image B is a golf course with trees and a cloudy sky",
+        "Different scenery and palette: muted gray and blue court vs saturated green fairway",
+        "The character models differ: curly-haired figures with thin limbs vs capped golfers in blue shirts"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark lunar-like golf scene with a black sky",
+        "Image B is a bright indoor basketball court with a blurred depth-of-field background",
+        "The character styles differ: realistic blue-capped golfers vs. stylized low-poly basketball players with ring markers"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A shows a basketball court at dusk with rain, lamps and a blue palette",
+        "Image B shows a golf tee on a bright grass field with stylized autumn trees",
+        "The two use different lighting, scenery and sports themes"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Different settings: open brown golf terrain vs. indoor basketball gym",
+        "Character models differ in style, with the golfer more stylized and the basketball players with detailed faces and hair",
+        "Different post-processing: A has an overcast sky and sparse orange particles, B has heavy depth-of-field blur and a green interior"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an icy cave with heavily stretched, glitchy textures and a basketball hoop",
+        "Image B is an outdoor golf course with low-poly trees, a cloudy sky and humanoid golfers",
+        "Completely different environments, palettes and art styles (blue ice vs green grass)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a dusk, rainy atmosphere and a blurred tree backdrop",
+        "Image B is a golf course at night with stylized round low-poly trees and a deep navy sky",
+        "The character models and lighting differ: A has varied players with colored ring markers, B has golfers on flat green terrain"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both use similar low-poly stylized human characters, but the scenes differ",
+        "A is a rainy basketball court at dusk with lamps and a tower; B is a barren brown golf tee with a cloudy sky",
+        "Different palettes, lighting and camera: A has saturated navy and orange, B has muted brown and gray"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an icy blue cave with a basketball hoop and stretched textures",
+        "Image B is an open brown terrain under an overcast sky with a golfer character",
+        "Different palettes and scene types, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an indoor basketball court with a flat gray backdrop; Image B is an outdoor golf course with a cloudy sky",
+        "Different palettes: dark navy and orange in A, saturated greens and blue-gray in B",
+        "Different character styles and camera setups: small stylized players with ground rings in A, a low-poly golfer with a club in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright daytime golf course with stylized autumn trees; Image B is a dusk basketball court with rain",
+        "Different sports, settings and lighting: flat green grass and clear sky vs dark navy court with ornate lamps",
+        "Different rendering style: simple low-poly look in A vs glossy, reflective, detailed materials in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A shows a golf scene with a barren brown plain and overcast sky",
+        "Image B shows a basketball court with a navy surface, lamps and rain at dusk",
+        "The character models look similar, but the environments, lighting and gameplay differ"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, blurry indoor basketball court with stylized low-poly players",
+        "Image B is a dark lunar-style terrain under a black sky with a golfer and a putter",
+        "Different lighting, palette and setting, and the character styles do not match"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dark lunar-style scene with a black sky and a golfer in a blue cap",
+        "Image B is a bright basketball court at dusk with stylized, cartoonish players",
+        "The two frames differ in lighting, palette, and character style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "different sports: basketball court vs golf course",
+        "different environment and lighting: blurred indoor gym vs flat night field",
+        "similar stylized character models, but that is likely just a shared engine or asset style"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court at dusk with a rainy, blurred background; Image B is a golf course in daylight",
+        "Both show similar stylized low-poly humanoid characters, but the scenery and sport differ",
+        "Different palettes and lighting: dark navy court with lamps versus bright green fairway and cloudy sky"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark lunar-like terrain with black sky and a golfer in a realistic style",
+        "Image B: bright basketball court with grey sky and stylized cartoon characters",
+        "Different art styles, lighting and palettes"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A shows an indoor basketball court with depth-of-field blur, while Image B shows an outdoor golf course",
+        "Character models look similar and low-poly, but the scenes and palettes differ (muted indoor greens and browns vs bright outdoor greens and sky)",
+        "The activities differ (basketball vs golf), and so do the HUD and scenery"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf game on an outdoor green course with pine trees and a sky",
+        "Image B is a basketball court in an indoor gray void with an orange key and hoop",
+        "The character models and art styles differ, with realistic textured trees in A and flat stylized figures in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Different sports and settings: golf tee on grass vs basketball court",
+        "Humanoid character style looks similar (low-poly, slim figures)",
+        "Different palette and sky: bright green and autumn trees vs dark gray court and floating props"
+      ]
+    }
+  ]
+}

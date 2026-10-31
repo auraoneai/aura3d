@@ -1,0 +1,150 @@
+[
+ {
+  "target": "links-shots-title-1280x720",
+  "id": "01-title",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 29.06,
+  "p5": 13,
+  "p50": 24,
+  "p95": 47,
+  "darkFrac": 0.0129,
+  "clipFrac": 0.0003,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 231,
+    "errors": 0
+   },
+   "game": {
+    "mode": "menu",
+    "phase": "menu",
+    "cameraMode": "menu",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": null,
+    "club": null,
+    "ballStatus": null,
+    "toPar": null,
+    "cameraEye": [
+     13.631725331409005,
+     12.75,
+     270.74510771228586
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-title-390x844",
+  "id": "01-title",
+  "hud": true,
+  "w": 390,
+  "h": 844,
+  "mean": 38.33,
+  "p5": 15,
+  "p50": 27,
+  "p95": 129,
+  "darkFrac": 0.0054,
+  "clipFrac": 0.0008,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 182,
+    "errors": 0
+   },
+   "game": {
+    "mode": "menu",
+    "phase": "menu",
+    "cameraMode": "menu",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": null,
+    "club": null,
+    "ballStatus": null,
+    "toPar": null,
+    "cameraEye": [
+     13.99178916213113,
+     12.75,
+     270.6917422391922
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-card-1x",
+  "id": "card-1x",
+  "hud": false,
+  "w": 720,
+  "h": 450,
+  "mean": 108.92,
+  "p5": 58,
+  "p50": 94,
+  "p95": 173,
+  "darkFrac": 0.0001,
+  "clipFrac": 0,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 201,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "address",
+    "cameraMode": "aim",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.9179785387488293,
+     4.149999138428944,
+     -5.285395089054483
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-card-2x",
+  "id": "card-2x",
+  "hud": false,
+  "w": 1440,
+  "h": 900,
+  "mean": 108.79,
+  "p5": 57,
+  "p50": 95,
+  "p95": 173,
+  "darkFrac": 0.0001,
+  "clipFrac": 0,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 201,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "address",
+    "cameraMode": "aim",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.9179785387488293,
+     4.149999138428944,
+     -5.285395089054483
+    ]
+   }
+  }
+ }
+]

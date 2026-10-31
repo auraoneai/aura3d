@@ -1,0 +1,409 @@
+[
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "02-early",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 94.19,
+  "p5": 26,
+  "p50": 87,
+  "p95": 172,
+  "darkFrac": 0.0011,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 201,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "address",
+    "cameraMode": "aim",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.9179785387488293,
+     4.149999138428944,
+     -5.285395089054483
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-01-address",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 94.19,
+  "p5": 26,
+  "p50": 87,
+  "p95": 172,
+  "darkFrac": 0.0011,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 201,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "address",
+    "cameraMode": "aim",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.9179785387488293,
+     4.149999138428944,
+     -5.285395089054483
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-02-power",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 93.46,
+  "p5": 27,
+  "p50": 88,
+  "p95": 164,
+  "darkFrac": 0.001,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 233,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "swing",
+    "cameraMode": "address",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.6811760649035286,
+     4.248415093152558,
+     -4.310089984911974
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-03-accuracy",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 93.8,
+  "p5": 27,
+  "p50": 88,
+  "p95": 164,
+  "darkFrac": 0.001,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 233,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "swing",
+    "cameraMode": "address",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 0,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.677553686681151,
+     4.2499205664921575,
+     -4.295170698335063
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-04-swing-0",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 93.85,
+  "p5": 27,
+  "p50": 88,
+  "p95": 164,
+  "darkFrac": 0.0009,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 233,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "swing",
+    "cameraMode": "address",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": null,
+    "toPar": 0,
+    "cameraEye": [
+     -2.6774229986159748,
+     4.249974880919268,
+     -4.294632440710693
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-05-swing-1",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 93.76,
+  "p5": 27,
+  "p50": 88,
+  "p95": 163,
+  "darkFrac": 0.0009,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 233,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "flight",
+    "cameraMode": "address",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": "flight",
+    "toPar": 0,
+    "cameraEye": [
+     -2.6773655877901237,
+     4.249998741063742,
+     -4.294395985953372
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-06-swing-2",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 66.99,
+  "p5": 20,
+  "p50": 67,
+  "p95": 94,
+  "darkFrac": 0.0021,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 150,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "flight",
+    "cameraMode": "flight",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": "flight",
+    "toPar": 0,
+    "cameraEye": [
+     1.0806630374838155,
+     14.02122990161683,
+     23.471638883177484
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-07-swing-3",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 69.81,
+  "p5": 20,
+  "p50": 70,
+  "p95": 125,
+  "darkFrac": 0.002,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 153,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "flight",
+    "cameraMode": "flight",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": "flight",
+    "toPar": 0,
+    "cameraEye": [
+     2.4445508919593726,
+     15.004437548602787,
+     44.9314947839264
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-08-swing-4",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 71.57,
+  "p5": 22,
+  "p50": 68,
+  "p95": 148,
+  "darkFrac": 0.0015,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 147,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "flight",
+    "cameraMode": "flight",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": "flight",
+    "toPar": 0,
+    "cameraEye": [
+     4.079287959800274,
+     14.145173114849808,
+     65.56866945586226
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-09-swing-5",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 85.24,
+  "p5": 20,
+  "p50": 77,
+  "p95": 161,
+  "darkFrac": 0.0018,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 147,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "flight",
+    "cameraMode": "flight",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "tee",
+    "club": "driver",
+    "ballStatus": "flight",
+    "toPar": 0,
+    "cameraEye": [
+     5.977141809985442,
+     11.45933701546391,
+     85.40500106286564
+    ]
+   }
+  }
+ },
+ {
+  "target": "links-shots-play-1280x720",
+  "id": "03-action-10-route-showcase-aura-links-3d-state-p",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 87.01,
+  "p5": 21,
+  "p50": 74,
+  "p95": 177,
+  "darkFrac": 0.0027,
+  "clipFrac": 0.0001,
+  "info": {
+   "diag": {
+    "renderPath": "hdr-msaa",
+    "drawCalls": 234,
+    "errors": 0
+   },
+   "game": {
+    "mode": "quick",
+    "phase": "address",
+    "cameraMode": "aim",
+    "course": "stAuroras",
+    "hole": 1,
+    "strokes": 1,
+    "lie": "fairway",
+    "club": "iron",
+    "ballStatus": "rest",
+    "toPar": 0,
+    "cameraEye": [
+     13.275936720793759,
+     1.856075058287693,
+     141.94179803915694
+    ]
+   }
+  }
+ }
+]

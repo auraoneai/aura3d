@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "e2bd24859148b6d3d92767760ea50214b24513adb10431b380bc001fd10f099e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8-3/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "03f71df9de18ce170231a059f09b80fc4b666e92680449f03635313e7ce63e0c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8b-2/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "b0dbf5721edf6813a3fcb993cc0736ecb99e67d676c69f9fb67b6cb3479135f1"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r9/aura-links-3d/frames/g10p3-r9-1/aura-links-3d--neonBay--settle-60s.jpg",
+      "sha256": "502605c073cdef5b8651012f5c9a1fceca5b9830895ecef41fc70d26087b04b5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 5,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The key light is flat and mostly ambient. The golfer reads washed out in the daylight frames. Only the night frame has a coherent moonlit mood, and the dusk desert frame gets some warm horizon gradient."
+    },
+    {
+      "category": "shadows",
+      "seen": "Characters cast only soft blob/contact shadows under their feet. The trees cast faint, barely visible ground shadows, and the cart and tee markers have no grounding shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Nothing reflects the environment. The club shaft is a dull grey line, the white cart looks unlit and overexposed, and the turf has no sheen."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The fairway is an endless flat plane meeting a hard horizon. The desert course is a featureless brown plain with scattered cone props. Tree lollipops line the edges, and no crowd, pin, hazards or course shaping are visible beyond one sand strip."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Floating ember/dust motes appear in every frame, and there is mild horizon haze in the first and third shots. Distance fog is weak, so the horizon line stays hard."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass texture tiles visibly in large repeating patches, especially on the desert cobble-like ground. The character cloth is flat-shaded, and the cart is a blown-out white material with no definition."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The golfer and caddie are low-detail rigged humanoids with a rough cap and hands. The trees are stacked spheres. The tee markers are plain red boxes, and the cart is reasonably modeled but untextured."
+    },
+    {
+      "category": "composition",
+      "seen": "The player is jammed into the left edge in frames 2–4 with the caddie cut off at the frame border. The large empty ground plane dominates the frame, and the aim line points at nothing, with no visible target or pin."
+    },
+    {
+      "category": "camera",
+      "seen": "The behind-the-shoulder tee camera is serviceable but placed so the golfer crops at the left. Frame 1 is tighter and better, yet the field of view shows mostly foreground turf."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the aim line and some tone mapping. The highlights on the white cart clip, and there is no vignette or color grading that unifies the day frames."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The address poses look stiff. The arm angles are awkward, with the elbow bent unnaturally away from the club, and the caddie stands in a rigid pose."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and legible, with hole/strokes/score, wind/pin/club/lie, a power meter and a controls hint. The top mode bar crowds the frame, and the HUD is absent in frames 2–4."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
