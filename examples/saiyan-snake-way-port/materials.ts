@@ -140,7 +140,11 @@ export const flatSpec = (color: Rgb, alpha: number): CustomSpec => ({
 
 export const blobSpec = (radius: number, alpha: number): CustomSpec => ({
   glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
-  uniforms: { blobRadius: { type: "f32", value: radius }, blobAlpha: { type: "f32", value: alpha } },
+  uniforms: {
+    blobRadius: { type: "f32", value: radius }, blobAlpha: { type: "f32", value: alpha },
+    /** GU47 phase 3: cast-shadow length (0 = the pre-GU47 round blob), ground direction away from the sun, and shade. */
+    blobCast: { type: "f32", value: 0 }, blobDir: { type: "vec3", value: [0, 0, 1] }, blobShade: { type: "color3", value: [0.16, 0.06, 0.26] }
+  },
   side: "double",
   transparent: true,
   depthWrite: false

@@ -56,7 +56,7 @@ describe("serpentine-sky-run look driver (SSR-01, SSR-02, SSR-05, SSR-06)", () =
     expect(f.env).toBe(0.6);
     expect(f.effects.get("bloom")).toEqual({ intensity: 0.45, threshold: 0.85 });
     expect(f.effects.get("colorGrade")!.temperature).toBe(0.08);
-    expect(f.exposure).toBe(1.1);
+    expect(f.exposure).toBe(1.14); // GU47 phase 3: rose exposure 1.1 -> 1.14
     // GU47 phase 2: the stage is a god-ray stage (flare on) but the volumetric pass stays off (VOLUMETRIC_SHAFTS)
     expect(f.enabled.get("volumetricFog")).toBe(false);
     expect(driver.godRaysOn).toBe(true);
@@ -196,7 +196,7 @@ describe("serpentine-sky-run verge dressing (SSR-11)", () => {
     const runtime = world.bind(app as never);
     runtime.update(createRun(), 1 / 60, 1, 16 / 9);
     expect(counts.get("verge-lanterns")).toBe(VERGE_POSTS);
-    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 4);
+    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 9); // GU47 phase 3: 4 flags + 1 post + 4 cord segments per post
     expect(VERGE_SPACING).toBe(18);
     expect(VERGE_POSTS).toBeGreaterThanOrEqual(12);
   });

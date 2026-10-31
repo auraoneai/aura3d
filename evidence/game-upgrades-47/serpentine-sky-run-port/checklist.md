@@ -24,3 +24,12 @@ Status per row: see `docs/prds/game-upgrades-47/lanes/g17.md`. Pixel, judge and 
 | SSR-18 | capture <= 95 draws with >= 3 instanced batches; textures <= 70 MB; fps not lower | open (phase 2) |
 | SSR-19 | 8 stage targets within budget; `run.mjs --strict` exits 0 | open (phase 2) |
 | SSR-20 | every category >= 7 (panel); darkFrac <= 0.4, clip <= 0.03; dE2000 >= 20 and SSIM <= 0.5 vs the 4 siblings; departures in PORTING-NOTES.md | open (phase 2) |
+
+## Phase 3 (4.7.1) update
+
+- SSR-03: interim stylised cast shadow (sun-aligned, script mode) visible in every sun stage. Engine sun shadow on the custom road still does not show (open, engine).
+- SSR-11: flag lines now have posts and cords (0 new nodes). Capture draws 120 (sun stages) vs the 95 budget: open.
+- SSR-16: HUD judged 6.5-7 (`look-judgement.json`). Final screens retaken (`g17p3-r4-shots`).
+- SSR-02/SSR-05: default and stages 1-2 mean 142-144 (in the 140-170 band). Stage 3 (134.8) and stage 8 (136.3) are below the band, which was not widened. Clip 0 on every view.
+- SSR-20: rubric minimum 4 (ibl_reflections), no category >= 7. Sibling distinctness fails vs ninja-runner-port (0.731) and cloud-runner-port (same_game true at 0.584). Open for 4.7.2. Modeling and material are blocked on WP-36.
+- game-checks: 0 errors, 4 warnings (luma-band only).

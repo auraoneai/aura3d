@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/fix2/serpentine-sky-run-port/frames/g17p2c-serpentine-sky-run-port-1/serpentine-sky-run-port--default--settle-60s.jpg",
+      "sha256": "7cc1e824878879b0490bede8c00292e7046e25ecb2d920ddbbd6bde345b70d74"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/fix2/serpentine-sky-run-port/frames/g17p2c-serpentine-sky-run-port-2/serpentine-sky-run-port--stage4--settle-60s.jpg",
+      "sha256": "f63c7441ae6cf266fa483d513d727c047a22d108ac617164a3fa63a94d751d04"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/fix2/serpentine-sky-run-port/frames/g17p2c-serpentine-sky-run-port-3/serpentine-sky-run-port--stage7--settle-60s.jpg",
+      "sha256": "96b7fd20a861e8b0aa5779766e50b8d9358676df23179c9ff83248a3a1b1b290"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/bp1/serpentine-sky-run-port/frames/g17bp1-serpentine-sky-run-port-8/serpentine-sky-run-port--stage8--settle-60s.jpg",
+      "sha256": "739efc042382ceefce3512ba92cf22fa4035f440c0e662a0369ad348cc2eb8ad"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 6.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Four time-of-day presets (pink dusk, red sunset, blue moonlit night, gold/purple sunset) restyle the whole scene. The character and path read as flat ambient-lit, with little directional modelling from the visible sun or moon. In the red preset everything is washed in one hue, which crushes value separation."
+    },
+    {
+      "category": "shadows",
+      "seen": "No cast shadow from the character or the lamp posts is visible on the path. There is only a soft purple blob/glow under the character's feet. The floating islands cast no shadows on the cloud sea."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The path tiles and the teal pipe/rail show no environment reflections or specular response to the sky. The character's armor looks matte with no sky tint, and the materials do not pick up the dramatic sky color."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The serpentine brick road runs over a cloud sea, with floating rock islands topped by bonsai-like trees, lanterns, and a winding pipe rail. The concept is cohesive and whimsical. However, the islands repeat one asset, the cloud floor is a flat noisy texture with dark blotches, and the horizon is empty."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Sky gradients, sun/moon bloom halos and stars are present, and distance haze fades the far road nicely. The cloud plane's dark blotchy patches look like a noise texture rather than volumetric clouds."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The road is a flat tiled texture with dark grout lines and no roughness or normal variation. The rail has a toon-gradient look. Tile scale stretches visibly in the foreground."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The character is a reasonably detailed rigged humanoid with a hair bun, wraps and a whip. The lamp posts and islands are decent but sparse. The road edge geometry is chunky and low-poly at its curved bevel."
+    },
+    {
+      "category": "composition",
+      "seen": "The road's leading lines draw the eye to the vanishing point, and the islands balance the upper right. However, the character is dead center and blocks the path ahead. No coin or gold accents are visible, and the subject occupies about 10–12% of the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase cam directly behind the character, not the side-on follow the recipe expects. Depth reads well, but the character occludes upcoming terrain."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun/moon and lanterns works. There is no apparent tone-mapped contrast curve: the red preset is a near-monochrome overlay, and the pink preset looks milky and low contrast."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The character's pose is a near-identical run/stand across frames, with the whip held at the side. Little motion is inferable from these frames."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No score, coin counter, lives or progress HUD is visible. The only text is a tiny unreadable label/sign at the far end of the road."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}
