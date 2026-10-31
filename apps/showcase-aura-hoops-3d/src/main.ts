@@ -68,6 +68,7 @@ import {
   courtRibNodes,
   lightningFlash,
   courtReflectionNodes,
+  courtBackdropNodes,
   COURT_FLOOR_FINISH
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
@@ -809,7 +810,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   // Skyline ring — tall silhouettes behind play, per-venue density/tint
-  if (v.id === "rucker" || v.id === "shanghai" || v.id === "athens") {
+  // GU47 phase 4: on the new look Rucker and Athens stand inside a ring of walk-up blocks (courtBackdropNodes); the
+  // skyline GLB (never visible in a capture) would sit inside it, so only Shanghai and ?look=original keep it.
+  if (!LOOK_ORIGINAL) nodes.push(...courtBackdropNodes(COURT_RIGS[v.id]));
+  if (v.id === "shanghai" || (LOOK_ORIGINAL && (v.id === "rucker" || v.id === "athens"))) {
     nodes.push(
       model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: 26, scaleMode: "fit", castShadow: false, receiveShadow: false })
         .position(0, -0.5, -56)
