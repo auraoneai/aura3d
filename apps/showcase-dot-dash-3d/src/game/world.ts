@@ -15,7 +15,7 @@ import type { FruitKind } from "./grid.js";
 import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
-  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, LAMP, LENS, LOOK_HDRI, MACRO_DOF,
+  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, LAMP, LAMP_HAZE, LENS, LOOK_HDRI, MACRO_DOF,
   LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
@@ -273,6 +273,9 @@ export function buildScene(): unknown {
     .add(effects.depthOfField({ name: "macro dof", focusDistance: BASE_FOCUS_DISTANCE, fStop: MACRO_DOF.fStop, focalLength: MACRO_DOF.focalLength, maxBlur: MACRO_DOF.maxBlur }))
     // DD47-E2: the dark room past the bench, warm and thin.
     .add(effects.fog({ color: look.fog.color, density: look.fog.density }))
+    // Phase 3 (4.7.1): lamp haze, a thin volumetric inscatter lit from the lamp plus a faint cone along its axis.
+    .add(effects.volumetricFog({ name: "lamp haze", ...LAMP_HAZE.fog, color: LAMP_HAZE.fog.color, lightPosition: [...LAMP.position], heightReference: 0 } as unknown as Parameters<typeof effects.volumetricFog>[0]))
+    .add(effects.lightCone({ name: "lamp cone", position: [...LAMP.position], direction: lampAxis(), color: LAMP_HAZE.cone.color, intensity: LAMP_HAZE.cone.intensity, length: LAMP_HAZE.cone.length, coneAngle: LAMP.angle * 0.7, softness: LAMP_HAZE.cone.softness } as Parameters<typeof effects.lightCone>[0]))
     // DD47-E1: the workshop HDRI fills and reflects at 0.35 and is never drawn (the bench is the surround); a box
     // probe over the board gives the glossy mask and the pins a parallax-correct reflection. No look preset: a look
     // always adds a shadowed directional key (a second caster next to the lamp). GU47(E-A): looks.preset
@@ -319,13 +322,14 @@ export function buildScene(): unknown {
   const traceLitMat = glowing(1.8, 0.3);
 
   // Courier: a bright cyan-white core inside a faceted glass shell and a spinning copper-lit ring.
-  const coreMat = material.emissive({ color: "#bffcff", emissive: "#6ff2ff", emissiveIntensity: 1.6 });
+  const coreMat = material.emissive({ color: "#bffcff", emissive: "#6ff2ff", emissiveIntensity: 2.2 });
   const shellMat = material.pbr({ color: "#ffffff", emissive: "#2fb8c8", emissiveIntensity: 0.1, roughness: 0.12, metalness: 0.2, clearcoat: 1, opacity: 0.72 });
   const haloMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 0.9, roughness: 0.3, metalness: 0.3, practical: true });
   // Sentries: one distinct silhouette each; per-instance colour carries identity and the surge state; a cool rim keeps
   // them readable in the lamp's shadow side without glowing.
   const sentryMat = material.pbr({ color: "#ffffff", roughness: 0.32, metalness: 0.35, rim: { color: "#cfe3ff", power: 2.6, intensity: 0.7 } });
-  const gemMat = glowing(0.45, 0.15);
+  // Phase 3 (4.7.1): the gems are cut glass under a clearcoat so the workshop IBL and the probe catch their facets.
+  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.4, roughness: 0.08, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
 
   s.addMany([
     // DD47-E2: walnut bench top and the anti-static mat under the board reach past every camera edge.
@@ -380,7 +384,8 @@ export function buildScene(): unknown {
   const holes = BENCH.board.size[0] / 2 - 1, holesZ = BENCH.board.size[2] / 2 - 1;
   s.addMany([
     text3D("GLINT COURIER  REV 4.7", { name: "silk title", size: 0.42, depth: 0.004, letterSpacing: 0.08, backend: "sdf", material: silk })
-      .position(-4.6, 0.004, 11.7).rotate(-Math.PI / 2, 0, 0),
+      // Phase 3 (4.7.1): on the far margin beside the refs; at the near edge (z 11.7) the camera cropped it on every board.
+      .position(2.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
     text3D("U1  J2  C14  R7", { name: "silk refs", size: 0.3, depth: 0.004, letterSpacing: 0.1, backend: "sdf", material: silk })
       .position(-15.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
     instances.torus({
@@ -393,6 +398,13 @@ export function buildScene(): unknown {
     })
   ]);
   return s.toJSON();
+}
+
+/** Unit vector from the desk lamp to its target (the lamp-haze cone axis). */
+function lampAxis(): [number, number, number] {
+  const d = [LAMP.target[0] - LAMP.position[0], LAMP.target[1] - LAMP.position[1], LAMP.target[2] - LAMP.position[2]] as const;
+  const l = Math.hypot(d[0], d[1], d[2]) || 1;
+  return [d[0] / l, d[1] / l, d[2] / l];
 }
 
 /** Per-board grade over the lens stack (DD47-P3); the LUT joins once the six .cube files are admitted. */

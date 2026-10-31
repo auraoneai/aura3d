@@ -69,13 +69,15 @@ export function boardLook(def: MazeDef): BoardLook {
 
 export interface Pylon { readonly x: number; readonly z: number; readonly h: number; readonly w: number; readonly cap: boolean }
 
+// Phase 3 (4.7.1): every theme's stubs are low (<= 1.4 tall); the tall grid, foundry and reactor stubs threw long
+// black blobs across the bench margin and read as floating debris (rubric: shadows, composition).
 const THEME_PYLONS: Record<MazeDef["theme"], { count: number; hMin: number; hRange: number; w: number }> = {
-  grid: { count: 18, hMin: 0.65, hRange: 1.9, w: 0.55 },
+  grid: { count: 18, hMin: 0.35, hRange: 0.85, w: 0.55 },
   spiral: { count: 18, hMin: 0.3, hRange: 0.7, w: 0.45 },
   towers: { count: 16, hMin: 0.35, hRange: 0.8, w: 0.5 },
   garden: { count: 24, hMin: 0.35, hRange: 0.9, w: 0.45 },
-  foundry: { count: 16, hMin: 0.8, hRange: 1.6, w: 0.85 },
-  reactor: { count: 18, hMin: 0.9, hRange: 2.2, w: 0.4 }
+  foundry: { count: 16, hMin: 0.4, hRange: 0.8, w: 0.7 },
+  reactor: { count: 18, hMin: 0.4, hRange: 1.0, w: 0.4 }
 };
 
 function hashId(id: string): number {
@@ -95,7 +97,7 @@ export function pylonLayout(id: string, theme: MazeDef["theme"]): readonly Pylon
       const r1 = Math.abs(Math.sin(c * 37.3 + 19)) % 1;
       const r2 = Math.abs(Math.sin(c * 91.7 + 21)) % 1;
       const side = c % 2 === 0 ? -1 : 1;
-      out.push({ x: side * (12.6 + r1 * 3.5), z: -9.5 + r2 * 19, h: 0.65 + r1 * 1.9, w: 0.55, cap: r2 < 0.65 });
+      out.push({ x: side * (12.6 + r1 * 3.5), z: -9.5 + r2 * 19, h: 0.35 + r1 * 0.85, w: 0.55, cap: r2 < 0.65 });
     }
     return out;
   }

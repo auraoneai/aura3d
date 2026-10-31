@@ -13,8 +13,10 @@ export const LAMP = {
   position: [-13, 19, 9] as const,
   target: [-1.5, 0, -0.5] as const,
   /** Half-angle in radians: the cone covers the board and falls off past its right third. */
-  angle: 0.66,
-  penumbra: 0.62,
+  angle: 0.8,
+  /** Phase 3 (4.7.1): a wider, softer cone (was 0.66 / 0.62) so the lamp's falloff reaches the far bench and the
+   * top of the frame reads as lit walnut instead of a void (rubric: environment, lighting). */
+  penumbra: 0.78,
   /** Range window (world units); the lamp is ~24 units from the board centre, so the default 12 would cut it off. */
   distance: 90,
   decay: 2
@@ -43,7 +45,7 @@ export const BENCH = {
  * Unshadowed; the engine caps punctual lights per tier.
  */
 export const PRACTICALS = {
-  courier: { color: "#5ff3ff", intensity: 3.2, distance: 4.5, decay: 2, height: 1.1 },
+  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.1 },
   surge: { color: "#ffb23e", intensity: 2.4, distance: 3.6, decay: 2, height: 0.9 },
   sentry: { color: "#8fa6b8", intensity: 1.6, distance: 3.2, decay: 2, height: 1.2 },
   pooled: 4
@@ -54,10 +56,20 @@ export const BOARD_PROBE = {
   position: [0, 2.5, 0] as const,
   box: { min: [-17.5, -0.5, -13.5] as const, max: [17.5, 6, 13.5] as const },
   resolution: 128 as const,
-  intensity: 0.8
+  intensity: 1
 } as const;
 
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
+/**
+ * Phase 3 (4.7.1) lamp haze: a thin height-bound volumetric inscatter lit from the lamp and a faint cone mesh along the
+ * lamp axis, so the warm cone reads in the air above the board (rubric: atmosphere). Both stay low so the board
+ * and the HUD read through them.
+ */
+export const LAMP_HAZE = {
+  fog: { density: 0.004, color: "#5a4632", intensity: 0.28, heightFalloff: 0.18, godRayDensity: 0.32 },
+  cone: { color: "#ffd9a8", intensity: 0.07, length: 23, softness: 0.85 }
+} as const;
+
 export const MACRO_DOF = { fStop: 2, focalLength: 85, maxBlur: 6 } as const;
 /** Camera-to-board-centre distance of the base rig ([0, 17.2, 13.8] -> origin), before the aspect pull-back. */
 export const BASE_FOCUS_DISTANCE = Math.hypot(17.2, 13.8);
@@ -72,7 +84,7 @@ export const LUT_INTENSITY = 0.8;
 /** Lens stack (DD47-P2), shared by every board; per-board grade terms live in the rows. */
 export const LENS = {
   bloom: { intensity: 0.55, threshold: 0.92, radius: 0.42 },
-  vignette: { intensity: 0.32, smoothness: 0.6 },
+  vignette: { intensity: 0.2, smoothness: 0.7 },
   chromaticAberration: 0.0012,
   grain: 0.02,
   toneMapping: "aces" as const
@@ -112,7 +124,7 @@ const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> 
   return {
     ...rest,
     timeOfDay: "late night",
-    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.35, rotationDeg: 205 },
+    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.45, rotationDeg: 205 },
     fog: { color: ROOM_FOG, density: fogDensity ?? 0.006 },
     background: ROOM_FOG
   };
@@ -175,8 +187,8 @@ export const BOARD_PARTS = {
   /** Gull-wing pins along every corridor face (DD47-M2). */
   pin: { color: "#c9ced6", roughness: 0.22, metalness: 1 },
   /** Walnut bench and anti-static mat (DD47-E2). */
-  walnut: { color: "#5a3a26", roughness: 0.62 },
-  mat: { color: "#2b3a44", roughness: 0.86 },
+  walnut: { color: "#7a4c2e", roughness: 0.55 },
+  mat: { color: "#34495a", roughness: 0.8 },
   /** Surge cells are capacitor cans with glowing vents (DD47-M3). */
   can: { color: "#2b2d33", roughness: 0.3, metalness: 0.8 },
   vent: "#ffb23e"

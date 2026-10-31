@@ -62,13 +62,13 @@ describe("dot-dash-3d lighting: desk-lamp key (DD47-L1) and workshop IBL (DD47-E
     expect(b!).toBeGreaterThan(r!);
   });
 
-  it("fills with the indoor-workshop catalogue HDRI at 0.35 without drawing it, plus one box probe", () => {
+  it("fills with the indoor-workshop catalogue HDRI at 0.45 without drawing it, plus one box probe", () => {
     const nodes = sceneNodes();
     const env = nodes.filter((n) => n.kind === "environment");
     expect(env).toHaveLength(1);
     expect(env[0]!.environment).toBe("hdri");
     expect(env[0]!.texture?.url).toBe(LOOK_HDRI.url);
-    expect(env[0]!.intensity).toBe(0.35);
+    expect(env[0]!.intensity).toBe(0.45);
     expect(env[0]!.background).toBe(false);
     expect(nodes.filter((n) => n.kind === "probe" && n.probe === "reflection")).toHaveLength(1);
   });
