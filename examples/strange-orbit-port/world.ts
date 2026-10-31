@@ -293,7 +293,8 @@ export function buildWorld(options: WorldOptions): World {
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
   builder.add(geometry.custom(dynamicFrom(course.track, true), { name: "track", material: trackMaterial() }).runtime({ id: "track" }));
-  builder.add(geometry.custom(dynamicFrom(course.rails, false), { name: "rails", material: solidMaterial(hexLinear("#e5e4b9"), hexLinear("#9ebdae"), 0.22) }));
+  // GU47 phase 3 (distinctness: "teal glowing track edges" read as Thermal Drift): gouache rails glow chalk-amber.
+  builder.add(geometry.custom(dynamicFrom(course.rails, false), { name: "rails", material: solidMaterial(hexLinear("#e5e4b9"), hexLinear(look === "gouache" ? "#ecb75f" : "#9ebdae"), 0.22) }));
   builder.add(geometry.custom(dynamicFrom(buildIslands(), true), { name: "islands", material: mineralMaterial(hexLinear("#b9c5e1"), true) }));
   builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }).runtime({ id: "ramps" }));
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
@@ -436,11 +437,13 @@ export function buildWorld(options: WorldOptions): World {
       receiveShadow: false,
       material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
     }));
-    builder.add(instances.cone({
+    // GU47 phase 3 (distinctness vs Thermal Drift: "spiky crystal cones"): the spires are eroded terracotta hoodoos
+    // (truncated 7-sided columns, warm umber/ochre), not crystal spikes; still one instanced draw.
+    builder.add(instances.cylinder({
       name: "rim-spires",
-      params: { radius: 0.5, height: 1, radialSegments: 5 },
+      params: { radiusTop: 0.24, radiusBottom: 0.5, radialSegments: 7 },
       transforms: scatter.spires.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
-      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#6f5a74" : "#9a6650")),
+      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#7a4f3e" : i % 3 === 1 ? "#b06e4e" : "#c9925f")),
       castShadow: false,
       receiveShadow: false,
       material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
