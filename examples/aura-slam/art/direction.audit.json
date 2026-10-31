@@ -222,7 +222,7 @@
       },
       {
         "node": "serve-aim-ring",
-        "emissiveIntensity": 0.75,
+        "emissiveIntensity": 0.9,
         "practical": true
       },
       {

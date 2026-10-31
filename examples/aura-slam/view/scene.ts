@@ -337,8 +337,10 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     primitives
       .torus({
         name: "serve-aim-ring",
-        size: [0.44, 0.44, 0.05],
-        material: material.emissive({ color: "#f4f8df", emissive: "#f4f8df", emissiveIntensity: 0.75 })
+        // Owner feedback 2026-10-31: the pale cream ring vanished on the lime service-box highlight. A thicker hot-red
+        // ring reads against the lime box and the blue, green, clay and sand courts alike.
+        size: [0.5, 0.5, 0.09],
+        material: material.emissive({ color: "#ff2a5f", emissive: "#ff2a5f", emissiveIntensity: 0.9 })
       })
       .rotate(Math.PI * 0.5, 0, 0)
       .scale(HIDDEN_SCALE)
