@@ -567,7 +567,7 @@ export function buildWorld(options: WorldOptions): World {
       const tint = look === "gouache"
         ? [{
           ...(i === 0 ? { clearcoat: 1, clearcoatRoughness: 0.12 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
-          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.5 : 0.35 }
+          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
       builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
@@ -997,9 +997,10 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       // GU47 phase 3: portrait stands further back and wider (at 390x844 the 7 m / fov 50 orbit filled the screen with
       // a cropped wheel behind the results card).
       const portrait = aspect < 0.85;
-      const r = portrait ? 12 : 7;
-      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * r).addScaledVector(cs, Math.sin(a) * r).addScaledVector(cu, portrait ? 3.4 : 2.4);
-      look = origin.clone().addScaledVector(cu, portrait ? 0.3 : 0.9);
+      // The results card sits mid-screen, so the aim point rides above the bike and the bike lands in the lower third.
+      const r = portrait ? 12 : 7.5;
+      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * r).addScaledVector(cs, Math.sin(a) * r).addScaledVector(cu, portrait ? 3.4 : 1.8);
+      look = origin.clone().addScaledVector(cu, portrait ? 4.2 : 2.6);
       fov = portrait ? 64 : 50;
     } else {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
