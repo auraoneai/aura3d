@@ -23,12 +23,18 @@ export const VENUE_SURFACE: Readonly<Record<string, SurfaceKind>> = { hard: "acr
 /** TT-M1: line paint. */
 export const LINE_COLOR = "#fbfbf5";
 
+/**
+ * The surface's tangent-space grain normal. Phase 2: only `fabric-normal` is a normal map; `plastic-micro-scratch` and
+ * `rubber-roughness` are grayscale roughness fields (rendering/ProceduralMaterialTextures.ts KIND_SLOT), and bound as a
+ * normal they tilted the acrylic and regolith courts away from the sun (black speckle on acrylic, a black Moon court).
+ * Every family now takes a fine fabric-normal grain (at the broadcast distance a roughness field would not read).
+ */
 const grain = (kind: SurfaceKind) => {
   switch (kind) {
-    case "acrylic": return material.proceduralTexture("plastic-micro-scratch", { scale: 36, strength: 0.18, contrast: 0.5 });
+    case "acrylic": return material.proceduralTexture("fabric-normal", { scale: 120, strength: 0.08, contrast: 0.5 });
     case "turf": return material.proceduralTexture("fabric-normal", { scale: 72, strength: 0.32, contrast: 0.6 });
     case "clay": return material.proceduralTexture("fabric-normal", { scale: 96, strength: 0.2, contrast: 0.55 });
-    case "regolith": return material.proceduralTexture("rubber-roughness", { scale: 48, strength: 0.12, contrast: 0.5 });
+    case "regolith": return material.proceduralTexture("fabric-normal", { scale: 64, strength: 0.14, contrast: 0.55 });
   }
 };
 
@@ -61,9 +67,16 @@ const hexLinear = (hex: string): [number, number, number] => {
 /** Mow-stripe colours (the 4.6.1 stripe boxes' two greens). */
 export const STRIPE_COLORS = ["#53945a", "#46804d"] as const;
 export const GRASS_STRIPES_ID = "grass-stripes";
+/** Phase 2: the darker half of the mow stripes (see buildGrassStripesNodes). */
+export const GRASS_STRIPES_ALT_ID = "grass-stripes-alt";
+/** Both stripe node ids, in STRIPE_COLORS order. */
+export const GRASS_STRIPE_NODE_IDS = [GRASS_STRIPES_ID, GRASS_STRIPES_ALT_ID] as const;
 
-/** TT-M1: the 8 mow stripes as one vertex-coloured mesh (top faces only, just above the court). */
-export function grassStripesGeometry(): AuraCustomGeometrySpec {
+/**
+ * TT-M1: the 8 mow stripes as quads (top faces only, just above the court and below the line tops). `parity` keeps only
+ * the stripes of one colour (0: STRIPE_COLORS[0], 1: STRIPE_COLORS[1]); omitted, all 8.
+ */
+export function grassStripesGeometry(parity?: 0 | 1): AuraCustomGeometrySpec {
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
@@ -72,6 +85,7 @@ export function grassStripesGeometry(): AuraCustomGeometrySpec {
   const depth = (BASELINE_Z * 2) / 8 - 0.02;
   const y = 0.0105;
   for (let i = 0; i < 8; i++) {
+    if (parity !== undefined && i % 2 !== parity) continue;
     const zc = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
     const [r, g, b] = hexLinear(STRIPE_COLORS[i % 2]!);
     const base = positions.length / 3;
@@ -85,15 +99,21 @@ export function grassStripesGeometry(): AuraCustomGeometrySpec {
   return { kind: "aura-custom-geometry", positions, normals, colors, indices } as unknown as AuraCustomGeometrySpec;
 }
 
-/** The stripes node (hidden until the grass venue shows it). */
-export function buildGrassStripesNode(): NodeInput {
-  return geometry
-    .custom(grassStripesGeometry(), {
-      name: GRASS_STRIPES_ID,
-      material: material.pbr({ color: "#ffffff", roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain("turf") }),
-      castShadow: false
-    })
-    .runtime(game.runtimeNode(GRASS_STRIPES_ID)) as unknown as NodeInput;
+/**
+ * The stripe nodes (hidden until the grass venue shows them). Phase 2: two meshes, one per stripe colour, each coloured by
+ * its material: the engine's mesh shading ignores vertex colours, so the single vertex-coloured mesh drew as a white slab
+ * over the turf that hid the court lines (London frame). 2 draws instead of 1.
+ */
+export function buildGrassStripesNodes(): NodeInput[] {
+  return GRASS_STRIPE_NODE_IDS.map((id, parity) =>
+    geometry
+      .custom(grassStripesGeometry(parity as 0 | 1), {
+        name: id,
+        material: material.pbr({ color: STRIPE_COLORS[parity]!, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain("turf") }),
+        castShadow: false
+      })
+      .runtime(game.runtimeNode(id)) as unknown as NodeInput
+  );
 }
 
 /** TT-M2: the felt ball (sheen #f2ff7a; a 0.1 self-glow keeps it readable at the broadcast distance without counting as fill). */

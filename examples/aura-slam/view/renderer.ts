@@ -21,7 +21,7 @@ import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { GRASS_STRIPES_ID, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+import { GRASS_STRIPE_NODE_IDS, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
@@ -363,7 +363,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.umpireHead = req("umpire-head");
       h.faultLeft = req("net-fault-left");
       h.faultRight = req("net-fault-right");
-      grassStripes = worldTour ? [req(GRASS_STRIPES_ID)] : Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
+      grassStripes = worldTour ? GRASS_STRIPE_NODE_IDS.map((id) => req(id)) : Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
       spectators = req(crowd ? crowd.bodies.nodeIds[0]! : "spectators");
       if (crowd) spectatorHeads = req(crowd.heads.nodeIds[0]!);
       particles = req("hit-particles");
