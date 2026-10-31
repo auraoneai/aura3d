@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAYLIGHT_EASE_SECONDS, DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, parseFoundParam, resolveLook, srgbToLinear, sunDirection } from "../../../examples/where-the-wind-wanders-port/daylight";
+import { DAYLIGHT_EASE_SECONDS, DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, parseFoundParam, resolveLook, srgbToLinear, GU47_DEFAULT_VIEWS, isDuskKey, lookPostFor, DAY_POST, DUSK_POST, sunDirection } from "../../../examples/where-the-wind-wanders-port/daylight";
 
 const deg = (rad: number): number => (rad * 180) / Math.PI;
 
@@ -96,13 +96,35 @@ describe("where-the-wind-wanders-port daylight (WW47-L1)", () => {
   });
 });
 
-describe("resolveLook (GU47 blind-panel fallback)", () => {
-  it("boots the 4.6 look for the daylight beats and keeps GU47 for bell and epilogue pins", () => {
-    expect(resolveLook(null, null)).toBe("original");
-    for (const k of [0, 1, 2, 3]) expect(resolveLook(null, k)).toBe("original");
-    expect(resolveLook(null, 4)).toBe("gu47");
-    expect(resolveLook(null, 5)).toBe("gu47");
-    expect(resolveLook("gu47", null)).toBe("gu47");
-    expect(resolveLook("original", 5)).toBe("original");
+describe("resolveLook (GU47 phase 3: per-view default from the blind panel)", () => {
+  it("boots the GU47 look for every panel-approved view, the 4.6 look otherwise; ?look= switches win both ways", () => {
+    for (const k of [0, 1, 2, 3, 4, 5]) expect(resolveLook(null, k)).toBe(GU47_DEFAULT_VIEWS.has(k) ? "gu47" : "original");
+    expect(resolveLook(null, null)).toBe(GU47_DEFAULT_VIEWS.has(0) ? "gu47" : "original");
+    expect(GU47_DEFAULT_VIEWS.has(4) && GU47_DEFAULT_VIEWS.has(5)).toBe(true); // bell and epilogue won in phase 2
+    for (const k of [null, 0, 3, 5]) {
+      expect(resolveLook("gu47", k)).toBe("gu47");
+      expect(resolveLook("original", k)).toBe("original");
+    }
+  });
+});
+
+describe("GU47 phase 3 daylight", () => {
+  it("the daytime skies are clear blues (no grey or beige overcast) and the dusk keys keep their palette", () => {
+    for (const id of ["found0", "found1", "found2", "found3"]) {
+      const k = DAYLIGHT_KEYS.find((d) => d.id === id)!;
+      const mid = srgbToLinear(k.skyMid), zen = srgbToLinear(k.skyZenith);
+      expect(mid[2]).toBeGreaterThan(mid[0] * 1.6);
+      expect(zen[2]).toBeGreaterThan(zen[0] * 3);
+      expect(k.fogDensity).toBeLessThanOrEqual(0.003);
+    }
+  });
+
+  it("daylight gets the clean post, dusk and night the gouache post", () => {
+    expect(isDuskKey(3)).toBe(false);
+    expect(isDuskKey(4)).toBe(true);
+    expect(lookPostFor(0)).toBe(DAY_POST);
+    expect(lookPostFor(5)).toBe(DUSK_POST);
+    expect(DAY_POST.bloom.threshold).toBeGreaterThan(DUSK_POST.bloom.threshold);
+    expect(DUSK_POST.grade).toEqual({ contrast: 1.1, saturation: 1.14, exposure: 1.05 });
   });
 });

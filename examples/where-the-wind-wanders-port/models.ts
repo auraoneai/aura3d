@@ -46,7 +46,7 @@ export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
   letter: [{ roughness: 0.62, metallic: 0, rim: { color: "#fff0d8", power: 2.5, intensity: 0.35 } }],
   boat: [{ roughness: 0.9, metallic: 0, envMapIntensity: 0.75 }],
   stones: [{ roughness: 0.96, metallic: 0, envMapIntensity: 0.6 }],
-  hero: [{ roughness: 0.85, rim: { color: "#ffd9b0", power: 3, intensity: 0.4 } }]
+  hero: [{ roughness: 0.85, rim: { color: "#ffe6c4", power: 2.6, intensity: 0.65 } }]
 };
 
 export function availableModels(): ModelSet {
