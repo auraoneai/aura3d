@@ -93,7 +93,7 @@ export const PHASES: readonly PhaseRow[] = [
     at: 10,
     timeOfDay: "golden hour just after summer rain, sun 14 deg",
     sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
-    key: { azimuthDeg: KEY_AZ, elevationDeg: 15, color: "#ffc27a", intensity: 4.4 },
+    key: { azimuthDeg: KEY_AZ, elevationDeg: 15, color: "#ffb766", intensity: 5.2 },
     hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
     environmentIntensity: 1.0,
     // blind-panel fix pass: thinner warm haze, stronger contrast, saturation and warmth, softer bloom, no grain

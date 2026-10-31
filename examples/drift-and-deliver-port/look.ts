@@ -285,6 +285,14 @@ export interface LookOptions {
   row?: PhaseRow;
 }
 
+/**
+ * GU47 phase 3: the venice_sunset fill is cooled toward sky blue so the shade sides of the streets read cool against
+ * the warm key (golden-hour colour contrast instead of one warm, low-contrast cast), and the wet road reflects it at
+ * 0.5 (1.2 smeared the warm sky over the asphalt).
+ */
+export const SHIFT_ENV_TINT = "#c2d2f0";
+export const SHIFT_ROAD_ENV = 0.5;
+
 /** GU47 WP-28 GC-L2: the shift look's key shadow per tier (High: 3 cascades over 220 m, PCSS; Low: 1 cascade, PCF). */
 export function shiftShadow(quality: "high" | "low") {
   return quality === "high"
@@ -339,7 +347,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   if (frame && row) {
     // GU47 WP-28 (GC-L1/L2/L6/S1/S3/P1): venice_sunset IBL (no tint), one shadowed key driven per frame, no
     // hemisphere (the IBL is the fill; C-35 keeps the practical slots for the sodium pool and the headlight)
-    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.veniceHdr, intensity: row.environmentIntensity, background: false, rotation: environmentRotationFor(row.sun.azimuthDeg) }));
+    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.veniceHdr, intensity: row.environmentIntensity, background: false, rotation: environmentRotationFor(row.sun.azimuthDeg), color: SHIFT_ENV_TINT }));
     const neutral = neutralFillIntensity(opts.env, opts.neutral);
     if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
     const toKey = lightDir(row.key);
@@ -391,7 +399,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // ---- ground, roads, parks, water ----
   // GC-M1: wet road in the shift look (darkened asphalt baked in the tile, puddles at roughness 0.04)
   const roadMat = tex.roadRoughness
-    ? material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, texture: asRef(tex.road), roughnessMap: asRef(tex.roadRoughness), envMapIntensity: 1.2, textureAnisotropy: 8 })
+    ? material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, texture: asRef(tex.road), roughnessMap: asRef(tex.roadRoughness), envMapIntensity: SHIFT_ROAD_ENV, textureAnisotropy: 8 })
     : material.pbr({ color: "#ffffff", roughness: 0.88, texture: asRef(tex.road), textureAnisotropy: 8 });
   b.add(geometry.custom(geo(roadPlane(opts.roadCells), "road"), { name: "road-tiles", material: roadMat, castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "park", 21.5), "parks"), { name: "parks", material: material.pbr({ color: "#ffffff", roughness: 0.95, texture: asRef(tex.park) }), castShadow: false, receiveShadow: true }));

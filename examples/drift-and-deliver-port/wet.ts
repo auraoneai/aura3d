@@ -17,7 +17,8 @@ export interface WetCtx {
 }
 
 /** Roughness values (0..1) the map encodes. */
-export const WET = { asphalt: 0.42, puddle: 0.04, pavement: 0.85, block: 0.8 } as const;
+/** GU47 phase 3: damp asphalt 0.62 (0.42 mirrored the warm sky into a pink-brown sheen the panel read as muddy haze). */
+export const WET = { asphalt: 0.62, puddle: 0.04, pavement: 0.85, block: 0.8 } as const;
 
 const grey = (v: number): string => {
   const b = Math.round(Math.max(0, Math.min(1, v)) * 255);
