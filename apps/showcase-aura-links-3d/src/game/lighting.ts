@@ -214,7 +214,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     background: "#d7b48c",
     fog: { color: "#d9b48a", mode: "exp2", density: 0.0034, maxOpacity: 0.4 },
     godRays: null,
-    grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0 },
+    // GU47 phase 3: the 4.7.0 frame read as a cool noon; warmer late-afternoon grade
+    grade: { contrast: 1.08, saturation: 1.14, temperature: 0.3, tint: 0.02 },
     bloom: { intensity: 0.36, threshold: 0.74, scatter: 0.62 },
     vignette: { intensity: 0.14, color: "#1d1208" },
     grain: { intensity: 0.045, size: 1.4 },

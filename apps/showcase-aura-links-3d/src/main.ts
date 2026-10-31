@@ -311,9 +311,19 @@ function buildConiferNodes(
   const lowColors: string[] = [];
   const midColors: string[] = [];
   const topColors: string[] = [];
-  const tones = theme === "dunes"
-    ? ["#4f7549", "#5a7f4e", "#446742"]
-    : ["#336b3d", "#3b7442", "#2b5f36"];
+  // GU47 phase 3 (until the WP-36 maple/marram/palm models land): each course paints its own canopy, Maple Hollow in
+  // autumn reds, oranges and golds, the dunes a wind-dark sea green, the harbour a deep teal; tiers shade dark to light
+  // so the stacks read as lit volumes. `?look=original` keeps the 4.6.2 greens.
+  const tones = turfOn && theme === "parkland"
+    ? ["#b8452c", "#d0702a", "#c9962e", "#8f3a22", "#5f7a3a"]
+    : turfOn && theme === "dunes"
+      ? ["#3f6450", "#4a6f55", "#36584a"]
+      : turfOn && theme === "nightCity"
+        ? ["#1e5a50", "#24685a", "#174a44"]
+        : theme === "dunes"
+          ? ["#4f7549", "#5a7f4e", "#446742"]
+          : ["#336b3d", "#3b7442", "#2b5f36"];
+  const tier = (tone: string, k: number) => (turfOn ? shade(tone, k) : tone);
   trees.forEach((tr, i) => {
     const s = tr.h / 6.2;
     const y = terrain.height(tr.x, tr.z) - 0.12;
@@ -322,9 +332,9 @@ function buildConiferNodes(
     mid.push({ position: [tr.x, y + 3.65 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.78, s * 0.9, s * 0.78] });
     top.push({ position: [tr.x, y + 4.8 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.54, s * 0.74, s * 0.54] });
     const tone = tones[i % tones.length]!;
-    lowColors.push(tone);
+    lowColors.push(tier(tone, 0.82));
     midColors.push(tone);
-    topColors.push(tone);
+    topColors.push(tier(tone, 1.14));
   });
   const bark = material.pbr({ color: "#5a4634", roughness: 0.94 });
   const bough = material.pbr({ color: "#ffffff", roughness: 0.88 });
