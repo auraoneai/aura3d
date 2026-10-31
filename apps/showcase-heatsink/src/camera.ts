@@ -81,9 +81,11 @@ export const RESULTS_ORBIT = { radius: 9, height: 2.6, speed: 0.3 } as const;
  * `TITLE_AIM` (the drone about 12 degrees right of centre, uncropped). GU47 phase 3: the old front three-quarter pose looked back along +Z, where the world has no skyline, arch
  * or rivals (the city is authored ahead of the drone), so the card frame showed an empty sky and a wall.
  */
-export const TITLE_OFFSET: readonly [number, number, number] = [-1.6, 1.2, 4.2];
+// GU47 phase 4 (rubric composition/camera: "player large, crowds out the road ahead"): pulled back to about 6 m (round 1
+// at 7.7 m lost the player as the subject: "no clear player subject in the 15-25% band").
+export const TITLE_OFFSET: readonly [number, number, number] = [-2.6, 1.5, 5.4];
 /** Title aim point relative to the drone: down the track past the drone, so the start gantry, arch and skyline frame it. */
-export const TITLE_AIM: readonly [number, number, number] = [1.4, 0.6, -16];
+export const TITLE_AIM: readonly [number, number, number] = [0.8, 0.5, -18];
 /** Countdown shots relative to the drone, by digit: low front three-quarter, flank, high behind. */
 export const COUNTDOWN_SHOTS: Readonly<Record<number, { readonly offset: readonly [number, number, number]; readonly fov: number }>> = {
   3: { offset: [-4.8, 0.6, -6.2], fov: 50 },

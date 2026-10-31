@@ -80,7 +80,11 @@ export const HEADLIGHT_DIRECTION: readonly [number, number, number] = (() => {
 /** Where the key light aims: the road about 20 m ahead of the drone (the drone stays near the origin). */
 export const KEY_TARGET: [number, number, number] = [0, 0, -20];
 /** HS-01: PCSS soft shadows over three cascades (the engine drops to 1 cascade PCF on the Low tier). */
-export const KEY_SHADOW = { filter: "pcss", cascades: 3, mapSize: 2048, maxDistance: 160, lightSize: 1.5 } as const;
+// GU47 phase 4 (rubric shadows 5.5: "blob-like, little defined cast shadow"): a smaller light size keeps the PCSS
+// penumbra tight enough that drone, gantry and wall shapes read on the deck.
+export const KEY_SHADOW = { filter: "pcss", cascades: 3, mapSize: 2048, maxDistance: 140, lightSize: 0.3 } as const;
+/** GU47 phase 4: screen-space contact shadows from the key (wall feet, props, drone undersides). */
+export const CONTACT_SHADOWS = { intensity: 0.75, length: 0.32, steps: 12 } as const;
 
 export const IDS = {
   deckEven: "road-deck-even",
@@ -301,7 +305,8 @@ export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraN
 /** HS-05 atmosphere and HS-12 post for a circuit (AO is HS-01's explicit pass). */
 export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
-    effects.fog({ name: "td fog", color: look.fog.color, density: look.fog.density, intensity: 0.6 }),
+    // GU47 phase 4 (rubric atmospheric_effects 5.5: "skyline crisp, little aerial perspective"): 0.6 -> 0.78.
+    effects.fog({ name: "td fog", color: look.fog.color, density: look.fog.density, intensity: 0.78 }),
     effects.colorGrade({
       name: "td grade",
       exposure: Math.pow(2, options.exposureEv ?? look.exposureEv),
@@ -317,6 +322,7 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
     effects.vignette({ name: "td vignette", intensity: look.vignette, smoothness: 0.65 })
   ];
   if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: "td ambient occlusion", intensity: 0.5, radius: 0.7 }));
+  out.push(effects.contactShadows({ ...CONTACT_SHADOWS, lights: "shadowed" }));
   if (look.grain > 0) out.push(effects.filmGrain({ name: "td film grain", intensity: look.grain }));
   if (look.volumetricFog) {
     const v = look.volumetricFog;
@@ -366,7 +372,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.spineB)),
     instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive(look.accents.lanes, 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.lanes)),
-    instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.pbr({ color: "#232936", roughness: 0.52, metalness: 0.45 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
+    instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.pbr({ color: "#232936", roughness: 0.34, metalness: 0.7 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
     // HS-15: the chevrons brighten with the core heat (u_heat, +25% at 90%); one custom program for both nodes.
     instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronHeatMaterial(look.accents.primary, CHEVRON_INTENSITY, reducedMotion), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
@@ -429,7 +435,9 @@ export function liftTowardsWhite(hex: string, amount: number): string {
 
 /** HS-10 interim livery: DRONE_SPECS colour (lifted 30% towards white) multiplied over the authored maps, lacquered. */
 export function droneLivery(color: string): AuraModelMaterialOverride {
-  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.65, clearcoatRoughness: 0.16 };
+  // GU47 phase 4 (rubric ibl_reflections: "drone metals show little environment reflection"): a little metal and a
+  // stronger environment term under the lacquer.
+  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.8, clearcoatRoughness: 0.1, metallic: 0.45, roughness: 0.32, envMapIntensity: 1.7 };
 }
 
 /** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */

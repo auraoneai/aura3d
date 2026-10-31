@@ -57,7 +57,9 @@ async function engineInfo(page: Page) {
       return {
         app: true, renderPath: dg?.renderPath?.path ?? null, drawCalls: dg?.drawCalls ?? null,
         triangles, textureBytes: typeof dg?.textureBytes === "number" ? dg.textureBytes : null,
-        texPending: rows.filter((r) => r?.status === "pending").length, texTotal: rows.length
+        texPending: rows.filter((r) => r?.status === "pending").length, texTotal: rows.length,
+        // GU47 phase 4: which shadow casters sampled and which features the tier dropped (software WebGL2 triage).
+        shadows: dg?.shadows ?? null, quality: dg?.quality ?? dg?.output?.quality ?? null
       };
     } catch (e) { return { app: true, diagErr: String(e) }; }
   });

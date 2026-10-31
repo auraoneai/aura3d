@@ -186,8 +186,8 @@ export interface SceneryAnchor {
 // With the 7 drones and the mine, 30 `model(...)` nodes cover all 26 admitted `heatsink*` assets.
 export const SCENERY_ANCHORS: readonly SceneryAnchor[] = [
   { id: "prop-gantry-start", assetKey: "heatsinkGantryStart", maxDim: 38, s: 68, period: 240, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
-  { id: "prop-arch-a", assetKey: "heatsinkArch", maxDim: 38, s: 46, period: 160, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
-  { id: "prop-arch-b", assetKey: "heatsinkArch", maxDim: 38, s: 126, period: 160, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
+  { id: "prop-arch-a", assetKey: "heatsink_thermalArchIron", maxDim: 38, s: 46, period: 160, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
+  { id: "prop-arch-b", assetKey: "heatsink_thermalArchIron", maxDim: 38, s: 126, period: 160, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
   { id: "prop-overpass", assetKey: "heatsinkOverpass", maxDim: 56, s: 94, period: 220, lateralX: 0, baseY: 4.8, yaw: 0, kind: "decor" },
   { id: "prop-tunnel-a", assetKey: "heatsinkTunnelFrame", maxDim: 36, s: 58, period: 180, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
   { id: "prop-tunnel-b", assetKey: "heatsinkTunnelFrame", maxDim: 36, s: 148, period: 180, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },

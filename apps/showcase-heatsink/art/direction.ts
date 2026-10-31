@@ -54,7 +54,8 @@ export default defineArtDirection({
     { role: "vehicle", assetKey: "heatsinkDroneNighthawk", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "vehicle", assetKey: "heatsinkDroneWraith", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "world", assetKey: "heatsinkGantryStart", maxTriangles: 40000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "world", assetKey: "heatsinkArch", maxTriangles: 40000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    // GU47 WP-36: the arches draw the Meshy soot-iron retexture (608 triangles, three 1024 px maps, no emissive map).
+    { role: "world", assetKey: "heatsink_thermalArchIron", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "heatsinkOverpass", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "heatsinkTunnelFrame", maxTriangles: 40000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "heatsinkStatue", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
