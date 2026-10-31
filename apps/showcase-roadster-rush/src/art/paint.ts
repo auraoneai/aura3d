@@ -13,11 +13,10 @@ import { APEX_PALETTE } from "./look";
 export const APEX_HERO_TINT = "#3a64e8";
 export const APEX_RIVAL_TINT = "#4a4d56";
 
-function paintOverride(tint: string, rim: { color: string; power: number; intensity: number }): AuraModelMaterialOverride {
-  const paint = material.carPaint({ color: tint });
+function paintOverride(tint: string | null, rim: { color: string; power: number; intensity: number }): AuraModelMaterialOverride {
+  const paint = material.carPaint({ color: tint ?? APEX_PALETTE.cobalt });
   return {
-    color: tint,
-    colorMode: "multiply",
+    ...(tint !== null ? { color: tint, colorMode: "multiply" as const } : {}),
     ...(paint.roughness !== undefined ? { roughness: paint.roughness } : {}),
     ...(paint.metallic !== undefined ? { metallic: paint.metallic } : {}),
     ...(paint.clearcoat !== undefined ? { clearcoat: paint.clearcoat } : {}),
@@ -27,9 +26,13 @@ function paintOverride(tint: string, rim: { color: string; power: number; intens
   };
 }
 
-/** Hero: cobalt metallic clearcoat, warm tangerine rim (AO-M1). */
-export function apexHeroPaint(): readonly AuraModelMaterialOverride[] {
-  return [paintOverride(APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.9 })];
+/**
+ * Hero: cobalt metallic clearcoat, warm tangerine rim (AO-M1). GU47 phase 4: the WP-36 retexture (apexHeroCobalt) paints the
+ * cobalt and the tangerine stripe into the base map, so the hero keeps the clearcoat values and the rim but takes no tint;
+ * `?models=0` (the grey showcase car) still gets the multiply tint.
+ */
+export function apexHeroPaint(retextured = true): readonly AuraModelMaterialOverride[] {
+  return [paintOverride(retextured ? null : APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.9 })];
 }
 
 /** Sky-lane rival: graphite with the reserved rival red on the rim (AO-A2 interim). */

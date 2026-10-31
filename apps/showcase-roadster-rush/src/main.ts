@@ -27,7 +27,7 @@ import {
   APEX_MOTION_BLUR,
   APEX_PALETTE,
   APEX_PRACTICALS,
-  APEX_SUN,
+  APEX_KEY,
   apexLookAt,
   hexToUnit,
   parseTodParam
@@ -300,7 +300,8 @@ function apexLookNode(): AuraSceneNode {
   const sunset = APEX_LOOK[0];
   const look = looks
     .preset("golden-hour", {
-      sun: APEX_SUN,
+      // GU47 phase 4: the shadowed key stands at APEX_KEY (17 deg), above the 7 deg disc the dome draws (art/look.ts)
+      sun: APEX_KEY,
       fogDensityScale: APEX_FOG_DENSITY_SCALE,
       hdri: APEX_IBL_HDRI,
       environmentIntensity: sunset.environmentIntensity,
@@ -353,8 +354,9 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .runtime({ id: FILL_LIGHT_ID })
     )
     .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
-    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero
-    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 12, intensity: 0.9, lights: "sun" }))
+    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero (GU47 phase 4: 0.3 -> 0.7 m rays,
+    // so the tyres and sills sit in the shadow instead of on it)
+    .add(effects.contactShadows({ length: 0.7, thickness: 0.08, steps: 16, intensity: 1, lights: "sun" }))
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
@@ -578,7 +580,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       scaleMode: "fit",
       targetMaxDimension: 4.35,
       // AO-M1: cobalt metallic clearcoat (material.carPaint values) with a warm tangerine rim (E-D); same model, same bounds
-      materialOverrides: apexHeroPaint()
+      materialOverrides: apexHeroPaint(meshyVehicles.enabled)
     })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
@@ -1023,7 +1025,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     // GU47 AO-L2: the scene light follows the same row as the dome. The look's key keeps the disc's direction and takes the
     // row's colour and intensity; the camera-side fill and the IBL (1.0 / 0.55 / 0.18) dim with it. AO-E3: fog colour too.
     const frame = apexLookAt(tod);
-    const toward = frame.sunDir;
+    const toward = frame.keyDir;
     const blend = { transitionSeconds: 0.35 };
     keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
