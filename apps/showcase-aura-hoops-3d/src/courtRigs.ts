@@ -256,6 +256,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 110,
     backdrop: "boardwalk, lifeguard tower and the ocean",
     surface: { name: "bleached teal acrylic", floor: "#4f8a93", paint: "#e6dcc2", line: "#fbf3df", apron: "#cdb07a", roughness: 0.72, puddles: 0, pbrSet: "hoopsCourtAcrylicTeal" },
+    // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
+    bleachers: { color: "#d9cdb4", seat: "#ff5d8f" },
     sprayTag: { color: "#ff5d8f", opacity: 0.82, size: 2.2 }
   },
   athens: {
@@ -285,7 +287,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     lensFlare: [],
     // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); a painted noon gradient is the sky.
     preethamSky: false,
-    gradientSky: { zenith: "#2d6cc4", horizon: "#bcd6ec", ground: "#8c8579", horizonGlow: 0.2, clouds: 0.25 },
+    gradientSky: { zenith: "#2d6cc4", horizon: "#9fc4e8", ground: "#8c8579", horizonGlow: 0.2, clouds: 0.25 },
     water: "none",
     skylineDistance: 100,
     backdrop: "whitewashed hillside and rooftop parapets",
@@ -322,6 +324,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 70,
     backdrop: "corrugated walls and open sides onto the rain",
     surface: { name: "painted concrete", floor: "#6a5a43", paint: "#8f3c2a", line: "#f3e8cf", apron: "#3e352b", roughness: 0.8, puddles: 0, pbrSet: "hoopsCourtConcretePainted" },
+    // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
+    bleachers: { color: "#6b5a45", seat: "#ffe14d" },
     sprayTag: { color: "#ffe14d", opacity: 0.84, size: 2.2 }
   },
   shanghai: {
@@ -359,6 +363,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     skylineDistance: 120,
     backdrop: "riverside towers across the water",
     surface: { name: "wet asphalt", floor: "#1d222c", paint: "#1b5a86", line: "#9fdcff", apron: "#12161f", roughness: 0.12, puddles: 0.7, pbrSet: "hoopsCourtAsphaltWet" },
+    // GU47 phase 3 round 3: own grounded bleachers in the court colours replace the borrowed (floating) seat GLB.
+    bleachers: { color: "#2a3140", seat: "#39d7ff" },
     sprayTag: { color: "#39d7ff", opacity: 0.8, size: 2.2 }
   },
   orbit: {
