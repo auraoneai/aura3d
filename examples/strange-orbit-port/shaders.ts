@@ -88,6 +88,13 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+/** Squared falloff radius (m^2) of the riders' soft contact shadow on the road (gouache only). */
+export const CONTACT_RADIUS2 = 2.4;
+/** Peak darkening of the contact shadow right under a rider (0..1). */
+export const CONTACT_STRENGTH = 0.85;
+/** Uniform names of the six rider contact shadows (player, then rivals 1..5). */
+export const CONTACT_UNIFORMS = ["riderContact0", "riderContact1", "riderContact2", "riderContact3", "riderContact4", "riderContact5"] as const;
+
 /** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
 export const TRACK_MARK_WARP = 2.5;
 
@@ -107,7 +114,16 @@ ${lighting(gouache)}
 float paintNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * 4.0, 0.0)); }
 // The surface marks use a gentler domain warp than the veins (2.5 instead of 4.0): the stronger warp smeared each mark
 // into a long streak along one world axis (audit SO-E5).
-float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0.0)); }
+float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0.0)); }${gouache ? `
+/** Contact shadow: riderContact0..5 hold each rider's centre (xyz, about 1 m above the road) and strength (w, 0 = hidden). */
+float contactTerm(vec3 p, vec4 c) {
+  vec3 d = p - c.xyz;
+  return 1.0 - c.w * exp(-dot(d, d) / ${CONTACT_RADIUS2.toFixed(2)});
+}
+float contactOcclusion(vec3 p) {
+  return contactTerm(p, riderContact0) * contactTerm(p, riderContact1) * contactTerm(p, riderContact2)
+    * contactTerm(p, riderContact3) * contactTerm(p, riderContact4) * contactTerm(p, riderContact5);
+}` : ""}
 void main() {
   // Procedural stand-in for impasto.png: warm paint marks. World-space triplanar noise, so the marks keep the same size in
   // every direction (UV-mapped streaks stretched along the whole length of the track).
@@ -145,7 +161,11 @@ void main() {
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
-  vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;
+  vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;${gouache ? `
+  // GU47 phase 3: soft contact shadow under each rider (the cascades miss the hover gap at software-GL resolution).
+  float occ = contactOcclusion(vWorld);
+  albedo *= occ;
+  emissive *= occ;` : ""}
   outColor = vec4(haze(shade(albedo, N, emissive, vWorld), vWorld), 1.0);
 }`;
 export const TRACK_FRAGMENT = trackFragment(true);

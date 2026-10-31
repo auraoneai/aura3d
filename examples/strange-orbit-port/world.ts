@@ -29,6 +29,7 @@ import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { CONTACT_STRENGTH, CONTACT_UNIFORMS } from "./shaders";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
@@ -291,10 +292,10 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
-  builder.add(geometry.custom(dynamicFrom(course.track, true), { name: "track", material: trackMaterial() }));
+  builder.add(geometry.custom(dynamicFrom(course.track, true), { name: "track", material: trackMaterial() }).runtime({ id: "track" }));
   builder.add(geometry.custom(dynamicFrom(course.rails, false), { name: "rails", material: solidMaterial(hexLinear("#e5e4b9"), hexLinear("#9ebdae"), 0.22) }));
   builder.add(geometry.custom(dynamicFrom(buildIslands(), true), { name: "islands", material: mineralMaterial(hexLinear("#b9c5e1"), true) }));
-  builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }));
+  builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }).runtime({ id: "ramps" }));
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
   /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
@@ -795,6 +796,20 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     riderShown[index] = true;
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
   };
+  /** GU47 phase 3 (gouache): soft contact shadow under each shown rider on the road and the ramps (presentation only). */
+  const contactSurfaces = input.look === "gouache" ? [app.nodes.get("track"), app.nodes.get("ramps")].filter((h) => h !== undefined && h !== null) : [];
+  const contactLast = CONTACT_UNIFORMS.map(() => "");
+  const updateContactShadows = (): void => {
+    if (contactSurfaces.length === 0) return;
+    for (let i = 0; i < CONTACT_UNIFORMS.length; i++) {
+      const p = riderAt[i]!;
+      const value: [number, number, number, number] = [p.x, p.y, p.z, riderShown[i] ? CONTACT_STRENGTH : 0];
+      const key = value.map((v) => v.toFixed(2)).join(",");
+      if (key === contactLast[i]) continue;
+      contactLast[i] = key;
+      for (const h of contactSurfaces) h.setUniform?.(CONTACT_UNIFORMS[i]!, value);
+    }
+  };
   /** SO47-L4: headlight 0.6 m ahead aimed 6 m down the road; tail points behind the nearest visible rivals. */
   const updateRiderLights = (menu: boolean): void => {
     if (!input.headlight) return;
@@ -883,6 +898,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     }
 
     updateRiderLights(menu);
+    updateContactShadows();
 
     /* camera */
     const frame = routeFrame(sForPlayer, menu ? "main" : state.route);

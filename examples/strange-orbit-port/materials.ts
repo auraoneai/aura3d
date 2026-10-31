@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import {
   ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
-  TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
+  TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, CONTACT_UNIFORMS, mineralFragment, solidFragment, trackFragment
 } from "./shaders";
 import type { OrbitLook } from "./art/look";
 
@@ -18,7 +18,13 @@ const FRAGMENTS = {
   original: { track: trackFragment(false), mineral: mineralFragment(false), solid: solidFragment(false) }
 } as const;
 
-export const trackSpec = (look: OrbitLook = "gouache"): CustomSpec => ({ receiveShadow: true, glsl: { vertex: TRACK_VERTEX, fragment: FRAGMENTS[look].track }, side: "double" });
+export const trackSpec = (look: OrbitLook = "gouache"): CustomSpec => ({
+  receiveShadow: true,
+  glsl: { vertex: TRACK_VERTEX, fragment: FRAGMENTS[look].track },
+  side: "double",
+  // GU47 phase 3 (gouache): rider contact shadows, moved every frame by world.ts (w 0 = off until placed).
+  ...(look === "gouache" ? { uniforms: Object.fromEntries(CONTACT_UNIFORMS.map((n) => [n, { type: "vec4" as const, value: [0, -1000, 0, 0] }])) } : {})
+});
 
 export interface SolidExtra {
   readonly transparent?: boolean;
