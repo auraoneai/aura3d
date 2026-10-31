@@ -137,16 +137,17 @@ export const STAGE_LOOK: readonly StageLook[] = [
     godRays: false, weather: "mist"
   },
   {
-    id: "sunburst", stage: "THE END OF THE ROAD", timeOfDay: "sun 12 deg, white-gold sunburst",
-    sun: { elevationDeg: 12, azimuthDeg: 0, color: "#fff0c8", intensity: 3.0, disc: "#ffffff", corona: 1.4 },
-    fill: { color: "#9a7ae0", intensity: 0.6 }, hemisphere: { sky: "#f0d0b0", ground: "#8a6a3a", intensity: 0.6 }, environmentIntensity: 0.6,
-    // GU47 phase 2: band, horizon, cloud sea and fog deepened from near-white and exposure 1.12 -> 1.0 (the capture read
-    // as a white-out with the road and islands lost in it).
-    sky: { zenith: "#2e3084", upper: "#b88aaa", horizon: "#ffd890", band: "#ffeab0", stars: 0, moon: 0 },
-    cloud: { lit: "#fff0c8", mid: "#e2b862", dark: "#86582e" },
-    fog: { color: "#e8c88e", near: 440, far: 1700 },
-    road: { pearl: "#fffaf0", jade: "#8ae8d0", spine: "#ffd060", belly: "#6a4a7a" },
-    exposure: 1.0, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.06, tint: 0.02, saturation: 1.08, contrast: 1.08 },
+    id: "sunburst", stage: "THE END OF THE ROAD", timeOfDay: "sun 10 deg, gold sunburst under a violet sky",
+    // GU47 blind-panel pass: the white-gold row read as a milky beige haze (pale sky, cream road, brown cloud blotches).
+    // Re-keyed to a saturated gold-on-violet: violet upper sky, gold horizon and cloud sea (no brown under-deck), deeper
+    // gold fog, smaller corona and a dimmer sun, lilac-pearl plates, softer bloom, more saturation and contrast.
+    sun: { elevationDeg: 10, azimuthDeg: 0, color: "#ffd890", intensity: 2.3, disc: "#fff4d8", corona: 0.7 },
+    fill: { color: "#8a6ae0", intensity: 0.6 }, hemisphere: { sky: "#c89ad8", ground: "#8a5a2a", intensity: 0.6 }, environmentIntensity: 0.55,
+    sky: { zenith: "#1e1660", upper: "#6a3ca8", horizon: "#ffa848", band: "#ffcc6a", stars: 0.05, moon: 0 },
+    cloud: { lit: "#ffd870", mid: "#f2b33d", dark: "#b8782e" },
+    fog: { color: "#d48e58", near: 480, far: 1800 },
+    road: { pearl: "#efe4f6", jade: "#7fe0c4", spine: "#ffc840", belly: "#4a3266" },
+    exposure: 1.0, bloom: { intensity: 0.35, threshold: 0.9 }, grade: { temperature: 0.06, tint: 0.04, saturation: 1.16, contrast: 1.12 },
     godRays: true, weather: "clear"
   }
 ];
