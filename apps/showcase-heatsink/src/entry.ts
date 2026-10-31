@@ -11,5 +11,7 @@ export function lookFromParam(value: string | null | undefined): ThermalDriftLoo
 
 if (typeof window !== "undefined") {
   const look = lookFromParam(new URLSearchParams(window.location.search).get("look"));
+  // The foundry title card hides the race chrome (index.html `html.td-foundry body.td-card`); 4.6.2 kept it visible.
+  if (look === "foundry") document.documentElement.classList.add("td-foundry");
   void (look === "foundry" ? import("./main") : import("./original/main"));
 }
