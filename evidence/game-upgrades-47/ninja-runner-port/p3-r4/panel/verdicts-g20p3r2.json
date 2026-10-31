@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey haze washes out the sky and grass, so contrast is low and colours look desaturated. Heavy dark vignette in the corners. The player sits off-centre on the left side of the path and is somewhat small. The far background is muddy.",
+     "A grey haze washes out the whole frame, lowering contrast and saturation; heavy vignetting muddies the corners; the player sits off-centre and is less readable; the sky and distant hills look dull and overcast; the overall mood is muddy.",
+     "A grey haze and heavy vignette wash out the frame, making it muddy with low contrast. The sky looks dull and desaturated. The player is pushed toward the lower-left and looks semi-transparent and washed out. The cobblestone path is blown out to near-white."
+    ]
+   }
+  ]
+ }
+]

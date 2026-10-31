@@ -114,17 +114,26 @@ export interface ResolvedLook {
   readonly ink: number;
 }
 
-/** The GU47 evening is the default (also `?look=evening`); `?look=original` keeps the 4.6.2 midday look. */
+/**
+ * The GU47 evening is the default (also `?look=evening`); `?look=original` keeps the 4.6.2 midday look. Exception: a
+ * page that boots into the Valley Gate (`?at=` in the gate band, from 2260 m) defaults to the 4.6.2 look, because the
+ * gate view is the one view whose evening frame did not beat its 4.6.2 frame in the blind panel (GU47 phase 3, g20p3r4:
+ * 1 of 3; a floating quad over the falls and a flat pink ground). `?look=evening&at=2500` still opts in.
+ */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  // GU47 phase 3: the retuned evening (golden afternoon to sunset afterglow, sun over the camera's shoulder, title shot
-  // over the runner's shoulder) is the default; phase 2 kept 4.6.2 (PRD D11) after two lost title frames.
-  return params.get("look") === "original" ? "original" : "evening";
+  const look = params.get("look");
+  if (look === "original" || look === "evening") return look;
+  const at = Number(params.get("at"));
+  return params.has("at") && Number.isFinite(at) && at >= GATE_BAND_START ? "original" : "evening";
 }
+
+/** Course distance (m) where the Valley Gate band starts (`districtIdAt`). */
+export const GATE_BAND_START = 2260;
 
 /** District band a distance belongs to (the five stops; the Backstreets share the village row). */
 export function districtIdAt(s: number): DistrictId {
-  return s < 470 ? "village" : s < 1120 ? "rooftops" : s < 1510 ? "river" : s < 2260 ? "forest" : "gate";
+  return s < 470 ? "village" : s < 1120 ? "rooftops" : s < 1510 ? "river" : s < GATE_BAND_START ? "forest" : "gate";
 }
 
 /** Unit vector toward a light at `elevationDeg` above the horizon and `azimuthDeg` (0 = +Z, 90 = +X). */

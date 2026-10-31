@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly overcast and grey sky; grass texture is a bit flat and blotchy",
+     "Sky slightly grey/overcast; player somewhat small and offset left; distant mountains a bit flat",
+     "Slightly flat, overcast lighting; the grass is a uniform saturated green with little shading variation; distant mountains are faint."
+    ]
+   },
+   {
+    "variant": "forest",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is a translucent yellow ghost-like figure; small blocks are scattered on the log path; the orange crate looks pasted on; the foreground tree foliage is jagged and clips the frame edge",
+     "Player rendered as a translucent, flat-shaded yellow ghost inside a shield bubble, so detail is weak; small cubes scattered on the log look like floating debris; orange crate sits oddly on the path; crude low-poly foliage cards",
+     "The player is a translucent yellow ghost-like figure inside a shield bubble, so it reads less well; small debris cubes are scattered on the log path; the foreground tree foliage is a bit noisy and faceted; the grass is overly saturated. Otherwise it has strong mood, depth and colour."
+    ]
+   },
+   {
+    "variant": "gate",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 2,
+    "afterDefects": [
+     "A floating rectangular quad glows in the sky above the waterfall; the waterfall is a flat billboard slab; the desert ground is flat and pink and looks unfinished; the player is translucent yellow and partly hidden by companion figures",
+     "Floating translucent rectangle in the upper-left sky (broken quad); waterfall is a flat billboard card standing in the desert; player is a flat yellow ghost among translucent blue clones; heavy pink cast makes ground and rocks muddy; grass strip ends abruptly against flat sand",
+     "A semi-transparent rectangular quad floats in the upper-left sky (a visible artifact); the waterfall is a flat billboard plane blocking the road's end; the pink-orange sand plane looks flat and untextured; the player is yellow and translucent and partly crowded by the blue clones. Still more atmospheric and colourful."
+    ]
+   },
+   {
+    "variant": "river",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "An odd translucent ellipse floats in front of the player; the player pose is awkward; the rock cliffs are rather low-poly",
+     "Player in a stylised pose with an odd-looking pink sphere at the head; an empty shield bubble floats next to the player; bridge planks are plain with little material detail; no water visible",
+     "A translucent shield bubble floats beside the player; the player's pose and costume are slightly odd; the mountains are low-poly and faceted. Otherwise it has good warm lighting, depth and composition."
+    ]
+   },
+   {
+    "variant": "rooftops",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Thin flat rail or plank strips float across the roofs; a stray green ribbon of geometry sits at the lower left; the walkway roof is flat and its colour blends in; the ground is a flat cobble plane",
+     "Thin horizontal bars float across the rooftops; flat untextured parapet blocks; player is flat-shaded; large flat green slab geometry on the right; ground plane is a repeating cobble texture",
+     "Thin plank/beam geometry floats across the bottom of the frame and between roofs; the rooftop run path is a tinted strip that looks somewhat flat; the player is small and orange against beige walls; the distant hills are slightly hazy yellow. Otherwise it has rich detail, depth and warm mood."
+    ]
+   },
+   {
+    "variant": "village",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Translucent pastel companion figures clutter the foreground near the player; tree foliage is faceted and low-poly",
+     "Translucent blue ghost clones crowd and partly cover the player; trees are low-poly, faceted crystal-like foliage; overcast grey sky",
+     "The blue translucent clone runners crowd the foreground and partly compete with the player; the sky is slightly grey; the tree foliage is noisy and low-poly. Otherwise it has good contrast, framing and depth."
+    ]
+   }
+  ]
+ }
+]
