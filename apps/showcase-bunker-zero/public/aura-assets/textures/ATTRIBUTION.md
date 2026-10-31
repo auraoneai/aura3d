@@ -5,7 +5,7 @@ All files are CC0 1.0 (ambientCG, https://ambientcg.com, author ambientCG), take
 
 | Files | ambientCG set | Library zip sha256 | Derivation |
 | --- | --- | --- | --- |
-| bz-concrete034-{color,normal}.jpg | Concrete034 | 5839d284d94ffb8d2a56df742ec522b13dd311c52dbd42b8fd33f0409ceedb81 | colour: `Concrete034_1K-JPG_Color.jpg` resized to 512 (`sips -Z 512 -s formatOptions 85`, GU47 phase 3); normal: `_NormalGL.jpg` resized to half (`sips -Z 512 -s formatOptions 88`) |
+| bz-concrete034-{color,normal}.jpg | Concrete034 | 5839d284d94ffb8d2a56df742ec522b13dd311c52dbd42b8fd33f0409ceedb81 | colour: `Concrete034_1K-JPG_Color.jpg` resized to 512 (`sips -Z 512 -s formatOptions 85`) and each channel scaled in linear light to mean 0.8, JPEG quality 88 (GU47 phase 3); normal: `_NormalGL.jpg` resized to half (`sips -Z 512 -s formatOptions 88`) |
 | bz-bricks075a-{color,normal}.jpg | Bricks075A | ebbffc63ae79060d68378cddafd7d6b659bc3e062120785d5927773c51a33214 | same |
 | bz-metal046b-{color,normal}.jpg | Metal046B | b4fc855a414f7a1e415af6edaef24c0dc114f7802b3879a3db88e6ba1c97cda0 | same |
 | bz-paintedplaster017-{color,normal}.jpg | PaintedPlaster017 | bae0380d82b6ccac8943b4980417cb3c9de5c896218339c108056f1dfb8e886c | same |

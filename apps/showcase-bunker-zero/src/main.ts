@@ -85,7 +85,7 @@ const BZ_SURFACE_WHITE = "#ece8df";
 /** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
 const BZ_WALL_LIFT = 0.1, BZ_FLOOR_LIFT = 0.08;
 /** GU47 phase 3: linear gain on the palette tone per surface (walls and floor a little darker for pools; the ceiling lifted out of the void). */
-const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.8 } as const;
+const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.4 } as const;
 /** GU47 phase 3: the ceiling slab's map on every sealed ceiling. */
 const BZ_CEIL_TEXTURE = "concrete034" as const;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
