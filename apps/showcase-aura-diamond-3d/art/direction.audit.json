@@ -506,7 +506,7 @@
         "practical": true
       },
       {
-        "node": "harbor-headland",
+        "node": "harbor-water",
         "practical": false
       },
       {
@@ -696,7 +696,7 @@
         "hdri": "belfast_sunset_puresky",
         "background": "sky"
       },
-      "exposureEV": 0.1
+      "exposureEV": 0.05
     },
     "framing": {
       "rig": "static",
