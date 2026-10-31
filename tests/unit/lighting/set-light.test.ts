@@ -75,7 +75,7 @@ async function mount(nodes: readonly unknown[]): Promise<Mounted> {
     snapshot,
     lights,
     nodes: registry,
-    frame: (t) => [...((updateCompiledScene(compiled, snapshot, registry, t) as { collectedLights?: Iterable<CollectedLight> }).collectedLights ?? [])],
+    frame: (t) => [...((updateCompiledScene(compiled, snapshot, registry, t * 1000) as { collectedLights?: Iterable<CollectedLight> }).collectedLights ?? [])],
     dispose: () => compiled.dispose()
   };
 }
