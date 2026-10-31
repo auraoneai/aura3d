@@ -35,6 +35,14 @@ export const CHANGEOVER_SHOTS: readonly DirectorShot[] = [
 export const INTRO_SECONDS = INTRO_SHOTS.reduce((s, x) => s + x.seconds, 0);
 export const CHANGEOVER_SECONDS = CHANGEOVER_SHOTS.reduce((s, x) => s + x.seconds, 0);
 
+/**
+ * A cut may run at most this many times its nominal length in wall-clock time. At normal frame rates the frame clock
+ * (dt clamped to 0.25 s) drives the shot; on a renderer that presents one frame every few seconds (software WebGL2, an
+ * old phone) the clamped clock would hold a 4 s intro on screen for minutes, so the cut ends and the broadcast camera
+ * takes the frame instead.
+ */
+export const CUT_WALL_SLACK = 2;
+
 /** Letterbox bar height as a fraction of the canvas height (each bar). */
 export const LETTERBOX_FRACTION = 0.1;
 
@@ -72,8 +80,10 @@ export interface BroadcastDirector {
   /**
    * Per frame: starts the intro when a match begins and the changeover after every odd game, advances the running cut
    * and ends it when play goes live. Returns the cut's framing, or null when the broadcast camera has the frame.
+   * `wallSeconds`: real seconds since the previous step (unclamped); a cut that has run CUT_WALL_SLACK times its length
+   * in wall-clock time ends (slow renderers). Omitted: frame clock only.
    */
-  step(state: Readonly<DirectorStateLike>, dt: number, reducedMotion: boolean): DirectorFrame | null;
+  step(state: Readonly<DirectorStateLike>, dt: number, reducedMotion: boolean, wallSeconds?: number): DirectorFrame | null;
   readonly active: DirectorCut | null;
   readonly time: number;
   /** Cuts played so far (debug). */
@@ -86,6 +96,7 @@ export function createBroadcastDirector(options: { autoIntro?: boolean; autoChan
   const autoChangeover = options.autoChangeover ?? true;
   let active: DirectorCut | null = null;
   let t = 0;
+  let wall = 0;
   let lastMode: string | undefined;
   let lastGames = -1;
   const played = { intro: 0, changeover: 0, skipped: 0 };
@@ -98,13 +109,14 @@ export function createBroadcastDirector(options: { autoIntro?: boolean; autoChan
     start(cut) {
       active = cut;
       t = 0;
+      wall = 0;
       played[cut] += 1;
     },
     skip() {
       if (active) played.skipped += 1;
       active = null;
     },
-    step(state, dt, reducedMotion) {
+    step(state, dt, reducedMotion, wallSeconds) {
       const mode = state.mode;
       const games = (state.score?.playerGames ?? 0) + (state.score?.aiGames ?? 0);
       if (autoIntro && mode === "playing" && lastMode !== undefined && lastMode !== "playing") self.start("intro");
@@ -116,6 +128,9 @@ export function createBroadcastDirector(options: { autoIntro?: boolean; autoChan
       // Play going live or leaving the match ends the cut (a `?intro=1` boot intro over the menu plays through).
       if (state.phase === "rally" || leftMatch) { active = null; return null; }
       t += Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.25) : 1 / 60;
+      if (wallSeconds !== undefined && Number.isFinite(wallSeconds) && wallSeconds > 0) wall += wallSeconds;
+      const length = active === "intro" ? INTRO_SECONDS : CHANGEOVER_SECONDS;
+      if (wall > length * CUT_WALL_SLACK) { active = null; return null; }
       const frame = shotAt(shotsOf(active), t, reducedMotion);
       if (!frame) active = null;
       return frame;

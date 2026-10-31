@@ -43,7 +43,14 @@ export interface Gu47Comparison {
   readonly region?: { readonly meanAbsDeltaRgb: number; readonly p95AbsDelta: number; readonly meanLumaDelta: number };
 }
 
-const LUT_URL = "/tests/qr/prd03/fixtures/luts/teal-orange-33.cube";
+// Served from tests/browser (the remote image COPYs tests/browser and tests/support only; the
+// tests/qr/prd03 original never reached it, so every remote load 404ed: LUT_UNAVAILABLE).
+const LUT_URL = "/tests/browser/gu47/luts/teal-orange-33.cube";
+// S4 marches toward an on-screen light. The scene sun points down and away from the camera
+// (toward-light . forward = -0.49), so its projected point is behind the eye and S4's
+// off-screen fade zeroes every shaft: god-on and god-density-half were byte-identical.
+// A world point in the open sky above the set (uv ~0.54, 0.89) keeps the receipt about S4.
+const GOD_RAY_LIGHT: readonly [number, number, number] = [0.8, 3, -10];
 const pixels = new Map<string, { data: Uint8ClampedArray; width: number; height: number }>();
 type App = ReturnType<typeof createAuraApp>;
 
@@ -75,8 +82,8 @@ function variantScene(id: Gu47PostVariant) {
     case "lut-off": return body().add(effects.colorGrade({}));
     case "lut-teal-orange": return body().add(effects.colorGrade({ lut: LUT_URL } as never));
     case "god-off": return body();
-    case "god-on": return body().add(effects.volumetricFog({ density: 0.2, intensity: 0.9 }));
-    case "god-density-half": return body().add(effects.volumetricFog({ density: 0.2, intensity: 0.9, godRayDensity: 0.5 } as never));
+    case "god-on": return body().add(effects.volumetricFog({ density: 0.2, intensity: 0.9, lightPosition: GOD_RAY_LIGHT }));
+    case "god-density-half": return body().add(effects.volumetricFog({ density: 0.2, intensity: 0.9, lightPosition: GOD_RAY_LIGHT, godRayDensity: 0.5 } as never));
     case "ssr-off": return body({ glossyFloor: true });
     case "ssr-on": return body({ glossyFloor: true }).add(effects.screenSpaceReflections({ intensity: 1 }));
     case "mb-off": return body({ mover: true });

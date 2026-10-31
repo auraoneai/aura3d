@@ -14,9 +14,9 @@ export const SKY_BAND_CAPACITY = 4;
 
 export interface GradientSpec {
   readonly model: "gradient";
-  readonly zenith: Vec3 | readonly number[];
-  readonly horizon: Vec3 | readonly number[];
-  readonly ground?: Vec3 | readonly number[];
+  readonly zenith: string | Vec3 | readonly number[];
+  readonly horizon: string | Vec3 | readonly number[];
+  readonly ground?: string | Vec3 | readonly number[];
   readonly exponent?: number;
   readonly horizonGlow?: number;
   readonly sun?: AuraSkySunSpecLike;
@@ -39,7 +39,7 @@ export function gradientFrame(spec: GradientSpec): GradientFrame {
   return {
     zenith: toVec3(spec.zenith, [0.08, 0.16, 0.38]),
     horizon: toVec3(spec.horizon, [0.55, 0.65, 0.8]),
-    ground: toVec3(spec.ground ?? [0.12, 0.12, 0.13], [0.12, 0.12, 0.13]),
+    ground: toVec3(spec.ground, [0.12, 0.12, 0.13]),
     exponent: spec.exponent ?? 1.6,
     horizonGlow: spec.horizonGlow ?? 0.35,
     sunDirection: spec.sun ? sunDirection(spec.sun) : null,
@@ -90,16 +90,26 @@ export function gradientEvaluate(frame: GradientFrame, dir: Vec3): Vec3 {
 }
 
 function bandColor(c: string | readonly number[]): Vec3 {
-  if (typeof c === "string" && c.startsWith("#") && c.length === 7) {
-    const srgb = (h: string) => Math.pow(parseInt(h, 16) / 255, 2.2);
-    return [srgb(c.slice(1, 3)), srgb(c.slice(3, 5)), c.length === 7 ? srgb(c.slice(5, 7)) : 0];
-  }
-  if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2])];
-  return [0, 0, 0];
+  return toVec3(c, [0, 0, 0]);
 }
 
-function toVec3(v: Vec3 | readonly number[], fallback: Vec3): Vec3 {
-  return v && v.length >= 3 ? [v[0] ?? fallback[0], v[1] ?? fallback[1], v[2] ?? fallback[2]] : fallback;
+/**
+ * A colour as linear RGB: an array as given, or an sRGB hex string
+ * (`#rrggbb` / `#rgb`). GU47 phase 2: the public `sky.gradient` passes its
+ * zenith / horizon / ground as hex strings, which this used to index as
+ * characters (`["#", "0", "5"]`): the uniforms read NaN, the sky drew
+ * nothing and the stars over it never showed (receipt `sky`).
+ */
+function toVec3(v: string | Vec3 | readonly number[] | undefined, fallback: Vec3): Vec3 {
+  if (typeof v === "string") {
+    const hex = /^#[0-9a-f]{3}$/i.test(v) ? `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}` : v;
+    if (!/^#[0-9a-f]{6}$/i.test(hex)) return fallback;
+    const srgb = (h: string) => Math.pow(parseInt(h, 16) / 255, 2.2);
+    return [srgb(hex.slice(1, 3)), srgb(hex.slice(3, 5)), srgb(hex.slice(5, 7))];
+  }
+  if (!v || v.length < 3) return fallback;
+  const out = [0, 1, 2].map((i) => Number(v[i] ?? fallback[i])) as unknown as Vec3;
+  return out.every(Number.isFinite) ? out : fallback;
 }
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;

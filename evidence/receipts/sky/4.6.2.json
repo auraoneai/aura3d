@@ -1,0 +1,41 @@
+{
+  "capability": "sky",
+  "version": "4.6.2",
+  "gitSha": "3061427b0",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/world-receipts.ts body(): ground strip 40x60 m, columns at 4/12/28 m, one shadow-casting sun, camera (0, 2, 6) -> (0, 1.4, -10), fov 55, 480x270; flat background vs sky.preetham (sun 35 deg, clouds coverage 0.45) vs sky.gradient night (stars count 1500, clouds 0.25), flags vfx.sky",
+  "frames": [
+    {
+      "file": "evidence/receipts/sky/sky-none.png",
+      "sha256": "91ff8491b7b50c4b69ef667452c02ce69abb69eafac74092730de9b29e819094",
+      "meanLuma": 61.085621359375,
+      "nonBlackRatio": 0.99975,
+      "label": "sky-none"
+    },
+    {
+      "file": "evidence/receipts/sky/sky-day-clouds.png",
+      "sha256": "e6822786eaca9ee72d1143e60362dda7dcd26a042b2bf988f6706e1aad7e3d8a",
+      "meanLuma": 167.4450876296875,
+      "nonBlackRatio": 0.99975,
+      "label": "sky-day-clouds"
+    },
+    {
+      "file": "evidence/receipts/sky/sky-night-stars.png",
+      "sha256": "ec2514e4e4091804666c755f460e760fc148e76885840827f4b0c2f4359cc525",
+      "meanLuma": 66.7009426453125,
+      "nonBlackRatio": 0.999640625,
+      "label": "sky-night-stars"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/eg/sky-stars-clouds.test.ts",
+    "tests/unit/gu47/eg/flag-promotion-noop.test.ts"
+  ],
+  "date": "2026-10-31T06:24:28.211Z",
+  "checks": {
+    "skyMeanAbsDeltaRgb": 208.7240060763628,
+    "skyDeltaAtLeast": 8,
+    "nightBrightPixels": 37,
+    "starsAtLeast": 12
+  }
+}
