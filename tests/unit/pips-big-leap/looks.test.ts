@@ -39,8 +39,8 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(angles("w2")).toEqual([10, 250]);
     expect(angles("w3")).toEqual([24, 150]);
     expect(angles("w6")).toEqual([30, 300]);
-    expect(WORLD_LOOKS.w4.key.intensity).toBe(0.15);
-    expect(WORLD_LOOKS.w5.key.intensity).toBe(0.25);
+    expect(WORLD_LOOKS.w4.key.intensity).toBe(1.1);
+    expect(WORLD_LOOKS.w5.key.intensity).toBe(0.9);
   });
 
   it("uses the PRD catalogue HDRIs and IBL strengths", () => {
@@ -48,9 +48,9 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(WORLD_LOOKS.w1.hdri.id).toBe("spruit_sunrise");
     expect(WORLD_LOOKS.w3.hdri.id).toBe("spruit_sunrise");
     expect(WORLD_LOOKS.w2.hdri.id).toBe("belfast_sunset_puresky");
-    expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.2 });
-    expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.45 });
-    expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.3 });
+    expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.6 });
+    expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.85 });
+    expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.55 });
     // Shared spruit_sunrise uses differ in rotation and intensity (PRD 6.1 secondary-use rule).
     const spruit = WORLD_IDS.filter((id) => WORLD_LOOKS[id].hdri.id === "spruit_sunrise").map((id) => `${WORLD_LOOKS[id].hdri.rotationDeg}/${WORLD_LOOKS[id].hdri.intensity}`);
     expect(new Set(spruit).size).toBe(spruit.length);
@@ -134,13 +134,8 @@ describe("pips-big-leap diorama base and atmosphere (PBL-E1, E2, E3, P3)", () =>
     for (const id of WORLD_IDS) expect(WORLD_LOOKS[id].ambient.maxParticles).toBeLessThanOrEqual(600);
   });
 
-  it("adds sun shafts in w1, w2 and w5 only", () => {
-    expect(WORLD_IDS.filter((id) => WORLD_LOOKS[id].shafts !== undefined)).toEqual(["w1", "w2", "w5"]);
-    for (const id of ["w1", "w2", "w5"] as const) {
-      const density = WORLD_LOOKS[id].shafts!.density;
-      expect(density).toBeGreaterThanOrEqual(0.05);
-      expect(density).toBeLessThanOrEqual(1);
-    }
+  it("runs no sun-shaft stage (phase 2: on software WebGL2 it only added extinction)", () => {
+    expect(WORLD_IDS.filter((id) => WORLD_LOOKS[id].shafts !== undefined)).toEqual([]);
   });
 });
 
