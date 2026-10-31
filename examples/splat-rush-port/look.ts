@@ -161,8 +161,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       fogDensity: 0.0055,
       gloss: { ball: 0.55, fresh: 0.7, drySeconds: 2, shininess: 48 },
       canvas: { weave: 0.05, streak: 0.06 },
-      skyReflect: 0.8,
-      contact: { height: 0.6, strength: 0.42 }
+      skyReflect: 1.1,
+      contact: { height: 0.8, strength: 0.5 }
     },
     sky: {
       /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
