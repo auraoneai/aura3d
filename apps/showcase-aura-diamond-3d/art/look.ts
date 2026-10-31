@@ -142,7 +142,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Harbor Sandlot at last light over the water",
     timeOfDay: "last light, sun 17 degrees above the sea",
     baseLook: "golden-hour",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.68, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "belfast_sunset_puresky", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
     // GU47 phase 4: at 9 degrees the key grazed the clay (cos 81 = 0.16), so the IBL lit the ground and no cast shadow
     // read; 17 degrees and a stronger key over a dimmer IBL give the players long last-light shadows.
@@ -205,14 +205,14 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Canyon Rim at hard desert noon",
     timeOfDay: "hard desert midday, sun 56 degrees",
     baseLook: "outdoor-day",
-    hdri: { id: "outdoor-midday", intensity: 0.82, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "outdoor-midday", intensity: 0.66, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     // Blind panel: the pale horizon blew the sky out to near white; a deep desert blue down to a dusty horizon.
     sky: { model: "gradient", zenith: "#2f6db4", horizon: "#9dbad6", ground: "#c9b28e" },
     // GU47 phase 4: a 72 degree key put each shadow under the feet and the bright IBL filled it; 56 degrees and a
     // stronger key against a dimmer IBL give a hard, readable desert shadow.
     // Phase 4 round 2: azimuth 20 is the camera side, so every shadow fell behind its player; 140 back-lights from the
     // first-base side and the shadows fall towards the broadcast lens.
-    sun: { elevationDeg: 56, azimuthDeg: 140, color: "#fff6e6", intensity: 4.1, colorTemperatureK: 6000 },
+    sun: { elevationDeg: 56, azimuthDeg: 140, color: "#fff6e6", intensity: 4.5, colorTemperatureK: 6000 },
     rim: false,
     fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
     exposureEv: -0.15,
@@ -239,8 +239,8 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Ivy Classic at spring sunrise",
     timeOfDay: "spring sunrise, sun 28 degrees",
     baseLook: "golden-hour",
-    hdri: { id: "spruit_sunrise", intensity: 0.76, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
-    sun: { elevationDeg: 28, azimuthDeg: 125, color: "#ffd2a1", intensity: 2.8, colorTemperatureK: 3800 },
+    hdri: { id: "spruit_sunrise", intensity: 0.64, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
+    sun: { elevationDeg: 28, azimuthDeg: 125, color: "#ffd2a1", intensity: 3.1, colorTemperatureK: 3800 },
     rim: { color: "#b9cfe6", intensity: 0.35, elevationDeg: 30, azimuthDeg: 290 },
     fog: { color: "#e6d9c8", density: 0.003, intensity: 0.3 },
     exposureEv: 0.08,

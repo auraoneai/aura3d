@@ -317,6 +317,9 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
         targetHeight: FAN_MODEL.height,
         scaleMode: "fit",
         role: "setDressing",
+        // Phase 4 round 3: the textured cream kit read as a grey mass behind the back-lit benches at stand distance; a flat
+        // material under the section colours keeps the seated silhouettes and brings the crowd colour back.
+        material: material.pbr({ color: "#ffffff", roughness: 0.8 }),
         transforms: seats.map((s) => ({ position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3, rotation: [0, fanModelYaw(s.yaw), 0] as Vec3 })),
         colors: shirts.map((c) => fanTint(c))
       })

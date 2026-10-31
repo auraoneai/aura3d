@@ -65,7 +65,7 @@ export function fanColors(park: ParkSpec, seats: readonly FanSeat[]): { readonly
  * `seat` of that height above the feet, so the feet go that far below the bench top. The mesh faces +z, so a fan on a
  * bench at angle theta turns by -theta to face home plate. `tint` is how far the section colour pulls the cream kit.
  */
-export const FAN_MODEL = { height: 1.22, seat: 0.4, tint: 0.55 } as const;
+export const FAN_MODEL = { height: 1.22, seat: 0.4, tint: 0.92 } as const;
 
 /** Yaw that turns the +z-facing fan mesh on a bench (bench yaw = theta + pi) towards home plate. */
 export const fanModelYaw = (benchYaw: number): number => Math.PI - benchYaw;
