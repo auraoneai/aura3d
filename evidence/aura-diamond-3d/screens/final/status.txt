@@ -4,3 +4,5 @@
 @@SHOTSA aura-diamond-3d 390x844 title ready=true
 @@SHOTSA aura-diamond-3d 390x844 play ready=true
 @@SHOTSA aura-diamond-3d 390x844 done captured=10 signatures=0 late=false results=false errors=0
+@@SHOTSA aura-diamond-3d card 1x ok
+@@SHOTSA aura-diamond-3d card 2x ok
