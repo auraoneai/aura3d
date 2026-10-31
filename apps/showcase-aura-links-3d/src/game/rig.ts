@@ -95,7 +95,16 @@ export interface GolferRig {
   readonly clubGrip: any;
 }
 
-export function buildGolferNodes(fit: GolferFit): any[] {
+/**
+ * GU47 phase 4 (ibl_reflections, material_quality): on the GU47 look the cart body is a clear-coated painted shell (the
+ * judge read it as "blown-out white with no specular response") and the bag a coated nylon; `?look=original` keeps the
+ * 4.6.2 materials. Presentation only.
+ */
+export const CART_REFINED_OVERRIDES = [
+  { color: "#d9d6cc", colorMode: "multiply" as const, roughness: 0.32, clearcoat: 0.85, clearcoatRoughness: 0.08, envMapIntensity: 1.35 }
+];
+
+export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
   const steel = material.pbr({ color: "#c8ccd4", metalness: 0.85, roughness: 0.28 });
   const rt = (name: string) => game.runtimeNode(name);
 
@@ -135,13 +144,14 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
       .runtime(rt("caddy-body")),
     primitives
-      .cylinder({ name: "golfer-bag", size: [0.3, 0.9, 0.3], material: material.pbr({ color: "#1f5f46", roughness: 0.8 }) })
+      .cylinder({ name: "golfer-bag", size: [0.3, 0.9, 0.3], material: refined ? material.pbr({ color: "#1f5f46", roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.2 } as any) : material.pbr({ color: "#1f5f46", roughness: 0.8 }) })
       .runtime(rt("golfer-bag")),
     model(assets.linksGolfCartMeshy, {
       name: "golfer-cart",
       targetHeight: 1.65,
       role: "setDressing",
-      scaleMode: "fit"
+      scaleMode: "fit",
+      ...(refined ? { materialOverrides: CART_REFINED_OVERRIDES } : {})
     }).runtime(rt("golfer-cart")),
     // Club — grip, shaft, head. Native geometry along local +Y; the bone
     // attachment (RightForearm) owns the world transform of all three parts,

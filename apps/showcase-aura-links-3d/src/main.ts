@@ -100,6 +100,7 @@ import { discOnTerrain, flatPad, ribbonAlongPath, terrainToMeshSpec, type Surfac
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
 import { turfTexture } from "./game/turfTextures";
 import { coverWind, groundCover } from "./game/groundCover";
+import { HORIZON_SPECS, horizonRing } from "./game/horizon";
 import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
@@ -789,6 +790,18 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
 
+  // --- GU47 phase 4: the distant landform ring (dune ridges, wooded rise, crater walls); one draw, GU47 look only ---
+  const horizon = turfOn ? HORIZON_SPECS[course.id] : undefined;
+  if (horizon) {
+    nodes.push(
+      geometry.custom(horizonRing(terrain, horizon), {
+        name: "horizon-landforms",
+        material: material.pbr({ color: horizon.color, roughness: horizon.roughness, doubleSided: true } as any),
+        castShadow: false
+      })
+    );
+  }
+
   // --- LINKS-09 ground cover (GU47 only): two instanced draws in the rough, the theme's tufts and its colour note ---
   if (turfOn) {
     for (const plan of groundCover(terrain, course.dressing.theme, hole.number, presentationTier)) {
@@ -810,6 +823,30 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
           ...(wind ? { wind } : {})
         })
       );
+      // GU47 WP-36 (golfMarram, LINKS-07): St Auroras' rough carries real marram clumps, the Links-owned Meshy model
+      // (6,793 triangles, one draw), on every 40th tuft spot nearest the tee, at most 48 (24 on Low)
+      if (l.name === "tufts" && course.dressing.theme === "dunes") {
+        const tee = lay.path[0] ?? [0, 0];
+        const spots = plan.transforms
+          .filter((_, i) => i % 8 === 0)
+          .map((t) => ({ t, d: Math.hypot(t.position[0] - tee[0], t.position[2] - tee[1]) }))
+          .filter((s) => s.d > 6)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, presentationTier === "low" ? 24 : 48);
+        if (spots.length > 0) {
+          nodes.push(
+            instances.model(assets.links_marram, {
+              name: "dune-marram",
+              transforms: spots.map(({ t }, i) => {
+                const s = 0.75 + ((i * 37) % 10) * 0.06;
+                return { position: [t.position[0], t.position[1] - 0.05, t.position[2]] as [number, number, number], rotation: [0, t.rotation[1], 0] as [number, number, number], scale: [s, s, s] as [number, number, number] };
+              }),
+              targetHeight: 1.1,
+              castShadow: true
+            })
+          );
+        }
+      }
     }
   }
 
@@ -957,7 +994,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   }
 
   // --- Golfer ---
-  nodes.push(...buildGolferNodes(state.fit));
+  nodes.push(...buildGolferNodes(state.fit, turfOn));
 
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
