@@ -115,11 +115,11 @@ describe("Apex Overdrive materials palette (GU47 AO-M2)", () => {
 });
 
 describe("Apex Overdrive sun shadows (GU47 AO-L4)", () => {
-  it("casts 3 PCSS cascades to 140 m from the look key and drops the black contact disc", async () => {
+  it("casts 3 PCSS cascades to 90 m (the near traffic reach) from the look key and drops the black contact disc", async () => {
     const { readFileSync } = await import("node:fs");
     const { resolve } = await import("node:path");
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
-    expect(main).toMatch(/shadow: \{ cascades: 3, maxDistance: 140, filter: "pcss"/);
+    expect(main).toMatch(/shadow: \{ cascades: 3, maxDistance: 90, filter: "pcss"/);
     expect(main).toContain("effects.contactShadows(");
     expect(main).not.toContain("player-contact-shadow");
     expect(main).not.toMatch(/lights\.ambient\(/);

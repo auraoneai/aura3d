@@ -307,8 +307,10 @@ function apexLookNode(): AuraSceneNode {
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
       background: APEX_PALETTE.charcoal,
-      // AO-L4: 3 cascades to 140 m with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low)
-      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 140, filter: "pcss", mapSize: 2048 } },
+      // AO-L4: 3 cascades with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low). GU47 phase 4: 140 -> 90 m,
+      // the reach of the shadow-casting near traffic pools (beyond 90 m the far LODs cast nothing), so the same 2048 map
+      // spends its texels where shadows exist; at 140 m the carrier's long shadow showed stair-steps in the glare.
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 90, filter: "pcss", mapSize: 2048 } },
       // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
       fog: { color: sunset.fog.color, near: 30, far: 180 },
       // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
