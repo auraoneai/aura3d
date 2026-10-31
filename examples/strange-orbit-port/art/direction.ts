@@ -42,7 +42,7 @@ export default defineArtDirection({
     // hemisphere ground bounce, planetshine directional, headlight spot, 3 rival tail points
     practicals: 6,
     environment: { preset: "capture:nebula-gas-giant", background: "sky" },
-    exposureEV: 0
+    exposureEV: 1.75
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [60, 76], mobile: "both" },
   assets: [

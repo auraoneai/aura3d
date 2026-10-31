@@ -46,6 +46,8 @@ export interface LookRow {
   };
   readonly camera: { readonly baseFov: number; readonly boostKick: number; readonly landingKick: number; readonly leanRollDeg: number };
   readonly planet: { readonly position: Vec3; readonly size: number; readonly ring: boolean; readonly moon: boolean };
+  /** Output exposure in EV (pre-tone-map `output.exposure = 2^ev`); 0 keeps the 4.6.1 exposure. */
+  readonly exposureEV: number;
   /** Signature-effect parameters: gouache brush scale and split-tone strength in the custom shaders (0 = off). */
   readonly signature: { readonly brush: number; readonly splitTone: number };
 }
@@ -73,17 +75,22 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.0, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
-    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.75 },
+    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.95 },
     environment: { kind: "capture", intensity: 0.85 },
     fog: { color: "#2a2a4d", density: 0.0011, maxOpacity: 0.78, heightMist: 1 },
     post: {
-      bloom: { intensity: 0.45, threshold: 0.72, radius: 0.5 },
-      grade: { contrast: 1.1, saturation: 1.08 },
+      bloom: { intensity: 0.3, threshold: 0.78, radius: 0.5 },
+      grade: { contrast: 1.1, saturation: 1.2 },
       vignette: { intensity: 0.24, smoothness: 0.7 },
       grain: { intensity: 0.035, size: 1.6 }
     },
     camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
     planet: { position: GIANT_POSITION, size: 520, ring: true, moon: true },
+    // Phase 2 (software WebGL2 capture): the freeze frame read mean 32 (engine light-uniform and frame-camera bugs, fixed on
+    // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
+    // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the
+    // frame stays inside 60-110.
+    exposureEV: 0.7,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {
@@ -104,9 +111,15 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     },
     camera: { baseFov: 72, boostKick: 0, landingKick: 0, leanRollDeg: 0 },
     planet: { position: [-17, 83, 48], size: 300, ring: false, moon: false },
+    exposureEV: 0,
     signature: { brush: 0, splitTone: 0 }
   }
 };
+
+/** Linear output exposure multiplier for a look (`output.exposure`). */
+export function lookExposure(look: OrbitLook): number {
+  return 2 ** LOOKS[look].exposureEV;
+}
 
 export interface SectorRow {
   readonly id: SectorId;
