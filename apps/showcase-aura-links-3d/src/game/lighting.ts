@@ -238,7 +238,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     background: "#5a3a35",
     fog: { color: "#6b5348", mode: "height", density: 0.005, maxOpacity: 0.55, heightDensity: 0.03, heightFalloff: 0.12, heightReference: 0 },
     godRays: { density: 0.6, intensity: 0.5, color: "#ffb27a" },
-    grade: { contrast: 1.12, saturation: 1.04, temperature: 0.25, tint: 0 },
+    // GU47 phase 3: the 4.7.0 frame read as a grey overcast over brown ground, not a dusk crater; warmer and richer grade
+    grade: { contrast: 1.14, saturation: 1.16, temperature: 0.4, tint: 0.03 },
     bloom: { intensity: 0.5, threshold: 0.68, scatter: 0.66 },
     vignette: { intensity: 0.18, color: "#140806" },
     grain: null,
