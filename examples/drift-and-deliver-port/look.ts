@@ -12,7 +12,7 @@ import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
-import { HDRI_URL, environmentRotationFor, godRayStrength, lightDir, type LookMode, type PhaseRow } from "./phases";
+import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
@@ -22,7 +22,7 @@ import { FESTOON, festoonBulbs, festoonIntensity } from "./festoons";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintRoadMarkings } from "./roadPaint";
-import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
+import { paintFacade, paintLaneMarkings, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
 import type { Solid } from "./sim";
 
@@ -137,6 +137,8 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
   if (look === "shift") {
     paintRoadMarkings(road.g, roadPx);
     wetRoad(road.g, roadPx);
+    // GU47 phase 2: lane paint sits on top of the wet asphalt (the multiply pass greyed it out)
+    paintLaneMarkings(road.g, roadPx);
     const rough = canvas(roadPx / 2, roadPx / 2);
     paintWetRoughness(rough.g, roadPx / 2);
     roadRoughness = repeating(texture.canvas({ canvas: rough.c, colorSpace: "linear" }));
@@ -293,7 +295,7 @@ export function shiftShadow(quality: "high" | "low") {
 export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 6 } as const;
 
 /** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
-export const GOD_RAYS = { density: 0.06, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35 } as const;
+export const GOD_RAYS = { density: 0.02, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35 } as const;
 
 /** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
 export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
@@ -355,14 +357,13 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));
       b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
       if (high) {
-        // GC-M1 SSR on the wet streets, GC-P1 grain and motion blur: High only (Low keeps palette, sky and beacon)
-        b.add(effects.screenSpaceReflections({ name: "wet-ssr", maxDistance: 60, roughness: 0.35, thickness: 0.5 }));
+        // GC-P1 grain on High. GU47 phase 2: SSR, motion blur and the GC-S5 volumetric god rays are switched off in
+        // this look: on software WebGL2 the volumetric pass hazed every phase into a flat beige wall (it stayed in the
+        // forward fog even with the post stage disabled), and SSR / motion blur softened the street against the 4.6.2
+        // frame. `GOD_RAYS` stays exported for the identity sheet; nothing adds it.
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
-        b.add(effects.motionBlur({ name: "motion-blur", intensity: 0.3 }));
         // GC-P3 tilt-shift toy-city band on the title and results screens only (shiftRuntime.menu toggles it)
         b.add(effects.depthOfField({ name: "title-tilt", maxBlur: TILT.maxBlur, tiltShift: { bandCenter: TILT.bandCenter, bandWidth: TILT.bandWidth } }));
-        // GC-S5 sunset god rays down the canyons (High only; intensity 0 away from sunset, driven by shiftRuntime)
-        b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAYS.density, color: GOD_RAYS.color, intensity: GOD_RAYS.intensity * godRayStrength(row.sun.elevationDeg), godRayDensity: GOD_RAYS.godRayDensity }));
       }
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }
