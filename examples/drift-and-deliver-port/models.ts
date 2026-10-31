@@ -46,8 +46,17 @@ export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "courier">> = { seda
  * default "ZYX" (the original look) rolls about the world z axis.
  */
 export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder?: "YXZ") {
-  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false, ...(bodyOrder ? { rotationOrder: bodyOrder } : {}) }).runtime({ id });
+  // GU47 phase 4: the shift look (`bodyOrder` set) gives the courier a clear-coated, sky-reflecting paint
+  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false, ...(bodyOrder ? { rotationOrder: bodyOrder, materialOverrides: [COURIER_PAINT] } : {}) }).runtime({ id });
 }
+
+/**
+ * GU47 phase 4 (4.7.2): glossy paint on the Meshy car bodies in the shift look. The GLBs ship matte (roughness about
+ * 0.9, no clearcoat), so the courier and the traffic showed no environment reflection and no sun highlight (rubric
+ * ibl_reflections 3.5). Presentation only: the overrides change the materials, not the meshes or the collision boxes.
+ */
+export const COURIER_PAINT = { roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.6 } as const;
+export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.08, envMapIntensity: 1.3 } as const;
 
 /** Uniform scale that brings a car GLB to its target length. */
 export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
@@ -56,10 +65,10 @@ export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
  * Traffic of one car kind as ONE instanced model (one draw per kind instead of one node per car). The app moves the cars
  * with `nodes.require(id).setInstances(transforms)` every frame; `start` holds the first transforms.
  */
-export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[]) {
+export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[], glossy = false) {
   const scale = carScale(key);
   // GU47 WP-28 GC-L2: traffic casts in the shift look (one instanced shadow draw per kind and cascade)
-  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false }).runtime({ id });
+  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false, ...(glossy ? { materialOverrides: [TRAFFIC_PAINT] } : {}) }).runtime({ id });
 }
 
 /** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */
