@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing.jpg",
+      "sha256": "d901f9277d0943a2b7dccc6d1a78c1bc78e747336613dda41ae01fc7a933e203"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-1/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "dfce81f259956acf14d11108fcf66d00b872f44189b0b2ef109bac753b901fb9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-3/aura-diamond-3d--lunar--settle-60s.jpg",
+      "sha256": "4057057a660836a10a486fb7d766c550cb41da698c7e9db1da3a0ab1afc52bb2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-2/aura-diamond-3d--canyon--settle-60s.jpg",
+      "sha256": "35d9cc00b9bd3e135de7edfa060e220d14dd4b4626027a0bc77f7c7c12b76fce"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 2.5,
+    "environment_world": 5,
+    "atmospheric_effects": 3,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 4,
+    "animation_quality": 4,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Lighting is mostly flat ambient. Harbor has a warm orange hotspot over the mound. Lunar is a dim grey wash with no flood-light pools. No 55°/45° key direction is readable on the players."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are only faint contact shadows under the fielders. No crisp cast shadows from the batter or catcher fall across the dirt. Lunar shows thin stray shadow lines across the infield, which suggests shadow-map artifacts."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Uniforms, bases and the mound all have the same matte response. There is no environment reflection or specular sheen even on the Midtown glass towers, which read as noisy textures."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The arena themes are varied: harbor boats, Midtown skyline, Lunar night, Canyon boulders. However, the stands are tiny low-poly blocks of colored dots. The skyline buildings have a noisy, garbled texture. Large empty walls make the backgrounds feel sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is essentially no indoor haze or depth fog. Only Midtown has a slight teal tint. The distant outfield and stands are as sharp as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The infield dirt uses a large-scale smeared noise texture. It looks blotchy pink in Midtown and flat beige in Lunar. The turf is a uniform flat green or teal with no mowing pattern or grain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Player models are simple and identical, with basic proportions, a blocky glove and a stick-like bat. The outfield wall and scoreboard are simple boxes. The infield shape has angular polygonal edges."
+    },
+    {
+      "category": "composition",
+      "seen": "Behind-home framing puts the batter, catcher and the whole infield in view, which is readable. The players occupy only a small part of the frame, and the top third is spent on the sparse stands and sky."
+    },
+    {
+      "category": "camera",
+      "seen": "The elevated broadcast perspective works for gameplay, with all fielders visible. It uses perspective rather than the expected orthographic-like long-lens look."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Harbor shows a heavy orange bloom and vignette blotch over the mound. The other frames have no grading or tonemapping character. Lunar looks underexposed and muddy."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "All fielders hold identical static poses across all frames. The batter stance is the only variation, seen in Harbor. Nothing conveys motion."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The Harbor HUD has a clean linescore, count, outs, bases and matchup panels in a dark broadcast style, plus a controls strip. The panels are low contrast, and a 'quick play' label overlaps text. The top nav bar is utilitarian."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

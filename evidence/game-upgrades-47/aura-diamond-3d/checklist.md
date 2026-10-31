@@ -28,3 +28,17 @@ budget; "blocked (WP-36)" = needs a generated asset; "blocked (E-x)" = needs an 
 | DIA-X1 | audit 0 errors; same_game false in 4 of 4; >= 14 of 15 park pairs read as different venues; every category >= 7 on Harbor, Skyline, Lunar | audit: 0 violations in all six parks (art-direction.test.ts writes art/direction.audit.json); judge: phase 2 |
 
 Statuses are updated row by row in `docs/prds/game-upgrades-47/lanes/g08.md`.
+
+## Phase 3 (4.7.1) status
+
+Steady-state luma from the phase-3 round-2 capture (`p3-r2`, runs `g08p3-r2-{1,2,3}`, software WebGL2) is committed as
+`luma-after.json`. Every park is judged better than 4.6.2 by the blind panel (3-0, tag `g08p3r2`), but the WP-18 bands miss:
+
+| Row | Phase-3 result |
+|---|---|
+| DIA-L1 | p95 162-166 (Harbor), 160 (Canyon), 130 (Ivy), 136 (Lunar) vs >= 200; clip 0 everywhere; Canyon p5 86 vs <= 25; Lunar darkFrac 0.17 vs 0.2-0.4. Bands not met; not widened (see lane report) |
+| DIA-L2 | Skyline p95 131 vs >= 190, darkFrac 0.014 (ok); Dome p50 78 vs >= 85, rb 0.89 vs 0.95-1.05. Not met |
+| DIA-E2 | Canyon top cell 122 vs >= 140. Lunar top cell within <= 12 |
+| DIA-E3 | middle row inside 40-170 in all six parks |
+| DIA-X1 | sibling judge: different games in 88-96% of 48 trials per pair; confidence 0.802 vs top-tennis (pass), 0.773 hoops, 0.795 fc, 0.778 links (fail at >= 0.8). Rubric: see `look-judgement.json` (min 2.5, ibl_reflections); categories under 7 |
+| DIA-A1/A2/A3 | still blocked (WP-36): set pieces, fans, stitched ball, kit retexture |

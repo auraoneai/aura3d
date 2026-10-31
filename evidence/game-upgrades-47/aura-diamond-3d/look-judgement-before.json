@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/aura-diamond-3d/screens/final/1280x720/03-action-04-swing-0-700.jpg",
+      "sha256": "faa379cdc4e05c1324006b514eb4249e125667529042ac579b1cca942029bd92"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/fix/aura-diamond-3d/frames/g08bp2-aura-diamond-3d-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "1ef55da45deb137e94afeceb010e0a3fd7c1e109619ed962341a5cdc26d2faba"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/fix/aura-diamond-3d/frames/g08bp2-aura-diamond-3d-2/aura-diamond-3d--canyon--settle-60s.jpg",
+      "sha256": "f1585395394ce07bf0ba1cc29aa7f5f68f21f0df3a0356258421d6fface200ed"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/fix/aura-diamond-3d/frames/g08bp2-aura-diamond-3d-1/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "ed813d3500f83a9a0fc4690f3e35bed2a457704a61a99365d771bf24729da438"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 2.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "animation_quality": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, even illumination across the infield in all four stadiums. There is no readable key direction from a 55° flood rig. Midtown gets a magenta tint, but the light has no falloff or pooling."
+    },
+    {
+      "category": "shadows",
+      "seen": "The players cast almost no contact shadows on the dirt. The batter and catcher look like they float. The mound and bases have no grounding occlusion."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No specular response on helmets, bats or bases. Uniforms and dirt read as fully diffuse, with no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Each venue is distinct: Harbor has a rock wall and pergolas, Canyon has giant boulders, Midtown has a skyline. However, the backdrops are low-detail billboards and the crowds are rows of colored blocks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Midtown shows faint rain streaks. Otherwise there is no distance haze or arena volumetrics, so the outfield wall is as crisp as the infield."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The dirt has a noisy, tiled-looking procedural texture that turns into blotchy magenta in Midtown. The turf is flat green with no mowing pattern. The rocks have decent albedo but look stretched."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Fielders are generic low-poly identical figures. The outfielders are tiny white sprites. The bat is a simple cylinder. The mound is a plain disc."
+    },
+    {
+      "category": "composition",
+      "seen": "The behind-the-plate broadcast view centers the diamond well. The batter and catcher occupy a small lower portion, and a large empty dirt area dominates the middle of the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "A high elevated perspective, not orthographic. The FOV looks wider than 40, which distorts the infield shape. The framing is consistent across frames."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild vignette and grading per venue. There is no bloom on the scoreboards or lights, and frame 1 has a gray washed-out haze over the HUD region."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static stances across frames. The only change is the batter's bat pose, and fielders show no ready-position variation."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard, count, outs and bases panels are clean and legible. The control-hint bar is clear. The timing reticle ring is readable. The top nav bar feels like debug chrome and crowds the view."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
