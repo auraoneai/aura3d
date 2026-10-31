@@ -87,7 +87,8 @@ export interface SplatLook {
   readonly post: null | {
     readonly bloom: { readonly intensity: number; readonly threshold: number; readonly scatter: number };
     readonly vignette: { readonly intensity: number; readonly color: string };
-    /** `gain`: linear exposure multiply in the HDR grade (GU47 phase 2: lifts the steady frame into the 125-150 mean band). */
+    /** `gain`: linear exposure multiply in the HDR grade (GU47 phase 2). The first tune (1.38) was set on a frozen boot frame
+     *  (the key light had no runtime id, so boot stopped before `ready`); the running title frame is brighter. */
     readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
@@ -151,7 +152,10 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       canvas: { weave: 0.05, streak: 0.06 }
     },
     sky: {
-      horizonY: -0.42,
+      /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
+       * from (0, 5.6, 9)), so the painted horizon goes there: the apricot band and the sun disc 7 deg above it show at the
+       * sea edge (at -0.42 both sat under the sea and the visible sky was rose to dusky blue only). */
+      horizonY: -0.225,
       sunDiscDeg: 1.6,
       haloDeg: 9,
       discElevationDeg: 7,
@@ -183,7 +187,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     post: {
       bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 1.38 },
+      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 0.95 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
@@ -280,5 +284,5 @@ const COMMON_CROPS: readonly QaCrop[] = [
 ];
 export const QA_CROPS: Readonly<Record<LookId, readonly QaCrop[]>> = {
   original: COMMON_CROPS,
-  carnival: [...COMMON_CROPS, { name: "sun", x: 0.2, y: 0.3, w: 0.16, h: 0.16 }]
+  carnival: [...COMMON_CROPS, { name: "sun", x: 0.04, y: 0.29, w: 0.16, h: 0.16 }]
 };
