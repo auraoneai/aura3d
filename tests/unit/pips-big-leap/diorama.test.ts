@@ -117,7 +117,7 @@ describe("pips-big-leap diorama scene", () => {
     expect(rate(true)).toBeCloseTo(rate(false) / 2, 5);
   });
 
-  it("drops the authored extra bloom and adds the vignette and the f/2 miniature DOF (PBL-P1, PBL-P2)", () => {
+  it("drops the authored extra bloom and adds the vignette and the f/4 miniature DOF where the world keeps it (PBL-P1, PBL-P2)", () => {
     for (const id of WORLD_IDS) {
       const effects = sceneOf(id).filter((n) => n.kind === "effect");
       expect(effects.filter((n) => n.effect === "bloom"), id).toHaveLength(1);
@@ -128,7 +128,7 @@ describe("pips-big-leap diorama scene", () => {
         expect(dof, id).toBeUndefined();
         continue;
       }
-      expect(dof?.fStop).toBe(2);
+      expect(dof?.fStop).toBe(4);
       expect(dof?.focusDistance).toBeCloseTo(4.63, 1);
     }
   });

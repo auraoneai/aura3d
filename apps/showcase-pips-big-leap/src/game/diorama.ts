@@ -412,7 +412,7 @@ export function vignetteNode(look: WorldLook): DioramaNode {
 
 /**
  * PBL-P2 signature miniature lens: thin-lens DOF focused on Pip (about 4.6 m on desktop),
- * f/2, 50 mm, maxBlur 4. The runtime follows Pip with `app.post.setEffect("depthOfField",
+ * f/4, 50 mm, maxBlur 2 (phase 3; f/2 and 4 px before). The runtime follows Pip with `app.post.setEffect("depthOfField",
  * { focusDistance })`. The engine tier table drops DOF below High (PRD 6.4).
  */
 export function miniatureDofNode(): DioramaNode {

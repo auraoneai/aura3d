@@ -37,11 +37,11 @@ describe("pips-big-leap look table (PBL-L1)", () => {
   it("keys the daylight worlds from behind the lens (phase 3: the panel saw a backlit Pip) and keeps w4/w6", () => {
     const angles = (id: keyof typeof WORLD_LOOKS) => [WORLD_LOOKS[id].key.elevationDeg, WORLD_LOOKS[id].key.azimuthDeg];
     expect(angles("academy")).toEqual([48, 35]);
-    expect(angles("w1")).toEqual([40, 40]);
+    expect(angles("w1")).toEqual([50, 40]);
     expect(angles("w2")).toEqual([24, 320]);
     expect(angles("w3")).toEqual([40, 30]);
     expect(angles("w6")).toEqual([30, 300]);
-    expect(WORLD_LOOKS.w4.key.intensity).toBe(1.1);
+    expect(WORLD_LOOKS.w4.key.intensity).toBe(1.4);
     expect(WORLD_LOOKS.w5.key.intensity).toBe(1.4);
   });
 
@@ -50,7 +50,7 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(WORLD_LOOKS.academy.hdri.id).toBe("autumn_field_puresky");
     expect(WORLD_LOOKS.w1.hdri.id).toBe("autumn_field_puresky");
     expect(WORLD_LOOKS.w3.hdri.id).toBe("autumn_field_puresky");
-    expect(WORLD_LOOKS.w2.hdri.id).toBe("belfast_sunset_puresky");
+    expect(WORLD_LOOKS.w2.hdri.id).toBe("kloppenheim_06_puresky");
     expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.6 });
     expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.6 });
     expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.55 });
@@ -149,8 +149,8 @@ describe("pips-big-leap diorama base and atmosphere (PBL-E1, E2, E3, P3)", () =>
 });
 
 describe("pips-big-leap miniature lens and framing (PBL-P2, PBL-C2)", () => {
-  it("uses f/2, 50 mm and maxBlur 4", () => {
-    expect(MINIATURE_LENS).toEqual({ fStop: 2, focalLength: 50, maxBlur: 4 });
+  it("uses f/4, 50 mm and maxBlur 2 (phase 3; was f/2, maxBlur 4)", () => {
+    expect(MINIATURE_LENS).toEqual({ fStop: 4, focalLength: 50, maxBlur: 2 });
   });
 
   it("frames Pip from 1.7 m with fov 46 on desktop and keeps >= 34 deg horizontal in a 390x844 portrait", () => {

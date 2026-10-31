@@ -125,7 +125,8 @@ export const PIP_PALETTE = {
 } as const;
 
 /** Depth of field shared by every world (PBL-P2): the signature shallow-focus miniature lens. */
-export const MINIATURE_LENS = { fStop: 2.0, focalLength: 50, maxBlur: 4 } as const;
+// Phase 3: f/4 and a 2 px cap (the rubric judge named the f/2 blur over the near props in w4/w6).
+export const MINIATURE_LENS = { fStop: 4.0, focalLength: 50, maxBlur: 2 } as const;
 
 /** Pip's body centre above his feet, for the focus distance (Pip is 1.25 m tall in world units). */
 export const PIP_FOCUS_LIFT = 0.6;
@@ -202,7 +203,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "canopy dawn shafts",
     baseLook: "outdoor-day",
     hdri: { id: "autumn_field_puresky", intensity: 0.92, rotationDeg: 70 },
-    key: { elevationDeg: 40, azimuthDeg: 40, color: "#ffe2b8", intensity: 3.0, lightSize: 0.7, softness: 0.5 },
+    key: { elevationDeg: 50, azimuthDeg: 40, color: "#ffe2b8", intensity: 3.0, lightSize: 0.7, softness: 0.5 },
     rim: { azimuthDeg: opposite(40), color: "#9fc2ff", intensity: 0.45 },
     hemisphere: { skyColor: "#d2e4ee", groundColor: "#4a5a2a", intensity: 0.3 },
     background: "#e6e4d2",
@@ -220,14 +221,14 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     id: "w2",
     hour: "millpond golden hour",
     baseLook: "golden-hour",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.95, rotationDeg: 250 },
+    hdri: { id: "kloppenheim_06_puresky", intensity: 0.95, rotationDeg: 250 },
     key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.8, lightSize: 0.8, softness: 0.5 },
     rim: { azimuthDeg: opposite(320), color: "#a8c4ff", intensity: 0.45 },
     hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.3 },
     background: "#f6d4a8",
     hdriSky: true,
     exposureEv: 0,
-    fog: { color: "#e8c8a4", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.4, maxOpacity: 0.16 },
+    fog: { color: "#e8c8a4", density: 0.001, heightDensity: 0.05, heightFalloff: 0.4, maxOpacity: 0.1 },
     base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
@@ -241,7 +242,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     id: "w3",
     hour: "dandelion-fluff dawn",
     baseLook: "alpine-snow",
-    hdri: { id: "autumn_field_puresky", intensity: 1.08, rotationDeg: 200 },
+    hdri: { id: "autumn_field_puresky", intensity: 0.96, rotationDeg: 200 },
     key: { elevationDeg: 40, azimuthDeg: 30, color: "#fff0e0", intensity: 3.0, lightSize: 0.6, softness: 0.4 },
     rim: { azimuthDeg: opposite(30), color: "#c6b8ff", intensity: 0.5 },
     hemisphere: { skyColor: "#e4e6fa", groundColor: "#7a6a86", intensity: 0.3 },
@@ -261,14 +262,14 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "lava-lit basalt cellar",
     baseLook: "interior-industrial",
     hdri: { id: "hangar_interior", intensity: 0.6, rotationDeg: 30 },
-    key: { elevationDeg: 55, azimuthDeg: 20, color: "#ffb48a", intensity: 1.1, lightSize: 1.2, softness: 0.7 },
+    key: { elevationDeg: 55, azimuthDeg: 20, color: "#ffb48a", intensity: 1.4, lightSize: 1.2, softness: 0.7 },
     rim: { azimuthDeg: 200, color: "#7d8fd8", intensity: 0.3 },
     hemisphere: { skyColor: "#3a2a2a", groundColor: "#ff6a2a", intensity: 0.5 },
     background: "#3a1c12",
     exposureEv: 1.4,
     fog: { color: "#3a1a10", density: 0.008, heightDensity: 0.14, heightFalloff: 0.32, maxOpacity: 0.6 },
     base: { felt: "#2a1f1c", clay: "#3a2a24", skirt: "#120a08", mound: "#4a2a1e" },
-    post: { preset: "arena-fight", contrast: 1.06, saturation: 1.08, temperature: 0.18, tint: -0.02, vignette: { intensity: 0.26, color: "#0a0503" } },
+    post: { preset: "arena-fight", contrast: 1.06, saturation: 1.08, temperature: 0.18, tint: -0.02, vignette: { intensity: 0.14, color: "#0a0503" } },
     ambient: { kind: "embers", color: "#ff8a3d", maxParticles: 300, rate: 44, size: [0.02, 0.045], lifetime: [2.5, 4.5], speed: [0.3, 0.8], gravity: 0.35, drag: 0.3, additive: true },
     practicals: [
       { name: "pbl-lava-glow-a", type: "point", position: [-3.2, 1.9, -28.5], color: "#ff6a2a", intensity: 14, distance: 7, flicker: 0.25 },
@@ -310,11 +311,11 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     rim: { azimuthDeg: opposite(300), color: "#7fe8d8", intensity: 0.35 },
     hemisphere: { skyColor: "#2a3a6a", groundColor: "#141a2a", intensity: 0.35 },
     background: "#0b1230",
-    exposureEv: 1.2,
+    exposureEv: 1.35,
     fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
-    post: { preset: "space", contrast: 1.04, saturation: 1.02, temperature: -0.12, tint: 0.02, vignette: { intensity: 0.22, color: "#03040a" } },
+    post: { preset: "space", contrast: 1.04, saturation: 1.02, temperature: -0.12, tint: 0.02, vignette: { intensity: 0.12, color: "#03040a" } },
     ambient: { kind: "fireflies", color: "#d8ff7a", maxParticles: 160, rate: 18, size: [0.03, 0.06], lifetime: [4, 7], speed: [0.08, 0.26], gravity: 0, drag: 0.35, additive: true },
     practicals: [
       { name: "pbl-crystal-glow-a", type: "point", position: [-3.4, 2.0, 0.5], color: "#6fe8ff", intensity: 14, distance: 7, flicker: 0.12 },
@@ -375,7 +376,8 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
  * GU47 blind-panel fix pass (2026-10-31): the 4.6.2 look became the default because three
  * blind judges rated the diorama worse than 4.6.2 in academy, w1, w2, w3 and w5. GU47 phase 3
  * (4.7.1) chooses the look per world: `WORLD_DEFAULT_LOOK` opens each world in the look that
- * won its blind panel against the 4.6.2 frame. `?look=diorama` / `?look=original` force one
+ * won its blind panel against the 4.6.2 frame. After the phase-3 fixes every world won 3/0/0
+ * (panel g06p3r2), so every world opens in the diorama; a world that loses later flips here. `?look=diorama` / `?look=original` force one
  * look for every world (both switches keep working).
  */
 export const DEFAULT_LOOK_MODE: PipLookMode = "original";
