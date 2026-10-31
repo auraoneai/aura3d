@@ -313,6 +313,7 @@ function render(dt: number, blend = false): void {
   if (!app || !runtime || guard.failed) return;
   try {
     const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
+    runtime.setTitle?.(!started);
     runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
     // GU47 SSR-15: intro cinema bars (written only when the height moves)
     const bars = Math.round((runtime.shot?.bars ?? 0) * 100) / 100;

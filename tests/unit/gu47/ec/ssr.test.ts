@@ -92,8 +92,80 @@ describe("S3 in the v2 HDR driver", () => {
   });
 });
 
+/**
+ * CPU mirror of the SSR_TRACE_GLSL march (orthographic toy: screen position = view xy, depth =
+ * -z). GU47 phase 2 (receipt effects-ssr): the old test accepted only a raw sample within
+ * `u_thickness` of the depth buffer, so a step longer than the thickness skipped thin surfaces.
+ */
+type V3 = readonly [number, number, number];
+function marchHit(p: V3, r: V3, sceneZ: (x: number) => number, options: { refineCrossing: boolean; steps?: number; maxDistance?: number; thickness?: number }): V3 | null {
+  const steps = options.steps ?? 24, stepLength = (options.maxDistance ?? 18) / steps, thickness = options.thickness ?? 0.25;
+  const at = (t: number): V3 => [p[0] + r[0] * t, p[1] + r[1] * t, p[2] + r[2] * t];
+  const behindBy = (q: V3) => -q[2] - sceneZ(q[0]);
+  let prev: V3 = p, prevBehind = false;
+  for (let i = 1; i <= steps; i += 1) {
+    const q = at(stepLength * i);
+    const behind = behindBy(q) > 0;
+    if (!options.refineCrossing) {
+      if (behind && behindBy(q) < thickness) return q;
+    } else if (behind && !prevBehind) {
+      let a = prev, b = q;
+      for (let j = 0; j < 4; j += 1) {
+        const m: V3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+        if (behindBy(m) > 0) b = m; else a = m;
+      }
+      if (behindBy(b) < thickness) return b;
+    }
+    prevBehind = behind;
+    prev = q;
+  }
+  return null;
+}
+
+describe("S3 hit test (CPU mirror of the trace loop)", () => {
+  // Open background until x = 1, then a face that rises steeply toward the camera (a crate front
+  // seen in the floor): the ray (depth 3 + 0.6 x) meets it at x = 1, and the next 0.75 m step lands
+  // 1.3 m behind it.
+  const p: V3 = [0, 0, -3];
+  const r: V3 = [1, 0, 0];
+  const sceneZ = (x: number) => (x < 1 ? 10 : Math.max(0.5, 3.6 - 2 * (x - 1)));
+
+  it("the unrefined test misses a surface the 0.75 m step jumps past by more than the thickness", () => {
+    expect(marchHit(p, [r[0], r[1], -0.6], sceneZ, { refineCrossing: false })).toBeNull();
+  });
+
+  it("refining the crossing first finds it, within a sixteenth of a step", () => {
+    const hit = marchHit(p, [r[0], r[1], -0.6], sceneZ, { refineCrossing: true });
+    expect(hit).not.toBeNull();
+    expect(hit![0]).toBeGreaterThan(0.9);
+    expect(hit![0]).toBeLessThan(1.1);
+  });
+
+  it("a ray passing far behind a surface is still rejected by the thickness test", () => {
+    const occluder = (x: number) => (x < 1 ? 10 : 0.5);
+    expect(marchHit(p, r, occluder, { refineCrossing: true })).toBeNull();
+  });
+
+  it("the distance fade uses the refined hit distance, not the march step index (drift-and-deliver-port wet road: 2.5 m steps banded the fade into stripes)", () => {
+    expect(SSR_TRACE_GLSL).toContain("travelled = clamp(length(b - p) / u_maxDistance, 0.0, 1.0);");
+    expect(SSR_TRACE_GLSL).not.toContain("travelled = float(i) / float(AURA_SSR_STEPS);");
+  });
+
+  it("the shader carries the crossing refinement", () => {
+    expect(SSR_TRACE_GLSL).toContain("if (behind && !prevBehind)");
+    expect(SSR_TRACE_GLSL).toContain("if (-b.z - linearDepthAt(buv) < u_thickness)");
+    expect(SSR_TRACE_GLSL).not.toContain("rayZ - sceneZ < u_thickness");
+  });
+});
+
 describe("bridge: pipeline.ssr", () => {
   const derive = (node: unknown) => createRootPostPipeline({ nodes: [node] } as never, undefined, undefined, QUALITY_TIERS.high).options;
+
+  it("reports that S3 has no per-pixel metalness / roughness whenever it is authored", () => {
+    const codes = (node: unknown) => createRootPostPipeline({ nodes: [node] } as never, undefined, undefined, QUALITY_TIERS.high).diagnostics.map((d) => d.code);
+    expect(codes(effects.screenSpaceReflections({ intensity: 1 }).toJSON())).toContain("POST_SSR_MATERIAL_INPUTS_UNAVAILABLE");
+    expect(codes(effects.bloom({}).toJSON())).not.toContain("POST_SSR_MATERIAL_INPUTS_UNAVAILABLE");
+  });
 
   it("emits the S3 bag for an authored node, with roughness/thickness only when authored", () => {
     expect(derive(effects.screenSpaceReflections({ intensity: 0.7 }).toJSON()).ssr).toEqual({ intensity: 0.7, maxDistance: 18 });

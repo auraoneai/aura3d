@@ -20,7 +20,15 @@ registerDiagnosticsSection({ id: "prd03.post", owner: "prd03", flag: "A3D_QR_POS
 registerDiagnosticsSection({ id: "prd03.exposure", owner: "prd03", flag: "A3D_QR_POST", key: "exposure", collect: collectExposureSection });
 
 // C-38 post surface — app.post / app.addPostPass / app.setQualityTier.
-registerAppExtension({ id: "prd03.post", owner: "prd03", flag: "A3D_QR_POST", member: "post", create: createPrd03PostSurface });
+// `dispose` releases the custom passes the app added (the pass registry is page-global).
+registerAppExtension({
+  id: "prd03.post",
+  owner: "prd03",
+  flag: "A3D_QR_POST",
+  member: "post",
+  create: createPrd03PostSurface,
+  dispose: (surface) => (surface as { dispose?: () => void }).dispose?.()
+});
 
 // C-36 merge — the contract table is the published surface; the record is
 // additive-only and never removes another lane's entries.

@@ -14,7 +14,7 @@ import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, gateDripMesh, mergeMeshe
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
-import { BACKDROP_KEY_SCALE, addBackdrop, updateBackdrop } from "./backdrop";
+import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, addBackdrop, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
 import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
@@ -765,7 +765,7 @@ export function buildWorld(options: WorldOptions): World {
     const post = look.post;
     builder
       .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, scatter: post.bloom.scatter }))
-      .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature }))
+      .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature, gain: post.grade.gain }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
       .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }))
       .add(effects.depthOfField({ name: "title-dof", focusDistance: dofFocus(0, 15, 18, { x: 0, y: 0.55, z: 0 }), fStop: post.dof.fStop, focalLength: post.dof.focalLength, maxBlur: post.dof.maxBlur }));
@@ -834,7 +834,7 @@ export function buildWorld(options: WorldOptions): World {
           node("cloud-sea").setUniform?.("crFogColor", [...tod.horizon]);
         }
         const d = tod.sunDirection;
-        node("backdrop-key").setLight?.({
+        node(BACKDROP_KEY_ID).setLight?.({
           position: [d[0] * 100, d[1] * 100, d[2] * 100],
           intensity: BACKDROP_KEY_SCALE * tod.sunIntensity,
           color: rgbHex(tod.sunColor)

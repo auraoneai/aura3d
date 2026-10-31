@@ -465,6 +465,8 @@ export class Prd03PostSurface implements AuraPostSurface {
   private requestedTier: AuraQualityTier | "auto" | null = null;
   /** GU47 E-C (EC-5): this app's runtime effect overrides (`setEffect` / `setEffectEnabled`). */
   private readonly runtimeOverrides: RuntimePostOverrides;
+  /** Releases of the passes this surface registered and that are still live. */
+  private readonly releases = new Set<() => void>();
 
   constructor(
     private readonly flags: QrFlags,
@@ -477,13 +479,28 @@ export class Prd03PostSurface implements AuraPostSurface {
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
     const descriptor = customPassToDescriptor(pass);
-    const release = registerPostPass(descriptor);
-    return () => {
+    const unregister = registerPostPass(descriptor);
+    const release = () => {
+      if (!this.releases.delete(release)) return;
       // SH-03: removing a pass leaves no residue — registry entry AND staged
       // setPassUniform overrides both go away.
       passUniformOverrides.delete(descriptor.id);
-      release();
+      unregister();
     };
+    this.releases.add(release);
+    return release;
+  }
+
+  /**
+   * GU47 phase 2: `app.dispose()` releases every pass this app added. The C-13
+   * registry is page-global, so a pass the app never released used to outlive
+   * it: the next app on the page that added a pass with the same name threw
+   * `REGISTRY_DUPLICATE:prd03.custom.<name>`, and any other app kept running
+   * the dead app's pass. Releasing is idempotent (the returned release and
+   * dispose may both run).
+   */
+  dispose(): void {
+    for (const release of [...this.releases]) release();
   }
 
   /**
@@ -815,7 +832,7 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 
 export interface PostFieldDiagnostic {
   readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE"
-    | "POST_LUT_PENDING" | "POST_LUT_UNAVAILABLE";
+    | "POST_LUT_PENDING" | "POST_LUT_UNAVAILABLE" | "POST_SELECTIVE_BLOOM_UNAVAILABLE" | "POST_SSR_MATERIAL_INPUTS_UNAVAILABLE";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;
@@ -1201,9 +1218,24 @@ export function createRootPostPipeline(
 
   const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
   if (bloom) diagnostics.push(...bloom.diagnostics);
-  // GU47 E-C (EC-7): a material `bloom` weight other than 1 turns on the
-  // prefilter's alpha weight; all-default scenes keep the bag unchanged.
-  const selectiveBloom = Boolean(bloom) && selectiveBloomActive(materialBloomWeights(nodes));
+  // GU47 E-C (EC-7): a material `bloom` weight other than 1 asks for the
+  // prefilter's alpha weight. Not stamped (GU47 phase 2): no forward program
+  // writes the weight, and on the generated path every opaque pixel's HDR
+  // alpha already carries the S2 indirect-fraction tag (2 + f_ind,
+  // `post/chunks/indirectFraction.glsl.ts`), which `auraBloomWeight` clamps
+  // to 2, doubling the bloom of every surface instead of masking one (receipt
+  // effects-selective-bloom: wall at weight 0 bloomed by 157). Until the
+  // forward write and a non-colliding encoding land, bloom stays unweighted
+  // and the scene is told so.
+  const selectiveBloomRequested = Boolean(bloom) && selectiveBloomActive(materialBloomWeights(nodes));
+  if (selectiveBloomRequested) {
+    diagnostics.push({
+      code: "POST_SELECTIVE_BLOOM_UNAVAILABLE",
+      effect: "bloom",
+      field: "material.bloom",
+      message: "material bloom weights are ignored: the forward pass does not write the weight yet, so bloom applies to every surface over the threshold."
+    });
+  }
 
   const exposure = (effectiveOutput?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
   const toneMapping = effectiveOutput?.toneMapping ?? "aces";
@@ -1222,6 +1254,14 @@ export function createRootPostPipeline(
   if (mbNode && !mbEnabled) tierDisabled("S7-motion-blur", "motion blur off below High");
   const ssrEnabled = tierResolution === undefined || tierResolution.ssr.enabled;
   if (ssrNode && !ssrEnabled) tierDisabled("S3-ssr", "SSR off below High");
+  // GU47 phase 2 (receipt effects-ssr): S3 has no per-pixel material inputs.
+  if (ssrNode && ssrEnabled) {
+    diagnostics.push({
+      code: "POST_SSR_MATERIAL_INPUTS_UNAVAILABLE",
+      effect: "screen-space-reflections",
+      message: "S3 reflects with dielectric F0 0.04 and the node roughness for the whole frame: the forward pass writes no per-pixel metalness or roughness, so metallic surfaces reflect weaker than their material."
+    });
+  }
   const grainEnabled = tierResolution === undefined || tierResolution.allowsFilmGrain;
   if (grainNode && !grainEnabled) tierDisabled("S12-film-grain", "grain off on Low");
   const caEnabled = tierResolution === undefined || tierResolution.allowsChromaticAberration;
@@ -1249,7 +1289,8 @@ export function createRootPostPipeline(
     // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
     // 38203056326) and armed the S12 RCAS sharpen on every frame.
     renderScale: 1,
-    ...(bloom ? { bloom: selectiveBloom ? { ...bloom.options, selective: true } : bloom.options } : {}),
+    // `selective: true` is not stamped (see POST_SELECTIVE_BLOOM_UNAVAILABLE above).
+    ...(bloom ? { bloom: bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
     dither: effectiveOutput?.dither !== false,
@@ -1278,6 +1319,8 @@ export function createRootPostPipeline(
         // the fog `density` no longer rides along (S4 never read it), and an
         // omitted value keeps the full march.
         ...(godRayDensityOf(volumetricNode) !== undefined ? { density: godRayDensityOf(volumetricNode) } : {}),
+        // GU47 phase 2: the fog `density` is the shaft medium (distance scaling), never the march density.
+        medium: numberField(volumetricNode, "density", 0.18),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
         // GU47 pass 4 (g08, g18): only a 3-number lightPosition is a world point; the UV pair is the forward anchor.
