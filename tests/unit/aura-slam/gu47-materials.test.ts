@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { buildTennisScene } from "../../../examples/aura-slam/view/scene";
 import {
-  GRASS_STRIPES_ID, LINE_COLOR, STRIPE_COLORS, VENUE_SURFACE, feltBallMaterial, grassStripesGeometry, rigMaterialRole, surfaceMaterial, upgradeRigMaterial
+  GRASS_STRIPES_ALT_ID, GRASS_STRIPES_ID, LINE_COLOR, STRIPE_COLORS, VENUE_SURFACE, feltBallMaterial, grassStripesGeometry, rigMaterialRole, surfaceMaterial, upgradeRigMaterial
 } from "../../../examples/aura-slam/view/surfaces";
 import { VENUE_PALETTES } from "../../../examples/aura-slam/view/venues";
 
@@ -21,6 +21,15 @@ describe("GU47 TT-M1: hero court surfaces", () => {
       expect(court.clearcoat, venue).toBe(0.35);
       expect(court.normal).toBeDefined();
       expect(court.color).toBe(VENUE_PALETTES[venue]!.court);
+    }
+  });
+
+  it("every court grain bound as a normal is a normal-map texture (roughness fields tilted the Moon court black)", () => {
+    for (const venue of Object.keys(VENUE_PALETTES)) {
+      for (const part of ["court", "alley", "apron"] as const) {
+        const normal = surfaceMaterial(venue, part).normal as { texture?: string } | undefined;
+        expect(normal?.texture, `${venue}/${part}`).toBe("fabric-normal");
+      }
     }
   });
 
@@ -41,7 +50,7 @@ describe("GU47 TT-M1: hero court surfaces", () => {
     expect(original.find((n) => n.name === "static-lines")?.material).toMatchObject({ color: "#f5f4e6" });
   });
 
-  it("the mow stripes are one mesh of 8 alternating quads (the 8 stripe boxes are gone)", () => {
+  it("the mow stripes are 8 alternating quads in two material-coloured meshes (the 8 stripe boxes are gone)", () => {
     const geo = grassStripesGeometry() as unknown as { positions: number[]; colors: number[]; indices: number[] };
     expect(geo.positions.length / 3).toBe(32);
     expect(geo.indices.length / 6).toBe(8);
@@ -51,6 +60,12 @@ describe("GU47 TT-M1: hero court surfaces", () => {
     expect(STRIPE_COLORS).toHaveLength(2);
     const names = nodesOf("grass").map((n) => n.name);
     expect(names.filter((n) => n === GRASS_STRIPES_ID)).toHaveLength(1);
+    expect(names.filter((n) => n === GRASS_STRIPES_ALT_ID)).toHaveLength(1);
+    expect((grassStripesGeometry(0) as unknown as { indices: number[] }).indices.length / 6).toBe(4);
+    expect((grassStripesGeometry(1) as unknown as { indices: number[] }).indices.length / 6).toBe(4);
+    // The engine's mesh shading ignores vertex colours: each half is coloured by its material.
+    const stripeColours = nodesOf("grass").filter((n) => n.name === GRASS_STRIPES_ID || n.name === GRASS_STRIPES_ALT_ID).map((n) => n.material?.color);
+    expect(stripeColours).toEqual([...STRIPE_COLORS]);
     expect(names.some((n) => typeof n === "string" && /^grass-stripe-\d$/.test(n))).toBe(false);
   });
 });

@@ -80,11 +80,11 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // pebbled clay; without a DOM (unit tests) the same materials fall back to plain colour.
   const tex = gu47 ? turfTextures() : null;
   const grass = gu47
-    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: 0.6 } : {}) })
+    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: turf.normalScale?.grass ?? 0.6 } : {}) })
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
+    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
@@ -522,7 +522,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     }
     case "dome": {
       nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
-      if (gu47) nodes.push(domeInfieldProbe());
+      if (gu47 && DOME_PROBE_ENABLED) nodes.push(domeInfieldProbe());
       if (gu47) {
         // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
         // and the crowd's gold, tinting the emissive too.
@@ -615,6 +615,13 @@ export function wallNameNode(park: ParkSpec): any {
  * panels and banners instead of the HDRI hangar. Captured once at mount (6 faces at 128 px, about +2 draws' worth of
  * work on the first frame only); the parallax box is the dome interior around the diamond. A3D_QR_LIGHTING (default-on).
  */
+/**
+ * GU47 phase 2: off. On the freeze build's software WebGL2 capture the probe's once-captured cube smeared the scene over
+ * the whole Dome floor (grass included) and pulled the frame out of its luma band (p50 46, rb 0.89). The Dome falls back
+ * to the hangar HDRI's IBL on the sealed infield until the probe capture is fixed in the engine (lane report handoff).
+ */
+export const DOME_PROBE_ENABLED = false;
+
 export function domeInfieldProbe(): any {
   return probes.reflection({
     name: "dome-infield-probe",
@@ -646,7 +653,10 @@ export function harborWater(): any {
       deepColor: "#173a52",
       waves: "calm",
       reflection: { low: "ibl", medium: "ibl", high: "ibl", ultra: "planar" },
-      refraction: { low: false, medium: false, high: true, ultra: true }
+      // GU47 phase 2: refraction off on every tier. Refraction needs the after-opaque scene copy, and on the freeze build
+      // that pass fails to compile (its vertex shader lacks the `prd10.sceneCopy` marker), so Harbor never drew. The
+      // calm bay keeps IBL reflection; refraction comes back when the engine fix lands (lane report handoff).
+      refraction: { low: false, medium: false, high: false, ultra: false }
     })
     .toJSON();
 }
@@ -840,6 +850,10 @@ function skyNode(plan: DiamondLookPlan): any | null {
     ground: s.ground,
     ...(s.sun ? { sun: s.sun } : {}),
     ...(s.stars ? { stars: s.stars } : {}),
+    // GU47 phase 2 fallback: one zero-intensity band. The freeze build's SkyBackgroundPass uploads u_bandParams from
+    // the band list, and an empty list (length 0) fails the mount (RENDERER_MOUNT_FAILED on Canyon and Lunar). One band
+    // uploads a vec4 + vec3 and adds nothing (intensity 0). Drop it once the engine pads the band arrays.
+    bands: [{ elevationDeg: 0, widthDeg: 1, color: s.horizon, intensity: 0 }],
     captureEnvironment: false,
     affectsFog: false
   });
