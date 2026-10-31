@@ -1,0 +1,40 @@
+{
+  "capability": "effects-god-rays",
+  "version": "4.6.2",
+  "gitSha": "abddd22f1",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/post-receipts.ts body(): grey floor (glossy for SSR), emissive white wall (left), warm emissive lamp sphere (right), grey crate (runtime id mover), one shadow-casting sun, camera (0, 2.2, 5.2) -> (0, 0.8, 0), 480x270; volumetricFog absent / density 0.2 + lightPosition [0.8, 3, -10] / + godRayDensity 0.5",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-god-rays/god-off.png",
+      "sha256": "e371a13d93e5feff485a7b1eca579074e947a8df662771c6f34a2f18cda23089",
+      "meanLuma": 81.62450208046876,
+      "nonBlackRatio": 1,
+      "label": "god-off"
+    },
+    {
+      "file": "evidence/receipts/effects-god-rays/god-on.png",
+      "sha256": "84420b27fec11c3b999cc70f6367457c82b88d085b619648db25c4af5ccf0bf2",
+      "meanLuma": 85.86095467343749,
+      "nonBlackRatio": 1,
+      "label": "god-on"
+    },
+    {
+      "file": "evidence/receipts/effects-god-rays/god-density-half.png",
+      "sha256": "cc4a38729bdca50192eaf6154a9520870afbec1c82b7dd89665e8d3bb89d329f",
+      "meanLuma": 81.82820442734375,
+      "nonBlackRatio": 1,
+      "label": "god-density-half"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/ec/tilt-shift-god-ray-density.test.ts",
+    "tests/unit/gu47/ec/hdr-grade-and-stage-trace.test.ts"
+  ],
+  "date": "2026-10-31T06:46:59.892Z",
+  "checks": {
+    "meanLumaDelta": 4.236452592968732,
+    "changedFraction": 0.90640234375,
+    "densityChangedFraction": 0.90800390625
+  }
+}

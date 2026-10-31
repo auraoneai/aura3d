@@ -69,6 +69,12 @@ export interface ResolvedCameraInput {
   readonly viewMatrix?: Mat4;
   /** The camera's own projection when it carries one (CameraLike objects that are not `Camera` instances). */
   readonly projectionMatrix?: Mat4;
+  /**
+   * The engine's shader view / projection (`compiler/renderInput.ts` CameraLike carries only these and the
+   * view-projection). Used when the camera has no `viewMatrix` / `projectionMatrix` of its own.
+   */
+  readonly shaderViewMatrix?: Mat4;
+  readonly shaderProjectionMatrix?: Mat4;
   readonly camera?: unknown;
   readonly cameraPosition?: readonly [number, number, number];
 }
@@ -97,6 +103,14 @@ function perspectiveClip(p: Mat4): { near: number; far: number } | undefined {
   return Number.isFinite(near) && Number.isFinite(far) && near > 0 && far > near ? { near, far } : undefined;
 }
 
+/** Near/far of a column-major OpenGL orthographic projection (m[11] = 0, m[15] = 1); undefined for other shapes. */
+function orthographicClip(p: Mat4): { near: number; far: number } | undefined {
+  if (Math.abs(p[11]!) > 1e-4 || Math.abs(p[15]! - 1) > 1e-4 || p[10] === 0) return undefined;
+  const near = (p[14]! + 1) / p[10]!;
+  const far = (p[14]! - 1) / p[10]!;
+  return Number.isFinite(near) && Number.isFinite(far) && far > near ? { near, far } : undefined;
+}
+
 /** Best-effort FrameCamera for the PR 0b stub; PRD 01 publishes real history later. */
 export function toFrameCamera(
   resolvedCamera: ResolvedCameraInput | undefined,
@@ -111,16 +125,22 @@ export function toFrameCamera(
     readonly projection?: "perspective" | "orthographic";
   } | undefined;
   const viewProjection = cameraViewProjection ?? resolvedCamera.viewProjectionMatrix;
-  const projection = frameProjection(cam?.projectionMatrix ?? resolvedCamera.projectionMatrix, viewProjection, resolvedCamera.viewMatrix);
-  const clip = cam?.near === undefined || cam?.far === undefined ? perspectiveClip(projection) : undefined;
+  // GU47 phase 2 (receipt effects-ssr): app cameras reach here as the engine's CameraLike, which carries only the
+  // shader view / projection; without them the frame camera had an identity view and projection (the S3 trace
+  // projected every ray off screen) and the 0.1/1000 clip guess instead of the engine's planes (S1 linear depth,
+  // and with it DOF, GTAO, S4 and TAA disocclusion, read about 2x too far).
+  const view = resolvedCamera.viewMatrix ?? resolvedCamera.shaderViewMatrix;
+  const projection = frameProjection(cam?.projectionMatrix ?? resolvedCamera.projectionMatrix ?? resolvedCamera.shaderProjectionMatrix, viewProjection, view);
+  const ortho = cam?.projection === undefined ? orthographicClip(projection) : undefined;
+  const clip = cam?.near === undefined || cam?.far === undefined ? perspectiveClip(projection) ?? ortho : undefined;
   return {
-    viewMatrix: resolvedCamera.viewMatrix ? toF32(resolvedCamera.viewMatrix) : toF32(identityMat4()),
+    viewMatrix: view ? toF32(view) : toF32(identityMat4()),
     projectionMatrix: toF32(projection),
     viewProjectionMatrix: toF32(viewProjection),
     previousViewProjectionMatrix: null,
     near: cam?.near ?? clip?.near ?? 0.1,
     far: cam?.far ?? clip?.far ?? 1000,
-    projection: cam?.projection ?? "perspective",
+    projection: cam?.projection ?? (ortho ? "orthographic" : "perspective"),
     position: cameraPosition ?? resolvedCamera.cameraPosition ?? [0, 0, 0]
   };
 }
