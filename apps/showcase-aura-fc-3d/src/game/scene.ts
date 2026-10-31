@@ -530,7 +530,7 @@ export const DIRT_TILES: readonly [number, number] = [16, 10];
 export function dirtPitchMaterial(color: string, roughness: number) {
   const tile = { scale: DIRT_TILES };
   return material.pbr({
-    color: lightenHex(color, 0.3), roughness,
+    color: lightenHex(color, 0.1), roughness,
     texture: assets.fcConcreteColor, normal: assets.fcConcreteNormal, roughnessMap: assets.fcConcreteRough, normalScale: 0.6,
     texTransforms: { baseColor: tile, normal: tile, metallicRoughness: tile }
   });
@@ -1038,11 +1038,18 @@ export function resolveWorld(app: any): WorldHandles {
 }
 
 /** Re-tint every venue-dependent surface. Called when state.venue changes. */
-export function applyVenue(h: WorldHandles, v: VenueSpec, mode: FcLookMode = fcLookMode(v.id)): void {
+/**
+ * Re-tint the world for venue `v`. `sceneBuiltFor` = the venue the mounted scene was built for: when it matches, the
+ * textured pitch and cage-wall materials are already the scene's own, and setting them again (phase 3) restarted their
+ * texture upgrade mid-flight, leaving the first swapped resource reported `pending` for the whole session (texPending=1
+ * on every luma row: fc-pitch on Munich, cage-w-n on Lagos).
+ */
+export function applyVenue(h: WorldHandles, v: VenueSpec, mode: FcLookMode = fcLookMode(v.id), sceneBuiltFor?: VenueId): void {
   const surfaces = surfaceMaterials(v, mode);
+  const retexture = sceneBuiltFor !== v.id;
   h.ground?.setMaterial(surfaces.ground);
   h.apron?.setMaterial(surfaces.apron);
-  h.pitch?.setMaterial(surfaces.pitch);
+  if (retexture) h.pitch?.setMaterial(surfaces.pitch);
   h.scoreboard?.setMaterial(material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.4 }));
   for (const hd of h.hoardings) hd?.setMaterial(material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 }));
   if (h.stripes) {
@@ -1050,7 +1057,7 @@ export function applyVenue(h: WorldHandles, v: VenueSpec, mode: FcLookMode = fcL
     h.stripes.setInstances?.(st.transforms, st.colors);
     h.stripes.setVisible(v.stripes);
   }
-  for (const c of h.cages) c?.setMaterial(cageWallMaterial(v)).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
+  for (const c of h.cages) (retexture ? c?.setMaterial(cageWallMaterial(v)) : c)?.setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   for (const c of h.cageRails) c?.setMaterial(material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   if (h.stands) {
     const st = standTransforms(v);

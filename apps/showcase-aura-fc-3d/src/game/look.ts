@@ -278,19 +278,19 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    background: "#d9b8b8", exposureEv: -1.1, floodScale: 1,
+    background: "#d9b8b8", exposureEv: -0.8, floodScale: 1,
     grade: { contrast: 1.18, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
     // dark pitch lines read; the 4.6.2 white flat measured mean 227
-    surface: "ice", turfRoughness: 0.35, pitchColor: "#b9bcc8", pools: 0, coneIntensity: 0.3, mirror: null,
+    surface: "ice", turfRoughness: 0.35, pitchColor: "#c4c6d1", pools: 0, coneIntensity: 0.3, mirror: null,
     bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.3, grain: 0, chromaticAberration: 0
   },
   glacier: {
-    background: "#050b14", exposureEv: 0.08, floodScale: 1.3,
+    background: "#050b14", exposureEv: 0.08, floodScale: 1.1,
     grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",
-    surface: "ice", turfRoughness: 0.3, pools: 0.14, coneIntensity: 0.55, mirror: null,
+    surface: "ice", turfRoughness: 0.3, pools: 0.06, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
     hideDome: true
   }

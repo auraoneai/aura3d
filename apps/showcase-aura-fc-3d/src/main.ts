@@ -613,7 +613,7 @@ function boot(): void {
       if (s.venue !== lastVenue) {
         lastVenue = s.venue;
         rebuildForVenue(s.venue);
-        applyVenue(world, VENUES[s.venue]);
+        applyVenue(world, VENUES[s.venue], undefined, sceneVenue);
         refreshKits();
         if (appReady) { hud.banner(VENUES[s.venue].label, 2400); hud.ident(VENUES[s.venue].label, VENUE_LOOKS[s.venue].timeOfDay); }
       }
