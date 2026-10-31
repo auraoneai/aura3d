@@ -87,11 +87,11 @@ describe("pips-big-leap diorama scene", () => {
     }
   });
 
-  it("adds a real gradient sky in every outdoor world and w6 (stars), never capturing the environment (PBL-E2, phase 3)", () => {
+  it("adds a starry gradient sky node in w6 only, never capturing the environment (the daylight worlds draw their HDRI; phase 3)", () => {
     const skyOf = (id: (typeof WORLD_IDS)[number]) => sceneOf(id).find((n) => n.kind === "sky");
-    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(skyOf(id)?.spec?.model, id).toBe("gradient");
     expect(skyOf("w6")?.spec?.stars).toBeDefined();
-    for (const id of ["academy", "w1", "w2", "w3", "w6"] as const) expect(skyOf(id)?.captureEnvironment).toBe(false);
+    expect(skyOf("w6")?.captureEnvironment).toBe(false);
+    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(skyOf(id), id).toBeUndefined();
     for (const id of ["w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
   });
 

@@ -29,7 +29,6 @@ import {
   PIP_PALETTE,
   focusDistanceFor,
   miniatureFramingFor,
-  skyColorFor,
   sunPosition,
   type PipAmbientKind,
   type PresentationScale,
@@ -320,12 +319,11 @@ export function skyNode(look: WorldLook): DioramaNode | null {
       captureEnvironment: false
     });
   }
-  const tone = (hex: string): string => (s.displayed ? skyColorFor(hex, look.exposureEv) : hex);
   return sky.gradient({
     name: dioramaName.sky,
-    zenith: tone(s.zenith),
-    horizon: tone(s.horizon),
-    ground: tone(s.ground),
+    zenith: s.zenith,
+    horizon: s.horizon,
+    ground: s.ground,
     exponent: s.exponent,
     horizonGlow: s.horizonGlow,
     ...(s.stars ? { stars: { count: s.stars.count, brightness: s.stars.brightness } } : {}),

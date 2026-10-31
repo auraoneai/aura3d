@@ -621,7 +621,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const diorama = mode === "diorama";
   const look = worldLook(spec.id);
   const scale = presentationScale(options.reducedMotion === true);
-  const builder = scene().background(diorama ? look.background : (spec.background ?? "#1e4d78"));
+  const builder = scene().background(diorama && !look.hdriSky ? look.background : (spec.background ?? "#1e4d78"));
   const baseTop = diorama ? addDioramaAtmosphere(builder, spec, look, baseDepthFor(spec), options, scale) : null;
   if (!diorama) addOriginalAtmosphere(builder, spec, options);
 

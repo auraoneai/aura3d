@@ -29,11 +29,12 @@ function fakeApp() {
     trails: [] as { target: string; stopped: boolean }[],
     plays: [] as { id: string; skipped: boolean }[],
     kicks: [] as { channel: string; offset: number }[],
-    shakes: [] as number[]
+    shakes: [] as number[],
+    sky: [] as unknown[]
   };
   const app = {
     setOutput: (o: unknown) => { calls.output.push(o); },
-    atmosphere: { setFog: (spec: unknown) => { calls.fog.push(spec); } },
+    atmosphere: { setFog: (spec: unknown) => { calls.fog.push(spec); }, setSky: (spec: unknown) => { calls.sky.push(spec); } },
     post: { setEffect: (name: string, patch: Record<string, unknown>) => { calls.post.push({ name, patch }); } },
     effects: {
       registerPreset: (kind: string) => { calls.presets.push(kind); },
@@ -114,6 +115,11 @@ describe("pips-big-leap runtime presentation", () => {
     expect(calls.output.at(-1)).toEqual({ exposure: 1 });
     expect(calls.fog.at(-1)).toBeNull();
     expect(p.evidence()).toMatchObject({ mode: "original", heatShimmer: false });
+    // The previous world's live sky is cleared (the engine never clears a sky node's spec on setScene).
+    expect(calls.sky.at(-1)).toBeNull();
+    const skies = calls.sky.length;
+    p.worldMounted(buildWorld(worldSpec("w6")));
+    expect(calls.sky.length).toBe(skies);
     // The original world gets no DOF writes or VFX.
     const posts = calls.post.length;
     p.frame(frame(), original, nodes().lookup);

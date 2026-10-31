@@ -174,7 +174,11 @@ interface AppSlice {
     setEffect?(name: string, patch: Parameters<NonNullable<AuraApp["post"]>["setEffect"]>[1]): void;
     addPostPass?(pass: AuraCustomPostPass): () => void;
   };
-  readonly atmosphere?: { setFog(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[0], opts?: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[1]): unknown };
+  readonly atmosphere?: {
+    setFog(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[0], opts?: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[1]): unknown;
+    /** `null` clears the live sky (LiveAtmosphere stores the spec as given; the frame draws no sky when it is null). */
+    setSky?(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setSky"]>[0] | null): unknown;
+  };
   readonly camera?: {
     play?(sequence: CameraSequenceArg): AuraCameraSequencePlayback;
     readonly fovKick?: { set?(channel: string, offsetDeg: number, seconds?: number): unknown };
@@ -245,6 +249,17 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
 
     worldMounted(built) {
       diorama = built.presentation.mode === "diorama";
+      // GU47 phase 3: the engine copies a mounted scene's sky node onto the live atmosphere but
+      // never clears it, so the previous world's sky (w6 stars, a daylight dome) kept drawing
+      // over a world that has none (round-1 w4/w5 showed w1's sky as a grey wall). A world
+      // without its own sky node clears it.
+      if (!(diorama && built.presentation.look.sky)) {
+        try {
+          app.atmosphere?.setSky?.(null);
+        } catch {
+          // A stub atmosphere has no live sky.
+        }
+      }
       if (!diorama) {
         // A 4.6.2-look world after a diorama world: undo the diorama's app-level state. The
         // output exposure defaults to 1 (Renderer.executeOutputPass), the app-level fog only

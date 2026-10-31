@@ -46,15 +46,16 @@ describe("pips-big-leap look table (PBL-L1)", () => {
   });
 
   it("uses the PRD catalogue HDRIs and IBL strengths", () => {
-    expect(WORLD_LOOKS.academy.hdri.id).toBe("spruit_sunrise");
-    expect(WORLD_LOOKS.w1.hdri.id).toBe("spruit_sunrise");
-    expect(WORLD_LOOKS.w3.hdri.id).toBe("spruit_sunrise");
+    // Phase 3: the daylight worlds draw a pure-sky HDRI as their sky.
+    expect(WORLD_LOOKS.academy.hdri.id).toBe("autumn_field_puresky");
+    expect(WORLD_LOOKS.w1.hdri.id).toBe("autumn_field_puresky");
+    expect(WORLD_LOOKS.w3.hdri.id).toBe("autumn_field_puresky");
     expect(WORLD_LOOKS.w2.hdri.id).toBe("belfast_sunset_puresky");
     expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.6 });
     expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.6 });
     expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.55 });
     // Shared spruit_sunrise uses differ in rotation and intensity (PRD 6.1 secondary-use rule).
-    const spruit = WORLD_IDS.filter((id) => WORLD_LOOKS[id].hdri.id === "spruit_sunrise").map((id) => `${WORLD_LOOKS[id].hdri.rotationDeg}/${WORLD_LOOKS[id].hdri.intensity}`);
+    const spruit = WORLD_IDS.filter((id) => WORLD_LOOKS[id].hdri.id === "autumn_field_puresky").map((id) => `${WORLD_LOOKS[id].hdri.rotationDeg}/${WORLD_LOOKS[id].hdri.intensity}`);
     expect(new Set(spruit).size).toBe(spruit.length);
   });
 
@@ -85,11 +86,13 @@ describe("pips-big-leap look overrides on the merged E-A looks.preset", () => {
       const baseTop = -baseDepthFor(worldSpec(id));
       const group = looks.preset(look.baseLook, lookOverridesFor(look, baseTop)).toJSON() as unknown as { readonly name: string; readonly background: string; readonly children: readonly Child[] };
       expect(group.name).toBe(`aura-look:${look.baseLook}`);
-      expect(group.background).toBe(look.background);
+      if (!look.hdriSky) expect(group.background).toBe(look.background);
       const byName = (name: string) => group.children.find((c) => c.name === name);
       const hdri = group.children.find((c) => c.kind === "environment");
       expect(hdri?.name, id).toBe(`look hdri ${look.hdri.id}_1k`);
-      expect(hdri?.background).toBe(false);
+      // Phase 3: the daylight worlds draw their HDRI as the sky; the others keep the colour backdrop.
+      if (look.hdriSky) expect(hdri?.background, id).not.toBe(false);
+      else expect(hdri?.background).toBe(false);
       expect(byName("look key light")?.shadow).toMatchObject({ filter: "pcss", cascades: 3 });
       expect(byName("look rim light")?.light).toBe("directional");
       const fog = byName("look fog");
@@ -122,10 +125,15 @@ describe("pips-big-leap diorama base and atmosphere (PBL-E1, E2, E3, P3)", () =>
     }
   });
 
-  it("gives every outdoor world a gradient sky (phase 3: a clear daylight sky), w6 a starry one, and the interiors none", () => {
-    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(WORLD_LOOKS[id].sky?.model, id).toBe("gradient");
+  it("draws the HDRI as the sky in the daylight worlds (phase 3), a starry gradient in w6, and no sky node elsewhere", () => {
+    for (const id of ["academy", "w1", "w2", "w3"] as const) {
+      expect(WORLD_LOOKS[id].hdriSky, id).toBe(true);
+      expect(WORLD_LOOKS[id].sky, id).toBeUndefined();
+      expect(lookOverridesFor(WORLD_LOOKS[id], -5).background, id).toBeUndefined();
+    }
     const w6 = WORLD_LOOKS.w6.sky;
     expect(w6?.model === "gradient" && w6.stars !== undefined && w6.stars.count > 0).toBe(true);
+    for (const id of ["w4", "w5", "w6"] as const) expect(lookOverridesFor(WORLD_LOOKS[id], -5).background, id).toBe(WORLD_LOOKS[id].background);
     for (const id of ["w4", "w5"] as const) expect(WORLD_LOOKS[id].sky).toBeUndefined();
   });
 
