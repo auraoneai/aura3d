@@ -35,3 +35,16 @@ Status per acceptance line. "unit" = covered by `tests/unit/splat-rush-port/gu47
 | CR-V3 | S4 ran; rays +8 vs off; otherwise dropped | dropped in phase 1 (S4 god rays unproven in the digest); phase 2 decides |
 | CR-V4 | 2 emitters, <= 2 draws; >= 20 specks on title | unit (one mote emitter, about 48 specks alive); island drips: blocked (WP-36 paint-pot island); live count: phase 2 |
 | CR-PF1 | <= 48 draws, <= 45 MB, no compiles after warm, frame <= 1.3x, sibling judge | phase 2 (new programs added to `allProgramSpecs`; warm path unchanged) |
+
+## Phase 3 (4.7.1)
+
+| Item | Acceptance | Status |
+|---|---|---|
+| default view | new look won a blind panel | done: `p4` 3/3 better; phase-3 recheck in the lane report (`g16p3r7`) |
+| `?look=original` | equals the 4.6.2 frame | done: steady mean 183.94, clip 0.0362, unchanged across r1-r7 |
+| rubric | every category >= 7 where presentation reaches | partial: min 5 -> 6 (`look-judgement.json`, r7); `ibl_reflections` 6 and `shadows` 6.5 open for 4.7.2 (toon programs, no shadow-map sampling); `material_quality` / `modeling_assets` blocked on WP-36 |
+| game-checks | 0 errors, fewest warnings | see lane report "Phase 3 (4.7.1)" |
+| screens | final screens and card/poster retaken on the current build | retaken from `g16p3-r7` (`p3/retake.py`) |
+| phone HUD | combo chip clear of the paint tube at 390 px | fixed in `59b8cded8` (both pages), verified in the r7 phone frames |
+| luma | default in 125-150, no band widened | r5 136.78; r7 in the lane report |
+| D8 | sim, replay, parity green | 14 files / 122 tests pass, one file at a time |
