@@ -39,7 +39,7 @@ export interface PipPractical {
 
 export type PipSkySpec =
   | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number; readonly exposure: number; readonly groundColor: string }
-  | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly exponent: number; readonly horizonGlow: number; readonly stars?: { readonly count: number; readonly brightness: number } };
+  | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly exponent: number; readonly horizonGlow: number; readonly stars?: { readonly count: number; readonly brightness: number }; readonly displayed?: boolean };
 
 export interface WorldLook {
   readonly id: WorldId;
@@ -182,9 +182,9 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hemisphere: { skyColor: "#d6e8f6", groundColor: "#5a6a34", intensity: 0.32 },
     background: "#cfe3f1",
     exposureEv: 1.8,
-    fog: { color: "#d4e4ee", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.42, maxOpacity: 0.28 },
+    fog: { color: "#d4e4ee", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.42, maxOpacity: 0.16 },
     base: { felt: "#5f8a3e", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#6a9a48" },
-    sky: { model: "gradient", zenith: "#5d9ae0", horizon: "#d8e9f4", ground: "#6a8a4a", exponent: 0.7, horizonGlow: 0.25 },
+    sky: { model: "gradient", zenith: "#5d9ae0", horizon: "#d8e9f4", ground: "#6a8a4a", exponent: 0.7, horizonGlow: 0.15, displayed: true },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.04, tint: 0, vignette: { intensity: 0.05, color: "#1c140b" } },
     ambient: { kind: "petals", color: "#f4d4d8", maxParticles: 260, rate: 34, size: [0.035, 0.07], lifetime: [6, 9], speed: [0.1, 0.32], gravity: -0.05, drag: 0.4, additive: false },
     practicals: [],
@@ -201,9 +201,9 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hemisphere: { skyColor: "#d2e4ee", groundColor: "#4a5a2a", intensity: 0.3 },
     background: "#e6e4d2",
     exposureEv: 1.8,
-    fog: { color: "#dfe4dc", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.38, maxOpacity: 0.3 },
+    fog: { color: "#dfe4dc", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.38, maxOpacity: 0.16 },
     base: { felt: "#4f7a36", clay: "#5c4129", skirt: "#2a1d12", mound: "#5f8a40" },
-    sky: { model: "gradient", zenith: "#6aa2dc", horizon: "#f4e6c6", ground: "#4f6a36", exponent: 0.65, horizonGlow: 0.35 },
+    sky: { model: "gradient", zenith: "#6aa2dc", horizon: "#f4e6c6", ground: "#4f6a36", exponent: 0.65, horizonGlow: 0.15, displayed: true },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.08, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.06, color: "#120d07" } },
     ambient: { kind: "spores", color: "#e6eeb0", maxParticles: 320, rate: 40, size: [0.025, 0.05], lifetime: [7, 10], speed: [0.06, 0.2], gravity: 0.02, drag: 0.5, additive: true },
     practicals: [],
@@ -215,14 +215,14 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "millpond golden hour",
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 250 },
-    key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.6, lightSize: 0.8, softness: 0.5 },
+    key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.1, lightSize: 0.8, softness: 0.5 },
     rim: { azimuthDeg: opposite(320), color: "#a8c4ff", intensity: 0.45 },
     hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.3 },
     background: "#f6d4a8",
-    exposureEv: 1.5,
-    fog: { color: "#f2d6b2", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.4, maxOpacity: 0.3 },
+    exposureEv: 1.3,
+    fog: { color: "#f2d6b2", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.4, maxOpacity: 0.16 },
     base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
-    sky: { model: "gradient", zenith: "#5f8fd0", horizon: "#ffd29c", ground: "#5a4a2a", exponent: 0.6, horizonGlow: 0.45 },
+    sky: { model: "gradient", zenith: "#5f8fd0", horizon: "#f4cc9c", ground: "#5a4a2a", exponent: 0.6, horizonGlow: 0.15, displayed: true },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
     practicals: [],
@@ -241,9 +241,9 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hemisphere: { skyColor: "#e4e6fa", groundColor: "#7a6a86", intensity: 0.3 },
     background: "#f4dcd2",
     exposureEv: 1.2,
-    fog: { color: "#f2e0e0", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.36, maxOpacity: 0.25 },
+    fog: { color: "#f2e0e0", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.36, maxOpacity: 0.16 },
     base: { felt: "#9a8a9a", clay: "#7a6476", skirt: "#3a2c3c", mound: "#b8a6b0" },
-    sky: { model: "gradient", zenith: "#7f9fe2", horizon: "#f8d8cc", ground: "#8a7aa0", exponent: 0.7, horizonGlow: 0.3 },
+    sky: { model: "gradient", zenith: "#7f9fe2", horizon: "#f8d8cc", ground: "#8a7aa0", exponent: 0.7, horizonGlow: 0.15, displayed: true },
     post: { preset: "daylight-outdoor", contrast: 1.12, saturation: 1.08, temperature: 0.04, tint: 0.02, vignette: { intensity: 0.05, color: "#2a1c24" } },
     ambient: { kind: "fluff", color: "#fff4e4", maxParticles: 300, rate: 32, size: [0.04, 0.085], lifetime: [7, 10], speed: [0.12, 0.34], gravity: 0.03, drag: 0.45, additive: false },
     practicals: [],
@@ -326,6 +326,30 @@ export function worldLook(id: WorldId): WorldLook {
   return WORLD_LOOKS[id];
 }
 
+const srgbToLinear = (c: number): number => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+const linearToSrgb = (c: number): number => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+/** Inverse of the fitted ACES curve x(2.51x+0.03)/(x(2.43x+0.59)+0.14), for y in [0, 0.9] (brighter targets clamp there). */
+const acesInverse = (y: number): number => {
+  const v = Math.min(0.9, Math.max(0, y));
+  const a = 2.51 - 2.43 * v, b = 0.03 - 0.59 * v, c = -0.14 * v;
+  return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+};
+
+/**
+ * GU47 phase 3: the gradient sky is drawn in scene light, so the world's output exposure
+ * (2^EV, up to 3.5x) and the tone curve blew the round-1 daylight skies out to a flat white.
+ * A sky marked `displayed` authors the colour the frame should show; this returns the
+ * scene-light colour that lands there after the exposure and an ACES-style tone curve.
+ */
+export function skyColorFor(hex: string, exposureEv: number): string {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  const channels = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const scene = acesInverse(srgbToLinear(v / 255)) / Math.pow(2, exposureEv);
+    return Math.round(Math.min(1, Math.max(0, linearToSrgb(scene))) * 255);
+  });
+  return `#${channels.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
 /** PBL-E1 height fog for a world: pooled in the diorama base, thinning above the course. */
 export function heightFogFor(look: WorldLook, baseTop: number): AuraHeightFogSpec {
   return {
@@ -355,7 +379,8 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
     key: {
       color: look.key.color,
       intensity: look.key.intensity,
-      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048 }
+      // Phase 3: a little depth and normal bias; the default left diagonal acne bands on the big near slabs.
+      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0015, normalBias: 0.14 }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },

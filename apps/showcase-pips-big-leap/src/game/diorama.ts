@@ -29,6 +29,7 @@ import {
   PIP_PALETTE,
   focusDistanceFor,
   miniatureFramingFor,
+  skyColorFor,
   sunPosition,
   type PipAmbientKind,
   type PresentationScale,
@@ -105,7 +106,7 @@ export interface SurfacePair {
 // GU47 phase 3: a fine, faint nap. The preset's fabric normal (scale 48, strength 0.28) tiled
 // once per slab read as a grid of bands across the big felt tops in the blind-panel frames.
 const FELT_NAP = { kind: "aura-procedural-texture", texture: "fabric-normal", scale: 180, strength: 0.07, contrast: 0.4 } as const;
-const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color, normal: FELT_NAP });
+const felt = (color: string): AuraMaterialSpec => material.felt({ color, sheenColor: color, sheen: 0.35, normal: FELT_NAP });
 const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
 
 /**
@@ -319,11 +320,12 @@ export function skyNode(look: WorldLook): DioramaNode | null {
       captureEnvironment: false
     });
   }
+  const tone = (hex: string): string => (s.displayed ? skyColorFor(hex, look.exposureEv) : hex);
   return sky.gradient({
     name: dioramaName.sky,
-    zenith: s.zenith,
-    horizon: s.horizon,
-    ground: s.ground,
+    zenith: tone(s.zenith),
+    horizon: tone(s.horizon),
+    ground: tone(s.ground),
     exponent: s.exponent,
     horizonGlow: s.horizonGlow,
     ...(s.stars ? { stars: { count: s.stars.count, brightness: s.stars.brightness } } : {}),
