@@ -4,7 +4,7 @@
  *   0 meadow = crisp dawn, 1 downtown = overcast noon, 2 riverbend = amber golden hour,
  *   3 emberline = red lava-lit dusk, 4 neon = blue-black lamplit night, 5 crittercore = pastel studio toybox.
  *
- * `?look=original` keeps the 4.6 look (themes.ts `look` presets with the old capped key, ambient and box sky).
+ * `?look=diorama` opts into the tabletop look; the default (and `?look=original`) is the 4.6 look (themes.ts `look` presets with the old capped key, ambient and box sky).
  */
 
 export type CrossHopHdriId =
