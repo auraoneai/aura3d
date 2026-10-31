@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/pips-big-leap/screens/final/1280-03-action.jpg",
+      "sha256": "17b660e778415f9f9a87e2245bce7db754690660dddc025110e52abe72433531"
+    },
+    {
+      "path": "evidence/pips-big-leap/screens/final/1280-04-mid.jpg",
+      "sha256": "ef800cdf92752ad35ae6da9f9325b6a0b1cf24708a009491d0a41292d6379727"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/pips-big-leap/frames/gu47-before-pips-big-leap-2/pips-big-leap--w2--settle-60s.jpg",
+      "sha256": "131386c1e5da6fbc809275cb1348fd1de7415f6d5e19bf02f41dee7b562b5186"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/pips-big-leap/frames/gu47-before-pips-big-leap-3/pips-big-leap--w5--settle-60s.jpg",
+      "sha256": "c97eee38a7d7fd8910e670a857342f3ce69a1f54f16a6638cac20eeba5c747fd"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 5,
+    "animation_quality": 5.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The Forest frames have a warm sun, and the 3/4 key light gives readable form on the coral platforms. The Clouds and Palace frames are flat and washed out, with almost no directional modeling on the floors."
+    },
+    {
+      "category": "shadows",
+      "seen": "Pip casts a soft contact shadow. The tree shadows on the grass in frame 1 are blurry and low-resolution. In the Palace frame, the platforms are barely grounded by any shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The palace towers show strong chrome reflections that clash with the matte, untextured floors. Elsewhere there is little environment response and the scene reads as mostly flat diffuse."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The levels are box platforms floating in a void. The Clouds level is a bare brown slab with a windmill and a pagoda placed far away. The Palace has an empty white backdrop with no ground context."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Only faint distance haze appears in the Forest frames. The Clouds sky is a hazy backdrop but no fog layering ties it to the platforms. The Palace has no atmosphere at all."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Platforms use plain untextured coral, white, tan and brown materials. The Pip character and the gate are richly detailed, which creates a large fidelity mismatch."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "There are mixed art styles throughout. Pip is a polished stylized model, the NPC is a blocky voxel humanoid, the drones are hard-surface sci-fi, and the trees are low-poly cones. Together they read as a kitbash."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 the NPC block clips into Pip and fills the center of the shot. Frames 3 and 4 have large empty floor areas in the lower half while the goal sits small and distant."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam behind Pip frames the route forward with a reasonable FOV and Pip at roughly 15-20% of the frame. In frame 1 it clips through the NPC and trees."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom in the Forest frames. The Clouds and Palace frames look overexposed and low-contrast, with no grading consistency between levels."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Pip's run and idle poses read with personality. A static frame cannot judge timing, but the frame 1 overlap suggests collision and penetration issues."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD has clean, readable pills, a useful objective banner and a controls strip. However, the debug-style top nav bar takes up chrome space."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
