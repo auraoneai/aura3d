@@ -88,7 +88,8 @@ export interface SplatLook {
     readonly bloom: { readonly intensity: number; readonly threshold: number; readonly scatter: number };
     readonly vignette: { readonly intensity: number; readonly color: string };
     /** `gain`: linear exposure multiply in the HDR grade (GU47 phase 2). The first tune (1.38) was set on a frozen boot frame
-     *  (the key light had no runtime id, so boot stopped before `ready`); the running title frame is brighter. */
+     *  (the key light had no runtime id, so boot stopped before `ready`); 0.95 on the running frame (g16fix1) gave mean 106.7, under
+     *  the 125-150 band, so it is 1.4 with a lighter golden zenith. */
     readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
@@ -164,7 +165,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       stages: [
         {
           name: "golden", at: 500,
-          zenith: "#1f4a63", upper: "#5d6f8c", rose: "#e8798a", horizon: "#f3a96b", sea: "#a99bc9",
+          zenith: "#33607e", upper: "#6f82a0", rose: "#e8798a", horizon: "#f3a96b", sea: "#a99bc9",
           sunColor: "#ffc58a", sunIntensity: 0.75, sunElevationDeg: 16, skyFill: "#6f8fb8", bounce: "#e8798a",
           cloudTop: "#f6c79a", cloudShadow: "#9f8fc0", stars: 0
         },
@@ -187,7 +188,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     post: {
       bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 0.95 },
+      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
