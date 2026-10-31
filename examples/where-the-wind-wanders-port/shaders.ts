@@ -30,7 +30,7 @@ bool playerFade(vec3 world) {
  * GU47 WW47-L1: the light is no longer hard-coded. `sunDir`, `sunCol`, `sunGain`, `skyCol`, `gndCol`, `fogCol`,
  * `fogDensity`, `fogHeight` and `cloudShadowAmt` are spec uniforms (`daylightUniforms()` in world.ts) written every
  * frame from the daylight driver (daylight.ts), so the painted surfaces and the engine sun share one key.
- * A fragment that defines `WIND_SUN_SHADOW` and includes `<a3d_shadow>` before COMMON receives the engine sun's shadow.
+ * A fragment that includes `<a3d_shadow>` before COMMON receives the engine sun's shadow when its spec sets `defines: { WIND_SUN_SHADOW: 1 }` (the engine preprocessor resolves `#ifdef` from the spec defines only, not from `#define` lines in the source).
  */
 export const COMMON = /* glsl */ `
 #include <a3d_fog>
@@ -53,7 +53,8 @@ ${CLOUD_GLSL}
 #ifdef WIND_HERO_SHADOW
 /**
  * GU47 phase 4: the traveller's cast shadow on the meadow and the ground, traced in the shader. The ray from a surface
- * point toward the sun is tested against a 2.5 m tapered column standing at playerPos (feet), plus a soft contact pool
+ * point toward the sun is tested against a 2.5 m tapered column standing at playerPos (feet), at half weight on top of the
+ * engine shadow the hero GLB casts, plus a soft contact pool
  * under the feet. heroShadowAmt is 0 in the 4.6 look and Low quality.
  */
 float heroShadow(vec3 w) {
@@ -68,7 +69,7 @@ float heroShadow(vec3 w) {
   float body = (1.0 - smoothstep(r * 0.5, r * 1.4, length(pa - ba * h))) * step(w.y, playerPos.y + 2.3);
   vec2 f = w.xz - playerPos.xz;
   float contact = exp(-dot(f, f) / 0.45) * 0.6;
-  return 1.0 - heroShadowAmt * clamp(max(body, contact), 0.0, 1.0);
+  return 1.0 - heroShadowAmt * clamp(max(body * 0.45, contact), 0.0, 1.0);
 }
 #endif
 float sunVisibility(vec3 world, vec3 n) {
@@ -149,8 +150,6 @@ in float vKind;
 in float vPhase;
 in float vGust;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
-#define WIND_HERO_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
@@ -295,8 +294,6 @@ in vec3 vTint;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
-#define WIND_HERO_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 void main() {
@@ -495,7 +492,6 @@ in vec3 vWorld;
 in vec2 vUv;
 in float vKind;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}

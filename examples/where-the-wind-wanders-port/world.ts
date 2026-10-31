@@ -56,13 +56,21 @@ export function writeDaylightUniforms(handle: { setUniform?(name: string, value:
   handle.setUniform?.("cloudShadowAmt", f.cloudShadow);
 }
 
+/**
+ * GU47 phase 4: the receive switches go through `defines`. The engine's shader preprocessor resolves `#ifdef` against the
+ * spec's `defines` only, so the `#define WIND_SUN_SHADOW 1` lines in the sources never enabled the shadow lookup and the
+ * meadow, ground and scenery received no sun shadow at all through 4.7.1.
+ */
+const RECEIVE_DEFINES = { WIND_SUN_SHADOW: 1, WIND_HERO_SHADOW: 1 } as const;
 export const windSpec = (): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
+  defines: RECEIVE_DEFINES,
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 }, heroShadowAmt: { type: "f32", value: 0 } },
   side: "double"
 });
 export const paintSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: PAINT_FRAGMENT },
+  defines: RECEIVE_DEFINES,
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, heroShadowAmt: { type: "f32", value: 0 } }
 });
 export const seaSpec = (): CustomSpec => ({
@@ -89,6 +97,7 @@ export const skySpec = (): CustomSpec => ({
 });
 export const propSpec = (castShadow = false): CustomSpec => ({
   glsl: { vertex: PROP_VERTEX, fragment: PROP_FRAGMENT },
+  defines: { WIND_SUN_SHADOW: 1 },
   ...(castShadow ? { castShadow: true } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
   side: "double"
@@ -410,7 +419,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     // GU47 phase 4: the painted tree and cottage shadows the terrain bakes also darken the meadow cards standing in them
     // (the grass hides the ground), so the cast shadows read on the High GU47 look; no rand() draw, so placement is unchanged
     if (shadows) {
-      const occ = blobOcclusion(sc.blobs, x, z);
+      const occ = 0.45 + 0.55 * blobOcclusion(sc.blobs, x, z);
       if (occ < 1) color = [color[0] * occ, color[1] * occ, color[2] * (occ * 0.5 + 0.5 * Math.sqrt(occ))];
     }
     pushCard(f, x, y, z, w, h, yaw, color, sway, phase, kind);
