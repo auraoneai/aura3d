@@ -49,7 +49,10 @@ export interface ChapterLook {
   readonly sun: ChapterSun;
   /** PCSS light size: larger is softer (overcast). */
   readonly shadowSoftness: number;
-  /** Look fog range in metres (density 24 / far); the horizon colour hides the sea edge. */
+  /**
+   * Look fog range in metres (density 24 / far); the horizon colour hides the sea edge. GU47 phase 2: far is
+   * 800-1500 m (density 0.016-0.03); the first table (far 150-320, density 0.075-0.16 exp2) buried the island in haze.
+   */
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
   /** Scene clear colour behind the sky node (the horizon colour, so a frame before the sky draws is not blue). */
   readonly horizon: AuraColor;
@@ -78,7 +81,7 @@ export const SIEGE_PALETTE = {
 } as const;
 
 const ISLAND: ChapterTerrain = {
-  turf: "#7c9a52",
+  turf: "#4f8a3e",
   sand: SIEGE_PALETTE.bleachedSand,
   chalk: SIEGE_PALETTE.chalk,
   wetRock: "#5f5b52",
@@ -99,7 +102,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     exposureEv: -0.05,
     sun: { elevationDeg: 35, azimuthDeg: 118, color: "#ffe2c2", intensity: 3.2 },
     shadowSoftness: 1.2,
-    fog: { color: "#e6dccd", near: 40, far: 320 },
+    fog: { color: "#e6dccd", near: 90, far: 1500 },
     horizon: "#efdcc4",
     sky: {
       model: "gradient",
@@ -132,7 +135,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     exposureEv: -0.15,
     sun: { elevationDeg: 62, azimuthDeg: 160, color: "#fff5e4", intensity: 3.6 },
     shadowSoftness: 0.9,
-    fog: { color: "#dcd3bd", near: 30, far: 240 },
+    fog: { color: "#dcd3bd", near: 80, far: 1300 },
     horizon: "#dcd8c8",
     sky: {
       model: "gradient",
@@ -153,7 +156,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     practicals: { windows: false, lighthouse: false, lanterns: false },
     flare: false,
     weather: "dust",
-    terrain: { ...ISLAND, turf: "#94a05e" }
+    terrain: { ...ISLAND, turf: "#6a9446" }
   },
   {
     chapter: 2,
@@ -164,7 +167,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     exposureEv: 0.1,
     sun: { elevationDeg: 48, azimuthDeg: 100, color: "#e4eaf0", intensity: 1.5 },
     shadowSoftness: 3.2,
-    fog: { color: "#c8cfd2", near: 14, far: 150 },
+    fog: { color: "#c8cfd2", near: 50, far: 800 },
     horizon: "#cbd1d4",
     sky: {
       model: "gradient",
@@ -196,7 +199,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     exposureEv: 0,
     sun: { elevationDeg: 14, azimuthDeg: 145, color: "#ffb26a", intensity: 2.8 },
     shadowSoftness: 1.4,
-    fog: { color: "#e2aa7c", near: 30, far: 260 },
+    fog: { color: "#e2aa7c", near: 80, far: 1300 },
     horizon: "#eab487",
     sky: {
       model: "preetham",
@@ -229,7 +232,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     exposureEv: 0.05,
     sun: { elevationDeg: 8, azimuthDeg: 215, color: "#ff7c4c", intensity: 2.4 },
     shadowSoftness: 2.0,
-    fog: { color: "#b56c5e", near: 22, far: 200 },
+    fog: { color: "#b56c5e", near: 70, far: 1000 },
     horizon: "#c27a62",
     sky: {
       model: "preetham",
@@ -257,12 +260,13 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     timeOfDay: "starry night with lantern light",
     preset: "polar-night",
     hdri: "deep_space_starfield",
-    environmentIntensity: 1.0,
+    // GU47 phase 2: the 4.6.2-era island read at night needs a strong moon and +1.2 EV (mean 9.6 at +0.15 EV, 1.1 moon).
+    environmentIntensity: 1.8,
     environmentRotationDeg: 0,
-    exposureEv: 0.15,
-    sun: { elevationDeg: 30, azimuthDeg: 300, color: "#9db8e8", intensity: 1.1 },
+    exposureEv: 1.2,
+    sun: { elevationDeg: 30, azimuthDeg: 300, color: "#9db8e8", intensity: 2.8 },
     shadowSoftness: 1.6,
-    fog: { color: "#0e1729", near: 30, far: 220 },
+    fog: { color: "#0e1729", near: 80, far: 1200 },
     horizon: "#16233f",
     sky: {
       model: "gradient",

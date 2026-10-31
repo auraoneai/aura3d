@@ -174,7 +174,10 @@ export interface StageOptions {
   readonly reducedMotion: boolean;
   /** `?ao=0` evidence switch: removes the miniature ambient-occlusion pass for an AO-on/off capture pair. */
   readonly ambientOcclusion?: boolean;
-  /** SS47-M2 CC0 detail maps on turf, sand and the chalk/wet-rock lip (default on); `?surfaces=0` is the flat pair. */
+  /**
+   * SS47-M2 CC0 detail maps on turf, sand and the chalk/wet-rock lip. GU47 phase 2: opt-in (`?surfaces=1`); on
+   * software WebGL2 the mapped turf rendered near-white in every chapter, so the default is the flat 4.6.2 material.
+   */
   readonly surfaceMaps?: boolean;
 }
 
@@ -332,7 +335,7 @@ export function chapterWeather(row: ChapterLook, options: StageOptions): StageNo
     })];
   }
   if (row.weather === "mist") {
-    return [effects.fog({ name: "siege sea mist", density: 0.035, color: row.fog.color, height: 1.2, falloff: 0.9 })];
+    return [effects.fog({ name: "siege sea mist", density: 0.012, color: row.fog.color, height: 1.2, falloff: 0.9 })];
   }
   return [];
 }
@@ -381,7 +384,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const terrain = row.terrain;
   // SS47-M2: CC0 grain/blade/rock detail maps on the three island discs (0 draws); the rock GLBs already drop their
   // photoreal moss colour (replaceTextures) for flat palette tints.
-  const textured = options.surfaceMaps !== false;
+  const textured = options.surfaceMaps === true;
   const groundColor = terrain.turf;
   const farColor = terrain.sand;
   const backdrop = row.horizon;

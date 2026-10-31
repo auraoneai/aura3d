@@ -52,8 +52,8 @@ const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVE
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
 /** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
 const AO = params.get("ao") !== "0";
-/** `?surfaces=0` evidence switch: flat island materials for the SS47-M2 before/after spread pair. */
-const SURFACES = params.get("surfaces") !== "0";
+/** `?surfaces=1` evidence switch: SS47-M2 CC0 detail maps on the island (GU47 phase 2: off by default, the mapped turf read white). */
+const SURFACES = params.get("surfaces") === "1";
 
 // ---------------------------------------------------------- persistence --
 
@@ -302,6 +302,11 @@ let orbitT = 0;
 const intro = { t: 0, done: !introEnabled({ reducedMotion: REDUCED, demo: DEMO || autoPlay, param: params.get("intro") }), skipped: false, shot: "aim" as string };
 /** The next camera update cuts instead of easing (after the intro). */
 let cutNext = false;
+/**
+ * GU47 phase 2: wall-clock start of the intro (first frame with time). The intro used only the summed frame dt, and
+ * on a slow device (software WebGL2, about 2 M triangles) the clamped dt kept it on the fort wide for over 60 s.
+ */
+let introStartMs: number | null = null;
 function finishIntro(skipped: boolean): void {
   if (intro.done) return;
   intro.done = true;
@@ -322,7 +327,9 @@ const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, numbe
 
 function updateCamera(dt: number, elapsed: number): void {
   if (!intro.done) {
-    intro.t += dt;
+    if (dt > 0 && introStartMs === null) introStartMs = performance.now();
+    const wall = introStartMs === null ? 0 : (performance.now() - introStartMs) / 1000;
+    intro.t = Math.max(intro.t + dt, wall);
     if (intro.t >= INTRO_SECONDS || camState !== "aim") {
       finishIntro(false);
     } else {
