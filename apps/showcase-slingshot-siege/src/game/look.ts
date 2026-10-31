@@ -56,7 +56,11 @@ export interface ChapterLook {
    * 800-1500 m (density 0.016-0.03); the first table (far 150-320, density 0.075-0.16 exp2) buried the island in haze.
    */
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
-  /** Scene clear colour behind the sky node (the horizon colour, so a frame before the sky draws is not blue). */
+  /**
+   * Scene clear colour behind the sky node. GU47 phase 3: a mid sky colour on the day rows; in the g12p3r1/r2 software
+   * WebGL2 frames the day sky node (gradient + cloud layer) never drew and this colour was the whole sky, so the cloud
+   * layer is off and the clear colour is a sky blue (sunset: warm rose) instead of a pale grey horizon.
+   */
   readonly horizon: AuraColor;
   readonly sky: AuraSkySpec;
   readonly post: AuraPostPresetId;
@@ -145,15 +149,14 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     sun: { elevationDeg: 38, azimuthDeg: 325, color: "#ffe6c8", intensity: 3.0 },
     shadowSoftness: 1.2,
     fog: { color: "#d8e6f0", near: 400, far: 4000 },
-    horizon: "#cfe2f0",
+    horizon: "#78aee0",
     sky: {
       model: "gradient",
       zenith: "#3f82cf",
       horizon: "#d6e8f4",
       ground: SIEGE_PALETTE.seaTeal,
       exponent: 0.6,
-      horizonGlow: 0.15,
-      clouds: { coverage: 0.38, speed: 0.6, color: "#ffffff" }
+      horizonGlow: 0.15
     },
     post: "daylight-outdoor",
     grade: { contrast: 1.08, saturation: 1.06, temperature: 0.04, tint: 0 },
@@ -182,15 +185,14 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     sun: { elevationDeg: 62, azimuthDeg: 340, color: "#fff6e6", intensity: 3.2 },
     shadowSoftness: 0.9,
     fog: { color: "#d4e2ee", near: 400, far: 4000 },
-    horizon: "#c8def0",
+    horizon: "#6aa2dc",
     sky: {
       model: "gradient",
       zenith: "#2a68b6",
       horizon: "#c9e0f2",
       ground: SIEGE_PALETTE.seaTeal,
       exponent: 0.8,
-      horizonGlow: 0.1,
-      clouds: { coverage: 0.26, speed: 0.4, color: "#fbfaf6" }
+      horizonGlow: 0.1
     },
     post: "daylight-outdoor",
     grade: { contrast: 1.1, saturation: 1.08, temperature: 0.07, tint: 0.01 },
@@ -219,15 +221,14 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     sun: { elevationDeg: 48, azimuthDeg: 315, color: "#f4f6ff", intensity: 2.8 },
     shadowSoftness: 2.0,
     fog: { color: "#d2e2ec", near: 400, far: 4000 },
-    horizon: "#d4e6ef",
+    horizon: "#80b4e2",
     sky: {
       model: "gradient",
       zenith: "#4a8bd2",
       horizon: "#dceaf2",
       ground: "#3f8a90",
       exponent: 0.7,
-      horizonGlow: 0.08,
-      clouds: { coverage: 0.58, speed: 0.9, color: "#ffffff" }
+      horizonGlow: 0.08
     },
     post: "daylight-outdoor",
     grade: { contrast: 1.08, saturation: 1.04, temperature: -0.04, tint: 0 },
@@ -256,15 +257,14 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     sun: { elevationDeg: 22, azimuthDeg: 300, color: "#ffc183", intensity: 3.0 },
     shadowSoftness: 1.4,
     fog: { color: "#f0c9a2", near: 400, far: 4000 },
-    horizon: "#f3c79a",
+    horizon: "#e8b48c",
     sky: {
       model: "gradient",
       zenith: "#4f77b8",
       horizon: "#f6c99a",
       ground: "#3f7c80",
       exponent: 0.55,
-      horizonGlow: 0.25,
-      clouds: { coverage: 0.34, speed: 0.5, color: "#ffdcb4" }
+      horizonGlow: 0.25
     },
     post: "cinematic-film",
     grade: { contrast: 1.1, saturation: 1.08, temperature: 0.24, tint: 0.02 },
@@ -293,15 +293,14 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     sun: { elevationDeg: 16, azimuthDeg: 295, color: "#ff9a62", intensity: 3.0 },
     shadowSoftness: 1.6,
     fog: { color: "#d99a86", near: 400, far: 4000 },
-    horizon: "#f0a27c",
+    horizon: "#d88a70",
     sky: {
       model: "gradient",
       zenith: "#2e4a8a",
       horizon: "#f2a07a",
       ground: "#33606a",
       exponent: 0.5,
-      horizonGlow: 0.3,
-      clouds: { coverage: 0.42, speed: 0.8, color: "#f3b39a" }
+      horizonGlow: 0.3
     },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 1.1, temperature: 0.3, tint: 0.04 },
