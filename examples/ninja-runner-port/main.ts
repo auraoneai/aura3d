@@ -6,9 +6,10 @@
  * (`pf(z, 1/120)`), with key presses applied between steps. Query parameters (all optional):
  * `autostart=1`, `autopilot=1` (the capture policy plays the run), `manual=1` (the sim only advances through
  * the hooks), `seed=N` (course seed, default 17), `daily=1` (today's course: the seed is the UTC date as YYYYMMDD),
- * `quality=low`. GU47 (WP-30): `look=original` (the pre-GU47 midday look; the default is the evening that moves with
- * distance), `at=<metres>` (boots straight into a run held at that distance through the capture policy; the sim then
- * holds still like `manual=1`, for the district luma targets), `lanterns=0` (no pooled lantern lights), `scarf=0` (no scarf ribbon), `godrays=0`, `cones=0` (no gate light cones).
+ * `quality=low`. GU47 (WP-30): `look=evening` (the GU47 evening that moves with distance, opt-in since phase 2 per PRD D11;
+ * the default, also `look=original`, is the 4.6.2 midday look), `at=<metres>` (boots straight into a run held at that distance through the capture policy; the sim then
+ * holds still like `manual=1`, for the district luma targets), `lanterns=0` (no pooled lantern lights), `scarf=0` (no scarf ribbon), `godrays=1` (opt in to the volumetric god rays; off by default since GU47 phase 2: in software WebGL2 the pass
+ * washed the whole frame to its fog colour and cost minutes per frame), `cones=0` (no gate light cones).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
@@ -22,7 +23,7 @@ import {
   type Action, type EnemyKind, type Form, type SimEvent, type SimState
 } from "./sim";
 import { createNinjaPresenter, viewOf } from "./presentation";
-import { lookMode } from "./districtLook";
+import { EVENING_EXPOSURE, lookMode } from "./districtLook";
 import { atDistance, qaCrops } from "./qa";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
@@ -38,13 +39,13 @@ const config = {
   /** `rules=original` reproduces the original game's obstacle contact (crates vanish, no knock-back); the default is the reworked contact rules. */
   ram: params.get("rules") !== "original",
   quality: (params.get("quality") === "low" ? "low" : "high") as "low" | "high",
-  /** GU47: evening (default) or the pre-GU47 look (`?look=original`). */
+  /** GU47: the 4.6.2 look (default, `?look=original`) or the evening (`?look=evening`, opt-in since phase 2, D11). */
   look: lookMode(params),
   /** GU47 NR-22: `?at=<metres>` district target, or null. */
   at: atDistance(params),
   lanterns: params.get("lanterns") !== "0",
   scarf: params.get("scarf") !== "0",
-  godRays: params.get("godrays") !== "0",
+  godRays: params.get("godrays") === "1",
   cones: params.get("cones") !== "0"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
@@ -593,7 +594,7 @@ async function boot(): Promise<void> {
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     // GU47 NR-08: the woodblock grade tone-maps with agx; `?look=original` keeps aces.
-    output: { toneMapping: config.look === "evening" ? "agx" : "aces", dither: false },
+    output: { toneMapping: config.look === "evening" ? "agx" : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false },
     scene: world.scene
   });
   await app.ready();

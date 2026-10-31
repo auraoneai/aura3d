@@ -31,7 +31,7 @@ export const easeShot = (k: number): number => { const t = Math.max(0, Math.min(
 /** The title-card shot over the roofs at course distance `s` (the runner idles at 0), drifting slowly with `time`. */
 export function introPose(s: number, time: number): ShotPose {
   const drift = Math.sin(time * 0.12) * 5;
-  return { eye: at(s + 14, 9 + drift, INTRO_HEIGHT), look: at(s + 46, -2, 2), fov: 50 };
+  return { eye: at(s + 14, 9 + drift, INTRO_HEIGHT), look: at(s + 90, -2, 12), fov: 50 };
 }
 
 /**
