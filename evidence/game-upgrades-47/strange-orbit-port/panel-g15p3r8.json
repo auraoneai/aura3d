@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy depth-of-field blur on the background track, rocks and mountains softens them; the rider and bike look slightly washed out and over-bright with a pale glow; the ground is a flat, smeared reddish plane; the moon disc is a little hazy.",
+     "The bike and rider are slightly washed out and overexposed, with a soft bloomy look. The ground is muddy reddish-brown with low contrast. A light haze sits over the frame. The background is much richer: mountain silhouettes, a moon, a winding track on pillars, and asteroids, which give good depth and mood.",
+     "Bike and rider are slightly overexposed and bloomy, so their material detail looks soft. The foreground ground plane is a flat, muddy reddish-brown with little texture. Background mountains and asteroids are a bit dark and murky, and some post-processing softness or haze spreads across the frame."
+    ]
+   },
+   {
+    "variant": "neutral-env",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as default-A: depth-of-field blur on the background, a slightly washed-out, glowing player, and a flat smeared ground plane.",
+     "Same frame as default-B. The vehicle is somewhat washed out and the ground is muddy with low contrast. The layered background (mountains, track on pillars, asteroids, moon) gives better atmosphere and depth.",
+     "Bike and rider are slightly overexposed and bloomy, so their material detail looks soft. The foreground ground plane is a flat, muddy reddish-brown. The background is somewhat dark and murky, with mild haze and softness."
+    ]
+   }
+  ]
+ }
+]

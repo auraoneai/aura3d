@@ -1,0 +1,717 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T20:26:53.954Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s"
+    ],
+    "framesB": [
+      "heatsink-port--default"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": true,
+  "same_game_confidence": 0.584,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 18,
+    "sameGameYes": 29,
+    "differentRate": 0.3829787234042553,
+    "ci95": [
+      0.2579048266351308,
+      0.5257369155602367
+    ],
+    "confidentDifferent": 10,
+    "confidentDifferentRate": 0.2127659574468085,
+    "same_game": true,
+    "same_game_confidence": 0.584,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different palettes: warm red/purple vs teal",
+        "different vehicle styles: astronaut bike vs PBR drone",
+        "different rendering style: flat low-poly vs more realistic"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a teal alien canyon with a drone, while Image B is a red-orange desert with an astronaut on a sidecar bike",
+        "Different palettes: cool teal/pink in A, warm brown/purple in B",
+        "Different vehicles, scenery and rendering: A has glowing crystals and mushrooms, B has a low-poly rock track with pillars"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "large pale moon in the sky in both frames",
+        "stylized alien planet levels with different palettes",
+        "third-person hover vehicle on a track"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different vehicles and rendering styles (realistic drone vs low-poly astronaut bike)",
+        "teal dark road palette vs warm red-orange terrain with purple sky",
+        "both have a big moon but the scene design differs"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon or planet dominating the sky in both",
+        "low-poly alien mountains with a starry sky",
+        "sci-fi racing vehicle on a track, seen from a chase camera"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: teal alien canyon with a drone vehicle; Image B: red-brown desert with an astronaut on a sidecar bike",
+        "Different palettes: cool teal and pink vs warm orange-brown and purple",
+        "Different art styles: smooth, realistic-looking drone and rocks vs low-poly mountains and floating boulders"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon disc over starry sky in both",
+        "sci-fi alien-planet racing with a rear chase camera on a single vehicle",
+        "stylized low-poly mountains and glowing track markers, with each level in its own palette"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a teal alien canyon with a drone on a dark road",
+        "Image B is a warm red-brown terrain with a purple starry sky and an astronaut on a sidecar bike",
+        "Different vehicles, palettes and scenery styles"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.52,
+      "tells": [
+        "large pale moon dominating the sky in both",
+        "stylized low-poly alien mountains and a racing track",
+        "differing vehicle styles and palettes could mean different levels or a different game"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "large pale moon in the sky of both frames",
+        "alien planet racing with chase camera behind vehicle",
+        "stylized low-poly mountain silhouettes and soft hazy look"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "large pale moon/planet dominating sky in both",
+        "stylized alien planet with a vehicle in third-person chase view",
+        "similar soft low-poly rendering and glowing track markers"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "realistic textured drone vs. cartoon astronaut on a hoverbike",
+        "teal smooth alien canyon vs. dark low-poly red desert",
+        "both have a big moon and a third-person chase camera, which keeps this uncertain"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a teal alien canyon with a drone, Image B is a red-orange desert with an astronaut on a sidecar bike",
+        "Different palettes: cool teal and navy against warm rust and purple",
+        "Different art styles: A has smooth stylized rock walls and a glowing road, B has low-poly dark silhouettes and a floating ribbon track"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a large pale moon or planet disc against a starry alien sky",
+        "Both are third-person behind-vehicle views on a racing track in a sci-fi setting",
+        "Palette, terrain and vehicle style differ, which could mean different levels or a different game"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon in both skies",
+        "alien racing track with chase camera",
+        "different palettes and vehicle styles (uncertain)"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a teal alien canyon with a drone vehicle; Image B is a warm red-orange desert with an astronaut on a sidecar bike",
+        "Different palettes: cool cyan and dark navy versus magenta, purple and rust tones",
+        "Different scenery: crystal spikes and glowing track lines versus floating rocks and a wavy beaded elevated track"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 17,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.52,
+      "tells": [
+        "large pale moon/planet dominating the sky in both",
+        "alien racing-track setting with stylized scenery",
+        "different vehicles and palettes (teal vs. red/purple) could be separate levels or separate games"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon in both skies",
+        "alien-planet racing with stylized vehicles",
+        "different palettes but similar hazy lighting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: teal alien canyon with a drone vehicle; Image B: red-brown terrain with an astronaut on a sidecar motorbike",
+        "Different palettes and mood: cool teal and dark navy against warm rust and purple starry sky",
+        "Different art style: A has smooth, moody, realistic-ish 3D; B has low-poly, flat-shaded scenery and a floating track"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon disc in a starry alien sky in both",
+        "alien-planet racing track with glowing markers",
+        "different vehicles and palettes could be separate levels of one game"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: teal alien canyon with a drone vehicle, cool, moody palette",
+        "Image B: warm red-orange ground with an astronaut on a sidecar bike and a purple starry sky",
+        "Different vehicles, art styles and track designs (dark glowing road vs. winding beaded bridge track)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "large pale moon/planet in sky in both",
+        "third-person hover vehicle on alien track",
+        "similar stylized low-poly alien scenery"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different vehicle styles (realistic drone vs stylized astronaut bike)",
+        "different palette and rendering (teal realistic vs purple/orange low-poly)",
+        "both have big moon and alien racing track"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 12,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "large pale moon over alien landscape in both",
+        "stylized vehicle racing with chase camera on a track",
+        "similar soft low-poly mountain silhouettes with different biome palettes"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 12,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "both show a large pale moon and an alien racing track",
+        "A has a detailed realistic drone and teal glowing terrain",
+        "B has a low-poly astronaut hoverbike and a red/purple palette"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 13,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "large pale moon over alien mountains in both",
+        "same third-person chase camera on a hovering vehicle",
+        "similar stylized soft lighting with white track markers"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 13,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.52,
+      "tells": [
+        "large pale moon disc dominating the sky in both",
+        "stylized alien-planet racing tracks with a sci-fi mood",
+        "different vehicles and palettes could be separate levels or vehicle choices"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 14,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon disc and stars in both skies",
+        "alien-planet racing track with stylized mountains",
+        "different vehicles and palettes, which could be separate worlds in one game"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 14,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: teal alien canyon with a drone and glowing cyan track lines",
+        "Image B: an astronaut on a hover-bike over a red-orange plain with a purple starry sky",
+        "Different palettes, vehicles and track styles (smooth dark road vs. beaded ribbon track)"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 15,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: teal alien canyon with a drone vehicle on a dark road",
+        "Image B: red-orange desert with a purple starry sky and an astronaut on a sidecar bike",
+        "Different palettes, vehicles and scenery styles"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 15,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon disc and starfield in both skies",
+        "alien-planet racing setup with a vehicle on a track",
+        "different palettes and vehicle styles, possibly separate levels"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 16,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a teal alien canyon with a drone, while Image B is a red-orange desert with an astronaut on a sidecar motorbike",
+        "Different palettes and lighting: cool teal/pink haze vs warm brown/purple starry sky",
+        "Different art styles: smooth, dark, glowing track lines vs low-poly rocks and a raised dotted track"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 16,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "large pale moon disc in a starry sky in both",
+        "alien low-poly mountain silhouettes with a racing-track layout",
+        "similar smooth sci-fi vehicle models seen from a chase camera"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 17,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "large pale moon/planet disc dominating the sky in both",
+        "stylized alien-planet racing setting with a distant track and stars",
+        "unusual sci-fi vehicles (sidecar bike, drone) with similar smooth, glossy modeling"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 17,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon in the sky in both",
+        "stylized alien-planet racing track",
+        "different vehicles and palettes could be separate levels"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 18,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon or planet disc dominates the sky in both",
+        "alien-planet racing track with white dotted or dashed markings",
+        "stylized low-poly mountains and a similar sci-fi mood, though palette and vehicle differ"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 18,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "large pale moon/planet in the sky in both frames",
+        "stylized alien terrain with a glowing track and a third-person vehicle camera",
+        "differing palettes and vehicles, which could be separate levels or vehicle choices"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 19,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.52,
+      "tells": [
+        "large pale moon disc and stars in both skies",
+        "alien-planet racing setting with a track and edge markers",
+        "different vehicle art styles and palettes, which weakens the match"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 19,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a cool teal palette with a drone on a dark road and glowing crystals",
+        "Image B is a warm red-orange and purple palette with an astronaut on a hover bike and a floating ribbon track",
+        "Different vehicles, terrain styles and lighting moods"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 20,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "large pale moon/planet in sky in both",
+        "stylized alien-world racing with hazy atmosphere",
+        "different biome palettes and vehicles could be levels in one game"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 20,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "realistic textured drone vs cartoon astronaut hoverbike",
+        "teal glossy alien canyon vs low-poly red desert with purple nebula sky",
+        "both feature a large pale moon and distant track gates, a weak link"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 21,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "large pale moon/planet disc dominating the sky in both",
+        "alien racing track with gate structures in the distance",
+        "stylized sci-fi vehicles on an otherwise empty track with a different palette per world"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 21,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "large pale moon/planet in sky in both",
+        "alien-planet racing with rear third-person vehicle camera",
+        "similar stylized low-poly terrain and soft fog gradients"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 22,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: teal-toned alien canyon with a realistic orange drone",
+        "Image B: red-orange plain, purple starry sky and a stylized astronaut on a hoverbike",
+        "Different palettes, art styles and vehicle designs"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 22,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "large pale moon disc with stars in both skies",
+        "alien-planet racing tracks with stylized vehicles",
+        "different palettes and vehicles, which could just be different levels"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 23,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "heatsink-port--default",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "large pale moon dominating the sky in both",
+        "similar third-person chase camera and stylized alien terrain",
+        "different palettes and vehicles could be separate levels"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 23,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "heatsink-port--default",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "large pale moon disc dominating the sky in both",
+        "alien-planet racing track with dotted markers and stylized low-poly scenery",
+        "third-person chase camera behind a sci-fi vehicle"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/fix/strange-orbit-port/frames/g15p2c-strange-orbit-port-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "b15827289c7ea533fe59a44969888e856f0e4f22e6467e8a600c507865c353ca"
+    },
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/fix/strange-orbit-port/frames/g15p2c-strange-orbit-port-1/strange-orbit-port--default--settle-25s.jpg",
+      "sha256": "db37b600f3991f05cb88cdbf621325f9960e01717658dde9825448019c794950"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/mid-action-1280.jpg",
+      "sha256": "4b783775d25b054bf11857833627316bd039257d0a5d3bcd5cdf3d2ea79942f8"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5,
+    "animation_quality": 4,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, even illumination on the bike and the terrain. There is no low golden-hour key light and no visible sun direction. The orange ground reads warm, but the light itself has no modeling."
+    },
+    {
+      "category": "shadows",
+      "seen": "No visible contact shadow under the hovering bike in frames 1–2 or under the chase bike in frame 3. Rocks and spikes on the background track cast no readable shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The bike's white and teal shell has a soft sheen but no environment reflection of the nebula sky or the orange terrain. The fairing looks diffuse, close to matte plastic."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A strong concept: a ribbon track looping through floating low-poly rocks and spikes against a nebula with a ringed planet. The foreground ground plane is a blurry, low-detail orange texture with no track markings or surface features."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Barely any depth haze between the foreground and the distant track loop. Distant elements keep full contrast, and there is no visible fog in the 30–180 m band and no dust trail."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The terrain texture is smeared and low-resolution, especially in the frame 1–2 foreground. The bike reads as a uniform glossy toy material with no metal or rubber differentiation beyond the wheel."
+    },
+    {
+      "category": "composition",
+      "seen": "In frames 1–2 the bike sits off-center to the right, and the huge empty orange foreground takes up about 40% of the frame. Frame 3 has a centered chase subject but a large empty sky area."
+    },
+    {
+      "category": "camera",
+      "seen": "Frames 1–2 use a side, showcase-like angle rather than a chase view. The frame 3 chase cam is reasonable, with the subject around 12–15% of the frame, slightly small. There is little speed sensation at 146 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the bike highlights and a soft overall image. There is no cinematic grade, vignette or motion blur conveying speed, and the softness looks like low resolution rather than intent."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Frames 1 and 2 are nearly identical, suggesting a stalled or static scene. The bike floats above the ground with no lean, suspension compression or contact."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "A clean, consistent dark translucent panel set: position, lap, race time, standings with gaps, stardust meter and speed. The typography is legible and the layout is well organized. The center toast text is readable but slightly low-contrast over the terrain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "critique: Craterline GP has a charming art direction: a looping ribbon track through floating low-poly asteroids, a nebula sky with a ringed planet, and a stylized astronaut bike. The HUD is polished and informative. The rendering undercuts the conce"
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

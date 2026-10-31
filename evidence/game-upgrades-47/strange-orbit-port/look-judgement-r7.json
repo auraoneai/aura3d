@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p3-r7/strange-orbit-port/frames/g15p3-r7-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "369d2f64e87d9cab9b9dfbcf7bc894db681489d772c6781b098329225634b70a"
+    },
+    {
+      "path": "../../../../../tmp/g15p3/r7-2/boost-1280.jpg",
+      "sha256": "14a09be7ce75a33b9d7c35cf99629fd88cc9ca126e552c59eb4c5710e5be964c"
+    },
+    {
+      "path": "../../../../../tmp/g15p3/r7-2/mid-action-1280.jpg",
+      "sha256": "63301c4b599ded806911b1bafcb0d93fa823c73abd13c3dafdd45dd1cda547aa"
+    },
+    {
+      "path": "../../../../../tmp/g15p3/r7-2/start-1280.jpg",
+      "sha256": "2695174317d34ae285b83f3989365224927cff74920e52527300d34f3fde8710"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 3.5,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "animation_quality": 4.5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, mostly ambient illumination. There is no clear low key sun raking across the track. The bike and astronaut read evenly lit white-cyan with no warm rim from the big pale moon/sun disc."
+    },
+    {
+      "category": "shadows",
+      "seen": "No visible contact shadow under the bike on the terracotta ground in frames 1–3. Pillars and floating rocks cast no readable shadows onto the track ribbon."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The bike's glossy white/teal fairing shows only a soft highlight. It does not reflect the purple nebula sky or the warm ground, so it feels unanchored."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Strong concept: a ribbon track on stilts over a starry void, with floating low-poly boulders, a jagged maroon ridge and a large moon. However, the ground plane is a smeared blurry orange texture, and the pillars are repetitive untextured cylinders."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The nebula skybox gives color, and the distant ridge has slight haze. There is no distance fog falloff on far pillars or rocks, and no dust or trail particles behind the bike."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The ground uses a low-res, mottled, blurry texture. Rocks are flat-shaded with no roughness variation. The bike plastic has a slightly milky, washed-out look."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The astronaut rider and retro sidecar bike are charming and readable. The low-poly rocks are stylistically coherent. Pillars and rail posts are primitive cylinders with no detail."
+    },
+    {
+      "category": "composition",
+      "seen": "The rider sits well at about 15–20% of the frame in chase views. In frame 3 the rider is off the track floating in zero-G, and the frame is cluttered by a forest of tilted pillars."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is reasonable, but frame 3 rolls and loses the track entirely. The countdown frame shows the HUD clipped by letterbox bars. There is no speed FOV cue at 199 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a soft vignette and slight bloom on the moon. The image looks low-contrast and hazy-grey overall, with no filmic grade or warm golden-hour push. The letterbox in frame 4 cuts the HUD."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The rider pose is static across frames. The bike shows no lean into the track curve in frame 2, and no motion blur or speed lines at high speed."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean, consistent dark panels: position, lap, timer, standings with gaps, a stardust bar, a speed dial and contextual prompts. However, the countdown letterbox overlaps and crops the top and bottom panels."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
