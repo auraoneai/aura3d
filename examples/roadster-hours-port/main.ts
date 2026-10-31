@@ -7,6 +7,7 @@
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { texturesSettled } from "./art/textureGate";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound, type AudioFrame, type GameSound } from "./audio";
 import { LEVELS } from "./data";
@@ -69,6 +70,8 @@ let app: AuraApp | undefined;
 let world: World | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
+/** `performance.now()` when the route last became ready (0 while loading); bounds the texture wait. */
+let readyAt = 0;
 let screen: "home" | "play" | "results" = "home";
 let paused = false;
 let autopilotOn = config.autopilot;
@@ -204,6 +207,7 @@ async function nextRoute(): Promise<void> {
     buildMenu();
     await settle();
     ready = true;
+    readyAt = performance.now();
     $("loading").classList.add("hidden");
     begin();
   } catch (error) {
@@ -506,7 +510,7 @@ const hooks = {
   /** Texture upgrade status per node: textures upload one material at a time after mount, so an early frame shows white models until these read `textured`. */
   textures: () => summarizeTextureUpgrade(app?.diagnostics()),
   /** RH47-01: true once every textured material has uploaded (`textured === total`, 58 on Sunbreak with the generated models); judged shots wait for it. */
-  texturesReady: () => { const t = summarizeTextureUpgrade(app?.diagnostics()); return t.total > 0 && t.textured === t.total; },
+  texturesReady: () => texturesSettled(summarizeTextureUpgrade(app?.diagnostics()), readyAt > 0 ? performance.now() - readyAt : 0),
   lookMode: () => lookMode,
   /**
    * GU47 QA crops for the steady-state capture (E-I crop contract, normalised to the canvas): the chase camera keeps the
@@ -544,6 +548,7 @@ window.skybreak = { snapshot };
  * 8 s (software GL can take minutes per texture; those frames then show the untextured fallback until the upload lands).
  */
 async function settle(): Promise<void> {
+  readyAt = 0;
   if (!app) return;
   if ((world?.texturedNodes ?? 0) > 0) $("loading-status").textContent = "Loading models";
   await warmPrograms(app, { maxFrames: 12, waitForEnvironment: true, environmentTimeoutMs: 2000, waitForTextures: true, textureTimeoutMs: 6000 });
@@ -567,6 +572,7 @@ async function boot(): Promise<void> {
   applyRoutePost();
   await settle();
   ready = true;
+  readyAt = performance.now();
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
   if (!config.autostart && !config.manual) runtime.startIntro();

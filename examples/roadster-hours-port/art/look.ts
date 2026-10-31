@@ -122,7 +122,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
     grade: { exposure: 1.0, contrast: 1.06, saturation: 1.04, temperature: 0.06, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "salt", color: "#eef1ee", alpha: 0.42, density: 0.85, windSpeed: 9, size: [0.5, 2.6], height: [0.2, 6] },
+    spray: { kind: "salt", color: "#eef1ee", alpha: 0.3, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
     wind: [6, -1.5]
   },
   redline: {
@@ -147,7 +147,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0.75, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
     grade: { exposure: 1.0, contrast: 1.1, saturation: 1.08, temperature: 0.14, tint: 0.03 },
     shadow: SHADOW,
-    spray: { kind: "sand", color: "#e2b88a", alpha: 0.32, density: 0.6, windSpeed: 7, size: [0.4, 2.2], height: [0.1, 4] },
+    spray: { kind: "sand", color: "#e2b88a", alpha: 0.24, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
     wind: [5, 0.5]
   },
   halo: {
@@ -169,10 +169,10 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
-    post: { bloom: { intensity: 0.8, threshold: 0.9, scatter: 0.65 }, flare: 0, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.26 },
-    grade: { exposure: 1.18, contrast: 1.06, saturation: 1.0, temperature: -0.08, tint: 0 },
+    post: { bloom: { intensity: 0.45, threshold: 1.05, scatter: 0.6 }, flare: 0, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.26 },
+    grade: { exposure: 1.05, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "mist", color: "#c9dbe6", alpha: 0.22, density: 0.5, windSpeed: 5, size: [0.8, 3.4], height: [0.5, 8] },
+    spray: { kind: "mist", color: "#c9dbe6", alpha: 0.16, density: 0.5, windSpeed: 5, size: [0.15, 0.6], height: [0.5, 8] },
     wind: [3.5, -0.5]
   }
 };
