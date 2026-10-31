@@ -482,9 +482,10 @@ const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("
  * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. Rucker: flood haze, cones and flare veil
  * the left half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2.
  * GU47 blind-panel pass: the look follows the court (`setVenue` re-reads it before the scene rebuild), so a normal launch
- * on Rucker still shows Manila, Shanghai and Venice in the new look once play moves there.
+ * on Rucker still shows Manila, Shanghai and Venice in the new look once play moves there. Athens (panel 0/3, fog white-out)
+ * draws the 4.6.2 look until a capture shows its fog-off rig beating the 4.6.2 frame.
  */
-const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit"]);
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit", "athens"]);
 const LOOK_PARAM = initialParams.get("look");
 const BOOT_COURT_PARAM = initialParams.get("court");
 const BOOT_COURT = BOOT_COURT_PARAM && BOOT_COURT_PARAM in VENUES ? BOOT_COURT_PARAM : "rucker";
