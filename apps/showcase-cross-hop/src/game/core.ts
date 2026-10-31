@@ -10,7 +10,7 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { THEME_LOOKS, VIVID_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, THEME_LOOKS, VIVID_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
@@ -1357,8 +1357,10 @@ export function syncVisuals(alpha = 1): void {
       const ry = l.dir > 0 ? 0 : Math.PI;
       if (l.moverKind === "log") {
         // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
-        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#7a4a24", 0, Math.PI / 2);
-        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e2c08a", 0, Math.PI / 2);
+        // Vivid look: lacquered terracotta toy logs with butter-yellow ends (the PRD G14 palette), not bark brown.
+        const vivid = lookMode === "vivid";
+        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, vivid ? CROSS_HOP_PALETTE.terracotta : "#7a4a24", 0, Math.PI / 2);
+        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, vivid ? CROSS_HOP_PALETTE.butterYellow : "#e2c08a", 0, Math.PI / 2);
       }
       // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
       else if (l.moverKind === "pad") inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.92, PAD_H, 0.92, "#4f9e4f");
