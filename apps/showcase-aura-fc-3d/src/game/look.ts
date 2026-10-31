@@ -242,15 +242,15 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.12, saturation: 1.0, temperature: -0.12, tint: 0 },
-    rim: { color: "#8fc8ff", intensity: 0.8, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.55, mirror: null,
+    rim: { color: "#8fc8ff", intensity: 0.6, azimuthDeg: 200 }, flares: true, weather: "rain",
+    surface: "grass", turfRoughness: 0.75, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
-    rim: { color: "#ff5fa2", intensity: 0.8, azimuthDeg: 160 }, flares: true, weather: "drizzle",
-    surface: "grass", turfRoughness: 0.55, mirror: null,
+    rim: { color: "#ff8fbd", intensity: 0.45, azimuthDeg: 160 }, flares: true, weather: "drizzle",
+    surface: "grass", turfRoughness: 0.85, mirror: null,
     bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
@@ -261,8 +261,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.28, threshold: 0.8 }, vignette: 0.28, grain: 0.05, chromaticAberration: 0
   },
   lagos: {
-    exposureEv: -0.35, floodScale: 1,
-    grade: { contrast: 1.12, saturation: 1.15, temperature: 0.2, tint: 0 },
+    background: "#d08a55", exposureEv: -0.45, floodScale: 1,
+    grade: { contrast: 1.18, saturation: 1.25, temperature: 0.35, tint: 0 },
     rim: null, flares: false, weather: "none",
     surface: "plain", turfRoughness: 0.95, mirror: null,
     bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
