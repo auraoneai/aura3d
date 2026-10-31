@@ -478,28 +478,33 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
 /**
- * GU47 phase 2 (PRD D11, no regression ships): courts whose new look still lost to the 4.6.2 frame after the two phase-2
- * capture rounds boot on the original look; `?look=new` opts back in. Rucker: flood haze, cones and flare veil the left
- * half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2. The boot court
- * decides (the default court is Rucker); a court picked later from the menu keeps the boot look.
+ * GU47 phase 2 (PRD D11, no regression ships): courts whose new look lost to the 4.6.2 frame draw the original look;
+ * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. Rucker: flood haze, cones and flare veil
+ * the left half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2.
+ * GU47 blind-panel pass: the look follows the court (`setVenue` re-reads it before the scene rebuild), so a normal launch
+ * on Rucker still shows Manila, Shanghai and Venice in the new look once play moves there. Athens (panel 0/3, fog white-out)
+ * draws the 4.6.2 look until a capture shows its fog-off rig beating the 4.6.2 frame.
  */
-const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit"]);
-const BOOT_COURT = initialParams.get("court") ?? "rucker";
-const LOOK_ORIGINAL = initialParams.get("look") === "original" ||
-  (initialParams.get("look") !== "new" && ORIGINAL_LOOK_COURTS.has(BOOT_COURT));
-/**
- * GU47 phase 2 fallback: `world.water` fails the renderer mount on this route ("Oblique clip projection is degenerate",
- * RENDERER_MOUNT_FAILED: Venice and Shanghai drew nothing in the after-capture). Until the engine water fix lands the
- * 4.6 ocean and river planes draw by default and `?water=real` opts in to the H47-E3 water nodes.
- */
-const REAL_WATER = !LOOK_ORIGINAL && initialParams.get("water") === "real";
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit", "athens"]);
+const LOOK_PARAM = initialParams.get("look");
+const BOOT_COURT_PARAM = initialParams.get("court");
+const BOOT_COURT = BOOT_COURT_PARAM && BOOT_COURT_PARAM in VENUES ? BOOT_COURT_PARAM : "rucker";
+function courtLookOriginal(courtId: string): boolean {
+  return LOOK_PARAM === "original" || (LOOK_PARAM !== "new" && ORIGINAL_LOOK_COURTS.has(courtId));
+}
+/** The boot court's look: decides the boot-only systems (broadcast intro and replay, juice event table). */
+const BOOT_LOOK_ORIGINAL = courtLookOriginal(BOOT_COURT);
+/** The look of the court on screen (re-read by `setVenue` before every court swap). */
+let LOOK_ORIGINAL = BOOT_LOOK_ORIGINAL;
+const REAL_WATER_PARAM = initialParams.get("water") === "real";
+const realWater = (): boolean => !LOOK_ORIGINAL && REAL_WATER_PARAM;
 /**
  * Reduced motion / flash as the boot scene sees them (`buildScene` runs before `setupSystems` sets the live flags):
  * the same URL params and media queries, read once.
  */
 /* H47-C1 / H47-P2: broadcast intro rail and Jam-dunk replay (broadcast.ts). Off on ?look=original, under reduced motion,
  * with ?intro=0 and on every measurement path (?diag=1, ?simsteps=N), so captures and probes keep their stepping. */
-const BROADCAST_OFF = LOOK_ORIGINAL || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
+const BROADCAST_OFF = BOOT_LOOK_ORIGINAL || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
   Number(initialParams.get("simsteps")) > 0 || initialParams.has("reducedMotion") ||
   (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 const broadcast = createBroadcast({ disabled: BROADCAST_OFF });
@@ -513,7 +518,11 @@ let broadcastPostOn = false;
 /** H47-V3: the Jam-dunk spray tags (new look). */
 const sprayTags = new SprayTags();
 // H47-H1: the tour HUD skin (spray-stencil score bug, spray-can Jam meter) styles off body[data-look="tour"].
-if (typeof document !== "undefined" && !LOOK_ORIGINAL) document.body.dataset.look = "tour";
+function applyHudLook(): void {
+  if (typeof document === "undefined") return;
+  if (LOOK_ORIGINAL) delete document.body.dataset.look; else document.body.dataset.look = "tour";
+}
+applyHudLook();
 /** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
 let shownBoardScore = "";
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
@@ -727,7 +736,7 @@ function athleteOverrides(kit: Kit): any[] {
 /* H47-PF1: on the new look the ground markers and drill cones are pooled instanced nodes (markerPools.ts): 10 shadow discs,
  * 10 team rings, 10 Jam auras, 10 cones and 10 cone rings drew as 50 primitive nodes and now draw as at most 6 (one ring
  * node per side keeps the round/square shape cue and the kit colour). ?look=original keeps the separate primitives. */
-const POOLED_MARKERS = !LOOK_ORIGINAL;
+const pooledMarkers = (): boolean => !LOOK_ORIGINAL;
 const HOME_IDS: readonly string[] = ["p0", "p1", "p2", "p3", "p4"];
 const AWAY_IDS: readonly string[] = ["a0", "a1", "a2", "a3", "a4"];
 const MARKER_ATHLETES = HOME_IDS.length + AWAY_IDS.length;
@@ -736,7 +745,7 @@ const RING_ROT_AWAY: Vec3 = [Math.PI / 2, 0, Math.PI / 4];
 const CONE_RING_ROT: Vec3 = [Math.PI / 2, 0, 0];
 
 function buildMarkerPoolNodes(): any[] {
-  if (!POOLED_MARKERS) return [];
+  if (!pooledMarkers()) return [];
   const home = teamKit("home"), away = teamKit("away");
   const ringMat = (k: Kit) => material.emissive({ color: k.jersey, emissive: k.jersey, emissiveIntensity: 0.45, opacity: 0.72 });
   const pool = (kind: "cylinder" | "torus", name: string, capacity: number, opts: Record<string, unknown>) =>
@@ -761,7 +770,7 @@ function buildAthlete(id: string, team: TeamId): any[] {
       .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
-    ...(POOLED_MARKERS ? [] : buildAthleteAccessories(id, team, kit))
+    ...(pooledMarkers() ? [] : buildAthleteAccessories(id, team, kit))
   ];
 }
 
@@ -801,7 +810,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
         model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
         model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
-      if (!REAL_WATER) nodes.push(
+      if (!realWater()) nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
     }
@@ -810,7 +819,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "venice") {
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      ...(!REAL_WATER ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
+      ...(!realWater() ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
     );
     for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
       nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
@@ -902,7 +911,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
 function buildCones(): any[] {
   const nodes: any[] = [];
-  if (POOLED_MARKERS) return buildMarkerPoolNodes();
+  if (pooledMarkers()) return buildMarkerPoolNodes();
   for (let i = 0; i < CONE_COUNT; i++) {
     nodes.push(
       primitives.cylinder({ name: `cone-${i}`, size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) })
@@ -943,7 +952,7 @@ function buildScene(v: VenueSpec): any {
     // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
-    if (REAL_WATER) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
+    if (realWater()) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
@@ -1167,7 +1176,7 @@ function resolveHandles(): void {
   heldRig.clear();
   poseKindOf.clear();
   armRigs.clear();
-  markerPools = POOLED_MARKERS ? {
+  markerPools = pooledMarkers() ? {
     shadows: new MarkerPool(req("marker-shadows"), ROSTER_IDS.length),
     ringsHome: new MarkerPool(req("marker-rings-home"), HOME_IDS.length, RING_ROT_HOME),
     ringsAway: new MarkerPool(req("marker-rings-away"), AWAY_IDS.length, RING_ROT_AWAY),
@@ -1334,7 +1343,14 @@ const HOOPS_KIND_SET: ReadonlySet<string> = new Set<string>(Object.values(JUICE_
 let ballTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
 let ballTrailFire = false;
 function mountCourtFx(): void {
-  if (LOOK_ORIGINAL || !auraApp) return;
+  if (!auraApp) return;
+  if (LOOK_ORIGINAL) {
+    // an original-look court after a new-look one: no ribbon; the hoops kinds stay registered for the boot juice table
+    try { ballTrail?.stop({ immediate: true }); } catch { /* fx best-effort */ }
+    ballTrail = null;
+    if (!BOOT_LOOK_ORIGINAL) try { registerHoopsFx((auraApp as any).effects, { reducedFlash }); } catch { /* fx best-effort */ }
+    return;
+  }
   try { registerHoopsFx((auraApp as any).effects, { reducedFlash }); } catch { /* fx best-effort */ }
   restartBallTrail(game_.jamFull);
 }
@@ -1420,7 +1436,7 @@ function setupSystems(): void {
   window.addEventListener("keydown", unlock, { once: true });
 
   juice = createJuice({
-    events: (LOOK_ORIGINAL ? JUICE_EVENTS : HOOPS_JUICE_EVENTS) as any,
+    events: (BOOT_LOOK_ORIGINAL ? JUICE_EVENTS : HOOPS_JUICE_EVENTS) as any,
     camera: (auraApp as any)?.camera as any,
     session: {
       reducedMotion,
@@ -3951,6 +3967,8 @@ function setVenue(vId: VenueId, silent = false): void {
   if (!VENUES[vId]) return;
   const changed = venue.id !== vId;
   venue = VENUES[vId];
+  LOOK_ORIGINAL = courtLookOriginal(vId);
+  applyHudLook();
   document.querySelectorAll<HTMLButtonElement>("[data-court]").forEach((b) => b.classList.toggle("active", b.dataset.court === vId));
   document.querySelectorAll<HTMLButtonElement>("[data-court-menu]").forEach((b) => b.classList.toggle("active", b.dataset.courtMenu === vId));
   if (changed) {

@@ -104,7 +104,8 @@ describe("Aura Hoops broadcast camera (H47-C1 / H47-P2)", () => {
     const off = createBroadcast({ disabled: true });
     expect(off.startIntro("orbit")).toBe(false);
     expect(off.startReplay()).toBe(false);
-    expect(MAIN).toMatch(/const BROADCAST_OFF = [^;]*look"\) === "original"[^;]*intro"\) === "0"[^;]*diag"\) === "1"[^;]*simsteps[^;]*reducedMotion[^;]*prefers-reduced-motion/s);
+    expect(MAIN).toMatch(/LOOK_PARAM === "original" \|\|/);
+    expect(MAIN).toMatch(/const BROADCAST_OFF = BOOT_LOOK_ORIGINAL \|\|[^;]*intro"\) === "0"[^;]*diag"\) === "1"[^;]*simsteps[^;]*reducedMotion[^;]*prefers-reduced-motion/s);
   });
 
   it("the live lens is long (fov 30-34) and the replay only follows a Jam dunk", () => {
