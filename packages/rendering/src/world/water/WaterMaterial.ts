@@ -53,6 +53,7 @@ in vec3 v_waveNormal;
 in float v_crest;
 in float v_shore;
 out vec4 o_color;
+uniform vec3 u_cameraPosition;   // bound by WaterRuntime; the shared chunks read it but do not declare it
 #ifndef A3D_PRD10_WATER_HAS_SCENE
 #define A3D_PRD10_WATER_HAS_SCENE 0
 #endif
@@ -95,7 +96,8 @@ export function waterShaderSources(options: { readonly hasScene: boolean; readon
     label: "prd10-water",
     marker: "prd10.water",
     vertex: WATER_VERT_GLSL,
-    fragment: defines + WATER_FRAG_GLSL,
+    // The define goes after `#version` (GLSL ES requires `#version` first; prefixing it failed every water compile).
+    fragment: WATER_FRAG_GLSL.replace("#version 300 es\n", `#version 300 es\n${defines}`),
     webgpu: undefined // WGSL twin ships with the Path G variant (chunk-level wgsl exists on a3d_prd10_water)
   };
 }
@@ -115,10 +117,12 @@ in vec3 v_waveNormal;
 in float v_crest;
 in float v_shore;
 out vec4 o_color;
+uniform vec3 u_cameraPosition;   // bound by WaterRuntime; the shared chunks read it but do not declare it
 ${a3d_prd10_world_light_fallback.glsl}
 ${a3d_prd10_water.glsl}
 uniform vec3 u_surfaceColor;   // gradient top (#2a8fb0)
 uniform vec3 u_deepGradient;   // gradient bottom (#021018)
+uniform float u_waterHeight;   // rest surface Y (declared in the vertex stage too)
 void main() {
   if (v_shore < 0.0) discard; // outside the polygon / circle shape (the grid is the shape's bounding square)
   vec3 n = a3dWaterNormal(v_waveNormal, v_xz, u_time);
