@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-fc-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "favela",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Black void behind the far stands; large dark areas around the edges; slightly muddy overall",
+     "Black void sky above the stands; the grey band past the touchline looks flat; the pitch is a bit dim and brown, but it has a textured dirt surface, a centre circle and a warm mood",
+     "Black void sky above the stands and a flat grey band at the touchline. Lighting is somewhat dim, but the dirt texture, centre circle and warm mood are good."
+    ]
+   },
+   {
+    "variant": "glacier",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large blown-out bloom hotspot on the pitch at lower right; somewhat dark, desaturated look",
+     "A large bright specular hotspot in the bottom right looks a bit like a blown-out glare; a slight vignette; otherwise a coherent night mood, readable players, a centre circle and a dense crowd",
+     "Bright bloom hotspot in the lower right and a slightly dark vignette. Otherwise strong mood, a full crowd and readable players."
+    ]
+   },
+   {
+    "variant": "kyoto",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark and grainy grass texture; dark background",
+     "Grass texture is a bit noisy/streaky and slightly dark; the top of the stands goes nearly black; otherwise good grass detail, a centre circle and a strong magenta accent",
+     "Fairly dark, and the noisy grass texture is a little muddy. Still good atmosphere and readable players."
+    ]
+   },
+   {
+    "variant": "lagos",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mostly a single orange-tan colour; low texture detail on the pitch",
+     "Pitch is fairly flat in texture; otherwise warm sunset lighting, long shadows, a centre circle and good depth",
+     "Somewhat flat pitch texture and a monochrome orange cast, but warm lighting, long shadows and a good centre circle."
+    ]
+   },
+   {
+    "variant": "munich",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Noisy, shimmering texture artefacts on the left side of the grass; dark surroundings",
+     "Bluish wet-looking noise patches on the lower-left grass look a bit artifacty; dark stands",
+     "Somewhat dark, with a slightly noisy wet-grass texture. Good atmosphere and a centre circle."
+    ]
+   },
+   {
+    "variant": "uyuni",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale, low-contrast grey pitch; flat, plain pink backdrop",
+     "Pale low-saturation palette with a flat grey pitch; the flat salmon wall behind looks plain; but dark lines and a centre circle keep it readable",
+     "Flat, low-saturation grey-white pitch and a plain salmon backdrop. Bland, but readable, with a centre circle."
+    ]
+   }
+  ]
+ }
+]
