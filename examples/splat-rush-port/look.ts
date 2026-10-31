@@ -87,7 +87,10 @@ export interface SplatLook {
   readonly post: null | {
     readonly bloom: { readonly intensity: number; readonly threshold: number; readonly scatter: number };
     readonly vignette: { readonly intensity: number; readonly color: string };
-    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
+    /** `gain`: linear exposure multiply in the HDR grade (GU47 phase 2). The first tune (1.38) was set on a frozen boot frame
+     *  (the key light had no runtime id, so boot stopped before `ready`); 0.95 on the running frame (g16fix1) gave mean 106.7, under
+     *  the 125-150 band, so it is 1.4 with a lighter golden zenith. */
+    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
     readonly dof: { readonly fStop: number; readonly focalLength: number; readonly maxBlur: number };
@@ -150,7 +153,10 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       canvas: { weave: 0.05, streak: 0.06 }
     },
     sky: {
-      horizonY: -0.42,
+      /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
+       * from (0, 5.6, 9)), so the painted horizon goes there: the apricot band and the sun disc 7 deg above it show at the
+       * sea edge (at -0.42 both sat under the sea and the visible sky was rose to dusky blue only). */
+      horizonY: -0.225,
       sunDiscDeg: 1.6,
       haloDeg: 9,
       discElevationDeg: 7,
@@ -159,7 +165,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       stages: [
         {
           name: "golden", at: 500,
-          zenith: "#1f4a63", upper: "#5d6f8c", rose: "#e8798a", horizon: "#f3a96b", sea: "#a99bc9",
+          zenith: "#33607e", upper: "#6f82a0", rose: "#e8798a", horizon: "#f3a96b", sea: "#a99bc9",
           sunColor: "#ffc58a", sunIntensity: 0.75, sunElevationDeg: 16, skyFill: "#6f8fb8", bounce: "#e8798a",
           cloudTop: "#f6c79a", cloudShadow: "#9f8fc0", stars: 0
         },
@@ -182,7 +188,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     post: {
       bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06 },
+      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
@@ -279,5 +285,5 @@ const COMMON_CROPS: readonly QaCrop[] = [
 ];
 export const QA_CROPS: Readonly<Record<LookId, readonly QaCrop[]>> = {
   original: COMMON_CROPS,
-  carnival: [...COMMON_CROPS, { name: "sun", x: 0.2, y: 0.3, w: 0.16, h: 0.16 }]
+  carnival: [...COMMON_CROPS, { name: "sun", x: 0.04, y: 0.29, w: 0.16, h: 0.16 }]
 };

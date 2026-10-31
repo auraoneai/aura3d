@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildParkScene, DEFAULT_SCENE_CONTEXT, WALL_NAME_THETA, wallNameNode } from "../../../apps/showcase-aura-diamond-3d/src/scene";
+import { buildParkScene, DEFAULT_SCENE_CONTEXT, DOME_PROBE_ENABLED, domeInfieldProbe, WALL_NAME_THETA, wallNameNode } from "../../../apps/showcase-aura-diamond-3d/src/scene";
 import { fencePoint, fenceRadius, FOUL_DEG, PARKS, PARK_ORDER } from "../../../apps/showcase-aura-diamond-3d/src/rules";
 
 const nodesOf = (park: keyof typeof PARKS, variant: "gu47" | "original"): any[] =>
@@ -47,9 +47,10 @@ describe("aura-diamond Dome infield reflections (DIA-M2)", () => {
   it("mounts one box probe in the GU47 Dome only, over a sealed 0.42-roughness infield", () => {
     for (const p of PARK_ORDER) {
       const probesIn = nodesOf(p, "gu47").filter((n) => n.kind === "probe");
-      expect(probesIn).toHaveLength(p === "dome" ? 1 : 0);
+      expect(probesIn).toHaveLength(p === "dome" && DOME_PROBE_ENABLED ? 1 : 0);
     }
-    const probe = nodesOf("dome", "gu47").find((n) => n.kind === "probe");
+    // Phase 2: the probe is off (DOME_PROBE_ENABLED); its node shape stays checked for when it returns.
+    const probe = domeInfieldProbe().toJSON ? domeInfieldProbe().toJSON() : domeInfieldProbe();
     expect(probe.probe).toBe("reflection");
     expect(probe.options.box.min[1]).toBeLessThan(0);
     expect(probe.options.update).toBe("once");

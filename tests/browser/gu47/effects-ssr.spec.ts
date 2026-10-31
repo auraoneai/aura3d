@@ -20,6 +20,8 @@ test.describe(`${CAPABILITY} receipt`, () => {
     const off = await session.render("ssr-off");
     const on = await session.render("ssr-on");
     const delta = await session.compare("ssr-off", "ssr-on", REGIONS.floorUnderCrate);
+    // Logged before the checks so a failing run still says what it measured (GU47 phase 2).
+    console.log(`[effects-ssr] measured ${JSON.stringify({ delta, stagesRan: on.stagesRan, skipped: on.skipped, errors: on.errors })}`);
     expect(off.stagesRan.some((stage) => stage.startsWith("S3"))).toBe(false);
     expect(on.stagesRan.some((stage) => stage.startsWith("S3:ssr-"))).toBe(true);
     expect(on.errors).toEqual([]);

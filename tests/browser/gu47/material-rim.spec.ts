@@ -13,7 +13,7 @@ import type { RimComparison, RimFrame, RimVariant } from "./material-rim-harness
 
 const SPEC = "tests/browser/gu47/material-rim.spec.ts";
 const HARNESS = "/tests/browser/gu47/material-rim.html";
-const SCENE = "tests/browser/gu47/material-rim-harness.ts rimScene(): unit sphere (#2a3140, roughness 0.6), dark backdrop, one directional key, camera z=4 fov 40; on frame adds rim { color #ffb347, power 2.5, intensity 1.5 }";
+const SCENE = "tests/browser/gu47/material-rim-harness.ts rimScene(): radius-1 sphere (primitives.sphere scale 2, #2a3140, roughness 0.6), dark backdrop, one directional key, camera z=4 fov 40; on frame adds rim { color #ffb347, power 2.5, intensity 1.5 }";
 
 interface RimWindow {
   __AURA3D_RIM_RECEIPT__?: {

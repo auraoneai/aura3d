@@ -298,3 +298,42 @@ describe("GU47 CR-P3 title-only depth of field", () => {
     });
   });
 });
+
+describe("GU47 phase 2: every node the runtime drives is a declared runtime node", () => {
+  /** Like the engine's `app.nodes.require`: only top-level nodes with `.runtime({ id })` resolve; anything else throws. */
+  function strictApp(declared: ReadonlySet<string>) {
+    const missing: string[] = [];
+    const handle = (id: string) => {
+      if (!declared.has(id)) { missing.push(id); throw new Error(`Aura3D runtime node "${id}" was not found.`); }
+      const h: Record<string, unknown> = {};
+      const chain = () => h;
+      Object.assign(h, { setPosition: chain, setRotation: chain, setScale: chain, setVisible: chain, updateAttribute: chain, setUniform: chain, setLight: () => undefined });
+      return h;
+    };
+    const app = { nodes: { require: handle }, camera: { setPose: () => undefined }, post: { setEffectEnabled: () => undefined, setEffect: () => undefined } };
+    return { app: app as never, missing };
+  }
+
+  for (const id of ["original", "carnival"] as const) {
+    it(`${id}: title, play and game over resolve only declared runtime ids (the carnival key light carries one)`, () => {
+      withDocument(() => {
+        const sim = new SplatRushSim(20261023);
+        const world = buildWorld({ sim, aspect: 16 / 9, look: LOOKS[id] });
+        const nodes = world.scene.toJSON().nodes as unknown as { name?: string; kind?: string; runtime?: { id?: string } }[];
+        const declared = new Set(nodes.map((n) => n.runtime?.id).filter((v): v is string => typeof v === "string"));
+        if (id === "carnival") expect(nodes.find((n) => n.name === "backdrop-key")?.runtime?.id).toBe("backdrop-key");
+        const { app, missing } = strictApp(declared);
+        const rt = world.bind(app);
+        rt.update(sim, 16 / 9, { symbols: true });
+        rt.warm(true);
+        rt.warm(false);
+        for (let i = 0; i < 240; i++) { sim.advance(IDLE); rt.update(sim, 16 / 9, { cameraLayers: true }); }
+        sim.advance({ ...IDLE, start: true });
+        for (let i = 0; i < 2400 && sim.o.phase !== "gameOver"; i++) { sim.advance(IDLE); rt.update(sim, 16 / 9, { cameraLayers: true, guide: true }); }
+        for (let i = 0; i < 60; i++) { sim.advance(IDLE); rt.update(sim, 16 / 9, { cameraLayers: true }); }
+        expect(sim.o.phase).toBe("gameOver");
+        expect(missing).toEqual([]);
+      });
+    });
+  }
+});
