@@ -850,10 +850,11 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
   );
   // GU47 phase 3 (rubric: the tee deck filled a third of every address frame as one flat colour): the deck carries the
-  // course's mown fairway surface (mow bands, blade normals, sheen) on a quad just above the box top; `?look=original`
+  // course's tight-cut surface (mottle mask, blade normals; the fairway mow bands read as shadow-map striping at night)
+  // on a quad just above the box top; `?look=original`
   // keeps the 4.6.2 slab.
   if (turfOn) {
-    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "fairway", pal.teeBox, 0.82) }));
+    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82) }));
   }
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
@@ -2036,6 +2037,21 @@ function startHole(idx: number): void {
   cam.eye = [initEx, t.height(initEx, initEz) + 5.3, initEz];
   cam.target = [initTx, t.height(initTx, initTz) - 2.4, initTz];
   cam.fov = 40;
+  if (turfOn) {
+    // GU47 phase 3 (rubric composition): start on the aim-cam pose the camera eases into (same formula as the aim branch
+    // of the camera update, zoom 1), not 8 m back and 5 m up with the golfer on the left edge; slow first frames (and
+    // the poster and steady-state captures) then show the address framing
+    const aspect = (window.innerWidth || 16) / (window.innerHeight || 9);
+    const side = clamp(aspect / 1.6, 0.3, 1);
+    const portrait = clamp((1.15 - aspect) / 0.6, 0, 1);
+    const back = 5.4 + 1.9 * portrait, aimSide = 2.7 * side * (1 - 0.9 * portrait);
+    const ex = t.tee[0] - Math.sin(t.lineYaw) * back - Math.cos(t.lineYaw) * aimSide;
+    const ez = t.tee[2] - Math.cos(t.lineYaw) * back + Math.sin(t.lineYaw) * aimSide;
+    const ax = t.tee[0] + Math.sin(t.lineYaw) * 34, az = t.tee[2] + Math.cos(t.lineYaw) * 34;
+    cam.eye = [ex, t.height(ex, ez) + 2.2, ez];
+    cam.target = [ax, t.height(ax, az) - 2.2, az];
+    cam.fov = 42 + 16 * portrait;
+  }
   if (framesRendered > 0 || idx > 0) {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
   }
