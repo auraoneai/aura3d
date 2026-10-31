@@ -218,7 +218,7 @@ void main() {
   lit += normalize(u_a3dSunColor + 1e-4) * 1.6 * spec * 0.28 * gKey * (banding > 0.0 ? 0.0 : 1.0);${gouache ? `
   // GU47 phase 3: the gas giant and its ring are painted, not lit: their night side kept a black disc in the grid and
   // countdown shots (it read as a void). A warm painted floor keeps the bands visible from every side.
-  if (banding > 0.0) lit = max(lit, albedo * vec3(0.62, 0.5, 0.46));` : ""}
+  if (banding > 0.0) lit = max(lit, albedo * vec3(0.78, 0.5, 0.36));` : ""}
   // Banded bodies (the gas giant) sit far out: they take a third of the haze so the planet stays a painted disc.
   outColor = vec4(mix(lit, haze(lit, vWorld), banding > 0.0 ? 0.35 : 1.0), 1.0);
 }`;

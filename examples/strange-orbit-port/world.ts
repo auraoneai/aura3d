@@ -638,7 +638,7 @@ export function buildWorld(options: WorldOptions): World {
         normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
         uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
         indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
-      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.72 : 0.6)) }).runtime({ id: `rider-shadow-${i}` }));
+      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.85 : 0.65)) }).runtime({ id: `rider-shadow-${i}` }));
     }
   }
 
