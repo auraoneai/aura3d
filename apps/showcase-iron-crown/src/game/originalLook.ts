@@ -30,8 +30,8 @@ export const ORIGINAL_LOOKS: Readonly<Record<StageId, OriginalLook>> = {
 
 /**
  * Per-venue default. The blind panel (2026-10-31) judged the first GU47 look better on Neo-Tokyo and the Dock only; the
- * other four now carry the refined GU47 look (refinedLook.ts, phase 3) and default to it only once the blind panel judges
- * that look better than the 4.6.2 frame (lane report g05.md, Phase 3).
+ * other four carry the refined GU47 look (refinedLook.ts, phase 3), which the blind panel judged better than the 4.6.2
+ * frame: Colosseum and Airstrip 3/0 (g05p3r2), Crown 3/0 (g05p3r3c), Monastery 3/0 (g05p3r3m).
  */
 export const VENUE_LOOK_DEFAULT: Readonly<Record<StageId, VenueLookMode>> = {
   "neo-tokyo-rooftop": "gu47",
