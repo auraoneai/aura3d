@@ -26,7 +26,7 @@ import { ORIGINAL_LOOKS, fcLookMode, usesOriginalBase } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
-import { fitCameraToAspect, broadcastPose, originalBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
+import { fitCameraToAspect, broadcastPose, originalBroadcastPose, hybridBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
 import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
 import { bindScoreboardText, shownScore } from "./game/scoreboard3d";
 import { loadSave } from "./game/save";
@@ -408,7 +408,9 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
-      const shot = usesOriginalBase(fcLookMode(sceneVenue)) ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
+      const lookMode = fcLookMode(sceneVenue);
+      const shot = lookMode === "hybrid" ? hybridBroadcastPose(cam.followX, b.x, b.z)
+        : usesOriginalBase(lookMode) ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
@@ -963,6 +965,18 @@ function boot(): void {
     .finally(() => {
       appReady = true;
       document.body.dataset.aura3dReady = "true";
+      // QA settle flag for the screens spec (readyGlobals): on software WebGL2 the turf texture lands 25-60 s after
+      // ready, and the card frame taken 10 s after ready showed the untextured mint tint. Set once 40 s and 5 frames
+      // have passed since ready (software GL presents about one frame every few seconds); gameplay never reads it.
+      {
+        const readyAt = performance.now(), readyFrame = framesRendered;
+        const settle = window.setInterval(() => {
+          if (performance.now() - readyAt >= 40_000 && framesRendered - readyFrame >= 5) {
+            (window as unknown as Record<string, unknown>).__AURA_FC_SETTLED__ = true;
+            window.clearInterval(settle);
+          }
+        }, 1000);
+      }
       if (canvas) canvas.dataset.ready = "true";
       const home = clubFor(modes.cfg?.homeClub ?? modes.studio.club);
       const away = clubFor(modes.cfg?.awayClub ?? "iron");

@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r8/screens/1280x720/01-title.jpg",
+      "sha256": "6b80af41b6418da47d1a88e02706416da1d77c87b13b38581fdbe9f8a91311a7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r8/screens/1280x720/03-action-02-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "cf4ca5f1274af66aae781bacf2dfcca2c355ec4e807d757c12b02a9d172129f9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r7/aura-fc-3d/frames/g09p3-r7-2/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "ae98fd3a952fe0b2bd95dd8db0b7d477da73d4795079e03e3b2e542e74fc66e9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r7/aura-fc-3d/frames/g09p3-r7-3/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "8178e7f92c41e15aae8c46d4fcbfb2efe3b6ecbc87747a40c7e35e22e7cfc77a"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 turf is lit fairly flat, with a cold blue-white sheen patch on the left. Frame 3 is an all-orange monochrome wash that flattens the players into the floor. Frame 4 has a blown hotspot at lower right that reads as a lens flare, not as a flood key."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players sit on soft dark blob discs under their feet. Frame 3 adds long directional shadows, but frames 1 and 4 show little or no cast shadow, so grounding is inconsistent across arenas."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No convincing environment reflections. The frame 1 turf shows a mottled specular noise pattern that looks like wet plastic rather than grass sheen. The goal and kit have no reflective response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Crowds are repeated capsule billboards in uniform rows. The stands are dark slabs with a plain green/teal hoarding strip. The goal in frame 2 has a decent net and a floodlight truss, but the arena reads as sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 has faint particle specks over the crowd and a bloom hotspot. There is essentially no indoor haze or volumetric light from the floods, so the stands do not separate in depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The frame 1 turf texture swims with blue-white streaky noise. Frames 3 and 4 have flat untextured court floors. Kits are flat vertex color with no cloth response."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Low-poly stylized players with simple heads and kits, readable but stiff. The ball is a small simple sphere. The goal frame in frame 2 is acceptable, with net geometry visible."
+    },
+    {
+      "category": "composition",
+      "seen": "The kickoff framing centers the ball and center circle with players spread symmetrically, which reads clearly. The replay shot in frame 2 is dominated by an empty pitch, with the ball a tiny white dot."
+    },
+    {
+      "category": "camera",
+      "seen": "The broadcast angle is elevated and steady, but players occupy only a small fraction of the frame. The frame 2 replay angle shows motion blur on the grass, but the ball is lost in it."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy radial motion blur in frame 2. The bloom flare in frame 4 lacks a source. The frame 3 color grade is a single-hue sepia filter. There is no coherent grading across arenas."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Kickoff poses are identical static idle stances. All players face the camera rigidly, and the frames show no gait or kick pose."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "A clean scoreboard with team chips, clock, and state label, plus a possession bar, a lime kickoff prompt, a replay tag, and a controls strip. It is legible and consistent, though small, and the top nav bar is a bit cluttered."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

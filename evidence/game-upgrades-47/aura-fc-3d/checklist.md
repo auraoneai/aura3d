@@ -50,3 +50,20 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | FC47-PF1 | <= 360 draws (Uyuni <= 480) | phase 2 (stands 14 -> 1, hoardings 4 -> 1 batch) |
 | FC47-PF1 | JS +40 KB max | phase 2 |
 | FC47-PF1 | 6 before/after rows | before rows in budget.json; after: phase 2 |
+
+## Phase 3 (4.7.1), software WebGL2
+
+| Item | Status |
+|---|---|
+| Every view opens in the panel-won look | done: all six venues default to `hybrid`; blind panel `g09p3r7` 3-0 better than 4.6.2 on every venue |
+| Rubric (PRD 1.2 goal 1) every category >= 7 | not met: final minimum 3.5 (ibl_reflections), ui_hud 7; modeling_assets / material_quality blocked on WP-36; see lane report g09.md "Phase 3" and `look-judgement.json` |
+| Distinctness vs genre neighbours (PRD 1.2 goal 2) | done: hoops 0.81, diamond 0.839 (`distinct/`) |
+| Centre circle drawn as a ring | done (48 instanced chords; the torus drew a dash) |
+| No stray scuff rectangles | done (hybrid drops the scuff decals) |
+| Night flood key with player shadows | done (main-stand PCSS spot on hybrid night venues; `?spotShadow=off`) |
+| HUD possession bar clear of the score bug | done (own plate, tag below it) |
+| game-checks 0 errors | done |
+| luma-band | 12 warnings: engine texPending=1 on every row (handoff), Favela/Glacier pitch bands written for the GU47 dark pitch, flood-bank crop above the 4.6.2-height frame; bands not widened |
+| screens-fresh | done: final screens and card retaken on the phase-3 build (`g09p3-r9`), posters rebuilt |
+| borrowed-asset (18), FC47-A1/A2/AN1/W1, M2 numbers | blocked (WP-36 Meshy assets) |
+| FC47-PF1 <= 360 draws | not met on Munich 391, Kyoto 390, Lagos 409, Glacier 393 (Favela 360, Uyuni 297); crowd impostors wait on WP-36 fans |

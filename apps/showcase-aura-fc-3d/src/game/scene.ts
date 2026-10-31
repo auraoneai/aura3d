@@ -73,6 +73,11 @@ function domeOn(search: string = typeof location === "undefined" ? "" : location
 }
 
 /** `?mirror=off` drops the Uyuni mirror (QA fallback, FC47-M3); always on outside a browser. */
+/** Hybrid night venues cast the main-flood spot shadow unless `?spotShadow=off`. */
+export function hybridSpotShadow(search: string = typeof location === "undefined" ? "" : location.search): boolean {
+  return new URLSearchParams(search).get("spotShadow") !== "off";
+}
+
 export function mirrorEnabled(search: string = typeof location === "undefined" ? "" : location.search): boolean {
   return new URLSearchParams(search).get("mirror") !== "off";
 }
@@ -233,25 +238,42 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
 /** The 4.6.2 floods: a pylon, an unshadowed spot and a 0.3 cone on each of the four towers (hybrid: spots x `scale`). */
-function originalFloodNodes(v: VenueSpec, scale = 1): any[] {
+function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
       model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
         .position(x, 0, z)
         .rotate(0, Math.atan2(-x, -z), 0),
-      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90 }),
-      effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: 0.3, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
+      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
+        ...(i === shadowTower ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {}) } as any),
+      effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: coneIntensity, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
         .runtime(gameRuntime(`flood-cone-${i}`))
     );
   });
+  if (pools > 0) {
+    // phase 3 hybrid: a soft additive pool on the turf under each tower (one draw), so the night pitch falls off
+    // from the floods toward the centre instead of reading evenly lit
+    nodes.push((instances as any).plane({
+      name: "fc-flood-pools", size: [1, 1, 1],
+      transforms: FLOOD_TOWERS.map((_, i) => lightPoolTransform(i)),
+      colors: FLOOD_TOWERS.map(() => v.floodColor),
+      material: lightPoolMaterial(pools)
+    }).runtime(gameRuntime("fc-flood-pools")));
+  }
   return nodes;
 }
 
 function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[] {
   const m = mode ?? fcLookMode(v.id);
   if (m === "original") return originalFloodNodes(v);
-  if (m === "hybrid") return originalFloodNodes(v, HYBRID_LAYERS[v.id].floodScale);
+  if (m === "hybrid") {
+    const hl = HYBRID_LAYERS[v.id];
+    // phase 3: at night the main-stand spot casts the players' shadows (PCSS 2048), so the flood reads as the key. The
+    // engine defect behind the `spotShadow` gate is fixed in 90bbc7c2e, so the hybrid path opts in by default
+    // (`?spotShadow=off` keeps the 4.6.2 shadowless spots).
+    return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1);
+  }
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
@@ -452,7 +474,11 @@ export function surfaceMaterials(v: VenueSpec, mode?: FcLookMode) {
     return {
       ground: material.pbr({ color: v.ground, roughness: 0.96 }),
       apron: material.pbr({ color: v.apron, roughness: 0.9 }),
-      pitch: hl.surface === "plain" ? material.pbr({ color: v.pitch, roughness: hl.turfRoughness }) : pitchMaterial(v, hl.surface, hl.turfRoughness)
+      pitch: hl.surface === "plain"
+        ? material.pbr({ color: hl.pitchColor ?? v.pitch, roughness: hl.turfRoughness })
+        : hl.surface === "dirt"
+          ? dirtPitchMaterial(hl.pitchColor ?? v.pitch, hl.turfRoughness)
+          : pitchMaterial(hl.pitchColor !== undefined ? { ...v, pitch: hl.pitchColor } : v, hl.surface, hl.turfRoughness)
     };
   }
   if (m === "original") {
@@ -499,6 +525,17 @@ export function pitchMaterial(v: VenueSpec, surface: FcVenueLook["surface"] = VE
   return material.pbr({ color: v.pitch, roughness });
 }
 
+/** Phase 3 hybrid Favela: the packed-dirt pitch takes the acg-concrete034 grain (tiled 16x10) under the venue colour. */
+export const DIRT_TILES: readonly [number, number] = [16, 10];
+export function dirtPitchMaterial(color: string, roughness: number) {
+  const tile = { scale: DIRT_TILES };
+  return material.pbr({
+    color: lightenHex(color, 0.1), roughness,
+    texture: assets.fcConcreteColor, normal: assets.fcConcreteNormal, roughnessMap: assets.fcConcreteRough, normalScale: 0.6,
+    texTransforms: { baseColor: tile, normal: tile, metallicRoughness: tile }
+  });
+}
+
 /** Mow stripes over textured turf: a 30% tint so the grass texture reads underneath (FC47-M1). */
 export const STRIPE_OPACITY = 0.3;
 export function stripeMaterial(v: VenueSpec, mode?: FcLookMode) {
@@ -521,6 +558,18 @@ export function cageWallMaterial(v: VenueSpec) {
 /** Pitch-line paint: lit by the floods, a faint self-glow only (<= 0.1, the art-direction emissive-fill limit). */
 export function lineMaterial(v: VenueSpec) {
   return material.pbr({ color: v.line, roughness: 0.6, emissive: v.line, emissiveIntensity: 0.08 });
+}
+
+/** Centre circle as chords: radius CIRCLE_R, 0.12 m paint, each chord tangent to the ring at its midpoint. */
+export const CIRCLE_SEGMENTS = 48;
+export function centreCircleTransforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
+  const out: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const chord = 2 * CIRCLE_R * Math.sin(Math.PI / CIRCLE_SEGMENTS) * 1.04;
+  for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
+    const a = ((i + 0.5) / CIRCLE_SEGMENTS) * Math.PI * 2;
+    out.push({ position: [Math.cos(a) * CIRCLE_R, 0.014, Math.sin(a) * CIRCLE_R], rotation: [0, -a, 0], scale: [0.12, 0.018, chord] });
+  }
+  return out;
 }
 
 function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
@@ -557,10 +606,13 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
     name: "fc-lines", size: [1, 1, 1], material: lineMat,
     transforms: pitchLines().map(([w, l, x, z]) => ({ position: [x, 0.014, z], scale: [w, 0.018, l] }))
   }));
-  // centre circle + spot
+  // centre circle + spot. The unit torus scaled [R, 0.05, 0.05] drew a flat 9 m dash, not a ring (4.6.2); the hybrid
+  // path draws the circle as CIRCLE_SEGMENTS thin chords in one instanced batch.
   nodes.push(
-    primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat })
-      .position(0, 0.02, 0).rotate(Math.PI / 2, 0, 0),
+    m === "hybrid"
+      ? (instances as any).box({ name: "line-circle", size: [1, 1, 1], material: lineMat, transforms: centreCircleTransforms() })
+      : primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat })
+        .position(0, 0.02, 0).rotate(Math.PI / 2, 0, 0),
     primitives.cylinder({ name: "line-spot-c", size: [0.22, 0.016, 0.22], material: lineMat }).position(0, 0.015, 0)
   );
 
@@ -822,8 +874,8 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       .position(34.0, 0, -15.5)
   );
 
-  /* ---- Pitch scuff decals ---- */
-  for (const [x, z, s] of [[-19, -3, 1.8], [19.2, 2.4, 1.6], [-0.5, 0.4, 2.2], [8, -6, 1.3], [-9, 5.4, 1.4], [23, -5, 1.2]] as const) {
+  /* ---- Pitch scuff decals (4.6.2 and GU47 paths; the hybrid frame read them as stray dark rectangles) ---- */
+  if ((mode ?? fcLookMode(v.id)) !== "hybrid") for (const [x, z, s] of [[-19, -3, 1.8], [19.2, 2.4, 1.6], [-0.5, 0.4, 2.2], [8, -6, 1.3], [-9, 5.4, 1.4], [23, -5, 1.2]] as const) {
     nodes.push(decals.project({ name: `fc-scuff-${x}-${z}`, color: "#000000", size: [s, s * 0.7], opacity: 0.13, position: [x, 0.014, z], normal: [0, 1, 0] }));
   }
 

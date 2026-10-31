@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T18:02:53.207Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-fc-3d--favela--settle-60s",
+      "aura-fc-3d--glacier--settle-60s",
+      "aura-fc-3d--kyoto--settle-60s",
+      "aura-fc-3d--lagos--settle-60s",
+      "aura-fc-3d--munich--settle-60s",
+      "aura-fc-3d--uyuni--settle-60s"
+    ],
+    "framesB": [
+      "aura-hoops-3d--athens",
+      "aura-hoops-3d--manila",
+      "aura-hoops-3d--orbit",
+      "aura-hoops-3d--rucker",
+      "aura-hoops-3d--shanghai",
+      "aura-hoops-3d--venice"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.81,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 47,
+    "sameGameYes": 1,
+    "differentRate": 0.9791666666666666,
+    "ci95": [
+      0.8910053086246883,
+      0.9963129840206002
+    ],
+    "confidentDifferent": 41,
+    "confidentDifferentRate": 0.8541666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.81,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch at night with small flat-shaded figures, while Image B is a basketball court in daylight",
+        "Image A uses a high top-down camera with dark brown sandy tones; Image B uses a low, close camera with a pastel sky and a blue court",
+        "Character models differ: Image A has tiny, simple figures, Image B has larger, more detailed figures with dreadlocks and orange ring markers"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a gray-blue sky and a cool palette; Image B is a soccer pitch with warm orange lighting and stands",
+        "Different character models: A has curly-haired figures with rings under their feet, B has smaller low-poly players with simple shadows",
+        "Different environment and lighting: A is a floating-objects void with a hoop, B is an enclosed stadium with a crowd"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: basketball with hoop and ball cart vs soccer with center circle",
+        "A has dark navy court, orange key and strong contrast; B has pale gray flat court with muted pastel tones",
+        "Different camera and character style: A low-angle with detailed, glasses-wearing characters; B high top-down view with small simple figures"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different sports and venues (basketball court vs soccer stadium)",
+        "different lighting and backdrop (bright gray void vs dark crowd stands)",
+        "similar stylized low-poly characters, a weak link"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a low-angle icy cave with a basketball hoop and smeared textures",
+        "Image B is a top-down soccer pitch with small flat-shaded players on a brown sandy surface",
+        "The palettes differ: cold blue in A, warm brown with a dark sky in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a blue key, hoop and ball cart; Image B is a soccer/futsal pitch with a ball and center circle",
+        "Different rendering: A has dark asphalt, a pale blue gradient sky and moody lighting; B has a flat light gray floor and muted pink walls",
+        "Different characters and camera: A's curly-haired figures have an orange ground ring and a low angle; B's small figures have round shadow discs and a high top-down view"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer game with a top-down camera and flat grey lighting; Image B is a basketball game",
+        "Image B has a warm sunset sky, a palm tree and a glowing orange ring under the player, which Image A lacks",
+        "The character models differ: A's are small and simple with round shadows, B's are larger and more detailed with textured hair"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a stadium crowd, Image B is an indoor basketball court",
+        "Different character styles: small flat-shaded soccer players versus detailed, proportioned basketball players with ring markers",
+        "Different camera and rendering: high top-down view with textured grass versus low-angle view with heavy depth-of-field blur"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized soccer/futsal match with flat-shaded players and a crowd",
+        "Image B is a low-camera view of glitchy, stretched ice textures with a basketball hoop",
+        "The art styles and camera setups are completely different"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A is a dim, brownish soccer pitch at night, while B is a bright basketball court with a pale sky",
+        "Different character styles: small flat-shaded soccer players versus larger curly-haired figures with orange ground rings",
+        "Different lighting and palette: sandy, muted tones versus gray, blue and saturated colors"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: icy blue, heavily stretched textures in a cave with a basketball hoop",
+        "Image B: warm orange stylized soccer pitch with a crowd and small low-poly players",
+        "Completely different palette, art style and camera (ground-level view vs. high-angle view)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court at dusk with rain, rich lighting and bloom, ornate lamps",
+        "Image B is a soccer/futsal pitch with flat grey, desaturated, overcast look and high-angle camera",
+        "Character models look somewhat alike (low-poly, similar proportions), but the rendering, scene and palette differ strongly"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a flat, desaturated look and a high overhead camera",
+        "Image B is a basketball court with depth-of-field blur, bloom and a low perspective camera",
+        "The character models and rendering differ: A has simple flat-shaded figures with blob shadows, B has more detailed characters with colored ground rings"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with small players and a stadium crowd",
+        "Image B is an icy cave with a basketball hoop and stretched textures",
+        "Different palettes and camera: green and dark top-down vs. blue and ground-level"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: basketball court vs soccer pitch",
+        "Indoor gray-white void and flat lighting vs night stadium with crowd and textured grass",
+        "Similar stylized low-poly human figures, but the rendering and palette differ"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer match on a warm tan pitch, Image B is a basketball court with a dark floor",
+        "Different lighting and palette: A has hazy orange sunset tones, B has a neutral grey sky with a cooler, crisper look",
+        "Different camera and art style: A uses a high, distant view with tiny figures, B uses a close view with detailed characters and ground rings"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with a stylized, low-detail, warm orange look",
+        "Image B is a basketball court with more detailed characters, a palm tree and a pastel sky",
+        "Different sports, camera framing and lighting palettes"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with hoop, ball cart and blue key; Image B is a soccer pitch with a stadium crowd",
+        "Different environments: pale gray sky and dark asphalt vs. night stadium with textured grass",
+        "Character models look similar (low-poly, curly hair) but the settings, camera and lighting differ"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Different sports: indoor basketball court vs. outdoor soccer pitch",
+        "Different settings and lighting: blurry depth-of-field gym vs. dark night stadium with crowd",
+        "Similar stylized low-poly player models, but camera and ground materials differ (flat court vs. textured grass)"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Night soccer stadium vs. daytime sunset basketball court",
+        "Different sports, field and court surfaces, and lighting palette",
+        "Different character proportions and shading, plus the ground-ring markers in B"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: basketball court vs. futsal/soccer pitch",
+        "Different lighting and palette: gray-white walls with dark navy court vs. blue-lit arena with crowd stands and lens glow",
+        "Camera and setting differ: low angle with stylized characters vs. high overhead view of small players"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a basketball court at dusk with rain and lamps, Image B is an indoor futsal/soccer pitch with a stadium crowd",
+        "Image A has perspective close-up, orange ring markers, and a blurred park background; Image B has a flat top-down view with a teal wall",
+        "The character styles look similar (stylized low-poly figures with small shadows), which weakly suggests a shared engine or studio"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a flat-shaded futsal pitch seen from a high camera, in a dark blue palette",
+        "Image B is a basketball court with a shallow-depth-of-field blurred interior and more realistic lighting",
+        "Different sports and different character styles: A has thin stylized figures with ground shadows, B has chunkier figures with orange ring markers"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "matching stylized low-poly character models (proportions, hair, socks)",
+        "white painted court lines and a ball on a sports court in both",
+        "different sport, lighting and environment, which lowers confidence"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night soccer pitch with a stadium crowd; Image B is a basketball court in daylight",
+        "Image A has dark, textured grass and small flat-shaded players; Image B has larger, more detailed characters with curly hair and ring markers",
+        "Image B has a floating, abstract sky setting with a hoop and ball cart; Image A is a realistic enclosed stadium"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a basketball court in a warm, hazy daytime setting; Image B is a soccer pitch under night stadium lighting",
+        "Different scenery and palettes: pastel beige and blue vs dark green with a crowd",
+        "Character styles are similar low-poly figures, but the camera and lighting differ strongly, so they are most likely separate games"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer pitch with warm orange, flat, low-poly lighting",
+        "Image B is a basketball court with a dark blue palette, rain and dusk glow",
+        "Different sports, character models, camera angles and rendering detail"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a stadium crowd and small low-poly players",
+        "Image B is an icy cave with a basketball hoop and heavily stretched textures",
+        "Different palettes and camera: A is a high, dark, magenta-and-green view; B is a low-angle, cold blue view"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer/futsal match from a high camera at night, with a dark crowd stand",
+        "Image B is a basketball court in daylight with a warm hazy sky and a palm tree",
+        "Character styles differ: A has flat, thin stylized figures; B has more detailed, chunkier characters with orange ring markers"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with hoops and ball cart; Image B is a futsal/soccer pitch with stadium crowd",
+        "Different art styles: A has detailed curly-haired figures on a gray court with a pale sky; B has flat stylized figures on a blue court with a dark vignette and lens glow",
+        "Different camera and lighting: A is a low-angle view in daylight; B is a high top-down view with night stadium lighting"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with a flat, warm orange palette and a high overhead camera",
+        "Image B is an indoor basketball court with a blurred depth-of-field background and cooler, realistic lighting",
+        "Image B has orange ring markers under players and a more detailed rendering style, unlike A's simple flat figures"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a basketball court with a blue surface; Image B is a soccer pitch with textured grass",
+        "The character models look similar: stylized low-poly figures with small heads and thin limbs, and dark ground shadow discs",
+        "The lighting and settings differ: dusk with ornate lamps and a tower in A, a night stadium with crowd stands in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a flat top-down camera, while Image B is a basketball court with a tilted camera and heavy depth-of-field blur",
+        "Different character models: A has small flat-shaded figures, B has larger, more detailed models with orange ring markers",
+        "Different lighting and palette: A has a dark, sandy-brown night look, B has a bright green-tinted indoor look with bloom"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a low-angle view of a glitchy, stretched-texture icy blue arena with a basketball hoop",
+        "Image B is a clean top-down futsal court with low-poly players, a ball and flat grey and pink colors",
+        "Visual styles, palettes and camera perspectives are completely different"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different sports (basketball court vs soccer pitch)",
+        "similar stylized humanoid character models",
+        "different environments and lighting (dusk rain vs night stadium)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "different sports and court surfaces (blue basketball vs sandy soccer)",
+        "similar stylized low-poly humanoid characters",
+        "different lighting and camera (rainy dusk vs top-down night)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a low-angle icy cave with a basketball hoop and stretched textures",
+        "Image B is an elevated view of a soccer pitch with small flat-shaded players and a brown sandy field",
+        "Palette and setting differ: cold blue ice versus warm brown night lighting"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: basketball with hoop and ball rack vs soccer with center circle",
+        "Different palettes: dark navy court with orange accents vs pale grey pitch with red walls",
+        "Different camera and lighting: low angle with saturated shading vs high top-down view with flat, soft lighting"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch and Image B is a basketball court, so the sport differs",
+        "Image A has a dark night stadium with a high camera, while Image B has a low camera and dusk lighting with blurred trees",
+        "The character styles are similar and both have rain, but the scenery, palette and props differ"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch; Image B is a basketball court",
+        "Different looks: A is flat, muted brown and dusty, B is saturated blue with rain and bloom",
+        "Different cameras: A is a high, near top-down view; B is a low, angled view with a blurred backdrop"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with a blurry, green-tinted indoor background and depth-of-field",
+        "Image B is a soccer pitch with a warm orange palette, a crowd in the stands, and a high-angle camera",
+        "The character models differ in proportions and shading: A looks more detailed and realistic, B is simpler and low-poly"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a soccer pitch with warm orange, flat low-poly shading",
+        "Image B is a basketball court with a cool blue palette, rain and realistic lighting",
+        "Different sports, character styles and camera setups"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.4,
+      "tells": [
+        "similar low-poly character style",
+        "different sports and environments",
+        "different camera and blur treatment"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dusk basketball court with rain, dark blue floor and ornate lamps",
+        "Image B: flat, desaturated gray futsal court with a soccer ball",
+        "Different lighting and rendering styles, although the character models look similar"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer pitch with warm orange stadium lighting; Image B is a basketball court with a gray overcast backdrop",
+        "Image A uses a flat, low-poly, distant, high-angle view; Image B uses a closer view with more detailed, textured characters",
+        "The palettes and the sport differ: A is a tan field with a crowd; B is a dark navy court with orange key areas"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball scene with heavy depth-of-field blur, bloom and a moody indoor palette",
+        "Image B is a flat, pale futsal pitch with a high top-down camera and no post-processing",
+        "The characters share a low-poly style, but the rendering, lighting and camera differ greatly"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer/futsal pitch with a dark stadium crowd, while Image B is a basketball court in a gray void",
+        "Different lighting: A has a blue glowing lens flare with a flat stylized look, B has bright neutral lighting with more detailed shading",
+        "Character models differ: A has small flat figures with shadow ovals, B has larger figures with ring markers and detailed faces"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night soccer pitch with stands and a crowd; Image B is a basketball court under a bright gray sky",
+        "Different character styles: small flat-shaded soccer players versus taller curly-haired characters with orange selection rings",
+        "Different lighting and palette: dark, moody grass tones versus a bright, hazy gray and blue court"
+      ]
+    }
+  ]
+}

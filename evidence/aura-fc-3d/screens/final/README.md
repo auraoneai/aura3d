@@ -1,15 +1,13 @@
-# Aura FC 3D: final screenshots (retaken 2026-10-29 on 4.5.0)
+# Aura FC 3D: final screenshots (retaken 2026-10-31 on the GU47 phase-3 build, 4.7.1)
 
-- **Build:** branch `audit-fix/g09` at `0faa96cb1` (4.5.0 engine plus the lane G09 audit fixes up to the possession-bar fix; the later day-venue and Shootout Lab HUD commits do not touch these Munich frames). Same file names and pixel sizes as the 2026-10-25 set, which came from `origin/game-rework` `8da9c05d3`.
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), RUN_ID `g09cap-shots2-175139`, headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. A frame costs several seconds there, so game time runs slow.
-- **Spec:** `tests/browser/shotsa-aura-fc-3d.spec.ts`; decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines. The run captured one extra desktop action frame (`03-action-08`), which is not kept so the set keeps its names.
-- **Layout:** `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x).
+- **Build:** branch `gu47/g09` at `62645b920` (4.7.0 plus the lane g09 phase-3 hybrid look: real centre circle, no scuff rectangles, night flood shadows and pools, 34 deg broadcast lens, possession plate). Munich, the default venue.
+- **Runner:** remote ACR task, RUN_ID `g09p3-r9-1`, image `g09p3-r9`, registry `picassostagingacr`; headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. Game time runs slow there.
+- **Spec:** `tests/browser/shotsa-aura-fc-3d.spec.ts` (waits on the QA flag `__AURA_FC_SETTLED__`, 40 s and 5 frames after ready, so the turf texture has landed); decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines.
+- **Layout:** `1280x720/` (6 action frames this run; the 2026-10-29 set had 7), `390x844/`, `card/` (720x450 at 1x and 2x).
 
 ## Seen
-- The goal net is drawn at the goal-frame size (7.6 x 2.85 x 2.6 m) instead of about 35 m wide (`1280x720/03-action-05`, `390x844/03-action-06`).
-- At 390x844 the portrait camera keeps the players in frame (`03-action-06` shows six players, the keeper and the goal); the 2026-10-25 `03-action-08` showed none.
-- The HUD kit chips match the worn kits (red home, white away). The possession bar sits under the scoreboard.
-- Phones get the venue dropdown in the quick bar instead of a scrolled row of venue buttons.
+- Textured wet turf under the night floods, the centre circle drawn as a ring, lit stands and the flood gantry, the goal with the REPLAY stinger after the goal (`1280x720/03-action-05`, `-06`).
+- The possession bar sits on its own plate under the score bug.
 
 ## Not covered
-- Half-time and results were not reached in this capture (software GL pace).
+- Half-time and results were not reached in this capture (software GL pace). Other venues: steady-state frames in `evidence/game-upgrades-47/aura-fc-3d/p3-r7/`.

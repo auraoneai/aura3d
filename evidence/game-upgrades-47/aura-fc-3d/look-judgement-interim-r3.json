@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r3/screens/1280x720/03-action-03-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "f78bd06c08fedc084d5d06571d6459b63babf544c9e1079e52c921baa851ab89"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r3/screens/1280x720/03-action-05-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "ed6563a53013050d755921f065dfbc2fdbeaffc2dffddf272025668f2cbac386"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r2/aura-fc-3d/frames/g09p3-r2-2/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "cb07fd4bd67da74650d410bd18f72ce6c65c839494c8a6b179896556ffa3518b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p3-r3/aura-fc-3d/frames/g09p3-r3-1/aura-fc-3d--uyuni--settle-60s.jpg",
+      "sha256": "73ff2a1500e1bd07963b81b596e1cbea6057aede57884bdf6957fe4e4aa6dc32"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 4,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "animation_quality": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Munich night frames have reasonable flood key on turf, but the stands are flat dark with unlit capsule crowd. Frames 3 and 4 are flat ambient: the sepia frame is a single warm wash, and the grey frame is washed-out low-contrast concrete."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players use soft blob ellipses plus faint directional shadows in frames 3 and 4. Goal net and posts cast almost no grounded shadow, and there is no contact darkening at the feet."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No visible environment reflection. Ball, turf and floor all read diffuse, and the grey court has no sheen despite looking like a polished indoor floor."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Stadium tiers hold pill-shaped crowd tokens and a truss light tower. Frames 3 and 4 have a mostly empty backdrop with a blocky wall and stand-in billboard frame."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, no light shafts from the floods and no depth fog. The grey frame looks foggy, but it reads as low contrast rather than as authored haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Turf has a noisy grass texture with a motion-blur-like smear. The goal net is a solid white translucent slab with no mesh detail. Kits are flat colour."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Low-poly stylized players with decent proportions and readable kits. The goal net is overly opaque and the crowd is primitive capsules."
+    },
+    {
+      "category": "composition",
+      "seen": "Kickoff frames are well centred but subjects are tiny, about 10% of the frame, with a large empty floor. Gameplay frames frame the attack and goal well."
+    },
+    {
+      "category": "camera",
+      "seen": "Uses a perspective broadcast angle rather than orthographic. The gameplay camera tracks the ball sensibly, but the kickoff frames are high and distant."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No bloom on floodlights, no tonemapped punch and no vignette. The sepia frame is a heavy colour grade that muddies everything."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Running poses look dynamic, and the keeper is shown diving in frame 2. Kickoff players stand in stiff T-like idle poses."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean scorebar, timer, possession bar and controls strip with consistent styling. The possession bar has no team colour split, and the kickoff frames show no HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
