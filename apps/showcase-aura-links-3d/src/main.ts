@@ -232,6 +232,16 @@ const turfOn = lookMode !== "original";
 const surfaceUv: SurfaceUvMode = turfOn ? "metres" : "legacy";
 
 /**
+ * GU47 phase 4 (shadows): the engine's default (4.2.0, "legacy") sun fit widens every cascade to every caster's bounds, and
+ * this course's instanced trees, rocks and marram span the whole 400 m hole, so each cascade covered the hole at 2048 px
+ * and the golfer's, the cart's and the trees' cast shadows fell to about one texel (no shadow shapes in any capture,
+ * although the map was rendered and sampled with 3 cascades: run g10p4-x1; docs/audits/lanes/e3.md). The 4.3.0 fit
+ * (`__A3D_SHADOW_FIT__ = "current"`, as Shadowstep Gauntlet) hugs each cascade to its frustum slice. GU47 look only;
+ * `?look=original` and `?shadowfit=legacy` keep the 4.2.0 fit (no real-GPU frame of the 4.3.0 fit for this game yet).
+ */
+if (turfOn) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
+
+/**
  * A course surface's material: on the GU47 look the theme's mask (mow stripes or rough mottling, colour lifted to keep
  * the mean), its normal tile (High tier only; Low keeps the masks) and the cut-grass sheen; otherwise the 4.6.2 colour
  * and roughness. Without canvases (no DOM) the textures drop out and the colour stays.
