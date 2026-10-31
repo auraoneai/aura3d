@@ -170,11 +170,13 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
-    // GU47 phase 3 round 3: back to the panel-verified bank (r1 and r2 thinned it to mean 72, band 105-135, and the view
-    // stopped reading as fog): density 0.006 from 6 m, god rays 0.35, exposure 1.05.
-    fog: { color: MARINE_FOG, density: 0.006, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 6, maxOpacity: 0.96, sunInscatter: 0.1 },
+    // GU47 phase 3 round 4: the panel frames (recap2) predate the 4.7.0 engine fix 16e85748f/b2edb52ed, after which a
+    // volumetric-fog node no longer acts as a pale exp2 scene fog; the bank they showed came from that node. Every 4.7.0
+    // build (r1-r3) measured mean 72 (band 105-135) with the slate #5f7f8c engine fog, which darkens instead of whitening.
+    // The engine fog now carries the bank in a pale marine grey: 0.0075 from 8 m (still < 0.3 at 40 m), exposure 1.15.
+    fog: { color: "#a7b7bf", density: 0.0075, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 8, maxOpacity: 0.96, sunInscatter: 0.1 },
     marine: { base: 12, top: 26, color: "#6c8794", opacity: 0.97, reach: 160 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.05 },
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.15 },
     bloom: { intensity: 0.12, threshold: 0.9, radius: 0.4 },
     grade: { contrast: 0.96, saturation: 0.82, temperature: -0.06, tint: 0 },
     vignette: 0.22,
