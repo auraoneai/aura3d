@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight beige haze and low contrast. Floor is plain and untextured.",
+     "The concrete wall texture is subtle and the floor is still mostly flat. The haze is a little milky and the ceiling light strip is cropped at the top.",
+     "Low-contrast beige palette. Flat, untextured floor. Props are small and far away. The concrete wall texture adds some detail."
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor is still plain and the haze is mild. Otherwise the concrete wall texture adds detail.",
+     "The concrete texture is mild and the floor is still fairly plain and pale. Slight haze.",
+     "Flat floor and low contrast overall. The concrete wall texture gives slightly more detail than A."
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The foreground floor is plain and the tint is a single colour. The stone walls add good detail.",
+     "The foreground floor is a plain flat grey slab. The dark teal pit area is murky, and the stone texture is a bit large and repetitive.",
+     "The pit is still dark and the floor is flat. The stone-wall texture adds detail, but the walls are a bit noisy. No enemies visible."
+    ]
+   },
+   {
+    "variant": "floor3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The floor texture is a bit smeared and blurry, and the orange tint is still heavy. It has more material detail than A.",
+     "The floor texture is blurry and smeared. Heavy orange monochrome tint and a slightly muddy midground.",
+     "Monotone orange cast. The floor texture is somewhat blurry and noisy, but the walls and floor have more material detail."
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor is plain and the image is slightly dim. The wood and plaster textures add detail.",
+     "The floor is plain and flat. The wood texture on the far blocks is a little cartoony, and the ceiling light strip is cropped at the top.",
+     "Muddy, low-contrast overall. The wood-textured partitions and wall texture add detail."
+    ]
+   },
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Similar flat walls with only subtle floor texture. The enemy is a little clearer.",
+     "Wall texture is minimal and the scene is mostly flat blue-grey. The ceiling light strip is cropped.",
+     "Nearly identical to A: flat walls with a faint texture and a monochrome blue-grey palette. The enemy is slightly larger and easier to read."
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The floor texture is somewhat blurred and noisy. The wall and wood textures give much more depth.",
+     "The floor texture is blurry and smeared. The enemy on the crate looks like it is floating or standing awkwardly.",
+     "Floor texture is blurry and smeared, but walls, partitions and floor are textured, which gives more depth and grit."
+    ]
+   },
+   {
+    "variant": "killhouse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight grey haze near the ceiling. The white floor decal is bright.",
+     "The tile texture repeats visibly and the floor is a bit blurry. Bright white floor decal and some haze around the top light.",
+     "Grey cast, and the white floor decal is overexposed. The tiled walls and floor texture add good detail."
+    ]
+   }
+  ]
+ }
+]

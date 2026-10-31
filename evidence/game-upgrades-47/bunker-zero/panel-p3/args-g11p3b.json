@@ -1,0 +1,55 @@
+[
+ {
+  "slug": "bunker-zero",
+  "variants": [
+   {
+    "variant": "default",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-1/bunker-zero--default--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-default/bunker-zero--default--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor1",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-1/bunker-zero--floor1--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor1/bunker-zero--floor1--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor2",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-1/bunker-zero--floor2--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor2/bunker-zero--floor2--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor3",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-2/bunker-zero--floor3--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor3/bunker-zero--floor3--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor4",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-2/bunker-zero--floor4--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor4/bunker-zero--floor4--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor5",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-2/bunker-zero--floor5--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor5/bunker-zero--floor5--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "floor6",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix-bp1/bunker-zero/frames/g11bp1-bunker-zero-f6/bunker-zero--floor6--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor6/bunker-zero--floor6--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   },
+   {
+    "variant": "killhouse",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-3/bunker-zero--killhouse--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-killhouse/bunker-zero--killhouse--settle-60s.jpg",
+    "refKind": "same variant in the current (phase-2, panel-approved) default"
+   }
+  ]
+ }
+]

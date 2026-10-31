@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g11-before/1280-03-action.jpg",
+      "sha256": "bd8d85a1da1d15b7a811b8e88e855e5e6006c648f63a28ae7af6d09c16ef10b3"
+    },
+    {
+      "path": "../../../../../tmp/g11-before/1280-04-mid.jpg",
+      "sha256": "c6cc4e402c042a20b284a9b2d59cdf3bdb8e961a28ab1b556d13a8cf6552dc42"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-1/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "c7e6ad4d74afd5545e2ba9af36be5201eda59c10aa06d18af8423ce31ca3f6b5"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/fix2/bunker-zero/frames/g11fix2-bunker-zero-2/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "0465dfab4614cdbae049585f5b1e1b2a358390046cbcb36154f5aff83bda8395"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 2,
+    "environment_world": 3.5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 3,
+    "modeling_assets": 3.5,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 4,
+    "animation_quality": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat ambient fill dominates. Ceiling strip lights emit little visible falloff, apart from a warm floor pool in frame 4 and a soft teal glow in frame 3. Walls in frame 1 are nearly uniform brown and dark green."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are no contact shadows where walls meet the floor or under the pickups. The only shadowing is a soft gradient on the floor in frame 1 and a darkened recess. The pillar figure in frame 4 has no grounded shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The water plane in frame 2 is an opaque flat cyan slab with no reflection or refraction. The frame 3 pit is a black void. Floors show no specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Corridors are untextured boxes with repeated glowing baseboard strips. The floor decal 'B-3 FORGE HALLS' in frame 4 adds some identity. Otherwise there is little Cold-War bunker dressing: no pipes, signage, crates or props."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light distance fog darkens the far corridor in frames 2 and 3. There are no visible dust, steam or volumetric shafts. The orange particle puffs in frame 2 are tiny and sparse."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Walls are flat albedo with faint panel seams, and frame 1 shows grainy noise. Ceilings and floors are single-colour planes. Only the pistol viewmodel has detailed PBR-like texturing."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pistol model in frames 3 and 4 is detailed. In frame 1 the weapon is a blobby yellow placeholder shape. Enemies and props are a distant purple pillar figure and a small crate pickup."
+    },
+    {
+      "category": "composition",
+      "seen": "Central one-point perspective corridors are readable, but every frame is the same symmetric hallway with little focal interest. The frame 2 water edge creates a hard horizontal cut."
+    },
+    {
+      "category": "camera",
+      "seen": "FOV is reasonable and the viewmodel sits well in frames 3 and 4. In frame 1 the weapon is clipped at the bottom centre and overlaps the HUD panel."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Mild bloom appears on the ceiling lights in frame 3 and the warm glow in frame 4, along with some vignetting. Frame 1 has visible noise or grain artefacts and no tone-mapping cohesion."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Only static frames are available. The muzzle and particle puffs in frame 2 are minimal, and no enemy animation is visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD bar is clean and well-typeset with health, armor, ammo, score, kills and time, plus a floor title card and kill feed. However, the controls hint bar and the HUD overlap the weapon in frame 1. Frames 3 and 4 have no HUD at all, which is inconsistent."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
