@@ -1,8 +1,10 @@
 /**
  * GU47 WP-30 camera rows, pure and DOM-free (the world feeds the result to `app.camera.setPose`):
  *
- * - NR-18 intro: on the title card the camera hangs high over the village roofs (> 20 m above the runner) with a slow
- *   drift, and during the 3-2-1 it blends down onto today's chase pose, reaching it exactly when the run starts.
+ * - NR-18 intro: on the title card the camera holds a low over-the-shoulder shot of the runner looking down the village
+ *   street with a slow drift, and during the 3-2-1 it blends onto today's chase pose, reaching it exactly when the run
+ *   starts. (GU47 phase 3: the phase-2 crane 26 m over the roofs made the runner a speck and lost the blind panel to the
+ *   4.6.2 title frame twice; the player reads first.)
  * - NR-18 win: three shots at the Valley Gate (a profile of the runner, a low shot up at the gate, a high wide crane),
  *   cut on fixed times after the win.
  * - NR-18 lane roll: the chase rolls with the runner's sideways speed, at most 3 degrees.
@@ -15,8 +17,8 @@ import { groundFrame } from "./course";
 export type Vec3 = [number, number, number];
 export interface ShotPose { readonly eye: Vec3; readonly look: Vec3; readonly fov: number }
 
-/** Height of the intro shot above the runner's ground (m); the acceptance asks for > 20 m on the title. */
-export const INTRO_HEIGHT = 26;
+/** Height of the intro shot above the runner's ground (m): over the runner's shoulder, under the eaves. */
+export const INTRO_HEIGHT = 3.7;
 /** Lane-change roll cap (degrees) and how fast it follows (halflife, s). */
 export const ROLL_MAX_DEG = 3;
 export const ROLL_HALFLIFE = 0.12;
@@ -28,10 +30,13 @@ const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a
 /** Smootherstep: zero slope at both ends, so the blend leaves the title and lands on the chase without a kick. */
 export const easeShot = (k: number): number => { const t = Math.max(0, Math.min(1, k)); return t * t * t * (t * (t * 6 - 15) + 10); };
 
-/** The title-card shot over the roofs at course distance `s` (the runner idles at 0), drifting slowly with `time`. */
+/**
+ * The title-card shot at course distance `s` (the runner idles at 0): 7.5 m behind and 0.9 m to the right (the runner reads near the centre) of the runner at
+ * shoulder-over height, looking down the street to the village gate, drifting slowly with `time`.
+ */
 export function introPose(s: number, time: number): ShotPose {
-  const drift = Math.sin(time * 0.12) * 5;
-  return { eye: at(s + 14, 9 + drift, INTRO_HEIGHT), look: at(s + 90, -2, 12), fov: 50 };
+  const drift = Math.sin(time * 0.12) * 0.6;
+  return { eye: at(s - 7.5, 0.9 + drift, INTRO_HEIGHT), look: at(s + 30, 0.2, 1.2), fov: 52 };
 }
 
 /**

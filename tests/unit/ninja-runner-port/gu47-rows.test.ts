@@ -77,8 +77,16 @@ describe("ninja-runner-port camera shots (GU47 NR-18)", async () => {
   const { groundFrame } = await import("../../../examples/ninja-runner-port/course");
   const chaseAt = (s: number) => { const e = cameraEye(s, 0, 0); const l = groundFrame(s + 12, 0, 1.6); return { eye: [e.x, e.y, e.z] as [number, number, number], look: [l.x, l.y, l.z] as [number, number, number], fov: 57 }; };
 
-  it("hangs the title shot more than 20 m above the runner's ground", () => {
-    for (const t of [0, 3, 20]) expect(cine.introPose(0, t).eye[1] - groundFrame(0, 0, 0).y).toBeGreaterThan(20);
+  it("holds the title shot over the runner's shoulder, behind the runner and looking down the street", () => {
+    for (const t of [0, 3, 20]) {
+      const pose = cine.introPose(0, t);
+      const h = pose.eye[1] - groundFrame(0, 0, 0).y;
+      expect(h).toBeGreaterThan(2.5);
+      expect(h).toBeLessThan(4.5);
+      // Behind the runner (the course heads towards -Z at the start) and looking ahead of it.
+      expect(pose.eye[2]).toBeGreaterThan(groundFrame(0, 0, 0).z);
+      expect(pose.look[2]).toBeLessThan(groundFrame(0, 0, 0).z - 20);
+    }
   });
 
   it("lands exactly on the chase pose when the countdown ends, and moves smoothly on the way", () => {

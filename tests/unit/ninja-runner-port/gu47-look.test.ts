@@ -1,3 +1,4 @@
+import { groundFrame } from "../../../examples/ninja-runner-port/course";
 import { describe, expect, it } from "vitest";
 import { instances, scene } from "../../../packages/engine/src";
 import { auditArtDirection, snapshotForAudit } from "../../../packages/game/src/art/index";
@@ -49,9 +50,17 @@ describe("ninja-runner-port district look table (NR-01, NR-02, NR-05, NR-06, NR-
     for (const row of DISTRICT_LOOKS) expect(districtIdAt(row.at)).toBe(row.id);
   });
 
-  it("steps the environment intensity 1.0 / 0.85 / 0.6 / 0.35 / 0.3 and sinks the sun 22 -> 9 -> 4, then a 25-degree moon", () => {
-    expect(DISTRICT_LOOKS.map((r) => r.environmentIntensity)).toEqual([1, 0.85, 0.6, 0.35, 0.3]);
-    expect(DISTRICT_LOOKS.map((r) => [r.key.kind, r.key.elevationDeg])).toEqual([["sun", 22], ["sun", 9], ["sun", 4], ["moon", 25], ["moon", 25]]);
+  it("sinks the sun 32 -> 10 degrees over the camera's shoulder while the sky fill rises (GU47 phase 3)", () => {
+    expect(DISTRICT_LOOKS.map((r) => r.environmentIntensity)).toEqual([1, 1.1, 1.2, 1.3, 1.35]);
+    expect(DISTRICT_LOOKS.map((r) => [r.key.kind, r.key.elevationDeg])).toEqual([["sun", 32], ["sun", 24], ["sun", 18], ["sun", 14], ["sun", 10]]);
+    // About 110 degrees off the course heading at each stop (behind the camera's left shoulder): side light, no backlight.
+    for (const row of DISTRICT_LOOKS) {
+      const f = groundFrame(row.at, 0, 0);
+      const heading = (Math.atan2(f.dx, f.dz) * 180) / Math.PI;
+      const off = Math.abs((((row.key.azimuthDeg - heading) % 360) + 540) % 360 - 180);
+      expect(off).toBeGreaterThanOrEqual(95);
+      expect(off).toBeLessThanOrEqual(125);
+    }
     for (const row of DISTRICT_LOOKS) expect(lookAtDistance(row.at).environmentIntensity).toBeCloseTo(row.environmentIntensity, 9);
   });
 
@@ -76,17 +85,24 @@ describe("ninja-runner-port district look table (NR-01, NR-02, NR-05, NR-06, NR-
     expect(lookAtDistance(250).keyIntensity).toBeCloseTo(DISTRICT_LOOKS[0]!.key.intensity, 9);
   });
 
-  it("lights lanterns from the river on and turns stars on at the gate", () => {
+  it("lights lanterns from the river on and shows the first stars in the gate afterglow", () => {
     expect(lookAtDistance(100).lanterns).toBe(0);
     expect(lookAtDistance(700).lanterns).toBe(0);
-    expect(lookAtDistance(1300).lanterns).toBeGreaterThan(0.5);
-    expect(lookAtDistance(2500).stars).toBe(1);
+    expect(lookAtDistance(1300).lanterns).toBeGreaterThan(0.3);
+    expect(lookAtDistance(2500).lanterns).toBe(1);
+    expect(lookAtDistance(2500).stars).toBeGreaterThan(0);
     expect(lookAtDistance(100).stars).toBe(0);
   });
 
   it("reads ?look=original and round-trips hex", () => {
     expect(lookMode("?look=original")).toBe("original");
-    expect(lookMode("?at=700")).toBe("original");
+    expect(lookMode("?at=700")).toBe("evening");
+    expect(lookMode("")).toBe("evening");
+    expect(lookMode("?at=1900")).toBe("evening");
+    // The gate view keeps its 4.6.2 look by default (blind panel g20p3r4: 1 of 3); both switches still work.
+    expect(lookMode("?at=2500")).toBe("original");
+    expect(lookMode("?look=evening&at=2500")).toBe("evening");
+    expect(lookMode("?look=original&at=100")).toBe("original");
     expect(lookMode("?look=evening&at=700")).toBe("evening");
     expect(linearToHex([1, 0, 0])).toBe("#ff0000");
   });

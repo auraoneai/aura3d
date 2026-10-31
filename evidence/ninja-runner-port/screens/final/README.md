@@ -1,9 +1,9 @@
-# Shadowstep Gauntlet: final screenshots (4.5.0, lane G20 retake, 2026-10-29)
+# Shadowstep Gauntlet: final screenshots (4.7.1, GU47 phase 3 lane g20 retake, 2026-10-31)
 
-- **Build:** branch `audit-fix/g20` on Aura3D 4.5.0 (engine at origin/main 31f8945ad). All frames from commit 6eccac79c.
-- **Runner:** remote Azure ACR task (`tools/remote-acr/run.sh`, spec `tests/browser/audit-fix/ninja-runner-port.spec.ts`), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac (`tools/real-gpu/run.sh`).
-- **Method:** the example page with `?manual=1`; states are driven through the QA hooks with the game's frame loop stopped, so every frame is a fixed sim state. Same file names and sizes as the 2026-10-25 set. Per-shot luma, draw calls and HUD rects: `../../audit-2026-10-29/after/`.
-- **Viewports:** 1280x720 for every state; 390x844 (touch emulation) for title, early and run; `card@2x.jpg` 1440x900 at the run state, `card.jpg` its 720x450 copy.
+- **Build:** branch `gu47/g20` at ef26bc065 (Aura3D 4.7.0 + the phase-3 evening default: golden afternoon to sunset, panel-verified for the title and four districts, tag g20p3r4).
+- **Runner:** remote Azure ACR task (run-shards, tag g20p3-s, spec `tests/browser/audit-fix/ninja-runner-port.spec.ts`, tests g20-desktop-a, g20-desktop-b, g20-phone, g20-card), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence.
+- **Method:** the example page with `?manual=1`; states are driven through the QA hooks with the game's frame loop stopped, so every frame is a fixed sim state. Same file names and sizes as the 2026-10-29 set; `card.jpg` is the half-size copy of `card@2x.jpg`. Decoded frames and GL_META rows: `evidence/game-upgrades-47/ninja-runner-port/p3-screens/`.
+- **Viewports:** 1280x720 for every state; 390x844 (touch emulation) for title, early and run; `card@2x.jpg` 1440x900 at the run state.
 
 ## Frames
 

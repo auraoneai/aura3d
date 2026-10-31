@@ -47,44 +47,49 @@ export const PALETTE = {
 } as const;
 
 export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
+  // GU47 phase 3: the evening now runs golden afternoon -> sunset afterglow. The sun stays about 110 degrees off the
+  // chase camera's heading at every stop (behind the left shoulder), so the runner and the street are side-lit and the
+  // shadows fall across the road instead of the frame being backlit into a glow (phase-2 frames g20p2r3, g20p2r4). As
+  // the sun sinks the sky-and-IBL fill rises, so the play space stays as readable as the 4.6.2 midday frame. Light fog
+  // in the horizon's colour (g20p3-r2 read hazy at 0.0021 with a near-white fog).
   {
-    id: "village", at: 100, timeOfDay: "late afternoon, golden",
-    key: { kind: "sun", elevationDeg: 22, azimuthDeg: 125, color: "#ffc98a", intensity: 2.7 },
+    id: "village", at: 100, timeOfDay: "golden afternoon",
+    key: { kind: "sun", elevationDeg: 32, azimuthDeg: -70, color: "#ffe0b4", intensity: 3.3 },
     environmentIntensity: 1.0,
-    fog: { color: "#d8c6a4", density: 0.0026 },
-    sky: { zenith: "#5b7fa8", horizon: "#f0cf98", glow: "#ffd9a0", cloud: "#f4e6cc", stars: 0, moon: 0 },
+    fog: { color: "#d8cfb4", density: 0.0015 },
+    sky: { zenith: "#2f6cc0", horizon: "#ecd6ac", glow: "#ffe0a8", cloud: "#fff2dc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.85
   },
   {
-    id: "rooftops", at: 700, timeOfDay: "vermilion sunset",
-    key: { kind: "sun", elevationDeg: 9, azimuthDeg: 120, color: "#ff9a5c", intensity: 2.3 },
-    environmentIntensity: 0.85,
-    fog: { color: "#e2a27e", density: 0.003 },
-    sky: { zenith: "#5e5a8c", horizon: "#f2774a", glow: "#ff8a4c", cloud: "#f6b088", stars: 0, moon: 0 },
+    id: "rooftops", at: 700, timeOfDay: "late afternoon, warm",
+    key: { kind: "sun", elevationDeg: 24, azimuthDeg: -29, color: "#ffd2a0", intensity: 3.4 },
+    environmentIntensity: 1.1,
+    fog: { color: "#dcc4a6", density: 0.0016 },
+    sky: { zenith: "#3466b8", horizon: "#f2cc9c", glow: "#ffcc90", cloud: "#ffe8cc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.9
   },
   {
-    id: "river", at: 1300, timeOfDay: "dusk",
-    key: { kind: "sun", elevationDeg: 4, azimuthDeg: 115, color: "#ff7446", intensity: 1.5 },
-    environmentIntensity: 0.6,
-    fog: { color: "#8c7c90", density: 0.0034 },
-    sky: { zenith: "#343d6c", horizon: "#d4684e", glow: "#ff6a3e", cloud: "#b88a90", stars: 0.15, moon: 0 },
-    lanterns: 0.8, ink: 0.95
+    id: "river", at: 1300, timeOfDay: "golden hour",
+    key: { kind: "sun", elevationDeg: 18, azimuthDeg: -62, color: "#ffc48c", intensity: 3.5 },
+    environmentIntensity: 1.2,
+    fog: { color: "#dcb898", density: 0.0017 },
+    sky: { zenith: "#3a5fae", horizon: "#f6c08e", glow: "#ffb070", cloud: "#ffdcbc", stars: 0, moon: 0 },
+    lanterns: 0.4, ink: 0.95
   },
   {
-    id: "forest", at: 1900, timeOfDay: "blue hour, mist",
-    key: { kind: "moon", elevationDeg: 25, azimuthDeg: -150, color: "#a3b6e2", intensity: 0.7 },
-    environmentIntensity: 0.35,
-    fog: { color: "#5c6c8c", density: 0.0046 },
-    sky: { zenith: "#1b2346", horizon: "#56668e", glow: "#c4d2f4", cloud: "#6a789c", stars: 0.55, moon: 0.7 },
-    lanterns: 1, ink: 1
+    id: "forest", at: 1900, timeOfDay: "sunset",
+    key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffb57a", intensity: 3.4 },
+    environmentIntensity: 1.3,
+    fog: { color: "#c9a294", density: 0.0019 },
+    sky: { zenith: "#40559f", horizon: "#f4ac86", glow: "#ff9c62", cloud: "#fbcab0", stars: 0, moon: 0 },
+    lanterns: 0.8, ink: 1
   },
   {
-    id: "gate", at: 2500, timeOfDay: "first stars",
-    key: { kind: "moon", elevationDeg: 25, azimuthDeg: -150, color: "#adc0ec", intensity: 0.6 },
-    environmentIntensity: 0.3,
-    fog: { color: "#2b3550", density: 0.003 },
-    sky: { zenith: "#0d1328", horizon: "#3a4672", glow: "#d6e0ff", cloud: "#3e4a70", stars: 1, moon: 1 },
+    id: "gate", at: 2500, timeOfDay: "sunset afterglow",
+    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa468", intensity: 3.3 },
+    environmentIntensity: 1.35,
+    fog: { color: "#b897a0", density: 0.0018 },
+    sky: { zenith: "#39478c", horizon: "#f09a80", glow: "#ff8c5a", cloud: "#f6b8a4", stars: 0.12, moon: 0 },
     lanterns: 1, ink: 1
   }
 ];
@@ -109,18 +114,26 @@ export interface ResolvedLook {
   readonly ink: number;
 }
 
-/** The 4.6.2 midday look is the default (also `?look=original`); `?look=evening` opts in to the GU47 evening. */
+/**
+ * The GU47 evening is the default (also `?look=evening`); `?look=original` keeps the 4.6.2 midday look. Exception: a
+ * page that boots into the Valley Gate (`?at=` in the gate band, from 2260 m) defaults to the 4.6.2 look, because the
+ * gate view is the one view whose evening frame did not beat its 4.6.2 frame in the blind panel (GU47 phase 3, g20p3r4:
+ * 1 of 3; a floating quad over the falls and a flat pink ground). `?look=evening&at=2500` still opts in.
+ */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  // GU47 phase 2 (PRD D11, no regression ships): the default stays the 4.6.2 look. The second pass cut the evening frame
-  // cost to the 4.6.2 level in software WebGL2 (pooled lantern points, grain and ink opt-in) but its title frame still
-  // lost to 4.6.2: first ~2 EV dark with the ink line dotting the grass (agx), then a white bloom wash (aces 1.8, g20p2r4).
-  return params.get("look") === "evening" ? "evening" : "original";
+  const look = params.get("look");
+  if (look === "original" || look === "evening") return look;
+  const at = Number(params.get("at"));
+  return params.has("at") && Number.isFinite(at) && at >= GATE_BAND_START ? "original" : "evening";
 }
+
+/** Course distance (m) where the Valley Gate band starts (`districtIdAt`). */
+export const GATE_BAND_START = 2260;
 
 /** District band a distance belongs to (the five stops; the Backstreets share the village row). */
 export function districtIdAt(s: number): DistrictId {
-  return s < 470 ? "village" : s < 1120 ? "rooftops" : s < 1510 ? "river" : s < 2260 ? "forest" : "gate";
+  return s < 470 ? "village" : s < 1120 ? "rooftops" : s < 1510 ? "river" : s < GATE_BAND_START ? "forest" : "gate";
 }
 
 /** Unit vector toward a light at `elevationDeg` above the horizon and `azimuthDeg` (0 = +Z, 90 = +X). */
@@ -214,21 +227,27 @@ export const ORIGINAL_SKY = {
 
 /**
  * GU47 phase 2: the evening HDRI (a sunset pure sky) is a dim fill; the district table keeps its relative steps and the
- * rig multiplies them by this gain (software WebGL2 frames of the village read about 5 EV under the 4.6.2 frame).
+ * rig multiplies them by this gain. GU47 phase 3: 0.9 (2.2 with a 3.8 sun washed the title frame to a milky mean 137
+ * against the 4.6.2 frame's 121, software WebGL2, g20p3-r1; 1.3 still lifted the blacks to 46 against 34 and halved the
+ * saturation, and the blind panel called it a grey haze 3/0, g20p3r2). The key carries the frame, the fill stays low.
  */
-export const ENVIRONMENT_GAIN = 2.2;
+export const ENVIRONMENT_GAIN = 0.9;
 /** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
-export const EVENING_FILL = { sky: "#c8cce0", ground: "#7a6650", intensity: 0.6 } as const;
-/** GU47 phase 2: output exposure of the evening look (aces); `?look=original` keeps 1. */
-export const EVENING_EXPOSURE = 1.5;
+export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.45 } as const;
+/**
+ * Output exposure of the evening look (aces). GU47 phase 3: back to 1, the 4.6.2 value; the light rig (a higher sun and
+ * a stronger sky fill) carries the brightness instead, so the authored sky dome renders at its own values.
+ */
+export const EVENING_EXPOSURE = 1.0;
 
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
   toneMapping: "aces" as const,
-  // Phase-2 second pass: the 4.6.2 bloom; 0.55 over 0.85 washed the brighter village white (g20p2r4).
-  bloom: { intensity: 0.35, threshold: 1.0, radius: 0.4 },
-  grade: { contrast: 1.14, saturation: 1.04 },
-  vignette: { intensity: 0.3, smoothness: 0.65 },
+  // Phase-2 second pass: 0.55 over 0.85 washed the brighter village white (g20p2r4); phase 3: threshold 1.4 so the
+  // sunlit cobbles do not bloom into a veil (g20p3-r1).
+  bloom: { intensity: 0.3, threshold: 1.4, radius: 0.4 },
+  grade: { contrast: 1.16, saturation: 1.22 },
+  vignette: { intensity: 0.14, smoothness: 0.8 },
   grain: { intensity: 0.025 },
   outline: { color: PALETTE.ink, width: 1, threshold: 0.3 }
 };
