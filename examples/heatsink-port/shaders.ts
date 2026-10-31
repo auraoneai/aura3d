@@ -115,7 +115,7 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0);
   vec3 Rv = reflect(-V, N);
-  vec3 mirror = mix(vec3(0.06, 0.16, 0.18), mix(vec3(0.42, 0.20, 0.36), vec3(0.16, 0.12, 0.36), smoothstep(0.0, 0.3, Rv.y)), smoothstep(-0.05, 0.08, Rv.y));
+  vec3 mirror = mix(vec3(0.03, 0.09, 0.10), mix(vec3(0.30, 0.12, 0.22), vec3(0.06, 0.05, 0.16), smoothstep(0.0, 0.3, Rv.y)), smoothstep(-0.05, 0.08, Rv.y));
   vec2 hx = vec2(u * 9.0, s * 0.22);
   vec2 hc = abs(fract(vec2(hx.x + 0.5 * floor(hx.y), hx.y)) - 0.5);
   float seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
@@ -124,7 +124,8 @@ void main() {
   // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
   // GU47 phase 3: darker obsidian (0.34 / 0.10 + 0.5 fres) and a warm grazing glint of the sunset band along the sun azimuth
   float glint = pow(max(dot(Rv, normalize(sunDir)), 0.0), 18.0);
-  color = mix(color, color * 0.34 + mirror * (0.10 + 0.5 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.55, glass);
+  // round g19p3-r1 still read as a pastel indigo grid at chase height (fres is high there): the sheen is now a thin dark mirror
+  color = mix(color, color * 0.30 + mirror * (0.04 + 0.22 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
   color += vRoad * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.5) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass;
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
@@ -251,7 +252,9 @@ void main() {
   float sun = pow(max(dot(d, normalize(sunDir)), 0.0), 160.0);
   vec2 g = floor(d.xz * 700.0 + d.y * 300.0);
   float star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h) * (1.0 - twilight * 0.5 * (0.5 + 0.5 * sin(u_time * 3.0 + hash21(g + 7.0) * 40.0)));
-  vec3 color = sky + aur + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
+  // twilight: the planet disk occludes the aurora behind it (additive, it washed out into the violet band)
+  vec3 behind = mix(sky + aur, sky * 0.35, disk * twilight * 0.85);
+  vec3 color = behind + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
   outColor = vec4(color, 1.0);
 }`;
 

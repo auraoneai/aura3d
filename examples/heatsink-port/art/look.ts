@@ -56,7 +56,7 @@ export interface HeatsinkLookRow {
     | { readonly kind: "neutral"; readonly intensity: number }
     | { readonly kind: "hdri"; readonly hdri: "sunset-dramatic"; readonly intensity: number; readonly rotationDeg: number };
   /** the custom shaders' `lit()` (IC-01): scale, warm sunset bounce from below the sun side, violet top fill */
-  readonly lit: { readonly scale: number; readonly bounce: Rgb; readonly topFill: Rgb; readonly roadAlbedo: number };
+  readonly lit: { readonly scale: number; readonly bounce: Rgb; readonly topFill: Rgb; readonly roadAlbedo: number; /** rock and plain albedo multiplier (1 = today's) */ readonly rockTint: Rgb };
   /** fog: the base haze colour and how far each district's HUD colour pulls it (IC-06) */
   readonly fog: { readonly color: Rgb; readonly districtMix: number; readonly districtMetres: number };
   /** obsidian-glass causeway (IC-10): 0 = today's asphalt */
@@ -106,10 +106,11 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     key: { position: TWILIGHT_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true },
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.7, rotationDeg: SUN_AZIMUTH_DEG },
-    lit: { scale: 0.45, bounce: [0.30, 0.12, 0.05], topFill: [0.11, 0.09, 0.27], roadAlbedo: 0.34 },
+    /* GU47 phase 3: at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
+    lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.6, 0.8, 0.86] },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
-    fog: { color: [0.06, 0.19, 0.21], districtMix: 0.3, districtMetres: 120 },
-    causeway: { glass: 1, veinHdr: 1.7, seams: 1 },
+    fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
+    causeway: { glass: 1, veinHdr: 1.7, seams: 0.35 },
     bloom: { intensity: 0.6, threshold: 1.0 },
     /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
@@ -128,7 +129,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     key: { position: [180, 260, -120], color: "#ffd9b0", intensity: 2.6, cascades: 2, maxDistance: 160, droneCasts: false },
     hemisphere: { sky: "#6fa8d8", ground: "#2a1a10", intensity: 1.1 },
     environment: { kind: "neutral", intensity: 1.0 },
-    lit: { scale: 0.26, bounce: [0, 0, 0], topFill: [0, 0, 0], roadAlbedo: 0.23 },
+    lit: { scale: 0.26, bounce: [0, 0, 0], topFill: [0, 0, 0], roadAlbedo: 0.23, rockTint: [1, 1, 1] },
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0, districtMetres: 120 },
     causeway: { glass: 0, veinHdr: 0, seams: 0 },
     bloom: { intensity: 0.6, threshold: 1.0 },
