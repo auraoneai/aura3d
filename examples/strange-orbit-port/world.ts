@@ -958,9 +958,13 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     } else if (input.look === "gouache" && state.phase === "finished") {
       // SO47-C2 results orbit around the player, held well off the chase axis.
       const a = resultsOrbitAngle(time, input.reducedMotion);
-      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * 7).addScaledVector(cs, Math.sin(a) * 7).addScaledVector(cu, 2.4);
-      look = origin.clone().addScaledVector(cu, 0.9);
-      fov = 50;
+      // GU47 phase 3: portrait stands further back and wider (at 390x844 the 7 m / fov 50 orbit filled the screen with
+      // a cropped wheel behind the results card).
+      const portrait = aspect < 0.85;
+      const r = portrait ? 12 : 7;
+      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * r).addScaledVector(cs, Math.sin(a) * r).addScaledVector(cu, portrait ? 3.4 : 2.4);
+      look = origin.clone().addScaledVector(cu, portrait ? 0.3 : 0.9);
+      fov = portrait ? 64 : 50;
     } else {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
       if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);
