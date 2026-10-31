@@ -11,7 +11,7 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
-import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
 import { buildBeacons } from "./art/beacons";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
@@ -472,7 +472,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* IC-22 countdown sweep into the chase pose and the finish orbit (twilight, full motion, not manual) */
     finishedFor = race.state === "finished" ? finishedFor + dt : 0;
     const dEye: [number, number, number] = [0, 0, 0], dLook: [number, number, number] = [0, 0, 0];
-    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: race.state, countdown: race.countdown, finishedFor, target: [p.position.x, p.position.y, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
+    /* GU47 phase 2: before the countdown ticks (the menu) the camera holds the chase pose; the sweep runs once the countdown starts */
+    const directorState = race.state === "countdown" && race.countdown >= SWEEP.seconds ? "menu" : race.state;
+    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: directorState, countdown: race.countdown, finishedFor, target: [p.position.x, p.position.y, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
     cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
     node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
