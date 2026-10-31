@@ -146,7 +146,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
     // GU47 phase 4: at 9 degrees the key grazed the clay (cos 81 = 0.16), so the IBL lit the ground and no cast shadow
     // read; 17 degrees and a stronger key over a dimmer IBL give the players long last-light shadows.
-    sun: { elevationDeg: 17, azimuthDeg: 250, color: "#ff9a52", intensity: 3.3, colorTemperatureK: 2600 },
+    sun: { elevationDeg: 17, azimuthDeg: 225, color: "#ff9a52", intensity: 3.3, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
     // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
     fog: { color: "#d9a57c", density: 0.001, intensity: 0.08 },
@@ -210,7 +210,9 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "gradient", zenith: "#2f6db4", horizon: "#9dbad6", ground: "#c9b28e" },
     // GU47 phase 4: a 72 degree key put each shadow under the feet and the bright IBL filled it; 56 degrees and a
     // stronger key against a dimmer IBL give a hard, readable desert shadow.
-    sun: { elevationDeg: 56, azimuthDeg: 20, color: "#fff6e6", intensity: 4.1, colorTemperatureK: 6000 },
+    // Phase 4 round 2: azimuth 20 is the camera side, so every shadow fell behind its player; 140 back-lights from the
+    // first-base side and the shadows fall towards the broadcast lens.
+    sun: { elevationDeg: 56, azimuthDeg: 140, color: "#fff6e6", intensity: 4.1, colorTemperatureK: 6000 },
     rim: false,
     fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
     exposureEv: -0.15,
@@ -238,7 +240,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "spring sunrise, sun 28 degrees",
     baseLook: "golden-hour",
     hdri: { id: "spruit_sunrise", intensity: 0.76, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
-    sun: { elevationDeg: 28, azimuthDeg: 110, color: "#ffd2a1", intensity: 2.8, colorTemperatureK: 3800 },
+    sun: { elevationDeg: 28, azimuthDeg: 125, color: "#ffd2a1", intensity: 2.8, colorTemperatureK: 3800 },
     rim: { color: "#b9cfe6", intensity: 0.35, elevationDeg: 30, azimuthDeg: 290 },
     fog: { color: "#e6d9c8", density: 0.003, intensity: 0.3 },
     exposureEv: 0.08,
@@ -268,7 +270,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "storm outside, truss lights inside",
     baseLook: "interior-industrial",
     hdri: { id: "hangar_interior", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 0.85 },
-    sun: { elevationDeg: 60, azimuthDeg: 30, color: "#e9f1ff", intensity: 2.1, colorTemperatureK: 7200 },
+    sun: { elevationDeg: 60, azimuthDeg: 150, color: "#e9f1ff", intensity: 2.1, colorTemperatureK: 7200 },
     rim: false,
     fog: { color: "#3a4256", density: 0.004, intensity: 0.34 },
     godRays: { density: 0.004, intensity: 0.55, color: "#c9d6f2", lightPosition: [12, 58, -30] },
@@ -302,7 +304,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
     // GU47 phase 3: round 1's 42 degree key striped the flat infield with shadow acne under the engine's auto bias; an
     // explicit depth and normal bias keeps the players' shadows and drops the stripes.
-    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.3, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
+    sun: { elevationDeg: 42, azimuthDeg: 235, color: "#fbf3e4", intensity: 3.3, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
     rim: { color: "#6f8fb8", intensity: 1.1, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
     exposureEv: 0.7,
@@ -515,8 +517,10 @@ export interface DiamondLookPlan {
 export interface DiamondKeyShadow {
   readonly bias: number;
   readonly normalBias: number;
-  readonly maxDistance?: number;
   readonly mapSize?: 1024 | 2048 | 4096;
+  readonly filter?: "hard" | "pcf" | "pcss";
+  readonly intensity?: number;
+  readonly fit?: { readonly center: Vec3; readonly extent: number; readonly depth?: number };
 }
 
 /**
@@ -526,10 +530,11 @@ export interface DiamondKeyShadow {
 const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
 
 /**
- * GU47 phase 4: the shadow range. The engine default covers 150 m of a 700 m far plane; the play happens inside 115 m of
- * the broadcast camera (home to the centre-field wall), so the cascades spend their texels where the players stand.
+ * GU47 phase 4: the key's shadow box. Round 1 kept camera cascades over 115 m and still showed no player shadow on
+ * software WebGL2; a fixed box over the diamond (home plate to the outfielders, 96 m across, about 5 cm per texel at
+ * 2048) puts every texel where the players stand, at full strength.
  */
-export const KEY_SHADOW_RANGE = { maxDistance: 115, mapSize: 2048 } as const;
+export const KEY_SHADOW_RANGE = { mapSize: 2048, filter: "pcf", intensity: 1, fit: { center: [0, 0, -24], extent: 48, depth: 160 } } as const;
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 
