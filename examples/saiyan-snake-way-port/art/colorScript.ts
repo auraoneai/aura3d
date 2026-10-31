@@ -140,11 +140,13 @@ export const STAGE_LOOK: readonly StageLook[] = [
     id: "sunburst", stage: "THE END OF THE ROAD", timeOfDay: "sun 12 deg, white-gold sunburst",
     sun: { elevationDeg: 12, azimuthDeg: 0, color: "#fff0c8", intensity: 3.0, disc: "#ffffff", corona: 1.4 },
     fill: { color: "#9a7ae0", intensity: 0.6 }, hemisphere: { sky: "#f0d0b0", ground: "#8a6a3a", intensity: 0.6 }, environmentIntensity: 0.6,
-    sky: { zenith: "#3a3c8c", upper: "#d0a6bc", horizon: "#fff0c2", band: "#ffffff", stars: 0, moon: 0 },
-    cloud: { lit: "#fff8e2", mid: "#f2d282", dark: "#a07042" },
-    fog: { color: "#f6deae", near: 440, far: 1700 },
+    // GU47 phase 2: band, horizon, cloud sea and fog deepened from near-white and exposure 1.12 -> 1.0 (the capture read
+    // as a white-out with the road and islands lost in it).
+    sky: { zenith: "#2e3084", upper: "#b88aaa", horizon: "#ffd890", band: "#ffeab0", stars: 0, moon: 0 },
+    cloud: { lit: "#fff0c8", mid: "#e2b862", dark: "#86582e" },
+    fog: { color: "#e8c88e", near: 440, far: 1700 },
     road: { pearl: "#fffaf0", jade: "#8ae8d0", spine: "#ffd060", belly: "#6a4a7a" },
-    exposure: 1.12, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.06, tint: 0.02, saturation: 1.04, contrast: 1.04 },
+    exposure: 1.0, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.06, tint: 0.02, saturation: 1.08, contrast: 1.08 },
     godRays: true, weather: "clear"
   }
 ];
