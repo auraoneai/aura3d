@@ -260,8 +260,9 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     key: { color: "#fffaf0", intensity: 3.3, colorTemperatureK: 5800 },
     rim: { color: "#d6e8ff", intensity: 0.18, azimuthDeg: 340 },
     // GU47 phase 3: -0.1 EV gave mean luma 198 and a washed white sky and mint tee (PRD LINKS-03 band: mean 145-175,
-    // clip <= 0.02); -0.5 EV, thinner haze and more saturation bring back the cobalt noon
-    exposureEv: -0.5,
+    // clip <= 0.02); thinner haze and more saturation bring back the cobalt noon; -0.5 EV still gave 183.5 (run
+    // g10p3-r3-2), so -0.95 EV
+    exposureEv: -0.95,
     background: "#4f86d9",
     fog: { color: "#bcd6f2", mode: "exp2", density: 0.0006, maxOpacity: 0.18 },
     godRays: null,
