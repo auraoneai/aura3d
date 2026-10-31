@@ -15,9 +15,10 @@ import { effects } from "../../../../packages/engine/src/agent-api/nodes/effects
 
 /**
  * GU47 E-C WP-3 item 7: per-material `bloom` weight (0..2, default 1) carried
- * in HDR alpha and applied by the bloom prefilter. The weight write (E-D's
- * forward shader) and the live prefilter read (webgl2/LegacyPost.ts) are
- * handoffs; this proves the weight math, the shader helper and the bridge flag.
+ * in HDR alpha and applied by the bloom prefilter. The prefilter read landed
+ * (eint); the forward weight write did not, so the bridge withholds the flag
+ * and reports POST_SELECTIVE_BLOOM_UNAVAILABLE. This proves the weight math,
+ * the shader helper and the bridge behaviour.
  */
 
 describe("bloom weight math", () => {
@@ -55,13 +56,27 @@ describe("bloom weight math", () => {
 
 describe("bridge: pipeline.bloom.selective", () => {
   // The v2 bag types its stage options as `unknown`; the tests read them loosely.
-  const derive = (...nodes: unknown[]): Record<string, any> =>
-    createRootPostPipeline({ nodes } as never, undefined, undefined, QUALITY_TIERS.high).options;
+  const result = (...nodes: unknown[]) => createRootPostPipeline({ nodes } as never, undefined, undefined, QUALITY_TIERS.high);
+  const derive = (...nodes: unknown[]): Record<string, any> => result(...nodes).options;
   const bloomNode = () => effects.bloom({ intensity: 0.5 }).toJSON();
   const box = (material: Record<string, unknown>) => ({ kind: "primitive", primitive: "box", material });
 
-  it("turns on when a material declares a weight other than 1", () => {
-    expect(derive(bloomNode(), box({ color: "#fff", bloom: 0 }), box({ color: "#fa0", emissive: "#fa0" })).bloom?.selective).toBe(true);
+  // GU47 phase 2 (receipt effects-selective-bloom: the weight-0 wall bloomed by 157): no forward
+  // program writes the weight, and generated programs already put the S2 indirect-fraction tag
+  // (2 + f_ind) in HDR alpha, which the selective prefilter clamps to weight 2 for every opaque
+  // pixel. The bridge therefore keeps bloom unweighted and reports why.
+  it("a weight other than 1 is reported unavailable and never stamps the prefilter's alpha weight", () => {
+    const { options, diagnostics } = result(bloomNode(), box({ color: "#fff", bloom: 0 }), box({ color: "#fa0", emissive: "#fa0" }));
+    expect((options as Record<string, any>).bloom && "selective" in (options as Record<string, any>).bloom).toBe(false);
+    expect((options as Record<string, any>).bloom).toEqual(derive(bloomNode(), box({ color: "#fff" })).bloom);
+    expect(diagnostics.map((d) => d.code)).toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE");
+    expect(result(bloomNode(), box({ color: "#fff" })).diagnostics.map((d) => d.code)).not.toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE");
+  });
+
+  it("the generated forward path's alpha tag would read as weight 2 (why the stamp is withheld)", () => {
+    const lamp: [number, number, number] = [8, 6, 3];
+    // AO_INDIRECT_FRACTION_TAG (2) + f_ind on an opaque pixel of a weight-0 material.
+    expect(bloomPrefilterExcess(lamp, 2.3, 1, 0.25, true)[0]).toBeCloseTo(bloomPrefilterExcess(lamp, 1, 1, 0.25, false)[0] * 2, 9);
   });
 
   it("leaves the bag unchanged when every weight is 1 (or absent)", () => {

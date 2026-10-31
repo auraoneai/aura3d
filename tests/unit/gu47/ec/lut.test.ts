@@ -155,6 +155,21 @@ describe("renderer: S10b binds the uploaded LUT", () => {
     expect(postStagesRan()).toContain("S10b:display-grade:lut:fused-fxaa");
   });
 
+  it("the LUT draws clear the forward pass's sampler object on the LUT unit (receipt effects-lut: a bound mipmapped material sampler left the mip-less TEXTURE_3D incomplete and every fetch black)", () => {
+    for (const antiAliasing of ["off", "fxaa"] as const) {
+      const rec = recordingGl();
+      const host = fakeHost(rec.gl);
+      runV2HdrStages(host, fakeTarget(), BASE, CAMERA);
+      // The forward pass leaves material samplers bound (webgl2/Samplers.ts) on low units.
+      rec.gl.bindSampler(0, { materialSampler: 0 } as never);
+      rec.gl.bindSampler(1, { materialSampler: 1 } as never);
+      runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, antiAliasing, lut: lutBag } as never, undefined);
+      const lutDraw = rec.draws.find((d) => d.uniforms.u_hasLut?.[0] === 1)!;
+      expect(lutDraw, antiAliasing).toBeDefined();
+      expect(lutDraw.samplersOn3dUnits[1], antiAliasing).toBeNull();
+    }
+  });
+
   it("a pending or failed bag binds the identity LUT and records why", () => {
     const rec = recordingGl();
     const host = fakeHost(rec.gl);
@@ -162,6 +177,21 @@ describe("renderer: S10b binds the uploaded LUT", () => {
     runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, lut: { source: "/luts/gone.cube", intensity: 1, status: "failed" } } as never, undefined);
     expect(postSkippedReasons()).toEqual(expect.arrayContaining(["LUT_PENDING:/luts/slow.cube", "LUT_UNAVAILABLE:/luts/gone.cube"]));
     expect(rec.draws.filter((d) => d.fragment === DISPLAY_GRADE_GLSL).every((d) => d.uniforms.u_hasLut?.[0] === 0)).toBe(true);
+  });
+
+  it("a LUT that finishes loading withdraws its LUT_PENDING reason (phase-2 receipt: pending outlived the load)", () => {
+    const rec = recordingGl();
+    const host = fakeHost(rec.gl);
+    runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, lut: { source: "/luts/late.cube", intensity: 1, status: "pending" } } as never, undefined);
+    expect(postSkippedReasons()).toContain("LUT_PENDING:/luts/late.cube");
+    runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, lut: { source: "/luts/late.cube", cube: TEAL_ORANGE, intensity: 1 } } as never, undefined);
+    expect(postSkippedReasons()).not.toContain("LUT_PENDING:/luts/late.cube");
+    expect(postStagesRan()).toContain("S10b:display-grade:lut");
+    // A load that fails replaces its pending reason with LUT_UNAVAILABLE.
+    runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, lut: { source: "/luts/lost.cube", intensity: 1, status: "pending" } } as never, undefined);
+    runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, lut: { source: "/luts/lost.cube", intensity: 1, status: "failed" } } as never, undefined);
+    expect(postSkippedReasons()).toContain("LUT_UNAVAILABLE:/luts/lost.cube");
+    expect(postSkippedReasons()).not.toContain("LUT_PENDING:/luts/lost.cube");
   });
 
   it("an invalid .cube records LUT_INVALID once and renders the identity grade", () => {

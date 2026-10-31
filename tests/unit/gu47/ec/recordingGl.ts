@@ -13,6 +13,8 @@ export interface DrawRecord {
   readonly uniforms: Readonly<Record<string, readonly number[]>>;
   /** TEXTURE_3D binds since the previous draw. */
   readonly textures3d: readonly unknown[];
+  /** Sampler object bound (bindSampler) on each unit that holds a TEXTURE_3D at draw time; null = texture's own parameters. */
+  readonly samplersOn3dUnits: Readonly<Record<number, unknown>>;
 }
 
 export interface RecordingGl {
@@ -31,6 +33,9 @@ export function recordingGl(): RecordingGl {
   let pending: Record<string, number[]> = {};
   let pending3d: unknown[] = [];
   let lastTarget = 0;
+  let activeUnit = 0;
+  const samplers = new Map<number, unknown>();
+  const units3d = new Set<number>();
   const fns: Record<string, (...args: never[]) => unknown> = {
     createVertexArray: () => ({}),
     createTexture: () => ({ texture: true }),
@@ -53,7 +58,16 @@ export function recordingGl(): RecordingGl {
     getProgramParameter: () => true,
     getShaderInfoLog: () => "",
     getProgramInfoLog: () => "",
+    activeTexture: (unit: never) => {
+      // Enums are their names ("TEXTURE1"); `gl.TEXTURE0 + i` concatenates to "TEXTURE0<i>".
+      const name = String(unit as unknown);
+      activeUnit = name.startsWith("TEXTURE0") && name.length > 8 ? Number(name.slice(8)) : Number(name.slice(7)) || 0;
+    },
+    bindSampler: (unit: never, sampler: never) => { samplers.set(unit as number, sampler ?? null); },
     bindTexture: (target: never, tex: never) => {
+      if ((target as unknown) === "TEXTURE_3D") {
+        if (tex) units3d.add(activeUnit); else units3d.delete(activeUnit);
+      }
       if ((target as unknown) === "TEXTURE_3D" && tex) pending3d.push(tex);
       lastTarget = target as number;
     },
@@ -61,7 +75,9 @@ export function recordingGl(): RecordingGl {
       texImage3D.push({ width: width as number, height: height as number, depth: depth as number, data: data as ArrayBufferView | null });
     },
     drawArrays: () => {
-      draws.push({ fragment: current ? programFragment.get(current) ?? "" : "", uniforms: pending, textures3d: pending3d });
+      const samplersOn3dUnits: Record<number, unknown> = {};
+      for (const unit of units3d) samplersOn3dUnits[unit] = samplers.get(unit) ?? null;
+      draws.push({ fragment: current ? programFragment.get(current) ?? "" : "", uniforms: pending, textures3d: pending3d, samplersOn3dUnits });
       pending = {};
       pending3d = [];
     }

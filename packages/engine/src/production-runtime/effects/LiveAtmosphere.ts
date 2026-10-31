@@ -39,6 +39,11 @@ function specFromNode(node: EffectNodeLike): AuraHeightFogSpec {
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
+/** GU47 phase 2: the S4 light-shaft node (`effects.volumetricFog`). */
+function isVolumetricFogNode(node: EffectNodeLike): boolean {
+  return (node as { readonly effect?: string }).effect === "volumetric-fog";
+}
+
 function colorToLinear(color: unknown): [number, number, number] | null {
   if (Array.isArray(color)) return [Number(color[0]) || 0, Number(color[1]) || 0, Number(color[2]) || 0];
   if (typeof color === "string" && color !== "sky") {
@@ -188,11 +193,29 @@ export class LiveAtmosphere {
     return true;
   }
 
-  /** Last *visible* fog node in scene order (§6.6). */
+  /**
+   * Fog nodes that may supply the scene fog. GU47 phase 2 (haze wash): a
+   * `volumetric-fog` node is the light-shaft medium; its `density` (0.06 to
+   * 0.2 in the GU47 looks and receipts) is a per-metre medium the S4 god-ray
+   * stage scales its shafts by (`1 - exp(-density · depth)`), not the scene's
+   * distance haze. As a scene-fog node it became an uncapped exp2 forward fog
+   * at that density, a flat wash past a few metres: beside an `effects.fog`
+   * (density ~0.002) it replaced it when it was last (drift-and-deliver-port,
+   * aura-hoops-3d, last-train, heatsink-port, ninja-runner, bunker-zero), and
+   * alone it buried the god-rays receipt scene. Only plain fog nodes supply
+   * the scene fog; a scene whose only fog is volumetric renders like a
+   * node-free scene (no fog unless `app.atmosphere.setFog`).
+   */
+  private sceneFogCandidates(): readonly EffectNodeLike[] {
+    return this.fogNodes.filter((node) => !isVolumetricFogNode(node));
+  }
+
+  /** Last *visible* scene-fog node in scene order (§6.6; plain fog before volumetric fog, see `sceneFogCandidates`). */
   activeFogNode(): EffectNodeLike | null {
-    for (let i = this.fogNodes.length - 1; i >= 0; i--) {
-      const state = this.fogStates.get(this.fogNodes[i] as object);
-      if (state?.visible) return this.fogNodes[i];
+    const candidates = this.sceneFogCandidates();
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const state = this.fogStates.get(candidates[i] as object);
+      if (state?.visible) return candidates[i]!;
     }
     return null;
   }
@@ -205,7 +228,7 @@ export class LiveAtmosphere {
    * or `null` = the scene fog cleared until the next override).
    */
   private fogTarget(): AuraHeightFogSpec | null {
-    if (this.fogNodes.length > 0) {
+    if (this.sceneFogCandidates().length > 0) {
       if (this.sceneFogCleared) return null;
       const node = this.activeFogNode();
       return node ? this.fogStates.get(node as object)?.spec ?? null : null;
@@ -213,9 +236,13 @@ export class LiveAtmosphere {
     return this.fog;
   }
 
-  /** GU47 E-B: `overrideSceneFog` default — true when every tracked fog node is a plain `effects.fog`. */
+  /**
+   * GU47 E-B: `overrideSceneFog` default — true when every scene-fog candidate is a plain `effects.fog` (GU47 phase 2:
+   * volumetric-fog nodes are never candidates, so one beside an `effects.fog` no longer turns the default off).
+   */
   private sceneFogIsPlainFog(): boolean {
-    return this.fogNodes.length > 0 && this.fogNodes.every((node) => (node as { readonly effect?: string }).effect === "fog");
+    const candidates = this.sceneFogCandidates();
+    return candidates.length > 0 && candidates.every((node) => (node as { readonly effect?: string }).effect === "fog");
   }
 
   /** GU47 E-B: true once `setFog` overrode the scene's fog node (or cleared it). */
@@ -275,12 +302,13 @@ export class LiveAtmosphere {
       : null;
     // GU47 E-B: on a scene with fog nodes, `overrideSceneFog` (default: the scene's only fog is effects.fog) merges
     // the spec into the active node's live spec (the C-37 `handle.setFog` path) or, for `null`, clears the scene fog.
-    if (this.fogNodes.length > 0 && (o?.overrideSceneFog ?? this.sceneFogIsPlainFog())) {
+    if (this.sceneFogCandidates().length > 0 && (o?.overrideSceneFog ?? this.sceneFogIsPlainFog())) {
       if (spec === null) {
         this.sceneFogCleared = true;
       } else {
         this.sceneFogCleared = false;
-        const node = this.activeFogNode() ?? this.fogNodes[this.fogNodes.length - 1]!;
+        const candidates = this.sceneFogCandidates();
+        const node = this.activeFogNode() ?? candidates[candidates.length - 1]!;
         const { transitionSeconds: _ignored, ...fields } = spec;
         this.setNodeFog(node, fields);
       }

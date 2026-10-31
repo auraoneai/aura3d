@@ -133,6 +133,11 @@ export interface GodRayOptions {
   readonly lightDirection?: readonly [number, number, number];
   /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
   readonly density?: number;
+  /**
+   * GU47 phase 2: shaft medium per metre (volumetricFog `density`): the shaft is scaled by
+   * `1 - exp(-medium · viewDepth)`, so it builds with distance. Omitted = unscaled.
+   */
+  readonly medium?: number;
 }
 
 /** §6.7 composite (linear) grade options. */
