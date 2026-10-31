@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g24p3-screens-r2/gameplay-early.1280x720.jpg",
+      "sha256": "2164898217e6f2c2d260596babfa22af27fb371bc07b28c0585d13bc8a96439c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r2/silt-and-signal-port/frames/g24p3-r2-4/silt-and-signal-port--ch2--settle-60s.jpg",
+      "sha256": "0a2e3f0a0ed4f9442d6cc60ed17394f3390d1d45bf444e652e169691fbaa5988"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r2/silt-and-signal-port/frames/g24p3-r2-5/silt-and-signal-port--ch3--settle-60s.jpg",
+      "sha256": "6384853731021cae5632e4126c8c5400ffbe7e3208e98eb4d36fa937346a6ae0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r2/silt-and-signal-port/frames/g24p3-r2-6/silt-and-signal-port--ch5--settle-60s.jpg",
+      "sha256": "4420f139d5a00775ac0fedc42f4cf17880084f2ffd3a024339860f35aa68182b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 3,
+    "environment_world": 5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 3,
+    "camera": 3.5,
+    "postprocessing": 4,
+    "animation_quality": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat ambient-dominant lighting with no clear low key sun direction. The night frames (blue, purple) depart from the golden-hour recipe, and only frame 1 has a warm sunset tone."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is barely any contact shadow under the hoverboard or the rider. The trees and arches cast no visible ground shadows, so objects float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Ring torus surfaces show glossy smeared highlights. The icy road reflection is a noisy flat white sheet with speckle artifacts rather than environment reflections."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Toy-like town walls and pine trees. Terrain is sparse with scattered rocks and floating rings. The town backdrop reads as cardboard cutouts with jagged stair-stepped edges."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Little depth fog. Distant mountains are tinted, but there is no aerial perspective gradient in the 30–180 m range. The sky has hard banded cloud shapes."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The ground has dithered noise texture and the road a speckled ice look. The cyan pillar is an unlit emissive cylinder, and the ring materials are dark plastic. The materials are inconsistent."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Low-poly stylized pines and a simple disc hoverboard on legs. The rider model is reasonable, but the buildings are flat boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "In every frame a huge glowing pillar sits dead center directly in front of the rider, occluding the view. The rider sits at the bottom edge at about 5% of the frame, well under the 15–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is placed so the objective beacon and ring geometry block the forward view. The low height, close behind the rider, gives no sense of speed or road ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Ink outline/toon shading and posterized color are present, but there are stair-step aliasing edges on the sky and building silhouettes, a heavy color cast shift per frame, and no cinematic film grade."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The rider holds a similar static stance across all frames, with no lean or motion cues visible on the board."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean parchment-style objective panel, speed/altitude panel and compass that fit the art. The controls text block is dense, and the HUD is missing in three of four frames."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
