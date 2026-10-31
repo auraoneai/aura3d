@@ -18,7 +18,7 @@ Coolant cyan no longer colours road spines, wall chevrons or horizon bands (toda
 
 | Circuit | Time of day | Sky / environment (E-A catalogue, `/hdri/<id>_1k.hdr`) | Key (colour, elevation/azimuth deg, intensity) | Fog | Weather |
 |---|---|---|---|---|---|
-| MEGACITY (`grand`, default) | rain-wet sodium night | `cobblestone_street_night` 0.55, background on (GU47 phase 3; was `rooftop_night`, the primary sky of top-tennis) (primary visible environment) | `#ffb070` 28/120 1.6 | `#2a1d14` 0.011 | rain + wet road |
+| MEGACITY (`grand`, default) | rain-wet sodium night | `kloppenheim_02` 0.8, background on (GU47 phase 3; was `rooftop_night`, the primary sky of top-tennis) (primary visible environment) | `#ffb070` 28/120 1.6 | `#2a1d14` 0.011 | rain + wet road |
 | DUSTFALL (`dustfall`) | ochre dust-storm sunset, 9-degree burnt sun | `industrial_sunset_puresky` 0.9, background on | `#ff9a4a` 9/35 2.6 | `#8a5a2e` 0.02 + volumetric god rays | dust field |
 | VESPER (`vesper`) | violet pre-dawn, lit from below by vents | `spruit_sunrise` 0.7, background on | `#b9a4ff` 18/300 1.0 + vent up-fill `#ff7a2e` | `#2a2348` 0.008 | rising embers |
 

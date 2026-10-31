@@ -10,7 +10,7 @@ describe("heatsink look table", () => {
   it("has exactly one row per circuit, each with a catalogue HDRI and a distinct time of day", () => {
     expect(Object.keys(CIRCUIT_LOOKS).sort()).toEqual([...CIRCUIT_ORDER].sort());
     const hdris = CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].hdri);
-    expect(hdris).toEqual(["cobblestone_street_night", "industrial_sunset_puresky", "spruit_sunrise"]);
+    expect(hdris).toEqual(["kloppenheim_02", "industrial_sunset_puresky", "spruit_sunrise"]);
     for (const id of hdris) expect(lookHdriIds).toContain(id);
     expect(new Set(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].timeOfDay)).size).toBe(3);
   });
@@ -24,7 +24,7 @@ describe("heatsink look table", () => {
   });
 
   it("carries the HS-03 environment intensities and the HS-05 fog rows; volumetric fog on DUSTFALL only", () => {
-    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.55, 0.9, 0.7]);
+    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.8, 0.9, 0.7]);
     expect(CIRCUIT_LOOKS.grand.fog).toEqual({ color: "#2a1d14", density: 0.011 });
     expect(CIRCUIT_LOOKS.dustfall.fog).toEqual({ color: "#8a5a2e", density: 0.02 });
     expect(CIRCUIT_LOOKS.vesper.fog).toEqual({ color: "#2a2348", density: 0.008 });

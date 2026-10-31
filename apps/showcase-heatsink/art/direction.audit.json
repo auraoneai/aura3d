@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-heatsink/art/direction.ts",
-  "sourceSha256": "6eecc2a68101b489b501573f36d6987b3cb3c1366b6d09ac08f7aa7fb6e94b13",
+  "sourceSha256": "d3cc2e09ffe02085e4cd367a852625dc58ccc8ae857aad6a58bdd7bcc4f84e8e",
   "id": "showcase-heatsink",
   "genre": "racing",
   "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
@@ -16,7 +16,7 @@
     "reservedObjective": "#35d6ff"
   },
   "environment": {
-    "hdri": "cobblestone_street_night",
+    "hdri": "kloppenheim_02",
     "background": "hdri"
   },
   "violations": [],
@@ -414,7 +414,7 @@
       "fill": "ibl",
       "practicals": 6,
       "environment": {
-        "hdri": "cobblestone_street_night",
+        "hdri": "kloppenheim_02",
         "background": "hdri"
       },
       "exposureEV": 0.4
