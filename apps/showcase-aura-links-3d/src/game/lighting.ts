@@ -353,6 +353,16 @@ export function keyShadowFor(tier: LinksTier): { readonly filter: "pcss" | "pcf"
   return tier === "low" ? { filter: "pcf", cascades: 1, mapSize: 1024 } : { filter: "pcss", cascades: 3, mapSize: 2048 };
 }
 
+/**
+ * GU47 phase 3: the floodlit and lunar tees showed parallel shadow-acne bands across the flat tee deck and turf (Neon Bay
+ * key 45 deg over 3 cascades to the camera far plane; Mare 25 deg; runs g10p3-r4-2 and g10p3-r8-2, software WebGL2).
+ * Those two rows pull the cascades in to 140 m and double the normal offset (engine default 1.5 texels); the day courses
+ * showed no acne and keep the engine defaults.
+ */
+export function keyShadowTuning(course: CourseId): { readonly normalBias?: number; readonly maxDistance?: number } {
+  return course === "neonBay" || course === "mareCourse" ? { normalBias: 3, maxDistance: 140 } : {};
+}
+
 /** Light position from elevation/azimuth (same basis as the engine looks: azimuth clockwise from +Z, Y up). */
 export function anglesToPosition(elevationDeg: number, azimuthDeg: number, distance = 24): V3 {
   const el = (elevationDeg * Math.PI) / 180;
