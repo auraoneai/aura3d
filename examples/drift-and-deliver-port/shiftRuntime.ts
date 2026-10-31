@@ -12,9 +12,9 @@
  */
 import { geometry, lights, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
-import { GOD_RAYS, facadeMaterial, festoonMaterial, type LookRig } from "./look";
+import { facadeMaterial, festoonMaterial, type LookRig } from "./look";
 import { festoonIntensity } from "./festoons";
-import { godRayStrength, phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
+import { phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
 import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, DRIZZLE, SPEED_LINES, SkidMarks, deliveryKind, drizzleAt, drizzleSpawn, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
 import { HEADLIGHT, LAMP_HEAD_Y, REPICK_SECONDS, SODIUM_INTENSITY, SODIUM_POOL, nearestLamps } from "./lamps";
 
@@ -106,7 +106,6 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let drizzleSeed = 0;
   let beaconShown = -1;
   let festoonShown = -1;
-  let raysShown = -1;
   let menuShown: boolean | null = null;
   let writes = 0;
   let wasDrifting = false;
@@ -135,15 +134,6 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       if (fe !== festoonShown) {
         festoonShown = fe;
         node("festoons")?.setMaterial(festoonMaterial(row.festoon));
-      }
-      // GC-S5 sunset god rays: enabled and intensity only when the quantised strength steps
-      const rays = godRayStrength(row.sun.elevationDeg);
-      if (rays !== raysShown) {
-        raysShown = rays;
-        // `enabled` is not a setEffect field (the engine throws POST_FIELD_UNSUPPORTED): the shafts go on and off
-        // with setEffectEnabled, so away from sunset the warm inscatter leaves the chain instead of hazing the frame
-        app.post?.setEffectEnabled("volumetricFog", rays > 0);
-        if (rays > 0) app.post?.setEffect("volumetricFog", { intensity: GOD_RAYS.intensity * rays, density: GOD_RAYS.density * rays });
       }
       // GC-L4 sodium pool
       repick -= dt;
