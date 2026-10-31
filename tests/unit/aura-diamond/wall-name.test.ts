@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildParkScene, DEFAULT_SCENE_CONTEXT, DOME_PROBE_ENABLED, domeInfieldProbe, WALL_NAME_THETA, wallNameNode } from "../../../apps/showcase-aura-diamond-3d/src/scene";
-import { fencePoint, fenceRadius, FOUL_DEG, PARKS, PARK_ORDER } from "../../../apps/showcase-aura-diamond-3d/src/rules";
+import { fencePoint, FOUL_DEG, PARKS, PARK_ORDER } from "../../../apps/showcase-aura-diamond-3d/src/rules";
 
 const nodesOf = (park: keyof typeof PARKS, variant: "gu47" | "original"): any[] =>
   (buildParkScene(PARKS[park], { ...DEFAULT_SCENE_CONTEXT, variant }).toJSON() as any).nodes;
@@ -26,19 +26,29 @@ describe("aura-diamond park name on the wall (DIA-V2)", () => {
       const ys = pts.map((q) => q[1]!);
       const width = Math.max(...xs) - Math.min(...xs);
       const segDeg = (2 * FOUL_DEG) / park.fenceSegments;
-      const segLen = 2 * fenceRadius(park, WALL_NAME_THETA) * Math.tan((segDeg * Math.PI) / 360);
-      expect(width).toBeLessThan(segLen - 0.3);
+      const p0 = fencePoint(park, WALL_NAME_THETA - segDeg / 2, 0);
+      const p1 = fencePoint(park, WALL_NAME_THETA + segDeg / 2, 0);
+      const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]);
+      expect(width).toBeLessThan(segLen - 1);
       expect(n.position[1]).toBeGreaterThanOrEqual(0);
       expect(n.position[1] + Math.max(...ys)).toBeLessThanOrEqual(park.wallH);
       // Glyph centre (local width/2) lies on the wall centre line pulled 0.32 m toward home.
       const yaw = n.rotation[1];
       const cx = n.position[0] + (width / 2) * Math.cos(yaw);
       const cz = n.position[2] - (width / 2) * Math.sin(yaw);
-      const face = fencePoint(park, WALL_NAME_THETA, 0, -0.32);
-      expect(Math.hypot(cx - face[0], cz - face[2])).toBeLessThan(0.05);
+      // The glyph baseline runs along the wall chord (the segment centred on WALL_NAME_THETA), 0.32 m in front of the
+      // wall's centre line, facing home; both ends stay in front of the wall face (blind panel: "ON RIM", "LASSIC").
+      const chord = [(p1[0] - p0[0]) / segLen, (p1[2] - p0[2]) / segLen];
+      expect(Math.cos(yaw) * chord[0]! - Math.sin(yaw) * chord[1]!).toBeGreaterThan(0.9999);
       const normal = [Math.sin(yaw), Math.cos(yaw)];
-      const toHome = [-face[0], -face[2]];
-      expect(normal[0]! * toHome[0]! + normal[1]! * toHome[1]!).toBeGreaterThan(0.99 * Math.hypot(toHome[0]!, toHome[1]!));
+      const pm = fencePoint(park, WALL_NAME_THETA, 0);
+      const ahead = (x: number, z: number) => (x - pm[0]) * normal[0]! + (z - pm[2]) * normal[1]!;
+      expect(ahead(cx, cz)).toBeCloseTo(0.32, 3);
+      expect(ahead(n.position[0], n.position[2])).toBeCloseTo(0.32, 3);
+      expect(ahead(n.position[0] + width * Math.cos(yaw), n.position[2] - width * Math.sin(yaw))).toBeCloseTo(0.32, 3);
+      expect(Math.hypot(cx - pm[0], cz - pm[2])).toBeLessThan(0.4);
+      const toHome = [-pm[0], -pm[2]];
+      expect(normal[0]! * toHome[0]! + normal[1]! * toHome[1]!).toBeGreaterThan(0.9 * Math.hypot(toHome[0]!, toHome[1]!));
     }
   });
 });

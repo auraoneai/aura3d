@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HORIZON_DRAWS, horizonBand, horizonForTier } from "../../../apps/showcase-aura-diamond-3d/art/horizon";
+import { HORIZON_BANDS_OFF, HORIZON_DRAWS, horizonBand, horizonForTier } from "../../../apps/showcase-aura-diamond-3d/art/horizon";
 import { WINDOW_CANVAS, windowPattern } from "../../../apps/showcase-aura-diamond-3d/src/windowTexture";
 import { buildParkScene, DEFAULT_SCENE_CONTEXT } from "../../../apps/showcase-aura-diamond-3d/src/scene";
 import { PARKS, PARK_ORDER, HARBOR_WATER } from "../../../apps/showcase-aura-diamond-3d/src/rules";
@@ -8,13 +8,13 @@ const sceneNodes = (park: keyof typeof PARKS, ctx = DEFAULT_SCENE_CONTEXT): any[
 const flat = (nodes: any[]): any[] => nodes.flatMap((n) => [n, ...flat(n.children ?? [])]);
 
 describe("aura-diamond horizon per park (DIA-W1)", () => {
-  it("gives every open-air park one band with its own name, shape mix and colour; the Dome none", () => {
+  it("keeps a band for Midtown and Lunar only (blind panel: the other bands read as cards and slabs), each its own", () => {
     const bands = PARK_ORDER.map((p) => horizonBand(p));
-    expect(bands.filter(Boolean)).toHaveLength(5);
-    expect(horizonBand("dome")).toBeNull();
+    expect(bands.filter(Boolean)).toHaveLength(2);
+    for (const p of HORIZON_BANDS_OFF) expect(horizonBand(p)).toBeNull();
     const live = bands.filter((b): b is NonNullable<typeof b> => b !== null);
-    expect(new Set(live.map((b) => b.name)).size).toBe(5);
-    expect(new Set(live.map((b) => b.color)).size).toBe(5);
+    expect(new Set(live.map((b) => b.name)).size).toBe(2);
+    expect(new Set(live.map((b) => b.color)).size).toBe(2);
     for (const p of PARK_ORDER) expect(HORIZON_DRAWS[p]).toBe(horizonBand(p) ? 1 : 0);
   });
 
@@ -39,13 +39,12 @@ describe("aura-diamond horizon per park (DIA-W1)", () => {
     }
   });
 
-  it("swaps Harbor's flat plane for world.water on the same footprint (original keeps the plane)", () => {
-    const water = flat(sceneNodes("sandlot")).find((n) => n.name === "harbor-water");
-    expect(water.kind).toBe("water");
-    expect(water.options.height).toBe(HARBOR_WATER.y);
-    expect(water.options.reflection.high).toBe("ibl");
-    const orig = flat(sceneNodes("sandlot", { ...DEFAULT_SCENE_CONTEXT, variant: "original" })).find((n) => n.name === "harbor-water");
-    expect(orig.kind).not.toBe("water");
+  it("keeps Harbor's bay a calm plane on the same footprint in both looks (blind panel: world.water read as pixel noise)", () => {
+    for (const variant of ["gu47", "original"] as const) {
+      const water = flat(sceneNodes("sandlot", { ...DEFAULT_SCENE_CONTEXT, variant })).find((n) => n.name === "harbor-water");
+      expect(water.kind).not.toBe("water");
+      expect(water.position[1]).toBe(HARBOR_WATER.y);
+    }
   });
 
   it("lights about 45% of Midtown's windows with no dark row", () => {

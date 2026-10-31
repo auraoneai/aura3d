@@ -136,8 +136,9 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "preetham", turbidity: 6.5, rayleigh: 2.4 },
     sun: { elevationDeg: 9, azimuthDeg: 250, color: "#ff9a52", intensity: 2.5, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
-    fog: { color: "#e7b58b", density: 0.0032, intensity: 0.32 },
-    exposureEv: 0.1,
+    // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
+    fog: { color: "#d9a57c", density: 0.0014, intensity: 0.14 },
+    exposureEv: 0.05,
     background: "#e0a070",
     accent: "#f08a4b",
     post: {
@@ -147,7 +148,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.85, intensity: 0.24 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.08, saturation: 1.08, temperature: 0.3, tint: 0.02 },
+      grade: { contrast: 1.16, saturation: 1.1, temperature: 0.22, tint: 0.02 },
       lut: "diamond-harbor-last-light.cube"
     },
     turf: { grass: "#41702f", stripe: "#4b7d35", clay: "#b86a42", track: "#7a4a33", trackRoughness: 0.92, chalk: "#efe4cc" },
@@ -191,11 +192,12 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "high noon, sun 72 degrees",
     baseLook: "outdoor-day",
     hdri: { id: "outdoor-midday", intensity: 1.1, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "gradient", zenith: "#5d8fc4", horizon: "#e4e6df", ground: "#c9b28e" },
+    // Blind panel: the pale horizon blew the sky out to near white; a deep desert blue down to a dusty horizon.
+    sky: { model: "gradient", zenith: "#2f6db4", horizon: "#9dbad6", ground: "#c9b28e" },
     sun: { elevationDeg: 72, azimuthDeg: 20, color: "#fff6e6", intensity: 3.6, colorTemperatureK: 6000 },
     rim: false,
-    fog: { color: "#d7c4a6", density: 0.0012, intensity: 0.3, height: { density: 0.0025, falloff: 0.06, start: 20 } },
-    exposureEv: -0.05,
+    fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
+    exposureEv: -0.15,
     background: "#c7d3dc",
     accent: "#e3b448",
     post: {
@@ -236,7 +238,8 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       grade: { contrast: 1.04, saturation: 1.06, temperature: 0.15, tint: -0.03 },
       lut: "diamond-ivy-sunrise.cube"
     },
-    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf" },
+    // Blind panel: the 24-degree sun raked the clay normals into a camouflage pattern; flatter normals like Lunar.
+    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf", normalScale: { grass: 0.35, clay: 0.15 } },
     crowd: ["#6fbf6a", "#b23a2e", "#e8e2cf", "#2d4f8a", "#e6a640", "#5b3d2e", "#8fb8d6"],
     signature: { splinter: "#d6b282", flash: "#fff0d2", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
