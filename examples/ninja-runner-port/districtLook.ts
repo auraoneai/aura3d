@@ -112,7 +112,10 @@ export interface ResolvedLook {
 /** `?look=original` keeps today's midday look; everything else is the evening. */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  return params.get("look") === "original" ? "original" : "evening";
+  // GU47 phase 2 (PRD D11, no regression ships): the default is the 4.6.2 look. In software WebGL2 the evening look
+  // never produced a frame that beat it (god-ray wash, then a village ~5 EV dark, then no frame within 25 min), so
+  // it is opt-in with `?look=evening`; `?look=original` still names the default explicitly.
+  return params.get("look") === "evening" ? "evening" : "original";
 }
 
 /** District band a distance belongs to (the five stops; the Backstreets share the village row). */
