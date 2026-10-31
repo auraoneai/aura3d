@@ -38,7 +38,7 @@ const hdri = (id: string, sizeBytes: number, sha256: string, source: string): Hd
  * venue's file is fetched: the boot venue's at mount, the next one on a venue change (`app.lighting.setEnvironment`).
  */
 const hdriDefinitions = {
-  rooftop_night: hdri("rooftop_night", 1629654, "4c8820e1517cc5fea7acaaa9b7ac1c043a4584f8b6042b6d6c72f8764abb255e", "Poly Haven rooftop_night"),
+  cobblestone_street_night: hdri("cobblestone_street_night", 1766411, "033963d2d4f34a98ee2b8d5989c29860eaaedfaf4a99e1205777a01262150a63", "Poly Haven cobblestone_street_night"),
   kloppenheim_02: hdri("kloppenheim_02", 1744238, "c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002", "Poly Haven kloppenheim_02"),
   venice_sunset: hdri("venice_sunset", 1437625, "ada97320249204fe041054c281ead9425e54302ac1538466a71cc9c1f381c725", "Poly Haven venice_sunset"),
   "outdoor-midday": hdri("outdoor-midday", 1173154, "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34", "Poly Haven kloppenheim_06_puresky (library outdoor-midday)"),

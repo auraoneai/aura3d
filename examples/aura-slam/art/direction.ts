@@ -49,7 +49,7 @@ export default defineArtDirection({
     fill: "ibl",
     practicals: 4,
     // Boot venue (hard court, New York night). The other five HDRIs are listed in evidence/game-upgrades-47/top-tennis/identity.md.
-    environment: { hdri: "rooftop_night", background: "hdri" },
+    environment: { hdri: "cobblestone_street_night", background: "hdri" },
     exposureEV: 0
   },
   framing: { rig: "static", subjectHeightFraction: [0.06, 0.16], fovDeg: [15, 60], mobile: "both" },
