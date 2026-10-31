@@ -296,7 +296,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.0, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
     rim: { color: "#6f8fb8", intensity: 1.1, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
-    exposureEv: 0.6,
+    exposureEv: 0.7,
     background: "#020305",
     accent: "#c3cbd8",
     post: {
@@ -311,7 +311,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       grade: { contrast: 1.16, saturation: 1.0, temperature: -0.02, tint: 0 },
       lut: "diamond-lunar-regolith.cube"
     },
-    turf: { grass: "#46443f", stripe: "#4d4a44", clay: "#968a78", track: "#36342f", trackRoughness: 0.98, chalk: "#f2eee2", normalScale: { grass: 0, clay: 0 } },
+    turf: { grass: "#514e48", stripe: "#5b5851", clay: "#968a78", track: "#36342f", trackRoughness: 0.98, chalk: "#f2eee2", normalScale: { grass: 0, clay: 0 } },
     crowd: ["#c3cbd8", "#e9e6dc", "#d98a3a", "#3c4a66", "#9aa3b5", "#5e6878", "#b8a27a"],
     signature: { splinter: "#cbbf9f", flash: "#ffffff", flashIntensity: 1.1, gravityScale: 0.17 },
     landingFx: "diamond-regolith-arc",
@@ -333,8 +333,9 @@ export const ORIGINAL_LOOKS: Readonly<Record<ParkId, { readonly baseLook: Diamon
 };
 
 /**
- * GU47 phase 2 (lunar blind panel): parks that play in their 4.6.2 look unless `?look=` names a look. The blind panel
- * judged the new Lunar Park worse than 4.6.2, so the Moon keeps the old look in normal play; every other park is GU47.
+ * Parks that play in their 4.6.2 look unless `?look=` names a look. GU47 phase 2 kept Lunar here (blind panel 1-2); phase 3
+ * fixed the shadow acne and the grey-on-grey palette and the panel judged the new Lunar better (3-0, tag g08p3r1), so every
+ * park now plays in the GU47 look. The mechanism stays for the next park the panel rejects.
  */
 export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>([]);
 
@@ -499,6 +500,12 @@ export interface DiamondLookPlan {
   readonly keyShadow: ParkLook["sun"]["shadow"] | null;
 }
 
+/**
+ * GU47 phase 3: the engine's auto normal bias left faint acne stripes on the flat clay (Ivy, Lunar); two shadow texels of
+ * normal offset clear them and keep the players' shadows (contact shadows ground the feet).
+ */
+const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
+
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 
 /**
@@ -576,7 +583,7 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
     vignette: row.post.vignette,
     godRays: tier === "high" && row.godRays ? row.godRays : null,
     weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null,
-    keyShadow: row.sun.shadow ?? null
+    keyShadow: row.sun.shadow ?? DEFAULT_KEY_SHADOW
   };
 }
 

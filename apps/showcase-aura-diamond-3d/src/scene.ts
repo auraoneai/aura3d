@@ -897,7 +897,8 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   const skyN = skyNode(plan);
   if (skyN) sc.add(skyN);
   // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
-  if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
+  // GU47 phase 3 (rubric: "the batter and catcher look like they float"): denser, longer contact shadows in the new look.
+  if (!QA_FLAGS.noContact) sc.add(effects.contactShadows(ctx.variant === "gu47" ? { intensity: 1.0, length: 0.45 } : { intensity: 0.75, length: 0.3 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
   if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
   // DIA-E4: the rain-wet blue hour over Midtown (the wet warning track is its glossy track roughness, DIA-M1).
