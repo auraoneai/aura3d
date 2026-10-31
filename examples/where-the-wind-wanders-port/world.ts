@@ -237,6 +237,8 @@ export function bellLightIntensity(complete: boolean, swing: number, lanterns: n
  * only the shaft density (`godRayDensity`, clamped to the engine's 0.05..1) moves with the sun.
  */
 export const SHAFT_INTENSITY = 0.22;
+/** GU47 phase 2: the volumetricFog shafts stage is not mounted (see the post block in `buildWorld`). */
+export const SHAFTS_ENABLED: boolean = false;
 export function shaftPatch(godRays: number): { intensity: number; godRayDensity: number } | null {
   if (!(godRays > 0.02)) return null;
   return { intensity: SHAFT_INTENSITY, godRayDensity: Math.round(Math.min(1, Math.max(0.05, godRays)) * 1000) / 1000 };
@@ -531,15 +533,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     // WW47-P1: a softer gouache palette, a warm bloom on the glows and the sun, an umber vignette
     builder
       .add(effects.bloom({ name: "bloom", intensity: 0.42, threshold: 0.92, scatter: 0.55, color: "#ffe2b8" }))
-      .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.05, exposure: 1.05 }))
-      .add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.75, color: "#3a2a1c" }));
+      .add(effects.colorGrade({ name: "grade", contrast: 1.1, saturation: 1.14, exposure: 1.05 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.16, smoothness: 0.75, color: "#3a2a1c" }));
     if (options.quality !== "low") {
-      // WW47-P2: golden-hour shafts at a low fixed strength from the found-0 sun; P3: grain 0.02 under the paper pass
-      // no lightPosition: the stage takes the shadowed key; the WSW sun sits behind the follow camera, so the shafts read
-      // mostly in the dusk finale and the voyage, where the camera turns toward the valley (lanes/g23.md)
-      builder
-        .add(effects.volumetricFog({ name: "golden shafts", density: 0.05, intensity: SHAFT_INTENSITY, color: "#ffd9a8", godRayDensity: shaftPatch(frameOfKey(DAYLIGHT_KEYS[options.daylightKey ?? 0] ?? DAYLIGHT_KEYS[0]!).godRays)?.godRayDensity ?? 0.05 }))
-        .add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
+      // WW47-P3: grain 0.02 under the paper pass. WW47-P2 (volumetricFog golden shafts) is off: on the GU47 engine its stage
+      // painted every GLB (cottage, trees, traveller) as a flat cream silhouette while the custom-shader meadow stayed
+      // clean (phase-2 A/B capture g23ab1, found0 = fog off only); the sun sits behind the follow camera, so no shafts
+      // were visible either. `shaftPatch` stays as the per-key table for when the stage is re-enabled.
+      builder.add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
     }
   }
 
@@ -583,7 +584,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
       let shownDaylight: DaylightFrame | null = null;
       // WW47-P2: the shaft patch last sent (only on High; written when the density moves, not every eased frame)
-      const shafts = !original && options.quality !== "low";
+      const shafts = SHAFTS_ENABLED && !original && options.quality !== "low";
       let shownShaft: string | null = null;
       const applyDaylight = (f: DaylightFrame): void => {
         if (f === shownDaylight) return;
