@@ -9,9 +9,12 @@ import { camera, createAuraApp, effects, lights, material, primitives, scene } f
  * - `mask`: rider white unlit, everything else black, no post (the rider's silhouette, for the perimeter);
  * - `plain`: the lit scene, no outline;  `targets`: + outline({ targets: ["rider"] });  `full`: + outline() (today);
  * - `toon-color`: + toon() (today's Silt pass);  `toon-depth`: + toon({ inkSource: "depth", fadeDistance: 40, inkColor }).
+ * - `toon-depth-flat`: `toon-depth` with `outline: 0`, the same luma banding without ink. Toon banding recolours every
+ *   pixel (the sky too), so the depth-ink checks compare `toon-depth-flat` → `toon-depth`: the only difference is the ink.
+ *   The sky/geometry split always comes from the `plain` frame.
  */
 
-export type OutlineVariant = "mask" | "plain" | "targets" | "full" | "toon-color" | "toon-depth";
+export type OutlineVariant = "mask" | "plain" | "targets" | "full" | "toon-color" | "toon-depth" | "toon-depth-flat";
 
 export interface OutlineFrame {
   readonly key: OutlineVariant;
@@ -21,6 +24,9 @@ export interface OutlineFrame {
   readonly drawCalls: number;
   readonly errors: readonly string[];
   readonly postSkipped: readonly string[];
+  /** Mean sRGB of the whole frame and of its top quarter (sky): diagnostics for the receipt log. */
+  readonly meanRgb: readonly [number, number, number];
+  readonly skyRgb: readonly [number, number, number];
 }
 
 export interface OutlineComparison {
@@ -97,9 +103,9 @@ async function render(id: OutlineVariant): Promise<OutlineFrame> {
   try {
     await waitForDraw(app, id);
     if (id === "toon-color") app.post?.addPostPass?.(effects.toon({ name: "receipt-toon", size: [480, 270] }));
-    if (id === "toon-depth") {
+    if (id === "toon-depth" || id === "toon-depth-flat") {
       // GU47 E-E: depth is bound at the HDR anchors today; `after-tonemap` needs the E-C LDR-tail depth handoff.
-      app.post?.addPostPass?.(effects.toon({ name: "receipt-toon", size: [480, 270], inkSource: "depth", fadeDistance: 40, inkColor: INK, order: "before-tonemap" }));
+      app.post?.addPostPass?.(effects.toon({ name: "receipt-toon", size: [480, 270], inkSource: "depth", fadeDistance: 40, inkColor: INK, order: "before-tonemap", ...(id === "toon-depth-flat" ? { outline: 0 } : {}) }));
     }
     await settle(app, 3);
     return await capture(app, id);
@@ -129,8 +135,22 @@ async function capture(app: AuraApp, key: OutlineVariant): Promise<OutlineFrame>
     height: canvas.height,
     drawCalls: diagnostics.drawCalls,
     errors: [...diagnostics.errors],
-    postSkipped: [...(diagnostics.output?.postSkipped ?? [])]
+    postSkipped: [...(diagnostics.output?.postSkipped ?? [])],
+    meanRgb: meanRgb(data, canvas.width, 0, canvas.height),
+    skyRgb: meanRgb(data, canvas.width, 0, Math.floor(canvas.height / 4))
   };
+}
+
+/** Mean sRGB of rows [y0, y1) (row 0 at the top of the screenshot). */
+function meanRgb(data: Uint8ClampedArray, width: number, y0: number, y1: number): [number, number, number] {
+  const rows = data.length / 4 / width;
+  const sum = [0, 0, 0];
+  let count = 0;
+  for (let y = Math.max(0, y0); y < Math.min(rows, y1); y += 1) for (let x = 0; x < width; x += 1) {
+    const i = (y * width + x) * 4;
+    sum[0] += data[i]!; sum[1] += data[i + 1]!; sum[2] += data[i + 2]!; count += 1;
+  }
+  return [Math.round(sum[0]! / Math.max(1, count)), Math.round(sum[1]! / Math.max(1, count)), Math.round(sum[2]! / Math.max(1, count))];
 }
 
 /** Pixels just outside a coverage mask: not covered, with a covered pixel within `radius` px (8 directions). */
@@ -152,9 +172,10 @@ function ring(covered: Uint8Array, width: number, height: number, radius: number
 
 function compare(base: OutlineVariant, inked: OutlineVariant): OutlineComparison {
   const maskFrame = frames.get("mask");
+  const plainFrame = frames.get("plain");
   const a = frames.get(base);
   const b = frames.get(inked);
-  if (!maskFrame || !a || !b) throw new Error(`compare(${base}, ${inked}): render mask, ${base} and ${inked} first`);
+  if (!maskFrame || !plainFrame || !a || !b) throw new Error(`compare(${base}, ${inked}): render mask, plain, ${base} and ${inked} first`);
   const { width, height } = a;
   const rider = new Uint8Array(width * height);
   const geometry = new Uint8Array(width * height);
@@ -162,10 +183,11 @@ function compare(base: OutlineVariant, inked: OutlineVariant): OutlineComparison
     const r = maskFrame.data[i * 4]!, g = maskFrame.data[i * 4 + 1]!, bl = maskFrame.data[i * 4 + 2]!;
     rider[i] = r > 200 && g > 200 && bl > 200 ? 1 : 0;
   }
-  // Geometry = anything that is not the sky colour in the plain frame.
+  // Geometry = anything that is not the sky colour in the plain frame (not `base`: a toon base bands the sky).
   const sky = [0x8f, 0xc3, 0xea];
+  const p = plainFrame.data;
   for (let i = 0; i < width * height; i += 1) {
-    const d = Math.abs(a.data[i * 4]! - sky[0]!) + Math.abs(a.data[i * 4 + 1]! - sky[1]!) + Math.abs(a.data[i * 4 + 2]! - sky[2]!);
+    const d = Math.abs(p[i * 4]! - sky[0]!) + Math.abs(p[i * 4 + 1]! - sky[1]!) + Math.abs(p[i * 4 + 2]! - sky[2]!);
     geometry[i] = d > 30 || rider[i] ? 1 : 0;
   }
   const towardInk = (i: number) => {

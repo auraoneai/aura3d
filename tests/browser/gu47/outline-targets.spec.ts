@@ -110,11 +110,15 @@ test.describe("GU47 outline-targets receipt", () => {
     const plain = await render("plain");
     const toonColor = await render("toon-color");
     const toonDepth = await render("toon-depth");
-    const depth = await compare("plain", "toon-depth");
+    const toonDepthFlat = await render("toon-depth-flat");
+    // Banding recolours every pixel, the sky included: the ink is isolated against the same toon with outline 0.
+    const depth = await compare("toon-depth-flat", "toon-depth");
     const color = await compare("plain", "toon-color");
-    logMetrics("outline-targets-toon", { plain: plain.drawCalls, depth, color });
+    const frameStats = (f: OutlineFrame) => ({ meanRgb: f.meanRgb, skyRgb: f.skyRgb, postSkipped: f.postSkipped });
+    logMetrics("outline-targets-toon", { plain: plain.drawCalls, depth, color, frames: { plain: frameStats(plain), toonColor: frameStats(toonColor), toonDepth: frameStats(toonDepth), toonDepthFlat: frameStats(toonDepthFlat) } });
     expect(toonColor.errors).toEqual([]);
     expect(toonDepth.errors).toEqual([]);
+    expect(toonDepthFlat.errors).toEqual([]);
     expect(depth.riderPerimeterInked, "rider perimeter inked by depth").toBeGreaterThanOrEqual(0.6);
     expect(depth.skyEdgeFraction, "sky edges").toBeLessThan(0.005);
     expect(depth.bottomChanged, "near ground changes more than the sky").toBeGreaterThan(depth.topChanged);
