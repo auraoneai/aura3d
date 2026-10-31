@@ -39,8 +39,8 @@ installBlackFrameGuard();
 
 // --------------------------------------------------------------------- boot
 
-// GU47 WP-16: the felt-and-clay diorama is the default; `?look=original` keeps the
-// pre-GU47 presentation. `?world=<id>` boots straight into a world (capture convenience).
+// GU47 WP-16: the felt-and-clay diorama is opt-in (`?look=diorama`); since the blind-panel
+// fix pass the pre-GU47 (4.6.2) presentation is the default (`?look=original` also selects it). `?world=<id>` boots straight into a world (capture convenience).
 const LOOK_MODE = lookModeFromSearch(window.location.search);
 const REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";

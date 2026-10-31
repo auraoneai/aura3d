@@ -4,7 +4,7 @@
 // (b) a plain-data collision world the player controller simulates against.
 // Both come from the same spec, so what you see is what you collide with.
 //
-// GU47 WP-16: the default presentation is the felt-and-clay diorama (`diorama.ts`,
+// GU47 WP-16: the opt-in presentation (`?look=diorama`) is the felt-and-clay diorama (`diorama.ts`,
 // per-world look table in `looks.ts`); `look: "original"` (`?look=original`) keeps the
 // pre-GU47 scene exactly. The collision world is identical in both.
 
@@ -446,7 +446,7 @@ export interface BuildWorldOptions {
    * can pair AO on and off at the same frame (LIGHT-06). Default true.
    */
   readonly ambientOcclusion?: boolean;
-  /** GU47 WP-16: the felt-and-clay diorama (default) or today's scene (`?look=original`). */
+  /** GU47 WP-16: the felt-and-clay diorama (`?look=diorama`) or today's scene (default since the blind-panel pass). */
   readonly look?: PipLookMode;
   /** PRD 6.3: halve the ambient emission and cap flora sway at 30%. */
   readonly reducedMotion?: boolean;

@@ -164,10 +164,11 @@ describe("pips-big-leap miniature lens and framing (PBL-P2, PBL-C2)", () => {
 });
 
 describe("pips-big-leap variants and accessibility", () => {
-  it("reads ?look=original and ?world=", () => {
+  it("reads ?look= and ?world= (4.6.2 look by default since the blind-panel pass)", () => {
     expect(lookModeFromSearch("?look=original")).toBe("original");
-    expect(lookModeFromSearch("")).toBe("diorama");
-    expect(lookModeFromSearch("?look=carnival")).toBe("diorama");
+    expect(lookModeFromSearch("?look=diorama")).toBe("diorama");
+    expect(lookModeFromSearch("")).toBe("original");
+    expect(lookModeFromSearch("?look=carnival")).toBe("original");
     expect(worldFromSearch("?world=w4")).toBe("w4");
     expect(worldFromSearch("?world=w9")).toBeNull();
   });

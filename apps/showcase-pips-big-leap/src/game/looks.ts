@@ -351,9 +351,19 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
   };
 }
 
-/** `?look=original` restores today's presentation; anything else is the diorama look. */
+/**
+ * GU47 blind-panel fix pass (2026-10-31): the 4.6.2 look is the default again. Three blind
+ * judges rated the diorama worse than 4.6.2 in academy, w1, w2, w3 and w5 (better only in w4
+ * and w6), and the look is chosen once for the whole game, so `?look=diorama` opts in and
+ * anything else (including `?look=original`) is today's presentation.
+ */
+export const DEFAULT_LOOK_MODE: PipLookMode = "original";
+
 export function lookModeFromSearch(search: string): PipLookMode {
-  return new URLSearchParams(search).get("look") === "original" ? "original" : "diorama";
+  const value = new URLSearchParams(search).get("look");
+  if (value === "diorama") return "diorama";
+  if (value === "original") return "original";
+  return DEFAULT_LOOK_MODE;
 }
 
 /** `?world=<id>` boots straight into a world (capture convenience; the atlas cards stay the E-I path). */
