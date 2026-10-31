@@ -1,0 +1,81 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r3/splat-rush-port/frames/g16p3-r3-1/desk--roll-settled.jpg",
+      "sha256": "2d0b221b82225709af1e33c9cc03b682d8c28dc1255a14ff9b09131936128c92"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r3/splat-rush-port/frames/g16p3-r3-1/desk--mid-action-settled.jpg",
+      "sha256": "79d2d9592f677e26b23fdb70b175a24b4f78d3acd929bbc7616c4e3965b3aa17"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r3/splat-rush-port/frames/g16p3-r3-1/desk--title-settled.jpg",
+      "sha256": "14a5cc77876501180e21dc6e031cc28694fb0c13189aaa7e4970bafabe6ef95e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r3/splat-rush-port/frames/g16p3-r3-1/desk--early-settled.jpg",
+      "sha256": "4d945735dc4155648a4d70fd69df3d5ed1f0c753303de8abde724d322029be37"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6,
+    "ibl_reflections": 6.5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 7,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "animation_quality": 6,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "The ball casts a soft blob-like contact shadow on the track. The gates' shadows are faint or missing, so the obstacles look slightly pasted onto the floor. There is no crisp directional sun shadow matching a 3/4 key light."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a strong glossy specular highlight and a rim, but the reflection reads as a generic studio highlight rather than reflecting the pink sky. The purple rail spheres have similar uniform highlights with no environment variation."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-ball chase view, not the side-on follow the recipe calls for. The ball fills about 10–15% of the frame in gameplay, below the 18–25% target, and is much smaller in frame 4. Speed lines suggest a wide FOV."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A heavy pink/magenta grade and bloom glow wash out the far track into yellow-white. Radial speed-line streaks overlay the sky. The look reads as sunset rather than a daylight-outdoor grade, and the far track loses contrast."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Paint splat particles and droplets appear on the track and around the gates, and speed lines imply motion. Stills cannot show easing, and the splats look like flat decals with limited volumetric variety."
+    },
+    {
+      "category": "lighting",
+      "seen": "Warm low-sun backlight from the horizon gives a golden-hour feel. The ball and gates are lit fairly flat from the front. The overall exposure is pleasant, but the key-light direction is ambiguous."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Floating grass islands with towers and trees, hot-air balloons, wooden pillars, cloud sea and bunting flags. A cohesive, whimsical world with good depth layering."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the pillars and islands into pink, and stylized clouds fill the lower frame. The fog density reads heavier than the recipe's 0.0025, but it supports depth."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean rounded HUD with balloon hearts, a paint meter, a score pill, a combo multiplier and a '2x 5s' power-up tag. The title card offers accessibility toggles and clear control text."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

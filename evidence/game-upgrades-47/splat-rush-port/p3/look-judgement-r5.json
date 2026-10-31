@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r5/splat-rush-port/frames/g16p3-r5-1/desk--roll-settled.jpg",
+      "sha256": "2c0b62c237411374917636ceba9b226004c3d657af65c82eab7b921a72cb89d4"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r5/splat-rush-port/frames/g16p3-r5-1/desk--mid-action-settled.jpg",
+      "sha256": "1dcc4e3cb04e07fbb2a90e26859bcc381724ddafda6705c295b40b3a41bfa377"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r5/splat-rush-port/frames/g16p3-r5-1/desk--title-settled.jpg",
+      "sha256": "8135fce0a79a9f57f86ed90a187aa9b9c8847c7add311faa7c34db252cada0e9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r5/splat-rush-port/frames/g16p3-r5-3/card--roll-60s.jpg",
+      "sha256": "55b9b61e045b5af4fd3f2f06dd1f217e6d2b2b25000069b38598a6200e8a4ca9"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6.5,
+    "ibl_reflections": 6,
+    "environment_world": 8,
+    "atmospheric_effects": 7,
+    "material_quality": 7.5,
+    "modeling_assets": 7.5,
+    "composition": 7.5,
+    "camera": 7,
+    "postprocessing": 7,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm sunset key light with soft toon-style falloff gives the scene a pleasant mood. The pink/orange grade replaces the recipe's outdoor-day sky blue and greens, so the gates and track are slightly washed together in places."
+    },
+    {
+      "category": "shadows",
+      "seen": "The ball casts a soft, blurry blob shadow and the gates cast faint shadows onto the track. Contact grounding where the gate legs meet the track is weak, and the floating islands and pillars show little shadow definition."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a strong stylized specular highlight and rim, but it does not reflect the sky or the surroundings. The purple bead railings show only simple painted highlights."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is richly dressed: floating grassy islands with towers and trees, hot-air balloons, wooden spires, cloud banks, bunting flags and a winding track that recedes into the distance."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze over the cloud sea, radial speed lines in the sky and paint splats behind the ball add energy. The far track fades gently into the haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The gates read clearly as glossy jelly with dripping edges. The track has a paper-like texture with paint streaks. The ball material is convincing candy gloss."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The assets are cohesive and stylized: the drip-edged gates, the bead rails and the low-poly islands are clean. The wooden pillars are fairly simple extruded shapes."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball sits centered in the lower third and takes up roughly 15–20% of the frame. The track leads the eye to the vanishing point. In the gameplay frames the ball overlaps the gate rows."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is low and behind the ball with a moderate FOV, which suits the runner gameplay. The recipe's side-on follow is not used, so this deviates from the platformer spec but is readable."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Ink outlines on objects, a warm color grade and a mild glow on the track highlight are visible. No harsh aliasing is noticeable at 1440 width. The grade pushes everything toward pink."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and themed: heart lives, a color/progress meter, a score and combo pill, a 2x timer chip and sound/pause buttons. The title card is legible and offers colour-symbol and reduced-motion toggles plus a keyboard hint line."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
