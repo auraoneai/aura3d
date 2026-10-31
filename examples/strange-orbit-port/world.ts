@@ -563,7 +563,7 @@ export function buildWorld(options: WorldOptions): World {
       // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
       const tint = look === "gouache"
         ? [{
-          ...(i === 0 ? { clearcoat: 0.6, clearcoatRoughness: 0.25 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
+          ...(i === 0 ? { clearcoat: 1, clearcoatRoughness: 0.12 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
           rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.5 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];

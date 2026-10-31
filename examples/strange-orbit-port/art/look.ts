@@ -84,8 +84,9 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
     fog: { color: "#3b3460", density: 0.0017, maxOpacity: 0.78, heightMist: 1 },
     post: {
-      bloom: { intensity: 0.3, threshold: 0.78, radius: 0.5 },
-      grade: { contrast: 1.1, saturation: 1.2 },
+      // GU47 phase 3 (rubric post 4.5: "milky veil"): less bloom, more contrast.
+      bloom: { intensity: 0.22, threshold: 0.8, radius: 0.5 },
+      grade: { contrast: 1.16, saturation: 1.2 },
       vignette: { intensity: 0.34, smoothness: 0.62 },
       grain: { intensity: 0.035, size: 1.6 }
     },

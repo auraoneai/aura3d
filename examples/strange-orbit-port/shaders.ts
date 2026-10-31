@@ -92,6 +92,8 @@ void main() {
 export const CONTACT_RADIUS2 = 2.4;
 /** Peak darkening of the contact shadow right under a rider (0..1). */
 export const CONTACT_STRENGTH = 0.85;
+/** Length (m) of the cast streak each rider lays away from the key. */
+export const CONTACT_STREAK = 3.4;
 /** Uniform names of the six rider contact shadows (player, then rivals 1..5). */
 export const CONTACT_UNIFORMS = ["riderContact0", "riderContact1", "riderContact2", "riderContact3", "riderContact4", "riderContact5"] as const;
 
@@ -118,7 +120,14 @@ float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0
 /** Contact shadow: riderContact0..5 hold each rider's centre (xyz, about 1 m above the road) and strength (w, 0 = hidden). */
 float contactTerm(vec3 p, vec4 c) {
   vec3 d = p - c.xyz;
-  return 1.0 - c.w * exp(-dot(d, d) / ${CONTACT_RADIUS2.toFixed(2)});
+  float blob = exp(-dot(d, d) / ${CONTACT_RADIUS2.toFixed(2)});
+  // Cast streak: distance to the segment from the rider centre away from the key, ${CONTACT_STREAK.toFixed(1)} m long (a low
+  // 18-degree key lays the rider's shadow about 3 m across the road).
+  vec3 away = -normalize(u_a3dSunDirection);
+  float t = clamp(dot(d, away), 0.0, ${CONTACT_STREAK.toFixed(1)});
+  vec3 e = d - away * t;
+  float streak = exp(-dot(e, e) / 0.45) * (1.0 - 0.5 * t / ${CONTACT_STREAK.toFixed(1)});
+  return 1.0 - c.w * max(blob * 0.75, streak * 0.8);
 }
 float contactOcclusion(vec3 p) {
   return contactTerm(p, riderContact0) * contactTerm(p, riderContact1) * contactTerm(p, riderContact2)
