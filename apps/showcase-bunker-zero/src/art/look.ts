@@ -185,13 +185,15 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   }),
   row({
     variant: "floor6", floorParam: "6", slot: 5, fixture: "alarm-beacon",
-    lamp: { color: "#ff2a1f", temperatureK: 1800 },
+    // Blind-panel fix pass: the red alarm lamp read as a muddy maroon cast; F6 now shares F1's warm work-light family.
+    lamp: { color: "#ffb870", temperatureK: 2900 },
     // F6's key is the moon through the hatch (lightRig.ts BZ_MOON); its spot becomes a sweeping alarm beacon.
     key: { cell: [4, 3], target: [4, 4], drop: 0.3, intensity: 40, distance: 12, angleDeg: 34, penumbra: 0.45 },
     fill: { cell: [20, 14], target: [20, 13], drop: 0.3, intensity: 26, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 7, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.05, environmentIntensity: 0.06, exposure: 1.0, grade: { temperature: 0.06, tint: 0.05 },
-    reference: { cell: [12, 13], yawDeg: 0, pitchDeg: 8 }
+    fogDensity: 0.04, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: 0.1, tint: 0 },
+    // The barrel-and-crate hall under the first lamps, looking -x past the gunner (was the empty cell [12, 13] pitched up).
+    reference: { cell: [13, 3], yawDeg: 270, pitchDeg: -3 }
   }),
   row({
     variant: "killhouse", floorParam: "kh", slot: 6, fixture: "flood",
