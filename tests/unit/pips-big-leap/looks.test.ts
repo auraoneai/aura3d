@@ -34,13 +34,19 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(backgrounds).not.toContain("#2a5c8a");
   });
 
-  it("keys the daylight worlds from behind the lens (phase 3: the panel saw a backlit Pip) and keeps w4/w6", () => {
+  it("keys the daylight worlds from the side so shadows cross the lawn (phase 4), never from in front of the lens, and keeps w4/w6", () => {
     const angles = (id: keyof typeof WORLD_LOOKS) => [WORLD_LOOKS[id].key.elevationDeg, WORLD_LOOKS[id].key.azimuthDeg];
-    expect(angles("academy")).toEqual([48, 35]);
-    expect(angles("w1")).toEqual([50, 40]);
-    expect(angles("w2")).toEqual([24, 320]);
-    expect(angles("w3")).toEqual([40, 30]);
+    expect(angles("academy")).toEqual([38, 100]);
+    expect(angles("w1")).toEqual([34, 80]);
+    expect(angles("w2")).toEqual([24, 290]);
+    expect(angles("w3")).toEqual([36, 110]);
     expect(angles("w6")).toEqual([30, 300]);
+    // The lens looks down -Z: a key with azimuth in 120..240 would backlight Pip (the phase-3 panel defect).
+    for (const id of ["academy", "w1", "w2", "w3", "w4", "w5", "w6"] as const) {
+      const az = WORLD_LOOKS[id].key.azimuthDeg;
+      expect(az <= 115 || az >= 245, id).toBe(true);
+      expect(WORLD_LOOKS[id].key.lightSize, id).toBeLessThanOrEqual(0.5);
+    }
     expect(WORLD_LOOKS.w4.key.intensity).toBe(1.4);
     expect(WORLD_LOOKS.w5.key.intensity).toBe(1.4);
   });

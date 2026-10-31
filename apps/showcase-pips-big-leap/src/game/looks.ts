@@ -315,7 +315,8 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     rim: { azimuthDeg: opposite(300), color: "#7fe8d8", intensity: 0.35 },
     hemisphere: { skyColor: "#2a3a6a", groundColor: "#141a2a", intensity: 0.35 },
     background: "#0b1230",
-    exposureEv: 1.35,
+    // Phase 4: 1.35 -> 1.15; the lilac start slab bloomed to a glare sheet in p4-r1 (mean 89 vs the 55-80 band).
+    exposureEv: 1.15,
     fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },

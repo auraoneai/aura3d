@@ -823,14 +823,16 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
   // PBL-PF1: one instanced draw class per prop asset (diorama only).
   for (const node of propInstanceNodes(props)) builder.add(node);
-  // GU47 phase 4: the diorama draws no voxel NPCs. Every rubric judgement named the blocky
-  // helper/sidekick as the style clash in the frame (modeling, composition, animation); the
-  // rigged hedgehog and beetle villagers (PBL-A3, WP-36) take their places when they land.
-  // The NPCs are pure decor (no runtime node, no collider), so the sim is unchanged.
-  for (const n of diorama ? [] : spec.npcs) {
+  for (const n of spec.npcs) {
     // C19: NPCs are camera obstacles too, so the boom shortens instead of
     // letting a 1.35 m runner fill the foreground.
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
+    // GU47 phase 4: the diorama draws no voxel NPCs. Every rubric judgement named the blocky
+    // helper/sidekick as the style clash in the frame (modeling, composition, animation); the
+    // rigged hedgehog and beetle villagers (PBL-A3, WP-36) take their places when they land.
+    // The NPCs are pure decor (no runtime node, no collider); the camera obstacle stays so the
+    // camera and collision world are identical in both looks (PRD D8).
+    if (diorama) continue;
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
     builder.add(
