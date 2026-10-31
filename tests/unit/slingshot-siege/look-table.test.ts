@@ -89,13 +89,13 @@ describe("slingshot-siege stage per chapter (SS47-L1, L2, L3, E1, E2, E3, P1)", 
     }
   });
 
-  it("points only on ch4/ch5, the lighthouse spot only on ch5, the sun flare only on ch3/ch4", () => {
+  it("points only on ch4/ch5, the lighthouse spot only on ch5, no sun flare (GU47 phase 2: it drew a screen-wide glow blob)", () => {
     const names = (c: number) => stage(c).map((n) => n.name ?? "");
     CHAPTERS.forEach((c) => {
       const n = names(c.id);
       expect(n.includes("siege window gatehouse"), `ch${c.id} windows`).toBe(c.id === 4 || c.id === 5);
       expect(n.includes("siege lighthouse"), `ch${c.id} lighthouse`).toBe(c.id === 5);
-      expect(n.includes("siege sun flare"), `ch${c.id} flare`).toBe(c.id === 3 || c.id === 4);
+      expect(n.includes("siege sun flare"), `ch${c.id} flare`).toBe(false);
     });
   });
 

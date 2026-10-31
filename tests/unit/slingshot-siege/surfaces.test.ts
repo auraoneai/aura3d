@@ -1,4 +1,4 @@
-// GU47 WP-22 (lane g12) SS47-M2: CC0 detail maps on the island turf, sand and wet-rock lip; flat pair on ?surfaces=0.
+// GU47 WP-22 (lane g12) SS47-M2: CC0 detail maps on the island turf, sand and wet-rock lip; flat by default since GU47 phase 2 (opt in with ?surfaces=1).
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
@@ -18,8 +18,8 @@ const island = (surfaceMaps?: boolean) => {
 };
 
 describe("slingshot-siege island surfaces (SS47-M2)", () => {
-  it("puts a normal and a roughness map on turf, wet-rock lip and sand by default, with no colour map", () => {
-    for (const node of island()) {
+  it("puts a normal and a roughness map on turf, wet-rock lip and sand on ?surfaces=1, with no colour map", () => {
+    for (const node of island(true)) {
       expect(node, "island disc").toBeDefined();
       const json = JSON.stringify(node.material);
       expect(json).toMatch(/siege-(turf|sand|wetrock)-normal/);
@@ -28,8 +28,8 @@ describe("slingshot-siege island surfaces (SS47-M2)", () => {
     }
   });
 
-  it("drops every map on the ?surfaces=0 evidence pair", () => {
-    for (const node of island(false)) expect(JSON.stringify(node.material)).not.toMatch(/siege-.*\.jpg/);
+  it("drops every map by default and on ?surfaces=0 (GU47 phase 2: the mapped turf read white)", () => {
+    for (const node of [...island(), ...island(false)]) expect(JSON.stringify(node.material)).not.toMatch(/siege-.*\.jpg/);
   });
 
   it("ships CC0 maps within budget, each hashed in PROVENANCE.md", () => {
