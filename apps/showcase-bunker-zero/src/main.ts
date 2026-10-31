@@ -79,7 +79,8 @@ const FLOOR_SPAN = 0;
 const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
 /** BZ-06: F2 standing water, and the wet-ground amount per floor slot (F2 flooded cellars, F6 the hatch rain). */
-const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
+// GU47 phase 3: #0b1714 read as a black hole in the floor (rubric round p3-r3); a lifted teal-grey keeps it wet and dark but a surface.
+const BZ_WATER = { color: "#1f3a36", roughness: 0.1 } as const;
 /** BZ-04: base colour under the texture sets (slightly warm white; the lamps carry each floor's colour). */
 const BZ_SURFACE_WHITE = "#ece8df";
 /** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
@@ -169,8 +170,8 @@ function buildScene() {
     const floorBase = compensatedBase(shade(def.palette.floor, BZ_FLOOR_LIFT), tex.floor, BZ_SURFACE_GAIN.floor);
     const ceilBase = compensatedBase(shade(def.palette.ceil, 0.1), BZ_CEIL_TEXTURE, BZ_SURFACE_GAIN.ceiling);
     const ceilTex = bunkerTexture(BZ_CEIL_TEXTURE);
-    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.25 : 0 });
-    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.25 : 0 });
+    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.25 : 0 });
+    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.25 : 0 });
     const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
@@ -222,15 +223,16 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
-        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.62, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
-        texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
+        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: 0.62, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        // GU47 phase 3: two repeats per 3 m cell and anisotropic filtering (rubric: the floor smeared like a stretched noise map)
+        texTransforms: { baseColor: { scale: [w * 2, h * 2] }, normal: { scale: [w * 2, h * 2] } }
       }) }).runtime(staticNode(slot, "floor")),
       // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
       def.id === 5
         ? primitives.box({ name: `f${slot} ceil`, instances: hatchCeiling(w, h, wallH), material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil"))
         : primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({
           // GU47 phase 3: board-formed concrete slab, one repeat per cell, so the lamps light a ceiling instead of a black void
-          color: ceilBase, texture: ceilTex.color, normal: ceilTex.normal, normalScale: 0.8, roughness: 0.92, metalness: 0,
+          color: ceilBase, texture: ceilTex.color, normal: ceilTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: 0.92, metalness: 0,
           texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
         }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({

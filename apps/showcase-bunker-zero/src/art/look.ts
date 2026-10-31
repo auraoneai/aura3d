@@ -58,7 +58,9 @@ export const BZ_POST = {
 export const BZ_FOV = 66;
 
 /** BZ-01: the carried lamp drops from 5.6 to 1.2 (it only keeps the player's hands readable between pools). */
-export const BZ_PLAYER_LIGHT = { color: "#fff1d6", intensity: 1.2, distance: 32, decay: 1.15 } as const;
+// GU47 phase 3: reach 32 m / decay 1.15 lit every wall in view to the same level (rubric: "walls and floor lit almost
+// uniformly, no falloff under the fixtures"); 14 m with physical decay keeps the hands and the near wall and lets the pools read.
+export const BZ_PLAYER_LIGHT = { color: "#fff1d6", intensity: 1.2, distance: 14, decay: 2 } as const;
 
 /**
  * Fixture points the rig keeps live per tier: the fixtures nearest the camera (weighted toward what it faces) get a
