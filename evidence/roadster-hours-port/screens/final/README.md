@@ -1,4 +1,12 @@
-# Saltwind Highway: final screenshots (4.5.0 build, audit fix 2026-10-29)
+# Saltwind Highway: final screenshots
+
+## 4.7.1 retake (GU47 phase 3, 2026-10-31)
+
+- **Build:** `gu47/g22` phase-3 commit 9a5c7ac5f (Aura3D 4.7.0 engine, GU47 default look), runs `g22p3-r2-1` (`screens`) and `g22p3-r2-5` (`card`), same spec and decoder as below. **Software WebGL2 (SwiftShader) on the remote ACR runner, not a GPU.**
+- **Retaken:** `title.*`, `gameplay-early.*`, `key-drive.*`, `card.2x.1440x900` (+ `card.1x` downscale and the index posters), `mid-drive.1280x720` (the second of the three steady-state shots, 20 s after the first: the screens run hit its time limit before the third shot and `results`).
+- **Not retaken:** `results.1280x720` stays the 4.5.0 frame (open for 4.7.2). Raw frames and `meta.jsonl`: `evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/`.
+
+## 4.5.0 set (audit fix 2026-10-29)
 
 - **Build:** `audit-fix/g22` (Aura3D 4.5.0 engine from the workspace, examples dev server, QA hooks). Capture: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (`screens` and `card` tests), decoder `evidence/roadster-hours-port/audit-fix/decode.mjs`; numbers in `metrics.jsonl` (one JSON object per frame: sim state, draw calls, render path, canvas luma from the game's `stats()` read-back).
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Runs `g22-after-screens3` and `g22-after-card`. These frames are not real-GPU evidence.
