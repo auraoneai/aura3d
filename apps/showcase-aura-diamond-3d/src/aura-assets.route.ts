@@ -45,6 +45,7 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsSkyline": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "hoopsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "ballpark_fanA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -378,6 +379,17 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-454795f29682b500e034c6a26bd667a3b3a92f374d8e6020cb516da69fa6118d",
     bounds: [1.907,0.63,0.233],
     sizeBytes: 21796168,
+  },
+  // GU47 WP-36 (DIA-A2): Diamond-owned Meshy seated fan, admitted with `aura3d assets import-meshy --into
+  // apps/showcase-aura-diamond-3d/assets --prefix ballpark` (rights: assets/provenance/ballpark_fanA.rights.json);
+  // sloppy-simplified 16,874 -> 625 triangles, 256 px maps (scripts/optimize-fan.mjs). Served from this app's public/aura-assets.
+  "ballpark_fanA": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ballpark_fanA.98745357.glb",
+    hash: "sha256-98745357514b73865fb520081ca3d1e837822d6e257e0042197186ba68b65e57",
+    bounds: [1.062, 1.903, 1.242],
+    sizeBytes: 46724,
   },
   "showcaseStadiumSeats": {
     type: "model",

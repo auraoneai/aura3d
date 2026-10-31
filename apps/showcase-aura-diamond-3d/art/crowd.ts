@@ -1,9 +1,9 @@
 /**
  * Aura Diamond 3D stands crowd (GU47 DIA-A2): about 600 seated fans on the bleacher benches, in the park's section
- * colours, drawn as two instanced draws (bodies, heads). The 18 skinned wavers at the wall stay as they are.
+ * colours, drawn as one instanced draw of the Meshy seated fan. The 18 skinned wavers at the wall stay as they are.
  *
- * Interim: the fans are instanced primitives until lane wp36 delivers the four static fan meshes and their impostors
- * (asset need in the lane report); the seat layout and colours here carry over unchanged. Pure and deterministic: the
+ * GU47 phase 4: the fans are the WP-36 Meshy seated fan (`ballpark_fanA`), one instanced draw; fan rows B-D and the
+ * impostors are still pending in WP-36. Pure and deterministic: the
  * fan colours come from their own seeded generator, never the game's RNG.
  */
 import { bleacherPlacements, makeRng, PARK_ORDER, type ParkSpec, type Vec3 } from "../src/rules";
@@ -60,6 +60,19 @@ export function fanColors(park: ParkSpec, seats: readonly FanSeat[]): { readonly
   return { shirts, skin };
 }
 
-/** Seated fan proportions (metres): torso capsule and head sphere. */
-export const FAN_BODY = { diameter: 0.42, height: 0.74 } as const;
-export const FAN_HEAD = { diameter: 0.24, height: 0.27 } as const;
+/**
+ * GU47 WP-36 (DIA-A2): the Meshy seated fan (`ballpark_fanA`). Fitted to `FAN_MODEL.height` from the feet; its seat sits
+ * `seat` of that height above the feet, so the feet go that far below the bench top. The mesh faces +z, so a fan on a
+ * bench at angle theta turns by -theta to face home plate. `tint` is how far the section colour pulls the cream kit.
+ */
+export const FAN_MODEL = { height: 1.22, seat: 0.4, tint: 0.55 } as const;
+
+/** Yaw that turns the +z-facing fan mesh on a bench (bench yaw = theta + pi) towards home plate. */
+export const fanModelYaw = (benchYaw: number): number => Math.PI - benchYaw;
+
+/** Mix a section colour towards white (the fan texture carries the shading; the instance colour only tints the kit). */
+export function fanTint(hex: string, amount: number = FAN_MODEL.tint): string {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => Math.round(255 + (c - 255) * amount));
+  return `#${ch.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}

@@ -11,7 +11,7 @@ import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
 import { probes } from "@aura3d/engine/lanes";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
-import { FAN_BODY, FAN_HEAD, fanColors, fanSeats } from "../art/crowd";
+import { FAN_MODEL, fanColors, fanModelYaw, fanSeats, fanTint } from "../art/crowd";
 import {
   makeRng,
   MOUND_Z,
@@ -306,28 +306,20 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
     })
   );
 
-  // GU47 DIA-A2: about 600 seated fans in the park's section colours, two instanced draws (bodies, heads), on the benches
-  // above. Interim primitives until wp36's static fan meshes and impostors land (art/crowd.ts keeps the seats and colours).
+  // GU47 DIA-A2 + WP-36: about 600 seated fans on the benches above, one instanced draw of the Meshy seated fan
+  // (`ballpark_fanA`, 625 triangles), its cream kit tinted towards the section colour (art/crowd.ts keeps seats and colours).
   if (ctx.variant === "gu47") {
     const seats = fanSeats(park, ctx.tier);
-    const { shirts, skin } = fanColors(park, seats);
+    const { shirts } = fanColors(park, seats);
     nodes.push(
-      instances.capsule({
+      instances.model(assets.ballpark_fanA, {
         name: "stand-fans",
-        size: [FAN_BODY.diameter, FAN_BODY.height, FAN_BODY.diameter],
-        params: { radialSegments: 8, capSegments: 2 },
-        material: material.pbr({ color: "#ffffff", roughness: 0.86 }),
-        transforms: seats.map((s) => ({ position: [s.position[0], s.position[1] + FAN_BODY.height / 2, s.position[2]] as Vec3, rotation: [0, s.yaw, 0] as Vec3 })),
-        colors: shirts
-      } as any),
-      instances.sphere({
-        name: "stand-fan-heads",
-        size: [FAN_HEAD.diameter, FAN_HEAD.height, FAN_HEAD.diameter],
-        params: { widthSegments: 8, heightSegments: 6 },
-        material: material.pbr({ color: "#ffffff", roughness: 0.7 }),
-        transforms: seats.map((s) => ({ position: [s.position[0], s.position[1] + FAN_BODY.height + FAN_HEAD.height * 0.42, s.position[2]] as Vec3 })),
-        colors: skin
-      } as any)
+        targetHeight: FAN_MODEL.height,
+        scaleMode: "fit",
+        role: "setDressing",
+        transforms: seats.map((s) => ({ position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3, rotation: [0, fanModelYaw(s.yaw), 0] as Vec3 })),
+        colors: shirts.map((c) => fanTint(c))
+      })
     );
   }
 

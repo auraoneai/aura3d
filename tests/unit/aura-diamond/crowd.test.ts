@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FAN_SKIN, FANS_PER_BENCH, fanColors, fanSeats } from "../../../apps/showcase-aura-diamond-3d/art/crowd";
+import { FAN_MODEL, FAN_SKIN, FANS_PER_BENCH, fanColors, fanModelYaw, fanSeats, fanTint } from "../../../apps/showcase-aura-diamond-3d/art/crowd";
 import { PARK_LOOKS } from "../../../apps/showcase-aura-diamond-3d/art/look";
 import { buildStandsNodes, DEFAULT_SCENE_CONTEXT } from "../../../apps/showcase-aura-diamond-3d/src/scene";
 import { fenceRadius, PARKS, PARK_ORDER } from "../../../apps/showcase-aura-diamond-3d/src/rules";
@@ -57,12 +57,26 @@ describe("aura-diamond stands crowd (DIA-A2)", () => {
     expect(FAN_SKIN.filter((h) => hoops.has(h))).toEqual([]);
   });
 
-  it("draws the fans in two instanced nodes and keeps the 18 wavers", () => {
-    const nodes = (buildStandsNodes(PARKS.ivy, DEFAULT_SCENE_CONTEXT) as { toJSON(): { name?: string; instances?: unknown; transforms?: readonly unknown[] } }[]).map((n) => n.toJSON());
+  it("draws the fans as one instanced draw of the WP-36 seated fan and keeps the 18 wavers", () => {
+    const nodes = (buildStandsNodes(PARKS.ivy, DEFAULT_SCENE_CONTEXT) as { toJSON(): { name?: string; asset?: { key?: string }; instances?: unknown; transforms?: readonly unknown[] } }[]).map((n) => n.toJSON());
     const fans = nodes.filter((n) => n.name === "stand-fans" || n.name === "stand-fan-heads");
-    expect(fans).toHaveLength(2);
+    expect(fans).toHaveLength(1);
+    expect(JSON.stringify(fans[0])).toContain("ballpark_fanA");
     expect(nodes.filter((n) => /^waver-\d+$/.test(String(n.name)))).toHaveLength(18);
     const original = (buildStandsNodes(PARKS.ivy, { ...DEFAULT_SCENE_CONTEXT, variant: "original" }) as { toJSON(): { name?: string } }[]).map((n) => n.toJSON());
     expect(original.some((n) => n.name === "stand-fans")).toBe(false);
+  });
+
+  it("turns each fan to face home plate and tints the cream kit towards the section colour", () => {
+    // The mesh faces +z; a bench at angle theta has yaw theta + pi and its fan turns by -theta.
+    for (const theta of [-0.66, 0, 0.4]) {
+      const yaw = fanModelYaw(theta + Math.PI);
+      const seat = [Math.sin(theta), -Math.cos(theta)];
+      const forward = [Math.sin(yaw), Math.cos(yaw)];
+      expect(forward[0]! * -seat[0]! + forward[1]! * -seat[1]!).toBeCloseTo(1, 6);
+    }
+    expect(fanTint("#000000", 1)).toBe("#000000");
+    expect(fanTint("#000000", 0)).toBe("#ffffff");
+    expect(FAN_MODEL.height).toBeLessThan(1.5);
   });
 });

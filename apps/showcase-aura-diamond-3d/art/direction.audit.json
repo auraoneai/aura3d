@@ -497,10 +497,6 @@
         "practical": false
       },
       {
-        "node": "stand-fan-heads",
-        "practical": false
-      },
-      {
         "node": "scoreboard-screen",
         "emissiveIntensity": 0.9,
         "practical": true
