@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Lanes are crammed with vehicles that overlap and clip into each other (trucks into cars), so traffic reads as a jam; the far ground is a flat green band; the foreground strip at the bottom is dull grey-green and hazy; the frog is partly turned away.",
+     "Too many vehicles packed into the frame. Trucks, cars and trains are crammed together and stack visually in the far rows. Sun glare and haze wash out the sky. The lanes are hard to read and the background is cluttered.",
+     "Bumper-to-bumper traffic makes the background cluttered. The horizon is hazy. The bottom foreground strip is a muddy grey-green with no water. The frog blends into the grass."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Trams still overlap in pairs; slight haze over the far field; the foreground bottom band is washed out and muddy.",
+     "Grey haze gives a washed-out, low-contrast look. The trams on the left and centre overlap and intersect each other. The city blocks are flat grey boxes.",
+     "Haze lowers contrast across the frame. The bottom foreground band is a dull grey-green. Trams overlap each other in the mid-ground."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze softens the sky and far rows; the bottom foreground band is slightly washed out; the frog is seen from behind.",
+     "Hazy orange-brown sky with a blown-out sun. Overall the image is slightly muddy and low in contrast. The background is dense with clutter. A yellow object floats on the left.",
+     "A warm yellow haze washes out the sky and the far field. Contrast is lower overall. The frog blends into the yellow-green ground. The bottom band is hazy."
+    ]
+   },
+   {
+    "variant": "theme3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Ground is still a dark, muddy olive; the sunset haze flattens the horizon; a train is cut off at the right edge; the frog has lowish contrast against the ground.",
+     "The dark olive-grey ground is muddy and low in contrast. The black building silhouettes are crude, and the sun glare is somewhat washed out.",
+     "The ground is dark and muddy. The sun glow is slightly washed out. The background is cluttered, and a train is clipped at the right edge."
+    ]
+   },
+   {
+    "variant": "theme4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Moon glow is slightly blown out; vehicles are crowded at the back with some overlap; the frog is seen from behind; ground contrast is low.",
+     "Pink cars overlap the trams in the background rows. The dark teal ground is somewhat muddy, and the moon glow is a bit blown out.",
+     "The moon bloom is large. The background is dense with vehicles. The ground is a dim teal, and the foreground strip is muddy."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Frame is washed out by haze with low contrast across the play area; the pastel ground fades into a milky foreground; vehicles are crowded with some clipping; the frog is seen from behind.",
+     "Pastel haze washes the whole frame out, so contrast is low and the player blends into the pale green ground. The background is crowded with overlapping trams and cars.",
+     "The whole frame is washed out by haze, giving a muddy pastel with low contrast. The frog blends into the pale green ground. The background is cluttered."
+    ]
+   }
+  ]
+ }
+]

@@ -342,9 +342,10 @@ export const VIVID_LOOKS: readonly VividLook[] = [
 /**
  * Views whose default is the vivid look: the `?theme=N` variants (quick play and World Tour start on theme 0, so they
  * follow theme 0) that a blind three-judge panel picked over the 4.6.2 frame. The others boot the 4.6 look; both
- * `?look=vivid` and `?look=original` override this. Phase 3 rounds: g14p3r2 (themes 3, 4 better), g14p3r3.
+ * `?look=vivid` and `?look=original` override this. Panel: g14p3r2 theme3 3/0, theme4 3/0; g14p3r3 theme1 3/0, theme2 2/1. Not better after three
+ * rounds, so on the 4.6 look: theme0 (g14p3r3 0/3) and theme5 (g14p3r3 1/1/1).
  */
-export const VIVID_DEFAULT_THEMES: readonly number[] = [0, 1, 2, 3, 4, 5];
+export const VIVID_DEFAULT_THEMES: readonly number[] = [1, 2, 3, 4];
 
 /** The look a view boots with: an explicit `?look=` wins, otherwise the panel verdict for the starting theme. */
 export function defaultLookFor(lookParam: string | null, theme: number | null): "vivid" | "original" | "diorama" {
