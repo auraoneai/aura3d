@@ -22,8 +22,8 @@ export interface HorizonSpec {
 }
 
 export const HORIZON_SPECS: Readonly<Partial<Record<CourseId, HorizonSpec>>> = {
-  stAuroras: { color: "#7f8c6c", roughness: 0.95, minHeight: 5, maxHeight: 16, margin: 70, lobes: [7, 17, 31] },
-  mapleHollow: { color: "#3f5a40", roughness: 0.94, minHeight: 9, maxHeight: 20, margin: 70, lobes: [5, 13, 41] },
+  stAuroras: { color: "#7f8c6c", roughness: 0.95, minHeight: 7, maxHeight: 20, margin: 70, lobes: [7, 17, 31] },
+  mapleHollow: { color: "#3f5a40", roughness: 0.94, minHeight: 10, maxHeight: 24, margin: 70, lobes: [5, 13, 41] },
   cinderRim: { color: "#2c2522", roughness: 0.92, minHeight: 18, maxHeight: 48, margin: 90, lobes: [3, 9, 23] },
   mareCourse: { color: "#5c5e63", roughness: 0.97, minHeight: 10, maxHeight: 30, margin: 110, lobes: [4, 11, 27] }
 };
@@ -55,7 +55,10 @@ export function crestHeight(spec: HorizonSpec, a: number): number {
 export function horizonRing(terrain: HoleTerrain, spec: HorizonSpec, segments = 128): HorizonGeometry {
   const { minX, maxX, minZ, maxZ } = terrain.bounds;
   const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
-  const radius = Math.hypot((maxX - minX) / 2, (maxZ - minZ) / 2) + spec.margin;
+  // an ellipse hugging the bounds: the sides stand `margin` out, the far end only 0.3 x margin past the green (the first
+  // round's circle put the far arc about 385 m from the tee, beyond what the address frames showed: run g10p4-r2)
+  const rx = (maxX - minX) / 2 + spec.margin;
+  const rz = (maxZ - minZ) / 2 + spec.margin * 0.3;
   const y0 = Math.min(terrain.tee[1], terrain.cup[1]) - 8;
   const positions: [number, number, number][] = [];
   const normals: [number, number, number][] = [];
@@ -66,6 +69,7 @@ export function horizonRing(terrain: HoleTerrain, spec: HorizonSpec, segments = 
     const dx = Math.sin(a), dz = Math.cos(a);
     const h = crestHeight(spec, a);
     const run = h * 1.6;
+    const radius = Math.hypot(dx * rx, dz * rz);
     // base (in front), crest, back foot
     const pts: [number, number, number][] = [
       [cx + dx * (radius - run), y0, cz + dz * (radius - run)],
