@@ -46,10 +46,10 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#e8c98a",
       exposureEv: -0.02,
       fogDensityScale: 0.12,
-      environmentIntensity: 1,
+      environmentIntensity: 0.7,
       environmentRotationDeg: 330,
       sun: { elevationDeg: 32, azimuthDeg: -40 },
-      key: { color: "#fff3e2", intensity: 3, shadow: { filter: "pcf", mapSize: 2048 } },
+      key: { color: "#fff3e2", intensity: 3.4, shadow: { filter: "pcf", mapSize: 2048 } },
       grade: { contrast: 1.18, saturation: 1.1, temperature: 0, tint: 0 }
     },
     rim: { color: "#fff2dc", intensity: 7 },
@@ -84,13 +84,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     hdri: "autumn_field_puresky",
     overrides: {
       accent: "#ffb03c",
-      exposureEv: 0.04,
+      exposureEv: 0,
       fogDensityScale: 0.24,
-      environmentIntensity: 1,
+      environmentIntensity: 0.75,
       environmentRotationDeg: 200,
       sun: { elevationDeg: 22, azimuthDeg: -52 },
       key: { color: "#ffd2a0", intensity: 3.2, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.12, saturation: 1.08, temperature: 0.06, tint: 0 }
+      grade: { contrast: 1.16, saturation: 1.08, temperature: 0.06, tint: 0 }
     },
     rim: { color: "#fff0dc", intensity: 8 },
     ringKey: { color: "#ffe2bf", intensity: 8 },
@@ -106,11 +106,11 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#7dd7ff",
       exposureEv: 0.04,
       fogDensityScale: 0.3,
-      environmentIntensity: 1,
-      environmentRotationDeg: 300,
+      environmentIntensity: 0.75,
+      environmentRotationDeg: 120,
       sun: { elevationDeg: 24, azimuthDeg: 40 },
       key: { color: "#ffe2c4", intensity: 3, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.1, saturation: 1.04, temperature: -0.04, tint: 0 }
+      grade: { contrast: 1.15, saturation: 1.04, temperature: -0.04, tint: 0 }
     },
     rim: { color: "#e6f2ff", intensity: 7 },
     ringKey: { color: "#ffe6c8", intensity: 8 },
