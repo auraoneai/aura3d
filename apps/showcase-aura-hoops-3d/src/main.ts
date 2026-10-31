@@ -66,7 +66,9 @@ import {
   courtSurroundNodes,
   courtBleacherNodes,
   courtRibNodes,
-  lightningFlash
+  lightningFlash,
+  courtReflectionNodes,
+  COURT_FLOOR_FINISH
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/quickbar.css";
@@ -603,6 +605,8 @@ function pushEvent(type: string, label: string, severity: "info" | "success" | "
  * ------------------------------------------------------------------ */
 function buildCourtSurfaces(v: VenueSpec): any[] {
   const nodes: any[] = [];
+  // GU47 phase 4: per-court floor finish (COURT_FLOOR_FINISH) on the new look; ?look=original keeps the 4.6 0.86 / 0.8.
+  const finish = LOOK_ORIGINAL ? { roughness: 0.86, paintRoughness: 0.8 } : COURT_FLOOR_FINISH[v.id];
   const lineMat = material.pbr({ color: v.line, roughness: 0.6, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 });
   const line = (name: string, w: number, l: number, x: number, z: number) =>
     primitives.box({ name, size: [w, 0.02, l], material: lineMat }).position(x, 0.012, z);
@@ -610,8 +614,8 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
   nodes.push(
     // Apron + playable floor + painted key + center disc (size = XYZ scale on unit geometry)
     primitives.plane({ name: "court-apron", size: [36, 1, 30], material: material.pbr({ color: v.apron, roughness: 0.94 }) }).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
-    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: material.pbr({ color: v.floor, roughness: 0.86 }) }).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
-    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: material.pbr({ color: v.paint, roughness: 0.8 }) }).position(0, 0.005, 1.05),
+    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: material.pbr({ color: v.floor, roughness: finish.roughness }) }).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
+    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: material.pbr({ color: v.paint, roughness: finish.paintRoughness }) }).position(0, 0.005, 1.05),
     primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) }).position(0, 0.006, 6.4)
   );
 
@@ -964,9 +968,12 @@ function buildScene(v: VenueSpec): any {
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
     if (realWater()) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
+    // GU47 phase 4: screen-space reflections on the glossy floors (Manila, Shanghai, Orbit).
+    s.addMany(courtReflectionNodes(rig));
   }
   s
-    .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
+    // GU47 phase 4: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
+    .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.9, length: 0.42, thickness: 0.06, lights: "shadowed" }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))

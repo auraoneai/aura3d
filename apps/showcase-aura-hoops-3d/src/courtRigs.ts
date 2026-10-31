@@ -412,8 +412,40 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
 
 export const courtRig = (id: CourtId): CourtRig => COURT_RIGS[id];
 
-/** H47-L1 key shadow: PCSS, three cascades on High (the tier caps cascades and filter on Low: 1 cascade, PCF). */
-export const COURT_KEY_SHADOW = { cascades: 3, filter: "pcss", lightSize: 1.6, mapSize: 2048 } as const;
+/**
+ * H47-L1 key shadow. GU47 phase 4: PCF, two cascades out to 60 m (the court and its apron) at full strength. PCSS drew no
+ * readable cast shadow in the software WebGL2 captures (4.7.1: blob discs only; same finding in lane g21), and three
+ * cascades over the default far plane spread the 2048 map over 240 m.
+ */
+export const COURT_KEY_SHADOW = { cascades: 2, filter: "pcf", mapSize: 2048, maxDistance: 60, intensity: 1, normalBias: 0.02, softness: 1.2 } as const;
+
+/**
+ * GU47 phase 4: the shadow-casting key never sits below this elevation. Rucker (7) and Venice (5) threw every
+ * athlete's shadow 15-20 m off the court; at 12 the shadow is about 9 m long and lands on the court. The court's sky
+ * (Venice Preetham) keeps `rig.sun`.
+ */
+export const KEY_MIN_ELEVATION_DEG = 12;
+
+/**
+ * GU47 phase 4 (rubric ibl_reflections): the playing floor's finish per court. The 4.7.1 floor was roughness 0.86 on
+ * every court, so the HDRI never showed in it; `ssr` adds screen-space reflections where the floor is glossy enough
+ * (below the S3 0.5 cutoff): Manila's polished concrete, Shanghai's wet asphalt, Orbit's composite deck.
+ */
+export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: number; readonly paintRoughness: number; readonly ssr: number }>> = {
+  rucker: { roughness: 0.74, paintRoughness: 0.66, ssr: 0 },
+  venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
+  athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
+  manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.45 },
+  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.6 },
+  orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.5 }
+};
+
+/** GU47 phase 4: screen-space reflections on the glossy courts (none on the matte outdoor ones). */
+export function courtReflectionNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  const ssr = COURT_FLOOR_FINISH[rig.id].ssr;
+  if (ssr <= 0) return [];
+  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 24, roughness: 0.45, thickness: 0.3 }) as AuraNodeBuilder<AuraSceneNode>];
+}
 
 /** The look overrides of one court (E-A): catalogue HDRI, key, fog to the horizon, grade, post preset and bloom. */
 export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
@@ -423,7 +455,7 @@ export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
     environmentIntensity: rig.environmentIntensity,
     environmentRotationDeg: rig.environmentRotationDeg,
     exposureEv: rig.exposureEv,
-    sun: rig.sun,
+    sun: { azimuthDeg: rig.sun.azimuthDeg, elevationDeg: Math.max(rig.sun.elevationDeg, KEY_MIN_ELEVATION_DEG) },
     key: { color: rig.key.color, intensity: rig.key.intensity, shadow: COURT_KEY_SHADOW },
     rim: false,
     // GU47 phase 2: the look's own fog node is dropped (fogDensityScale 0) and courtFogNode authors it instead. With
