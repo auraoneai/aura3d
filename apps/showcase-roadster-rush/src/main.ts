@@ -499,7 +499,9 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .plane({ name: "apex-road-decals", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(DECAL_CAPACITY) })
       .runtime(game.runtimeNode(poolId("road-decals"))),
     instances
-      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
+      // GU47 phase 3 (distinctness): tangerine light-line dashes, the identity colour on the deck; the sibling judge matched the
+      // generic white dashes with another racer's highway
+      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#ffb27a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
     instances
       .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
