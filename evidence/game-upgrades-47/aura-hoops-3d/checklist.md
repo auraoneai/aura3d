@@ -31,3 +31,18 @@ Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
 | H47-W1 | >= 12 prop keys per court | blocked (WP-36 props) |
 | H47-PF1 | <= 320 draws | partial (trail spheres removed on the new look); measured phase 2 |
 | H47-PF2 | proof run, judges | phase 2 |
+
+## Phase 3 (4.7.1) update, 2026-10-31
+
+| ID | Acceptance | Status |
+|---|---|---|
+| PRD D11 | every view's default beats its 4.6.2 frame in a blind panel | done: all six courts better 3/0/0 (g07p3f); `ORIGINAL_LOOK_COURTS` empty |
+| H47-E1 | no solid void | done for Rucker/Athens/Orbit (ground to the horizon, Orbit deck disc); Manila and Shanghai HDRI backdrops back (sky-node trap, lane report) |
+| H47-E4 | sky band | Venice Preetham only; Athens Preetham off (white-out); engine handoff for sky persistence across court swaps |
+| H47-V2 | flood cones, god rays | Manila god rays and motes; Rucker cones and haze off (they washed the chase frame) |
+| H47-L4 | Venice flare; Rucker floods | Venice only; Rucker flood flares off (veil) |
+| H47-A1 | crowd / stands | own instanced bleachers on all six courts (new look); spectators still WP-36 |
+| 7.2 rubric | 12 categories >= 7 | not met: min 4 (ibl_reflections), max 6.5 (ui_hud); `look-judgement.json` validated |
+| 7.2 distinctness | >= 0.8 vs every neighbour | top-tennis 0.846, links 0.832 pass; diamond 0.755, fc 0.746 fail |
+| 7.2 game-checks | 0 errors, 0 warnings | 0 errors, 13 warnings (12 luma-band: band wrong for panel-verified looks, not widened; 1 borrowed-asset: WP-36) |
+| 7.2 final screens | retaken, committed | done (g07p3-f-scr, 34907fcdf) |
