@@ -36,7 +36,7 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(SALTWIND_LOOK.halo.post.autoExposure).toBe(true);
     expect(SALTWIND_LOOK.sunbreak.post.bloom).toMatchObject({ intensity: 0.3, threshold: 1.1 });
     expect(SALTWIND_LOOK.redline.post.bloom).toMatchObject({ intensity: 0.45, threshold: 1.0 });
-    expect(SALTWIND_LOOK.halo.post.bloom).toMatchObject({ intensity: 0.8, threshold: 0.9 });
+    expect(SALTWIND_LOOK.halo.post.bloom).toMatchObject({ intensity: 0.45, threshold: 1.05 });
     expect(new Set(SALTWIND_VARIANTS.map((v) => SALTWIND_LOOK[v].hdri))).toEqual(new Set(["belfast_sunset_puresky", "industrial_sunset_puresky", "rooftop_night"]));
   });
 
