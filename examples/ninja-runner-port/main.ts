@@ -22,7 +22,7 @@ import {
   type Action, type EnemyKind, type Form, type SimEvent, type SimState
 } from "./sim";
 import { createNinjaPresenter, viewOf } from "./presentation";
-import { EVENING_EXPOSURE, lookMode } from "./districtLook";
+import { EVENING_EXPOSURE, WOODBLOCK_POST, lookMode } from "./districtLook";
 import { atDistance, qaCrops } from "./qa";
 import { installPerfProbe } from "./perfProbe";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
@@ -53,7 +53,9 @@ const config = {
   godRays: params.get("godrays") === "1",
   cones: params.get("cones") !== "0",
   vfx: params.get("vfx") !== "0",
-  ink: params.get("ink") !== "0",
+  // The full-frame ink line read the grass and cobble textures as edges (a dark dot field over the whole village in the
+  // software-WebGL2 title frame, g20p2r3) and is one more full-frame pass: opt-in with `?ink=1`.
+  ink: params.get("ink") === "1",
   grain: params.get("grain") === "1"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
@@ -601,8 +603,9 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    // GU47 NR-08: the woodblock grade tone-maps with agx; `?look=original` keeps aces.
-    output: { toneMapping: config.look === "evening" ? "agx" : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false },
+    // GU47 NR-08 woodblock grade; tone mapping per WOODBLOCK_POST (aces since the phase-2 second pass: agx read the
+    // village ~2 EV under 4.6.2 in software WebGL2); `?look=original` keeps aces at exposure 1.
+    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false },
     scene: world.scene
   });
   await app.ready();

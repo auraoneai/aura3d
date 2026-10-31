@@ -219,12 +219,12 @@ export const ORIGINAL_SKY = {
 export const ENVIRONMENT_GAIN = 2.2;
 /** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
 export const EVENING_FILL = { sky: "#c8cce0", ground: "#7a6650", intensity: 0.6 } as const;
-/** GU47 phase 2: output exposure of the evening look (agx); `?look=original` keeps 1. */
-export const EVENING_EXPOSURE = 1.45;
+/** GU47 phase 2: output exposure of the evening look (aces); `?look=original` keeps 1. */
+export const EVENING_EXPOSURE = 1.8;
 
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
-  toneMapping: "agx" as const,
+  toneMapping: "aces" as const,
   bloom: { intensity: 0.55, threshold: 0.85, radius: 0.4 },
   grade: { contrast: 1.14, saturation: 1.04 },
   vignette: { intensity: 0.3, smoothness: 0.65 },
