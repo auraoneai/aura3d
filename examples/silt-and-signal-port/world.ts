@@ -305,7 +305,9 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     target: [0, 0, 0],
     intensity: look.key.intensity,
     color: look.key.color,
-    shadow: { ...keyShadow(options), ...(pcss ? { filter: "pcss" as const, lightSize: 2.5 } : {}) }
+    // phase 4: PCSS light size 2.5 -> 0.6. At a 6-14 deg sun the blocker-receiver gap is metres, and a 2.5 m light blurred
+    // the long dusk shadows away entirely (p4-r2 ch0: none visible while the PCF storm chapter showed every tree's)
+    shadow: { ...keyShadow(options), ...(pcss ? { filter: "pcss" as const, lightSize: PCSS_LIGHT_SIZE } : {}) }
   }).runtime({ id: "silt-key" }));
   // DG-L3: the rim sits opposite the key (mirrored azimuth, 25 deg up), never shadowed, always below the key
   builder.add(lights.directional({
@@ -411,6 +413,8 @@ const columnTransforms = (list: readonly Column[]) =>
 export const GATE_SHUT = { rimColor: "#ff6a3d", haloColor: "#ffb08a", bodyColor: "#1a0603" } as const;
 /** GU47: the open beacon in the inked look, the one jade signal accent. */
 export const SIGNAL_JADE = { rimColor: SILT_PALETTE.jade, haloColor: SILT_PALETTE.jadeWhite, bodyColor: "#06231b" } as const;
+/** GU47 phase 4: PCSS light size (metres) for the low-sun chapters' long shadows (DG-L5). */
+export const PCSS_LIGHT_SIZE = 0.6;
 /** GU47 phase 4: the rider's ground shadow shape (metres; opacity of the flat ink shape). */
 export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.32, maxSlide: 0.6 } as const;
 /**
