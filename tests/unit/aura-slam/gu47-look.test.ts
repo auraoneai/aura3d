@@ -31,8 +31,8 @@ describe("GU47 TT-L1: venue light table", () => {
     expect(venueLook("nope").id).toBe("hard");
   });
 
-  it("sun venues use the PRD angles (grass 40/120, clay 18/250, desert 72/10, beach 8/290, moon 25/60)", () => {
-    const want: Record<string, [number, number]> = { grass: [40, 120], clay: [18, 250], desert: [72, 10], beach: [8, 290], moon: [25, 60] };
+  it("sun venues use the PRD angles (grass 40/120, clay 18/250, desert 72/10, beach 22/290 (blind-panel fix: was 8), moon 25/60)", () => {
+    const want: Record<string, [number, number]> = { grass: [40, 120], clay: [18, 250], desert: [72, 10], beach: [22, 290], moon: [25, 60] };
     for (const [id, [el, az]] of Object.entries(want)) {
       const sun = VENUE_LOOKS[id as keyof typeof VENUE_LOOKS].sun!;
       expect([sun.elevationDeg, sun.azimuthDeg], id).toEqual([el, az]);

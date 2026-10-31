@@ -39,7 +39,10 @@ const VIEWPORTS = [[1280, 720], [1920, 1080], [390, 844], [390, 600], [844, 390]
 
 describe("GU47 TT-C1: broadcast camera v2", () => {
   it("is the World Tour camera; ?cam=classic and ?look=original keep the 4.6.1 camera", () => {
-    expect(cameraRigFor("")).toBe(CAMERA_V2);
+    // Blind-panel fix pass: the hard (no ?venue=) and beach boot venues keep the 4.6.2 framing; ?cam=v2 forces v2.
+    expect(cameraRigFor("")).toBe(CAMERA_CLASSIC);
+    expect(cameraRigFor("?venue=beach")).toBe(CAMERA_CLASSIC);
+    expect(cameraRigFor("?cam=v2")).toBe(CAMERA_V2);
     expect(cameraRigFor("?venue=clay")).toBe(CAMERA_V2);
     expect(cameraRigFor("?cam=classic")).toBe(CAMERA_CLASSIC);
     expect(cameraRigFor("?look=original&venue=moon")).toBe(CAMERA_CLASSIC);
