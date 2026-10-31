@@ -48,13 +48,13 @@ No source maps are built. Nothing else from the shared `public/` tree is copied.
 ```bash
 cd apps/veer-wonder-world
 node tools/check-dist.mjs                                                # noindex, no source maps, no child name
-npx -y @aura3d/cli@4.5.0 check-deploy --dist dist --no-assets          # static check; safe anywhere
+npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --no-assets          # static check; safe anywhere
 # Remote runner only (it opens the build in a headless browser):
-npx -y @aura3d/cli@4.5.0 check-deploy --dist dist --no-assets --browser --route /
+npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --no-assets --browser --route /
 ```
 
 `--no-assets` reflects that the app's `aura.assets.json` lists no entries, so check-deploy has no model list to check.
-- **The file must still exist.** The 4.5.0 CLI fails with "Missing aura.assets.json" without it, even with `--no-assets`.
+- **The file must still exist.** The 4.6.2 CLI fails with "Missing aura.assets.json" without it, even with `--no-assets`.
 - **Do not run `aura3d assets add` or `aura3d assets typegen` in this folder.** The file's `typegen` points at `src/aura-assets.ts`, which `tools/gen-aura-assets.mjs` writes, and either command would overwrite that module.
 
 Two other checks cover the models and sounds instead:
