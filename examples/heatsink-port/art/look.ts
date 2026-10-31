@@ -113,7 +113,9 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     bloom: { intensity: 0.6, threshold: 1.0 },
     /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
-    post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: 0.35, lensFlare: 0.55 },
+    post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: null, lensFlare: 0.55 },
+    /* GU47 phase 2: godRays was 0.35 (effects.volumetricFog, density 0.08, #ffb7a0). On software WebGL2 it drew no shafts, only a
+     * peach extinction that flattened the drone and the causeway to one tone at chase distance; off until the god-ray stage draws shafts. */
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true },
     glow: { pools: 1, points: 2 },

@@ -36,7 +36,9 @@ describe("heatsink-port look table (GU47 WP-29)", () => {
     expect(orig.filter((n) => n.kind === "effect").map((n) => n.effect).sort()).toEqual(["bloom", "color-grade", "vignette"]);
     const tw = nodes("");
     expect(tw.some((n) => n.name === "ion-wake")).toBe(true);
-    for (const e of ["ambient-occlusion", "motion-blur", "chromatic-aberration", "film-grain", "volumetric-fog"]) expect(tw.some((n) => n.effect === e), e).toBe(true);
+    for (const e of ["ambient-occlusion", "motion-blur", "chromatic-aberration", "film-grain"]) expect(tw.some((n) => n.effect === e), e).toBe(true);
+    /* GU47 phase 2: the god-ray volumetric fog only added a peach extinction on software WebGL2, so twilight mounts none */
+    expect(tw.some((n) => n.effect === "volumetric-fog")).toBe(false);
   });
 
   it("Low tier drops GTAO, motion blur, god rays, grain and CA, keeps the wake, sky and palette, 1 cascade", () => {
