@@ -98,6 +98,9 @@ const BZ_PIPE_COLOR = "#4b5136";
 /** GU47 phase 4: floor gloss per slot so the screen-space reflections catch the lamps (cutoff 0.5), wetter on F2 / F6. */
 const BZ_FLOOR_ROUGHNESS = (slot: number) => 0.34 - (BZ_WETNESS[slot] ?? 0) * 0.16;
 const BZ_BLOB = { y: 0.008, opacity: 0.22, rings: [{ scale: 1 }, { scale: 0.62 }, { scale: 0.34 }] } as const;
+/** GU47 phase 4: decal tints. Round g11p4-r1 drew the scorches as white shapes (alpha from the map, white from the tint),
+ *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
+const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
 const BZ_SSR = { intensity: 0.85, maxDistance: 16, roughness: 0.5, thickness: 0.35 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -390,7 +393,7 @@ function buildScene() {
           break;
         case "+": case "*":
           nodes.push(
-            model(assets.fpsEnergyCorePickupMeshy, { name: `f${slot} medkit ${x}-${z}`, targetHeight: 0.82 })
+            model(assets.fpsEnergyCorePickupMeshy, { name: `f${slot} medkit ${x}-${z}`, targetHeight: 0.82, materialOverrides: pickupGlow("#c8bfb0", "#b8402e", 0.12, { roughness: 0.5 }) })
               .position(wx, 0.45, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
@@ -536,7 +539,7 @@ function buildScene() {
   for (let i = 0; i < BZ_FLOOR_DECAL_COUNT; i++) {
     const kind = floorDecalKind(i), pose = bootDecals[i];
     nodes.push(decals.project({
-      name: `bunker floor ${kind} ${i}`, texture: decalTex(kind), color: "#ffffff", opacity: kind === "scorch" ? 0.8 : 0.9, roughness: 0.9,
+      name: `bunker floor ${kind} ${i}`, texture: decalTex(kind), color: BZ_DECAL_TINT[kind], opacity: kind === "scorch" ? 0.8 : 0.9, roughness: 0.9,
       size: pose?.size ?? 1, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(floorDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
@@ -544,13 +547,13 @@ function buildScene() {
   for (let i = 0; i < BZ_HAZARD_DECALS; i++) {
     const pose = bootHazard[i];
     nodes.push(decals.project({
-      name: `bunker hazard stripe ${i}`, texture: decalTex("hazard"), color: "#ffffff", opacity: 0.9, roughness: 0.7,
+      name: `bunker hazard stripe ${i}`, texture: decalTex("hazard"), color: BZ_DECAL_TINT.hazard, opacity: 0.9, roughness: 0.7,
       size: BZ_HAZARD_SIZE, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(hazardDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
   for (let i = 0; i < BZ_BULLET_HOLES; i++) {
     nodes.push(decals.project({
-      name: `bunker bullet hole ${i}`, texture: decalTex("bullet"), color: "#ffffff", opacity: 0.9, roughness: 0.95,
+      name: `bunker bullet hole ${i}`, texture: decalTex("bullet"), color: BZ_DECAL_TINT.bullet, opacity: 0.9, roughness: 0.95,
       size: 0.16, position: [0, -50, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(bulletHoleId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
@@ -1310,6 +1313,9 @@ function syncScenePose(inp: SimInput) {
   for (const pk of sim.state.pickups) {
     const node = opt(`f${slot}-pk-${pk.cx}-${pk.cz}`);
     if (!node) continue;
+    // GU47 phase 4: a taken weapon pickup shares its GLB with the weapon in hand; hiding it also dropped the machine-gun
+    // viewmodel from every HUD frame (p3-r4, p4-r1), so a taken mg / rocket pickup is parked under the floor instead.
+    if (pk.taken && (pk.kind === "mg" || pk.kind === "rocket")) { node.setPosition(pk.x + ox, -40, pk.z); node.setVisible(true); continue; }
     if (pk.taken) { node.setVisible(false); continue; }
     node.setPosition(pk.x + ox, (pk.kind === "key" ? 1.1 : 0.55) + Math.sin(sim.state.time * 2.4 + pk.cx) * 0.1, pk.z);
     node.setRotation(0, sim.state.time * 1.6, 0);
