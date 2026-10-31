@@ -83,9 +83,12 @@ export function vignettePulse(row: HeatsinkLookRow, reduced: boolean, afterburne
   return envelope + (target - envelope) * (1 - Math.exp(-rate * Math.max(0, dt)));
 }
 
-/** IC-12: drone heat as 8 quantised emissive steps, copper to white-hot (sRGB hex, intensity); step 0 = no glow */
+/**
+ * IC-12: drone heat as 8 quantised emissive steps, copper to white-hot (sRGB hex, intensity); step 0 = no glow. GU47 phase 3:
+ * intensities halved (were 0.25..1.9): at 40% heat the whole hull read as a flat red silhouette in the mid-action frame.
+ */
 export const HEAT_STEPS: readonly (readonly [string, number])[] = [
-  ["#000000", 0], ["#5a1e08", 0.25], ["#8a2e0a", 0.45], ["#c8441a", 0.7], ["#e8641e", 0.95], ["#ff8a2e", 1.2], ["#ffc070", 1.5], ["#fff0d8", 1.9]
+  ["#000000", 0], ["#5a1e08", 0.12], ["#8a2e0a", 0.22], ["#c8441a", 0.35], ["#e8641e", 0.48], ["#ff8a2e", 0.6], ["#ffc070", 0.75], ["#fff0d8", 0.95]
 ];
 
 /** heat 0..1 to a step index; the original look never glows (step 0) */
