@@ -11,21 +11,23 @@ export const CAMERA_MIN_DISTANCE = 2.5;
 type Eye = [number, number, number];
 
 /** Chase framing: distance behind the rider, extra distance per unit of speed (capped) and height above the board. */
-export interface ChaseFraming { readonly back: number; readonly perSpeed: number; readonly maxExtra: number; readonly height: number; readonly lookAhead: number; readonly lookLift: number }
+export interface ChaseFraming { readonly back: number; readonly perSpeed: number; readonly maxExtra: number; readonly height: number; readonly lookAhead: number; readonly lookLift: number; readonly side: number }
 /** Today's chase (the original look). */
-export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra: 8, height: 5.2, lookAhead: 14, lookLift: 1.2 };
+export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra: 8, height: 5.2, lookAhead: 14, lookLift: 1.2, side: 0 };
 /**
  * GU47 phase 3 (inked look): a closer, lower chase so the rider fills about 12-18% of the frame height instead of a
- * 5% speck (rubric composition and camera; blind panel "the player is tiny").
+ * 5% speck (rubric composition and camera; blind panel "the player is tiny"). `side` slides eye and target 1.6 m to the
+ * right (over the shoulder) so the beacon column far ahead no longer stands exactly on the rider's head.
  */
-export const INKED_CHASE: ChaseFraming = { back: 8.5, perSpeed: 0.06, maxExtra: 6, height: 3.4, lookAhead: 11, lookLift: 1.7 };
+export const INKED_CHASE: ChaseFraming = { back: 8.5, perSpeed: 0.06, maxExtra: 6, height: 3.4, lookAhead: 11, lookLift: 1.7, side: 1.6 };
 
 /** The chase eye the camera wants: behind the rider along the heading, above the board, further back at speed. */
 export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">, framing: ChaseFraming = ORIGINAL_CHASE): Eye {
   const { state, flight } = sim;
   const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
   const back = framing.back + Math.min(framing.maxExtra, Math.abs(flight.speed) * framing.perSpeed);
-  return [state.x - fx * back, state.y + framing.height + Math.abs(flight.vertical) * 0.05, state.z - fz * back];
+  // right of the heading: (-fz, fx)
+  return [state.x - fx * back - fz * framing.side, state.y + framing.height + Math.abs(flight.vertical) * 0.05, state.z - fz * back + fx * framing.side];
 }
 
 /** Native sizes of the tree model (0.927 x 1.684 x 0.883) and the rock models (about 1 unit) scaled by the placement. */

@@ -311,7 +311,7 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.35 : 0.5, godRayDensity: GOD_RAY_DENSITY }));
   }
   // DG-L5: screen-space contact shadows under the board, rider and props in every inked chapter (not on Low)
-  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.7, length: 0.3 }));
+  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.9, length: 0.45 }));
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));
@@ -820,7 +820,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           }
           towing = state.towing;
           const framing = inked ? INKED_CHASE : ORIGINAL_CHASE;
-          const tx = state.x + fx * framing.lookAhead, ty = state.y + framing.lookLift, tz = state.z + fz * framing.lookAhead;
+          const tx = state.x + fx * framing.lookAhead - fz * framing.side, ty = state.y + framing.lookLift, tz = state.z + fz * framing.lookAhead + fx * framing.side;
           if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
