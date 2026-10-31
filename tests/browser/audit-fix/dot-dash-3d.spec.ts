@@ -486,6 +486,8 @@ test.describe("g13 dot-dash-3d", () => {
     { name: "card", width: 1440, height: 900, mobile: false }
   ]) {
     test(`g13-screens-${profile.name}`, async ({ browser }) => {
+      // five steady screens at 20-60 s each outran 30 min on a busy software-GL runner (the ACR step allows 60 min)
+      test.setTimeout(3_300_000);
       await screens(browser, profile);
       log(`G13_DONE g13-screens-${profile.name}`);
     });
