@@ -373,6 +373,8 @@ export function sunDirection(sun: Pick<ChapterSun, "elevationDeg" | "azimuthDeg"
  * Chapters whose default is the 4.6.2 look. GU47 blind-panel fix pass: default and chapters 0-4 lost 0/3 to the
  * 4.6.2 frame (round p2b) and went back to the 4.6.2 look. GU47 phase 3 (4.7.1): the relit rows above are the
  * candidate look; a chapter leaves this set only after a blind panel picks its new frame (at least 2 of 3 judges).
+ * Blind panel g12p3r2b (software WebGL2 frames of round g12p3r2): default and ch0-ch4 better, 3/0/0 each, so the set
+ * is empty; `?look=original` still opens the 4.6.2 look.
  */
 export const ORIGINAL_LOOK_CHAPTERS: ReadonlySet<number> = new Set([]);
 

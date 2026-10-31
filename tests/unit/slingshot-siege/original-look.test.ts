@@ -1,13 +1,13 @@
-// GU47 blind-panel fix pass (lane g12): default and chapters 0-4 open on the 4.6.2 look; ch5 keeps the GU47 night.
+// GU47 blind-panel fix pass (lane g12) and phase 3: the 4.6.2 look stays reachable with ?look=original; every chapter
+// defaults to the GU47 look since the relit day rows won the blind panel.
 import { describe, expect, it } from "vitest";
 import { ORIGINAL_LOOK_CHAPTERS, useOriginalLook } from "../../../apps/showcase-slingshot-siege/src/game/look";
 import { ORIGINAL_CHAPTER_LOOKS, buildSceneOriginal } from "../../../apps/showcase-slingshot-siege/src/game/stageOriginal";
 
 describe("slingshot-siege 4.6.2 look switch", () => {
-  it("defaults chapters 0-4 to the 4.6.2 look and ch5 to the GU47 look", () => {
-    expect([...ORIGINAL_LOOK_CHAPTERS].sort()).toEqual([0, 1, 2, 3, 4]);
-    for (let c = 0; c <= 4; c += 1) expect(useOriginalLook(c, null)).toBe(true);
-    expect(useOriginalLook(5, null)).toBe(false);
+  it("GU47 phase 3: every chapter defaults to the relit GU47 look (blind panel g12p3r2b: default and ch0-ch4 better 3/0/0)", () => {
+    expect([...ORIGINAL_LOOK_CHAPTERS]).toEqual([]);
+    for (let c = 0; c <= 5; c += 1) expect(useOriginalLook(c, null)).toBe(false);
   });
 
   it("honours ?look=original and ?look=gu47", () => {
