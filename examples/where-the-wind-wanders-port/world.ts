@@ -623,7 +623,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         const bx = kitePos.x, by = kitePos.y - 0.15 * KITE_HEIGHT, bz = kitePos.z;
         const dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.max(0.01, Math.hypot(dx, dy, dz));
         node("kite-string").setPosition((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2)
-          .setRotation(-Math.asin(dy / len), Math.atan2(dx, dz), 0).setScale(0.028, 0.028, len);
+          .setRotation(-Math.asin(dy / len), Math.atan2(dx, dz), 0).setScale([0.028, 0.028, len]);
       };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream", "terrain"];
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
