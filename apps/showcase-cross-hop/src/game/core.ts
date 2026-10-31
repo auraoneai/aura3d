@@ -558,7 +558,7 @@ function buildDioramaScene(): unknown {
   backdropColors(0).forEach((c, i) => {
     const b = flat.bands[i]!;
     s.add(primitives.plane({ name: `cross-hop backdrop ${i}`, size: [1, 1, 1], material: backdropMaterial(c), castShadow: false, receiveShadow: false })
-      .position(flat.x, b.y, flat.z).scale([BACKDROP_WIDTH, b.height, 1]).runtime(game.runtimeNode(`backdrop-${i}`)));
+      .position(flat.x, b.y, flat.z).rotate(Math.PI / 2, 0, 0).scale([BACKDROP_WIDTH, 1, b.height]).runtime(game.runtimeNode(`backdrop-${i}`)));
   });
   s.addMany(poolNodes(true) as never[]);
   return s.toJSON();
@@ -1218,7 +1218,7 @@ function syncDioramaCamera(px: number, pz: number, py: number, warn: number): vo
     const h = app.nodes?.get(`backdrop-${i}`);
     if (!h) continue;
     h.setPosition(flat.x, flat.bands[i]!.y, flat.z);
-    h.setScale([BACKDROP_WIDTH, flat.bands[i]!.height, 1]);
+    h.setScale([BACKDROP_WIDTH, 1, flat.bands[i]!.height]);
   }
   if (reducedMotion) return;
   const band = screenY([px, py + 0.4, pz], p.position, p.target, fov);
