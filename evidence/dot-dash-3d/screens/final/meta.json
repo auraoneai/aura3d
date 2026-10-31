@@ -1,75 +1,81 @@
 {
   "meta": {
     "dot-dash-3d": {
-      "run": "g13w3-screens-final",
-      "branch": "audit-fix/g13 + audit-fix/e2",
+      "run": "g13p3-r3-s1280, g13p3-r3-s390, g13p3-r3-scard",
+      "branch": "gu47/g13 (phase 3, 4.7.1)",
       "runner": "remote ACR, headless Chromium, SwiftShader",
-      "tool": "tests/browser/audit-fix/dot-dash-3d.spec.ts g13-screens",
+      "tool": "tests/browser/audit-fix/dot-dash-3d.spec.ts g13-screens-1280 / -390 / -card",
       "frames": {
         "1280-01-title": {
           "w": 1280,
           "h": 720,
-          "meanLuma": 13.38,
+          "meanLuma": 17.85,
           "mode": "title"
         },
         "1280-02-early": {
           "w": 1280,
           "h": 720,
-          "meanLuma": 29.15,
+          "meanLuma": 45.74,
           "mode": "play"
         },
         "1280-03-action": {
           "w": 1280,
           "h": 720,
-          "meanLuma": 28.37,
+          "meanLuma": 45.7,
           "mode": "play"
         },
         "1280-04-mid": {
           "w": 1280,
           "h": 720,
-          "meanLuma": 27.64,
+          "meanLuma": 52.73,
           "mode": "play"
         },
         "1280-05-modes": {
           "w": 1280,
           "h": 720,
-          "meanLuma": 19.74,
+          "meanLuma": 22.47,
           "mode": "play"
         },
         "390-01-title": {
           "w": 390,
           "h": 844,
-          "meanLuma": 14.62,
+          "meanLuma": 18.5,
           "mode": "title"
         },
         "390-02-early": {
           "w": 390,
           "h": 844,
-          "meanLuma": 27.4,
+          "meanLuma": 43.31,
           "mode": "play"
         },
         "390-03-action": {
           "w": 390,
           "h": 844,
-          "meanLuma": 25.83,
+          "meanLuma": 42.66,
           "mode": "play"
         },
         "390-04-mid": {
           "w": 390,
           "h": 844,
-          "meanLuma": 25.48,
+          "meanLuma": 42.14,
           "mode": "play"
         },
         "390-05-modes": {
           "w": 390,
           "h": 844,
-          "meanLuma": 23.82,
+          "meanLuma": 25.44,
           "mode": "play"
         },
         "card-04-mid": {
           "w": 1440,
           "h": 900,
           "meanLuma": 28.18,
+          "mode": "play"
+        },
+        "card-2x": {
+          "w": 1440,
+          "h": 900,
+          "meanLuma": 47.17,
           "mode": "play"
         }
       }
