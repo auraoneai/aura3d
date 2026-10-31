@@ -26,6 +26,7 @@ import {
   createGameAudio,
   effects,
   game,
+  installQaHooks,
   material
 } from "@aura3d/engine";
 import {
@@ -3938,13 +3939,20 @@ function boot(): void {
 
   // GU47 QA crops (E-I crop contract): infield, outfield-wall, board, batter and sky rects, recomputed from the current
   // broadcast camera every time the steady-state capture asks (a function, so they follow the camera).
+  // Standard QA hooks (window.__AURA_AURA_DIAMOND_3D__: ready, state, frame, pixels, info) with the crops as an extra;
+  // the steady-state capture reads crops from every `__AURA_<NAME>__` hook.
   {
-    const qa = ((window as any).__AURA_QA__ ??= {});
-    qa.crops = () => {
+    const crops = () => {
       const canvas = document.querySelector("#app canvas") as HTMLCanvasElement | null;
       const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
       return diamondCrops(park(), { eye: G.cam.eye, target: G.cam.target, fov: G.cam.fov }, aspect);
     };
+    installQaHooks("aura-diamond-3d", {
+      ready: () => appReady && framesRendered > 2,
+      app: () => app as any,
+      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, lookVariant: sceneCtx.variant, inning: G.inning, half: G.half, outs: G.outs, balls: G.balls, strikes: G.strikes, bases: [...G.bases], score: { ...G.score } }),
+      extras: { crops }
+    });
   }
 
   {
