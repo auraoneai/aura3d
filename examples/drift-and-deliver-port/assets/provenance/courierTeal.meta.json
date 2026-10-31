@@ -1,0 +1,10 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a18c0c-12d0-748c-85fd-49bbbe58612b",
+    "operation": "retexture",
+    "createdAt": "2026-10-30T09:02:46.432Z",
+    "finishedAt": "2026-10-30T09:03:27.500Z",
+    "consumedCredits": 10
+  }
+}

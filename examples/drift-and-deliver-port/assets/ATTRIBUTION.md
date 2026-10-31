@@ -26,6 +26,7 @@ Every model comes from an original text prompt written for this port (no image-t
 | clocktower | landmark | tall stone clock tower, pointed copper green roof, four lit clock faces | 01a169e5-0183 | 01a16a1d-6074 | 19.2k |
 | lighthouse | landmark | white and red striped harbour lighthouse on a rocky base | 01a169e6-3970 | 01a16a1f-1dbb | 20.0k |
 | watertank | rooftop prop | rooftop wooden water tank on a steel stilt frame, conical lid | 01a169e7-27e0 | 01a16a21-32ca | 5.8k |
+| courierTeal | player car (shift look) | GU47 WP-36 `gridlockCourierTeal`: Meshy retexture of `courier.glb` (no new geometry), text style prompt "courier hatchback in courier teal with a cream roof, an orange stripe and a black roof rack, glossy wet paint" | retexture 01a18c0c-12d0 (2026-10-30, 10 credits) | none (baked to +z / y = 0 / length 1.903 like `courier.glb`, textures to 1024 px jpeg; `assets import-meshy --profile vehicle`, rights in `provenance/courierTeal.rights.json`) | 37.4k |
 
 The rigged walker (`ped`, Meshy 01a169f0-01b4) was generated but never wired in; it was deleted on 2026-10-29 (audit row C14) together with its provenance files.
 

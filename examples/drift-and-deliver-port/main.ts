@@ -200,7 +200,7 @@ function buildScene() {
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
-    s.add(carModel("car-rig", "courier", true, look.shift ? "YXZ" : undefined));
+    s.add(carModel("car-rig", look.shift ? "courierTeal" : "courier", true, look.shift ? "YXZ" : undefined));
   } else {
     s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
     s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
