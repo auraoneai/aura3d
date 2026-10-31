@@ -340,7 +340,10 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       target: [START.x, 0, START.z],
       color: linearToHex(k0.sunColor),
       intensity: k0.engineSunIntensity,
-      shadow: shadows ? { cascades: 2, mapSize: 2048, filter: "pcss", maxDistance: 70 } : false
+      // GU47 phase 4: one cascade. With two, a single wide draw (the terrain, the merged grass, the scenery batch) picks its
+      // cascade from its world centre, lands in the far split and samples outside that split's light volume near the camera,
+      // so the meadow around the traveller received no sun shadow at all.
+      shadow: shadows ? { cascades: 1, mapSize: 2048, filter: "pcss", maxDistance: 60 } : false
     }).runtime({ id: "sun" }));
     builder.add(lights.hemisphere({ name: "valley sky fill", skyColor: linearToHex(k0.hemiSky), groundColor: linearToHex(k0.hemiGround), intensity: HEMI_INTENSITY }).runtime({ id: "sky-fill" }));
     builder.add(environments.hdri({ name: "valley ibl", texture: ENV_ASSETS.valleyIbl as never, intensity: VALLEY_IBL_INTENSITY, background: false }));
