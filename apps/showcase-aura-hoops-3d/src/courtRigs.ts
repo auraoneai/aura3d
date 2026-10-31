@@ -114,6 +114,11 @@ export interface CourtRig {
   readonly exposureEv: number;
   /** H47-E1: fog to the HDRI horizon (near/far in metres; the skyline sits at 60-120 m inside it). */
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
+  /**
+   * GU47 blind-panel pass: no fog at all (the colour stays the clear colour). Athens: with the engine's look fog now a
+   * range fog, the noon court drew as a white-out (players faded, hoop and backdrop gone; panel 0/3).
+   */
+  readonly fogOff?: boolean;
   readonly post: AuraPostPresetId;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
   /** H47-P1: bloom 0.85 day / 0.6 night (intensity), with a lower threshold at night so lamps and signs glow. */
@@ -245,6 +250,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 2: +0.5 EV for p95 >= 215 once the fog wash is gone (4.6 frame p95 178).
     exposureEv: 0.38,
     fog: { color: "#cbd8e2", near: 60, far: 320 },
+    fogOff: true,
     post: "daylight-outdoor",
     grade: { contrast: 1.16, saturation: 0.86, temperature: 0.02, tint: 0 },
     bloom: { intensity: 0.85, threshold: 1.2 },
@@ -385,7 +391,7 @@ export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
     // GU47 phase 2: the look's own fog node is dropped (fogDensityScale 0) and courtFogNode authors it instead. With
     // A3D_QR_VFX_FOG on, a look fog that carries near/far but no mode resolves to height fog at 24/far density, which
     // washed every court at 20 m (Athens p95 201, colours gone). Fallback until the engine height-fog fix lands.
-    fog: { color: rig.fog.color, near: rig.fog.near, far: rig.fog.far },
+    ...(rig.fogOff ? {} : { fog: { color: rig.fog.color, near: rig.fog.near, far: rig.fog.far } }),
     fogDensityScale: 0,
     grade: rig.grade,
     post: rig.post
@@ -408,7 +414,7 @@ export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean }
     const json = node.toJSON() as { name?: string; effect?: string };
     return json.name !== LOOK_AO_NODE && json.name !== LOOK_BLOOM_NODE && json.effect !== "bloom";
   }) as AuraNodeBuilder<AuraSceneNode>[];
-  nodes.push(courtFogNode(rig));
+  if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
   nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
   if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.08 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
