@@ -87,9 +87,11 @@ const SUN_AZ = 36;
  * GU47 phase 4 (4.7.2): the golden and sunset key sits higher and further along the avenue axis (behind the chase
  * camera), so it clears the canyon walls and lands on the street. At 12-15 deg from the side the whole canyon fell in
  * building shadow: the courier, the poles and the props cast nothing the eye could see (rubric shadows 4.5). The sky
- * sun (`sun`, 14 deg / 4 deg) and the HDRI keep the low golden and sunset sun.
+ * sun (`sun`, 14 deg / 4 deg) and the HDRI keep the low golden and sunset sun. Round 2: straight down the start avenue
+ * (az -90, no sideways component) and higher (52 / 40 deg): at az -104 / 40 deg the 60 m towers still shaded the
+ * whole street in the g18p4-r1 frames.
  */
-export const KEY_LIFT = { azimuthDeg: -104, golden: 40, sunset: 30 } as const;
+export const KEY_LIFT = { azimuthDeg: -90, golden: 52, sunset: 40 } as const;
 
 export const PHASES: readonly PhaseRow[] = [
   {
@@ -123,7 +125,7 @@ export const PHASES: readonly PhaseRow[] = [
     at: 120,
     timeOfDay: "sunset, sun 4 deg on the harbour line",
     sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9a52", intensity: 3.3 },
-    key: { azimuthDeg: KEY_LIFT.azimuthDeg + 4, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.6 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.6 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
     environmentIntensity: 0.55,
     // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)
