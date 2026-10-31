@@ -31,12 +31,12 @@ const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a
 export const easeShot = (k: number): number => { const t = Math.max(0, Math.min(1, k)); return t * t * t * (t * (t * 6 - 15) + 10); };
 
 /**
- * The title-card shot at course distance `s` (the runner idles at 0): 7.5 m behind and 2 m to the right of the runner at
+ * The title-card shot at course distance `s` (the runner idles at 0): 7.5 m behind and 0.9 m to the right (the runner reads near the centre) of the runner at
  * shoulder-over height, looking down the street to the village gate, drifting slowly with `time`.
  */
 export function introPose(s: number, time: number): ShotPose {
   const drift = Math.sin(time * 0.12) * 0.6;
-  return { eye: at(s - 7.5, 2.0 + drift, INTRO_HEIGHT), look: at(s + 30, -0.3, 1.4), fov: 52 };
+  return { eye: at(s - 7.5, 0.9 + drift, INTRO_HEIGHT), look: at(s + 30, 0.2, 1.2), fov: 52 };
 }
 
 /**

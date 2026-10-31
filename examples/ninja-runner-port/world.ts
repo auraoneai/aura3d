@@ -317,7 +317,9 @@ export function buildWorld(options: WorldOptions): World {
     const [kind, pathTint] = PATH_SURFACE[g.biome]!;
     const path = g.zone === "path";
     const surf = path ? ground[kind] : g.biome === "rooftops" ? ground.tiles : ground.grass;
-    const tint = path ? pathTint : VERGE_TINT[g.biome]!;
+    // GU47 phase 3: under the evening's warm key the pale cobbles read blown out (blind panel, g20p3r2); a sandstone tint
+    // keeps their texture. The 4.6.2 look keeps the white tint.
+    const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#ddd2c2" : pathTint) : VERGE_TINT[g.biome]!;
     const key = `${path ? kind : g.biome === "rooftops" ? "tiles" : "grass"}|${tint}`;
     let m = merged.get(key);
     if (!m) merged.set(key, m = { surf, tint, rough: path ? 0.92 : 1, positions: [], normals: [], uvs: [], indices: [] });
