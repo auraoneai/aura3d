@@ -17,13 +17,18 @@ export type SiltLookMode = "inked" | "original";
  * GU47 phase 2 (PRD D11, no regression ships): chapters whose inked frame did not beat the 4.6.2 frame after two
  * remote capture rounds (software WebGL2) open in the original look by default; `?look=inked` still opts in.
  * Blind-panel fix pass: ch4 storm (grey, muddy, horizon halo) and the bare entry URL (no `chapter` param: sepia wash,
- * tiny rider) were judged worse than 4.6.2, so both ship the 4.6.2 look; `?chapter=0&start=1` keeps the inked look.
+ * tiny rider) were judged worse than 4.6.2 and shipped the 4.6.2 look. Phase 3 (4.7.1) reworked both (storm light over
+ * green orchard grass with dark ridges under a bright horizon gap; a closer title orbit and a cleaner dusk grade), so
+ * they open in the inked look again (blind-panel tally in lanes/g24.md).
  */
-export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 4, 6]);
+export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 6]);
+
+/** The bare entry URL (no `chapter` param) opens the 4.6.2 look when true (blind-panel fallback). */
+export const BARE_ENTRY_ORIGINAL = false;
 
 /**
  * `?look=original` is today's look (PRD §6.1 ports keep it); `?look=inked` is the inked poster look. Without a `look`
- * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS; the bare entry URL (no `chapter`) is original.
+ * param the chapter decides: inked, except the ORIGINAL_DEFAULT_CHAPTERS; the bare entry URL (no `chapter`) is chapter 0.
  */
 export function siltLookMode(search: string | URLSearchParams | undefined): SiltLookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
@@ -31,8 +36,8 @@ export function siltLookMode(search: string | URLSearchParams | undefined): Silt
   if (look === "original") return "original";
   if (look === "inked") return "inked";
   const raw = params?.get("chapter");
-  if (raw === null || raw === undefined) return "original";
-  const chapter = Math.trunc(Number(raw));
+  if (BARE_ENTRY_ORIGINAL && (raw === null || raw === undefined)) return "original";
+  const chapter = Math.trunc(Number(raw ?? 0));
   return ORIGINAL_DEFAULT_CHAPTERS.has(Number.isFinite(chapter) ? chapter : 0) ? "original" : "inked";
 }
 
@@ -71,6 +76,10 @@ export interface ChapterLook {
   readonly motes: { readonly kind: AmbientMotes; readonly color: string };
   /** DG-S5: rain in the storm chapter only. */
   readonly rain: boolean;
+  /** Ground set in the inked look: warm sand (DG-M1) or the storm chapter's rain-green orchard grass. */
+  readonly ground: "sand" | "orchard";
+  /** Colour the DG-S2 horizon rings fade into (defaults to the fog colour); the storm darkens them into ridges. */
+  readonly ridge?: string;
   /** DG-S4: god rays from the low sun (ch0) or moon shafts (ch2). */
   readonly godRays: boolean;
   /** DG-L6: low-sun lens flare (ch0, ch6). */
@@ -99,11 +108,11 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.55 },
     hdri: "belfast_sunset_puresky", environmentIntensity: 0.9, environmentRotationDeg: 250, practicals: 0, pcss: true,
     sky: { top: "#6d7ca6", horizon: "#f2a35c", discSize: 0.035, glow: 0.9, cirrus: 0.75, dust: 0.7, storm: 0, stars: 0 },
-    fog: { color: "#e6b07c", density: 0.00066, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.55 },
-    grade: { exposure: 1.0, contrast: 1.08, saturation: 1.14, temperature: 0.12 },
+    fog: { color: "#d8b898", density: 0.00048, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
+    grade: { exposure: 1.02, contrast: 1.2, saturation: 1.16, temperature: 0.03 },
     bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#e8b678", rate: 140 }, motes: { kind: "sand", color: "#f0c58a" },
-    rain: false, godRays: true, lensFlare: true
+    ground: "sand", rain: false, godRays: true, lensFlare: true
   },
   {
     chapter: 1, hour: "white-hot noon (12:40)", night: false,
@@ -115,7 +124,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     grade: { exposure: 0.85, contrast: 1.14, saturation: 1.06, temperature: 0.08 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "sand", color: "#f4e2c0" },
-    rain: false, godRays: false, lensFlare: false
+    ground: "sand", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 2, hour: "indigo moonlight under the roots (23:30)", night: true,
@@ -127,7 +136,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     grade: { exposure: 1.3, contrast: 1.06, saturation: 1.0, temperature: -0.18 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#8ea6d8", rate: 110 }, motes: { kind: "fireflies", color: "#d9f06a" },
-    rain: false, godRays: true, lensFlare: false
+    ground: "sand", rain: false, godRays: true, lensFlare: false
   },
   {
     chapter: 3, hour: "teal lantern-dusk over the reef (18:20)", night: false,
@@ -139,18 +148,21 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     grade: { exposure: 1.18, contrast: 1.1, saturation: 1.12, temperature: -0.02 },
     bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "wick-glow", color: "#ffbf6a" },
-    rain: false, godRays: false, lensFlare: false
+    ground: "sand", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 4, hour: "slate storm in the orchard (15:00)", night: false,
-    key: { elevationDeg: 40, azimuthDeg: 200, color: "#dfe3ea", intensity: 1.3 },
+    // phase 3: storm light, a warm sun breaking under the slate deck onto rain-green orchard grass, the deck lifting
+    // into a bright horizon gap behind dark ridges (no pale plateau band, no grey wash)
+    key: { elevationDeg: 40, azimuthDeg: 200, color: "#ffe2b4", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
-    hdri: "kloppenheim_02", environmentIntensity: 0.85, environmentRotationDeg: 200, practicals: 0, pcss: false,
-    sky: { top: "#3b4455", horizon: "#8c9198", discSize: 0.022, glow: 0.2, cirrus: 0.2, dust: 0.3, storm: 1, stars: 0 },
-    fog: { color: "#7b838e", density: 0.0007, heightFalloff: 0.04, heightReference: 0, maxOpacity: 0.45 },
-    grade: { exposure: 1.2, contrast: 1.15, saturation: 0.98, temperature: -0.06 },
+    hdri: "kloppenheim_02", environmentIntensity: 0.75, environmentRotationDeg: 200, practicals: 0, pcss: false,
+    sky: { top: "#2c3a56", horizon: "#cfd6d6", discSize: 0.022, glow: 0.45, cirrus: 0.2, dust: 0.15, storm: 1, stars: 0 },
+    fog: { color: "#8a97aa", density: 0.00036, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.26 },
+    grade: { exposure: 1.18, contrast: 1.2, saturation: 1.2, temperature: 0.02 },
     bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
-    wake: { color: "#a39c90", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
+    wake: { color: "#b8b39a", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
+    ground: "orchard", ridge: "#3c4860",
     rain: true, godRays: false, lensFlare: false
   },
   {
@@ -163,7 +175,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     grade: { exposure: 1.3, contrast: 1.05, saturation: 1.05, temperature: -0.1 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#a79ad0", rate: 110 }, motes: { kind: "embers", color: "#ff9c5a" },
-    rain: false, godRays: false, lensFlare: false
+    ground: "sand", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 6, hour: "rose dawn on the long return (06:05)", night: false,
@@ -175,7 +187,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     grade: { exposure: 0.94, contrast: 1.18, saturation: 1.15, temperature: 0.06 },
     bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
-    rain: false, godRays: false, lensFlare: true
+    ground: "sand", rain: false, godRays: false, lensFlare: true
   }
 ];
 

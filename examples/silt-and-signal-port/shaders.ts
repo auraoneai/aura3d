@@ -79,9 +79,10 @@ void main() {
   // horizon dust band: warm, low, always a little moving with the sand
   float dust = exp(-pow(dir.y * 11.0, 2.0)) * (0.75 + 0.25 * noise(vec2(p.x * 14.0, 0.0))) * skyDust;
   c = mix(c, skyBottom * vec3(1.06, 0.98, 0.88), clamp(dust, 0.0, 1.0) * 0.6);
-  // storm cover: a low slate deck over the whole dome
+  // storm cover: a slate deck over the dome that lifts into a bright gap just above the horizon (storm light), so the
+  // dark horizon ridges stand against light instead of a pale band under a dark lid
   float deck = noise(dir.xz / max(0.15, dir.y + 0.3) * 2.2) * 0.6 + noise(dir.xz / max(0.15, dir.y + 0.3) * 5.1) * 0.4;
-  c = mix(c, mix(skyTop, skyBottom, 0.35) * (0.7 + 0.3 * deck), skyStorm * smoothstep(-0.05, 0.25, dir.y) * 0.85);
+  c = mix(c, mix(skyTop, skyBottom, 0.2) * (0.62 + 0.45 * deck), skyStorm * smoothstep(0.03, 0.42, dir.y) * 0.85);
   // stars at night
   vec2 starP = vec2(atan(dir.x, dir.z), asin(dir.y)) * 800.0;
   float sparkle = pow(max(0.0, 1.0 - length(fract(starP) - 0.5) * 2.0), 12.0) * step(0.996, hash(floor(starP)));

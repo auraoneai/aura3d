@@ -335,7 +335,9 @@ function render(dt: number): void {
   const seqDt = sequenceStep(dt);
   const live = mode === "play" && !config.manual && !drawLatest;
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), drawLatest);
-  let pose = overridePose ?? (mode === "title" ? titlePose() : null);
+  // phase 3: the inked title screen holds the chase framing behind the rider (the camera's own collider-aware eye); the
+  // 30 m orbit of the original look left the rider a speck on a field of ground (blind panel)
+  let pose = overridePose ?? (mode === "title" && config.look !== "inked" ? titlePose() : null);
   if (!pose && mode === "play" && railLeft > 0) {
     railLeft = Math.max(0, railLeft - seqDt);
     const eye = runtime.cameraEye()?.eye ?? [sim.state.x, sim.state.y + 5, sim.state.z + 13];

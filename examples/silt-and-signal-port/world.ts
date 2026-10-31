@@ -12,7 +12,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
-import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
+import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
@@ -20,7 +20,7 @@ import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
-import { buildArchitecture, farDuneRings, farDunes, terrainColors, type ColoredMesh } from "./architecture";
+import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 
 type Scene = ReturnType<typeof scene>;
@@ -311,7 +311,7 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.35 : 0.5, godRayDensity: GOD_RAY_DENSITY }));
   }
   // DG-L5: screen-space contact shadows under the board, rider and props in every inked chapter (not on Low)
-  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.7, length: 0.3 }));
+  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.9, length: 0.45 }));
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));
@@ -439,12 +439,16 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   if (flare) builder.add(lights.lensFlare({ name: "silt flare", position: [...FAR], elements: lensFlareElements(look.key.color), intensity: buildOptions.reducedMotion ? 0.3 : 0.6, runtime: { id: "silt-flare" } }));
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
 
-  builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: terrainColors(terrainMesh.positions, inked) }), {
+  const orchard = inked && look.ground === "orchard";
+  builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: orchard ? orchardTerrainColors(terrainMesh.positions) : terrainColors(terrainMesh.positions, inked) }), {
     name: "terrain",
     receiveShadow: true,
     // GU47 DG-M1 (interim): the inked look trades the grass set for the gravel-sand ground set under warm sand vertex
     // colours; the WP-36 rippled sand, scrub and sandstone sets replace it (asset need in the lane report)
-    material: inked
+    // phase 3: the storm chapter's orchard keeps the grass set under rain-green and gold vertex colours (storm light)
+    material: orchard
+      ? pbr({ color: "#e4ead2", texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 0.92 })
+      : inked
       ? pbr({ color: look.night ? "#b7a48a" : "#f0dcc0", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, normalScale: 0.6, roughness: 1 })
       : pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
   }).runtime({ id: "terrain" }));
@@ -503,7 +507,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   // distant dunes and mesas: the horizon silhouette (outside the +-640 m play corridor, inside the far plane)
   {
     const mid = -terrain.length / 2;
-    const haze = inked ? linearOf(look.fog.color) : hexLinear(chapter === 0 ? 0xdcc5b1 : palette.fog!);
+    const haze = inked ? linearOf(look.ridge ?? look.fog.color) : hexLinear(chapter === 0 ? 0xdcc5b1 : palette.fog!);
     // DG-S2 (part): the inked look stacks three rings tinted toward the fog (one merged draw); mesa and arch silhouettes are WP-36
     builder.add(geometry.custom(dynamicFrom(inked ? farDuneRings(0, mid, haze) : farDunes(0, mid, 1500, 2150, haze)), {
       name: "far-dunes", castShadow: false, receiveShadow: false,
@@ -815,7 +819,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             node("tow-glow").setPosition(...FAR);
           }
           towing = state.towing;
-          const tx = state.x + fx * 14, ty = state.y + 1.2, tz = state.z + fz * 14;
+          const framing = inked ? INKED_CHASE : ORIGINAL_CHASE;
+          const tx = state.x + fx * framing.lookAhead - fz * framing.side, ty = state.y + framing.lookLift, tz = state.z + fz * framing.lookAhead + fx * framing.side;
           if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
@@ -835,7 +840,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             if (cut) roll = wantRoll;
             up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll);
           }
-          const eye = options.clearCamera === false ? wantedChaseEye(sim) : clearChaseEye(sim, clearance, dt, scenery);
+          const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
           lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
           let shown: [number, number, number] = [eye[0], eye[1], eye[2]];
           if (shakeLeft > 0) {

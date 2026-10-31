@@ -334,6 +334,24 @@ export function inkedTerrainColors(positions: readonly number[]): number[] {
   return out;
 }
 
+/**
+ * GU47 phase 3 (storm chapter, inked look): rain-green orchard grass with gold dry patches and darker wet hollows,
+ * multipliers on the grass set, so the storm light lands on saturated ground under the slate deck.
+ */
+export function orchardTerrainColors(positions: readonly number[]): number[] {
+  const out: number[] = [];
+  const lush: Rgb = [0.95, 1.3, 0.62], gold: Rgb = [1.5, 1.3, 0.7], hollow: Rgb = [0.62, 0.86, 0.52];
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+    const dry = smooth(0.5, 0.68, fbm(x * 0.0065 + 11.3, z * 0.0065 - 4.1, 4));
+    const fine = 0.9 + 0.2 * fbm(x * 0.05, z * 0.05, 3);
+    const low = 1 - smooth(-1, 6, y);
+    const c = scale(mix(mix(lush, gold, dry * 0.7), hollow, low * 0.5), fine);
+    out.push(c[0], c[1], c[2], 1);
+  }
+  return out;
+}
+
 /** A ring of distant dunes and mesas that gives the horizon a silhouette; vertex colours fade into the haze. */
 /** Shape knobs for one horizon ring (defaults are today's single ring). */
 export interface FarDuneShape {

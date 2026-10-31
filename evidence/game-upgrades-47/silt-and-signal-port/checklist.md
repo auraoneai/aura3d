@@ -49,3 +49,15 @@ E-I captures / measured budgets on the remote runner; "WP-36" = waits for genera
 | DG-W1 | none within 40 m of a ring; >= 25; +2 draws | unit |
 | DG-W2 | decals | done (one merged decal mesh, +1 draw; plaza stddev phase 2) |
 | DG-PF1 | budgets | phase 2 (budget.json before rows) |
+
+## Phase 3 (4.7.1) status
+
+| item | status |
+|---|---|
+| default (bare entry URL) beats 4.6.2 | done: inked by default; panel `g24p3r3b` 3/0/0 (also r1 3/0/0, r2 3/0/0) |
+| ch4 beats 4.6.2 | done: inked by default; panel `g24p3r3b` 3/0/0 (storm light, orchard grass, dark ridges under a silver gap) |
+| ch0, ch2, ch3, ch5 still beat 4.6.2 with the closer chase | done: `g24p3r3b` 3/0/0, 3/0/0, 2/1/0, 3/0/0 |
+| ch1, ch6 | 4.6.2 look by default (phase 2 D11), `?look=inked` opts in |
+| rubric >= 7 per category | not met: min 3 (shadows), max 6.5 (HUD); `look-judgement.json` validates; modeling/material/animation blocked on WP-36 |
+| final screens and card on the current build | done (title and results frames not retaken) |
+| game-checks | 0 errors, 14 warnings (luma-band only; bands not widened) |

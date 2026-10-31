@@ -24,11 +24,12 @@ describe("GU47 WP-34 look table", () => {
   it("?look=original selects today's look; anything else is inked", () => {
     expect(siltLookMode("?look=original")).toBe("original");
     expect(siltLookMode("?chapter=2&start=1")).toBe("inked");
-    // blind-panel fix pass: the bare entry URL and ch4 storm ship the 4.6.2 (original) look
-    expect(siltLookMode(undefined)).toBe("original");
-    expect(siltLookMode("")).toBe("original");
-    expect(siltLookMode("?chapter=4&start=1")).toBe("original");
-    expect(siltLookMode("?chapter=4&start=1&look=inked")).toBe("inked");
+    // phase 3 (4.7.1): the reworked bare entry URL (chapter 0) and ch4 storm open in the inked look again
+    expect(siltLookMode(undefined)).toBe("inked");
+    expect(siltLookMode("")).toBe("inked");
+    expect(siltLookMode("?look=original")).toBe("original");
+    expect(siltLookMode("?chapter=4&start=1")).toBe("inked");
+    expect(siltLookMode("?chapter=4&start=1&look=original")).toBe("original");
     // GU47 phase 2 (D11): ch1 noon and ch6 dawn open in the original look unless ?look=inked
     expect(siltLookMode("?chapter=1&start=1")).toBe("original");
     expect(siltLookMode("?chapter=1&start=1&look=inked")).toBe("inked");

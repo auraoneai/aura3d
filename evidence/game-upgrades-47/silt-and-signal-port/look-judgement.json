@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r3/screens/gameplay-early.1280x720.jpg",
+      "sha256": "c98273b995a16671ed89f87d42b49885c50d70ed61eae3fb4896cc65cacc2782"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r3/silt-and-signal-port/frames/g24p3-r3-1/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "74b458e9f8029a2fb30ebdad98a658ab4a7a1e2015748799025aee5d92b7ceeb"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r3/silt-and-signal-port/frames/g24p3-r3-2/silt-and-signal-port--ch4--settle-60s.jpg",
+      "sha256": "a33a111f577a3c755955b9fc3e35a0ecfda3c086508132c9756bf829397e2804"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p3-r3/silt-and-signal-port/frames/g24p3-r3-7/silt-and-signal-port--ch2--settle-60s.jpg",
+      "sha256": "867371b8525dc8db01cd5a920646dec71d39fe9deb9e94b0a614bd58f4bfd2de"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 3.5,
+    "camera": 4,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1–2 have a warm peach sky and orange-lit facades, close to the golden-hour target. Frame 3 is a flat grey-teal overcast and frame 4 is a deep blue night. Lighting is not consistent across the run, there is no clear low-sun key direction, and objects read as flatly lit toon shading."
+    },
+    {
+      "category": "shadows",
+      "seen": "The pine trees, white boxes, character and board cast little to no visible ground shadow on the cobblestone plaza. The arch interior shows a painted dark band rather than a coherent cast shadow, so objects float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The dark torus rings have a glossy streaked sheen, but it does not pick up the sky or surroundings. The water channel in frames 1–2 is a flat pale-blue plane with no reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The plaza is dense with low-poly pines, lamp posts and wall gates, and the valley with its river and pylons in frames 3–4 gives scale. However, buildings are untextured white boxes and the far city is a cutout-like silhouette."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some distance haze softens the far skyline in frames 1–2. Frame 3's sky shows hard stepped banding instead of smooth fog. There is no aerial perspective falloff across the 30–180 m range, and the trees in the valley stay equally saturated."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone ground has a nice halftone/stipple texture. The cyan pillar and the arch show visible posterized step banding. The white buildings have no surface detail, and the bronze barrels and wood poles are flat single tones."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The faceted pines and the character on the hoverboard read clearly with an ink outline. Buildings are primitive boxes with stamped windows, and the arch and rings are simple torus primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "A tall glowing cyan objective pillar sits dead-center in every frame, splitting the image and hiding the path ahead. The rider is only about 5–8% of the frame, below the 15–25% target. In frames 3–4 a huge ring border consumes most of the screen."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low and far back, so the rider is tiny at the bottom-center. In frames 3–4 the camera is placed just behind a ring so its thick rim frames and crowds the view. There is no sense of speed framing (speed reads 0)."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a consistent ink-outline toon pass and a halftone ground dither that give a stylized identity. However, there is no film grade, bloom or vignette, and posterization banding on the pillar and sky is visible. The cinematic-film recipe is not met."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has a legible quest card, a speed/altitude panel with a bar, a compass and a controls legend in a cohesive brown-panel style. However, the controls legend is a dense text block, and the HUD is absent in frames 2–4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g24p3-judge/key-boost.1280x720.jpg",
+      "sha256": "2be386ee8fe6d94be872778a0c4b376c7bd2821a2cd6c1aff9d246b71442fbbb"
+    },
+    {
+      "path": "../../../../../tmp/g24p3-judge/silt-and-signal-port--ch0--settle-60s.jpg",
+      "sha256": "cee8782ee02c7d9448de19e3a00ceec500bc4ec2d3942df603cc556209900589"
+    },
+    {
+      "path": "../../../../../tmp/g24p3-judge/silt-and-signal-port--ch2--settle-60s.jpg",
+      "sha256": "77d7226c02e7ead252beb12523ae6c24c7a8552d7d10ff68058f3c6e87fac3e1"
+    },
+    {
+      "path": "../../../../../tmp/g24p3-judge/silt-and-signal-port--ch5--settle-60s.jpg",
+      "sha256": "66959f7c91ab9efdd15d61e6c301860c14d9741cd734e0782c6dc2658f0e7baf"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 2,
+    "environment_world": 5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 4,
+    "composition": 3.5,
+    "camera": 3.5,
+    "postprocessing": 4.5,
+    "animation_quality": 4,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 2 has a warm amber sky tint, but the lighting is mostly flat ambient across all four frames. There is no directional key light: tree cones and building faces show only toon banding, and the night frames are lit uniformly in blue/purple."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are almost no cast shadows. The tall white block in frame 1, the trees, and the giant rings drop nothing onto the cobble or ground, so objects look pasted onto the terrain."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The icy road in frames 3–4 has painted streaks rather than real reflections. The cyan pillar and the rings show no environment reflection or sky response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is varied: a ruined aqueduct town with cobbles (frame 1), a giant arch over a pine avenue (frame 2), and a night valley with a road, rings and pillars (frames 3–4). However, buildings are untextured white boxes and the ground is a large empty cobble plane."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 2 shows warm haze toward the horizon, which works. The other frames have little depth fog, and the distant mountains in frames 3–4 are lit as flat colour with no aerial perspective."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The stone wall in frame 1 has a stretched, noisy photo texture that clashes with the cel-shaded trees. The white block and houses are flat, with blotchy grime, and the pillar is unlit flat cyan."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Trees are simple stacked cones, buildings are boxes, and the rings are thick toruses. The rider and the small hover-stool board are tiny and low detail."
+    },
+    {
+      "category": "composition",
+      "seen": "In every frame the rider is centered and occupies roughly 3–5% of the frame, well below the 15–25% target. In frames 2–4 a giant cyan pillar bisects the frame directly over the player and dominates attention."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits far back and high, so the craft reads as a speck. In frame 1 the camera clips beside a stone wall that fills the right third, and there is no sense of speed or FOV kick."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Ink outlines and a painterly tint give a consistent stylized look. There is no visible bloom on the glowing pillar, no film grading toward warm/charcoal in the night shots, and no motion blur."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The rider holds a static standing pose across all frames, and the 'Impact: speed 60 to 50' popup shows no visible feedback effect."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The objective panel, speed/altitude card, controls panel and compass are readable and tidy. However, the controls text block is large, the floating impact text overlaps the scene, and the compass arrow lacks context."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
