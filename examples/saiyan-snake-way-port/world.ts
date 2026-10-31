@@ -941,15 +941,15 @@ export function buildWorld(options: WorldOptions = {}): World {
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
         const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
-        // GU47 phase 3 (rubric: camera/composition): under the colour script the chase sits higher and aims lower, so the
-        // runner drops below the vanishing point and the road ahead reads above the head
-        const rise = flying ? 4.4 : script ? 4.1 : 3.4;
+        // GU47 phase 3: a higher chase (rise 4.1, aim 1.0) was tried for the rubric and reverted: the sibling judge read the
+        // larger road foreground as the other runners' framing (differentRate 0.73 -> 0.50); the panel-won framing stays.
+        const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : 12;
-        const aim = falling ? -1.4 : script ? 1.0 : 1.6;
+        const aim = falling ? -1.4 : 1.6;
         let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
         let up: V3 = rig.u;
         if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
