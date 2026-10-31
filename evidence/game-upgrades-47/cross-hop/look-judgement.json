@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-03-action.jpg",
+      "sha256": "ccdcf2faa7bcdb7acd17b5c56d1ec6acfdba2a0d2157fa6c6d38fd454e5d90dc"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme1.jpg",
+      "sha256": "4419e4e6a681e5fca7084734b227074cddb1f8aae1558b6e38c8676a442b6270"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme2.jpg",
+      "sha256": "b811a0dd5f742d5530b310019380e27af395e2d22c99b8472597b87026b1322d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme3.jpg",
+      "sha256": "713b6b4fee0a00b10dd5ba7ee2dae8e926103ff2036e0f76f32c4257dace1ac6"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 4.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, even fill across the grass and road lanes with little key-light direction. Riverbend has a heavy hazy gray-beige overlay that washes out contrast, and Emberline is dim and muddy."
+    },
+    {
+      "category": "shadows",
+      "seen": "Vehicles and the frog have only faint or absent contact shadows. The trucks and trams look like they float on the asphalt, and there are no readable cast shadows from the sun."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car bodies show some glossy highlights, such as the red Fiat and the taxis. The ground, water and logs show no environment reflection, and the river is a flat blue strip."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Lanes are repetitive flat stripes of grass, road, river and log. A few lollipop trees and blocky dark skyscrapers serve as backdrops. The sky is an empty gradient with a blurry sun disc. The Downtown lanes are crowded and noisy."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze is present but too strong in Riverbend, where it greys the whole frame. There is little depth gradation elsewhere, and the far rows of cars stay sharp and saturated."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Vehicles look like scanned toy models with decent albedo. The ground, logs and lily pads are untextured flat colors. The logs show cream end-caps but no bark detail, creating a mismatch with the detailed vehicles."
+    },
+    {
+      "category": "composition",
+      "seen": "The frog sits at the lower center and covers roughly 5–8% of the frame, well below the 18–25% target. Most of the frame is distant traffic rows, so the subject reads small and the busy background competes with it."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high behind-the-player chase view rather than a side-on follow. The far horizon shows many lanes at once, which flattens depth and makes the near lanes hard to read."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no clear grading or bloom on the sun. The Riverbend overlay looks like an unintended dim or vignette pass, and Emberline is underexposed. No AO grounding is visible."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The frog's hop poses look stiff, with the model tilted and legs dangling. Small dust puff particles appear near the landing spot, which is a nice touch."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Vehicle models are varied and detailed, including trams, trains, trucks and taxis. The frog model is decent but low-contrast. Trees and buildings are primitive placeholders."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
