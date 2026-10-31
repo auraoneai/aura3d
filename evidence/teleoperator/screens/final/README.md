@@ -1,6 +1,6 @@
 # Grid Dispatch (`teleoperator`): final screenshots
 
-**Retaken 2026-10-29 on the audit-fix build** (lane G04, branch `audit-fix/g04`, Aura3D 4.5.0 engine). Same file names and sizes as the 2026-10-25 set. Spec: `tests/browser/audit-fix/teleoperator.spec.ts`; runs `g04c-desktop` (1280x720), `g04d-phone` (390x844, touch), `g04c-card` (1440x900). Frames are decoded from the run log with `tools/teleoperator/decode-gl-log.mjs`.
+**Retaken 2026-10-31 on the GU47 phase-3 build** (lane g04, branch `gu47/g04` at `cac123875`, Aura3D 4.7.0 engine; boot sky Marine dusk). Same file names and sizes as the 2026-10-29 set. Spec: `tests/browser/audit-fix/teleoperator.spec.ts`; runs `g04p3-r3-3` (desktop, 1280x720), `g04p3-r3-5` (phone, 390x844, touch), `g04p3-r3-4` (card, 1440x900; `card-1x.jpg` is the 720x450 downscale). Frames are decoded from the run log (`decode-luma.mjs` / `tools/teleoperator/decode-gl-log.mjs`). Earlier set: 2026-10-29 audit-fix build (git history).
 
 **Runner:** remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader). This shows layout and content, not GPU look or frame rate. The app is paused for each capture (the canvas keeps its last presented frame), because software GL presents about one frame every 10 to 15 s.
 

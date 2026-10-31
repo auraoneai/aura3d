@@ -1,12 +1,12 @@
 {
   "meta": {
     "teleoperator": {
-      "capturedAt": "2026-10-29",
-      "build": "audit-fix/g04 (Grid Dispatch audit fixes), Aura3D 4.5.0 engine",
+      "capturedAt": "2026-10-31",
+      "build": "gu47/g04 phase 3 round 3 (cac123875, GU47 4.7.1 look pass), Aura3D 4.7.0 engine",
       "runner": "remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader); not real-GPU evidence",
       "spec": "tests/browser/audit-fix/teleoperator.spec.ts",
       "1280": {
-        "run": "g04c-desktop",
+        "run": "g04p3-r3-3",
         "notes": [
           "ready lit (body data-aura3d-ready)",
           "01-title first frame after ready",
@@ -19,7 +19,7 @@
         "errors": []
       },
       "390": {
-        "run": "g04d-phone",
+        "run": "g04p3-r3-5",
         "notes": [
           "touch pads visible (coarse pointer)",
           "03-action after touch Throttle and Right",
@@ -29,7 +29,7 @@
         "errors": []
       },
       "card": {
-        "run": "g04c-card",
+        "run": "g04p3-r3-4",
         "notes": [
           "card-2x captured at 1440x900 after 50 s; card-1x downscaled to 720x450"
         ]
