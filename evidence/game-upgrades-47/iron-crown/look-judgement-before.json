@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/bp/iron-crown/frames/g05bq-iron-crown-crown/iron-crown--crown-arena--settle-60s.jpg",
+      "sha256": "3970970c1bcc69a711007293491ad107a9ca564f0e9af432de02cc9f7e260d98"
+    },
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/bp/iron-crown/frames/g05bq-iron-crown-colo/iron-crown--colosseum-ruins--settle-60s.jpg",
+      "sha256": "72507cc51c877fd42f6fc6c2223f030c8ac072454764d28990542e2e0ebc5c4d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/bp/iron-crown/frames/g05bq-iron-crown-dh/iron-crown--desert-airbase--settle-60s.jpg",
+      "sha256": "2d38bcb8a645f0fdd20b4e6f545fe2d3a521c651640db8ae4a566640467cdf0d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/iron-crown/bp/iron-crown/frames/g05bq-iron-crown-dh/iron-crown--himalayan-monastery--settle-60s.jpg",
+      "sha256": "228989ccbf0f87bd5eb3edf6c9259f1253878504337b92a7cf1e11db719c6f34"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 3.5,
+    "shadows": 2,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 3,
+    "animation_quality": 4,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, near-uniform ambient fill in all four arenas. There is no visible top spotlight at about 60° pooling on the fighters and no rim light separating them from the background. Only the throne-room frame has a darker, warmer mood, and even there the fighters are evenly lit."
+    },
+    {
+      "category": "shadows",
+      "seen": "The fighters cast no visible contact or drop shadows. The dark discs under their feet are painted floor decals, not shadows. The jet, barrels, crates and pillars also sit without grounding shadows, so the props read as pasted on."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The dragon statues and the dark lantern pillars show some glossy specular, and the leather chair has a soft sheen. The fighters' leather suit and the floor show almost no environment reflection, and the floor has no glossy spot or ring highlights."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The same circular sun-emblem arena floor is reused across four backdrops: throne room with crown, stylized castle with wooden towers, carrier deck with jet, and pink Japanese shrine. The backdrops are kitbashed prop sets with no crowd, ropes or arena boundary. The throne-room crowd seats are empty silhouettes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A uniform grey-blue distance fog veils frames 2–4 and washes out the backdrops, worst on the shrine. It is not a lit haze cone or volumetric shaft, and the fighters get the same milky veil as the background."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The karate gi is a flat cyan with little cloth shading. The dark leather suit has some normal detail but reads muddy. The materials clash: hand-painted stylized wood towers sit beside photoscan-style tanks and a realistic jet."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The fighter models are mid-poly with simple faces and stiff hands. The asset styles are mismatched (cartoon castle vs realistic carrier props vs baroque throne), and in the castle stage a grass patch clips at the karate fighter's feet."
+    },
+    {
+      "category": "composition",
+      "seen": "The layout is symmetric and side-on, with the pair occupying roughly 20% of the frame, close to the target. The large centre emblem and centre props (crown, castle gate, jet, shrine) pull focus away from the fighters, and the busy backdrop silhouettes merge with the fighter silhouettes."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a side-on framing with a moderate FOV, consistent across stages. It is static and wide, with a slightly high angle that flattens the duel and gives little sense of a follow camera."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Strong low-contrast grey lift and washed-out blacks in frames 2–4, with blown pastel highlights on the shrine. There is no punchy arena grade, vignette or bloom on light sources."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Both fighters hold an identical, rigid guard pose in all four frames, with locked knees and splayed fingers. There is no visible weight shift or secondary motion."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No health bars, timer, round indicator or name plates are visible in any frame of a fighting-game stage."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}
