@@ -496,7 +496,7 @@ export const ROUTE_LUT_URL = {
 /** Name of the route IBL node: the route and the catalogue file, so `diagnostics().lighting.environment.source` names both. */
 export const routeIblName = (row: SaltwindLookRow): string => `route IBL ${row.id} ${row.hdri}_1k`;
 
-/** Shadow of the GU47 key (RH47-03, phase 4): one PCSS cascade over the near 110 m (see `SHADOW` in art/look.ts); PCF on Low (PRD §6.4). */
+/** Shadow of the GU47 key (RH47-03, phase 4): one PCSS cascade over the near 75 m (see `SHADOW` in art/look.ts); PCF on Low (PRD §6.4). */
 export const keyShadowFor = (row: SaltwindLookRow) => ({ cascades: row.shadow.cascades, maxDistance: row.shadow.maxDistance, filter: row.shadow.filter, mapSize: row.shadow.mapSize, softness: 1.2 });
 
 /** The relay gate glow per route (RH47-11: route-tinted gantries replace today's cyan emissive boxes). */

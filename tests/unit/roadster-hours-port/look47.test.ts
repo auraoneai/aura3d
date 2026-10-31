@@ -85,12 +85,12 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(outputFor("original").pixelRatio).toBe(1);
   });
 
-  it("mounts the row's rig: one PCSS cascade over the near 110 m, the route IBL, no ambient light (RH47-02/03/04)", () => {
+  it("mounts the row's rig: one PCSS cascade over the near 75 m, the route IBL, no ambient light (RH47-02/03/04)", () => {
     SALTWIND_VARIANTS.forEach((id, i) => {
       const all = nodes(buildWorld(i, "gu47").scene);
       const lightsOf = all.filter((n) => n.kind === "light");
       const sun = lightsOf.find((n) => n.name === "sun")!;
-      expect(sun.shadow).toMatchObject({ cascades: 1, maxDistance: 110, filter: "pcss" });
+      expect(sun.shadow).toMatchObject({ cascades: 1, maxDistance: 75, filter: "pcss" });
       expect(lightsOf.filter((n) => n.shadow && n.shadow !== false).length).toBe(1);
       expect(lightsOf.some((n) => n.light === "ambient")).toBe(false);
       const env = all.find((n) => n.kind === "environment")!;

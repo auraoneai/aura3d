@@ -396,7 +396,7 @@ document.body.classList.toggle("look-original", lookMode === "original");
  * GU47 phase 4: the 4.3.0 sun-shadow fit (`__A3D_SHADOW_FIT__ = "current"`) on the GU47 looks. The default 4.2.0 fit widens
  * the shadow map to the bounds of every caster, and this course's flanks, sea plane and scenery span kilometres: the probe
  * g22p4-probe (software WebGL2) read a 2048 map covering about 30 km (a car-sized shadow is under one texel), so no shadow
- * ever showed. The 4.3.0 fit covers the camera's near 110 m (art/look.ts `SHADOW`). Same switch and reasoning as
+ * ever showed. The 4.3.0 fit covers the camera's near 75 m (art/look.ts `SHADOW`). Same switch and reasoning as
  * examples/ninja-runner-port; `?look=original` and `?shadowfit=legacy` keep the 4.2.0 fit.
  */
 if (lookMode !== "original" && new URLSearchParams(location.search).get("shadow") !== "0") (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
