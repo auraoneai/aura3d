@@ -1,0 +1,85 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/drift-and-deliver-port/frames/gu47-before-drift-and-deliver-port/drift-and-deliver-port--default--settle-60s.jpg",
+      "sha256": "3ddaab9e722ddc6881ed15a4f07d5de600aeb00aa46f2159b27fff89c0776afb"
+    },
+    {
+      "path": "../wp38/evidence/game-upgrades-47/before/drift-and-deliver-port/frames/gu47-before-drift-and-deliver-port/drift-and-deliver-port--default--settle-25s.jpg",
+      "sha256": "ded691c61597887755c3e88550588bf6d6642d2fb4c98e4ac31707eb3a92e3d2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 2,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 3.5,
+    "animation_quality": 3,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, near-uniform ambient light across the building facades and road. There is no directional low sun or warm key, so the frame reads as overcast noon rather than golden hour despite the orange sky."
+    },
+    {
+      "category": "shadows",
+      "seen": "The car casts only a faint dark contact patch. Buildings, lamp posts and the pedestrian cast no visible cast shadows on the road or sidewalks."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car's cyan paint and rear window show no environment reflections or specular highlights. The building glass windows are flat blue fills with no sky reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city canyon has repeated low-poly towers, lamp posts, traffic lights, crosswalks, a turn arrow and a fire hydrant. It is coherent but highly repetitive, and the street is empty apart from one static blocky pedestrian."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A warm orange distance haze fades the far towers into the sky, which roughly matches the recipe's fog range. However, there is no light shafts, dust or sun glow."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The car has a scuffed texture on the paint but reads matte and plasticky, and the license plate is a blurry grey rectangle. Road, sidewalk and building surfaces are flat untextured colors."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car model is decent and rounded, but it clashes stylistically with the voxel-like blocky pedestrian and boxy buildings. Lamp posts and traffic lights are simple but readable."
+    },
+    {
+      "category": "composition",
+      "seen": "The center-aligned car with a strong vanishing-point street gives clear readability. The car occupies roughly 10–12% of the frame, below the 15–25% target, and the palette is cool blue/cyan rather than burnt orange and charcoal."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits behind and above the car at a moderate FOV that looks close to 60. It is a static framing with no sense of speed, lean or dynamic offset."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible film grain, bloom on the lamp heads, vignette or color grade. Only a mild warm haze is present, so there is no cinematic-film treatment."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The two frames are nearly identical: the car shifts slightly and the pedestrian is static. There is no visible motion blur, wheel motion or suspension cue."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a minimap in the lower-right with a dark grid and colored dots. There is no speed, timer, delivery objective or damage readout, and the minimap is tiny and lacks a legend."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

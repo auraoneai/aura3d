@@ -73,10 +73,10 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(parseAt("x")).toBeUndefined();
     expect(parseAt(null)).toBeUndefined();
     expect(parseLook("original")).toBe("original");
-    // blind-panel fix pass: default, golden and sunset keep the 4.6.2 look; the blue-hour pin keeps the shift look
-    expect(parseLook(null)).toBe("original");
-    expect(parseLook(null, true, 10)).toBe("original");
-    expect(parseLook(null, true, 120)).toBe("original");
+    // GU47 phase 3: every HDRI-lit view (default, golden, sunset, blue hour) opens the shift look
+    expect(parseLook(null)).toBe("shift");
+    expect(parseLook(null, true, 10)).toBe("shift");
+    expect(parseLook(null, true, 120)).toBe("shift");
     expect(parseLook(null, true, 170)).toBe("shift");
     expect(parseLook(null, false, 170)).toBe("original");
     // GU47 phase 2 (D11): the lights-only diagnostic defaults to the original look; ?look=shift forces the shift

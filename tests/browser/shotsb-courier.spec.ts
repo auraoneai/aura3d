@@ -3,6 +3,8 @@ import { shotsb } from "./shotsb-lib";
 shotsb({
   slug: "gridlock-courier", folder: "drift-and-deliver-port", hook: "__AURA_DRIFT_AND_DELIVER__",
   titleQuery: "", manualQuery: "?manual=1", card: "drift",
+  // GU47 phase 3: chunks keep each remote run under the 1 h ACR cap (the whole desktop pass timed out on software GL)
+  chunks: [{ name: "run", states: ["early", "drive", "drift"] }, { name: "pickup", states: ["pickup"] }, { name: "action", states: ["mid-action"] }],
   states: [
     { name: "early", drive: `api.reset(); api.teleport(30, -300, 0); api.stepFrames(0);` },
     { name: "drive", drive: `api.stepFrames(240, { w: true });` },

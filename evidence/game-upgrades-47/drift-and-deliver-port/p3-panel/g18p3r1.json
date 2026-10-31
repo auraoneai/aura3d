@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong warm-to-cool contrast and varied building colours. The far road end fades into a soft bright haze, and the car's rear texture looks a little smeared.",
+     "The warm grade washes the road a little; the far end of the street fades into yellow haze; the minimap is busy and hard to read; the licence plate texture is blurry.",
+     "Small horizon gap at the vanishing point. Sidewalks are slightly washed out on the left. The car's rear texture is a little smeary."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The golden-hour look is only slightly different from the default. The horizon haze is a bit bright, and the car texture is a little blurry.",
+     "The golden haze softens the far distance; the road picks up a slight warm wash; the minimap is cluttered; the plate texture is blurry.",
+     "Slightly bright sidewalks. The car's rear texture is smeary. Otherwise warm and well-contrasted."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The vanishing point is a bit overexposed. Otherwise it has a good warm orange sky, solid depth and good contrast. The car texture is slightly smeared.",
+     "The orange glow at the vanishing point is a little blown out; the bright road centre slightly washes the area behind the car; the minimap is cluttered.",
+     "Orange glow at the vanishing point slightly blows out the distant street. The near road is a bit dark and flat. Otherwise a strong sunset mood with good contrast."
+    ]
+   }
+  ]
+ }
+]

@@ -91,7 +91,9 @@
       /* GU47 GC-H1 dispatch HUD (shift look only: body.dispatch); fonts from /fonts/local.css */
       #dial, #stamp { display: none; }
       body.dispatch #dial { display: block; width: 112px; height: 112px; margin: 0 auto -58px; }
-      body.dispatch #speedbox { left: 22px; bottom: 18px; transform: none; } /* blind-panel fix: bottom-left, clear of the courier bumper */
+      body.dispatch:not(.touch) #speedbox { bottom: 18px; } /* touch keeps its 240 px lift above the pads */
+      /* GU47 phase 3: on desktop the dial sits bottom-left, right of the nitro bar (26 + 250 px) and clear of the courier's bumper (touch and phones keep their own corner) */
+      @media (min-width: 641px) { body.dispatch:not(.touch) #speedbox { left: 300px; bottom: 18px; transform: none; } }
       body.dispatch #speed { position: relative; font-size: 34px; }
       body.dispatch #job { top: 52px; padding: 7px 14px 8px; min-width: 168px; text-align: center; color: #2b2f36; font: 400 14px/1.35 "TT Commons Pro Mono", "Graphik Web", monospace; letter-spacing: 1px; text-shadow: none; border-radius: 3px; background: radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); border-top: 2px dashed rgba(43, 47, 54, 0.35); }
       body.dispatch #job:empty { display: none; }

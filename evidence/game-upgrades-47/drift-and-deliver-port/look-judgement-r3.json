@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-1/drift-and-deliver-port--default--settle-60s.jpg",
+      "sha256": "75026dc38e2494d7d3a7951b7b9fa88b890e8376714d174e159c9f10bf053fa0"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "29883e660e80193a5f1681e843c914f8aa9b863fe152a8b5fcdffc54c536cb69"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "6fb982405feb28ba710f9e26a8a92f8911e8dc59719ac28fe0403f89517b44d9"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-2/drift-and-deliver-port--golden--settle-25s.jpg",
+      "sha256": "89a50c2c2008979c1ac43eb8b9e1457197c9f686d3dc403d5217e1ad1d3530b3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The time-of-day cycle works. It moves from golden (frames 1 and 4) to orange sunset to blue dusk with emissive windows. But the key light reads as flat ambient tint. No low-angle sun direction is legible on the building faces, and the headlight is a flat white rectangle on the road, not an amber pool."
+    },
+    {
+      "category": "shadows",
+      "seen": "The low sun should cast long shadows across the street canyon, but none appear. Buildings, lamp posts, traffic lights and the pedestrian cast nothing visible. The car has only a faint dark smudge underneath, with no crisp contact shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car paint is matte teal with no sky or environment reflection. The rear glass shows no reflection of the orange sky, and the building windows are flat dark-blue fills with no reflected sky gradient."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The street canyon is symmetric and repetitive, built from identical facade modules, lamps and traffic lights. Hard road markings and a turn arrow add some readability. The world is clean but sparse: one blocky pedestrian, no traffic, no props."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A distant warm haze sits at the vanishing point and the far skyline fades, roughly matching the 30–180 m fog intent. There is no mid-distance aerial perspective, no sun shafts and no dust or particulates. Fog density looks the same in every frame."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The car uses a low-res, blotchy scanned-looking texture, and the license plate is a blurred grey patch. Building surfaces are untextured flat colours. The asphalt has no roughness variation, wetness or wear."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly box buildings are acceptable stylisation, but the pedestrian is a crude blocky figure. The hatchback is lumpy, with a soft, melted silhouette that clashes in fidelity with the crisp flat-shaded buildings."
+    },
+    {
+      "category": "composition",
+      "seen": "The car is centred on the yellow line with a strong one-point perspective to the bright sky slot. The subject covers roughly 10% of the frame area, which is under the 15–25% target. The framing is very static and symmetric."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam sits at about 60° FOV, behind and slightly above the car. It holds an identical framing in all four frames, with no lag, roll or speed cues."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild colour grading per time of day. Bloom is barely visible on the street lamps and window emissives, with no lens or film grain, vignette or cinematic tonemap contrast. The night frame looks muddy rather than graded."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The minimal orange-ring speedometer is clean. The minimap is a dense, noisy pixel grid with no legible route or player marker emphasis, and the two widgets do not share a visual language."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

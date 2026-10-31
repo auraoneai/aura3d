@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bluehour",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Quite dark at the edges and on the sidewalks; the headlight cone shows as a pale, slab-like strip on the road ahead of the car; the car sits low in the frame and its wheels are cut off. Otherwise strong mood: lit windows, deep blue sky, warm street lamps.",
+     "Overall dark with crushed shadows on the road and lower facades; the headlight beam ahead of the car looks like a flat pale slab; the far end of the street fades into a grainy haze patch.",
+     "A pale, translucent headlight-cone slab rises above the car roof into the road ahead and looks like a glitch. The foreground road and car underside are fairly dark, and the faint dotted sky texture at the vanishing point looks slightly noisy. Otherwise it has strong blue-hour mood, lit windows, warm lamps and good depth."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Car sits low in the frame and its wheels are cut off; the asphalt is very dark close to the camera; some window glass looks flat.",
+     "Some building faces fall into deep shadow; the road surface is very dark near the camera; the HUD speedometer is small. Otherwise it has good contrast, warm directional light and depth.",
+     "Foreground asphalt is quite dark and the car is a little underlit at the bottom. There is a faint pale disc decal on the road at left. The minimap is busy."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Car sits low in the frame and its wheels are cut off; dark foreground asphalt; golden tint is subtle but has good contrast and depth.",
+     "Dark asphalt and shadowed lower facades lose some detail; the golden tint is mostly in the sky gap.",
+     "Foreground road is fairly dark and there is a faint pale disc decal on the asphalt. The golden tone is subtle rather than strong. Otherwise it has warm directional light, good contrast and clear depth down the avenue."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Foreground road is fairly dark; the car's wheels are cropped at the bottom; a slight pale headlight strip ahead of the car. Strong orange sky glow and lit windows give good atmosphere.",
+     "The headlight beam on the road reads as a pale flat patch; the near road and lower buildings are quite dark; slight sparkle/noise at the vanishing point.",
+     "A slight translucent headlight-cone slab appears above the car roof. The foreground is dark, and the sparkly dotted noise at the vanishing point looks a bit glitchy. Otherwise the orange sunset sky, lit windows and contrast give a strong mood."
+    ]
+   }
+  ]
+ }
+]

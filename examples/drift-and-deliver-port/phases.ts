@@ -80,6 +80,12 @@ export const HDRI_SUN_AZIMUTH_DEG = 36;
 
 /** The shift's sun azimuth: down the diagonal of the street grid, so it rakes both the x and the z avenues. */
 const SUN_AZ = 36;
+/**
+ * GU47 phase 3: the shadowed key comes from behind the chase camera's left shoulder (as in the 4.6.2 rig), so the
+ * facades and the courier face into warm light and the shadows fall ahead down the street. With the key under the
+ * sky sun (ahead, down the canyon) every judged frame was backlit: grey facades, flat street, weak shadows.
+ */
+const KEY_AZ = -150;
 
 export const PHASES: readonly PhaseRow[] = [
   {
@@ -87,15 +93,17 @@ export const PHASES: readonly PhaseRow[] = [
     at: 10,
     timeOfDay: "golden hour just after summer rain, sun 14 deg",
     sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
-    key: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
+    key: { azimuthDeg: KEY_AZ, elevationDeg: 15, color: "#ffb766", intensity: 7.0 },
     hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
-    environmentIntensity: 1.0,
+    // phase 3 round 3: key up, IBL fill down, so the buildings, poles and the courier throw shadows the eye can see
+    // (rubric g18p3-r2: "no shadows despite a low sun"; the venice_sunset fill at 1.0 washed them out)
+    environmentIntensity: 0.65,
     // blind-panel fix pass: thinner warm haze, stronger contrast, saturation and warmth, softer bloom, no grain
     // (the panel read the cool #c9d6dc haze at 0.0019 as muddy, low-contrast and barely golden next to 4.6.2)
     fog: { color: "#efc896", density: 0.0011 },
     sky: { horizon: "#ffd9a8", mid: "#f4b98e", top: "#d9956f", glow: "#ffd08a", clouds: 0.55, stars: 0 },
     grade: { contrast: 1.22, saturation: 1.34, temperature: 0.16 },
-    bloom: { intensity: 0.4, threshold: 1.0 },
+    bloom: { intensity: 0.5, threshold: 0.9 },
     vignette: 0.22,
     grain: 0,
     windows: 0.15,
@@ -111,12 +119,13 @@ export const PHASES: readonly PhaseRow[] = [
     at: 120,
     timeOfDay: "sunset, sun 4 deg on the harbour line",
     sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9a52", intensity: 3.3 },
-    key: { azimuthDeg: SUN_AZ - 4, elevationDeg: 12, color: "#ff9a52", intensity: 3.3 },
+    key: { azimuthDeg: KEY_AZ + 4, elevationDeg: 12, color: "#ff9a52", intensity: 4.6 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
-    environmentIntensity: 0.8,
+    environmentIntensity: 0.55,
     // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)
     fog: { color: "#d8967a", density: 0.0013 },
-    sky: { horizon: "#ff9a5c", mid: "#e07a62", top: "#9c5a70", glow: "#ffb070", clouds: 0.5, stars: 0 },
+    // phase 3: glow and horizon a step down (the panel read the sunset vanishing point as slightly blown out)
+    sky: { horizon: "#f28a52", mid: "#e07a62", top: "#9c5a70", glow: "#f59a5e", clouds: 0.5, stars: 0 },
     grade: { contrast: 1.22, saturation: 1.3, temperature: 0.16 },
     bloom: { intensity: 0.5, threshold: 0.95 },
     vignette: 0.24,
@@ -199,12 +208,14 @@ export function parseAt(raw: string | null | undefined): number | undefined {
  * capture rounds, worse than 4.6.2); `?look=shift` still forces it.
  */
 /**
- * Blind-panel fix pass: only the blue-hour pin (`?at=` at or past `SHIFT_LOOK_FROM`) was judged better than 4.6.2, so
- * the default run, golden (`at=10`) and sunset (`at=120`) fall back to the 4.6.2 look; `?look=shift` still forces it.
+ * GU47 phase 3 (4.7.1): the shift look is the default again for every pinned and unpinned view with the HDRI on
+ * (the key now front-lights the street, the stucco is warmer and the dial sits clear of the bumper; blind panel in the
+ * lane report). `SHIFT_LOOK_FROM` is the lowest `?at=` pin that opens the shift look; `?look=original` and
+ * `?look=shift` force either look, and `env=0` keeps the original look (D11).
  */
-export const SHIFT_LOOK_FROM = 150;
+export const SHIFT_LOOK_FROM = 0;
 export const parseLook = (raw: string | null | undefined, env = true, at?: number): LookMode =>
-  raw === "original" ? "original" : raw === "shift" || (env && at !== undefined && at >= SHIFT_LOOK_FROM) ? "shift" : "original";
+  raw === "original" ? "original" : raw === "shift" || (env && (at === undefined || at >= SHIFT_LOOK_FROM)) ? "shift" : "original";
 
 /* ------------------------------------------------------------------ blending */
 

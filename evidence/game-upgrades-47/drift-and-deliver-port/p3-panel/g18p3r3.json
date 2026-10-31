@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Asphalt is very dark, so lane detail in the lower foreground is hard to read; the car's rear plate and lower bumper look smudged; the minimap is busy",
+     "Asphalt is very dark near the camera, so the lower third is a little heavy; odd pale disc decals on the road at left; plate and bumper textures on the car are blurry",
+     "Asphalt is very dark, almost black, with little surface detail in the lower third. The car's paint texture looks blotchy and the license plate is blurred. The minimap is busy and noisy."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The dark asphalt crushes some foreground detail; texture smudging on the car's rear; otherwise warm, contrasty and well composed",
+     "Dark foreground asphalt; the golden-hour effect is subtle (warm sky and building tints); blurry rear textures on the car; odd pale disc decals on the road",
+     "The road is very dark with little texture. The car's paint texture is blotchy and the plate is blurred. The minimap is cluttered."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The foreground road and lower buildings are quite dark; there is a faint light streak on the road ahead of the car; minor smudging on the car's texture; overall a strong sunset mood with good depth",
+     "Foreground road is quite dark and the lower half is a little murky; slight glow streak on the road ahead of the car; blurry rear textures on the car",
+     "The asphalt and the shadowed building sides are very dark and crush detail at the bottom of the frame. The car's paint texture is blotchy. The far end of the street has slight orange bloom haze. The minimap is cluttered."
+    ]
+   }
+  ]
+ }
+]

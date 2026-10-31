@@ -1,0 +1,50 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The far buildings are slightly hazy. There are odd pale oval decals on the road at left. The car's roof texture is a little smeary. Otherwise the warm lighting, darker asphalt and more varied building colours give better contrast and depth.",
+     "Car paint texture looks a little blotchy and the license plate is blurry. The far end of the street fades into a flat amber haze. Otherwise contrast is strong, the asphalt is dark and the warm light gives the frame depth."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The golden variant is barely different from that build's default frame. Minor haze on the distant street, pale oval road decals at left, and a slightly smeary car texture.",
+     "Looks almost identical to the default scene, so the golden-hour treatment is barely noticeable. Car texture is blotchy and the far end of the street is a flat amber haze."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A bright headlight strip on the road in front of the car looks a bit artificial. Pale oval road decals at left. Otherwise the strong orange sky, warm rim light and dark road give good mood and contrast.",
+     "A bright light band runs down the road from the car to the horizon and looks like an artifact. The orange sky is crushed into a narrow strip between the buildings. Car texture is blotchy."
+    ]
+   }
+  ]
+ }
+]

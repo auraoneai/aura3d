@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g18tools/s4/r3/drift-1280.jpg",
+      "sha256": "5386dba38d5249064e49698ebf4d86af052f968d0610585ff26f90a9a9108a9c"
+    },
+    {
+      "path": "../../../../../tmp/g18tools/s4/r5/pickup-1280.jpg",
+      "sha256": "7aa3cd598f716a32f9ee242ab4378b11c35ceacecfacb7f42c8eae56ee24d043"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "29883e660e80193a5f1681e843c914f8aa9b863fe152a8b5fcdffc54c536cb69"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r3/drift-and-deliver-port/frames/g18p3-r3-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "6fb982405feb28ba710f9e26a8a92f8911e8dc59719ac28fe0403f89517b44d9"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm golden-hour sky gradient is present, and the low sun rakes orange light across the facades in frame 1. Frames 3–4 go flat and dim, with weak key/fill separation. The headlight cone reads as a pale grey wedge rather than amber."
+    },
+    {
+      "category": "shadows",
+      "seen": "Long building shadows appear in frame 1, but contact shadows under the player car and taxi are faint or blob-like. Shadows are absent in the dusk frames. Edges are soft and low-resolution, with no grounding of street props."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car paint and windows show almost no environment reflection. The blue glass on the buildings is flat, the wet look on the asphalt is missing, and there are no specular highlights from the sun on the car body."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Dense, repeating box-skyscraper canyons with lamps, palms, hydrants and traffic lights give scale. The suburban frame adds variety with houses and a desert ridge. Building modules visibly repeat, and the streets are empty of life apart from one taxi, a red car and a blocky pedestrian."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the canyon ends into the orange sky, and the suburb ridge is hazed. However, the fog color doesn't tint the mid-ground, and there are no volumetric sun shafts or dust. The night frame has no atmospheric glow around the lamps."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The player car has a low-res mottled texture with smeared baked dirt, and the license plate is a grey smear. The asphalt is a uniform dark grey with no roughness variation. Facades are flat colored polygons with emissive windows."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car and taxi meshes are reasonably shaped. Buildings are simple extruded boxes with inset windows, the pedestrian is a crude blocky figure, and the palms are low-poly cards. Overall the assets are inconsistent in fidelity."
+    },
+    {
+      "category": "composition",
+      "seen": "The car is centered and sits around the 15–20% target in frames 1–2, but around 25–30% and lower-heavy in frames 3–4. The vanishing-point canyons give strong leading lines, and the taxi in frame 2 frames the shot nicely."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits behind and slightly above the car with an FOV close to 60. It drifts closer and lower in the later frames. There is no visible speed-based FOV kick or motion blur at 102 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is some mild tone mapping and warm grading, but no visible bloom on the lamps or sun, and no vignette or grain for a cinematic-film feel. The dusk frame looks crushed and muddy rather than graded."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The stills show a slight yaw and body roll on the car in frame 1, but no suspension compression cues, wheel blur, or particle effects such as drift smoke despite the DRIFT counter."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is a clean timer, a ticket card with distance/time, a speedometer arc, a nitro bar and a minimap. The minimap is cluttered and illegible at this size, and the HUD in frames 3–4 is stripped down to a speedometer and minimap with no numeric readout."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

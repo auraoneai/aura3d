@@ -16,6 +16,12 @@ export interface GameCfg {
   card: string;
   desktop?: { width: number; height: number };
   lowQuality?: boolean;
+  /**
+   * Optional: split the desktop and mobile state passes into named chunks (each its own test, so one remote run stays
+   * under the 1 h ACR cap on a heavy scene). Each chunk runs its states in order on a fresh page; a chunk must start
+   * with a state that resets the game. Without `chunks` the single desktop and mobile tests run as before.
+   */
+  chunks?: { name: string; states: string[] }[];
 }
 
 const emit = (slug: string, name: string, buf: Buffer): void => {
@@ -106,6 +112,25 @@ export function shotsb(cfg: GameCfg): void {
       process.stdout.write(`@@SBERRORS ${cfg.slug} title ${JSON.stringify(log.slice(0, 8))}\n`);
     });
 
+    if (cfg.chunks) {
+      for (const chunk of cfg.chunks) {
+        const states = cfg.states.filter((s) => chunk.states.includes(s.name));
+        test(`states desktop ${chunk.name} ${cfg.slug}`, async ({ browser }) => {
+          const log: string[] = [];
+          const page = await openGame(browser, server, cfg, cfg.manualQuery, desktop, false, log);
+          await run(page, states, tag(desktop.width), log);
+          process.stdout.write(`@@SBERRORS ${cfg.slug} desktop-${chunk.name} ${JSON.stringify(log.slice(0, 8))}\n`);
+          await page.context().close();
+        });
+        test(`states mobile ${chunk.name} ${cfg.slug}`, async ({ browser }) => {
+          const log: string[] = [];
+          const page = await openGame(browser, server, cfg, cfg.manualQuery, { width: 390, height: 844 }, true, log);
+          await run(page, states.filter((s) => s.mobile !== false), "390", log);
+          process.stdout.write(`@@SBERRORS ${cfg.slug} mobile-${chunk.name} ${JSON.stringify(log.slice(0, 8))}\n`);
+          await page.context().close();
+        });
+      }
+    } else {
     test(`states desktop ${cfg.slug}`, async ({ browser }) => {
       const log: string[] = [];
       const page = await openGame(browser, server, cfg, cfg.manualQuery, desktop, false, log);
@@ -121,6 +146,7 @@ export function shotsb(cfg: GameCfg): void {
       process.stdout.write(`@@SBERRORS ${cfg.slug} mobile ${JSON.stringify(log.slice(0, 8))}\n`);
       await page.context().close();
     });
+    }
 
     test(`card ${cfg.slug}`, async ({ browser }) => {
       const log: string[] = [];

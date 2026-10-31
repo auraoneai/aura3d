@@ -241,7 +241,8 @@ let manualInput: Keys | null = null;
 let hudTimer = 0;
 let renderFailed = false;
 /** GU47 phase 2: shift-look scale of the additive beam cone (presentation only; the spot light keeps full strength). */
-const SHIFT_BEAM_VOLUME = 0.35;
+// phase 3: 0.15 (at 0.35 the rubric and the panel still read the cone as a white slab over the roof)
+const SHIFT_BEAM_VOLUME = 0.15;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
 let beamsUncullable = false;
 let headlightAmount = Math.max(0, Math.min(1, Number(new URLSearchParams(location.search).get("beams") ?? 0) || 0));
