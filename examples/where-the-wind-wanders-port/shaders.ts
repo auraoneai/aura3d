@@ -336,14 +336,10 @@ void main() {
   float fres = 0.04 + 0.96 * pow(1.0 - max(dot(n, view), 0.0), 4.0);
   vec3 refl = reflect(-view, n);
   vec3 skyc = mix(vec3(0.6, 0.8, 0.86), vec3(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
-  // phase 3 (GU47 daylight only, seaSparkle = the key's clearSky): a stronger sky reflection
-  col = mix(col, skyc, fres * (0.55 + 0.25 * seaSparkle));
+  col = mix(col, skyc, fres * 0.55);
   float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
   float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
   col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
-  // phase 3: daylight sparkle on the wind ripples (the sun sits behind the camera, so the glint alone never shows)
-  float sparkle = smoothstep(0.86, 0.99, vnoise(p * vec2(7.0, 12.0) + vec2(t * 0.9, -t * 0.5))) * smoothstep(0.55, 0.85, a0);
-  col += vec3(1.0, 0.98, 0.92) * sparkle * 0.55 * seaSparkle;
   // foam breathes along the shore
   float breathe = 0.5 + 0.5 * sin(t * 1.1 + off * 1.6 + a0 * 6.0);
   float foam = (1.0 - smoothstep(0.0, 2.4, off + 0.6 * breathe)) * step(-0.8, off) * (0.35 + 0.65 * breathe) * smoothstep(0.35, 0.7, vnoise(p * 1.6 + t * 0.2));
