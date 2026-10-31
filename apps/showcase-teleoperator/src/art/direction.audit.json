@@ -421,7 +421,7 @@
       },
       {
         "node": "sf-glass-obelisk-crown",
-        "emissiveIntensity": 1.65,
+        "emissiveIntensity": 0.55,
         "practical": true
       },
       {
