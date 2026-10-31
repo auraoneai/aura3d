@@ -133,6 +133,11 @@ export interface CourtRig {
   readonly lensFlare: readonly { readonly name: string; readonly position: AuraVec3; readonly intensity: number }[];
   /** H47-E4 (C): Preetham sky for the two daylight courts (E-G sky flag, default-on). */
   readonly preethamSky: boolean;
+  /**
+   * GU47 phase 3: a painted gradient sky behind the court (the HDRI keeps lighting it). Rucker and Athens drew a flat,
+   * washed pale strip above the horizon (blind panel round g07p3r1); a sky with a real zenith and horizon gives depth.
+   */
+  readonly gradientSky?: { readonly zenith: AuraColor; readonly horizon: AuraColor; readonly ground: AuraColor; readonly horizonGlow: number; readonly clouds?: number };
   /** H47-E3: real water (Venice surf, Shanghai river). */
   readonly water: "none" | "ocean" | "river";
   /** H47-E1: skyline distance in metres (60-120) and the court backdrop set (WP-36 backdrop kit; today's models stay). */
@@ -198,7 +203,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
     // GU47 phase 3: the haze is gone, so the extra stop would only lift the black point: 1.0 -> 0.6.
     exposureEv: 0.6,
-    fog: { color: "#46506a", near: 28, far: 210 },
+    fog: { color: "#4a4a62", near: 28, far: 210 },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 0.92, temperature: -0.08, tint: 0.02 },
     // GU47 phase 3: 0.6 / 0.8 bloomed the sodium heads and the sunset sky into a veil over the left half of the frame
@@ -213,6 +218,8 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 3: the two camera-facing flood flares are off (they veiled the chase frame; blind panel).
     lensFlare: [],
     preethamSky: false,
+    // blue hour: deep indigo zenith down to the last sunset glow over the walk-ups
+    gradientSky: { zenith: "#101a3e", horizon: "#c8714a", ground: "#25282d", horizonGlow: 0.6 },
     water: "none",
     skylineDistance: 92,
     backdrop: "brick walk-ups behind a 4 m chain-link fence",
@@ -276,8 +283,9 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     practicals: [],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
     lensFlare: [],
-    // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); the outdoor-midday HDRI is the sky.
+    // GU47 phase 3: the noon Preetham sky is off (suspect in the white-out); a painted noon gradient is the sky.
     preethamSky: false,
+    gradientSky: { zenith: "#2d6cc4", horizon: "#bcd6ec", ground: "#8c8579", horizonGlow: 0.2, clouds: 0.25 },
     water: "none",
     skylineDistance: 100,
     backdrop: "whitewashed hillside and rooftop parapets",
@@ -364,9 +372,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // Earth-shine key, ribs and +0.6 EV for p95 >= 215 and darkFrac <= 0.6.
     environmentIntensity: 1.0,
     environmentRotationDeg: 0,
-    // Earth-shine from where the planet hangs ((-60, 130, -300) -> elevation 24, azimuth 191).
-    sun: { elevationDeg: 24, azimuthDeg: 191 },
-    key: { color: "#9fc8ff", intensity: 3.2 },
+    // GU47 phase 3: the deck key comes from the station gallery behind the broadcast camera. Earth-shine from where the
+    // planet hangs (elevation 24, azimuth 191) backlit every player into a black silhouette once the dome was gone.
+    sun: { elevationDeg: 50, azimuthDeg: 20 },
+    key: { color: "#cfe2ff", intensity: 2.8 },
     exposureEv: 0.9,
     fog: { color: "#0b1120", near: 70, far: 420 },
     post: "space",
@@ -507,6 +516,14 @@ export function courtLensFlareNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNod
 
 /** H47-E4 (C): Preetham sky on the two daylight courts, sun matched to the key; the HDRI keeps lighting the scene. */
 export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  const g = rig.gradientSky;
+  if (g) {
+    return [sky.gradient({
+      name: `${rig.id}-gradient-sky`, zenith: g.zenith, horizon: g.horizon, ground: g.ground, horizonGlow: g.horizonGlow,
+      ...(g.clouds ? { clouds: { coverage: g.clouds, speed: 0.01, color: "#ffffff" } } : {}),
+      captureEnvironment: false, affectsFog: true
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+  }
   if (!rig.preethamSky) return [];
   return [sky.preetham({ name: `${rig.id}-preetham-sky`, sun: { elevationDeg: rig.sun.elevationDeg, azimuthDeg: rig.sun.azimuthDeg }, turbidity: rig.id === "venice" ? 6 : 2.4, rayleigh: rig.id === "venice" ? 2.2 : 1.1, captureEnvironment: false, affectsFog: true }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
@@ -719,5 +736,5 @@ export function courtRibNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
     position: [p.position[0], (p.position[1] + p.height / 2) / 2, p.position[2]] as AuraVec3,
     scale: [p.width * 0.5, p.position[1] + p.height / 2, p.width * 0.5] as AuraVec3
   }));
-  return [instances.box({ name: "orbit-ribs", transforms: ribs, castShadow: false, material: material.emissive({ color: "#0b1626", emissive: "#7dfcff", emissiveIntensity: 3.5, bloom: 1.5 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+  return [instances.box({ name: "orbit-ribs", transforms: ribs, castShadow: false, material: material.emissive({ color: "#0b1626", emissive: "#7dfcff", emissiveIntensity: 1.4, bloom: 1 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
