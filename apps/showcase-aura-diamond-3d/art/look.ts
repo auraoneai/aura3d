@@ -133,11 +133,11 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "last light, sun 9 degrees above the sea",
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.9, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "preetham", turbidity: 6.5, rayleigh: 2.4 },
+    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
     sun: { elevationDeg: 9, azimuthDeg: 250, color: "#ff9a52", intensity: 2.5, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
     // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
-    fog: { color: "#d9a57c", density: 0.0014, intensity: 0.14 },
+    fog: { color: "#d9a57c", density: 0.001, intensity: 0.08 },
     exposureEv: 0.05,
     background: "#e0a070",
     accent: "#f08a4b",
@@ -148,7 +148,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.85, intensity: 0.24 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.16, saturation: 1.1, temperature: 0.22, tint: 0.02 },
+      grade: { contrast: 1.2, saturation: 1.1, temperature: 0.22, tint: 0.02 },
       lut: "diamond-harbor-last-light.cube"
     },
     turf: { grass: "#41702f", stripe: "#4b7d35", clay: "#b86a42", track: "#7a4a33", trackRoughness: 0.92, chalk: "#efe4cc" },
@@ -238,8 +238,9 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       grade: { contrast: 1.04, saturation: 1.06, temperature: 0.15, tint: -0.03 },
       lut: "diamond-ivy-sunrise.cube"
     },
-    // Blind panel: the 24-degree sun raked the clay normals into a camouflage pattern; flatter normals like Lunar.
-    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf", normalScale: { grass: 0.35, clay: 0.15 } },
+    // Blind panel: the 24-degree sun raked the clay normals into a camouflage pattern (still there at 0.15), so Ivy's
+    // clay has no normal map (scale 0 drops it); the turf keeps flatter blades.
+    turf: { grass: "#3d7a35", stripe: "#468640", clay: "#b4623c", track: "#7c4630", trackRoughness: 0.9, chalk: "#e8e2cf", normalScale: { grass: 0.35, clay: 0 } },
     crowd: ["#6fbf6a", "#b23a2e", "#e8e2cf", "#2d4f8a", "#e6a640", "#5b3d2e", "#8fb8d6"],
     signature: { splinter: "#d6b282", flash: "#fff0d2", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
@@ -268,7 +269,8 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       grade: { contrast: 1.1, saturation: 0.98, temperature: 0.1, tint: 0.02 },
       lut: "diamond-dome-storm.cube"
     },
-    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", clayRoughness: 0.42, track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc" },
+    // Blind panel round 2: the sealed infield read blotchy through the pebble normals; smooth synthetic, no clay normal.
+    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", clayRoughness: 0.42, track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc", normalScale: { grass: 0.6, clay: 0 } },
     crowd: ["#8f83f2", "#e4e3dc", "#f0b44a", "#2c3550", "#d0546b", "#4fa3a0", "#a7adbd"],
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",

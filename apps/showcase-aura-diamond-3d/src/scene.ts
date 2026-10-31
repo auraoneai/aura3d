@@ -84,7 +84,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
+    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex && (turf.normalScale?.clay ?? 0.5) > 0 ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
