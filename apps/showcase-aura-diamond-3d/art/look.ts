@@ -162,10 +162,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "blue hour after rain",
     baseLook: "night-city",
     hdri: { id: "rooftop_night", intensity: 1.6, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
-    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.4, colorTemperatureK: 9000 },
+    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.0, colorTemperatureK: 9000 },
     rim: false,
-    fog: { color: "#1c2c44", density: 0.0045, intensity: 0.38 },
-    exposureEv: 1.4,
+    fog: { color: "#1c2c44", density: 0.0045, intensity: 0.24 },
+    exposureEv: 1.0,
     background: "#0b1422",
     accent: "#4fc3e8",
     post: {
@@ -175,7 +175,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.65, intensity: 0.42 },
       grain: 0.03,
       vignette: 0.24,
-      grade: { contrast: 1.12, saturation: 1.04, temperature: -0.25, tint: 0.04 },
+      grade: { contrast: 1.2, saturation: 1.1, temperature: -0.2, tint: 0 },
       lut: "diamond-midtown-blue-hour.cube"
     },
     turf: { grass: "#2f5a36", stripe: "#376640", clay: "#7a4b37", track: "#3a2c26", trackRoughness: 0.28, chalk: "#e6e1d2" },
