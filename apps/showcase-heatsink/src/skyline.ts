@@ -56,7 +56,8 @@ export function skylineLayout(layer: SkylineLayerSpec, nearest: boolean): Skylin
     const [hMin, hMax] = layer.height;
     const [wMin, wMax] = layer.width;
     const height = spire ? hMin + (hMax - hMin) * (0.6 + 0.4 * next()) : hMin + (hMax - hMin) * next() * 0.85;
-    const width = spire ? Math.max(3, wMin * (0.25 + 0.2 * next())) : wMin + (wMax - wMin) * next();
+    // GU47 phase 3: spires at least 7 m wide (the panel read 3 m spires at 180-450 m as stray poles and broken slivers).
+    const width = spire ? Math.max(7, wMin * (0.4 + 0.25 * next())) : wMin + (wMax - wMin) * next();
     const distance = layer.distance * (0.94 + 0.12 * next());
     const rad = (angle * Math.PI) / 180;
     out.push({ x: Math.sin(rad) * distance, z: -Math.cos(rad) * distance, yaw: -rad, width, height, depth: spire ? width : width * (0.6 + 0.5 * next()), spire });

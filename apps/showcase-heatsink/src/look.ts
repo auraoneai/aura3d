@@ -109,7 +109,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#2a1d14", density: 0.011 },
     // GU47 phase 3 (forward title pose, cobblestone night sky): round 1 measured mean 41 at +0.35 and 50 at +0.8 (band 45-70, software WebGL2).
-    exposureEv: 0.6,
+    // Round 2: mean 55 at +0.6 and 64 at +1.0 under cobblestone_street_night; kloppenheim_02 has a darker sky.
+    exposureEv: 0.8,
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.18, tint: -0.03 },
     lutIntensity: 0.6,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ffb070" },
@@ -140,7 +141,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     // and hid the drone. Round 1 (-1 EV, inscatter 0.5) landed 68.8, too close to the ceiling; round 2 thins the dust further.
     // GU47 phase 3: with the boot fixed, round 1 measured mean 54 at -1.1 and 64 at -0.6 (software WebGL2); the frame read murky.
     exposureEv: -0.9,
-    grade: { contrast: 1.06, saturation: 0.9, temperature: 0.32, tint: 0.03 },
+    // Round 2 panel: "muddy brown monochrome, low contrast": more contrast and colour, a little less warmth.
+    grade: { contrast: 1.16, saturation: 1.02, temperature: 0.24, tint: 0.03 },
     lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
     vignette: 0.28,
@@ -168,7 +170,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     fog: { color: "#2a2348", density: 0.008 },
     // GU47 phase 2: the after capture measured mean 73.3 (band 45-70, software WebGL2), mostly the bright pre-dawn sky.
     // GU47 phase 3: round 1 measured mean 98 at -0.25 (software WebGL2, sun glare in the old backward title pose).
-    exposureEv: -0.7,
+    // Round 2: mean 45.5 at -0.7 and 35 at -1.2 (60 s, software WebGL2), against the 45-70 band.
+    exposureEv: -0.45,
     grade: { contrast: 1.1, saturation: 1.08, temperature: -0.12, tint: 0.12 },
     lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },
