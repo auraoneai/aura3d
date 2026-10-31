@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/rubric-r2/hud-aiming-1280x720.jpg",
+      "sha256": "8b8a76f0851eaff602cfdeade7854d253c0b3000468967155f947fc13f77471f"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r2/slingshot-siege/frames/g12p3-r2-5/slingshot-siege--ch3--settle-60s.jpg",
+      "sha256": "a729b243862a318cecc6d41fea5cab1f77a14d1bf3d40efe1870f8ce96085091"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r2/slingshot-siege/frames/g12p3-r2-6/slingshot-siege--ch4--settle-60s.jpg",
+      "sha256": "3ba0ec3571c1b4412b16c78617e08ce899dbe3133388417012d0ffd9876c142a"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r2/slingshot-siege/frames/g12p3-r2-7/slingshot-siege--ch5--settle-60s.jpg",
+      "sha256": "0249bbcdc1234d7f647d059df57aa8e85ae54d1eafc6211ea971c3608d15efda"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Per-level time-of-day grading (overcast, golden, sunset, night) changes the mood, but the key light is flat. No rim separation on the slingshot, windmill or fort. Night frame leaves the rocks crushed to near-black silhouettes."
+    },
+    {
+      "category": "shadows",
+      "seen": "Shadows are mostly absent or very soft in the day frames, so the props float on the grass. The night frame shows hard, stretched shadows from the crates, barrel and hills, inconsistent with the other frames."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No visible specular or environment reflection on the barrel metal bands, stone or water. Everything reads as matte diffuse."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A circular grass island with photoscanned boulders, stylized cone trees, scattered pegs and a flat sea plane. Layout is identical across all four levels. Only the sky and the target fort change."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Hazy horizon fade in the dusk frames and a starfield in the night frame. No fog depth, particles, dust or water spray."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Photoscanned rock and wood-pile textures sit next to untextured flat-green grass and plain cone trees. This is a stylistic clash of realistic and flat-shaded materials."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Windmill, arch, crates, barrel and slingshot are readable and charming. The ground cover is primitive cones and boxes, and the target forts are small and simple."
+    },
+    {
+      "category": "composition",
+      "seen": "Slingshot at left and fort at far right frame a wide, empty foreground of grass. The targets occupy a small fraction of the frame, and the foreground lacks a focal interest."
+    },
+    {
+      "category": "camera",
+      "seen": "Low perspective three-quarter side view, appropriate for a slingshot game but far from the recipe's top-down orthographic. A fixed framing that repeats exactly across all levels."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Warm color grading on the dusk levels and a slight vignette or dither in the night frame. No bloom on the sunset sun, and no depth of field or tonemapping nuance visible."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames only. No projectile in flight, debris or motion cues visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean top nav tabs, a framed parchment score card with stars, a level banner, and egg ammo slots with a selection highlight. Also a tutorial tooltip and a bottom key-hint bar. Readable and themed, though the bottom bar is dense."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
