@@ -109,8 +109,9 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#2a1d14", density: 0.011 },
     // GU47 phase 3 (forward title pose, cobblestone night sky): round 1 measured mean 41 at +0.35 and 50 at +0.8 (band 45-70, software WebGL2).
-    // Round 2: mean 55 at +0.6 and 64 at +1.0 under cobblestone_street_night; kloppenheim_02 has a darker sky.
-    exposureEv: 0.8,
+    // Round 2: mean 55 at +0.6 and 64 at +1.0 under cobblestone_street_night; round 3 (kloppenheim_02, +0.8) 66.4, near
+    // the 70 ceiling (60 s, software WebGL2).
+    exposureEv: 0.6,
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.18, tint: -0.03 },
     lutIntensity: 0.6,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ffb070" },
