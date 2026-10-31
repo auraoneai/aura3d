@@ -79,16 +79,17 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     environment: { kind: "capture", intensity: 0.85 },
     fog: { color: "#2a2a4d", density: 0.0011, maxOpacity: 0.78, heightMist: 1 },
     post: {
-      bloom: { intensity: 0.45, threshold: 0.72, radius: 0.5 },
-      grade: { contrast: 1.1, saturation: 1.08 },
+      bloom: { intensity: 0.3, threshold: 0.78, radius: 0.5 },
+      grade: { contrast: 1.1, saturation: 1.2 },
       vignette: { intensity: 0.24, smoothness: 0.7 },
       grain: { intensity: 0.035, size: 1.6 }
     },
     camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
     planet: { position: GIANT_POSITION, size: 520, ring: true, moon: true },
-    // Phase 2 (software WebGL2 capture): the 18-degree raking key lands at about a third of the original key's N.L on the
-    // road, so the frame read mean 32 against the 60-110 band. +1.75 EV keeps the rig ratios (art direction) and lifts it.
-    exposureEV: 1.75,
+    // Phase 2 (software WebGL2 capture): the freeze frame read mean 32 (engine light-uniform and frame-camera bugs, fixed on
+    // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
+    // +1.0 EV with less bloom and more saturation: rider and crater keep their colour, the frame stays inside 60-110.
+    exposureEV: 1.0,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {
