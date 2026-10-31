@@ -169,7 +169,7 @@ export function isNightVenue(id: VenueId): boolean {
  * unshadowed tower spots with their cones, flat turf, no weather, flares, mirror, rim or venue post). PRD D11: a venue
  * whose GU47 frame cannot beat its 4.6.2 frame defaults to "original".
  */
-export type FcLookMode = "gu47" | "original";
+export type FcLookMode = "gu47" | "original" | "hybrid";
 
 /** The 4.6.2 venue looks (apps/showcase-aura-fc-3d/src/game/scene.ts at 4.6.2, VENUE_LOOKS). */
 export interface FcOriginalLook {
@@ -196,8 +196,90 @@ export const DEFAULT_LOOK_MODE: Readonly<Record<VenueId, FcLookMode>> = {
   munich: "original", kyoto: "original", favela: "original", lagos: "original", uyuni: "original", glacier: "original"
 };
 
-/** `?look=original` / `?look=gu47` override the venue default. */
+/** `?look=original` / `?look=gu47` / `?look=hybrid` override the venue default. */
 export function fcLookMode(venue: VenueId, search: string = typeof location === "undefined" ? "" : location.search): FcLookMode {
   const q = new URLSearchParams(search).get("look");
-  return q === "original" || q === "gu47" ? q : DEFAULT_LOOK_MODE[venue];
+  return q === "original" || q === "gu47" || q === "hybrid" ? q : DEFAULT_LOOK_MODE[venue];
 }
+
+/** True when the look path keeps the 4.6.2 base (lighting rig, camera, no rail): "original" and "hybrid". */
+export function usesOriginalBase(mode: FcLookMode): boolean {
+  return mode !== "gu47";
+}
+
+/* ---------------- Phase 2, second pass: the hybrid look path, `?look=hybrid` ---------------- */
+
+/**
+ * The hybrid path keeps everything the 4.6.2 frame got right (its look preset with the IBL and the cascaded key, the
+ * four unshadowed tower spots, the 9.5 m broadcast camera, the stands and bowl) and layers the GU47 upgrades that
+ * survived the phase-2 captures on top: a real night sky instead of the studio HDRI painted as the sky (the HDRI still
+ * lights the bowl), the venue grade, a rim on the night venues, textured turf, weather, lens flares on the far banks,
+ * the venue vignette / grain / chromatic aberration, Uyuni's mirror flat at 1024 and a Glacier dome that encloses the
+ * bowl instead of cutting through the far touchline.
+ */
+export interface FcHybridLayer {
+  /** Sky colour that replaces the look's drawn HDRI sky (the HDRI keeps lighting the scene); undefined = the look sky. */
+  readonly background?: string;
+  readonly exposureEv: number;
+  /** Multiplier on the 4.6.2 tower-spot intensity. */
+  readonly floodScale: number;
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
+  readonly rim: { readonly color: string; readonly intensity: number; readonly azimuthDeg: number } | null;
+  readonly flares: boolean;
+  readonly weather: FcWeather;
+  readonly surface: "grass" | "ice" | "plain";
+  readonly turfRoughness: number;
+  readonly mirror: { readonly resolution: number; readonly tint: string } | null;
+  readonly bloom: { readonly intensity: number; readonly threshold: number };
+  readonly vignette: number;
+  readonly grain: number;
+  readonly chromaticAberration: number;
+  /** Glacier dome scale [x, y, z] (4.6.2: [1.22, 1, 1.22], which cut through the far touchline); undefined = 4.6.2. */
+  readonly domeScale?: readonly [number, number, number];
+}
+
+export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
+  munich: {
+    background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
+    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.12, tint: 0 },
+    rim: { color: "#8fc8ff", intensity: 0.8, azimuthDeg: 200 }, flares: true, weather: "rain",
+    surface: "grass", turfRoughness: 0.55, mirror: null,
+    bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
+  },
+  kyoto: {
+    background: "#120814", exposureEv: 0.08, floodScale: 1.3,
+    grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
+    rim: { color: "#ff5fa2", intensity: 0.8, azimuthDeg: 160 }, flares: true, weather: "drizzle",
+    surface: "grass", turfRoughness: 0.55, mirror: null,
+    bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
+  },
+  favela: {
+    background: "#140d07", exposureEv: 0.08, floodScale: 1.3,
+    grade: { contrast: 1.1, saturation: 1.05, temperature: 0.25, tint: -0.05 },
+    rim: { color: "#ffc27a", intensity: 0.7, azimuthDeg: 190 }, flares: true, weather: "dust",
+    surface: "plain", turfRoughness: 0.9, mirror: null,
+    bloom: { intensity: 0.28, threshold: 0.8 }, vignette: 0.28, grain: 0.05, chromaticAberration: 0
+  },
+  lagos: {
+    exposureEv: -0.35, floodScale: 1,
+    grade: { contrast: 1.12, saturation: 1.15, temperature: 0.2, tint: 0 },
+    rim: null, flares: false, weather: "none",
+    surface: "plain", turfRoughness: 0.95, mirror: null,
+    bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
+  },
+  uyuni: {
+    exposureEv: -0.6, floodScale: 1,
+    grade: { contrast: 1.06, saturation: 1.0, temperature: 0.08, tint: 0 },
+    rim: null, flares: false, weather: "none",
+    surface: "plain", turfRoughness: 0.3, mirror: { resolution: 1024, tint: "#eef3f8" },
+    bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.2, grain: 0, chromaticAberration: 0
+  },
+  glacier: {
+    background: "#050b14", exposureEv: 0.08, floodScale: 1.3,
+    grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
+    rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",
+    surface: "ice", turfRoughness: 0.3, mirror: null,
+    bloom: { intensity: 0.3, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
+    domeScale: [2.4, 1.6, 2.4]
+  }
+};

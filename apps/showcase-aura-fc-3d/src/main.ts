@@ -22,7 +22,7 @@ import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
-import { ORIGINAL_LOOKS, fcLookMode } from "./game/look";
+import { ORIGINAL_LOOKS, fcLookMode, usesOriginalBase } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
@@ -81,8 +81,9 @@ function boot(): void {
     return loadSave().venue;
   })();
   let sceneVenue: VenueId = bootVenue;
-  // PRD D11: the venue's look path (`?look=original` = the 4.6.2 look; the default is per venue, look.ts)
-  const bootOriginal = fcLookMode(bootVenue) === "original";
+  // PRD D11: the venue's look path (`?look=original` = the 4.6.2 look; the default is per venue, look.ts). The hybrid
+  // path keeps the 4.6.2 base (app look options, no output preset, camera, no rail) under its GU47 layers.
+  const bootOriginal = usesOriginalBase(fcLookMode(bootVenue));
   const noAo = bootParams.get("ao") === "0";
   // PRD 6.3: read before the first scene build (weather emission, motion blur and chromatic aberration follow it)
   const reducedMotion = bootParams.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
@@ -407,7 +408,7 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
-      const shot = fcLookMode(sceneVenue) === "original" ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
+      const shot = usesOriginalBase(fcLookMode(sceneVenue)) ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
