@@ -3869,6 +3869,7 @@ function setBroadcastPost(on: boolean, eye?: BroadcastV3, focus?: BroadcastV3): 
  * once nothing runs, and the live camera and sim resume on the same frame.
  */
 let broadcastRan = false;
+let broadcastWallMs = 0;
 function runBroadcast(dt: number): boolean {
   if (!broadcast.active && !broadcastRan) return false;
   const shot = broadcast.active ? broadcast.update(dt) : null;
@@ -3923,7 +3924,12 @@ auraApp.onFrame(({ dt }) => {
       frame(dt);
       return;
     }
-    if (runBroadcast(dt)) return;
+    // GU47 phase 2: broadcast shots run on wall-clock time (capped at 1 s a frame). The engine dt is clamped, so at the
+    // 1-3 fps of software WebGL2 the 6 s intro rail ran for minutes and settle-60s frames caught the fly-in mid-rail.
+    const nowMs = performance.now();
+    const wallDt = broadcastWallMs > 0 ? Math.min(1, Math.max(0, (nowMs - broadcastWallMs) / 1000)) : dt;
+    broadcastWallMs = nowMs;
+    if (runBroadcast(wallDt)) return;
     simLoop.tick(performance.now());
   });
   frameBoundary.run(flushMarkerPools);
