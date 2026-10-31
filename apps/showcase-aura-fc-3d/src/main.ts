@@ -22,10 +22,11 @@ import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
+import { ORIGINAL_LOOKS, fcLookMode } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
-import { fitCameraToAspect, broadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
+import { fitCameraToAspect, broadcastPose, originalBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
 import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
 import { bindScoreboardText, shownScore } from "./game/scoreboard3d";
 import { loadSave } from "./game/save";
@@ -80,6 +81,8 @@ function boot(): void {
     return loadSave().venue;
   })();
   let sceneVenue: VenueId = bootVenue;
+  // PRD D11: the venue's look path (`?look=original` = the 4.6.2 look; the default is per venue, look.ts)
+  const bootOriginal = fcLookMode(bootVenue) === "original";
   const noAo = bootParams.get("ao") === "0";
   // PRD 6.3: read before the first scene build (weather emission, motion blur and chromatic aberration follow it)
   const reducedMotion = bootParams.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
@@ -93,10 +96,11 @@ function boot(): void {
   try {
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
-      ...looks.appOptions(VENUE_LOOKS[bootVenue].look),
+      ...looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look),
       // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
       // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
-      output: { preset: VENUE_LOOKS[bootVenue].post },
+      // PRD D11: the 4.6.2 look path set no output preset; `?outputPreset=off` is the QA A/B for the GU47 path.
+      ...(bootOriginal || bootParams.get("outputPreset") === "off" ? {} : { output: { preset: VENUE_LOOKS[bootVenue].post } }),
       qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {
@@ -309,9 +313,14 @@ function boot(): void {
   let prevModeTag = "";
   // FC47-C1 broadcast package: tunnel-to-gantry intro once per match (`?intro=off`; reduced motion cuts straight to the
   // gantry), goal replay from the render-side ring buffer (`?replay=off`), full-time orbit, a hard cut on shot changes.
-  const introOff = bootParams.get("intro") === "off" || reducedMotion;
+  // PRD D11: the original look path keeps the 4.6.2 camera too (no rail, the 9.5 m side-follow broadcast rig).
+  const introOff = bootParams.get("intro") === "off" || reducedMotion || bootOriginal;
   const replayOff = bootParams.get("replay") === "off";
   let introPlayed = false;
+  // Phase 2: the rail runs on wall-clock time as well as frame time. Frame dt is clamped to 0.1 s, so on a slow
+  // device (software WebGL2 draws about one frame a second) the 4 s rail took minutes and the camera sat at the tunnel
+  // mouth, inside the weather and fog (the near-black / blank night captures).
+  let introStartMs = 0;
   let shownMode: CamMode = cam.mode;
   let camCuts = 0;
   const replayBuf = createReplayBuffer();
@@ -329,7 +338,7 @@ function boot(): void {
       if (s.phase === "kickoff" || s.phase === "live") cam.mode = "broadcast";
       // FC47-C1: the first kickoff of a match opens on the 4 s tunnel-to-gantry rail
       if (s.phase === "kickoff" && s.half === 1 && s.clock === 0 && !introPlayed && !introOff
-        && (modes.mode === "quick" || modes.mode === "circuit" || modes.mode === "demo")) { cam.mode = "intro"; introPlayed = true; }
+        && (modes.mode === "quick" || modes.mode === "circuit" || modes.mode === "demo")) { cam.mode = "intro"; introPlayed = true; introStartMs = performance.now(); }
       if (s.phase === "shootout") cam.mode = "penalty";
       if (modes.mode === "menu" || modes.mode === "studio" || modes.mode === "circuit") { cam.mode = "menu"; if (modes.mode !== "circuit") introPlayed = false; }
       if (modes.mode === "touch") cam.mode = "lab";
@@ -350,9 +359,10 @@ function boot(): void {
       cam.target = [0, 1.1, 0];
       cam.fov = 46;
     } else if (cam.mode === "intro") {
-      const shot = introRailPose(cam.modeT);
+      const railT = Math.max(cam.modeT, (performance.now() - introStartMs) / 1000);
+      const shot = introRailPose(railT);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
-      if (cam.modeT >= INTRO_RAIL_S) cam.mode = "broadcast";
+      if (railT >= INTRO_RAIL_S) { cam.mode = "broadcast"; cam.modeT = Math.max(cam.modeT, INTRO_RAIL_S); }
     } else if (cam.mode === "replay" && replay) {
       const rb = replay.frame?.ball ?? b;
       const shot = replayPose(replay.side, rb.x, rb.z, reducedMotion, PITCH_HX);
@@ -397,7 +407,7 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
-      const shot = broadcastPose(cam.followX, b.x, b.z);
+      const shot = fcLookMode(sceneVenue) === "original" ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
@@ -728,6 +738,7 @@ function boot(): void {
         ready: appReady,
         framesRendered,
         look: VENUE_LOOKS[sceneVenue].look,
+        lookMode: fcLookMode(sceneVenue),
         vfxPackBursts: vfxFired,
         mode: modes.mode,
         phase: s.phase,

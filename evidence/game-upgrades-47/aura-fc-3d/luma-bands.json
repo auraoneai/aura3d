@@ -1,0 +1,14 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "aura-fc-3d",
+  "note": "WP-19 acceptance bands, copied from the PRD section-5 rows (software WebGL2): FC47-L1 (night venues: Munich and Glacier top row mean <= 45, pitch 55-95, darkFrac 0.05-0.35), FC47-L2 (pitch spread >= 18), FC47-S1 (Uyuni mean 150-190, p5 <= 120), FC47-P3 (night flood bank p95 >= 230, clip < 1%). 'pitch' and 'flood-bank' are the window.__AURA_QA__.crops rects (src/game/qaCrops.ts). Cross-region rules are not single-row checks and are read from the capture by hand in the lane report: L3 player crop >= 20 over crowd crop (Munich, Kyoto), S1 Uyuni grid spread >= 30 and Lagos top-row R-B >= 40, M3 Uyuni bottom row p5 <= 120 and >= 25 below the top row, V2 Glacier sky G-R >= 25. Variants are the ?venue= targets in tests/browser/game-luma-targets.ts.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "variants": {
+    "munich": { "darkFrac": [0.05, 0.35], "clipFrac": [null, 0.01], "cells": { "top": { "mean": [null, 45] } }, "crops": { "pitch": { "mean": [55, 95], "spread": [18, null] }, "flood-bank": { "p95": [230, null] } } },
+    "kyoto": { "darkFrac": [0.05, 0.35], "clipFrac": [null, 0.01], "crops": { "pitch": { "mean": [55, 95], "spread": [18, null] }, "flood-bank": { "p95": [230, null] } } },
+    "favela": { "darkFrac": [0.05, 0.35], "clipFrac": [null, 0.01], "crops": { "pitch": { "mean": [55, 95], "spread": [18, null] }, "flood-bank": { "p95": [230, null] } } },
+    "glacier": { "darkFrac": [0.05, 0.35], "clipFrac": [null, 0.01], "cells": { "top": { "mean": [null, 45] } }, "crops": { "pitch": { "mean": [55, 95], "spread": [18, null] }, "flood-bank": { "p95": [230, null] } } },
+    "lagos": {},
+    "uyuni": { "mean": [150, 190], "p5": [null, 120] }
+  }
+}

@@ -18,7 +18,7 @@ import {
 } from "./dims";
 import { athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
-import { MAIN_FLOOD_TOWER, VENUE_LOOKS, type FcVenueLook } from "./look";
+import { MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
 
 export { VENUE_LOOKS } from "./look";
@@ -30,6 +30,39 @@ export const REFEREE_TARGET_HEIGHT = 1.84;
 export interface FcSceneOptions {
   /** prefers-reduced-motion / ?reducedMotion: weather emission halves, no motion blur, no chromatic aberration. */
   readonly reducedMotion?: boolean;
+  /** Engine-defect gates (default: read from the URL, see `fcEngineGates`). */
+  readonly engineGates?: Partial<FcEngineGates>;
+  /** Look path (default: `fcLookMode`, the venue default or `?look=`). */
+  readonly lookMode?: FcLookMode;
+}
+
+/** PRD D11: true when the venue renders the 4.6.2 look path (`?look=original` or the venue default). */
+export function usesOriginalLook(venue: VenueId, mode?: FcLookMode): boolean {
+  return (mode ?? fcLookMode(venue)) === "original";
+}
+
+/**
+ * GU47 phase-2 fallbacks for three engine defects found by the WP-38 receipts (software WebGL2, image
+ * gu47-after-10301502). Each feature stays authored; it is mounted only when its gate is on, and every gate is off by
+ * default until the owning engine lane lands its fix:
+ * - `spotShadow`: the main-stand flood's PCSS spot shadow. Any bound local shadow uploads `u_localShadowTexelScale`
+ *   as a Float32Array(8), which `MultiDraw.ts` rejects, so Munich, Kyoto, Favela and Glacier failed to mount
+ *   (RENDERER_MOUNT_FAILED, nothing drawn). E-B. Opt in with `?spotShadow=on`.
+ * - `stars`: Glacier's `sky.dayNight` star sky; a sky with no bands uploads a length-0 `u_bandParams` and throws.
+ *   E-G. Opt in with `?stars=on`.
+ * - `lut`: the per-venue display LUT (FC47-P2); the LUT stays pending, then unavailable, so every shot carried
+ *   texPending 1 and the luma-band check rejects it. E-C. Opt in with `?lut=on`.
+ */
+export interface FcEngineGates {
+  readonly spotShadow: boolean;
+  readonly stars: boolean;
+  readonly lut: boolean;
+}
+
+export function fcEngineGates(search: string = typeof location === "undefined" ? "" : location.search, override: Partial<FcEngineGates> = {}): FcEngineGates {
+  const q = new URLSearchParams(search);
+  const on = (k: string) => q.get(k) === "on";
+  return { spotShadow: on("spotShadow"), stars: on("stars"), lut: on("lut"), ...override };
 }
 
 const HIDDEN = 0.0001;
@@ -69,7 +102,7 @@ function venueIdOf(vl: FcVenueLook): VenueId {
   return (Object.keys(VENUE_LOOKS) as VenueId[]).find((id) => VENUE_LOOKS[id] === vl) ?? "munich";
 }
 
-export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
+export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const drawSky = vl.skyHdri !== undefined || vl.look === "golden-hour";
   const ibl = vl.nightIbl;
   return {
@@ -85,7 +118,7 @@ export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
     },
     ...(vl.rim ? { rim: { color: vl.rim.color, intensity: vl.rim.intensity, azimuthDeg: vl.rim.azimuthDeg } } : {}),
     // FC47-P2: the venue's split-tone display LUT rides on the look grade (E-C binds it in the display grade)
-    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, lut: VENUE_LUT_ASSETS[venueIdOf(vl)] },
+    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venueIdOf(vl)] } : {}) },
     post: vl.post,
     ...(vl.skyHdri !== undefined ? { hdri: vl.skyHdri } : {}),
     ...(ibl ? {
@@ -96,9 +129,9 @@ export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
   };
 }
 
-export function venueLookNode(venue: VenueId): any {
+export function venueLookNode(venue: VenueId, gates: FcEngineGates = fcEngineGates()): any {
   const vl = VENUE_LOOKS[venue];
-  const group = looks.preset(vl.look, venueLookOverrides(vl)).toJSON() as any;
+  const group = looks.preset(vl.look, venueLookOverrides(vl, gates)).toJSON() as any;
   if (vl.key.shadowed) return group;
   // The look key always requests a shadow; on night venues it is the unshadowed front fill (FC47-L2).
   return {
@@ -157,9 +190,9 @@ export const FLARE_TOWERS: readonly number[] = [MAIN_FLOOD_TOWER, 0];
  * so a flare also shows through a stand roof; edge fade 0.2). Three elements each (glow on the lamp head, two small
  * ghosts) in the venue's flood colour; day venues get none. Expected cost: 6 additive sprites on the sprite path.
  */
-export function floodFlareNodes(venue: VenueId): any[] {
+export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
   const vl = VENUE_LOOKS[venue];
-  if (!vl.floodShadow) return [];
+  if (!vl.floodShadow || usesOriginalLook(venue, mode)) return [];
   return FLARE_TOWERS.map((i) => {
     const [x, z] = FLOOD_TOWERS[i]!;
     return lights.lensFlare({
@@ -175,7 +208,27 @@ export function floodFlareNodes(venue: VenueId): any[] {
   });
 }
 
-function floodNodes(v: VenueSpec): any[] {
+/** Night venues: intensity of the three secondary tower spots relative to the main-stand flood. */
+export const SECONDARY_FLOOD_SCALE = 0.6;
+
+/** The 4.6.2 floods: a pylon, an unshadowed spot and a 0.3 cone on each of the four towers. */
+function originalFloodNodes(v: VenueSpec): any[] {
+  const nodes: any[] = [];
+  FLOOD_TOWERS.forEach(([x, z], i) => {
+    nodes.push(
+      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
+        .position(x, 0, z)
+        .rotate(0, Math.atan2(-x, -z), 0),
+      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood, color: v.floodColor, distance: 90 }),
+      effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: 0.3, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
+        .runtime(gameRuntime(`flood-cone-${i}`))
+    );
+  });
+  return nodes;
+}
+
+function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[] {
+  if (usesOriginalLook(v.id, mode)) return originalFloodNodes(v);
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
@@ -198,7 +251,7 @@ function floodNodes(v: VenueSpec): any[] {
       lights.spot({
         name: "fc-main-flood", position: mainFloodPosition(), target: [-6, 0, 4], angle: 0.62, penumbra: 0.55,
         intensity: vl.flood, color: vl.floodColor, distance: 120,
-        ...(vl.floodShadow ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {})
+        ...(vl.floodShadow && gates.spotShadow ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {})
       } as any)
     );
   }
@@ -212,6 +265,15 @@ function floodNodes(v: VenueSpec): any[] {
         material: lightPoolMaterial(Math.min(0.32, vl.flood * 0.05))
       }).runtime(gameRuntime("fc-flood-pools"))
     );
+    // Phase 2: the pools alone left the night pitch far darker than 4.6.2 (four 2.3 tower spots); the other three
+    // banks are real unshadowed spots again at SECONDARY_FLOOD_SCALE of the main flood (the main flood keeps the shadow).
+    for (const i of others) {
+      const [x, z] = FLOOD_TOWERS[i]!;
+      nodes.push(lights.spot({
+        name: `fc-flood-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.56, penumbra: 0.55,
+        intensity: vl.flood * SECONDARY_FLOOD_SCALE, color: vl.floodColor, distance: 100
+      } as any));
+    }
   }
   return nodes;
 }
@@ -267,7 +329,9 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
   const vl = VENUE_LOOKS[venue];
   const reducedMotion = opts.reducedMotion === true;
   const nodes: any[] = [];
-  if (vl.starSky) {
+  // PRD D11 original path: 4.6.2 drew no weather, haze or venue post; only the Glacier aurora stays
+  if (usesOriginalLook(venue, opts.lookMode)) return VENUES[venue].aurora ? auroraNodes(reducedMotion) : [];
+  if (vl.starSky && fcEngineGates(undefined, opts.engineGates).stars) {
     // FC47-S1: the polar-night star sky (sky node only; dayNight's legacy spheres and its extra moon light stay out)
     const night = sky.dayNight({ hour: vl.starSky.hour, starLimit: vl.starSky.starLimit });
     const skyNode = night.nodes.find((n: any) => n.kind === "sky");
@@ -345,8 +409,15 @@ export function stripeInstances(v: VenueSpec): { transforms: any[]; colors: stri
  * Ground, apron and pitch materials of a venue (shared by the scene build and applyVenue, so a re-tint never undoes
  * the venue's turf). FC47-M1: the pitch roughness comes from the look row (0.35 wet on Munich and Kyoto).
  */
-export function surfaceMaterials(v: VenueSpec) {
+export function surfaceMaterials(v: VenueSpec, mode?: FcLookMode) {
   const vl = VENUE_LOOKS[v.id];
+  if (usesOriginalLook(v.id, mode)) {
+    return {
+      ground: material.pbr({ color: v.ground, roughness: 0.96 }),
+      apron: material.pbr({ color: v.apron, roughness: 0.9 }),
+      pitch: material.pbr({ color: v.pitch, roughness: 0.85 })
+    };
+  }
   return {
     ground: material.pbr({ color: v.ground, roughness: 0.96 }),
     apron: material.pbr({ color: v.apron, roughness: Math.min(0.9, vl.turfRoughness + 0.1) }),
@@ -387,9 +458,9 @@ export function pitchMaterial(v: VenueSpec) {
 
 /** Mow stripes over textured turf: a 30% tint so the grass texture reads underneath (FC47-M1). */
 export const STRIPE_OPACITY = 0.3;
-export function stripeMaterial(v: VenueSpec) {
+export function stripeMaterial(v: VenueSpec, mode?: FcLookMode) {
   const vl = VENUE_LOOKS[v.id];
-  return vl.surface === "grass"
+  return vl.surface === "grass" && !usesOriginalLook(v.id, mode)
     ? material.pbr({ color: "#ffffff", roughness: vl.turfRoughness, opacity: STRIPE_OPACITY, depthWrite: false })
     : material.pbr({ color: "#ffffff", roughness: 0.85 });
 }
@@ -407,9 +478,9 @@ export function lineMaterial(v: VenueSpec) {
   return material.pbr({ color: v.line, roughness: 0.6, emissive: v.line, emissiveIntensity: 0.08 });
 }
 
-function pitchNodes(v: VenueSpec): any[] {
+function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   const lineMat = lineMaterial(v);
-  const surfaces = surfaceMaterials(v);
+  const surfaces = surfaceMaterials(v, mode);
 
   // Horizontal XZ planes use size: [widthX, 1, depthZ]
   const nodes: any[] = [
@@ -424,14 +495,14 @@ function pitchNodes(v: VenueSpec): any[] {
   // and above the pitch plane. Doubles the scene draws in its capture: `?mirror=off` is the QA fallback (phase 2
   // measures it against the 480-draw Uyuni budget and picks the probe fallback if it is over).
   const mirror = VENUE_LOOKS[v.id].mirror;
-  if (mirror && mirrorEnabled()) {
+  if (mirror && mirrorEnabled() && !usesOriginalLook(v.id, mode)) {
     nodes.push(engineSurfaces.mirror({ name: "fc-mirror", size: [PITCH_HX * 2, PITCH_HZ * 2], resolution: mirror.resolution, tint: mirror.tint, position: [0, 0.006, 0] }));
   }
 
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {
     const st = stripeInstances(v);
-    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v) })
+    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v, mode) })
       .runtime(gameRuntime("fc-stripes")));
   }
 
@@ -553,7 +624,7 @@ export function standTransforms(v: VenueSpec): { position: [number, number, numb
   return out;
 }
 
-function stadiumNodes(v: VenueSpec): any[] {
+function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode?: FcLookMode): any[] {
   const nodes: any[] = [];
 
   /* ---- Favela cage walls (ball bounces off these) ---- */
@@ -637,8 +708,8 @@ function stadiumNodes(v: VenueSpec): any[] {
   }
 
   /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */
-  nodes.push(...floodNodes(v));
-  nodes.push(...floodFlareNodes(v.id));
+  nodes.push(...floodNodes(v, gates, mode));
+  nodes.push(...floodFlareNodes(v.id, mode));
 
   /* ---- Scoreboard gantry + emissive screen ---- */
   nodes.push(
@@ -757,14 +828,21 @@ export const ATHLETE_IDS = [
 export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {}) {
   const v = VENUES[venue];
   const vl = VENUE_LOOKS[venue];
+  const mode = opts.lookMode ?? fcLookMode(venue);
+  const original = mode === "original";
+  const ol = ORIGINAL_LOOKS[venue];
+  const bloom = original ? ol.bloom : vl.bloom;
   const s = scene()
     // The night venues show their storm / lantern / dust / polar sky colour; Lagos and Uyuni draw their sky HDRI.
-    .background(vl.background)
-    .add(venueLookNode(venue))
-    .addMany(pitchNodes(v))
+    // PRD D11 original path: the 4.6.2 background and preset with only its fog scale and exposure overridden.
+    .background(original ? ol.background : vl.background)
+    .add(original
+      ? looks.preset(ol.look, { fogDensityScale: ol.fog, exposureEv: ol.exposureEv })
+      : venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
+    .addMany(pitchNodes(v, mode))
     .addMany(goalNodes(-1))
     .addMany(goalNodes(1))
-    .addMany(stadiumNodes(v))
+    .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates), mode))
     .addMany(ballNodes());
   for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
   s.addMany(atmosphereNodes(venue, opts))
@@ -772,7 +850,7 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
   // PRD 6.3: no motion blur under reduced motion
   if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s
-    .add(effects.bloom({ intensity: vl.bloom.intensity, threshold: vl.bloom.threshold }))
+    .add(effects.bloom({ intensity: bloom.intensity, threshold: bloom.threshold }))
     .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
 }
 
