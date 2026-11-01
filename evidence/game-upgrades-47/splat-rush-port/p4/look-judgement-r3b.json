@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r3/splat-rush-port/frames/g16p4-r3-1/desk--roll-settled.jpg",
+      "sha256": "dd6a8dfafc61bb5abf34e56e3c08b48a4ef6722cc9616d990f8fa48c140bd3e5"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r3/splat-rush-port/frames/g16p4-r3-1/desk--mid-action-settled.jpg",
+      "sha256": "7f6587a9d58e141f7fb425509d6fddcbcd46c478a5d97daf6506348ca38b33e7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r3/splat-rush-port/frames/g16p4-r3-1/desk--title-settled.jpg",
+      "sha256": "55d2138a64b3d5d52c40af7a132a7608b2ee746fb9b19e57b71561a8741eba0b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r3/splat-rush-port/frames/g16p4-r3-1/desk--early-settled.jpg",
+      "sha256": "e676e1119e65b3d14afe36f73ae6f677aee870c915a30a9cbc2e415e82ced82a"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 6.5,
+    "ibl_reflections": 6,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 6,
+    "modeling_assets": 6.5,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 6,
+    "animation_quality": 6,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The key is a warm, low, sunset-style light that tints the whole scene pink and orange rather than outdoor-day sky blue. The track's mid-distance is washed to near-white yellow, flattening form on the gates."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is a soft contact shadow under the ball, and the gates cast colored shadow and reflection shapes onto the track. Shadows on the background pillars and islands are weak, so distant objects feel unanchored."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The ball has a glossy highlight and the rail beads show a dark reflective sheen. The specular reads like a single fake highlight, with no visible environment color picked up from the sky."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The track is a pale, low-detail plank texture with faint streaks. The gates use flat toon color with drip shapes. The red paint splat at the bottom is an opaque, untextured blob covering the foreground."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Floating islands, towers, balloons and wooden spires are simple low-poly stylized pieces. They are coherent with each other, but the gates and pillars are repetitive."
+    },
+    {
+      "category": "composition",
+      "seen": "The track's leading lines converge well to the horizon. However, the ball is centered low and occupies roughly 10–15% of the frame, below the 18–25% target, and the paint blob crowds the bottom edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-ball chase view with moderate FOV, not the recipe's side-on follow. It works for a lane runner but deviates from the platformer recipe."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the track center blows out to near-white. Speed-line overlays add energy, but the overall exposure and haze leave the palette milky and low-contrast."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Still frames show paint droplets, splatter particles and speed lines, which suggest motion feedback. Little else about animation quality can be verified from screenshots."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is layered: a cloud sea, floating grassy islands with towers, hot-air balloons, pennant bunting and wooden spires. It gives good depth and a whimsical identity."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Pink haze and the cloud floor give aerial perspective, and distant spires fade nicely. The haze is heavy enough to desaturate the midground."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and consistent: rounded score and combo pills, heart lives, a power meter and a '2x 5s' buff chip. The title card is legible and includes accessibility toggles and keyboard hints."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

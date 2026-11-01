@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "No visible ground or track, so the red ball looks like it floats in empty sky with only a faint shadow. Flat, uniform blue sky lighting with no atmospheric depth. The ball material is plain matte. Speed-line streaks cross the scenery.",
+     "No visible ground or play surface: the ball and its shadow sit over empty flat sky. The scene has no depth cues, the lighting is flat, and the ball is matte with no material detail. It reads like a sky backdrop more than a play area.",
+     "No visible ground or track. The red ball and its shadow float on a flat blue gradient, so the play area can't be read. The ball is flat-shaded with no specular, the lighting is flat, and the frame has little depth or mood."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Lavender cloud floor and haze are somewhat low-contrast and slightly muddy in the foreground. The wooden pillars are simple untextured shapes. A stray white streak crosses the floor at the right. The purple floating props are a little murky.",
+     "No visible ground or play surface: the ball seems to float over flat blue sky. Flat lighting, little depth, and a plain matte ball.",
+     "Almost identical to A: no visible ground, the ball floats over an empty blue gradient, the lighting is flat, the ball is a plain red, and the lower half of the frame is empty. Only the speed-line placement differs slightly."
+    ]
+   }
+  ]
+ }
+]

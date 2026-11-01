@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r1/splat-rush-port/frames/g16p4-r1-1/desk--roll-settled.jpg",
+      "sha256": "0b5e14eae0087085571e30536a129976e32dad47a20c169c6ea728b9e2687290"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r1/splat-rush-port/frames/g16p4-r1-1/desk--mid-action-settled.jpg",
+      "sha256": "25da605dbffecd4e1db34f83e00ce4e2be3708d5c2c53f7bac02b386654c969c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r1/splat-rush-port/frames/g16p4-r1-1/desk--title-settled.jpg",
+      "sha256": "17242086bf5214f1823ca6e5c6a59365ff90fdcc9f83eed7c15b3564c94512a7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r1/splat-rush-port/frames/g16p4-r1-1/desk--early-settled.jpg",
+      "sha256": "ef603c733f6fe5a89c970e9ec0a147dc7f5d022626a078daa6b47c3c99010d66"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6,
+    "ibl_reflections": 6.5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 7,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "animation_quality": 6.5,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "The ball and gates cast soft shadows onto the track, but they are faint and washed out by the bright hot spot on the track. The floating islands and wooden pillars show little visible contact shadowing."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a convincing glossy specular highlight and rim. The rail spheres show only a generic dark sheen. The track's reflection of the gates is subtle and blurry, and the environment does not read clearly in reflections."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-ball chase view, not the side-on follow the recipe expects. The ball fills roughly 20% of the frame in frames 1 and 2 but only about 5% in frame 4. That is a large inconsistency."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A strong bloom/overexposed glare band sits mid-track and flattens detail on the gates' bases. White speed lines streak the upper sky. The overall grade leans pink-purple rather than daylight-outdoor."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Paint splatter decals trail behind the ball and speckle the gates, and speed-line streaks suggest motion. Motion is otherwise hard to judge from stills, and the splats repeat as similar flat blobs."
+    },
+    {
+      "category": "lighting",
+      "seen": "Warm sunset key light with a sun disc on the horizon gives readable form on the ball and pillars. However, the palette is pink/lavender dusk instead of outdoor-day sky blue."
+    },
+    {
+      "category": "composition",
+      "seen": "The track's vanishing line leads the eye well toward the gates. Large foreground cloud masses at the bottom corners crowd the frame edges."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Purplish haze over the cloud floor lowers contrast a little. Floating islands and the purple vehicles on the left look slightly muddy. One stray white speed-line streak crosses the floor.",
+     "The lavender haze across the cloud floor lowers contrast in the lower half. Odd purple blob objects float near the islands. The pillars look plain and somewhat repetitive. Even so, it has a clear ground plane, warm sunset mood, depth from the rows of pillars, and a glossy, readable outlined ball with a grounded shadow.",
+     "The ground is a soft lavender cloud plane with fairly low contrast. The brown pillars are plain and repetitive and look a bit like a fence. Some speed streaks clutter the sky. The floating islands on the left are a little purple-tinted and muddy."
+    ]
+   }
+  ]
+ }
+]

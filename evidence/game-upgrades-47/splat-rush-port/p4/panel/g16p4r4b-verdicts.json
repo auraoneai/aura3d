@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat, unshaded red ball sits over empty blue sky with no visible track or ground; its shadow falls on nothing, so the play area can't be read. Flat, low-contrast blue gradient with little depth or mood. Speed-line streaks cross the floating islands.",
+     "Almost identical to A: no visible ground or track under the player, flat unshaded red ball, flat bright lighting with little depth. Only the speed-line positions differ slightly.",
+     "The cloud floor is lavender and somewhat hazy, so the lower half has low contrast. A long white streak line cuts across the ground near the ball. The wooden pillars are plain and untextured."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 1,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat unshaded ball floating over blue sky with no visible ground or track; the shadow falls on nothing. Flat gradient with weak depth and mood and little material detail.",
+     "The purple blob objects floating near the islands look odd and hard to read, like broken or untextured meshes. The pink cloud floor is a bit hazy and low in contrast, and one stray white speed line streaks across the floor. Otherwise it has a strong sunset mood and a readable glossy ball with a clear contact shadow. The pillars frame the scene, and the floor gives a clear sense of the play area and depth.",
+     "Practically identical to A: no visible ground, the ball appears to float, the ball material is flat, lighting is flat, and the lower third is empty."
+    ]
+   }
+  ]
+ }
+]

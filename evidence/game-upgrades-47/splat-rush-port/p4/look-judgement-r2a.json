@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r2/splat-rush-port/frames/g16p4-r2-1/desk--roll-settled.jpg",
+      "sha256": "d05599872d466f9f997f346e3d11f0fd71ff1c087a5e5de9a1dffa7ab4a2e3dd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r2/splat-rush-port/frames/g16p4-r2-1/desk--mid-action-settled.jpg",
+      "sha256": "1251cae1898f1654c60caa280ec972e5d440297a66214f1e2e89522db8ccd08d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r2/splat-rush-port/frames/g16p4-r2-1/desk--title-settled.jpg",
+      "sha256": "17242086bf5214f1823ca6e5c6a59365ff90fdcc9f83eed7c15b3564c94512a7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r2/splat-rush-port/frames/g16p4-r2-1/desk--early-settled.jpg",
+      "sha256": "8efb65ab52106f7dd56459144d205d7932567a4635e6233e9e02a36b23e2d5eb"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6.5,
+    "ibl_reflections": 6.5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 7,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "animation_quality": 6.5,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "The ball casts a soft contact shadow, and the gates cast faint colored shadows on the track. But the pillars and floating islands show almost no grounding shadow, and the shadow direction reads as nearly overhead rather than a 3/4 front sun."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The ball has a strong glossy specular highlight and a rim reflection, and the bead railings show a highlight too. The track has a faint mirrored sheen under the gates. There is no evident environment-map reflection of the pink sky on the ball body."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-ball chase cam looking down a long track, not the side-on follow the recipe expects. In frames 1–2 the ball fills about 15–20% of the frame, but in frame 4 it shrinks to about 3%. The wide view makes the background pillars feel tilted and stretched."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom and a warm glow appear near the horizon on the track, and white speed lines streak across the sky. The image is generally soft and slightly washed. The speed-line overlay looks like flat 2D strokes pasted over the 3D scene."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The red paint splatter trail and droplets around the gates suggest impact feedback, and the speed lines suggest motion. The decals look static and blobby. Stills cannot confirm smooth motion."
+    },
+    {
+      "category": "lighting",
+      "seen": "Warm sunset backlight with pink and orange sky and soft ambient light. It is pleasant but low-contrast. This is a sunset palette, not the outdoor-day sky blue the recipe calls for, and there is no strong key-light direction."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Floating grass islands with towers and trees, hot air balloons, wooden spires, a cloud sea, and bunting flags. The world is cohesive and stylized, but the repeated tall wooden pillars feel generic."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Haze softens the distant pillars, and the cloud floor and pink sky gradient add depth. The fog reads a bit heavy and pink compared with the light daytime fog the recipe specifies."
+    },
+    {
+      "category": "composition",
+      "seen": "The track's leading lines converge nicely toward the vanishing point. The tall pillars clutter the edges, and the ball is too small in frame 4."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Dripping candy-paint gates and a glossy ball look appealing. The track surface is a flat beige with streaky texture, and the pillars look matte with little detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Gates with drip geometry, a beaded rail, a coin with an embossed star, and a shield pickup are all readable. The pillars and spires are simple low-poly prisms."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean, readable score and combo pills, heart lives, a power meter, and a 2x timer chip. The title card offers accessibility toggles and lists the controls."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
