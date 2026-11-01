@@ -21,7 +21,7 @@ import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
 import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
-import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
+import { hasMeshy, meshyGeometry, meshyLodGeometry, meshyLodMaterial, meshyMaterial, meshySize } from "./meshy";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
 import { createCameraDirector } from "./camera";
@@ -341,6 +341,21 @@ const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
   return { min, max };
 };
 
+/**
+ * GU47 phase 6 (WP-32 triangle budget, PRD D7): repeated Meshy props and traffic draw their full mesh only within
+ * `LOD_NEAR_M` of the camera and a baked LOD (`tools/bake-lod.mjs`, error <= 4% of the model) beyond it. Only the near set
+ * casts shadows: the single sun cascade covers 75 m, so a far caster never reached the map but cost a full depth draw.
+ * At 150 m a 10 m tree is about 40 px tall on 720p; the LOD error stays under 2 px there. `?lod=0` and `?look=original`
+ * keep one full-mesh draw per kind.
+ */
+export const LOD_NEAR_M = 150;
+/** The camera moves this far before the scatter near/far split is rebuilt (rebuilding re-uploads the instance lists). */
+export const LOD_STEP_M = 12;
+interface ScatterItem { readonly p: Vec3; readonly yaw: number; readonly size: Vec3 }
+interface LodScatter { readonly near: string; readonly far: string; readonly items: readonly ScatterItem[] }
+const scatterTransform = (item: ScatterItem) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size });
+const within = (a: ArrayLike<number>, b: ArrayLike<number>, r: number): boolean => (a[0]! - b[0]!) ** 2 + (a[1]! - b[1]!) ** 2 + (a[2]! - b[2]!) ** 2 < r * r;
+
 /** The slice of a `batched.mesh` handle a vehicle slot writes through. */
 interface SlotMesh { setMatrixAt(i: number, matrix: Float32Array): void; setVisibleAt(i: number, visible: boolean): void }
 
@@ -627,15 +642,28 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; the procedural lighthouse and town above are only built when these are missing ---- */
   let texturedScenery = 0;
-  const scatter = (key: string, name: string, items: readonly { p: Vec3; yaw: number; size: Vec3 }[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
+  const lodOn = row !== null && enabled("lod");
+  const lodScatter: LodScatter[] = [];
+  const lodFarNodes: Parameters<typeof builder.add>[0][] = [];
+  const scatter = (key: string, name: string, items: readonly ScatterItem[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
     const data = meshyGeometry(key);
     if (!data || !items.length) return;
     texturedScenery++;
+    // RH47-15: palms and pines sway in the route wind (E-G instance wind; weaker on Halo, none on ?look=original)
+    const wind = row && (key === "palm" || key === "pine") ? { wind: { strength: row.id === "halo" ? 0.3 : 0.6, directionDeg: (Math.atan2(row.wind[0], row.wind[1]) * 180) / Math.PI, assetHeight: 1 } } : {};
+    const lod = lodOn && items.length > 1 ? meshyLodGeometry(key) : undefined;
+    // With a LOD both nodes start with every instance; the first runtime update splits them by camera distance.
     builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
-      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size })),
-      // RH47-15: palms and pines sway in the route wind (E-G instance wind; weaker on Halo, none on ?look=original)
-      ...(row && (key === "palm" || key === "pine") ? { wind: { strength: row.id === "halo" ? 0.3 : 0.6, directionDeg: (Math.atan2(row.wind[0], row.wind[1]) * 180) / Math.PI, assetHeight: 1 } } : {})
-    } as never));
+      name, material: meshyMaterial(key, options), transforms: items.map(scatterTransform), ...wind
+    } as never).runtime({ id: name }));
+    if (!lod) return;
+    texturedScenery++;
+    // added last (lodFarNodes below): textured materials upgrade one at a time in scene order, so the far copies must not
+    // hold back the near models' textures (p6-r1: the near pines were still untextured at 60 s on software WebGL2)
+    lodFarNodes.push(instances.custom(geometry.dynamic({ positions: lod.positions, normals: lod.normals, uvs: lod.uvs, indices: lod.indices }) as never, {
+      name: `${name}-far`, material: meshyLodMaterial(key, options), transforms: items.map(scatterTransform), castShadow: false, ...wind
+    } as never).runtime({ id: `${name}-far` }));
+    lodScatter.push({ near: name, far: `${name}-far`, items });
   };
   if (look.style === "coast" && hasMeshy("lighthouse")) {
     const lightS = Math.min(level.length - 260, 2520);
@@ -831,15 +859,24 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     groupHandles.set(g, { mesh, geo });
   }
   /* generated vehicles: one textured batched mesh per model (each model carries its own texture, one material per batched mesh) */
-  const meshyBatches = new Map<string, { mesh: ReturnType<typeof batched.mesh>; geo: number }>();
+  const meshyBatches = new Map<string, { mesh: ReturnType<typeof batched.mesh>; geo: number; far?: { mesh: ReturnType<typeof batched.mesh>; geo: number } }>();
   for (const key of meshyKeys) {
     const data = meshyGeometry(key)!;
     const count = defs.filter((d) => d.meshy === key).length;
     const mesh = batched.mesh({ name: `vehicles-${key}`, maxInstances: count + 8, maxVertices: data.positions.length / 3 + 64, maxIndices: data.indices.length + 64, material: meshyMaterial(key, { roughness: 0.5, metallic: 0.12 }) });
     const geo = mesh.addGeometry(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }));
-    meshyBatches.set(key, { mesh, geo });
     builder.add(mesh);
     geometryTotal++;
+    // phase 6 LOD: the same vehicles beyond LOD_NEAR_M, unshadowed (each slot is visible in exactly one of the two meshes)
+    const lod = lodOn ? meshyLodGeometry(key) : undefined;
+    let far: { mesh: ReturnType<typeof batched.mesh>; geo: number } | undefined;
+    if (lod) {
+      const farMesh = batched.mesh({ name: `vehicles-${key}-far`, maxInstances: count + 8, maxVertices: lod.positions.length / 3 + 64, maxIndices: lod.indices.length + 64, material: meshyLodMaterial(key, { roughness: 0.5, metallic: 0.12 }) });
+      far = { mesh: farMesh, geo: farMesh.addGeometry(geometry.dynamic({ positions: lod.positions, normals: lod.normals, uvs: lod.uvs, indices: lod.indices })) };
+      // batched.mesh takes no castShadow option; the node's own flag is read by the batched emit (the state rides on batchedId)
+      builder.add({ ...farMesh.toJSON(), castShadow: false } as never);
+    }
+    meshyBatches.set(key, { mesh, geo, ...(far ? { far } : {}) });
   }
   const rigDefs = defs.filter((d) => !d.car && !d.meshy);
   const rigDetail = new Map<VehicleDef, ReturnType<typeof rigParts>>();
@@ -858,14 +895,20 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   geometryTotal++;
   builder.add(rigHeads);
 
-  interface Slot { readonly mesh: SlotMesh; readonly slot: number; readonly box: LocalBox; readonly size: Vec3 }
+  interface Slot { readonly mesh: SlotMesh; readonly slot: number; readonly box: LocalBox; readonly size: Vec3; readonly at: Vec3; near: boolean | null; readonly far?: { readonly mesh: SlotMesh; readonly slot: number } }
   const slotsFor = (def: VehicleDef): Slot[] => {
     const slots: Slot[] = [];
     if (def.meshy) {
       const handle = meshyBatches.get(def.meshy)!;
       const slot = handle.mesh.addInstance(handle.geo);
       if (row) handle.mesh.setColorAt(slot, def.colour);
-      slots.push({ mesh: handle.mesh, slot, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
+      let far: { mesh: SlotMesh; slot: number } | undefined;
+      if (handle.far) {
+        const farSlot = handle.far.mesh.addInstance(handle.far.geo);
+        if (row) handle.far.mesh.setColorAt(farSlot, def.colour);
+        far = { mesh: handle.far.mesh, slot: farSlot };
+      }
+      slots.push({ mesh: handle.mesh, slot, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0], at: [0, 0, 0], near: null, ...(far ? { far } : {}) });
     } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {
@@ -874,17 +917,17 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         if (!handle || geo === undefined) continue;
         const slot = handle.mesh.addInstance(geo);
         if (g === "paint") handle.mesh.setColorAt(slot, def.colour);
-        slots.push({ mesh: handle.mesh, slot, box, size: [0, 0, 0] });
+        slots.push({ mesh: handle.mesh, slot, box, size: [0, 0, 0], at: [0, 0, 0], near: null });
       }
     } else {
       const detail = rigDetail.get(def) ?? rigParts(def.piece, pieceSpec(def.piece, def.variant)!.boxes, def.colour, CAB_COLOURS[0]!);
       for (const part of detail.parts) {
         const slot = rigs.addInstance(rigGeo);
         rigs.setColorAt(slot, part.colour);
-        slots.push({ mesh: rigs, slot, box: part.box, size: [0, 0, 0] });
+        slots.push({ mesh: rigs, slot, box: part.box, size: [0, 0, 0], at: [0, 0, 0], near: null });
       }
-      for (const b of detail.tails) slots.push({ mesh: rigLights, slot: rigLights.addInstance(rigLightGeo), box: b, size: [0, 0, 0] });
-      for (const b of detail.heads) slots.push({ mesh: rigHeads, slot: rigHeads.addInstance(rigHeadGeo), box: b, size: [0, 0, 0] });
+      for (const b of detail.tails) slots.push({ mesh: rigLights, slot: rigLights.addInstance(rigLightGeo), box: b, size: [0, 0, 0], at: [0, 0, 0], near: null });
+      for (const b of detail.heads) slots.push({ mesh: rigHeads, slot: rigHeads.addInstance(rigHeadGeo), box: b, size: [0, 0, 0], at: [0, 0, 0], near: null });
     }
     return slots;
   };
@@ -946,6 +989,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     builder.add(geometry.custom(plumeGeometry(SPRAY_POINTS, 9), { name: "crosswind-spray", material: material.custom(spray), castShadow: false }).runtime({ id: "crosswind-spray" }));
   }
 
+  for (const far of lodFarNodes) builder.add(far);
+
   return {
     scene: builder,
     level,
@@ -991,6 +1036,34 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
+      // phase 6 LOD: the near/far split of the scatter and the traffic, rebuilt from the camera position
+      const lodNodes = lodScatter.map((set) => ({ set, near: node(set.near), far: node(set.far), mask: new Uint8Array(set.items.length).fill(2) }));
+      const lodAt: Vec3 = [Number.NaN, 0, 0];
+      const lodStep = (eye: ArrayLike<number>, force = false): void => {
+        if (!force && within(eye, lodAt, LOD_STEP_M)) return;
+        lodAt[0] = eye[0]!; lodAt[1] = eye[1]!; lodAt[2] = eye[2]!;
+        for (const entry of lodNodes) {
+          let changed = false;
+          entry.set.items.forEach((item, i) => { const m = within(item.p, eye, LOD_NEAR_M) ? 1 : 0; if (entry.mask[i] !== m) { entry.mask[i] = m; changed = true; } });
+          if (!changed) continue;
+          const near = entry.set.items.filter((_item, i) => entry.mask[i] === 1), far = entry.set.items.filter((_item, i) => entry.mask[i] === 0);
+          // an emptied side is hidden rather than given an empty instance list
+          entry.near.setVisible(near.length > 0);
+          if (near.length) entry.near.setInstances(near.map(scatterTransform));
+          entry.far.setVisible(far.length > 0);
+          if (far.length) entry.far.setInstances(far.map(scatterTransform));
+        }
+      };
+      // traffic moves on its own, so its split runs every frame (a visibility flip only when a slot crosses LOD_NEAR_M)
+      const lodVehicles = (eye: ArrayLike<number>): void => {
+        for (const slot of lodSlots) {
+          const near = within(slot.at, eye, LOD_NEAR_M);
+          if (slot.near === near) continue;
+          slot.near = near;
+          slot.mesh.setVisibleAt(slot.slot, near);
+          slot.far!.mesh.setVisibleAt(slot.far!.slot, !near);
+        }
+      };
 
       const writeVehicle = (slot: Slot, s: number, l: number, yaw: number): void => {
         const b = slot.box;
@@ -1002,6 +1075,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         const centre = roadPoint(level, s + lon, l + lat, cy);
         slot.size[0] = b.max[0]! - b.min[0]!; slot.size[1] = b.max[1]! - b.min[1]!; slot.size[2] = b.max[2]! - b.min[2]!;
         slot.mesh.setMatrixAt(slot.slot, matrixFor(yaw - heading, centre, slot.size, scratch));
+        if (slot.far) { slot.far.mesh.setMatrixAt(slot.far.slot, scratch); slot.at[0] = centre[0]; slot.at[1] = centre[1]; slot.at[2] = centre[2]; }
       };
       const placeLineup = (): void => {
         layout.vehicles.forEach((v, vi) => { for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw); });
@@ -1009,6 +1083,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       placeLineup();
 
       const allSlots = [...lineupSlots.flat(), ...trafficSlots.flat()];
+      const lodSlots = allSlots.filter((slot) => slot.far);
       // GU47 phase 3 (rubric composition/camera): a lower, closer chase eye a metre toward the sea side, so the car is bigger,
       // the horizon sits higher and the frame is no longer dead-symmetric; ?look=original keeps today's rig. Phase 4: 7.4 -> 6.3 m
       // back (judge: the car filled 8-12% of the frame, target 15-25%).
@@ -1037,9 +1112,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         },
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
-          for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
+          for (const s of allSlots) { s.mesh.setVisibleAt(s.slot, false); s.far?.mesh.setVisibleAt(s.far.slot, false); }
           const hidden = draws();
-          for (const s of allSlots) s.mesh.setVisibleAt(s.slot, true);
+          for (const s of allSlots) { s.mesh.setVisibleAt(s.slot, true); s.far?.mesh.setVisibleAt(s.far.slot, false); s.near = null; }
           const visible = draws();
           const features = (app.diagnostics() as unknown as { compiledFeatures?: readonly string[] }).compiledFeatures ?? [];
           return { hidden, visible, delta: visible - hidden, instances: allSlots.length, texturedInstances: allSlots.filter((s) => [...meshyBatches.values()].some((b) => b.mesh === s.mesh)).length, batchedGeometries: geometryTotal, geometries: geometryTotal, features: features.map(String) };
@@ -1131,11 +1206,13 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
             const target = roadPoint(level, shot.look.s, shot.look.l, shot.look.h);
             const at = shot.orbit ? orbitEye(carP, shot.orbit) : roadPoint(level, shot.eye!.s, shot.eye!.l, shot.eye!.h);
             sky.setPosition(at[0], at[1], at[2]);
+            lodStep(at); lodVehicles(at);
             camCtl.setPose({ position: at, target, up: [0, 1, 0], fov: shot.fov ?? 58 }, { cut: true });
             return;
           }
           const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
+          lodStep(pose.eye); lodVehicles(pose.eye);
           camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
         }
       };
