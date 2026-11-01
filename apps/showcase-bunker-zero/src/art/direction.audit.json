@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-bunker-zero/src/art/direction.ts",
-  "sourceSha256": "c1fdc0ec9a438b781df893a12ca82f170a59572bd1b1948e2cae90bfe82ef645",
+  "sourceSha256": "9a83183e238a74fcce27b53148f50491031d8fa8b064e6bd38ac774b2850d707",
   "id": "showcase-bunker-zero",
   "genre": "arena-shooter",
   "signatureEffect": "Gunfire lights the room: every shot, ricochet and blast throws a warm transient light across board-formed concrete between the pools of the floor's own lamps.",
@@ -135,6 +135,13 @@
       },
       {
         "assetKey": "bzHoundMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzMgViewmodel",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -375,6 +382,13 @@
       {
         "role": "prop",
         "assetKey": "corridorPulseRifleMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bzMgViewmodel",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024

@@ -25,9 +25,9 @@ describe("bunker zero weapon view", () => {
 import { VIEWMODEL_YAW_OFFSET } from "../../../apps/showcase-bunker-zero/src/weapons-view";
 
 describe("bunker zero viewmodel orientation", () => {
-  it("has a yaw offset for every weapon, and turns the sidearm (its muzzle is at +X) around", () => {
+  it("has a yaw offset for every weapon, and turns the sidearm and the rifle (their muzzles are at +X) around", () => {
     expect(Object.keys(VIEWMODEL_YAW_OFFSET).sort()).toEqual([...IDS].sort());
     expect(VIEWMODEL_YAW_OFFSET.pistol).toBeCloseTo(Math.PI, 6);
-    expect(VIEWMODEL_YAW_OFFSET.mg).toBe(0);
+    expect(VIEWMODEL_YAW_OFFSET.mg).toBeCloseTo(Math.PI, 6);
   });
 });

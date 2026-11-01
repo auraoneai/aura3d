@@ -4,7 +4,8 @@ import { WEAPONS, type WeaponId } from "./sim";
 export const VIEWMODEL_ASSET = {
   knife: "mechWeaponA",
   pistol: "bzPistol",
-  mg: "corridorPulseRifleMeshy",
+  // GU47 phase 6: the rifle GLB without its self-glow (aura-evidence/lift/bzMgViewmodel.lift.json); the pickup keeps the original
+  mg: "bzMgViewmodel",
   rocket: "mechWeaponB"
 } as const satisfies Record<WeaponId, string>;
 
@@ -17,6 +18,7 @@ export function weaponHudLabel(id: WeaponId): string {
 export const VIEWMODEL_YAW_OFFSET: Record<WeaponId, number> = {
   knife: 0,
   pistol: Math.PI,
-  mg: 0,
+  // GU47 phase 6: the rifle's muzzle is at +X too (first drawn in hand in vmprobe g11p6-r3, it pointed at the camera)
+  mg: Math.PI,
   rocket: 0
 };

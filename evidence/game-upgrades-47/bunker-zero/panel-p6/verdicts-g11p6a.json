@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cool blue-grey palette is somewhat flat and slightly hazy, the enemy figure looks semi-transparent and overlaps the gun, little prop detail, and the long hallway is sparse",
+     "Walls and floor are mostly flat and untextured. The cool blue-grey palette is slightly washed and low in contrast. The enemy figure overlaps the weapon and is partly hidden behind it. The corridor is fairly empty.",
+     "Cool blue-grey palette is a bit cold and low in saturation; the nearby enemy looks pale and slightly washed out and overlaps the gun; walls are fairly plain; the end of the corridor is close and simple. Still the more polished frame, with a clear vault-door focal point, floor signage, wall pipes and good lighting."
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The floor texture is blotchy and noisy, the gun partly covers the barrel, and the ceiling is fairly dark. Otherwise it has good textured walls, vault doors, and readable props and enemy",
+     "The floor texture is noisy, smeary and over-scaled. The ceiling is very dark. The barrel is partly blocked by the weapon. Overall it is slightly dim and brown.",
+     "Floor texture is blotchy and noisy, almost watery; the ceiling is very dark and empty; the barrel on the right is partly hidden by the gun. Otherwise the frame is strong: textured concrete walls, vault doors, crates, a readable enemy standing on a crate, good depth and composition."
+    ]
+   }
+  ]
+ }
+]

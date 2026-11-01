@@ -10,6 +10,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "bzArmorMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bzCrateMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bzBarrelMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "bzMgViewmodel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bzBlastDoor": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -1189,6 +1190,130 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "environment",
       "suitabilityReason": "bunker blast door (WP-36 bzBlastDoor, BZ-12)"
+    },
+  },
+  "bzMgViewmodel": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bzMgViewmodel.24108259.glb",
+    hash: "sha256-24108259f777a2ae302444ddb3ee112f00793cfbc5651bfd1a04608988eb2c1d",
+    bounds: [
+      1.8983,
+      0.7926,
+      0.2006
+    ],
+    sizeBytes: 807352,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": []
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/corridorPulseRifleMeshy/model.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-10-15T05:00:00.000Z",
+        "checkedAt": "2026-10-15T05:00:00.000Z"
+      },
+      "sourcePath": "artifacts/meshy/corridorPulseRifleMeshy/model.glb",
+      "outputPath": "public/aura-assets/bzMgViewmodel.24108259.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D Meshy 3D Pipeline",
+      "boundsMetadata": {
+        "min": [
+          -0.9495,
+          -0.3973,
+          -0.1006
+        ],
+        "max": [
+          0.9488,
+          0.3953,
+          0.1
+        ],
+        "size": [
+          1.8983,
+          0.7926,
+          0.2006
+        ],
+        "center": [
+          -0.0004,
+          -0.001,
+          -0.0003
+        ],
+        "maxDimension": 1.8983,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/corridorPulseRifleMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy 2K PBR 3D hero asset."
     },
   },
 } as const);

@@ -1,0 +1,19 @@
+[
+ {
+  "slug": "bunker-zero",
+  "variants": [
+   {
+    "variant": "floor5",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/wp38/evidence/game-upgrades-47/before/bunker-zero/frames/gu47-before-bunker-zero/bunker-zero--default--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p6-r1/bunker-zero/frames/g11p6-r1-floor5/bunker-zero--floor5--settle-60s.jpg",
+    "refKind": "the game's 4.6.2 default frame (this variant is new)"
+   },
+   {
+    "variant": "floor6",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/wp38/evidence/game-upgrades-47/before/bunker-zero/frames/gu47-before-bunker-zero/bunker-zero--default--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g11/evidence/game-upgrades-47/bunker-zero/p6-r1/bunker-zero/frames/g11p6-r1-floor6/bunker-zero--floor6--settle-60s.jpg",
+    "refKind": "the game's 4.6.2 default frame (this variant is new)"
+   }
+  ]
+ }
+]

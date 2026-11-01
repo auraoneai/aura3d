@@ -1,0 +1,10 @@
+{
+  "asset": "bzMgViewmodel",
+  "derivedFrom": "root catalog corridorPulseRifleMeshy (public/aura-assets/corridorPulseRifleMeshy.de9ae48d.glb, CC0-1.0, Aura3D Meshy 3D Pipeline)",
+  "tool": "tools/bunker-zero-lift/unglow.mjs",
+  "change": "emissive texture and emissive factor removed (the colour map was its own emissive at factor 1); geometry, colour, normal and metal-roughness maps unchanged",
+  "reason": "in hand the full self-glow bloomed into a ghost (GU47 phase 4 r3), and any material override on the in-hand rifle left it undrawn in every HUD frame (phase 4 r4/r5, phase 6 vmprobe g11p6-r1); the viewmodel now loads this copy with no override",
+  "date": "2026-11-01",
+  "output": "public/aura-assets/bzMgViewmodel.24108259.glb",
+  "sha256": "24108259f777a2ae302444ddb3ee112f00793cfbc5651bfd1a04608988eb2c1d"
+}

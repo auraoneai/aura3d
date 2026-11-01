@@ -1446,6 +1446,67 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
+    },
+    {
+      "id": "bzMgViewmodel",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/bzMgViewmodel.24108259.glb",
+      "outputPath": "public/aura-assets/bzMgViewmodel.24108259.glb",
+      "url": "/aura-assets/bzMgViewmodel.24108259.glb",
+      "hash": "sha256-24108259f777a2ae302444ddb3ee112f00793cfbc5651bfd1a04608988eb2c1d",
+      "sizeBytes": 807352,
+      "bounds": [
+        1.8983,
+        0.7926,
+        0.2006
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.9495,
+          -0.3973,
+          -0.1006
+        ],
+        "max": [
+          0.9488,
+          0.3953,
+          0.1
+        ],
+        "size": [
+          1.8983,
+          0.7926,
+          0.2006
+        ],
+        "center": [
+          -0.0004,
+          -0.001,
+          -0.0003
+        ],
+        "maxDimension": 1.8983,
+        "grounded": false
+      },
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "role": "prop",
+      "provenance": {
+        "sourcePath": "public/aura-assets/bzMgViewmodel.24108259.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D Meshy 3D Pipeline",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D Meshy 3D Pipeline",
+        "retrievedAt": "2026-11-01T08:20:00.000Z",
+        "checkedAt": "2026-11-01T08:20:00.000Z",
+        "evidence": [
+          "aura-evidence/lift/bzMgViewmodel.lift.json"
+        ]
+      },
+      "sha256": "24108259f777a2ae302444ddb3ee112f00793cfbc5651bfd1a04608988eb2c1d",
+      "license": "CC0-1.0",
+      "licenseName": "CC0 1.0 Universal"
     }
   ]
 }
