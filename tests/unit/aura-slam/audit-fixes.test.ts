@@ -245,7 +245,9 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
       const mast = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`) as { size?: number[] };
       expect(mast.size?.[1]).toBe(9);
       const head = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetMaxDimension?: number };
-      expect(head.position?.[1]).toBe(9);
+      // GU47 phase 9: the owned lamp head hangs from its bracket, whose top sits 0.2 m above the 9 m mast top.
+      expect(head.position?.[1]).toBeCloseTo(9 + 0.2 - 2.2, 9);
+      expect(head.position?.[0]).toBe(side === "left" ? -12.5 : 12.5);
       expect(head.targetMaxDimension).toBe(2.2);
     }
   });
