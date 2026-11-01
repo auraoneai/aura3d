@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly hazy blue cast at the horizon and the building window textures are simple stripes, but the moonlit mood is coherent and the car reads well.",
+     "Slightly flat, cool blue grade; the road surface is a bit hazy and low in contrast near the horizon; building windows are simple stripe textures.",
+     "The palette is cold and somewhat flat. The distant water and town are slightly hazy. A purple-red rectangle under the car shows the same rendering artifact, though it is less obvious. The car reads clearly and the scene has more depth, but the frame lacks warmth and the right-hand hillside is dark and flat."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A flat purple-red rectangular overlay sits on the road behind the car, the car is small in frame, and the water on the left is somewhat washed out.",
+     "Overall dark and muddy, with the canyon walls in heavy shadow; a hard-edged dark red rectangle on the road under the car looks like an artifact; the cyan edge strips feel out of place.",
+     "The sky and horizon are grey and somewhat washed out by haze. Overall the frame is slightly desaturated. The car is well lit and casts a grounded shadow, and the windmills, trees and sand dune add detail and depth."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild warm haze toward the vanishing point and the canyon walls are slightly flat, but the car is clear and the lighting is warm and readable.",
+     "A grey, overcast haze washes out the sky and the far distance, so contrast is somewhat low; the sea is flat and pale.",
+     "A slight warm haze down the canyon softens the vanishing point. The road texture is a little noisy. Otherwise the warm lighting is strong, the car reads clearly, and the canyon walls give good depth."
+    ]
+   }
+  ]
+ }
+]

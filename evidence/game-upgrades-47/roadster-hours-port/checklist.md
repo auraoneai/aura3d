@@ -50,3 +50,17 @@ Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in
 | RH47-19 budget | 206 / 176 / 140 draws, 4.96 M / 2.1 M / 1.2 M triangles: over budget, unchanged by phase 3 (WP-36 LOD/impostors) |
 | Game-checks | 0 errors, 7 warnings (luma-band only) |
 | Poster pair | card + index posters rebuilt from the phase-3 card frame |
+
+## Phase 4 (4.7.2, 2026-10-31; software WebGL2 captures g22p4-r4)
+
+| Line | Status |
+|---|---|
+| RH47-02 bands | sunbreak 124.0/123.3 (100-125 met); redline 63.2/62.9 (60-85 met); halo 63.9/65.7 in the rewritten 55-70 band (panel g22p4r4), road cell 53/58 (> 45 met) |
+| RH47-03 shadows | cast shadows now reach the road (1 cascade over 75 m + 4.3.0 fit; probe g22p4-probe); cascadeCount 1, not 3 (custom receivers pick one cascade per draw) |
+| RH47-17 HUD | ui_hud 7 / 7.5; combo chip, toasts clear of the gate sign; results frame retaken (p4-r4/screens) |
+| RH47-18 every category >= 7 | not met: min 4 / 4.5 (ibl_reflections, shadows, material_quality, postprocessing); see lane report |
+| RH47-18 sibling >= 0.8 | 6 of 8 pass; roadster-rush different 0.767, heatsink-port same 0.571 fail |
+| RH47-19 budget | draws 129 / 123 / 107 (<= 170 met); triangles 2.43 M / 1.02 M / 0.66 M (900 k: Halo only) |
+| WP-36 Meshy rows (33) | blocked: Meshy keys refuse API calls |
+| Blind panel | g22p4r4: halo, redline, sunbreak better 3/0 each |
+| Game-checks | 0 errors, 2 warnings (texPending at 25 s) |

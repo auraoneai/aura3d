@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "45246dd860c5dd6116bde5956381fd4125770101bb7d20aef9095766d3ef716a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/title.1280x720.jpg",
+      "sha256": "d78fdfa2bfe31ddb7fc49a3a80988795c0ace1853cc8b79383db38e0f9966989"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r3/roadster-hours-port/frames/g22p4-r3-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "d24e66ea789902385b6a98a5941e73920df12babf4a316d28976b6e8e30a6d88"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r3/roadster-hours-port/frames/g22p4-r3-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "ed533733f41537f7462a1ef7a3237338bdc236b1e52be462dc25769c57e16936"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The coastal frame is grey and hazy with little contrast and no low warm sun. Only the canyon frame reaches the golden-hour target, with warm walls and a purple-orange sky. In the night frame the streetlights cast no pools on the road, and the car shows no amber headlight or glowing taillights, so the whole scene is lit evenly by a blue moon fill."
+    },
+    {
+      "category": "shadows",
+      "seen": "The car's shadow on the road in the menu frame is visibly stair-stepped and blocky. The car has almost no contact shadow in the coastal and canyon frames, so it reads as floating. Trees on the sand hills do cast readable directional shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The teal paint has a soft specular highlight but shows no reflected environment (sky, canyon walls or city). The road and the guardrails show no reflections. The sea is a flat banded blue with no sky reflection or sun glint."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The three biomes (coast, canyon, night city) are distinct and the gates, turbines, traffic and village add some life. The night towers are plain boxes with white stripe windows. The canyon walls are two large flat planes, and the sea has no shoreline detail."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze on the coast and warm fog down the canyon give depth, and the car kicks up a dust plume. The coastal haze is so strong that the midground goes milky. The night stars are square pixels, and the night scene has little depth fog."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt is a coarse, high-contrast noise texture that reads like gravel. The canyon walls carry smeared low-resolution striping. The rocks are flat orange facets. The car paint and its chrome roll hoops are the best materials on screen."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The Cobra-style car is recognisable and reasonably detailed. The trees, rocks and houses are low-poly generated models, the traffic truck is a simple box, and the city towers are untextured blocks."
+    },
+    {
+      "category": "composition",
+      "seen": "Every frame centres the car low on the vanishing point, with the road leading to the gate. The car fills roughly 10–15% of the frame, a little under the 15–25% target. In the coastal frame the 'CLEAN LANDING' message sits on top of the gate's sign."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera holds a consistent height with a field of view around 60°. It is very static and centred, with no visible speed-driven FOV change or lean at 217 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a vignette in the canyon and night frames and bloom around the moon. The coastal frame looks washed out and desaturated, nothing like a cinematic film grade. The canyon frame has the warmest, most filmic grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The typography is clean, and the timer, relay count, score/combo and speed dial are readable. The gate sign text ('HARBOUR RELAY', 'STATION RELAY') renders as aliased, garbled pixels. The 'CLEAN LANDING' popup overlaps the sign, and the semi-transparent menu panel is plain but tidy."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

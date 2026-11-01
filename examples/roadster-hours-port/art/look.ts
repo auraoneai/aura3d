@@ -81,6 +81,8 @@ export interface SaltwindLookRow {
     readonly tail: number;
     /** GU47 phase 3: street-lamp pools and city-glow wash on the asphalt (Halo only). */
     readonly lampPool: number;
+    /** Phase 4: polished-asphalt reflection of the sky (and, with lampPool, the mercury lamps) on top of the lit road; 0 = none. */
+    readonly sheen: number;
     /** RH47-10: CC0 detail maps (asphalt plus one rock set) and their strength on the custom road and terrain surfaces. */
     readonly detail: { readonly rock: "limestone" | "sandstone"; readonly amount: number };
   };
@@ -96,13 +98,18 @@ export interface SaltwindLookRow {
     readonly vignette: number;
   };
   readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
-  readonly shadow: { readonly cascades: 3; readonly maxDistance: number; readonly filter: "pcss"; readonly mapSize: 2048 };
+  readonly shadow: { readonly cascades: 1; readonly maxDistance: number; readonly filter: "pcss"; readonly mapSize: 2048 };
   readonly spray: SprayLook;
   /** Wind across the road (x, z in world units per second) for clouds, whitecaps and spray. */
   readonly wind: readonly [number, number];
 }
 
-const SHADOW = { cascades: 3, maxDistance: 260, filter: "pcss", mapSize: 2048 } as const;
+// phase 4 (4.7.2): one cascade over the near 110 m. The road, the flanks and the town are each one custom-shader draw, and
+// the forward pass picks one cascade per draw from the draw's world centre (hundreds of metres down the course), so with 3
+// cascades they sampled the far cascade, whose light volume does not hold the car: no car or roadside shadow ever reached
+// the asphalt (rubric shadows 3-4). One cascade holds every near receiver; 75 m keeps the car's shadow edge crisp (p4-r2 at
+// 110 m stair-stepped).
+const SHADOW = { cascades: 1, maxDistance: 75, filter: "pcss", mapSize: 2048 } as const;
 
 export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> = {
   sunbreak: {
@@ -113,21 +120,22 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     environmentRotationDeg: 300,
     // phase 3: the side sun swings behind the left shoulder (over the sea), so the car, the cliffs and the turbines face it
     // and every caster throws its shadow forward-right across the road in view (rubric lighting/shadows 4.5/3).
-    sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffdcaa", intensity: 3.8 },
+    // phase 4: warmer 4 pm sun, cleaner sky and thinner warm haze (judge: "overcast grey-blue, the golden low sun never appears")
+    sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 },
     fill: { kind: "sea-bounce", color: "#8fc6c4", intensity: 0.55, elevationDeg: 8, azimuthDeg: -110 },
     gantryPoints: null,
-    sky: { zenith: "#3b7cbd", horizon: "#e2e4da", band: "#e9e4d6", bandAmount: 0.45, clouds: [0.4, 0.32], night: 0 },
+    sky: { zenith: "#2f74c0", horizon: "#ece0c6", band: "#f0dcb4", bandAmount: 0.5, clouds: [0.2, 0.12], night: 0 },
     ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
-    fog: { color: "#dde3de", near: 280, far: 3200, density: 0.00022 },
+    fog: { color: "#e6ddc8", near: 320, far: 3600, density: 0.00016 },
     surfaces: {
       asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0,
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0, sheen: 0.55,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
     post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0.025, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
-    grade: { exposure: 1.24, contrast: 1.1, saturation: 1.08, temperature: 0.06, tint: 0 },
+    grade: { exposure: 1.2, contrast: 1.12, saturation: 1.14, temperature: 0.11, tint: 0 },
     shadow: SHADOW,
     spray: { kind: "salt", color: "#eef1ee", alpha: 0.38, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
     wind: [6, -1.5]
@@ -149,7 +157,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.6,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
@@ -176,12 +184,12 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.1, 0.106, 0.124], roadGloss: 0.42,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9,
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9, sheen: 0.4,
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
     post: { bloom: { intensity: 0.45, threshold: 1.05, scatter: 0.6 }, flare: 0, grain: 0.03, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.22 },
-    grade: { exposure: 1.02, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
+    grade: { exposure: 0.95, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
     shadow: SHADOW,
     spray: { kind: "mist", color: "#c9dbe6", alpha: 0.12, density: 0.5, windSpeed: 5, size: [0.15, 0.6], height: [0.5, 8] },
     wind: [3.5, -0.5]

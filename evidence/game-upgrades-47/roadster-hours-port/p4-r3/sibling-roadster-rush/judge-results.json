@@ -1,0 +1,720 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:20:52.477Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": true,
+  "same_game_confidence": 0.613,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 16,
+    "sameGameYes": 31,
+    "differentRate": 0.3404255319148936,
+    "ci95": [
+      0.22167260713762188,
+      0.4832934049469702
+    ],
+    "confidentDifferent": 6,
+    "confidentDifferentRate": 0.1276595744680851,
+    "same_game": true,
+    "same_game_confidence": 0.613,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same third-person rear chase camera on a multi-lane highway",
+        "similar overhead gantry road signs and dashed lane markings",
+        "different time of day and car type, which could just be varied levels"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Same rear chase camera behind the car on a multi-lane highway",
+        "Warm sunset lighting with hazy purple-orange sky and similar post-processing",
+        "Overhead road signs (Relay banner and Exit 4B Harbour) with matching low-poly look and road markings"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same rear-chase camera and multi-lane highway layout",
+        "overhead gantry sign at the road's end in both frames",
+        "similar warm sunset grading and soft low-poly shading"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same chase camera behind the car on a multi-lane highway",
+        "warm sunset grading and a gantry sign over the road in both",
+        "similar low-poly stylized road and lane markings, with different stage themes (city vs canyon)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pale moonlit blue sky with a full moon and a vintage Cobra-style roadster; Image B: orange sunset horizon with a futuristic winged racer",
+        "Different building style: A has dark towers with white stripe windows, B has dense tan-windowed skyscrapers with ring markers",
+        "Different road look: A has white lane dashes and guardrails on a hazy surface, B has orange dashes, yellow edge lines, traffic, and an exit gantry sign"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "elevated multi-lane highway with low-poly striped-window skyscrapers",
+        "third-person rear chase camera behind a car",
+        "similar overhead gantry sign and road-lane styling with different time of day"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: stylized dusk city with blocky lit skyscrapers and a futuristic blue car",
+        "Image B: hazy daytime coastal road with wind turbines, a vintage teal roadster and realistic muted lighting",
+        "Different road markings, palette and rendering style (saturated neon vs. desaturated soft)"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a coastal daytime road with a vintage teal roadster and wind turbines, while Image B is a city highway at sunset with a futuristic car",
+        "Different lighting and palette: hazy gray-blue daylight versus purple-orange dusk with strong glow",
+        "Both use overhead gantry signs, a rear chase camera and similar noisy asphalt, which hints at a shared engine or template"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Different car models: vintage Cobra-style roadster vs futuristic open-wheel racer",
+        "Night scene with a moon and sparse traffic vs sunset scene with traffic and overhead exit signs",
+        "Building styles differ: sparse striped towers vs dense textured window-grid blocks"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Same third-person rear chase camera over a multi-lane highway at sunset",
+        "Overhead gantry sign with matching pixel-style lettering ('RELAY' banner vs 'EXIT 4B HARBOUR')",
+        "Similar warm orange/purple dusk grading and low-poly stylized look"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "identical rear chase-camera framing on a highway",
+        "similar warm sunset glow and soft post-processing with motion blur",
+        "overhead gantry signs and stylized low-poly road edges in both"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: night scene with moon, snow-like specks, sparse bridge road and a vintage roadster",
+        "Image B: dusk sunset sky, dense traffic, motion-blurred road and a futuristic open-wheel car",
+        "Different building styles: striped dark towers in A, dense textured windowed blocks in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Same rear chase camera over a multi-lane highway with a gantry sign at the end",
+        "Warm sunset lighting with a hazy purple-orange sky and similar post-processing",
+        "Matching stylized low-poly look with similar road markings and edge barriers"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Elevated multi-lane highway with the same third-person rear chase camera",
+        "Blocky skyscrapers with striped window-band textures",
+        "Gantry sign over the road ahead and a large sun/moon disc in the sky, with differing time-of-day lighting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "identical rear chase camera and centered car framing on a multi-lane highway",
+        "distant overhead gantry sign with similar pixel-style text in both frames",
+        "similar road surface and lane markings, with only the time of day, location and car differing"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: hazy gray sky, coastal desert, wind turbines, vintage teal roadster",
+        "Image B: purple sunset sky, dense city towers, futuristic car with boost trails, motion blur",
+        "Both have similar asphalt texture, third-person rear chase camera and overhead highway signs"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: stylized blocky skyscrapers, purple-orange sunset, motion blur and neon glow",
+        "Image B: realistic hazy daylight coastal highway with wind turbines and a vintage roadster",
+        "Different road, car and lighting styles: urban synthwave vs. natural seaside"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: moonlit blue night, sparse square star particles, striped skyscrapers, vintage Cobra-style car",
+        "Image B: orange sunset horizon, dense windowed towers with ring markers, futuristic car with thrusters, traffic and exit signs",
+        "Different road style: white dashed lanes and guardrails vs orange lane marks, yellow edge line and wet-looking asphalt"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Same behind-the-car chase camera on a multi-lane highway",
+        "Warm sunset lighting with a purple-orange sky and similar post-processing",
+        "Overhead gantry signs and matching road markings and stylized low-poly look"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a third-person rear view of a car on an elevated multi-lane highway with guardrails",
+        "Both have blocky skyscrapers on each side and an overhead gantry sign far ahead",
+        "Both have a low sun or moon disc and a stylized low-poly city look, with different time of day and car model"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "identical rear chase camera and sunset-lit highway setup",
+        "similar gantry signs over the road",
+        "matching soft, low-poly stylized rendering and warm color grading"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "identical rear-chase camera and highway layout with lane dashes and edge lines",
+        "low-poly stylized scenery with warm orange sunset glow at the horizon",
+        "overhead gantry signs with the same text style (RELAY and EXIT 4B HARBOUR)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a hazy daytime coastal road with wind turbines and a vintage roadster; Image B is a sunset city highway with a futuristic car and boost trails",
+        "Different palettes: muted grey-beige against saturated purple and orange",
+        "Both are third-person rear-chase highway racers with gantry signs and similar asphalt texture"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "same rear chase camera on a multi-lane highway",
+        "overhead gantry signs with place names (EXIT 4B HARBOUR, COAST...)",
+        "similar low-poly scenery and road-surface rendering despite day/night change"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: stylized neon dusk city with purple/orange sky and blocky skyscrapers",
+        "Image B: hazy daytime coastal highway with wind turbines and realistic muted palette",
+        "Different car styles and lane markings (yellow dashed vs white)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "elevated multi-lane highway over water with city towers",
+        "blocky skyscrapers with striped lit-window textures",
+        "third-person rear chase camera on a stylized car"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "same rear chase camera and highway layout with a gantry or banner ahead",
+        "matching warm sunset grading, bloom and soft low-poly shading",
+        "similar road texture and lane-marking style"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same rear chase camera on a multi-lane highway",
+        "overhead gantry sign far ahead in both",
+        "similar warm sunset glow and soft low-poly shading"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a calm night scene with a vintage roadster and sparse empty highway; Image B is a dusk scene with a futuristic open-wheel car and traffic",
+        "Different building styles: A has dark towers with bright horizontal stripe windows, B has brown towers with dotted window grids",
+        "Different road and HUD details: A has white lane dashes and a snowy sky; B has orange dashes, yellow edge lines, gantry signs and motion blur"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: stylized dusk city with blocky lit towers and purple-orange sky",
+        "Image B: hazy daylight coast with wind turbines and sand dunes",
+        "Different car models and road texture, motion blur and lighting in A versus soft realistic shading in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a moonlit blue night with a vintage Cobra-style car and sparse snow-like star specks; Image B has an orange sunset horizon with a futuristic hovering racer with thrusters",
+        "Different road styling: A has white dashed lines and low guardrails; B has orange lane dashes, yellow edge line, overhead exit signs and traffic",
+        "Different building style: A has dark towers with white stripe windows; B has dense tan-windowed towers with ring markers"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person rear chase camera over a multi-lane highway with similar sunset lighting",
+        "overhead gantry signs with matching pixel-style text ('RELAY' banner and 'EXIT 4B HARBOUR')",
+        "similar stylized low-poly look with warm orange-purple grading and dashed lane markings"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same third-person rear chase camera on a multi-lane highway",
+        "overhead gantry road signs with similar text style",
+        "dashed lane markings and guardrails rendered the same way, with similar car modelling"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person rear chase camera on a multi-lane highway",
+        "overhead gantry road signs with similar text styling",
+        "similar asphalt texture and dashed lane markings"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "both are third-person rear-chase views on an elevated multi-lane highway with guardrails and a gantry sign",
+        "blocky skyscrapers with striped window textures and a low sun or moon disc",
+        "time of day, car model, and road markings differ (night/white lines vs sunset/yellow lines)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Different environments: coastal desert with wind turbines vs. sunset city canyon",
+        "Different vehicles: vintage teal roadster vs. futuristic purple racer with boost trails",
+        "Both are third-person chase-cam highway racers with similar asphalt texture and overhead gantry signs"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: hazy daylight coast with wind turbines and a vintage teal roadster",
+        "Image B: stylized dusk city with purple-orange sky, boxy lit towers and a futuristic blue racer",
+        "Different car models, lighting and road texture, with motion blur and traffic only in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "both are third-person rear-view car driving on an elevated multi-lane highway with guardrails",
+        "blocky skyscraper towers lining the road with a sun/moon disc in the sky",
+        "overhead gantry signage and similar road lane markings, differing only in time of day and car model"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both are third-person rear-view car driving on an elevated multi-lane night highway",
+        "Both use blocky skyscrapers with striped window-band textures and square star-like specks in the sky",
+        "Different palette and car, with Image A warm sunset/neon and Image B cool moonlit, which is why confidence is limited"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Same rear-chase camera framing and overhead gantry signs on a multi-lane highway",
+        "Matching warm sunset lighting with purple-orange haze and similar road texture and dashed lane markings",
+        "Different environments and car styles (canyon with a vintage roadster vs. city with a futuristic racer) could be separate levels"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "identical rear chase camera and car placement",
+        "multi-lane highway with dashed lines and distant overhead sign gantry",
+        "low-poly stylized environments with sunset gradient lighting"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "identical behind-the-car chase camera and framing",
+        "warm sunset lighting with bloom on a multi-lane highway",
+        "overhead gantry signs spanning the road in both"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same third-person rear chase camera on a multi-lane highway",
+        "overhead highway gantry signs with similar text style",
+        "similar road markings, guardrails and low-poly stylized scenery"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "elevated highway over water with blocky striped-window skyscrapers",
+        "rear-chase camera on a car with overhead gantry signs",
+        "same low-poly city style despite different time of day"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a night scene with a moon, snowflakes and sparse striped skyscrapers; Image B is a dusk scene with a purple-orange sky and dense tiled towers",
+        "Different cars: a classic Cobra-style roadster versus a futuristic blue open-wheel racer with thrusters",
+        "Image B has traffic, an overhead exit sign and motion blur; Image A has an empty road, a pale-blue sheen and no blur"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same third-person rear chase camera on a multi-lane highway",
+        "overhead gantry road signs with similar lettering",
+        "similar road surface, dashed lane markings and guardrail style"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "identical chase camera behind the car on a wide multi-lane highway",
+        "same warm sunset haze, grading and soft road texture",
+        "overhead gantry signs in both, with similar low-poly stylized scenery"
+      ]
+    }
+  ]
+}

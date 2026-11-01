@@ -1,0 +1,720 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:47:10.090Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s"
+    ],
+    "framesB": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.856,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 44,
+    "confidentDifferentRate": 0.9361702127659575,
+    "same_game": false,
+    "same_game_confidence": 0.856,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: realistic daytime coastal highway with a vintage roadster and wind turbines",
+        "B: low-poly stylized night city with neon-lit drone vehicles and a minimap",
+        "Different art style, lighting and palette (hazy natural vs saturated dusk glow)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage roadster in a desert canyon with low-poly red cliffs",
+        "Image B: blocky voxel-style hover vehicles in a night city with lit skyscrapers",
+        "Different vehicle types, scenery and HUD (minimap only in B)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: blocky low-poly futuristic hover vehicles in a night city with a minimap HUD",
+        "Image B: a realistic vintage roadster in a desert canyon at sunset, no HUD",
+        "Different palettes and art styles; both are road racing scenes with similar lane markings"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has blocky low-poly hovering drones and a night city, while Image B has a realistic Cobra-style car in a canyon",
+        "Different settings and vehicle styles: futuristic city highway versus desert canyon road",
+        "Image A has a minimap HUD and flat-shaded geometry; Image B has smoother, more detailed car modelling and no HUD"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: realistic vintage roadster on a moonlit highway, B: low-poly orange hover-drone vehicles",
+        "A: sparse striped blocky towers with a calm night sky, B: dense dark skyscrapers with a dusk sky and warm glow",
+        "B has a minimap HUD and a stylized voxel look that A lacks"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky hovercraft racers with a minimap HUD at sunset",
+        "Image B: realistic vintage roadster on a moonlit highway",
+        "Different building styles, lighting, and art direction"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized low-poly futuristic city with hovering drone racers and a minimap HUD",
+        "Image B: realistic coastal highway with a vintage roadster, wind turbines and soft hazy lighting",
+        "Different art style, palette and vehicle types"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic coastal highway with a vintage teal roadster and wind turbines",
+        "Image B: stylized blocky futuristic city with hovering racers and a minimap HUD",
+        "Different palettes and art styles: muted natural daylight vs warm orange sunset glow"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A uses a realistic vintage sports car, Image B uses blocky low-poly drone vehicles",
+        "Image A is a cool blue moonlit night with striped skyscrapers, Image B is a warm orange dusk with silhouetted city and an arch",
+        "Image B has a track minimap HUD and yellow lane markings, Image A has white dashed lines and no HUD"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage roadster in a red canyon, smooth shading",
+        "Image B: blocky low-poly drone racers in a dark futuristic city",
+        "Different HUD: Image B has a track minimap, Image A has none"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: blocky low-poly hover vehicles with a minimap HUD",
+        "Image B: realistic vintage roadster on a moonlit highway",
+        "Different building and road styles (dense window-grid towers vs. striped slab towers)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage Cobra roadster in a desert canyon at sunset",
+        "Image B: blocky low-poly drone vehicles in a night city with neon lighting",
+        "Image B has a minimap HUD, and the art style and palette differ from A"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage roadster on a moonlit highway with striped skyscrapers",
+        "Image B: low-poly drone racers with orange silhouetted city and a track minimap HUD",
+        "Different palettes and art styles: cool blue night vs. warm orange dusk"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a canyon highway with a realistic vintage roadster; Image B is a futuristic city with blocky hovercraft",
+        "Different art styles: smooth low-poly terrain vs voxel-like angular vehicles and dense skyscrapers",
+        "Different HUD: no HUD in A, circular track minimap in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has hovering voxel-style sci-fi racers and a minimap, Image B has a realistic vintage Cobra-style car",
+        "Image A is a warm sunset city with dense lit windows, Image B is a cool moonlit night with striped towers",
+        "Different road and scenery style: arched gate and ruined skyline vs. open elevated highway with guardrails"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: low-poly futuristic hover racers in a neon night city with a minimap",
+        "Image B: realistic vintage Cobra roadster on a coastal highway with wind turbines",
+        "Different art style and lighting: stylized dusk glow vs. hazy realistic daylight"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic coastal highway with a vintage roadster and wind turbines, Image B is a stylized sci-fi city with blocky hover vehicles",
+        "Different art styles: smooth realistic materials versus low-poly chunky geometry",
+        "Different lighting and HUD: hazy daylight with no HUD versus a sunset glare with a minimap in the corner"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: low-poly futuristic hover racers in a dusk city with a minimap HUD",
+        "Image B: realistic Cobra-style car on a coastal highway with wind turbines",
+        "Different art styles and lighting: flat blocky orange silhouettes vs. soft hazy realistic materials"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: realistic vintage roadster on a moonlit highway, B: chunky low-poly hovering drone vehicles",
+        "Different building styles: A has striped blocky towers, B has tall dark towers with speckled windows",
+        "B has a minimap HUD and a warm orange/blue palette; A has a cool monochrome blue night"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic vintage roadster on a night highway with moonlit blue palette",
+        "Image B: blocky low-poly hover vehicles at warm sunset with a minimap HUD",
+        "Different building styles: striped blue towers vs dense lit-window brown skyscrapers"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: blocky low-poly futuristic hover-drone racers in a night city",
+        "Image B: smooth, detailed vintage Cobra-style car in a canyon",
+        "Different environments, vehicle styles and HUD (minimap only in A)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage roadster in a desert canyon at sunset, no HUD",
+        "Image B: blocky low-poly drone vehicles in a neon night city with a minimap",
+        "Different art style, palette and setting; only the road racing theme is shared"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic coastal highway with a vintage roadster and wind turbines; Image B: stylized futuristic city with hovering racers",
+        "Different art style: smooth realistic models vs blocky low-poly sci-fi vehicles and buildings",
+        "Different lighting and HUD: hazy gray daylight with no HUD vs low sunset glare with a track minimap"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: low-poly futuristic hover racers and dark neon skyscrapers with a minimap HUD",
+        "Image B: realistic vintage Cobra roadster on a coastal highway with wind turbines",
+        "Different art styles and lighting: stylized night city vs. hazy realistic daylight"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: low-poly futuristic hover-drones, dusk city with orange silhouettes and a minimap HUD",
+        "Image B: realistic textured Cobra-style sports car on a coastal highway with wind turbines",
+        "Different art style, lighting, and palette: stylized dark orange versus naturalistic hazy daylight"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has blocky low-poly hovering drones in an orange dusk city with a minimap HUD",
+        "Image B has a realistic textured vintage sports car on a blue moonlit highway with a starry sky",
+        "The two frames differ in vehicle type, art style, palette and lighting"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: futuristic hovercraft racers in a neon city with a minimap HUD",
+        "Image B: realistic vintage Cobra roadster in a canyon with smooth low-poly cliffs",
+        "Different vehicle styles, scenery and palettes, though both use warm sunset lighting"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: blocky low-poly sci-fi hover vehicles in a night city with a minimap HUD",
+        "Image B: smoother, realistic vintage Shelby Cobra-style car in a desert canyon at dusk",
+        "Different vehicle types, palette and scenery, though both are road racing scenes with similar road markings"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic classic roadster with moonlit night sky and striped skyscrapers",
+        "Image B: low-poly blocky drone vehicles, orange dusk palette, minimap HUD",
+        "Different road markings and art style (white dashed lines vs yellow lines)"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: low-poly futuristic hover-drones in a dusk city with a minimap HUD",
+        "Image B: realistic Cobra-style roadster on a coastal highway with wind turbines",
+        "Different art styles, lighting and palettes (dark orange silhouettes vs. hazy natural daylight)"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: realistic vintage roadster on a moonlit highway with a striped-window skyline, B: low-poly orange hover-drone vehicles",
+        "Different art styles: smooth realistic car model vs blocky voxel-style props",
+        "B has a minimap HUD and warm orange glow with dusk lighting, while A has a cold blue night palette and no HUD"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: realistic vintage roadster in a red canyon, B: blocky low-poly drone racers in a city",
+        "different scenery and palette: canyon cliffs and purple dusk vs. dark skyline with orange silhouettes",
+        "B has a track minimap HUD and flat-shaded voxel style, A has smoother realistic car materials"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime coastal highway with a vintage roadster; Image B is a stylized low-poly night city with hovering drone vehicles",
+        "Different art style and lighting: soft hazy desert palette vs dark neon-lit blues and oranges",
+        "Image B has a minimap HUD and blocky futuristic props that Image A lacks"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a blocky sci-fi hover-racer in a neon night city with a minimap HUD",
+        "Image B is a realistic classic Cobra roadster on a coastal highway with wind turbines",
+        "Different art styles, palettes and lighting: warm sunset glow vs. pale hazy daylight"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic classic roadster on a moonlit blue highway, Image B has blocky low-poly hover craft at a warm orange sunset",
+        "Different building styles: striped blue-white towers vs dense lit-window brown skyscrapers",
+        "Only Image B has a minimap HUD and fantasy vehicles with rotors"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic vintage Cobra roadster on a coastal highway with wind turbines",
+        "Image B: low-poly futuristic hover racers in a dark neon city with a minimap HUD",
+        "Different art style, palette and lighting: soft hazy daylight vs. harsh sunset glare"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic daytime coastal highway with a vintage roadster and wind turbines",
+        "Image B: low-poly dusk city with drone racers, a dark orange skyline and a minimap HUD",
+        "Different art styles, lighting and vehicle types"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night scene with a realistic vintage roadster, while Image B is a sunset scene with blocky hover-craft",
+        "Different building styles: striped blue towers versus dense brown windowed skyscrapers",
+        "Image B has a minimap HUD, and its road and lighting differ from Image A's cool moonlit palette"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: low-poly voxel hovercraft with a minimap HUD and dense dark skyscrapers",
+        "Image B: realistic vintage roadster on a moonlit highway with a starry sky and striped buildings",
+        "Different art styles: chunky stylized blocks versus smooth realistic car and flat-lit towers"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic classic roadster in a desert canyon with low-poly orange cliffs",
+        "Image B: blocky voxel-style hovercraft racers in a night city with glowing windows",
+        "Different settings, vehicle styles and HUD (minimap only in B)"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: blocky low-poly sci-fi hover vehicles in a night city",
+        "Image B: classic Cobra-style roadster in a desert canyon at sunset",
+        "Different vehicle and scenery styles, though both show a similar road with white and yellow lane markings and the same soft lighting"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: blocky low-poly hover drones in a night city with a minimap HUD",
+        "Image B: realistic classic roadster in a canyon with smooth shading and no HUD",
+        "Different vehicle types, scenery and road markings (yellow dashes vs white dashes)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic daytime coastal highway with a vintage roadster",
+        "Image B: stylized low-poly night city with hovering drone vehicles and a minimap",
+        "Different art style, lighting and palette (hazy desert tones vs. neon dusk)"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has blocky low-poly hovering drone vehicles and a minimap HUD, while Image B has a realistic vintage roadster",
+        "Different palettes: orange dusk silhouettes versus a blue moonlit night with stars",
+        "Different building styles: flat brown silhouettes versus striped lit-window towers"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic vintage roadster on a moonlit highway with striped skyscrapers",
+        "Image B: low-poly blocky drone vehicles with orange dusk lighting and a minimap HUD",
+        "Different art style, sky and palette (cool blue night vs warm brown dusk)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic daytime coastal highway with a vintage roadster",
+        "Image B: low-poly neon night city with hovering drone vehicles",
+        "Different art style, lighting and HUD (minimap only in B)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: futuristic hovercraft in a neon city with a minimap HUD",
+        "Image B: realistic vintage Cobra roadster in a desert canyon",
+        "Different vehicle and scenery styles; only the warm sunset tone is shared"
+      ]
+    }
+  ]
+}

@@ -3,85 +3,76 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/mid-drive-settle1.1280x720.jpg",
-      "sha256": "7be65b0f6dba687f366cc0b888fd2b79d848df635c9871294d8ba75aff7338ed"
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "baf090cfcb9c9e3222ef2c30ea43a8a3a6e995b116905acb797080a0fdf24b4b"
     },
     {
-      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/title.1280x720.jpg",
-      "sha256": "53c174232354a8321ec6d31fc326ef50a9547e74c6f22c8bedca29b63ea00ad8"
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/screens/title.1280x720.jpg",
+      "sha256": "d200b2c94e5ac1fe2fe6d83cc1c3a863b0e5d87afca4a6fe23765c45e5d86a0d"
     },
     {
-      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/roadster-hours-port/frames/g22p3-r2-3/roadster-hours-port--redline--settle-60s.jpg",
-      "sha256": "4beb270fbc36a96488147761240ee371013cb107790821296862fce1eda72f27"
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "4fc26cf5dcbe7c3a5db297a43871ffaf7c146d6afecd794bba1dfb8b81fda81b"
     },
     {
-      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/roadster-hours-port/frames/g22p3-r2-4/roadster-hours-port--halo--settle-60s.jpg",
-      "sha256": "7dd1287fde9787533db72507d94803976a10d80c43e4518c1000108bf1cf34c0"
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "7adb5fce8de3e0131d2459dee6a7c894f8674dc9f65ca6b367938fbf4f9da6a2"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5.5,
-    "shadows": 4,
+    "lighting": 5,
+    "shadows": 4.5,
     "ibl_reflections": 4.5,
-    "environment_world": 6,
-    "atmospheric_effects": 6.5,
-    "material_quality": 5,
-    "modeling_assets": 6,
-    "composition": 6.5,
-    "camera": 6.5,
-    "postprocessing": 5.5,
-    "animation_quality": 6,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
     "ui_hud": 7
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "The coast frame is overcast grey-blue with flat key light, so the recipe's golden-hour low sun never appears. The canyon has a warm sunset tint, but the walls are evenly lit with no rim or directional falloff."
+      "seen": "The coast frame and the menu frame are lit by a flat, overcast-looking sky with no low sun direction, so the car has no rim light or warm key. The canyon frame has a warm sunset sky, but the car and road stay cool purple-grey. At night the streetlamps on the skyway cast no light pools onto the road."
     },
     {
       "category": "shadows",
-      "seen": "There are no clear car contact shadows on the asphalt in any frame. Only a faint dark smudge sits under the car. Trees, rocks and canyon walls cast no readable shadows."
+      "seen": "The car's contact shadow is a faint, soft smudge that barely grounds it. Trees on the coastal hill cast visible shadows. The canyon walls and the rocks on the ridge cast no readable shadows, and nothing at night casts a shadow."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The Cobra body has some specular sheen, but the road shows no wet or sky reflection despite its glossy dark tone. The night skyway shows no streetlight reflections on the road."
+      "seen": "The teal paint shows broad soft highlights but does not reflect the sky, sea or canyon walls. The night road has a faint sheen under the car and no reflections of the city or lamps."
     },
     {
       "category": "environment_world",
-      "seen": "The three biomes are distinct: coast with wind turbines and houses, red canyon, and night city. However, the canyon walls are bare smooth slopes, the city towers are simple striped boxes, and the road edges are sparse."
+      "seen": "The three biomes add variety: a coast with sea, turbines and red-roof houses, a canyon, and a night city. Each is sparse, though. The canyon walls are huge flat planes, the city towers are plain boxes with stripe windows, and the roadside props are spread thinly."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Distance haze is present on the coast and canyon horizons, and floating particles appear in the night and canyon frames. The coast fog is heavy and greys out the whole scene rather than adding depth."
+      "seen": "Distance fog is present in all frames. In the coast frame it turns into a milky haze that washes out the whole image instead of only the far distance. The canyon frame's warm haze toward the vanishing point works best."
     },
     {
       "category": "material_quality",
-      "seen": "The asphalt is a uniform noisy texture with no wear or roughness variation. The grass hill is a flat green with speckles. The canyon rock has broad banding but no surface detail."
+      "seen": "The asphalt has a noisy grain texture that reads as road. The sea is stylised blue streaks. The canyon walls are untextured colour bands. The building windows are a flat stripe texture, and the car's tail lamps and wheels read as plain white blobs."
     },
     {
       "category": "modeling_assets",
-      "seen": "The car model is decent, with roll bars and stripes. The low-poly orange rocks and trees are stylistically mismatched with the semi-realistic car. The city buildings are primitive extruded boxes."
+      "seen": "The roadster has a believable silhouette with roll hoops and a stripe livery. The trees, rocks and houses are low-poly generated props whose style does not match the car. The tail-lamp housings and wheels lack detail."
     },
     {
       "category": "composition",
-      "seen": "The car sits centered, taking roughly 8–12% of the frame, below the 15–25% target. The vanishing point is strongly centered with the relay gate on axis, which reads clearly but statically."
+      "seen": "The car sits in the lower-right third and takes about 12 to 15% of the frame. The horizon and finish gantry sit dead centre in every shot, and the large empty sky or wall areas carry no visual interest."
     },
     {
       "category": "camera",
-      "seen": "The chase camera sits low behind the car with an FOV that looks near 60. In the gameplay frame, the exhaust smoke covers the lower center and partly obscures the car."
+      "seen": "The chase camera is low with a field of view of roughly 60° and the same offset in every frame. The car sits to the right of the lane centre with no visible speed framing or lean."
     },
     {
       "category": "postprocessing",
-      "seen": "There is a mild bloom on the moon and a vignette in the night frame. Color grading is weak: the coast frame is washed-out grey and lacks the cinematic contrast and warm palette the recipe calls for."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "Motion can only be inferred from stills. Thrust smoke and the CLEAN LANDING callout suggest trick feedback, but the smoke puffs are opaque, flat sprites."
-    },
-    {
-      "category": "ui_hud",
-      "seen": "The HUD is clean, with a speedometer arc, thrust and heat bars, timer, relay count, score and progress bar. The red combo text is low contrast and hard to read, and the CLEAN LANDING text overlaps the gate sign."
+      "seen": "The coast frame has lifted blacks and low contrast with no filmic tone curve. The canyon and night frames show only a mild vignette and grain. The tyre smoke puffs at the bottom right are flat grey discs."
     }
   ],
   "nextChange": {

@@ -24,6 +24,10 @@
     body:not(.look-original) #speedo small { letter-spacing: .14em; text-transform: uppercase; font-size: 11px; }
     /* GU47 RH47-16: letterbox bars for the intro rail (none on reduced motion: the director never raises them). */
     body.shot-bars::before, body.shot-bars::after { content: ""; position: fixed; left: 0; right: 0; height: calc(var(--shot-bars, 0) * 10vh); background: #050607; z-index: 1; pointer-events: none; }
+    /* GU47 phase 4: the combo line sat as thin signal red on the pale Sunbreak sky (judge: unreadable); a salt-white chip with a red rule keeps the accent and reads on any sky. */
+    body:not(.look-original) #combo:not(:empty) { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 3px; background: rgba(8,12,18,.62); color: #f4efe2; border-right: 3px solid var(--accent); text-shadow: none; }
+    /* phase 4: GU47 toasts sit above the relay-gate sign line (judge: "CLEAN LANDING" covered the sign) */
+    body:not(.look-original) #toast { top: 17%; }
     body.shot-bars::before { top: 0; }
     body.shot-bars::after { bottom: 0; }
     html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; font: 400 14px/1.4 "DIN Pro", sans-serif; font-synthesis: none; color: var(--ink); -webkit-font-smoothing: antialiased; }

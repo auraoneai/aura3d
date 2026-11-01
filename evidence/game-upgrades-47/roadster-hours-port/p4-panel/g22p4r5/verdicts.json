@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Light warm haze lowers contrast a little near the horizon, and the road surface is somewhat flat and purple-grey. Otherwise the canyon is well lit and atmospheric, the warm rock tones show good depth, and the car reads clearly.",
+     "Mild warm haze softens the distant end of the road; a little motion blur at the bottom right; car sits off-centre but is clearly readable",
+     "Faint dust haze and slightly washed purple tone on the road; the warm sunlit canyon reads well, the car has good material detail and a shadow, and the depth is strong"
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky and distant sea are somewhat hazy, washed and purple-grey, and the road texture is a bit noisy. Otherwise the warm sunlit hills, tree shadows, wind turbines, readable signage and a well-grounded car with shadow give a clearly more polished, sunny frame.",
+     "Sky is a little hazy and flat, and the far sea and horizon are slightly washed out; otherwise warm and readable, with windmills, trees and a grounded car shadow",
+     "A grey-purple sky haze slightly washes out the horizon, and the road texture is a bit noisy. Otherwise the warm sunlit dunes, the wind turbines and trees give depth, the car is well lit and grounded with a shadow, and the colour is richer"
+    ]
+   }
+  ]
+ }
+]
