@@ -3,91 +3,91 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/hud-rucker-action.jpg",
-      "sha256": "584b46429bdf24f69220c837e379653ab9f18c7914828fa28a43c183027efdca"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-scr/screens-1280x720--03-action-03-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "f41647954218bc8d0b713a38f3e200fb9d00331d6590e2ea601e3e327093ec2c"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/manila-settle-60s.jpg",
-      "sha256": "36114335e3d729d8b4473a37547b5e14aa2d5db07bf8065d9a8053e0788a9575"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "02f7a934de1e1a3ecbb7519de509e3d89188944d220cfda14d85128f0c5ddbd8"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/venice-settle-60s.jpg",
-      "sha256": "48f95ff72c95ba977878f930be390009c7a45bceb54872479d88ce81ccf7c47b"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-2/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/shanghai-settle-60s.jpg",
-      "sha256": "7c2af1b2e8ff158feb6295125f8df1f81b857e8aadfa9f9bb9d07b6725178687"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "6275cd29ee1aaeca0f0c1e20d738c75cfa41521aa3579c21ef56b89f2cf72a55"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 6,
-    "shadows": 4.5,
-    "ibl_reflections": 4,
-    "environment_world": 5.5,
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
     "atmospheric_effects": 5,
-    "material_quality": 5,
-    "modeling_assets": 5,
-    "composition": 5,
-    "camera": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 4.5,
+    "camera": 4,
     "postprocessing": 5.5,
-    "animation_quality": 5,
+    "animation_quality": 4.5,
     "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Frame 1 is a dim, blue-purple wash with no readable key direction despite the 'golden hour look' label. Frames 2 and 3 are flat and evenly lit. Frame 4 has the best night mood, with lamp posts, but the lamps cast little light onto the court."
+      "seen": "Frame 1 is labeled 'Golden Hour Look' but renders as a murky purple dusk with flat fill and no readable key direction. Frame 3 has a convincing low warm sun, so the lighting presets are inconsistent in quality."
     },
     {
       "category": "shadows",
-      "seen": "Players get soft blob or contact shadows that are faint and mostly directionless. Frame 4 has some cast shadows near the bleachers, but there is no consistent sun or flood shadow direction across frames."
+      "seen": "Frame 3 shadows have heavy stair-step aliasing along the bleacher and left court edges. Frame 2 shows dark rectangular patches on the floor that read as broken blob shadows. In frame 1 the players have almost no contact shadow under their feet."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The court surfaces are matte with no sheen or reflections, even under the wet rain in frame 4. Only the trophy in frame 1 shows a metallic gold response."
+      "seen": "Only frame 4 shows meaningful reflection: a blue specular streak and lamp glints on the wet-looking court. The other frames have matte surfaces with little environment response."
     },
     {
       "category": "environment_world",
-      "seen": "The bleachers and ball cart are generic blocks. Backdrops are blurred photo-like planes (green interior, beige haze, treeline). The Venice palm floats unattached in the sky. Frame 1 has a giant pillar intersecting the court and the trophy oddly placed mid-court."
+      "seen": "The buildings in frames 1 and 3 are flat boxes with a uniform grid of emissive window squares. The bleachers are plain untextured steps. The blue tower in frame 4 has a smeared, stretched texture, and the ornate lamps are the only detailed set dressing."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Frame 4 has light rain streaks and frame 2 has dust particles near the hoop. Frame 3's beige haze is flat fog that washes out the far background rather than adding depth."
+      "seen": "Frame 2 has indoor bloom and haze, but the depth of field blurs the gym into an unreadable smear. Frame 3's sky is blown out to white behind the buildings. Frame 4 has faint rain specks."
     },
     {
       "category": "material_quality",
-      "seen": "Clothing is flat color with no fabric response. Skin is smooth unlit-looking. Court paint is uniform, with no wear or grain except a faint noise overlay."
+      "seen": "Clothing and skin use flat albedo with no fabric or skin response. The court reads as matte plastic in frames 1 to 3. The floor glyph in the bottom left of frames 2 and 4 is pixelated."
     },
     {
       "category": "modeling_assets",
-      "seen": "The low-poly stylized characters are readable, but faces are simplistic and hands are mitten-like. The court line decals at the paint have broken white swoosh artifacts near the feet. The hoop and backboard are decent."
+      "seen": "The characters are low-poly with near-identical faces and white goggle-like eyes. White curved arc artifacts protrude from players' ankles in every frame. The ball cart and backboard are reasonable."
     },
     {
       "category": "composition",
-      "seen": "Frame 1 crops a player at the left edge and leaves a large empty foreground. Frames 2–4 cluster players mid-frame with the hoop cut off at the top right. The ball carrier is well emphasized by the orange ring."
+      "seen": "Frame 1 crops a player at the left edge and the ball at the right edge, and the HUD panel covers players. Frames 2 to 4 cut off the hoop at the top right and a player at the right edge."
     },
     {
       "category": "camera",
-      "seen": "Low perspective camera rather than the broadcast high angle. Frame 1 is very close and oblique with no clear court read. Frames 2–4 use a consistent shallow sideline angle that hides court layout depth."
+      "seen": "The camera is a low perspective at roughly 20 to 30 degrees of elevation, not the specified 70-degree orthographic broadcast view. Frame 1 sits so close that the court becomes a fragment rather than the 25 to 40 percent subject."
     },
     {
       "category": "postprocessing",
-      "seen": "There is background depth-of-field blur and a film grain or noise layer. Frame 1 is crushed and desaturated. There is no meaningful bloom on the lamps in frame 4."
+      "seen": "Grain, vignette, bloom and DOF are present. The DOF in frame 2 is overdone and frame 3 clips its highlights."
     },
     {
       "category": "animation_quality",
-      "seen": "The handler's dribble crouch varies across frames. Off-ball players stand in near-identical idle T-ish poses across all four shots. The players in frame 1 are mid-stride but stiff."
+      "seen": "Most players stand in stiff A-poses with arms straight down. Only the dribbler shows a dynamic crouch."
     },
     {
       "category": "ui_hud",
-      "seen": "Frame 1 has a clean scoreboard, court tag, stamina bar and controls strip in a consistent orange/cyan style. The top mode bar is dense and debug-like, and frames 2–4 show no HUD at all."
+      "seen": "The frame 1 scoreboard, stamina bar and control strip share a consistent style. The top mode and court bar is a dense developer-style menu, and the score panel overlaps gameplay."
     }
   ],
   "nextChange": {
-    "category": "ibl_reflections",
-    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
-    "api": "environments.hdri(url) or the look's preset env"
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
   },
   "judge": "prism"
 }

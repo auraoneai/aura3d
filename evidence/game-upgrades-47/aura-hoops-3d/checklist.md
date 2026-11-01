@@ -46,3 +46,17 @@ Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
 | 7.2 distinctness | >= 0.8 vs every neighbour | top-tennis 0.846, links 0.832 pass; diamond 0.755, fc 0.746 fail |
 | 7.2 game-checks | 0 errors, 0 warnings | 0 errors, 13 warnings (12 luma-band: band wrong for panel-verified looks, not widened; 1 borrowed-asset: WP-36) |
 | 7.2 final screens | retaken, committed | done (g07p3-f-scr, 34907fcdf) |
+
+## Phase 4 (4.7.2) update, 2026-10-31 (software WebGL2; details in the lane report "Phase 4 (4.7.2)")
+
+| ID | Acceptance | Status |
+|---|---|---|
+| PRD D11 | every changed view beats its 4.6.2 frame in a blind panel | done: all six courts better 3/0/0 on the final build (g07p4r6; also g07p4r4) |
+| H47-L1 / shadows | cast shadows that read | done on the steady frames: PCF key fitted to 60 m, elevation floor 12 deg, stronger key over less fill; rubric shadows 4.5 -> 3.5-6 (it varies with the HUD moment the screens spec catches) |
+| H47-E2 / ibl_reflections | glossy surfaces reflect | done: per-court floor finish, SSR on Manila/Shanghai/Orbit; rubric 4 -> 5-6 |
+| H47-E1 / environment | backdrop past the court | Rucker/Athens walk-up ring (3 / 2 instanced draws) |
+| H47-M2 / WP-36 | Meshy props swapped in | `hoops_blacktopFloodlight` (Rucker floods); 43 other rows blocked: Meshy keys refuse API calls |
+| 7.2 rubric | 12 categories >= 7 | not met: final min 3.5-4, best run min 5.5 (r4 a); lowest are athlete modeling/material/animation (WP-36 blocked) |
+| 7.2 distinctness | >= 0.8 vs every neighbour | tennis 0.856, links 0.827 pass; fc 0.799, diamond 0.752 fail (tell: shared low-poly athletes) |
+| 7.2 game-checks | 0 errors | 0 errors, 13 warnings (unchanged: 12 luma-band, not widened; 1 borrowed-asset on `?look=original` only) |
+| PRD D7 | <= 320 draws | 199-247 draws; triangles 1.63-1.89 M (was up to 2.29 M) |

@@ -41,6 +41,8 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsCheckSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
   readonly "hoopsAthleteBigKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "hoopsAthleteGuardKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 WP-36 blacktopFloodlightRig: Meshy retexture of hoopsFloodlight (assets/provenance/hoops_blacktopFloodlight.*). */
+  readonly "hoops_blacktopFloodlight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -342,6 +344,14 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-5c0f9a76aacc6dcb14c3fb3b8895cfcef3a0d16305f3567f8cc66805a98643ce",
     bounds: [0.905,1.903,0.404],
     sizeBytes: 1592664,
+  },
+  "hoops_blacktopFloodlight": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoops_blacktopFloodlight.9e22faef.glb",
+    hash: "sha256-9e22faefcf59f6da9485a875d324efaee4d3949cfee68f28e998710e2dcb3f76",
+    bounds: [0.695,2,0.687],
+    sizeBytes: 499364,
   },
   "showcaseStadiumSeats": {
     type: "model",

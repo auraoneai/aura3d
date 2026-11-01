@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-hoops-3d/art/direction.ts",
-  "sourceSha256": "1bff7df0354e77c71eff8fc061391bb7cd657570162acfc0f29a4a689450233f",
+  "sourceSha256": "02504d1cd2b8cb335b2ac12848f06315651ea5c851def2df1450a6fbeaa84e16",
   "id": "showcase-aura-hoops-3d",
   "genre": "basketball",
   "signatureEffect": "Spray-tag decal stencilled on the blacktop under the rim after a Jam dunk, fading over 20 s, at most 8 live, on every tier.",
@@ -24,7 +24,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.5
+        "intensity": 2.4
       },
       {
         "type": "spot",
@@ -176,6 +176,13 @@
         "assetKey": "hoopsTrophy",
         "triangles": 0,
         "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hoops_blacktopFloodlight",
+        "triangles": 0,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
@@ -340,6 +347,13 @@
       {
         "role": "set-dressing",
         "assetKey": "hoopsFloodlight",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hoops_blacktopFloodlight",
         "maxTriangles": 25000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
