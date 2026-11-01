@@ -55,8 +55,9 @@ export default defineArtDirection({
   framing: { rig: "static", subjectHeightFraction: [0.06, 0.16], fovDeg: [15, 60], mobile: "both" },
   assets: [
     { role: "set-dressing", assetKey: "showcaseStadiumSeats", kit: "K4", maxTriangles: 60000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "rooftopScoreboardRigMeshy", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "rooftopFloodlightTowerMeshy", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    // GU47 phase 9 (D2): Aura Slam-owned CC0 props (Kenney Factory Kit screen-wide, 144 tris; Poly Haven security_light, 4,668 tris).
+    { role: "prop", assetKey: "tennisScoreboardScreen", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "tennisFloodlightHead", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "ball-bounce-clay", kind: "clay-puff" },

@@ -20,12 +20,12 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopScoreboardGantryMeshy",
+      "typedRef": "assets.tennisScoreboardScreen",
       "quality": "production",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
+      "typedRef": "assets.tennisFloodlightHead",
       "quality": "production",
       "role": "setDressing"
     }

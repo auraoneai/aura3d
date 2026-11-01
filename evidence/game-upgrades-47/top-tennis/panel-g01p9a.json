@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "clay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The foreground and lower corners are fairly dark. The purple scoreboard structure is cut off at the top edge. Faint mirrored ghost text of the banners shows on the court, and the 'AURA SLAM' banner is partly covered by the far player. The players are small in frame.",
+     "Purple jumbotron or rig is cut off at the top edge and looks like it is floating. Light poles reach out of frame. Players are small. Warm orange colour across the whole frame lowers contrast between the court and the surround. Scoreboard text is partly hidden by the opponent.",
+     "Purple overhead structure at the top looks like it is floating and is cut off by the frame; sky backdrop is blurry; the near foreground is a large empty clay area; scoreboard text is slightly mirrored on the court"
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale beige and pastel teal give a washed-out, low-contrast frame with weak shadows. The sky band is flat grey-blue. Faint mirrored ghost text shows under the banners. The scoreboard structure is cut off at the top, and the players are small.",
+     "Flat, low-contrast beige and pale teal colours look slightly washed out. Lighting has little depth and the sky is a plain grey-blue band. Jumbotron is cut off at the top and looks like it is floating. Players are small.",
+     "Somewhat washed out and low contrast: beige ground and pale teal court with weak shadows give a flat, hazy look; purple overhead structure looks like it is floating and is cut off; large empty sand foreground"
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Green court on green surroundings is somewhat monotone. The far background is a muddy blurred band. Faint mirrored ghost text shows under the banners, and the scoreboard structure is cut off at the top.",
+     "Monochrome green colour lowers contrast between the court and the surround. Jumbotron is cut off at the top and looks like it is floating. Background treeline is blurry and dark. Players are small.",
+     "Slightly dark, muted greens; purple overhead structure looks like it is floating and is cut off at the top; blurry backdrop; ghosted scoreboard text reflected on the court"
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large areas of pure black at the sides and top, and the right stand partly fades into shadow. Faint mirrored ghost text shows on the court under the banners. The players are small, though the white suits read clearly against the blue.",
+     "Very dark surroundings. The right-hand stands are partly lost in shadow and the far edges are black. Shiny reflections of the scoreboard text appear on the court. Players are small.",
+     "Harsh lighting: the right-side stands and corners are crushed into near-black, and the grey floor is somewhat flat; the moon sprite looks pasted on; some ghosted reflection artifacts on the court"
+    ]
+   }
+  ]
+ }
+]

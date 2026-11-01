@@ -44,6 +44,9 @@ export const GANTRY_POSITION: Vec3 = [0, 2.4, -15.6];
 export const STATIC_RUNTIME_IDS = { bleachers: "stadium-bleachers", sponsorTrim: "stadium-sponsor-trim" } as const;
 export const GRANDSTAND_LENGTH = 24;
 export const FLOODLIGHT_MAST_H = 9;
+/** Fitted size of the owned lamp head (largest side: its 0.53 m height) and the stadium screen width (GU47 phase 9). */
+const FLOODLIGHT_HEAD_SIZE = 2.2;
+const SCOREBOARD_WIDTH = 5;
 
 export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOptions = {}): ReturnType<typeof scene> {
   const original = options.look === "original";
@@ -261,7 +264,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
 
   // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
-  // is a 1.9 x 1.4 x 1.9 lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
+  // is a lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
   const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.pbr({ color: "#5d6a70", metalness: 0.95, roughness: 0.22 });
   for (const side of [-1, 1]) {
     s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
@@ -278,27 +281,26 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .position(0, 0, -19.5)
       .rotate(0, Math.PI * 0.5, 0)
       .runtime(game.runtimeNode("stadium-grandstand-rear", { tags: ["typed-supporting-asset"] })),
-    model(assets.rooftopScoreboardRigMeshy, {
+    // GU47 phase 9 (D2): an Aura Slam-owned CC0 stadium screen (Kenney Factory Kit `screen-wide`, 1.2 x 1.0 x 0.5) replaces
+    // the borrowed Meshy gantry. 5 m wide keeps it inside the old 6.2 m footprint and about as tall (4.1 m vs 3.5 m).
+    model(assets.tennisScoreboardScreen, {
       name: "stadium-scoreboard-gantry",
       role: "setDressing",
       castShadow: false,
       scaleMode: "fit",
-      targetMaxDimension: 6.2
+      targetMaxDimension: SCOREBOARD_WIDTH
     }).position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION)),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-left",
-      role: "setDressing",
-      castShadow: false,
-      scaleMode: "fit",
-      targetMaxDimension: 2.2
-    }).position(-12.5, FLOODLIGHT_MAST_H, -13.2),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-right",
-      role: "setDressing",
-      castShadow: false,
-      scaleMode: "fit",
-      targetMaxDimension: 2.2
-    }).position(12.5, FLOODLIGHT_MAST_H, -13.2)
+    // GU47 phase 9 (D2): Aura Slam-owned CC0 lamp heads (Poly Haven `security_light`, bracket along +Z, shade hanging down)
+    // replace the borrowed Meshy heads. The bracket plate sits on the mast top and the shade faces the court.
+    ...[-1, 1].map((side) =>
+      model(assets.tennisFloodlightHead, {
+        name: `stadium-floodlight-${side < 0 ? "left" : "right"}`,
+        role: "setDressing",
+        castShadow: false,
+        scaleMode: "fit",
+        targetMaxDimension: FLOODLIGHT_HEAD_SIZE
+      }).position(side * 12.5, FLOODLIGHT_MAST_H + 0.2 - FLOODLIGHT_HEAD_SIZE, -13.2 + FLOODLIGHT_HEAD_SIZE * 0.36)
+    )
   ]);
 
   // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed
