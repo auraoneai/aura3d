@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-slingshot-siege/src/art/direction.ts",
-  "sourceSha256": "c030cccc3339b144be1a6172deb8f137d8342abe3a8c8012a5100b93a0642cdc",
+  "sourceSha256": "0700a68132c7aecbe9a522c2499e028a1b92f2eff64377436702282074ca54e5",
   "id": "showcase-slingshot-siege",
   "genre": "golf-physics",
   "signatureEffect": "Tilt-shift miniature focus band that keeps the toy fort crisp over a real sea horizon, through six times of one seaside day.",
@@ -26,7 +26,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3
+        "intensity": 5.4
       }
     ],
     "hasAmbient": false,
@@ -35,6 +35,13 @@
       "background": true
     },
     "models": [
+      {
+        "assetKey": "sling_seaStackIsland",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
       {
         "assetKey": "gullsiegeBridgeMeshy",
         "triangles": 0,
@@ -1796,6 +1803,13 @@
       {
         "role": "set-dressing",
         "assetKey": "gullsiegeWindmillMeshy",
+        "maxTriangles": 150000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_seaStackIsland",
         "maxTriangles": 150000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
