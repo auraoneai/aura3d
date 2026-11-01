@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bangkok-dock",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The blurry photo backdrop behind the walls is slightly out of place. The pagoda roof is still a little translucent and pink-tinted. The edges are dark from a slight vignette.",
+     "Slightly dark, with a vignette that crushes the lower corners. The background backdrop is blurry and low-res. The pagoda is a bit translucent and ghosted.",
+     "The blurred photographic backdrop clashes slightly in style with the 3D set. The pagoda roof is still somewhat translucent. The floor is fairly dark. Otherwise contrast and colour are good and both fighters read clearly."
+    ]
+   },
+   {
+    "variant": "crown-arena",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very warm, dark red grade. The dark-coated fighter on the right partly blends into the background. The upper half is somewhat murky.",
+     "Quite dark overall, and the brown fighter on the right partly blends into the background. The crowd is still made of placeholder blobs. The floor reflection is a little noisy.",
+     "The frame is quite dark overall and the dark-clad fighter on the right blends a little into the background. Bloom on the gold trim is slightly strong."
+    ]
+   },
+   {
+    "variant": "neo-tokyo-rooftop",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A blown-out white bloom or haze blob sits by the left fighter's legs and hand. Rain streaks are large and evenly spaced, so they look slightly artificial. Floor reflections are a bit noisy.",
+     "A bright white bloom/smear near the left fighter's legs partly hides them. Floor reflections are streaky and noisy. The rain streaks are thick and look artificial, and the billboard screen is blown out white.",
+     "A bright white bloom blob near the left fighter's leg partly washes out the fighter's lower body. The rain streaks are large and somewhat coarse, and some cross the fighters. The sky is black."
+    ]
+   }
+  ]
+ }
+]

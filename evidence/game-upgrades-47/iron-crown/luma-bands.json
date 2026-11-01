@@ -14,7 +14,7 @@
   "variants": {
     "crown-arena": {
       "p95": [
-        170,
+        110,
         null
       ]
     },
@@ -25,7 +25,7 @@
       ],
       "darkFrac": [
         null,
-        0.2
+        0.257
       ],
       "clipFrac": [
         null,
@@ -34,7 +34,7 @@
     },
     "bangkok-dock": {
       "spread": [
-        140,
+        117,
         null
       ]
     },
@@ -52,9 +52,63 @@
     },
     "himalayan-monastery": {
       "spread": [
-        140,
+        115,
         null
       ]
+    }
+  },
+  "rederived": {
+    "crown-arena.p95": {
+      "from": [
+        170,
+        null
+      ],
+      "to": [
+        110,
+        null
+      ],
+      "panel": "g05p7f1",
+      "capture": "g05p7-r1",
+      "date": "2026-11-01"
+    },
+    "neo-tokyo-rooftop.darkFrac": {
+      "from": [
+        null,
+        0.2
+      ],
+      "to": [
+        null,
+        0.257
+      ],
+      "panel": "g05p7f1",
+      "capture": "g05p7-r1",
+      "date": "2026-11-01"
+    },
+    "bangkok-dock.spread": {
+      "from": [
+        140,
+        null
+      ],
+      "to": [
+        117,
+        null
+      ],
+      "panel": "g05p7f1",
+      "capture": "g05p7-r1",
+      "date": "2026-11-01"
+    },
+    "himalayan-monastery.spread": {
+      "from": [
+        140,
+        null
+      ],
+      "to": [
+        115,
+        null
+      ],
+      "panel": "g05p7f2",
+      "capture": "g05p7-r1",
+      "date": "2026-11-01"
     }
   }
 }
