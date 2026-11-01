@@ -9,14 +9,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "dotdashCourierPod": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/dotdashCourierPod.8238f297.glb",
-    hash: "sha256-8238f2977089aaa8586887e424b939047f942100ba587cbb9c40e0f60b0db903",
+    url: "/aura-assets/dotdashCourierPod.ba46ab62.glb",
+    hash: "sha256-ba46ab6233165c24c31a0c8e07edbfbfe48d0a5c29bf20f75256b1b957baea9d",
     bounds: [
-      1.327,
-      1.902,
-      0.758
+      1.323,
+      1.901,
+      0.757
     ],
-    sizeBytes: 1530004,
+    sizeBytes: 1027696,
     metadata: {
       "materials": [
         "material-0"
@@ -66,11 +66,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/dotdashCourierPod.8238f297.glb",
+        "sourcePath": "public/aura-assets/dotdashCourierPod.ba46ab62.glb",
         "license": "LicenseRef-Meshy-Generated",
         "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
         "licenseUrl": "https://www.meshy.ai/terms",
-        "licenseRaw": "Generated 2026-10-30 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, dot-dash-3d/dotdashCourierPod, task 01a18c0b-0637-7752-8b7b-b16088c69507). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "licenseRaw": "Generated 2026-10-30 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, dot-dash-3d/dotdashCourierPod, task 01a18c0b-0637-7752-8b7b-b16088c69507). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed. Simplified 27550 -> 10468 triangles (meshoptimizer, PRD D7 hero budget 2k-12k); textures unchanged.",
         "author": "Meshy AI (AuraOne account)",
         "sourceFamily": "meshy",
         "retrievedAt": "2026-10-30T09:02:38Z",
@@ -80,32 +80,32 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-30T09:02:38Z"
       },
-      "sourcePath": "public/aura-assets/dotdashCourierPod.8238f297.glb",
-      "outputPath": "public/aura-assets/dotdashCourierPod.8238f297.glb",
+      "sourcePath": "public/aura-assets/dotdashCourierPod.ba46ab62.glb",
+      "outputPath": "public/aura-assets/dotdashCourierPod.ba46ab62.glb",
       "license": "LicenseRef-Meshy-Generated",
       "author": "Meshy AI (AuraOne account)",
       "boundsMetadata": {
         "min": [
-          -0.664,
+          -0.66,
           -0.951,
           -0.38
         ],
         "max": [
           0.664,
-          0.951,
+          0.95,
           0.378
         ],
         "size": [
-          1.327,
-          1.902,
-          0.758
+          1.323,
+          1.901,
+          0.757
         ],
         "center": [
-          0,
+          0.002,
           0,
           -0.001
         ],
-        "maxDimension": 1.902,
+        "maxDimension": 1.901,
         "grounded": false
       },
       "materialMetadata": [
