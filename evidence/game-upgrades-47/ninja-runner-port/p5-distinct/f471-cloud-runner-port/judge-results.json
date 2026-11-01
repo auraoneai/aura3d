@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T06:13:49.806Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village--settle-60s"
+    ],
+    "framesB": [
+      "cloud-runner-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": true,
+  "same_game_confidence": 0.623,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 11,
+    "sameGameYes": 37,
+    "differentRate": 0.22916666666666666,
+    "ci95": [
+      0.13307691028989044,
+      0.36539535908451154
+    ],
+    "confidentDifferent": 0,
+    "confidentDifferentRate": 0,
+    "same_game": true,
+    "same_game_confidence": 0.623,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "low-poly conifers with orange-red trunks and faceted foliage in both",
+        "log or cylinder path as the central walkable element",
+        "similar rounded gray boulders and small dark green shrubs"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders, dirt road, and a small child character",
+        "Image B: medieval village with brick-textured round trees, cobblestone path, and ninja characters",
+        "Different scenery, texture style, and character design, though both use a similar third-person camera and green grass"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "matching low-poly faceted rock and tree style with painterly textures",
+        "similar saturated green grass slopes with a path or bridge running into the distance",
+        "third-person runner camera behind a stylized character"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a third-person runner on a narrow path with a similar over-the-back camera",
+        "Similar hand-painted, low-poly textures and a soft, hazy distance",
+        "Both have a stylized small humanoid character with a glow or rim light"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a village with stone houses and a cobblestone road, Image B is a dirt path with cracked boulders and a cliff",
+        "different character designs: orange-hooded ninja vs. green-clothed curly-haired kid",
+        "different art styles: realistic textured buildings vs. low-poly faceted trees and a flat pastel palette"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "character standing on a log",
+        "low-poly conifer trees with faceted foliage and rocky boulders",
+        "similar stylized green grass terrain with rock cliffs"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person camera behind a small stylized character on a path",
+        "similar saturated green grass and round bush models",
+        "similar hazy blue-gray sky with soft clouds"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "matching low-poly faceted rock and cliff textures with gray boulders",
+        "same saturated green grass with a painterly hand-painted look",
+        "third-person runner layout with a stylized character on a path"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders and dirt road in a hazy open landscape",
+        "Image B: medieval village with cobblestone road and stylized brick-textured tree canopies",
+        "Different characters and art style: a small child in green vs. ninja-like figures with orange sashes"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a green countryside with a dirt road and a small boy in green clothes; Image B is a medieval town seen from the rooftops with a runner in orange",
+        "The skies and lighting differ: pale blue and hazy in A, purple sunset in B",
+        "Rendering styles differ: faceted low-poly trees and cracked boulders in A, tiled roofs and half-timbered houses in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "character standing or running on a log",
+        "low-poly faceted conifer trees with orange-brown trunks",
+        "similar rounded boulders and green grass with bush clumps"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 2,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show a third-person runner on a long path with low-poly stylized scenery",
+        "Similar rounded boulders with painted, cracked textures",
+        "Matching saturated green grass and warm brown path palette with hazy painted skies"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person runner camera behind character on a straight path",
+        "similar stylized low-poly foliage with hand-painted textures and soft sky",
+        "matching saturated green grass and round bush shapes"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a small third-person runner character seen from behind with a translucent/glowing outline",
+        "Similar stylized low-poly props with painterly textures and soft Unreal-like lighting",
+        "Both are running/obstacle-course setups on a narrow path with a distant hazy horizon"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "third-person camera behind a small humanoid character on a straight path, same framing in both",
+        "similar stylized low-poly look with saturated flat green grass and rounded bushes",
+        "matching hazy blue-gray sky and soft distant horizon"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 3,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show a third-person character on a path with low-poly stylized scenery",
+        "Similar cracked or rounded boulders and bright saturated green grass",
+        "Same smooth painterly character rendering and soft lighting, though the sky palettes differ"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 3,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "character standing on a log in both frames",
+        "low-poly faceted conifer foliage with orange-red trunks",
+        "rounded gray boulders and stylized green grass with small dark-green bushes"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 3,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders and a dirt road with a lone child character",
+        "Image B: medieval village with cobblestone road, brick-textured round trees and ninja characters",
+        "Different scenery, texture style and character design, though both use bright saturated green grass"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Similar stylized low-poly third-person runner character seen from behind",
+        "Matching soft painterly textures and hazy distant horizon",
+        "Obstacle-running setup (rooftops vs. rolling log) with chase-camera framing"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Image A: village with cobblestone road and red-orange trees; Image B: dirt path with low-poly pines and cracked boulders",
+        "Different characters: dark-clad ninja with orange hood vs. small green-clad child with curly hair",
+        "Both use a similar third-person camera and grass texture, but scenery and art style differ"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 4,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small stylized character",
+        "similar hand-painted low-poly textures with soft Unreal-style lighting",
+        "orange-tinted character with glow/outline, similar to the green-clad kid in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 4,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "low-poly conifers with orange-brown trunks and faceted foliage in both",
+        "grey boulders and small round green bushes on bright green grass",
+        "third-person character on a log or path with similar low-poly style"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 4,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "matching low-poly faceted rocks and boulders with painterly textures",
+        "same saturated green grass with a stylized hand-painted look",
+        "third-person runner layout with a character on a narrow path"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 4,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person runner camera behind character on a straight path",
+        "similar stylized low-poly foliage with hand-painted textures",
+        "matching soft cloudy sky and bright saturated green grass with rounded bushes"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "third-person camera behind a small stylized character on a straight path",
+        "similar hazy blue-gray sky with soft clouds and flat bright green grass",
+        "matching low-poly rounded bushes and painterly stylized textures"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 5,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A has a dirt road with low-poly trees and cracked boulders, while Image B has a cobblestone village with half-timbered houses",
+        "The characters differ: a small curly-haired child in green in A, hooded ninja figures in B",
+        "The tree styles differ: faceted low-poly conifers in A, blobby brick-textured canopies in B"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 5,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Same third-person camera behind a small stylized character on a path",
+        "Similar bright saturated green grass with round dark green bushes",
+        "Similar hazy blue-gray sky and distant mountains"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 5,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "low-poly conifer trees with similar orange-brown trunks and faceted leaf clusters",
+        "log as a walkable path or platform",
+        "similar grey rocks and small round green bushes"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 5,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "matching low-poly faceted rocks and trees with painterly textures",
+        "same saturated green grass and rounded boulders",
+        "third-person runner view with a small stylized character on a straight path"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 5,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Third-person runner camera behind a small stylized character, with a similar glow or outline on the figure",
+        "Same hand-painted, low-poly texture style on trees, rocks, roofs and cliffs",
+        "Obstacle-course layout (rooftop path in A, dirt track with a log in B) and soft hazy distant terrain"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 6,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a village with stone houses, a cobblestone path and red trees, while Image B is a dirt road with low-poly trees, cracked boulders and a rolling log",
+        "different character designs: a hooded ninja in dark clothes versus a small curly-haired child in green",
+        "different scenery and palette: muted overcast sky and cottages versus bright sky, orange cliff and a watery horizon"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 6,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders, dirt road, small child character",
+        "Image B: medieval village with cobblestone road, brick-textured round trees, ninja characters",
+        "Different scenery, art style and character design, though both have similar bright green grass and rendering"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 6,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Similar stylized low-poly trees and cracked or rounded boulders",
+        "Bright saturated green grass with a brown path and the same third-person runner camera",
+        "Hand-painted textures on a character in colored clothing against a soft cloudy sky"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 6,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "character walking on a log in both frames",
+        "low-poly faceted conifer trees with reddish trunks and rounded grey boulders",
+        "stylized grass, rock cliffs and bushes, though sky palette and lighting differ"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 6,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Similar stylized low-poly characters with a glowing, painterly look",
+        "Third-person runner camera behind the character on a path or rooftop",
+        "Matching hand-painted textures and soft Unreal-style lighting and fog"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 7,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a small third-person runner character from behind with a similar camera angle",
+        "Matching stylized low-poly assets with painterly hand-textured materials",
+        "Both are endless-runner-style paths with obstacles, and the lighting and fog look similar"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 7,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders, dirt path, and a child character in a teal outfit",
+        "Image B: village with cobblestone road, brick-textured round trees, and ninja characters",
+        "Different art styles and settings: sparse wilderness against a dense medieval town"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 7,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Same third-person camera behind a small stylized humanoid character on a path",
+        "Similar bright saturated green grass and rounded dark green bushes",
+        "Similar hazy blue-gray sky with soft clouds and distant mountains"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 7,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Matching hand-painted low-poly style with textured, faceted rocks and boulders",
+        "Same saturated green grass with a similar third-person runner camera behind a character on a path",
+        "Similar low-poly pine trees and painterly character models"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 7,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "low-poly conifers with orange-red trunks and faceted foliage in both",
+        "log or cylindrical wooden platform as the path/object",
+        "third-person camera behind a small humanoid character on a stylized green terrain"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 8,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a green countryside with a dirt road and a small child character; Image B is a medieval rooftop town at dusk",
+        "Different palettes and lighting: soft blue-grey daylight in A, purple-orange sunset in B",
+        "Different art styles: faceted low-poly trees and cracked boulders in A, textured tiled roofs and half-timbered houses in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 8,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "character standing on a log, a shared theme",
+        "low-poly conifer trees with faceted foliage and reddish-brown trunks",
+        "similar rounded grey boulders and green grass terrain"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 8,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "similar small stylized humanoid character seen from behind in a third-person camera",
+        "matching bright saturated green grass with soft cloudy blue-gray sky",
+        "bush clumps with similar rounded shapes and a path leading to the horizon"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 8,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person endless-runner camera behind the character on a straight path",
+        "similar stylized low-poly vegetation with painterly textures and the same soft sky and lighting",
+        "similar bright green grass with rounded bushes on both sides of the track"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 8,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Matching cracked/gray boulders with similar texture and shading",
+        "Same stylized low-poly trees and bright saturated green grass",
+        "Similar third-person behind-the-character camera on a path with a painterly character model"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 9,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Third-person runner with a small stylized character in both frames",
+        "Similar hand-painted, low-poly textures and soft lighting",
+        "Both show a path or obstacle to run over (rooftop ridge, rolling log)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 9,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Low-poly conifers with orange-brown trunks and faceted leaf clusters in both",
+        "Log or cylinder path with a character running along it, third-person camera",
+        "Grey boulders and small round green bushes on bright green grass"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 9,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person runner camera behind character on a path",
+        "similar stylized low-poly trees with painterly textures and the same saturated green grass",
+        "matching soft blue-gray cloudy sky and lighting"
+      ]
+    }
+  ]
+}
