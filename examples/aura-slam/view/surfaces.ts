@@ -56,6 +56,9 @@ export function surfaceMaterial(venue: string | null | undefined, part: CourtPar
   // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
   // GU47 phase 3: the engine's moon planet preset keeps its own pale #cbd5e1 whatever colour it is given, which washed the lunar
   // plain out to a flat light grey; a plain PBR regolith in the palette charcoal keeps the court the brightest thing in frame.
+  // GU47 phase 4 round 4 (rubric ibl_reflections 2.5 "fully matte", environment "large untextured floor"): the floodlit New
+  // York surround is a polished sealed concourse that mirrors the night HDRI and the floods (`material.reflectiveFloor`).
+  if (part === "ground" && key === "hard") return material.reflectiveFloor({ color, roughness: 0.16, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.6 });
   if (part === "ground") return kind === "regolith" ? material.pbr({ color, roughness: 0.98, normal: grain(kind) }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
     case "acrylic":
