@@ -135,12 +135,7 @@ function clearCameraPath(models: ModelSink): void {
 /** Scenery options. `paintedTrees` (GU47 phase 4, evening look): the village and riverside broadleaf trees are drawn as the
  *  game's own painted trunk-and-crown instances (blossom and maple tones) instead of the shared generated oak model, the top
  *  sibling tell against Cloud Runner ("identical faceted low-poly tree foliage and twisted trunks", judge g20p4 vs final471). */
-export interface SceneryOptions {
-  readonly paintedTrees?: boolean;
-  /** GU47 phase 5 (evening look): verge bushes take a russet autumn tint instead of the 4.6.2 spring green. */
-  readonly autumnVerge?: boolean;
-}
-
+export interface SceneryOptions { readonly paintedTrees?: boolean }
 
 export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
@@ -460,7 +455,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       for (const side of [-1, 1] as const) {
         if (ground() < (models ? 0.82 : 0.4)) continue;
         const c = at(d, side * (w / 2 + 0.9 + ground() * 7));
-        if (models) { mputH("bush", c.x, c.y - 0.1, c.z, ground() * 6, 0.8 + ground() * 1.1, 0.9 + ground() * 0.5, biome === "water" ? undefined : options.autumnVerge ? "#e2b48e" : "#d4e6c4"); continue; }
+        if (models) { mputH("bush", c.x, c.y - 0.1, c.z, ground() * 6, 0.8 + ground() * 1.1, 0.9 + ground() * 0.5, biome === "water" ? undefined : "#d4e6c4"); continue; }
         put("tufts", c.x, c.y - 0.04, c.z, ground() * 6, 0.34 + ground() * 0.3, 0.45 + ground() * 0.5, 0.34 + ground() * 0.3, shade(verge, 0.9 + ground() * 0.35));
       }
     }
