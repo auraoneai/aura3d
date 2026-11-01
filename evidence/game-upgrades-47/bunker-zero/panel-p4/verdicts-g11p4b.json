@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly washed sepia haze; the floor is flat and low-contrast; the overhead light blooms a little too much",
+     "Slightly hazy and desaturated overall; the far end fades into murk; the floor decal text is a little blurry; the enemies are small and greyish against the floor",
+     "Slightly washed-out beige palette with low contrast in the ceiling and far end. Enemies are small and dim in the distance. The floor is fairly plain."
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild sepia haze; floor noise texture looks smeared and blotchy; enemies are small and a bit muddy",
+     "A bit hazy and desaturated; the noisy floor texture is slightly smeary; the enemies are small and low-contrast",
+     "The concrete floor texture is a bit noisy and blotchy. The colour grade is slightly hazy and low-contrast, and enemies in the distance are small."
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Foreground floor is a washed-out blank grey; a raised dark slab edge looks odd; empty room with no enemies or props; strong teal monotone",
+     "The raised teal floor slab looks like an odd floating platform with a hard seam; the foreground floor is a flat, washed grey; the overall teal cast is muddy; no enemies or subjects in view; empty composition",
+     "The flat grey foreground slab meets the teal platform at an abrupt, odd-looking ledge. There are no enemies or props, so the play area feels empty. The image is somewhat dark and low-contrast in the upper half."
+    ]
+   },
+   {
+    "variant": "floor3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange/brown monotone; washed-out bright floor; empty room with no enemies; the gun picks up an orange tint",
+     "Strong sepia cast, slightly washed out; empty corridor with no enemies; the light flare on the floor is a bit blown out; the gun is tinted orange",
+     "The room is empty with no enemies or props. A strong sepia cast with a hot orange bloom spot on the floor reduces contrast. The gun picks up an odd orange tint."
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Yellow-brown murky haze; blotchy floor texture; vault door looks like it sits on a black cube; no enemies visible",
+     "Muddy, low-saturation yellowish haze; the floor texture is smeary; the vault door block in the middle of the room looks like it is placed oddly; no enemies visible",
+     "A large vault-door block partly blocks the view and looks like a placed cube. The floor texture is noisy, there are no enemies in view, and the yellowish grade is a bit murky."
+    ]
+   },
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cool blue haze slightly washes out the frame; walls have little texture detail; the enemy is partly hidden behind the gun",
+     "Cool blue grade is a bit monotone; the enemy is partly hidden behind the gun model; walls are fairly plain",
+     "Walls and floor are mostly untextured and flat blue-grey. The enemy overlaps the gun and is partly hidden behind it. The frame is somewhat low-contrast."
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor texture is smeared and stretched; overall slightly muddy and desaturated; the ceiling is very dark",
+     "The floor texture is noisy and smeary; slight overall haze; the gun overlaps the barrel",
+     "The floor texture is blotchy and over-noisy. The gun partly covers a barrel, and the ceiling is very dark."
+    ]
+   },
+   {
+    "variant": "killhouse",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Untextured placeholder walls and floor; flat orange ceiling; little depth or mood",
+     "Greyish haze around the ceiling light; the floor texture is smeary; a dark diamond-shaped shadow decal on the floor looks odd; no enemies visible; slightly desaturated",
+     "No enemies in view. A dark shadow decal on the floor looks a little odd. The floor texture is noisy and the ceiling bloom is slightly hazy."
+    ]
+   }
+  ]
+ }
+]
