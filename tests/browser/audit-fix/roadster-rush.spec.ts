@@ -295,6 +295,128 @@ test.describe("audit-fix roadster-rush", () => {
     });
   }
 
+  // GU47 phase 6: the 1280x720 results card alone (one state per shard; the rr-desktop-main shard is long under load).
+  test("rr-x-results desktop results card", async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await ctx.newPage();
+    if (await boot(page, "?seed=42")) {
+      await takeManual(page);
+      await run(page, 60);
+      await page.evaluate(() => (window as unknown as Record<string, any>).__GAME__.game.triggerAction("pickup", { kind: "shield" }));
+      await scenario(page, "ramp");
+      await run(page, 510);
+      await page.evaluate(() => {
+        const g = (window as unknown as Record<string, any>).__GAME__.game;
+        g.player.shieldTimer = 0; g.player.rocketTimer = 0; g.player.graceTimer = 0;
+        g.triggerAction("crash");
+        g.manual = true;
+        for (let i = 0; i < 240 && g.mode !== "gameover"; i++) g.simStep(1 / 60);
+        g.manual = true;
+      });
+      await shootState(page, "1280x720", "results");
+    }
+    await ctx.close();
+  });
+
+  // GU47 phase 6: Shift held past empty air (fix 64a8c9482). Manual stepping first: per sim step, the sim's `boosting`
+  // flag, the presentation `boostVisual` flag, `boost` events and shake pulses once air is 0. Then the live loop with the
+  // boost still held: shake-pulse writes, speed-line emissions and the evidence `player.boosting` flag sampled per frame.
+  test("rr-x-boost empty-air boost hold", async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await ctx.newPage();
+    if (await boot(page, "?seed=42")) {
+      await takeManual(page);
+      await run(page, 60);
+      const manual = await page.evaluate(() => {
+        const g = (window as unknown as Record<string, any>).__GAME__.game;
+        const p = g.player;
+        let boostEvents = 0;
+        const orig = p.emit;
+        p.emit = function (name: string, payload?: unknown) { if (name === "boost") boostEvents++; return orig.call(this, name, payload); };
+        g.manual = true;
+        g.triggerAction("boost", { duration: 1e9 });
+        let steps = 0, emptySteps = 0, boostingFlips = 0, visualFlips = 0, shakePulses = 0, eventsAtEmpty = 0, visualOffSteps = 0;
+        let prevBoosting: boolean | null = null, prevVisual: boolean | null = null;
+        const firstEmpty: number[] = [];
+        for (; steps < 900 && emptySteps < 300; steps++) {
+          if (steps % 60 === 0) g.triggerAction("pickup", { kind: "shield" });
+          const evBefore = boostEvents;
+          p.shakePulse = 0;
+          g.simStep(1 / 60);
+          if (g.mode !== "playing") break;
+          if (p.air <= 0.001 || emptySteps > 0) {
+            if (emptySteps === 0) firstEmpty.push(steps);
+            emptySteps++;
+            if (prevBoosting !== null && prevBoosting !== p.boosting) boostingFlips++;
+            if (prevVisual !== null && prevVisual !== p.boostVisual) visualFlips++;
+            if (!p.boostVisual) visualOffSteps++;
+            if (p.shakePulse > 0) shakePulses++;
+            eventsAtEmpty += boostEvents - evBefore;
+            prevBoosting = p.boosting; prevVisual = p.boostVisual;
+          }
+        }
+        g.manual = true;
+        return { steps, emptyFromStep: firstEmpty[0] ?? null, emptySteps, mode: g.mode, air: +p.air.toFixed(2), boostEventsTotal: boostEvents, boostEventsAtEmpty: eventsAtEmpty, simBoostingFlipsAtEmpty: boostingFlips, boostVisualFlipsAtEmpty: visualFlips, boostVisualOffStepsAtEmpty: visualOffSteps, shakePulsesAtEmpty: shakePulses, boosting: p.boosting, boostVisual: p.boostVisual };
+      });
+      log(`GL_PROBE ${JSON.stringify({ target: "boost", step: "manual-empty-air", ...manual })}`);
+      await shootState(page, "1280x720", "boost-empty");
+
+      // live loop, boost still held through the harness, shield refreshed so traffic cannot end the run
+      await page.evaluate(() => {
+        const w = window as unknown as Record<string, any>;
+        const g = w.__GAME__.game;
+        const p = g.player;
+        const s: Record<string, unknown> & { shakeWrites: number; maxShake: number; frames: number; evBoostFlips: number; evBoostOff: number; simFlips: number; linesStart: number; linesEnd: number; airMax: number } = { shakeWrites: 0, maxShake: 0, frames: 0, evBoostFlips: 0, evBoostOff: 0, simFlips: 0, linesStart: 0, linesEnd: 0, airMax: 0 };
+        let pulse = p.shakePulse;
+        Object.defineProperty(p, "shakePulse", { configurable: true, get: () => pulse, set: (v: number) => { if (v > 0) { s.shakeWrites++; s.maxShake = Math.max(s.maxShake, v); } pulse = v; } });
+        s.linesStart = Number(w.__AURA_QA__?.apex?.vfx?.speedLinesAccepted ?? 0);
+        let prevEv: boolean | null = null, prevSim: boolean | null = null;
+        // the app may not draw on requestAnimationFrame here: poll every 50 ms, sample once per rendered frame
+        let lastFrame = -1;
+        const tick = () => {
+          try {
+            const fr = Number(w.__AURA3D_GAME_EVIDENCE__?.framesRendered ?? 0);
+            if (fr === lastFrame) return;
+            lastFrame = fr;
+            const ev = w.__AURA3D_SHOWCASE_ROADSTER_RUSH__?.evidence?.player ?? w.__AURA3D_GAME_EVIDENCE__?.player ?? {};
+            s.frames++;
+            s.airMax = Math.max(s.airMax, Number(p.air));
+            const evB = Boolean(ev.boosting);
+            if (prevEv !== null && prevEv !== evB) s.evBoostFlips++;
+            if (!evB) s.evBoostOff++;
+            if (prevSim !== null && prevSim !== p.boosting) s.simFlips++;
+            prevEv = evB; prevSim = p.boosting;
+            if (g.mode === "playing" && s.frames % 5 === 0) g.triggerAction("pickup", { kind: "shield" });
+          } catch (e) { s.err = String(e).slice(0, 200); }
+          if (w.__boostLiveStop) clearInterval(w.__boostLiveTimer);
+        };
+        s.simStart = Number(g.time ?? 0);
+        w.__boostLive = s;
+        g.triggerAction("pickup", { kind: "shield" });
+        g.manual = false;
+        w.__boostLiveTimer = setInterval(tick, 50);
+      });
+      // software WebGL2 draws a frame every few seconds: wait for 20 sampled frames (or 6 min), not a fixed time
+      try {
+        await page.waitForFunction(() => ((window as unknown as Record<string, any>).__boostLive?.frames ?? 0) >= 20, undefined, { timeout: 6 * 60_000, polling: 1000 });
+      } catch { /* report whatever was sampled */ }
+      const live = await page.evaluate(() => {
+        const w = window as unknown as Record<string, any>;
+        const g = w.__GAME__.game;
+        w.__boostLiveStop = true;
+        const s = w.__boostLive;
+        s.linesEnd = Number(w.__AURA_QA__?.apex?.vfx?.speedLinesAccepted ?? 0);
+        return { ...s, mode: g.mode, air: +Number(g.player.air).toFixed(2), boostVisual: g.player.boostVisual, simTime: +Number(g.time ?? 0).toFixed(2) };
+      });
+      log(`GL_PROBE ${JSON.stringify({ target: "boost", step: "live-empty-air", ...live })}`);
+      await shoot(page, "1280x720", "boost-empty-live.b", { live });
+      await page.waitForTimeout(700);
+      await shoot(page, "1280x720", "boost-empty-live.c");
+      await page.evaluate(() => { (window as unknown as Record<string, any>).__GAME__.game.manual = true; });
+    }
+    await ctx.close();
+  });
+
   test("rr-x-bloom auto against production chain (RP-05, game side)", async ({ browser }) => {
     for (const [tag, query] of [["auto", "?seed=42&capture=1"], ["production", "?seed=42&capture=1&aura3d-render=production"]] as const) {
       const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
