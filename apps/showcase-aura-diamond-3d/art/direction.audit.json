@@ -243,13 +243,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondRock",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "diamondFloodlight",
         "triangles": 0,
         "textures": 0,
@@ -484,11 +477,7 @@
         "practical": false
       },
       {
-        "node": "ondeck-l",
-        "practical": false
-      },
-      {
-        "node": "ondeck-r",
+        "node": "ondeck-mats",
         "practical": false
       },
       {

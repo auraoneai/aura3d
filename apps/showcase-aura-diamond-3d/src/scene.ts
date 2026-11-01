@@ -101,6 +101,9 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // the mound (6 -> 1), the base paths (4 -> 1), the chalk (6 -> 1), the plate and the rubber (2 -> 1), the base bags
   // (3 -> 1), the foul poles and their glow (4 -> 2), the dugouts (2 -> 1): -17 draws before shadow passes.
   const t = fieldInstanceTransforms(park);
+  // GU47 phase 6 (draw budget, PRD D7): pieces 2-4 cm thick lying on the ground cast no visible shadow, so GU47 leaves
+  // them out of the key's shadow pass (one depth draw each).
+  const flush = gu47 ? ({ castShadow: false } as const) : {};
   nodes.push(
     primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
     ...(gu47
@@ -112,11 +115,11 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
         )),
     // Infield, home circle, the three base circles and the mound, then the four base paths.
     instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: t.clay }),
-    instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths }),
+    instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths, ...flush }),
     instances.model(assets.diamondBase, { name: "base-bags", targetHeight: 0.16, scaleMode: "fit", transforms: t.bags }),
-    instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates }),
+    instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates, ...flush }),
     // Batter's and catcher's boxes, then the two foul lines.
-    instances.box({ name: "field-chalk", size: [1, 0.02, 1], material: chalk(), transforms: t.chalk }),
+    instances.box({ name: "field-chalk", size: [1, 0.02, 1], material: chalk(), transforms: t.chalk, ...flush }),
     instances.cylinder({
       name: "foul-pole-glows",
       size: [0.14, 11, 0.14],
@@ -165,7 +168,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
       trackT.push({ position: [pm[0], -0.008, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [len, 1, 1] });
     }
-    nodes.push(instances.box({ name: "warning-track", size: [1, 0.02, 4.5], material: material.pbr({ color: turf.track, roughness: turf.trackRoughness }), transforms: trackT }));
+    nodes.push(instances.box({ name: "warning-track", size: [1, 0.02, 4.5], material: material.pbr({ color: turf.track, roughness: turf.trackRoughness }), transforms: trackT, castShadow: false }));
   }
 
   // On-deck rings + side dugouts. Keep the circles as painted chalk outlines
@@ -177,12 +180,12 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const ondeckMat = material.pbr({ color: "#eee6d2", roughness: 1, opacity: 0.5 });
   const ondeckMat47 = material.pbr({ color: PARK_LOOKS[park.id].turf.track, roughness: 0.9 });
   const ondeck = (name: string, x: number) =>
-    ctx.variant === "gu47"
-      ? primitives.cylinder({ name, size: [1.6, 0.02, 1.6], params: { radialSegments: 40 }, material: ondeckMat47 } as any).position(x, 0.018, 2.2)
-      : primitives.torus({ name, size: [1.5, 1.5, 0.26], material: ondeckMat }).position(x, 0.028, 2.2).rotate(Math.PI / 2, 0, 0);
+    primitives.torus({ name, size: [1.5, 1.5, 0.26], material: ondeckMat }).position(x, 0.028, 2.2).rotate(Math.PI / 2, 0, 0);
   nodes.push(
-    ondeck("ondeck-l", -7.1),
-    ondeck("ondeck-r", 7.1),
+    // GU47 phase 6 (draw budget): the two mats are one instanced draw and, 2 cm thick on the ground, cast no shadow.
+    ...(ctx.variant === "gu47"
+      ? [instances.cylinder({ name: "ondeck-mats", size: [1.6, 0.02, 1.6], params: { radialSegments: 40 }, material: ondeckMat47, castShadow: false, transforms: [{ position: [-7.1, 0.018, 2.2] }, { position: [7.1, 0.018, 2.2] }] } as any)]
+      : [ondeck("ondeck-l", -7.1), ondeck("ondeck-r", 7.1)]),
     instances.model(assets.diamondDugout, {
       name: "dugouts", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
       materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }],
@@ -402,9 +405,13 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
         [-park.fenceCorner * 0.5, 14],
         [park.fenceCorner * 0.5, 14]
       ];
-      towers.forEach(([tx, tz], i) => {
-        nodes.push(model(assets.diamondFloodlight, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0));
-      });
+      // GU47 phase 6 (draw budget): the four unlit towers as one instanced draw.
+      nodes.push(
+        instances.model(assets.diamondFloodlight, {
+          name: "flood-towers", targetHeight: 16, role: "setDressing", scaleMode: "fit",
+          transforms: towers.map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0] as Vec3 }))
+        })
+      );
     }
     return nodes;
   }
@@ -438,6 +445,21 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
   return nodes;
 }
 
+/** `?look=original`: Ivy's 4.6.2 trophy, statue and seven vine panels as separate nodes. */
+function ivyOriginalDressing(park: ParkSpec): any[] {
+  return [
+    model(assets.diamondTrophy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 0, 8.4).rotate(0, 0.9, 0),
+    model(assets.diamondTrophy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
+    ...Array.from({ length: 7 }, (_, i) => {
+      const theta = -36 + i * 12;
+      const pm = fencePoint(park, theta, 0);
+      return model(assets.diamondIvyWall, { name: `ivy-vine-${i}`, targetHeight: park.wallH + 1.2, role: "setDressing", scaleMode: "fit" })
+        .position(pm[0] * 0.995, 0, pm[2] * 0.995)
+        .rotate(0, (theta * Math.PI) / 180, 0);
+    })
+  ];
+}
+
 export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
   const gu47 = ctx.variant === "gu47";
@@ -459,8 +481,24 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
         primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr(gu47 ? { color: "#2a5470", roughness: 0.22, metalness: 0.2 } : { color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
         model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
         model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
-        model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
-        model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0),
+        ...(gu47
+          ? [
+              // GU47 phase 6 (draw budget): the two rocks as one instanced draw, each instance in its 4.6.2 override colour
+              // over a white replace override (pine-b's 6.5 m fit is pine-a's 7 m fit scaled by 6.5/7).
+              instances.model(assets.diamondRock, {
+                name: "harbor-rocks", targetHeight: 7, role: "setDressing", scaleMode: "fit",
+                materialOverrides: [{ ...rockOverride[0]!, color: "#ffffff", roughness: 0.95 }],
+                transforms: [
+                  { position: [at("pine-a")[0], 0, at("pine-a")[1]] as Vec3 },
+                  { position: [at("pine-b")[0], 0, at("pine-b")[1]] as Vec3, rotation: [0, 1.2, 0] as Vec3, scale: [6.5 / 7, 6.5 / 7, 6.5 / 7] as Vec3 }
+                ],
+                colors: [rockOverride[0]!.color, rockOverrideAlt[0]!.color]
+              })
+            ]
+          : [
+              model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
+              model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0)
+            ]),
         model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-lamp")[0], 0, at("sandlot-lamp")[1])
       );
       break;
@@ -508,20 +546,27 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     case "ivy": {
       nodes.push(
         model(assets.diamondStadium, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
-        model(assets.diamondTrophy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 0, 8.4).rotate(0, 0.9, 0),
-        model(assets.diamondTrophy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
-        ...Array.from({ length: 7 }, (_, i) => {
-          const theta = -36 + i * 12;
-          const pm = fencePoint(park, theta, 0);
-          return model(assets.diamondIvyWall, {
-            name: `ivy-vine-${i}`,
-            targetHeight: park.wallH + 1.2,
-            role: "setDressing",
-            scaleMode: "fit"
-          })
-            .position(pm[0] * 0.995, 0, pm[2] * 0.995)
-            .rotate(0, (theta * Math.PI) / 180, 0);
-        })
+        ...(gu47
+          ? [
+              // GU47 phase 6 (draw budget): trophy and statue as one instanced draw (the statue's 4.2 m fit is the 2.4 m
+              // fit scaled by 4.2/2.4), and the seven vine panels as another (-7 draws before the shadow pass).
+              instances.model(assets.diamondTrophy, {
+                name: "ivy-trophies", targetHeight: 2.4, role: "setDressing", scaleMode: "fit",
+                transforms: [
+                  { position: [-9.5, 0, 8.4] as Vec3, rotation: [0, 0.9, 0] as Vec3 },
+                  { position: [14, 0, 10] as Vec3, rotation: [0, -2.4, 0] as Vec3, scale: [4.2 / 2.4, 4.2 / 2.4, 4.2 / 2.4] as Vec3 }
+                ]
+              }),
+              instances.model(assets.diamondIvyWall, {
+                name: "ivy-vines", targetHeight: park.wallH + 1.2, role: "setDressing", scaleMode: "fit",
+                transforms: Array.from({ length: 7 }, (_, i) => {
+                  const theta = -36 + i * 12;
+                  const pm = fencePoint(park, theta, 0);
+                  return { position: [pm[0] * 0.995, 0, pm[2] * 0.995] as Vec3, rotation: [0, (theta * Math.PI) / 180, 0] as Vec3 };
+                })
+              })
+            ]
+          : ivyOriginalDressing(park))
       );
       break;
     }
@@ -779,7 +824,8 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   for (const id of KIT_OWNERS) {
     nodes.push(
       primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: CAP_ROUGHNESS }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
-      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
+      // GU47 phase 6 (draw budget): the 5 cm belt sits inside the torso's shadow, so GU47 drops its depth draw.
+      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }), ...(gu47 ? { castShadow: false } : {}) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
     );
   }
 
@@ -803,7 +849,7 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
   nodes.push(
     primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: ballColor, roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }), ...(gu47 ? { castShadow: false } : {}) }).runtime(game.runtimeNode("ball-shadow"))
   );
 
   // 4.6.2 ball tracer: a scene ribbon plus 16 glowing spheres. Scene trails with a target now draw (E-F), so GU47 keeps
