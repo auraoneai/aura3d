@@ -1,5 +1,7 @@
 # Lamplight Line: final screenshots
 
+**Retaken 2026-10-31 (GU47 phase 4, 4.7.2, lane g21)** on branch `gu47/g21` (commit with the bands A/B raking key, 4.3.0 shadow fit and the WP-36 enamel tram): the five 1280x720 frames from remote run `g21p4-r3-2` (same spec and file names), software WebGL2 (SwiftShader), not a GPU. The 390x844 and card frames come from run `g21p4-r3c` when it lands (see the lane report).
+
 **Retaken 2026-10-29 (audit RH-05, lane g21)** from branch `audit-fix/g21` on the 4.5.0 engine, same file names and sizes, same capture (`tests/browser/finc-lib.ts`, `finc-games.ts` `TRAIN` / `TRAIN_CARD`, wrappers `tests/browser/audit-fix/last-train-port-screens-*.spec.ts`). Runs: `g21w3-scrdesktop-131235` (1280x720 frames), `g21w3-scrmobile-131238` (390x844 frames), `g21w3-scrcard-142538` (card). Software WebGL2 (SwiftShader), not a GPU. The HUD now has the lean meter, streak and lanterns; the results card shows the per-service score, Gold, the grade rule and buttons; in `results` the tram sits parallel to the platform (audit D-11). The 390x844 frames come from a viewport without touch, so the touch bar is not shown (it is in `evidence/last-train-port/audit-fix-g21-wave3/after-phone-*.jpg`).
 
 The original notes from 2026-10-24 follow.

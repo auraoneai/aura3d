@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:46:44.410Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.947,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.947,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A shows a vintage tram in a European-style town with capsule-shaped pedestrians",
+        "Image B shows a futuristic hover-racer on a neon city highway with a minimap HUD",
+        "The two scenes differ in genre, art style, and scenery, with no shared assets"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark futuristic hover-racing city with a minimap HUD",
+        "Image B is a bright pastel European tram station with painterly textures and no HUD",
+        "Different art styles, palettes and subject matter (racing vehicles vs. tram and pedestrians)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a European-style town with a red tram and cobblestones",
+        "Image B is a futuristic night city with hover racers and a minimap HUD",
+        "Different art styles: painterly textured buildings vs. blocky voxel-like vehicles and glowing skyscrapers"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a blocky low-poly futuristic racing scene with hovering vehicles; Image B is a textured Victorian-style street with a tram",
+        "Different art styles: flat orange silhouette skyline vs detailed building textures and cobblestones",
+        "Image A has a track minimap HUD; Image B has capsule-shaped pedestrians and a tram on rails"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a painterly, textured tram scene with a European town and a navy panel HUD",
+        "Image B is a low-poly futuristic hover-racer on a highway with silhouetted orange skyscrapers and a minimal minimap HUD",
+        "The two frames differ in art style, subject matter, palette and HUD design"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: warm daytime European street with a red tram and pastel peg-figure pedestrians",
+        "Image B: dark neon sci-fi city with hovering racing vehicles and a minimap HUD",
+        "Different art style, palette, and lighting (soft sunset vs. night-time glow with wet reflections)"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a quaint European street with a red tram and pastel buildings; Image B is a dark futuristic hover-racing city",
+        "Image B has a track minimap HUD and glowing vehicles, while Image A has a toy-like peg-figure style with no HUD",
+        "Different palettes and lighting: soft warm pastel in A versus dark, high-contrast sunset bloom in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a period European street with a red tram, cobblestones and a dusk sky",
+        "Image B is a neon sci-fi racing scene with hover vehicles, dark skyscrapers and a minimap",
+        "The art, lighting and HUD differ: A is warm and realistic with capsule pedestrians, B is blocky low-poly with glowing orange and blue"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pastel, hazy sky-tram scene with a red streetcar on an elevated track and framed HUD panels",
+        "Image B is a dark, low-poly drone-racing scene on a city highway with a minimal track-map HUD",
+        "The palette, lighting, and art styles differ: soft glossy day-dusk vs. gritty dark orange silhouettes"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: futuristic neon night city with hovering racing vehicles and a minimap",
+        "B: daytime vintage tram, European-style buildings and cobblestones with a warm sunset sky",
+        "Different art styles: low-poly voxel look vs painterly textured realism"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime European street with a red tram and textured, painterly buildings",
+        "Image B is a dark futuristic racing scene with hovering drones and low-poly silhouetted city",
+        "Different HUD and style: Image B has a track minimap, and Image A has none"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a low-poly neon night city racer with hover vehicles; B is a pastel daytime tram game over clouds",
+        "Different HUD styles: A has only a small minimap, B has navy rounded text panels with keybind hints",
+        "Different palettes and lighting: A is dark blue with orange glow, B is hazy warm pastel with a soft sun"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a neon sci-fi hover-racer with a minimap, Image B is a vintage street tram scene",
+        "Different art styles: low-poly voxel-like futuristic city vs. textured European buildings with cobblestones",
+        "Different palettes and lighting: cool blue dusk with orange glow vs. warm sunset with muted tones"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: futuristic hover-racing with low-poly vehicles and a minimap HUD",
+        "Image B: a realistic textured tram in a European street with painted buildings",
+        "Different art styles and settings: dark blocky sci-fi highway vs. warm period town"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a painterly tram game with a streetcar, row houses and a navy HUD panel",
+        "Image B is a futuristic hover-racer on a dark city highway with a minimap and no panel HUD",
+        "Different art styles and settings: warm hand-painted textures vs blocky voxel-like sci-fi vehicles"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a dark futuristic hover-racer on a city highway; B is a red tram on an elevated rail over clouds",
+        "Different art styles: blocky low-poly night/sunset city vs soft pastel dreamy sky",
+        "Different HUD: A has a minimap loop only; B has navy rounded text panels with key hints"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a dark dusk futuristic racing scene with hover vehicles and a minimap HUD",
+        "B is a warm pastel town with a tram, cobblestones and textured houses",
+        "Different art styles: blocky low-poly silhouettes vs painterly photoscanned textures"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: low-poly voxel-like futuristic hover-racer on a neon night highway, B: textured tram in a European-style town",
+        "Very different art styles and palettes (dark blue/orange glow vs. warm pastel daylight)",
+        "Different HUD: A has a minimap loop only, B has framed navy panels with text and key hints"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a futuristic hover-racing scene in a dark cyberpunk city, with a minimap HUD",
+        "Image B is a quaint European street with a red tram, tracks, cobblestones and simple capsule pedestrians",
+        "The subjects, art styles and settings differ: blocky low-poly sci-fi against painterly textured period buildings"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a futuristic hover-racing scene with blocky low-poly vehicles and a track minimap HUD",
+        "Image B is a European street scene with a vintage tram, textured buildings and capsule people",
+        "The art styles differ: flat dark orange silhouettes against detailed painterly textures"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark, low-poly futuristic hover-racer on a city highway with a minimap",
+        "Image B is a soft, pastel tram game above clouds with detailed panel HUDs",
+        "Different vehicles, palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: painterly, textured tram scene with warm daytime European buildings and a HUD panel",
+        "B: low-poly neon futuristic hover-racer on a night highway with skyscrapers and a minimap",
+        "Different art styles, palettes and vehicle types"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A is a night-time neon sci-fi racing scene with low-poly hovercraft, B is a daytime European street with a red tram",
+        "A has a minimap HUD and dark blue palette, B has warm pastel textured buildings and cobblestones",
+        "different art styles: blocky flat-shaded voxels vs. painterly textured realistic models"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a futuristic hover-racer on a dark city highway with a minimap",
+        "B is a red tram on an elevated track over clouds with panel-style HUD text",
+        "Different palettes, settings, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a low-poly neon futuristic racer with hovering vehicles and a minimap",
+        "B is a realistic-textured vintage town with a streetcar, cobblestones and capsule people",
+        "Completely different art styles, palettes and subject matter"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a painterly, textured tram scene with European-style buildings and a navy HUD",
+        "Image B is a low-poly futuristic hover-racer with a dark highway and dusk skyline, plus a minimal minimap HUD",
+        "The art styles, vehicles, settings and HUD designs are all different"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a period European street with a red tram and capsule-shaped pedestrians",
+        "Image B is a futuristic racing game with hovercraft, a skyscraper city and a minimap HUD",
+        "The scenery, vehicles and palettes differ: A has a dusk pastel sky and cobblestones, B has glowing sunset sun flare and wet asphalt"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm sunset European town with a red tram and peg-like pedestrians",
+        "Image B is a neon futuristic city with a racing hovercraft, wet road and a minimap HUD",
+        "Different art styles: painterly textured buildings versus low-poly voxel-like emissive objects"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark futuristic hover-racer on a highway with silhouetted orange skyline and a minimap HUD",
+        "Image B is a bright European street scene with a red tram, cobblestones, and textured buildings",
+        "Very different art styles and palettes: low-poly flat voxel look versus painterly textured realism with tilt-shift"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, stylized pastel European street with a red tram",
+        "Image B is a dark futuristic city with hovering racing vehicles and a minimap HUD",
+        "Different art styles, palettes, and lighting: bright cartoon vs. gritty bloom-heavy dusk"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright pastel tram street with cobblestones and rails",
+        "Image B: dark futuristic city racing scene with hovering vehicles and a minimap",
+        "Different art styles, palettes and settings"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European-style tram street with brick-textured buildings and a red streetcar",
+        "Image B is a futuristic racing game with hovering drones and a blocky low-poly city silhouette",
+        "Different HUD and art style: B has a track minimap, A has none"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a futuristic hover-racer with blocky voxel-style vehicles on a dark neon city highway",
+        "Image B is a painterly red tram with period buildings, tracks and cobblestones",
+        "The HUDs differ: A has a minimal track minimap, B has navy panels with key prompts"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a red tram on an elevated track above pastel clouds at sunset; B is a night-time futuristic city with hovering race vehicles",
+        "A has panel-style HUD boxes with key hints; B has only a minimap",
+        "Different art style: A is soft pastel and painterly; B is low-poly blocky with neon glow and wet road reflections"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a sunny, pastel town scene with a red tram, cobblestones and low-poly trees",
+        "B is a dark futuristic city with racing drones on a highway and a minimap HUD",
+        "Different art styles, palettes and lighting: warm painterly textures versus dark blocky silhouettes"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a neon futuristic night city with hovering racers and a minimap, while Image B is a sunny, warm European street with a tram",
+        "Different art styles: A uses chunky low-poly voxel-like models with bloom and reflective wet road, B uses painterly textured buildings with simple primitive figures",
+        "Different lighting and palette: A is dark blue with orange glow, B is hazy pastel yellow dusk"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a futuristic hovercraft race on a highway with a minimap HUD",
+        "Image B is a historic European town with a red tram, cobblestones and rails",
+        "Different art styles: low-poly blocky sci-fi vs. textured painterly buildings and capsule people"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A is a blocky low-poly sci-fi hover-racer in a neon city; B is a realistic-textured vintage tram in an old European street",
+        "Different art styles: flat voxel-like shapes versus detailed textured buildings and cobblestones",
+        "Different HUD and setting: A has a track minimap, B has none and shows a dusk town with rails"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: futuristic hover-racer on a night-city highway with a minimap",
+        "B: red tram on an elevated rail over a cloud sea, with panel-style HUD",
+        "different art styles, palettes and gameplay genres"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European-style tram street with brick buildings and cobblestones; Image B is a futuristic racing city with hovering drones",
+        "Different art styles: A has textured, detailed models and simple capsule people; B has flat low-poly voxel-like silhouettes and a track minimap HUD",
+        "Different subjects and gameplay: A is a tram station scene; B is a hover-vehicle race on a highway"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: warm pastel town with a red tram and cobblestones; B: dark futuristic highway with racing drones",
+        "Different art styles: A uses painterly textured buildings and low-poly trees; B uses chunky blocky voxel-like vehicles and silhouetted skyline",
+        "Different HUD and lighting: B has a minimap track outline and a dusky overcast sky; A has a hazy golden sunset with no HUD"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a period European street with a red tram and simple capsule pedestrians",
+        "Image B is a futuristic racing game with hover vehicles, a neon cityscape and a minimap HUD",
+        "Different art direction and subject: warm historic town versus dark voxel-style sci-fi highway"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a European-style town with a red tram and peg-like pedestrians",
+        "Image B is a futuristic night city with hover racers and a minimap HUD",
+        "Different art styles and settings: painterly pastel textures versus dark voxel-like sci-fi"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--dustfall--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a blocky low-poly futuristic hover-racing scene on a highway with a minimap, while Image B is a painterly textured tram game in a European street",
+        "Different art styles: flat dark silhouetted voxel-like city versus detailed painterly buildings and a textured tram",
+        "Different HUD: a minimap track outline in A versus navy rounded text panels with controls in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a neon night-time sci-fi hover-racing scene with a minimap, while Image B is a warm daytime European street with a tram",
+        "Image A uses blocky low-poly vehicles and dark skyscrapers; Image B uses painterly textured houses and simple peg-figure characters",
+        "The palettes and lighting differ: dark blue with orange glow in A, pastel sunset yellow and orange in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pastel, stylized European town with a red tram and cobblestones",
+        "Image B is a dark futuristic city with hovering racing vehicles and a minimap HUD",
+        "The two frames differ completely in palette, setting, lighting and asset style"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink--vesper--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm sunset European street with a red tram and capsule-shaped pedestrians",
+        "Image B is a neon-lit futuristic city with a hovering racer and a minimap HUD",
+        "The art styles differ: textured, painterly buildings versus low-poly emissive sci-fi blocks"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a painterly tram game with a navy HUD, while Image B is a voxel-style hover-racer with a minimap",
+        "Different subjects: Victorian townhouses and a streetcar versus a futuristic city and flying vehicles",
+        "Different art and lighting: soft textured pastel look versus blocky models and a gritty bloom-heavy sunset"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,629 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:54:12.396Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--golden--settle-60s",
+      "drift-and-deliver-port--noenv--settle-60s",
+      "drift-and-deliver-port--original--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.868,
+  "summary": {
+    "trials": 48,
+    "valid": 15,
+    "differentGame": 15,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.7961107336956521,
+      1
+    ],
+    "confidentDifferent": 15,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.868,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street at sunset with a teal car and a circular speedometer and minimap",
+        "Image B is a red tram on a rail over a cloud sea with navy panel HUDs",
+        "Different vehicles, settings, palettes and HUD styles"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: low-poly city street with a teal car and a minimap",
+        "B: red tram on an elevated rail above clouds, with panel-style HUD",
+        "Different settings, palettes and HUD designs"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a painterly, low-poly town with a tram and hazy sunset sky, while Image B is a dense downtown street with a car",
+        "Image B has a speedometer and minimap HUD, and Image A has none",
+        "Different art styles: A's textures look hand-painted with primitive peg figures, B's look flat-shaded with a blocky skyscraper grid"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a painterly, textured tram scene with a navy HUD panel; Image B is a flat low-poly city with a minimal dial and minimap HUD",
+        "Different vehicles and settings: a red tram on rails among European-style houses versus a teal car on a skyscraper street",
+        "Different art styles and lighting: soft, warm, hand-painted look versus clean, hard-edged geometric shading"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a car driving down a dense skyscraper street with a HUD speedometer and minimap; B is a tram in a small town square with no HUD",
+        "Different art styles: A has blocky modern buildings with dark asphalt, B has painterly textured European houses and cobblestones",
+        "Different lighting and palette: A has a deep orange sunset corridor, B has a soft pastel hazy sky"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: modern skyscraper city street with a teal car, speedometer and minimap HUD",
+        "B: old European-style rowhouses with a red tram, cobblestones and rails, no HUD",
+        "Different art styles and lighting: A is warm golden-hour with flat blocky buildings, B is dusky with textured, realistic houses"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A shows a red tram on cobblestone with low-poly European houses and peg-like people; Image B shows a modern skyscraper city street with a car",
+        "Image B has a HUD with speedometer and minimap, and Image A has none",
+        "The art styles differ: A uses painterly textures, B uses flat-shaded blocky buildings with a realistic car"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a modern city street with a teal car and a circular speedometer and minimap, while Image B is a tram on tracks in a European-style village",
+        "Different HUD styles: A has a minimal gauge and grid minimap, B has navy panels with text and key prompts",
+        "Different art and materials: A uses flat blocky skyscrapers at sunset, B uses painterly textured houses with red roofs"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a cloud sea, while Image B is a teal car on a city street",
+        "Different HUD styles: navy rounded panels with key prompts vs. a round speedometer and grid minimap",
+        "Different art and lighting: soft pastel haze and sunset glow vs. blocky city buildings with hard shadows"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "A is a modern city street with a car, speedometer and minimap HUD; B is a European-style town with a tram and no HUD",
+        "Different building styles: tall flat-shaded skyscrapers vs. red-roofed houses with a painterly texture",
+        "Different pedestrians: blocky figures vs. capsule-shaped people, and the lighting and palettes differ"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: painterly, photoscanned-looking houses with a red tram and low-poly primitive trees and figures",
+        "Image B: dense skyscraper street canyon with a cyan car, speedometer and minimap HUD",
+        "Different scene types, building styles and HUD, so they look like separate games"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: painterly, textured buildings with a red tram and warm sunset sky",
+        "Image B: flat-shaded blocky skyscrapers on a symmetrical city street with a minimap HUD",
+        "Different scenery and art style: low-poly peg figures and cobblestones in A, a car on asphalt with traffic lights in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: dusk tram scene with detailed pitched-roof buildings and cobblestones",
+        "Image B: blocky modern skyscraper street with a teal car and a minimap HUD",
+        "Different building styles, palettes and lighting (dark purple dusk vs. warm flat orange haze)"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a modern flat-shaded city with tall skyscrapers and a teal car, plus a minimap HUD",
+        "Image B is a European-style old town with red-roofed buildings, a tram, cobblestones and capsule people",
+        "Lighting and palette differ: A is a hazy beige/orange sky, B is a dusky gradient with painterly textures"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: tram on tracks in a low-rise town with pastel painted textures and blob characters",
+        "Image B: car driving through a dense skyscraper street with a speedometer and minimap HUD",
+        "Different building styles and palettes: warm tilt-shift storybook look vs. blocky modern city"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    }
+  ]
+}
