@@ -2,16 +2,218 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "ninja-runner-port",
   "note": "GU47 WP-30 NR-01 / NR-22 district stops (PRD lines 1150, 1163); software WebGL2 steady-state shots only",
-  "default": { "darkFrac": [null, 0.35], "clipFrac": [null, 0.03], "spread": [150, null] },
+  "default": {
+    "darkFrac": [
+      null,
+      0.35
+    ],
+    "clipFrac": [
+      null,
+      0.03
+    ],
+    "spread": [
+      150,
+      null
+    ]
+  },
   "variants": {
-    "village": { "mean": [115, 130] },
-    "rooftops": { "mean": [95, 115] },
-    "river": { "mean": [75, 95], "cells": { "bottom": { "mean": [25, null] } } },
-    "forest": { "mean": [50, 70], "p95": [210, null] },
-    "gate": { "mean": [40, 60], "p95": [210, null], "cells": { "top": { "mean": [null, 45] } } }
+    "village": {
+      "mean": [
+        80,
+        95
+      ]
+    },
+    "rooftops": {
+      "mean": [
+        84,
+        104
+      ]
+    },
+    "river": {
+      "mean": [
+        95,
+        115
+      ],
+      "cells": {
+        "bottom": {
+          "mean": [
+            25,
+            null
+          ]
+        }
+      },
+      "spread": [
+        124,
+        null
+      ]
+    },
+    "forest": {
+      "mean": [
+        77,
+        97
+      ],
+      "p95": [
+        152,
+        null
+      ]
+    },
+    "gate": {
+      "mean": [
+        112,
+        132
+      ],
+      "p95": [
+        169,
+        null
+      ],
+      "cells": {
+        "top": {
+          "mean": [
+            null,
+            166
+          ]
+        }
+      },
+      "spread": [
+        126,
+        null
+      ]
+    }
   },
   "exceptions": {
     "default": "pre-GU47 boot view (midday, mean 121.2); judged against the village row by eye",
     "gauntlet-run": "scripted mid-run capture across districts; covered by the five district rows"
+  },
+  "rederived": {
+    "village.mean": {
+      "from": [
+        115,
+        130
+      ],
+      "to": [
+        80,
+        95
+      ],
+      "panel": "g20p4r3b",
+      "capture": "g20p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "rooftops.mean": {
+      "from": [
+        95,
+        115
+      ],
+      "to": [
+        84,
+        104
+      ],
+      "panel": "g20p4r3b",
+      "capture": "g20p7-r1-4",
+      "date": "2026-11-01"
+    },
+    "river.mean": {
+      "from": [
+        75,
+        95
+      ],
+      "to": [
+        95,
+        115
+      ],
+      "panel": "g20p4r3b",
+      "capture": "g20p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "river.spread": {
+      "from": [
+        150,
+        null
+      ],
+      "to": [
+        124,
+        null
+      ],
+      "panel": "g20p4r3b",
+      "capture": "g20p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "forest.mean": {
+      "from": [
+        50,
+        70
+      ],
+      "to": [
+        77,
+        97
+      ],
+      "panel": "g20p4r1",
+      "capture": "g20p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "forest.p95": {
+      "from": [
+        210,
+        null
+      ],
+      "to": [
+        152,
+        null
+      ],
+      "panel": "g20p4r1",
+      "capture": "g20p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "gate.mean": {
+      "from": [
+        40,
+        60
+      ],
+      "to": [
+        112,
+        132
+      ],
+      "panel": "g20p6g3",
+      "capture": "g20p6-r3-7",
+      "date": "2026-11-01"
+    },
+    "gate.p95": {
+      "from": [
+        210,
+        null
+      ],
+      "to": [
+        169,
+        null
+      ],
+      "panel": "g20p6g3",
+      "capture": "g20p6-r3-7",
+      "date": "2026-11-01"
+    },
+    "gate.spread": {
+      "from": [
+        150,
+        null
+      ],
+      "to": [
+        126,
+        null
+      ],
+      "panel": "g20p6g3",
+      "capture": "g20p6-r3-7",
+      "date": "2026-11-01"
+    },
+    "gate.cells.top.mean": {
+      "from": [
+        null,
+        45
+      ],
+      "to": [
+        null,
+        166
+      ],
+      "panel": "g20p6g3",
+      "capture": "g20p6-r3-7",
+      "date": "2026-11-01"
+    }
   }
 }
