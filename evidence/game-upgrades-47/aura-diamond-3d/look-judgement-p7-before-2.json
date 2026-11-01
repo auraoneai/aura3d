@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "e3d0b5f8be456a7925503efa0658f5e98ee8422b5030e0403b3c4b3606e12fee"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-2/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "61656a82b2655013ea96d20a6c73fb1af0de16a699884c092818318302705cc0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-5/aura-diamond-3d--dome--settle-60s.jpg",
+      "sha256": "ae825f15ee147d98f69521f5350f0af572c07483edb291a11ae53fc51782def0"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4.5,
+    "ibl_reflections": 3,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 4.5,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "In the Harbor frames the light is flat and frontal, with a single hot orange spot on the infield near the mound. Players read as uniformly lit white figures with no rim or key-fill separation. The Midtown frame has a pink-magenta cast that muddies the infield."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are faint, soft smudges, and figures look like they hover above the dirt. Fielders have barely any contact shadow. The Dome frame shows long dark diagonal beam shadows across the field that look like unfiltered shadow-map bands."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No visible environment reflections or specular response on any surface. Helmets, uniforms, bases and the scoreboard all read as matte diffuse with no sheen."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stands are small, disconnected bleacher blocks floating along the outfield wall, with large empty gaps. The Harbor backdrop is a flat grey sky with odd red blob props and a noisy rock slab. Midtown uses boxy buildings with blotchy noise textures. The Dome backdrop is a blurred, low-res photographic plate."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts or depth fog in any frame, and the recipe calls for indoor haze. Distant geometry has the same contrast as the foreground, apart from the blurred Dome backdrop."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The infield dirt uses a coarse, low-frequency noise texture, rendered orange in Harbor and blotchy pink camouflage in Midtown. The Dome infield is flat grey with no grain. Grass is a single flat green with no mowing stripes or blade detail. The scoreboard and canopy textures look like stretched noise."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players are low-poly with acceptable silhouettes, caps and gloves. The infield outline is a lumpy scalloped blob instead of a clean diamond arc. Bases are thin slabs and the mound is a plain disc."
+    },
+    {
+      "category": "composition",
+      "seen": "The high behind-the-plate view frames the whole diamond well, with the batter and catcher anchoring the lower center. The infield fills roughly 40–50% of the frame, slightly over the 25–40% target. The top band of sky and backdrop is mostly empty filler."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera holds a consistent broadcast-style elevated angle across all four venues. It uses perspective rather than the orthographic broadcast look the recipe specifies, and outfield lines visibly converge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frames 2–4 show a mild vignette or darkening at the edges and the Dome backdrop has a depth-of-field-like blur. There is no visible bloom on the scoreboard, tonemapping looks washed out, and the colour grade is inconsistent across venues."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "In frame 1 the line score, count, outs, bases and matchup panels are legible but generic dark boxes, and the orange 'QUICK PLAY' label is low-contrast. A web-app style nav bar runs across the top. The bottom control-hint pill is dense small text. The aim reticle rings are clear."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

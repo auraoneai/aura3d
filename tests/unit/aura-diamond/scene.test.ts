@@ -204,3 +204,22 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     for (const h of ["#c98a5a", "#070a12", "#9db8cf"]) expect(text.includes(h)).toBe(false);
   });
 });
+
+describe("aura-diamond phase-7 SSR (S3 roughness gate, lane e6)", () => {
+  it("authors SSR at full gate strength on the glossy parks and nowhere else", async () => {
+    const { renderer } = await import("../../../packages/engine/src");
+    const { ssrRoughnessGate } = await import("../../../packages/engine/src/agent-api/rendererDiagnostics");
+    const withSsr: string[] = [];
+    for (const park of PARK_ORDER) {
+      const ssr = flat(park).nodes.find((n) => n.effect === "screen-space-reflections");
+      if (!ssr) continue;
+      withSsr.push(park);
+      expect(ssrRoughnessGate(ssr.roughness)).toBe(1);
+      expect(ssr.intensity).toBe(PARK_LOOKS[park].ssr);
+      const report = renderer.diagnostics(buildParkScene(PARKS[park], DEFAULT_SCENE_CONTEXT));
+      expect(report.warnings.some((w: string) => w.startsWith("SSR_ROUGHNESS_GATED"))).toBe(false);
+    }
+    expect(withSsr.sort()).toEqual(["dome", "sandlot", "skyline"]);
+    expect(flat("skyline", { ...DEFAULT_SCENE_CONTEXT, tier: "low" }).nodes.some((n) => n.effect === "screen-space-reflections")).toBe(false);
+  });
+});

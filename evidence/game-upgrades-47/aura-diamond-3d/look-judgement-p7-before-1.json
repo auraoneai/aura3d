@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "e3d0b5f8be456a7925503efa0658f5e98ee8422b5030e0403b3c4b3606e12fee"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-2/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "61656a82b2655013ea96d20a6c73fb1af0de16a699884c092818318302705cc0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p6-r1/aura-diamond-3d/frames/g08p6-r1-5/aura-diamond-3d--dome--settle-60s.jpg",
+      "sha256": "ae825f15ee147d98f69521f5350f0af572c07483edb291a11ae53fc51782def0"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4.5,
+    "ibl_reflections": 2.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single warm key makes a hotspot near the pitcher's mound in Harbor. The rest of the field is lit evenly with little falloff, and there is no sense of floodlight banks. In the Dome frame the infield turns a flat blue-grey, and the players look pasted on because their lighting doesn't respond to the scene."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are faint, soft smears at the feet with weak contact, and the fielders barely ground. The Dome shows large hard diagonal shadow bands from the roof that cut across the infield and read as artifacts rather than structure."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Every surface is matte. Uniforms, bases, helmets, and the bat show no specular response or environment reflection, and there is no wet or polished sheen on the wall pads or scoreboard glass."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stands are small, sparse bleacher blocks with dot-pattern crowds and large empty gaps between them. The Harbor backdrop uses blocky rock slabs and red boulders with a stretched noise texture. The Midtown skyline is flat window-grid boxes with smeared, glitchy facades. The Dome background is a blurry photo-like plate."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is no indoor haze, light shafts, or depth fog in any frame. The far stands have the same contrast as the foreground. The only depth cue is the Dome's blurred backdrop."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The infield dirt uses a large-scale noise texture that turns into pink blotchy camo in Midtown and flat grey in the Dome. The grass is a uniform green with faint stripes. The uniforms are untextured flat white."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The players are low-poly with simple capped heads and orange glove blobs. The infield is an odd scalloped, lobed shape rather than a baseball diamond cutout. The mound is a plain beveled disc, and the bases are flat slabs."
+    },
+    {
+      "category": "composition",
+      "seen": "The behind-catcher view keeps the batter, catcher, and all fielders readable. The dirt infield takes about 60% of the frame, so the green and white palette reads mostly as orange or pink. The sky and stands at the top are thin and empty."
+    },
+    {
+      "category": "camera",
+      "seen": "The elevated perspective behind home plate uses a moderate FOV, which suits baseball but is not the broadcast orthographic recipe. The framing is identical across all four stadiums, and the bottom crop cuts off the catcher's feet."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image has slightly washed-out tonemapping with lifted blacks. The Dome uses background blur like a DOF effect, but the other frames have no consistent grade, bloom, or vignette. Edges show visible aliasing on foul lines and stand rails."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The score grid, count, outs, bases, and matchup panels are legible on dark translucent cards. The 'QUICK PLAY' header in orange is low contrast. The panels sit over the 'HARBOR SANDLOT' wall sign. The web-style tab bar and long control strip feel like a dev tool, not a broadcast package."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

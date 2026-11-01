@@ -128,7 +128,7 @@ export interface ParkLook {
   /** What a landing ball kicks up, and how a home run is celebrated (VFX pack kinds). */
   readonly landingFx: "diamond-clay-puff" | "diamond-canyon-dust" | "diamond-regolith-arc";
   readonly celebration: "diamond-hr-firework" | "diamond-dome-confetti" | "diamond-regolith-arc";
-  /** GU47 phase 4: screen-space reflections strength where a surface is glossy (wet track, sealed infield, harbour). */
+  /** GU47 phase 4: screen-space reflections strength where a surface is glossy (wet track, sealed infield, harbour). Phase 7: the S3 stage reads the authored `roughness` as the frame-wide surface roughness (0.5 zeroed it), so scene.ts authors 0.3 and these strengths were trimmed. */
   readonly ssr?: number;
 }
 
@@ -176,7 +176,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#d9b78a", flash: "#ffe2b0", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework",
-    ssr: 0.45
+    ssr: 0.35
   },
   skyline: {
     park: "skyline",
@@ -206,7 +206,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#cdb48f", flash: "#eaf0f8", flashIntensity: 1.25, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework",
-    ssr: 0.7
+    ssr: 0.55
   },
   canyon: {
     park: "canyon",
@@ -301,7 +301,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-dome-confetti",
-    ssr: 0.5
+    ssr: 0.4
   },
   lunar: {
     park: "lunar",
