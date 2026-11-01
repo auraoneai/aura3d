@@ -1984,6 +1984,21 @@ function installQa() {
           const p = sim.state.player;
           for (const e of sim.state.enemies) { e.state = "dead"; e.deathT = 99; }
           const tx = cellCenter(x), tz = cellCenter(z);
+          // the crack lamp and the exit shutter face one way: stand on that side, looking back at them
+          const facing = ch === "P" ? pushFace(rows, x, z).map((v) => -v) : ch === "E" ? wallFace(rows, x, z).map((v) => -v) : null;
+          if (facing && (facing[0] || facing[1])) {
+            for (let d = dist * CELL; d >= CELL * 0.6; d -= 0.3) {
+              const px = tx + facing[0] * d, pz = tz + facing[1] * d;
+              if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
+              p.x = px; p.z = pz; p.hp = 9999; p.pitch = 0;
+              p.yaw = Math.atan2(tx - px, -(tz - pz));
+              if (!p.weapons.includes(weapon)) p.weapons.push(weapon);
+              p.weapon = weapon;
+              qaFrozen = true;
+              syncScenePose(noInput);
+              return { ok: true, floor: i, cell: [x, z], distance: +d.toFixed(2), facing };
+            }
+          }
           for (let k = 0; k < 16; k++) {
             const a = (k * Math.PI) / 8;
             for (let d = dist * CELL; d >= CELL * 0.9; d -= 0.4) {
