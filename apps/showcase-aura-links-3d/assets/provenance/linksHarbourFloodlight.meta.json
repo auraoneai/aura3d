@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksHarbourFloodlight",
+ "sourceId": "kenney:city-kit-roads:light-curved-double",
+ "sha256": "f84c02e6be3f9320ae281a96345c96ef8f8c2ffef2d5a1f1b5b809d9d8a789db",
+ "sizeBytes": 21324,
+ "triangles": 152,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  0.05,
+  0.675,
+  0.4
+ ]
+}

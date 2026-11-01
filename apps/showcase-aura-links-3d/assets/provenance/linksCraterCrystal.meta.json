@@ -1,0 +1,14 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksCraterCrystal",
+ "sourceId": "quaternius:ultimate-platformer-pack:Gem_Blue",
+ "sha256": "971f0bc53af16ee54b1df9e5e2dabc7bf927e406bad6c6f652b0e8f6dec62103",
+ "sizeBytes": 3644,
+ "triangles": 44,
+ "textures": [],
+ "bounds": [
+  0.986,
+  2.109,
+  0.697
+ ]
+}

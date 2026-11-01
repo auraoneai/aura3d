@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksDunesBeaconTower",
+ "sourceId": "kenney:city-kit-industrial:water-tower",
+ "sha256": "76dd47f8fefa762e1d7f6a27e545cc211f2f726a67dbd32bc86cafb2e9bac303",
+ "sizeBytes": 76736,
+ "triangles": 968,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  0.852,
+  2.142,
+  0.832
+ ]
+}

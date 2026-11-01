@@ -1,0 +1,17 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksMareRelay",
+ "sourceId": "os3a:crystal-crossroads-041",
+ "sha256": "de4b176dcd63e2b231bdf1a39e6523858580de94ec7a79137dda54ef9969b72e",
+ "sizeBytes": 315400,
+ "triangles": 328,
+ "textures": [
+  "512x512",
+  "512x512"
+ ],
+ "bounds": [
+  0.942,
+  1.406,
+  0.742
+ ]
+}

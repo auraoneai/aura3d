@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksHarbourTowerB",
+ "sourceId": "kenney:city-kit-commercial:building-skyscraper-d",
+ "sha256": "55b28fcefefc24bb81d876632e12b35e89b5ca9819d0c981c3268d76be31cae6",
+ "sizeBytes": 126404,
+ "triangles": 1892,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  1.28,
+  5.47,
+  1.388
+ ]
+}

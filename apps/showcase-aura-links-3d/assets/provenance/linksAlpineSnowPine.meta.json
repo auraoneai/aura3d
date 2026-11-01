@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksAlpineSnowPine",
+ "sourceId": "kenney:platformer-kit:tree-pine-snow",
+ "sha256": "c20c1f4fcaeb58d22257c018070b3749ff7f949e8a476f81cd14d1c878144ff4",
+ "sizeBytes": 26656,
+ "triangles": 204,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  0.948,
+  1.997,
+  0.948
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "licenseName": "CC0-1.0",
+ "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+ "sourceId": "quaternius:ultimate-platformer-pack:Gem_Blue",
+ "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/blob/main/quaternius/ultimate-platformer-pack/Gem_Blue.gltf",
+ "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/quaternius/ultimate-platformer-pack/Gem_Blue.gltf",
+ "author": "Quaternius",
+ "retrievedAt": "2026-11-01T16:40:00Z",
+ "replaces": "the Cinder Rim crater spire",
+ "changes": "gltf repacked to GLB; no geometry change",
+ "rightsBasis": "CC0-1.0 public-domain dedication by Quaternius. Admitted 2026-11-01 for Aura Links 3D only (GU47 phase 9, PRD D2); source id claimed for aura-links-3d in the GU47 CC0 claims ledger."
+}

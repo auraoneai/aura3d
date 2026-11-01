@@ -665,7 +665,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const millX = midT[0] - fairHalf - 16;
     const millZ = midT[1] + 18;
     nodes.push(
-      model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksDunesBeaconTower, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
         .position(millX, terrain.height(millX, millZ), millZ)
         .rotate(0, 0.55, 0)
     );
@@ -675,7 +675,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
       const brX = w.center[0] - w.radius * 0.8;
       const brZ = w.center[1];
       nodes.push(
-        model(assets.siegeStoneBridgeMeshy, { name: "landmark-bridge", targetHeight: 2.1, role: "setDressing", scaleMode: "fit" })
+        model(assets.linksBurnFootbridge, { name: "landmark-bridge", targetHeight: 2.1, role: "setDressing", scaleMode: "fit" })
           .position(brX, terrain.height(brX, brZ) + 0.14, brZ)
           .rotate(0, 0.2, 0)
       );
@@ -684,18 +684,26 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     if (clubSpot) nodes.push(...buildClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
   } else if (theme === "volcanic") {
     nodes.push(
-      model(assets.skylineCrystalShardMeshy, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksCraterCrystal, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1])
         .rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
+    // GU47 phase 9 (D2): the far treeline behind the green is this game's own CC0 snow pine, instanced in one draw; it
+    // stays inside the old backdrop card's 90 m span and 60 m height at the same distance
+    const alpTransforms = Array.from({ length: 15 }, (_, i) => {
+      const h = 20 + ((i * 7) % 5) * 3.5;
+      return {
+        position: [cx + 18 + i * 6, 0, cz + 140 + ((i % 3) - 1) * 0.5] as [number, number, number],
+        rotation: [0, i * 1.7, 0] as [number, number, number],
+        scale: [h / 2, h / 2, h / 2] as [number, number, number]
+      };
+    });
     nodes.push(
-      model(assets.turboAlpineVenueBackdrop, { name: "landmark-alps", targetHeight: 60, role: "setDressing", scaleMode: "fit" })
-        .position(cx + 60, 0, cz + 140)
-        .rotate(0, Math.PI, 0)
+      instances.model(assets.linksAlpineSnowPine, { name: "landmark-alps", transforms: alpTransforms, targetHeight: 2, castShadow: false })
     );
   } else if (theme === "nightCity") {
-    const buildings = [assets.showcaseModernBuildingOne, assets.showcaseModernOfficeBuilding, assets.showcaseVoxelBuilding];
+    const buildings = [assets.linksHarbourTowerA, assets.linksHarbourTowerB, assets.linksHarbourTowerC];
     buildings.forEach((b, i) => {
       const bx = terrain.bounds.minX + 30 + i * 46;
       nodes.push(
@@ -709,7 +717,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
-        model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
+        model(assets.linksHarbourFloodlight, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
           .position(x, terrain.height(x, z), z)
       );
       if (lookMode === "original") {
@@ -718,14 +726,14 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     }
   } else if (theme === "lunar") {
     nodes.push(
-      model(assets.auroraHabitatDomeMeshy, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareLander, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1])
         .rotate(0, -0.9, 0),
-      model(assets.lunarRoverMeshy, { name: "landmark-rover", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareRover, { name: "landmark-rover", targetHeight: 1.65, role: "setDressing", scaleMode: "fit" })
         .position(tx + 12, terrain.height(tx + 12, tz + 8), tz + 8)
         .rotate(0, 0.5, 0)
         .runtime(game.runtimeNode("landmark-rover")),
-      model(assets.gravityOrbitalRelayMeshy, { name: "landmark-relay", targetHeight: 9, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareRelay, { name: "landmark-relay", targetHeight: 9, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
     );
   }
@@ -959,7 +967,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // (the GU47 look draws the shot tracer as a runtime trail per shot, startTracer(); `?look=original` keeps the
   // authored ribbon node, which E-F now draws)
   nodes.push(
-    model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
+    model(assets.linksGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
     primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
   );
   if (lookMode === "original") {
@@ -2826,17 +2834,17 @@ function setupAudio(): void {
   audio = createGameAudio({
     browserContext: true,
     cues: {
-      drive:    { id: "drive", asset: { url: assets.siegeDriveHitSfx.url }, volume: 0.55 },
+      drive:    { id: "drive", asset: { url: assets.linksDriveStrikeSfx.url }, volume: 0.55 },
       putt:     { id: "putt", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.5 },
       bounce:   { id: "bounce", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[1]) }, volume: 0.4 },
-      cup:      { id: "cup", asset: { url: assets.siegeCupSinkSfx.url }, volume: 0.8 },
-      rattle:   { id: "rattle", asset: { url: assets.siegeMetalClangSfx.url }, volume: 0.45 },
+      cup:      { id: "cup", asset: { url: assets.linksCupDropSfx.url }, volume: 0.8 },
+      rattle:   { id: "rattle", asset: { url: assets.linksFlagstickRattleSfx.url }, volume: 0.45 },
       splash:   { id: "splash", asset: { url: sfxUrl(sfx.sports.ballBounceHard[1]) }, volume: 0.5 },
-      parChime: { id: "parChime", asset: { url: assets.siegeParChimeSfx.url }, volume: 0.7 },
-      bogey:    { id: "bogey", asset: { url: assets.siegeBogeyStingSfx.url }, volume: 0.5 },
+      parChime: { id: "parChime", asset: { url: assets.linksBirdieChimeSfx.url }, volume: 0.7 },
+      bogey:    { id: "bogey", asset: { url: assets.linksBogeyThudSfx.url }, volume: 0.5 },
       win:      { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
-      ui:       { id: "ui", asset: { url: assets.siegeUiConfirmSfx.url }, volume: 0.4 },
-      wind:     { id: "wind", asset: { url: assets.siegeAmbientWindSfx.url }, volume: 0.25, loop: true }
+      ui:       { id: "ui", asset: { url: assets.linksMenuTickSfx.url }, volume: 0.4 },
+      wind:     { id: "wind", asset: { url: assets.linksCoastWindLoopSfx.url }, volume: 0.25, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as any;
@@ -2912,21 +2920,21 @@ const CATALOG_ASSETS: readonly string[] = [
   "linksGolferAthleteMeshy",
   "linksGolfCartMeshy",
   "linksPinFlagMeshy",
-  "siegeGolfBall",
+  "linksGolfBall",
   "propPineTree",
   "propRockA",
   "propRockB",
-  "siegeWindmillTowerMeshy",
-  "siegeStoneBridgeMeshy",
-  "skylineCrystalShardMeshy",
-  "turboAlpineVenueBackdrop",
-  "neonStreetLampProp",
-  "showcaseModernBuildingOne",
-  "showcaseModernOfficeBuilding",
-  "showcaseVoxelBuilding",
-  "auroraHabitatDomeMeshy",
-  "lunarRoverMeshy",
-  "gravityOrbitalRelayMeshy"
+  "linksDunesBeaconTower",
+  "linksBurnFootbridge",
+  "linksCraterCrystal",
+  "linksAlpineSnowPine",
+  "linksHarbourFloodlight",
+  "linksHarbourTowerA",
+  "linksHarbourTowerB",
+  "linksHarbourTowerC",
+  "linksMareLander",
+  "linksMareRover",
+  "linksMareRelay"
 ];
 
 function publishEvidence(): void {
