@@ -188,7 +188,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor5", floorParam: "5", slot: 4, fixture: "fluorescent-tube",
     lamp: { color: "#cfe8ff", temperatureK: 6500 },
-    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 70, distance: 17, angleDeg: 30, penumbra: 0.4 },
+    key: { cell: [3, 2], target: [7, 2], drop: 0.25, intensity: 70, distance: 17, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [17, 14], target: [17, 13], drop: 0.1, intensity: 26, distance: 10, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0.35 },
     fogDensity: 0.04, environmentIntensity: 0.1, exposure: 1.0, grade: { temperature: -0.16, tint: 0 },

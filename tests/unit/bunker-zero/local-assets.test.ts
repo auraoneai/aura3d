@@ -11,7 +11,7 @@ const entries: Array<{ id: string; outputPath: string; url: string; hash: string
 describe("bunker zero local assets", () => {
   it("ships the pistol and the lifted enemy and pickup models", () => {
     const ids = entries.map((e) => e.id).sort();
-    expect(ids).toEqual(["bzArmorMeshy", "bzBarrelMeshy", "bzCrateMeshy", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzPistol", "bzWardenMeshy"]);
+    expect(ids).toEqual(["bzArmorMeshy", "bzBarrelMeshy", "bzBlastDoor", "bzCrateMeshy", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzPistol", "bzWardenMeshy"]);
   });
 
   for (const entry of entries) {

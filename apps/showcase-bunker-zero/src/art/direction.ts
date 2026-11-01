@@ -73,6 +73,7 @@ export default defineArtDirection({
     prop("corridorFireAmmoBoltMeshy"),
     prop("corridorMuzzleFlameBurstMeshy"),
     world("pulseNeonGateArchMeshy"),
+    world("bzBlastDoor"),
     world("fpsSciFiCoverCrateMeshy"),
     world("blockfallReactorContainmentPylonMeshy")
   ],
