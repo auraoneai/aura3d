@@ -354,7 +354,8 @@ export function buildScene(): unknown {
   // them readable in the lamp's shadow side without glowing.
   const sentryMat = material.pbr({ color: "#ffffff", roughness: 0.32, metalness: 0.35, rim: { color: "#cfe3ff", power: 2.6, intensity: 0.7 } });
   // Phase 3 (4.7.1): the gems are cut glass under a clearcoat so the workshop IBL and the probe catch their facets.
-  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.4, roughness: 0.08, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
+  // Round 4: less self-glow (0.4 -> 0.18) and more metal (0.1 -> 0.35) so the facets show the room instead of a flat tint.
+  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.18, roughness: 0.06, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
 
   s.addMany([
     // DD47-E2: walnut bench top and the anti-static mat under the board reach past every camera edge.

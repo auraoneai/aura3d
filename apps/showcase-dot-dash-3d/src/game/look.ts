@@ -73,7 +73,7 @@ export const BOARD_PROBE = {
   position: [0, 2.5, 0] as const,
   box: { min: [-17.5, -0.5, -13.5] as const, max: [17.5, 6, 13.5] as const },
   resolution: 128 as const,
-  intensity: 1
+  intensity: 1.5
 } as const;
 
 /**
@@ -88,7 +88,8 @@ export const COURIER_POD = {
   scale: 0.484,
   lift: -0.02 + 0.951 * 0.484,
   coreHeight: 1.04,
-  shell: 0.34,
+  /** Round 4: the Courier Studio glass bubble grows 0.34 -> 0.5 (judge: "a tiny pale cube that is hard to pick out"). */
+  shell: 0.5,
   /** Round 3: the amber halo rings the pod's waist (marker around the body) instead of the hovering core. */
   haloHeight: 0.48,
   halo: 0.9,
@@ -184,6 +185,9 @@ export interface BoardLookRow {
 
 // Phase 3 (4.7.1): the dark-mask boards (classic, foundry, zerocore) take a brighter lamp (+25-35%) so their
 // steady-state frames reach the declared luma band (mean 42-60, p95 >= 200) instead of sitting at mean 32-40.
+// Phase 4 round 4: the pale boards' lamps 2600 -> 2200 (the raking lamp burned their left half to white, judge round 3);
+// chip epoxy is glossier (roughness 0.38 -> 0.24, clearcoat 0.6 -> 1) and the probe 1 -> 1.5 so tops and gems
+// reflect the room (rubric: ibl_reflections).
 // Phase 4 round 2: the HDRI fill drops 0.45 -> 0.38 so the lamp's shadow side reads darker than its lit side; the
 // dark-mask boards' lamps go +9% (classic 4700, foundry 4600, zerocore 5200) to hold their mean luma.
 // Phase 4 (4.7.2): the dark-mask boards' masks are glossier (classic 0.3 -> 0.22, foundry 0.34 -> 0.26, zerocore
@@ -216,7 +220,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the deep purple mask read flat and dark around black chips; a pale lilac mask (garden's
     // white-mask recipe, which the panel preferred) lets the lamp model the board and the chips stand out.
     mask: "#c6b8e2", maskRoughness: 0.4, copper: "#c99a3e", silk: "#3a2856", led: "#ff6fd0", traceGlow: "#ffc24a",
-    lamp: { color: "#fff0dc", intensity: 2600, temperatureK: 3900 },
+    lamp: { color: "#fff0dc", intensity: 2200, temperatureK: 3900 },
     grade: { contrast: 1.1, saturation: 1.04, temperature: 0.04, tint: 0.06, lut: "/luts/dot-dash-3d/spiral.cube" }
   }),
   twin: row({
@@ -225,14 +229,14 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the navy mask read flat and dark; a pale blue-white mask (garden's recipe) with gold
     // traces gives the lamp something to model and makes the cyan courier read.
     mask: "#b9cbe4", maskRoughness: 0.4, copper: "#cda04a", silk: "#1c3058", led: "#2fd6ff", traceGlow: "#4fe3ff",
-    lamp: { color: "#fff2e0", intensity: 2600, temperatureK: 4100 },
+    lamp: { color: "#fff2e0", intensity: 2200, temperatureK: 4100 },
     grade: { contrast: 1.07, saturation: 1.02, temperature: -0.04, tint: -0.02, lut: "/luts/dot-dash-3d/twin.cube" }
   }),
   garden: row({
     board: "garden",
     pcb: "white-mask LED lighting board, ENIG gold",
     mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#8dff6a", traceGlow: "#c4ff7a",
-    lamp: { color: "#fff0d8", intensity: 2600, temperatureK: 4000 },
+    lamp: { color: "#fff0d8", intensity: 2200, temperatureK: 4000 },
     grade: { contrast: 1.06, saturation: 1.08, temperature: 0, tint: -0.04, lut: "/luts/dot-dash-3d/garden.cube" }
   }),
   foundry: row({
@@ -254,7 +258,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
 /** Fixed parts of the board, the same on every PCB type. */
 export const BOARD_PARTS = {
   /** Black epoxy chip walls (DD47-M2). */
-  epoxy: { color: "#141416", roughness: 0.38, clearcoat: 0.6 },
+  epoxy: { color: "#141416", roughness: 0.24, clearcoat: 1 },
   /** Gull-wing pins along every corridor face (DD47-M2). */
   pin: { color: "#c9ced6", roughness: 0.22, metalness: 1 },
   /** Walnut bench and anti-static mat (DD47-E2). */
