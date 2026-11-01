@@ -1,6 +1,6 @@
-# Cross Hop: evidence screens (retaken 2026-10-31, GU47 phase 3 lane g14)
+# Cross Hop: evidence screens (retaken 2026-11-01, GU47 phase 6 lane g14)
 
-Retaken 2026-10-31 from branch `gu47/g14` (4.7.0 plus the phase-3 vivid look), remote ACR run `g14p3s1`, software WebGL2 (SwiftShader), same spec, names and sizes; all ten frames come from that run (01-04 from `sc-screens-1280` / `sc-screens-390`, card from `sc-screens-card`, card-1x downscaled). Quick Play starts on Meadow, whose default stays the 4.6 look (blind panel g14p3r3), so these frames show the 4.6 look; HUD frames of the vivid views are in `evidence/game-upgrades-47/cross-hop/p3-s1/screens/1280-vivid-theme*.jpg`. The table below describes the 2026-10-29 set.
+Retaken 2026-11-01 from branch `gu47/g14` (4.7.3 plus phase 6: Meadow and Critter Core boot the vivid look), image `g14p6f1` on remote ACR (`crmmeprodacr`), software WebGL2 (SwiftShader), same spec, names and sizes. 390 frames and card from runs `g14p6-s1-3` / `g14p6-s1-4`, 1280 frames from `g14p6-s2-2` (the first 1280 run was cancelled by the scheduler hang guard: the screens spec logs no GL_META); card-1x is card-2x downscaled. Quick Play starts on Meadow, which now opens the vivid look (blind panel g14p6f1 3/0/0), so these frames show the vivid look. The 2026-10-31 set (phase 3, 4.6 look) is in git history (`4815853a3`). The table below describes the 2026-10-29 set.
 
 ## Previous set (2026-10-29, audit lane G14)
 

@@ -4,12 +4,12 @@
   "note": "before: PRD WP-24 'Today' line (4.6 build: 145-165 draws, textureBytes 284.8 MB); no newer committed measurement exists. after: phase 2 (remote capture on software WebGL2). Budget: <= 200 draws desktop High, Low <= 160 (80%), textureBytes <= 170 MB with no growth over 20 restarts, <= 2,000 particles.",
   "budget": { "drawCalls": { "high": 200, "low": 160 }, "textureBytesMB": 170, "particles": 2000 },
   "variants": {
-    "theme0": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme0": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null, "phase6": {"note": "GU47 phase 6 (4.7.4): Meadow switched to the vivid look. before = 4.7.3 frame (4.6 look, g14p4-r2-1), after = g14p6-f1-1; capture GL_META at settle-60s, software WebGL2.", "before": {"drawCalls": 181, "triangles": 12880502, "textureBytesMB": 279.6}, "after": {"drawCalls": 143, "triangles": 10739146, "textureBytesMB": 247.6}} },
     "theme1": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
     "theme2": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
     "theme3": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
     "theme4": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
-    "theme5": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null }
+    "theme5": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null, "phase6": {"note": "GU47 phase 6 (4.7.4): Critter Core switched to the vivid candy-dusk look. before = 4.7.3 frame (dressed 4.6 dusk look, g14p5-r1-1), after = g14p6-f1-6; capture GL_META at settle-60s, software WebGL2.", "before": {"drawCalls": 189, "triangles": 12988090, "textureBytesMB": 279.6}, "after": {"drawCalls": 151, "triangles": 10864330, "textureBytesMB": 247.6}} }
   },
   "expectedDrawDelta": {
     "CH47-01": "-3 (ambient and rim removed: no draws; sky boxes and sun sphere removed: -3; one sun with 2 cascades adds shadow passes for casters already drawn)",
