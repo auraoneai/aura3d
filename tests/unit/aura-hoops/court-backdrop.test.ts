@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ssrRoughnessGate } from "../../../packages/engine/src/agent-api/rendererDiagnostics";
 import { COURT_FLOOR_FINISH, courtBackdropLayout, courtBackdropNodes, courtRig, courtReflectionNodes } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
 
 describe("aura-hoops GU47 phase 4 backdrop and floor finish", () => {
@@ -22,6 +23,15 @@ describe("aura-hoops GU47 phase 4 backdrop and floor finish", () => {
       const ssr = courtReflectionNodes(courtRig(id));
       expect(ssr.length).toBe(COURT_FLOOR_FINISH[id].ssr > 0 ? 1 : 0);
       if (ssr.length) expect(COURT_FLOOR_FINISH[id].roughness).toBeLessThan(0.5);
+    }
+  });
+
+  it("keeps the S3 roughness gate fully open (phase 7: no SSR_ROUGHNESS_GATED)", () => {
+    for (const id of ["manila", "shanghai", "orbit"] as const) {
+      const [node] = courtReflectionNodes(courtRig(id));
+      const built = (node as unknown as { readonly value: { readonly roughness?: number } }).value;
+      expect(built.roughness).toBe(0.3);
+      expect(ssrRoughnessGate(built.roughness)).toBe(1);
     }
   });
 });

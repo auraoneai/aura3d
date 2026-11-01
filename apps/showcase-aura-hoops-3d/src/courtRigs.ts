@@ -435,17 +435,25 @@ export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: 
   rucker: { roughness: 0.74, paintRoughness: 0.66, ssr: 0 },
   venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
   athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
-  manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.45 },
+  // phase 7: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3); phase 4's 0.45 / 0.42 / 0.5 ran at
+  // 26 % (roughness 0.45 was read as a cutoff, e6 SSR_ROUGHNESS_GATED), i.e. about 0.11-0.13 effective.
+  manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.24 },
   // round 5: SSR 0.6 -> 0.42 and a thicker hit (rubric: horizontal banding near the bottom of the Shanghai frame)
-  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.42 },
-  orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.5 }
+  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.22 },
+  orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.28 }
 };
+
+/**
+ * GU47 phase 7 (e6 handoff): the S3 trace takes `roughness` as the surface roughness of every pixel (no per-pixel
+ * channel yet), full strength at 0.35 or less, zero at 0.5. 0.3 keeps the gate fully open on the three glossy courts.
+ */
+export const COURT_SSR_ROUGHNESS = 0.3;
 
 /** GU47 phase 4: screen-space reflections on the glossy courts (none on the matte outdoor ones). */
 export function courtReflectionNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   const ssr = COURT_FLOOR_FINISH[rig.id].ssr;
   if (ssr <= 0) return [];
-  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 20, roughness: 0.45, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
+  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 24, roughness: COURT_SSR_ROUGHNESS, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
 }
 
 /** The look overrides of one court (E-A): catalogue HDRI, key, fog to the horizon, grade, post preset and bloom. */
