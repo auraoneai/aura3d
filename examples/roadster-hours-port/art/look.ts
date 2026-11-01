@@ -142,18 +142,20 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
   },
   redline: {
     id: "redline",
-    timeOfDay: "last light, 15 deg sun, heat shimmer",
+    timeOfDay: "high desert noon, cobalt sky, heat shimmer",
     hdri: "industrial_sunset_puresky",
     environmentIntensity: 0.7,
     environmentRotationDeg: 330,
+    // phase 5 (4.7.3, sibling judge: Redline pairs read 16/16 "same" as roadster-rush's purple-orange sunset): Redline moves
+    // to high-desert noon under a cobalt sky, red rock against blue; the canyon, sandstone detail and heat shimmer stay.
     // phase 3: 7 deg down the canyon left both walls in the far wall's shadow (mean 28, rubric lighting 4.5); at 15 deg from
     // the left the sunlit right wall rakes from its lit rim down into shade and the road catches the last light.
-    sun: { elevationDeg: 15, azimuthDeg: -58, color: "#ff9e5e", intensity: 4.2 },
-    fill: { kind: "violet-rim", color: "#8a72c8", intensity: 0.85, elevationDeg: 18, azimuthDeg: 150 },
+    sun: { elevationDeg: 34, azimuthDeg: -58, color: "#fff1dc", intensity: 3.6 },
+    fill: { kind: "violet-rim", color: "#7fa6dc", intensity: 0.6, elevationDeg: 18, azimuthDeg: 150 },
     gantryPoints: null,
-    sky: { zenith: "#3b4f86", horizon: "#f2a66e", band: "#e9b98c", bandAmount: 0.4, clouds: [0.35, 0.25], night: 0 },
-    ambient: { sky: "#9aa2cc", skyGain: 0.95, ground: "#c47c4e", groundGain: 0.7 },
-    fog: { color: "#ecb488", near: 120, far: 1700, density: 0.00055 },
+    sky: { zenith: "#1546a8", horizon: "#9cc4e6", band: "#d6e6f2", bandAmount: 0.25, clouds: [0.4, 0.1], night: 0 },
+    ambient: { sky: "#86a8dc", skyGain: 0.8, ground: "#c47c4e", groundGain: 0.6 },
+    fog: { color: "#b9cfe2", near: 220, far: 2600, density: 0.0003 },
     surfaces: {
       asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
@@ -162,7 +164,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
     post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0.75, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
-    grade: { exposure: 1.5, contrast: 1.06, saturation: 1.06, temperature: 0.12, tint: 0.03 },
+    grade: { exposure: 1.15, contrast: 1.12, saturation: 1.1, temperature: -0.02, tint: 0 },
     shadow: SHADOW,
     spray: { kind: "sand", color: "#e2b88a", alpha: 0.3, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
     wind: [5, 0.5]
