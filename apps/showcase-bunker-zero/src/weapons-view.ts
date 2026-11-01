@@ -4,7 +4,8 @@ import { WEAPONS, type WeaponId } from "./sim";
 export const VIEWMODEL_ASSET = {
   knife: "mechWeaponA",
   pistol: "bzPistol",
-  mg: "corridorPulseRifleMeshy",
+  // GU47 phase 6: the rifle GLB without its self-glow (aura-evidence/lift/bzMgViewmodel.lift.json); the pickup keeps the original
+  mg: "bzMgViewmodel",
   rocket: "mechWeaponB"
 } as const satisfies Record<WeaponId, string>;
 

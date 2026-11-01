@@ -91,8 +91,6 @@ const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.4 } as const;
 const BZ_CEIL_TEXTURE = "concrete034" as const;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 /** GU47 phase 4: baked contact shade at the wall foot (the key's cast shadow alone did not ground the walls; rubric 3). */
-/** GU47 phase 6: the machine-gun viewmodel keeps this fraction of the GLB's full self-glow (1 bloomed into a ghost, r3). */
-const BZ_VM_MG_GLOW = 0.12;
 const BZ_WALL_AO = { near: 0.22, far: 0.6, y: 0.006, nearOpacity: 0.24, farOpacity: 0.15, ceil: 0.4, ceilOpacity: 0.3 } as const;
 /** GU47 phase 4: two service pipes under the ceiling on each corridor face (olive enamel over steel; F3 rust-brown). */
 const BZ_PIPES = [{ d: 0.16, off: 0.14, drop: 0.3 }, { d: 0.09, off: 0.1, drop: 0.52 }] as const;
@@ -551,9 +549,9 @@ function buildScene() {
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
     // GU47 phase 4: the rifle GLB carries emissiveFactor 1 with its colour map as emissive, so in hand it bloomed into a
     // yellow ghost at the bottom of every HUD frame (r3 1280-03); the viewmodel drops the self-glow and reads by the lamp.
-    // GU47 phase 6: that override (colour multiply, black emissive at 0, metallic 0.6) left no rifle in any HUD frame (r4, r5);
-    // the self-glow is now only scaled down, the GLB's own surface stays
-    model(assets[VIEWMODEL_ASSET.mg], { castShadow: false, name: "vm mg", materialOverrides: [{ emissiveIntensity: BZ_VM_MG_GLOW }] })
+    // GU47 phase 6: any material override on the in-hand rifle left it undrawn (r4, r5, vmprobe g11p6-r1), so the viewmodel
+    // loads bzMgViewmodel, the same rifle with the self-glow removed in the file (it bloomed into a ghost, r3), and no override
+    model(assets[VIEWMODEL_ASSET.mg], { castShadow: false, name: "vm mg" })
       .position(0, 0, 0).scale(0.45)
       .runtime(game.runtimeNode("vm-mg", { tags: ["viewmodel"] })),
     model(assets[VIEWMODEL_ASSET.rocket], { castShadow: false, name: "vm rocket", targetHeight: 0.48 })
