@@ -5,7 +5,7 @@
 // -> `game.publicPlatformerPresentation` -> `game.certifyPlatformerGeometry` /
 // `game.certifyPlatformerPresentation`, plus a `game.platformer` kit snapshot
 // stepped once at spawn. The pipeline runs for real — bindings bind to the
-// world's *actual* typed backdrop GLB (real sha-256 hashes), surfaces are the
+// game's own typed course-tile GLB (real sha-256 hash), surfaces are the
 // course's authored geometry (compiler-authored overlay source, honestly
 // labelled) — and the only honest blockers are the retained-proof fields
 // (browser screenshots/hashes), which cannot exist until a captured run.
@@ -61,17 +61,13 @@ export interface WorldCertification {
 export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertification {
   const notes: string[] = [];
   try {
-    const backdropKey = spec.backdrops[0]?.asset ?? "verdant";
-    const backdropAsset = assets.backdrop[backdropKey];
-    const worldAsset = backdropKey === "verdant" ? "showcaseKenneyVerdantPlatformerWorld"
-      : backdropKey === "cartoon" ? "showcaseCartoonPlatformWorld"
-      : backdropKey === "palace" ? "showcasePlatformerWorldLevel"
-      : backdropKey === "readable" ? "showcaseReadablePlatformLevel"
-      : backdropKey === "sidescroll" ? "showcaseSideScrollerPlatformLevel"
-      : "showcasePlatformerBasicPack";
-    // Shared-catalog `hash` widened to `string | undefined` in the current
-    // typegen surface; backdrops always carry one — fall back explicitly.
-    const worldAssetHash = backdropAsset.hash ?? "sha256-unavailable";
+    // GU47 phase 9 (PRD D2): the binding anchors on an asset this game owns. The course is
+    // compiler-authored (no world GLB is mounted), so the anchor is the typed moss-disc course
+    // tile (WP-36 `leapTileMossDisc`) and its real sha-256 hash; the old shared backdrop kits
+    // were never drawn and are gone.
+    const anchorAsset = assets.props.pedestal;
+    const worldAsset = "pipsTileMossDisc";
+    const worldAssetHash = anchorAsset.hash ?? "sha256-unavailable";
     const overlay = `apps/showcase-pips-big-leap/src/game/worlds.ts#${spec.id}`;
 
     const walkable = spec.platforms.filter((p) => !p.ghost);
@@ -136,14 +132,14 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       modelAlignment: {
         source: "compiler-authored-overlay-validated",
         modelBounds: {
-          min: [-backdropAsset.bounds[0] / 2, 0, -backdropAsset.bounds[2] / 2],
-          max: [backdropAsset.bounds[0] / 2, backdropAsset.bounds[1], backdropAsset.bounds[2] / 2]
+          min: [-anchorAsset.bounds[0] / 2, 0, -anchorAsset.bounds[2] / 2],
+          max: [anchorAsset.bounds[0] / 2, anchorAsset.bounds[1], anchorAsset.bounds[2] / 2]
         },
-        modelPoint: [0, backdropAsset.bounds[1] / 2, 0],
+        modelPoint: [0, anchorAsset.bounds[1] / 2, 0],
         gamePoint: start,
         evidence: {
           routeOverlay: overlay,
-          notes: "Compiler-authored platform surfaces from the authored WorldSpec course; the backdrop GLB is scene dressing and its real sha-256 hash anchors the binding."
+          notes: "Compiler-authored platform surfaces from the authored WorldSpec course; the owned moss-disc course tile GLB and its real sha-256 hash anchor the binding."
         }
       },
       evidence: {

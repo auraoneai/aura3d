@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "6a8c5d70b0cb8a8f2e1548ad8f3ea0ae1bc068149c63c6e3ff2aa4e8b738f16d",
+  "sourceSha256": "25397914dcea8a786ddaf10dcdb3257b8e22114735c5c04f4736e0ef9abd2274",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -130,14 +130,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -172,9 +172,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -186,16 +186,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
-            "textures": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -221,7 +221,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkDroneNighthawk",
+            "assetKey": "pipsBee",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -486,14 +486,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -528,37 +528,37 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsHeart",
             "triangles": 0,
             "textures": 0,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCrystal",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsTileMossDisc",
+            "triangles": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -577,7 +577,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkDroneNighthawk",
+            "assetKey": "pipsBee",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -851,14 +851,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -893,9 +893,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -907,51 +907,51 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsWindmill",
             "triangles": 0,
-            "textures": 0,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeWindmillMeshy",
+            "assetKey": "pipsWatchtower",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeWatchtowerMeshy",
+            "assetKey": "pipsCrate",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeCrateMeshy",
+            "assetKey": "pipsBarrel",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeBarrelMeshy",
+            "assetKey": "pipsLantern",
             "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1212,14 +1212,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -1254,23 +1254,23 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "reactorFusionTurbineMeshy",
+            "assetKey": "pipsWindTurbine",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "reactorFusionTurbineMeshy",
+            "assetKey": "pipsWindTurbine",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1282,16 +1282,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
-            "textures": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1303,16 +1303,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeWatchtowerMeshy",
+            "assetKey": "pipsWatchtower",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "neonStreetLampProp",
+            "assetKey": "pipsLantern",
             "triangles": 0,
-            "textures": 9,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1583,14 +1583,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -1625,9 +1625,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1639,44 +1639,44 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
+            "assetKey": "pipsEmberPot",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCrystal",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsPillar",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsArch",
             "triangles": 0,
-            "textures": 0,
+            "textures": 2,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "pipsLantern",
             "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "heatsinkArch",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1956,14 +1956,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -1998,9 +1998,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2019,37 +2019,37 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsPillar",
             "triangles": 0,
-            "textures": 0,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "pipsArch",
             "triangles": 0,
-            "textures": 3,
+            "textures": 2,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkArch",
+            "assetKey": "pipsLantern",
             "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2068,44 +2068,44 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           }
@@ -2362,14 +2362,14 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkBoostPad",
+            "assetKey": "pipsBouncer",
             "triangles": 0,
             "textures": 0,
             "unlit": false,
@@ -2404,9 +2404,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "fpsEnergyCorePickupMeshy",
+            "assetKey": "pipsHeart",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2418,23 +2418,23 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "pipsCrystal",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsTileMossDisc",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
+            "assetKey": "pipsStar",
             "triangles": 0,
             "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2446,9 +2446,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "neonStreetLampProp",
+            "assetKey": "pipsLantern",
             "triangles": 0,
-            "textures": 9,
+            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2676,7 +2676,7 @@
       },
       {
         "role": "character",
-        "assetKey": "showcaseSidekickRunner",
+        "assetKey": "pipsSidekick",
         "maxTriangles": 30000,
         "minTriangles": 2000,
         "textureSet": "BC+N",
@@ -2751,98 +2751,105 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "gullsiegeWindmillMeshy",
+        "assetKey": "pipsWindmill",
         "maxTriangles": 20000,
-        "textureSet": "BC+N",
+        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "gullsiegeWatchtowerMeshy",
+        "assetKey": "pipsWatchtower",
         "maxTriangles": 20000,
-        "textureSet": "BC+N",
+        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "gullsiegeCrateMeshy",
+        "assetKey": "pipsCrate",
         "maxTriangles": 8000,
-        "textureSet": "BC+N",
+        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "gullsiegeBarrelMeshy",
+        "assetKey": "pipsBarrel",
         "maxTriangles": 8000,
-        "textureSet": "BC+N",
+        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "skylineCrystalShardMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "prop",
-        "assetKey": "fpsEnergyCorePickupMeshy",
-        "maxTriangles": 8000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "auraClashCornerBrazierPylonMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "neonStreetLampProp",
+        "assetKey": "pipsCrystal",
         "maxTriangles": 8000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "prop",
-        "assetKey": "heatsinkBoostPad",
+        "assetKey": "pipsHeart",
         "maxTriangles": 8000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "heatsinkArch",
+        "assetKey": "pipsStar",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pipsEmberPot",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pipsLantern",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "pipsBouncer",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pipsArch",
         "maxTriangles": 20000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "prop",
-        "assetKey": "galleryShiftPedestal",
+        "assetKey": "pipsTileMossDisc",
         "maxTriangles": 8000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pipsWindTurbine",
+        "maxTriangles": 20000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "reactorFusionTurbineMeshy",
+        "assetKey": "pipsPillar",
         "maxTriangles": 20000,
-        "textureSet": "BC+N",
+        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "blockfallReactorContainmentPylonMeshy",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "heatsinkDroneNighthawk",
+        "assetKey": "pipsBee",
         "maxTriangles": 20000,
         "textureSet": "BC",
         "maxTextureSize": 1024

@@ -2,10 +2,13 @@
 //
 // Hero, boss, and the collectible/checkpoint/gate props are bespoke Meshy
 // generations imported into this app's own catalog (`aura.assets.json`,
-// generated key surface in `src/aura-catalog.ts`). The world props and the
-// two NPC runners come from the shared repo catalog, through the small
-// per-app copy in `src/aura-assets.shared.ts` (RH-06: importing the root
-// `src/aura-assets.ts` shipped the whole 2.6 MB shared catalog to this page).
+// generated key surface in `src/aura-catalog.ts`). GU47 phase 9 (PRD D2): every
+// world prop and the sidekick NPC is now this game's own `pips*` key (CC0
+// catalog files or the WP-36 Meshy moss disc, admitted into this app with
+// licence and provenance). Only the generic conifer, boulders and helper still
+// come from the shared repo catalog, through the small per-app copy in
+// `src/aura-assets.shared.ts` (RH-06: importing the root `src/aura-assets.ts`
+// shipped the whole 2.6 MB shared catalog to this page).
 import { assets as catalog } from "./aura-catalog.js";
 import { sharedAssets as shared } from "./aura-assets.shared.js";
 
@@ -16,35 +19,27 @@ export const assets = {
   goldenAcorn: catalog.pipsGoldenAcorn,
   checkpointFlag: catalog.pipsCheckpointFlag,
   sungate: catalog.pipsSungate,
-  hawk: shared.heatsinkDroneNighthawk,
-  sidekick: shared.showcaseSidekickRunner,
+  hawk: catalog.pipsBee,
+  sidekick: catalog.pipsSidekick,
   helper: shared.helperChar,
-  // Backdrop kits are not mounted; certify.ts reads their hash only.
-  backdrop: {
-    verdant: shared.showcaseKenneyVerdantPlatformerWorld,
-    cartoon: shared.showcaseCartoonPlatformWorld,
-    palace: shared.showcasePlatformerWorldLevel,
-    readable: shared.showcaseReadablePlatformLevel,
-    sidescroll: shared.showcaseSideScrollerPlatformLevel,
-    basicpack: shared.showcasePlatformerBasicPack
-  },
   props: {
     conifer: shared.propConifer,
     boulder: shared.propBoulder,
     rockB: shared.propRockB,
-    windmill: shared.gullsiegeWindmillMeshy,
-    watchtower: shared.gullsiegeWatchtowerMeshy,
-    crate: shared.gullsiegeCrateMeshy,
-    barrel: shared.gullsiegeBarrelMeshy,
-    crystalShard: shared.skylineCrystalShardMeshy,
-    energyCore: shared.fpsEnergyCorePickupMeshy,
-    brazier: shared.auraClashCornerBrazierPylonMeshy,
-    streetLamp: shared.neonStreetLampProp,
-    boostPad: shared.heatsinkBoostPad,
-    arch: shared.heatsinkArch,
-    pedestal: shared.galleryShiftPedestal,
-    turbine: shared.reactorFusionTurbineMeshy,
-    pylon: shared.blockfallReactorContainmentPylonMeshy
+    windmill: catalog.pipsWindmill,
+    watchtower: catalog.pipsWatchtower,
+    crate: catalog.pipsCrate,
+    barrel: catalog.pipsBarrel,
+    crystalShard: catalog.pipsCrystal,
+    heart: catalog.pipsHeart,
+    star: catalog.pipsStar,
+    brazier: catalog.pipsEmberPot,
+    streetLamp: catalog.pipsLantern,
+    boostPad: catalog.pipsBouncer,
+    arch: catalog.pipsArch,
+    pedestal: catalog.pipsTileMossDisc,
+    turbine: catalog.pipsWindTurbine,
+    pylon: catalog.pipsPillar
   }
 } as const;
 

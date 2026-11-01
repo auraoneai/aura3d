@@ -59,7 +59,7 @@ describe("pips-big-leap materials (PBL-M2)", () => {
     let shardDraws = 0;
     for (const id of WORLD_IDS) {
       for (const n of sceneOf(id).filter((x) => (x.name ?? "").startsWith("pbl-props:"))) {
-        const shard = /crystalShard/i.test(n.asset?.id ?? "");
+        const shard = /crystalShard|^pipsCrystal$/i.test(n.asset?.id ?? ""); // GU47 phase 9: the owned shard is pipsCrystal
         if (shard) shardDraws += 1;
         expect(n.materialOverrides, n.name).toEqual(shard ? CRYSTAL_OVERRIDES : undefined);
       }

@@ -72,18 +72,20 @@
       "provenance": "meshy-generated (artifacts/meshy/pips-sungate, model.glb)"
     },
     {
-      "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
+      "typedRef": "assets.pipsTileMossDisc",
       "role": "primaryWorld",
       "status": "typed-secondary-asset",
       "quality": "candidate",
-      "hash": "sha256-ac8f17eb"
+      "hash": "sha256-ead348fe89d29",
+      "provenance": "meshy-generated (GU47 WP-36 leapTileMossDisc; course-tile anchor of the compiler-authored course)"
     },
     {
-      "typedRef": "assets.showcaseRunnerRobot",
+      "typedRef": "assets.pipsWindmill",
       "role": "setDressing",
       "status": "typed-secondary-asset",
       "quality": "candidate",
-      "hash": "sha256-252b3a16"
+      "hash": "sha256-057181dde02f0",
+      "provenance": "CC0 catalog (kenney:fantasy-town-kit:windmill)"
     }
   ],
   "claimStatus": {
