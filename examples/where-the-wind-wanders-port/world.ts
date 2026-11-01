@@ -62,19 +62,20 @@ export function writeDaylightUniforms(handle: { setUniform?(name: string, value:
  * meadow, ground and scenery received no sun shadow at all through 4.7.1.
  */
 const RECEIVE_DEFINES = { WIND_SUN_SHADOW: 1, WIND_HERO_SHADOW: 1 } as const;
-export const windSpec = (): CustomSpec => ({
+export const windSpec = (receive = true): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
-  defines: RECEIVE_DEFINES,
+  ...(receive ? { defines: RECEIVE_DEFINES } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 }, heroShadowAmt: { type: "f32", value: 0 } },
   side: "double"
 });
-export const paintSpec = (): CustomSpec => ({
+export const paintSpec = (receive = true): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: PAINT_FRAGMENT },
-  defines: RECEIVE_DEFINES,
+  ...(receive ? { defines: RECEIVE_DEFINES } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, heroShadowAmt: { type: "f32", value: 0 } }
 });
-export const seaSpec = (): CustomSpec => ({
+export const seaSpec = (shoreReflection = true): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
+  ...(shoreReflection ? { defines: { SHORE_REFLECTION: 1 } } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false
@@ -95,9 +96,9 @@ export const skySpec = (): CustomSpec => ({
   depthWrite: false,
   side: "double"
 });
-export const propSpec = (castShadow = false): CustomSpec => ({
+export const propSpec = (castShadow = false, receive = true): CustomSpec => ({
   glsl: { vertex: PROP_VERTEX, fragment: PROP_FRAGMENT },
-  defines: { WIND_SUN_SHADOW: 1 },
+  ...(receive ? { defines: { WIND_SUN_SHADOW: 1 } } : {}),
   ...(castShadow ? { castShadow: true } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
   side: "double"
@@ -330,7 +331,13 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   /** WW47-L2: the engine sun casts on High; Low and the original look draw no shadow rows (PRD §6.4). */
   const shadows = !original && options.quality !== "low";
   /** GU47 phase 4: strength of the shader-traced traveller shadow (the engine shadow map does not reach the meadow). */
-  const heroShadow = shadows ? 0.85 : 0;
+  /**
+   * GU47 phase 4 (4.7.2): the shadow receive, the traced traveller shadow, the shaded meadow cards, the lake's treeline
+   * reflection and the kite. Every boot view takes them except the bell dusk view, which lost the blind panel with them
+   * (g23p4r4b, 0/3/0) and so boots exactly as in 4.7.1.
+   */
+  const phase4 = !original && DAYLIGHT_KEYS[options.daylightKey ?? 0]?.id !== "bell";
+  const heroShadow = shadows && phase4 ? 0.85 : 0;
   /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
   const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
@@ -354,7 +361,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // GU47 phase 4: one cascade. With two, a single wide draw (the terrain, the merged grass, the scenery batch) picks its
       // cascade from its world centre, lands in the far split and samples outside that split's light volume near the camera,
       // so the meadow around the traveller received no sun shadow at all.
-      shadow: shadows ? { cascades: 1, mapSize: 2048, filter: "pcss", maxDistance: 60 } : false
+      shadow: shadows ? (phase4 ? { cascades: 1, mapSize: 2048, filter: "pcss", maxDistance: 60 } : { cascades: 2, mapSize: 2048, filter: "pcss", maxDistance: 70 }) : false
     }).runtime({ id: "sun" }));
     builder.add(lights.hemisphere({ name: "valley sky fill", skyColor: linearToHex(k0.hemiSky), groundColor: linearToHex(k0.hemiGround), intensity: HEMI_INTENSITY }).runtime({ id: "sky-fill" }));
     builder.add(environments.hdri({ name: "valley ibl", texture: ENV_ASSETS.valleyIbl as never, intensity: VALLEY_IBL_INTENSITY, background: false }));
@@ -370,7 +377,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     normals: terrain.normals,
     indices: terrain.indices,
     attributes: { tint: { itemSize: 3, data: terrain.tint } }
-  }), { name: "terrain", material: material.custom(paintSpec()) }).runtime({ id: lit("terrain") }));
+  }), { name: "terrain", material: material.custom(paintSpec(phase4)) }).runtime({ id: lit("terrain") }));
 
   /* ---- sea ---- */
   const S = 360;
@@ -379,7 +386,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
     indices: [0, 2, 1, 0, 3, 2],
     attributes: { tint: { itemSize: 3, data: f32([0.3, 0.55, 0.6, 0.3, 0.55, 0.6, 0.3, 0.55, 0.6, 0.3, 0.55, 0.6]) } }
-  }), { name: "sea", material: material.custom(seaSpec()) }).runtime({ id: lit("sea") }));
+  }), { name: "sea", material: material.custom(seaSpec(phase4)) }).runtime({ id: lit("sea") }));
 
   /* ---- sky dome (follows the camera) ---- */
   {
@@ -418,7 +425,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     const phase = phaseOverride ?? rand() * 6.28;
     // GU47 phase 4: the painted tree and cottage shadows the terrain bakes also darken the meadow cards standing in them
     // (the grass hides the ground), so the cast shadows read on the High GU47 look; no rand() draw, so placement is unchanged
-    if (shadows) {
+    if (shadows && phase4) {
       const occ = 0.45 + 0.55 * blobOcclusion(sc.blobs, x, z);
       if (occ < 1) color = [color[0] * occ, color[1] * occ, color[2] * (occ * 0.5 + 0.5 * Math.sqrt(occ))];
     }
@@ -498,7 +505,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       tint: { itemSize: 3, data: f32(f.tint) }, sway: { itemSize: 1, data: f32(f.sway) }, phase: { itemSize: 1, data: f32(f.phase) }, kind: { itemSize: 1, data: f32(f.kind) }
     }
   });
-  builder.add(geometry.custom(foliageGeometry, { name: "foliage", material: material.custom(windSpec()) }).runtime({ id: lit("foliage") }));
+  builder.add(geometry.custom(foliageGeometry, { name: "foliage", material: material.custom(windSpec(phase4)) }).runtime({ id: lit("foliage") }));
 
   /* ---- the stream: a ribbon of water laid in the carved bed ---- */
   {
@@ -526,13 +533,13 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   }
 
   /* ---- merged scenery ---- */
-  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(shadows)) }).runtime({ id: lit("props") }));
-  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows)) }).runtime({ id: lit("sails") }));
-  builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: lit("bell") }));
-  if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: lit("boat") }));
+  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("props") }));
+  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("sails") }));
+  builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("bell") }));
+  if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("boat") }));
   addStaticModels(builder, sc, set, shadows, !original);
   LETTERS.forEach((_, i) => {
-    if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: lit(`letter-${i}`) }));
+    if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit(`letter-${i}`) }));
     builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: lit(`letter-glow-${i}`) }));
     builder.add(geometry.custom(geometry.dynamic(beam(0.5, 12)), { name: `letter-beam-${i}`, material: material.custom(shaftSpec(i * 3.7, 0.2)) }).runtime({ id: lit(`letter-beam-${i}`) }));
   });
@@ -545,8 +552,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: lit("traveller") }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
   // WW47-A1 (GU47 phase 4): the GU47 look flies the WP-36 paper kite in place of the wisp; `?look=original` keeps the wisp
-  const kite = !original && set.kite === true;
-  if (!set.wisp && !kite) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
+  const kite = phase4 && set.kite === true;
+  if (!set.wisp && !kite) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("wisp") }));
   addAnimatedModels(builder, { ...set, kite }, LETTERS.length, shadows, !original);
   if (!kite) builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
 

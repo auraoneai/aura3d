@@ -362,6 +362,7 @@ void main() {
   col = mix(col, skyc, fres * 0.55);
   // GU47 phase 4 (ibl_reflections): the far shore mirrored in the lake. The reflected ray is traced to the wooded far bank
   // (z ~ -98, a treeline 6-12 m high), so the water under the far shore carries a rippled, lit-green reflection band.
+#ifdef SHORE_REFLECTION
   if (refl.z < -0.01) {
     float th = (-98.0 - vWorld.z) / refl.z;
     float hx = vWorld.x + refl.x * th;
@@ -377,6 +378,7 @@ void main() {
     vec3 shoreLit = shoreAlb * (skyCol * 0.85 + sunCol * sunGain * 0.3);
     col = mix(col, mix(shoreLit, deep * 0.6, 0.2), onShore * 0.72);
   }
+#endif
   float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
   float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
   col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
