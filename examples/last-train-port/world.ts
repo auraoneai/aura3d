@@ -89,12 +89,12 @@ const LICENSE_KENNEY = "CC0-1.0 (Kenney Pirate Kit, kenney.nl), retinted for Lam
  */
 const ASSETS = defineAuraAssets({
   lamplightKeep: {
-    type: "model", format: "glb", url: new URL("./assets/lamplight-keep.glb", import.meta.url).href,
+    type: "model", format: "glb", url: new URL("./assets/lamplight-keep.glb", import.meta.url).pathname,
     sha256: "bfa55dfb12dfe0ca47d4f69e97c437ddf1c712595e4f5f44e4846af85f768b5c", sizeBytes: 63524,
     metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-small" } }
   },
   lamplightTower: {
-    type: "model", format: "glb", url: new URL("./assets/lamplight-tower.glb", import.meta.url).href,
+    type: "model", format: "glb", url: new URL("./assets/lamplight-tower.glb", import.meta.url).pathname,
     sha256: "e2e98d8c6db7d0d2ee0decc264f4cd66b10a6d16c665962f598a4ae550282ca0", sizeBytes: 59776,
     metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-large" } }
   },
