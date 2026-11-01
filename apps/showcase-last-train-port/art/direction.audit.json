@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-last-train-port/art/direction.ts",
-  "sourceSha256": "46a50630eb41cdaf91f2087342ad6920bfcb78b3f860e13e36a522fdaf46bdfc",
+  "sourceSha256": "ad0c55e8362af15407ce062d398bdaab3809e4f9dd0152db10891f185749521c",
   "id": "showcase-last-train-port",
   "genre": "racing",
   "signatureEffect": "Earned sky lanterns: every clean arrival releases paper lanterns that stay aloft, so the dusk sky fills with the lights the driver earned.",
@@ -164,7 +164,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "windmill",
+        "assetKey": "lamplightKeep",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -283,7 +283,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "windmill",
+        "assetKey": "lamplightKeep",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -409,7 +409,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "tower",
+        "assetKey": "lamplightTower",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -528,7 +528,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "tower",
+        "assetKey": "lamplightTower",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -647,7 +647,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "tower",
+        "assetKey": "lamplightTower",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -773,7 +773,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "windmill",
+        "assetKey": "lamplightKeep",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1536,16 +1536,16 @@
       },
       {
         "role": "backdrop",
-        "assetKey": "windmill",
+        "assetKey": "lamplightKeep",
         "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
+        "textureSet": "BC",
         "maxTextureSize": 512
       },
       {
         "role": "backdrop",
-        "assetKey": "tower",
+        "assetKey": "lamplightTower",
         "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
+        "textureSet": "BC",
         "maxTextureSize": 512
       }
     ],

@@ -1,7 +1,7 @@
 /**
  * Last Train to the Sea world on the public `@aura3d/engine` surface only: the six-town ring railway (track built from
  * the original's measured route: ballast ribbon, instanced sleepers, rails, trestle pylons and masts), cloud-top
- * islands dressed with catalog houses, trees, rocks, a windmill and a watchtower, a station platform per town, an
+ * islands dressed with catalog houses, trees, rocks, two stone landmark towers, a station platform per town, an
  * open-sided tram with twelve seats and seated passengers, a sky dome and cloud sea (`material.custom`), and rain / snow /
  * mote points. The look is image-based lighting (CC0 sky HDRI), a cascaded-shadow sun, a cool moon fill, exp2 fog,
  * bloom, colour grade and vignette (AO is opt-in with `?fx=ao`: the engine drops the pass on this path for a missing
@@ -81,18 +81,22 @@ const glow = (color: string, intensity = 1.2) => material.emissive({ color, emis
 
 const PAX_ASSET = { easy: MESHY_ASSETS.paxEasy, sightseer: MESHY_ASSETS.paxSightseer, rushed: MESHY_ASSETS.paxRushed, sleeper: MESHY_ASSETS.paxSleeper };
 const HOUSES = [MESHY_ASSETS.houseCream, MESHY_ASSETS.houseOchre, MESHY_ASSETS.houseBlue];
-const LICENSE_CATALOG = "Aura3D catalog (gullsiege Meshy set), licensed for use with the engine";
-/** The windmill and tower are the catalog GLBs with their 1024 px maps resized to 512 px (audit D-09: they are distant landmarks). */
+const LICENSE_KENNEY = "CC0-1.0 (Kenney Pirate Kit, kenney.nl), retinted for Lamplight Line";
+/**
+ * GU47 phase 9 (PRD D2: owned assets): the two distant landmarks are CC0 Kenney Pirate Kit towers this game owns (claimed in the
+ * GU47 CC0 ledger), their colormap retinted from blue-grey stone to cream stucco with terracotta roofs and the pivot centred like
+ * the GLBs they replace (sources and the retint in assets/ATTRIBUTION.md).
+ */
 const ASSETS = defineAuraAssets({
-  windmill: {
-    type: "model", format: "glb", url: new URL("./assets/windmill.glb", import.meta.url).href,
-    sha256: "612f5ff55b5c0d3544f3dfbf17f38b290ade0b58eb118f16b681d25572324fa7", sizeBytes: 866416,
-    metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWindmillMeshy.f4ebca18.glb" } }
+  lamplightKeep: {
+    type: "model", format: "glb", url: new URL("./assets/lamplight-keep.glb", import.meta.url).pathname,
+    sha256: "bfa55dfb12dfe0ca47d4f69e97c437ddf1c712595e4f5f44e4846af85f768b5c", sizeBytes: 63524,
+    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-small" } }
   },
-  tower: {
-    type: "model", format: "glb", url: new URL("./assets/tower.glb", import.meta.url).href,
-    sha256: "f682cf1b45ee70e663eecd5cc84b58fbfa60f555e34450472ee91b5a57336006", sizeBytes: 803968,
-    metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb" } }
+  lamplightTower: {
+    type: "model", format: "glb", url: new URL("./assets/lamplight-tower.glb", import.meta.url).pathname,
+    sha256: "e2e98d8c6db7d0d2ee0decc264f4cd66b10a6d16c665962f598a4ae550282ca0", sizeBytes: 59776,
+    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-large" } }
   },
   skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } },
   /* GU47 LT-04: the band HDRIs from the E-A catalogue (served at /hdri/<id>_1k.hdr; CC0, Poly Haven, public/hdri/ATTRIBUTION.md) */
@@ -527,10 +531,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
-    const landmark = [ASSETS.windmill, ASSETS.windmill, ASSETS.tower, ASSETS.tower, ASSETS.tower, ASSETS.windmill][i]!;
+    const landmark = [ASSETS.lamplightKeep, ASSETS.lamplightKeep, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightKeep][i]!;
     const lx = 36 * (i % 2 ? 1 : -1), la = -26 + (i % 3) * 18;
     placed.push([lx, la]);
-    const lh = landmark === ASSETS.windmill ? 30 : 34;
+    const lh = landmark === ASSETS.lamplightKeep ? 30 : 34;
     b.add(model(landmark, { name: `landmark-${i}`, position: [s0.x + sx * lx + fx * la, top + lh / 2 - 0.4, s0.z + sz * lx + fz * la], rotation: [0, yaw + i, 0], targetMaxDimension: lh, castShadow: false, receiveShadow: true }).runtime({ id: `landmark-${i}` }));
     if (MESHY_ENABLED) {
       for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
