@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:29:53.570Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "top-tennis--beach",
+      "top-tennis--clay",
+      "top-tennis--default",
+      "top-tennis--desert",
+      "top-tennis--grass",
+      "top-tennis--moon"
+    ],
+    "framesB": [
+      "aura-hoops-3d--athens",
+      "aura-hoops-3d--manila",
+      "aura-hoops-3d--orbit",
+      "aura-hoops-3d--rucker",
+      "aura-hoops-3d--shanghai",
+      "aura-hoops-3d--venice"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.898,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 46,
+    "sameGameYes": 2,
+    "differentRate": 0.9583333333333334,
+    "ci95": [
+      0.8602408885222853,
+      0.9884983479210344
+    ],
+    "confidentDifferent": 46,
+    "confidentDifferentRate": 0.9583333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.898,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a tennis game with an overhead camera and a pixel-font banner; Image B is a basketball court with a low, close camera",
+        "Different palettes: A has a flat pinkish-beige surround with a crowd of colored blocks, B has a hazy pastel gradient sky with a palm tree",
+        "Different character styles: A has small, low-detail figures, B has larger, more detailed characters with orange ring markers"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with detailed characters and a hazy gray sky",
+        "Image B is a tennis court with blocky low-poly spectators on a flat tan ground",
+        "Different camera, palette and character style, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court at dusk with a hazy gradient sky and soft purple lighting",
+        "Image B is a tennis court at night with a moon, black sky and a high-angle camera",
+        "Different character models, with detailed hair and clothing in A and blocky white figures and crowd in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a basketball court with a hazy purple-orange dusk and realistic-proportioned characters",
+        "Image B is a green tennis court with blocky, colorful crowd figures and a high overhead camera",
+        "Different lighting, palette and HUD (tennis scoreboard text vs. none)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark, realistic-style night basketball gym with black sky and spotlit court",
+        "Image B is a bright, low-poly tennis court in flat pastel daylight with colorful block crowds",
+        "Different character models, camera angles and palettes, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with detailed characters in daylight; Image B is a tennis court at night with a moon",
+        "Character styles differ: realistic proportions with hair and clothing in A, simple white mannequin figures and blocky crowds in B",
+        "Different camera and lighting: low-angle soft overcast scene in A, high-angle dark scene with hard shadows in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark night tennis arena with blocky low-poly crowd figures and a hard black-and-grey palette",
+        "Image B is a soft pastel dusk basketball court with detailed, rounded characters, a palm tree and hazy gradient sky",
+        "Different sports, art style, lighting and character modelling"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis court with blocky low-poly crowd figures and a flat green palette",
+        "Image B is an indoor basketball gym with depth-of-field blur, bloom and more realistic character models",
+        "Different sports, lighting and camera style, and no shared HUD or rendering look"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a tennis game on a clay court with a blocky, colorful crowd and an elevated camera",
+        "Image B is a dark basketball gym with realistic humanoid characters and a low camera",
+        "The sports, palettes, character styles and lighting all differ"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with a fixed top-down camera, a pink-beige palette and blocky crowd figures, with 'Aura Slam / World Tour' banners",
+        "Image B is a basketball court with a low third-person camera, gray overcast sky and realistic-proportioned characters with ground ring markers",
+        "The sports, camera setups, lighting and character models all differ"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark, dramatic night basketball gym with a realistic-ish lit court and detailed characters",
+        "Image B is a bright, flat-shaded tennis scene with a beige ground and a pale sky, and blocky crowd figures",
+        "Different sports, lighting, palette and art style"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with detailed rainy dusk scenery, lamps and a glassy tower, while Image B is a tennis court in a dark moon arena",
+        "Different character styles: stylized proportioned players in A versus blocky white astronaut figures and crowd in B",
+        "Different lighting and mood: warm blurred dusk with bloom in A versus flat dark stadium with hard shadows in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night tennis court with blocky, flat-colored crowd figures and a dark void backdrop",
+        "Image B is a basketball court in a blurry, depth-of-field indoor setting with more detailed characters",
+        "The two frames differ in sport, lighting and rendering style"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright green tennis court with blocky colorful crowd figures",
+        "Image B is a dark navy basketball court with more realistic humanoid characters",
+        "Different lighting, palette and camera: top-down daylight vs low-angle night scene"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a hazy dusk basketball court with a low third-person camera and soft realistic lighting",
+        "Image B is a tennis court seen from a high overhead camera with flat, saturated blocky colors and 'AURA SLAM' signage",
+        "Character models and art style differ: detailed, skinny humans vs. chunky voxel-like crowd and players"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "translucent wireframe-style objects in both (arena structure in A, ball cart in B)",
+        "basketball arena with a hoop visible in A's background",
+        "very different lighting and character detail, pointing to different games"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses blocky low-poly characters, flat shading and a tan sandy ground with a teal tennis court",
+        "Image B uses more detailed humanoid models with a hazy pink-gray gradient sky, palm tree and a blue basketball court",
+        "Different sports, camera framing and rendering style: high isometric view vs. low close-up perspective"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a basketball court with detailed, realistic-style characters in a muted gray sky and ground palette",
+        "Image B is a tennis court with blocky, colorful crowd figures and a green stylized palette",
+        "The two frames use different camera setups, character models and lighting"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a blurred, depth-of-field indoor basketball gym; Image B is a flat-shaded top-down tennis court with a crisp look",
+        "Image A has a tilt-shift, photoreal-leaning style with bokeh; Image B has a saturated blue court and blocky colorful crowd",
+        "Image B shows 'AURA SLAM' and 'WORLD TOUR' tennis signage, with no shared branding or HUD style with A"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, low-poly tennis arena with blocky crowd and top-down camera",
+        "Image B is a bright, hazy pastel outdoor basketball court with more detailed humanoid characters",
+        "Different lighting, palette and camera style, and no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with a hazy grey sky and purple-grey ground; Image B is an orange clay tennis court",
+        "Different character styles: A has taller, more realistic figures with ground rings; B has small blocky figures and a crowd of colorful seats",
+        "Different camera and lighting: A is a low perspective in soft fog; B is a high-angle view with a strong orange tint and a 'PARIS 0-0' scoreboard"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night basketball court with rain, lamp posts and a glassy blue tower; Image B is a daytime orange clay tennis court",
+        "Different character models: A has detailed humanoids with orange ground rings, B has blocky low-poly figures and crowds",
+        "Different lighting and palette: A is dark navy with a pink dusk sky, B is warm orange with hard shadows"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game and Image B is a basketball game",
+        "A has blocky, saturated low-poly figures under hard orange lighting; B has realistic proportions, a blurred indoor background and soft depth-of-field",
+        "Different HUD styles: A has a scoreboard text banner, B has ring markers under players"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis game with an overhead camera and blocky stylized figures",
+        "Image B is a basketball court with a low-angle perspective and hazy white sky",
+        "Different character models, HUD and lighting (flat pink-beige ground vs. purple dusk haze)"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, stylized overhead tennis court with blocky crowd; Image B is a bright overcast basketball court with realistic characters",
+        "Different camera: fixed high-angle top-down vs low third-person perspective",
+        "Different sport, palette and lighting: dark teal and blue vs pale gray sky and gray court"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with hazy pastel sky and humanoid characters with detailed hair",
+        "Image B is a green tennis court with blocky, multicolored crowd figures and an overhead camera",
+        "Different palettes, lighting and character styles, plus a distinct HUD and scoreboard text in B"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is flat-shaded low-poly tennis on a beige ground with no post-processing",
+        "Image B is a basketball scene with realistic lighting, blur, rain and a dusk sky",
+        "Character styles differ: blocky crowd figures in A, detailed proportioned players in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with a blocky low-poly top-down look and a crowd of colored stands, while Image B is a basketball scene with more realistic character models",
+        "Different camera styles: fixed high-angle overhead in A and a low, close perspective in B",
+        "Different lighting and palette: flat bright blue court with a teal surround in A, and a dark void with dramatic spotlights in B"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--venice",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a clay tennis court with blocky voxel-style crowd figures and an overhead camera",
+        "Image B is a basketball court with smoother, more realistic characters and a hazy pastel sky",
+        "The sports, art styles, palettes and HUD (score banners vs. orange player rings) differ"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with a gray, overcast, realistic-style look; Image B is a tennis clay court with a warm orange palette and strong shadows",
+        "Different character styles: detailed human figures with hair and clothing in A, blocky voxel-like characters and crowd in B",
+        "Different camera and presentation: low ground-level view in A, high isometric-style view with an in-world scoreboard in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a flat-shaded tennis court with blocky low-poly crowd; Image B is a basketball court with depth-of-field blur and realistic lighting",
+        "Different sports, art styles and rendering fidelity (flat beige palette vs. moody post-processed indoor scene)",
+        "Different HUD and character models: simple blocky figures vs. more detailed humanoids with ground rings"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a basketball court with ornate lamps, rain and a dusk blurred background, in a more realistic, textured style",
+        "Image B is a tennis court with flat low-poly blocky crowds and a top-down camera",
+        "Different sports and different rendering and lighting style, with no shared characters or HUD"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with a flat, stylized top-down look and block-colored crowds",
+        "Image B is a basketball game with a depth-of-field blur and realistic bloom lighting",
+        "Different character models and sports, with no shared HUD or visual style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with realistic, detailed characters and a ball cart",
+        "Image B is a tennis court with blocky, simplified figures and a crowd of colored dummies",
+        "Different art style, camera angle and sports setting"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with rain, lamps and realistic-style characters at dusk; Image B is a tennis court",
+        "Different art styles: detailed shaded characters and glossy materials vs. blocky low-poly crowd and flat green palette",
+        "Different camera and HUD: close perspective view vs. high broadcast-style view with a 'LONDON 0-0 0-0' scoreboard"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a rainy dusk basketball court with glossy lamps and a blurred background, while Image B is a flat-lit tennis court with a matte pastel look",
+        "Image A has a low perspective camera with a realistic bloom and depth-of-field, while Image B has a high top-down camera with no depth-of-field",
+        "The character models and rendering differ: A has detailed figures with orange ring markers, B has simple blocky figures and a crowd of colorful voxel seats"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--orbit",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, realistic-style night basketball gym with a black void and spotlit court",
+        "Image B is a bright, flat-shaded low-poly tennis court with a pastel beige palette and a high-angle camera",
+        "Different character models: A has detailed humanoids with orange ground rings, B has simple stylized figures and a crowd of colorful blocky spectators"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court at dusk with hazy sky and stylized human characters",
+        "Image B is a tennis court at night with a moon, crowd stands and a different character style",
+        "Different sports, lighting, palette and camera"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a flat, low-poly tennis court from a high overhead camera with blocky crowd figures",
+        "Image B is a basketball court in a lit outdoor park with rain, blurred background and glossy textured objects",
+        "Different character styles, camera angles and rendering detail"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "top-tennis--beach",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with a flat pastel look and a top-down camera; Image B is a basketball game with a dusk, rainy, glossy look",
+        "Different sports, courts and character models (blocky crowd figures vs. detailed players with ground rings)",
+        "Different lighting and palette: warm beige surroundings vs. a dark navy court with bloom and a blurred background"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball scene with a blurred indoor background, depth of field and realistic lighting",
+        "Image B is a flat-shaded tennis court with a sandy backdrop and blocky crowd figures",
+        "Different sports, rendering styles and character models"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat-shaded low-poly tennis scene with a beige ground and no post-processing",
+        "Image B is a basketball court with realistic lighting, a blurred background, rain, and glossy materials",
+        "The character models differ: A has blocky figures and B has more detailed humanoids with orange ring markers"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "top-tennis--grass",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a basketball court with realistic blurred indoor depth of field and ringed character markers",
+        "Image B is a tennis court with flat low-poly crowd blocks and a high, fixed camera angle",
+        "The two frames differ in sport, lighting and character style, and Image B has a different HUD with a scoreboard banner"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--shanghai",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a basketball court with detailed stylized characters, lamps, and a dusk sky",
+        "Image B is a tennis court with a black void sky, a moon, and simple blocky crowd figures",
+        "Different character models and rendering style: textured, rainy, blurred background in A vs flat, low-detail lighting in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "top-tennis--desert",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "translucent wireframe material on the tower in A and the ball cart in B",
+        "basketball hoop and backboard structure visible behind the tennis court in A",
+        "similar blocky stylized characters with simple proportions"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "top-tennis--moon",
+      "b": "aura-hoops-3d--manila",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a basketball scene with a blurred indoor gym and tilt-shift depth of field, Image B is a tennis court at night",
+        "Image A has detailed humanoid figures with orange ring markers, Image B has simple low-poly figures and blocky crowds",
+        "Image A has warm, hazy, desaturated lighting, Image B has harsh dark lighting under a moon with saturated blue court colors"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "top-tennis--clay",
+      "b": "aura-hoops-3d--rucker",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with an overhead camera, a clay court and blocky crowd figures",
+        "Image B is a basketball court with a low camera, hazy white sky and more detailed, proportioned characters",
+        "The two use different character styles and different lighting (saturated orange vs. muted purple-gray)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "top-tennis--default",
+      "b": "aura-hoops-3d--athens",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, stylized tennis arena with an overhead camera and a crowd of blocky figures",
+        "Image B is a bright, overcast basketball court with a low camera and more detailed characters",
+        "The HUD, lighting and character styles differ, and the sports and environments are unrelated"
+      ]
+    }
+  ]
+}

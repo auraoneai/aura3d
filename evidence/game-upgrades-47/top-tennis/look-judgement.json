@@ -3,20 +3,20 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/aura-slam/screens/final/1280-04-mid.jpg",
-      "sha256": "a7013c42e3b2dad855789e4760582da2f317f0a2f6f8f076568429e68c4fd5ab"
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/screens/1280-04-mid.jpg",
+      "sha256": "62e7e5ebbd62c693113db8962943a67bbbc2895c5047bba375a7d2f7d2d24b68"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-1/top-tennis--moon--settle-60s.jpg",
-      "sha256": "26542036d364e663b8fa4ca8d95546e0b1895289c3457113b5557d6b67ef7c05"
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--moon--settle-60s.jpg",
+      "sha256": "4727e0f14a995a044518fcf68ee8a68c8caec6498cb44f963826768cc62c0d69"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-4/top-tennis--clay--settle-60s.jpg",
-      "sha256": "de832258f3ead4e12275cdd21663d8e6730aa62fa5c131b263ef73d2d152a325"
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--clay--settle-60s.jpg",
+      "sha256": "249f2a9fdab5eedde673c8f289f3558561bb778f24b12b0c9a98ea9b4b351037"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p3-r3/top-tennis/frames/g01p3-r3b-3/top-tennis--grass--settle-60s.jpg",
-      "sha256": "3ea8cbaf08f567e3cdabeb0f3900e83f8c655f53b19a4a3d095be0539611e967"
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r3/top-tennis--desert--settle-60s.jpg",
+      "sha256": "923073d8fd8549910c62c2dbd265b08faa5dbe81efd587576dfa52d801fcc285"
     }
   ],
   "references": [],
@@ -24,64 +24,59 @@
     "lighting": 5,
     "shadows": 5.5,
     "ibl_reflections": 2.5,
-    "environment_world": 5.5,
-    "atmospheric_effects": 3,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3.5,
     "material_quality": 3.5,
-    "modeling_assets": 4.5,
-    "composition": 6,
+    "modeling_assets": 4,
+    "composition": 5,
     "camera": 6,
-    "postprocessing": 3.5,
-    "animation_quality": 5,
-    "ui_hud": 7
+    "postprocessing": 4,
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "A single flat directional key lights every scene. The Moon frame is mostly black with no fill, so the stands and floor fall into murk. The NY frame has a soft central spotlight bloom on the court, but the stands stay dim and uniform."
+      "seen": "Each venue has a different key, but none reads as an indoor flood rig at 55°/45°. Moon is a single hard light over a black void. Paris is monochrome orange with a hot spot near the net. Dubai is flat beige ambient with almost no modeling of form. Frame 1 has a soft central spotlight with a dark vignette and a green cast over the blue court."
     },
     {
       "category": "shadows",
-      "seen": "Players and the umpire chair cast hard directional shadows, with a long diagonal shadow on Paris clay. There is no contact occlusion under the stands or bench. The net shadow is a plain dark band. In the NY frame the player shadows are offset blobs."
+      "seen": "Players and the umpire chair cast directional shadows. They are long and sharp in Moon and Paris, short and soft in Dubai. The net shadow is visible in Paris. There is little contact occlusion where the stands meet the floor, and the shadow edges in Moon look hard and slightly aliased."
     },
     {
       "category": "ibl_reflections",
-      "seen": "No environment reflections are visible. The hard court, grass and clay are all fully matte. The Moon helmets show only a faint gold sheen."
+      "seen": "No surface shows environment reflections or specular response. The court, stands, net posts and player kits all shade as matte diffuse, and the light poles look identical in every venue."
     },
     {
       "category": "environment_world",
-      "seen": "Voxel-like crowd stands repeat the same seat/person tiles. Distant backdrops (stadium structure, the Moon sphere) are low-res cards on a flat plane. The surface colors are themed per venue, but the arena shell is identical every time."
+      "seen": "The stands, umpire chair, bench and signs sit on a bare floor plane. Beyond them is a void (Moon), a flat orange plane (Paris) or a beige plane (Dubai). Light poles have no fixtures. The Eiffel Tower is a blurred backdrop cut off by the frame top. There is no arena roof, walls or interior-industrial structure."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is no indoor haze, dust or volumetric light. The only depth cue is a vague dark falloff. The blurred top background in Paris and London reads as a texture, not fog."
+      "seen": "No indoor haze or light shafts are visible. Frame 1 has a greenish fog-like wash and a vignette. Paris has a faint warm gradient. Moon and Dubai have no atmosphere at all."
     },
     {
       "category": "material_quality",
-      "seen": "Surfaces are mostly single flat albedo. The grass stripes are a simple tint. Clay has no granular texture or skid marks. The net is a solid black slab with no mesh transparency. The stands are untextured boxes."
+      "seen": "Court surfaces are flat single colors with a faint diagonal noise texture in frame 1. The service-box highlight is a flat pale-yellow quad. Crowd, stands and bench use untextured solid colors, and the clay court has no grain or scuffing."
     },
     {
       "category": "modeling_assets",
-      "seen": "Low-poly players with simple limbs. The crowd is blocky L-shaped figures, readable but primitive. The umpire chair and bench are plain boxes. The ad boards ('AURA SLAM', 'WORLD TOUR') are clipped and pixelated."
+      "seen": "Crowd members are repeated capsule figures in rainbow solids with identical poses. Players are low-poly, and the Moon variant swaps in white astronaut suits. The umpire chair and bench are simple boxes. The net is a thin line with visible kinks. Signage text is clipped to 'AURA SL M'."
     },
     {
       "category": "composition",
-      "seen": "The court fills roughly 35–45% of the frame, close to target. In the wide shots the court is centered with symmetric stands. In NY the near-side HUD panels crowd the corners, and the stands are cropped at the edges."
+      "seen": "In frames 2–4 the court fills about 30% of the frame, which is within target, but the upper third is wasted on empty floor and backdrop. In frame 1 the court fills about 70% of the frame and the HUD panels crowd the stands. The ball is barely visible in any frame."
     },
     {
       "category": "camera",
-      "seen": "The broadcast high-angle perspective is broadly on recipe. It is perspective, not orthographic. The NY camera sits much closer and steeper, so framing is inconsistent between modes. The far player is small and hard to read in the wide shots."
+      "seen": "Frames 2–4 use an elevated three-quarter broadcast view close to the recipe. Frame 1 switches to a much tighter, steeper perspective, so the shots are inconsistent."
     },
     {
       "category": "postprocessing",
-      "seen": "There is a mild vignette and some edge aliasing on the court lines and net. There is no tonemapping punch, color grade or bloom on the highlights. The Moon frame looks underexposed rather than graded."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "The NY serve pose shows the arm raised with the ball toss. The other frames show idle ready stances. The poses read clearly but stiffly."
+      "seen": "Frame 1 has a heavy vignette and a green-teal color cast that muddies the blue court. Paris is crushed into a single orange hue. Dubai is low-contrast and washed out. There is no bloom on lights and no consistent arena grade."
     },
     {
       "category": "ui_hud",
-      "seen": "The NY frame has a clean scoreboard with a lime accent, a ball speed gauge, a power bar, mode chips and a controls strip, all coherent and legible. The in-world score boards in the other frames are low-res bitmap text."
+      "seen": "Frame 1 has a clean scoreboard, power bar, ball-speed dial, mode pills and a controls strip, all readable. Frames 2–4 show only in-world signage with low-res pixel text and no overlay HUD."
     }
   ],
   "nextChange": {
