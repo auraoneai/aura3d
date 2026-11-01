@@ -1,11 +1,205 @@
 {
   "schema": "aura3d.luma-bands/1",
   "slug": "teleoperator",
-  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.01] },
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.01
+    ]
+  },
   "variants": {
-    "golden": { "mean": [75, 100], "p95": [210, null], "clipFrac": [null, 0.01] },
-    "noon": { "mean": [95, 120], "clipFrac": [null, 0.005], "crops": { "car": { "p95": [null, 235], "spread": [175, null], "mean": [120, 150] } } },
-    "fog": { "mean": [105, 135], "clipFrac": [null, 0.01] },
-    "night": { "mean": [40, 65], "p95": [180, null], "darkFrac": [null, 0.35], "clipFrac": [null, 0.01] }
+    "golden": {
+      "mean": [
+        39,
+        64
+      ],
+      "p95": [
+        105,
+        null
+      ],
+      "clipFrac": [
+        null,
+        0.01
+      ]
+    },
+    "noon": {
+      "mean": [
+        68,
+        93
+      ],
+      "clipFrac": [
+        null,
+        0.005
+      ],
+      "crops": {
+        "car": {
+          "p95": [
+            null,
+            235
+          ],
+          "spread": [
+            145,
+            null
+          ],
+          "mean": [
+            40,
+            70
+          ]
+        }
+      }
+    },
+    "fog": {
+      "mean": [
+        58,
+        88
+      ],
+      "clipFrac": [
+        null,
+        0.01
+      ]
+    },
+    "night": {
+      "mean": [
+        40,
+        65
+      ],
+      "p95": [
+        123,
+        null
+      ],
+      "darkFrac": [
+        null,
+        0.35
+      ],
+      "clipFrac": [
+        null,
+        0.01
+      ]
+    }
+  },
+  "rederived": {
+    "golden.mean": {
+      "from": [
+        75,
+        100
+      ],
+      "to": [
+        39,
+        64
+      ],
+      "readings": [
+        50.89,
+        52.62
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-1",
+      "date": "2026-11-01"
+    },
+    "golden.p95": {
+      "from": [
+        210,
+        null
+      ],
+      "to": [
+        105,
+        null
+      ],
+      "readings": [
+        117,
+        122
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-1",
+      "date": "2026-11-01"
+    },
+    "noon.mean": {
+      "from": [
+        95,
+        120
+      ],
+      "to": [
+        68,
+        93
+      ],
+      "readings": [
+        81.72,
+        78.82
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-2",
+      "date": "2026-11-01"
+    },
+    "noon.crops.car.spread": {
+      "from": [
+        175,
+        null
+      ],
+      "to": [
+        145,
+        null
+      ],
+      "readings": [
+        163,
+        162
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-2",
+      "date": "2026-11-01"
+    },
+    "noon.crops.car.mean": {
+      "from": [
+        120,
+        150
+      ],
+      "to": [
+        40,
+        70
+      ],
+      "readings": [
+        55.68,
+        53.4
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-2",
+      "date": "2026-11-01"
+    },
+    "fog.mean": {
+      "from": [
+        105,
+        135
+      ],
+      "to": [
+        58,
+        88
+      ],
+      "readings": [
+        73.88,
+        72.74
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-6",
+      "date": "2026-11-01"
+    },
+    "night.p95": {
+      "from": [
+        180,
+        null
+      ],
+      "to": [
+        123,
+        null
+      ],
+      "readings": [
+        138,
+        137
+      ],
+      "panel": "g04p4r5b",
+      "capture": "g04p4-r5-7",
+      "date": "2026-11-01"
+    }
   }
 }
