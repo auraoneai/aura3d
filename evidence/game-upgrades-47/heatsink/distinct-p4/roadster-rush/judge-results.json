@@ -1,0 +1,720 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:07:23.602Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.889,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.889,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky voxel hover-vehicles, minimap HUD, dusk haze with dark tower skyscrapers",
+        "Image B: realistic sports car with cyan thrusters, starry night sky, lit-window buildings, highway exit sign",
+        "Different vehicle styles, scenery, and lighting palette"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly hovering drone racers with a minimap HUD under a dark, overcast, orange-silhouetted skyline",
+        "Image B: realistic-style car on a multi-lane highway with motion blur, an exit sign and a sunset sky",
+        "Different vehicle types, building styles, lighting palettes and camera setups"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: realistic night city, a single sleek car and cyan thrusters, with exit-sign text",
+        "Image B: low-poly orange silhouette skyline, blocky hover drones and a minimap",
+        "Different lighting and palette: dusk blue/amber vs overcast brown/orange haze"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic highway with sunset purple-orange sky and road signs, while Image B has an overcast sky and flat orange industrial silhouettes",
+        "Different vehicles: sleek blue car in A, blocky hovering drones with rotors in B",
+        "Different HUD: no minimap in A, track-outline minimap in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses blocky voxel hover-vehicles and a minimap HUD, while Image B shows a smooth single supercar",
+        "Different lighting: low golden sun glare with a grey sky versus a starry night sky with dark blue buildings",
+        "Different city and road style: dark window-grid towers with a gate arch versus striped lit towers with highway exit signs"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: sleek purple-blue racer with a highway exit sign and a purple-orange sunset sky",
+        "Image B: blocky voxel hover vehicles with a gray sky, a minimap and bloom-heavy sun glare",
+        "Different building styles: A has brick-textured towers with ring markers, B has dark towers with dense lit windows"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A: realistic-style cars and traffic on a highway with overhead exit signs, sunset purple-orange sky",
+        "B: blocky hovering vehicles with propellers, stone arch gate, blue dusk sky, minimap HUD",
+        "Different building styles and vehicle designs"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky voxel hovercraft, dusk blue palette, minimap HUD",
+        "Image B: smooth sports car, sunset purple-orange sky, highway exit sign",
+        "Different building styles and road/lighting treatment"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky voxel hover-vehicles and a minimap HUD, while Image B has a smooth-bodied sports racer with chase camera and motion blur",
+        "Image A has a gray overcast sky with a bright sun glare, while Image B has a purple-orange sunset sky",
+        "Image A has dark brown buildings with scattered lit windows, while Image B has gridded buildings with tan and blue window tiles, highway signs and ordinary traffic"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has hovering drone-like vehicles and a minimap HUD; Image B has a road car with a chase camera",
+        "Image A has a flat brown silhouetted city under a gray overcast sky; Image B has textured tower blocks under a purple-orange sunset",
+        "Image B has a motion-blurred road with traffic and an 'EXIT 4B HARBOUR' sign, while Image A has a plain dark road with no traffic"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: realistic sports car on a highway with a night sky, B: blocky hover-vehicles in a grey, hazy daytime sky",
+        "different building styles (A: flat striped windows with ring markers, B: dense dark towers with speckled window lights)",
+        "different HUD and camera (B has a minimap in the corner and a lower, closer view)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has hovering drone-like vehicles and a minimap, Image B has a single ground car with thruster glow",
+        "Image A has a brown industrial skyline with an overcast sky, Image B has a starry dusk sky with a lit window grid on buildings",
+        "Image B has highway exit signs and a wet reflective road, with a different vehicle style and no minimap"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky voxel hovercraft with a minimap HUD, Image B has a smooth realistic racing car with civilian traffic",
+        "Different skies: Image A is a grey haze with a bright sun glare, Image B is a purple-orange sunset",
+        "Different buildings and road: Image A has dark towers with glowing windows on a wet road, Image B has tiled buildings with highway signs and motion-blurred asphalt"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky low-poly hovering drones and a minimap HUD, Image B has a realistic-looking car with motion blur",
+        "Image A has a dark, overcast sky with orange silhouetted skyline, Image B has a purple and orange sunset with striped skyscrapers",
+        "Different road and scenery styles: Image A has a glowing lava-edged elevated highway, Image B has a multi-lane highway with exit signs and ring markers"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has a purple-orange gradient sky with a visible sun disc; Image B has a gray overcast sky with bloom from a low sun",
+        "Image A shows a sleek blue formula-style car on a multi-lane highway with traffic; Image B shows blocky voxel-style hover vehicles on a narrow road",
+        "Image B has a minimap HUD and dark skyscrapers with dense window lights, while Image A has banded, brick-textured towers with ring markers"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-style car on a highway with an exit sign and a window-grid city at dusk",
+        "Image B has blocky hovercraft racers, a stone arch and a minimap",
+        "The two frames differ in vehicle style, building design and lighting"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: blocky voxel-style hovercraft, dark dusk city with minimap HUD",
+        "B: smooth realistic sports car, warm sunset with highway exit sign",
+        "Different building styles: tall dark towers vs. brick-textured blocks with ring markers"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A: realistic-style cars with sunset purple/orange sky and highway exit signs, B: blocky hover-craft in a sci-fi city",
+        "Different building styles: A has windowed block towers, B has tall dark slender skyscrapers",
+        "Different HUD and lighting: B has a minimap and cool blue dusk tone, A has no minimap and warm sunset"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky voxel hover-vehicles with a low sun glare and a minimap HUD; Image B has a smooth sports car on a highway",
+        "Image A uses dim brown-gray towers with scattered lit windows; Image B uses bright banded blue-and-cream windows under a starry night sky",
+        "The road surface differs: Image A has glossy wet asphalt with a yellow/orange center dash, and Image B has dark asphalt with motion blur, orange lane dashes and a highway exit sign"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky low-poly hover drones on an orange-silhouetted city with a minimap HUD",
+        "Image B: smooth glossy racecar with motion blur on a sunset highway with exit signs",
+        "Different building style, palette and vehicle type"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A uses blocky voxel hover vehicles and a minimap HUD, while Image B shows a smooth-bodied open-wheel car",
+        "Image A has dark, gritty, bloom-heavy dusk lighting with lit-window skyscrapers, while Image B has a saturated purple-orange sunset with tiled-texture buildings",
+        "Image B has a highway exit sign, ring markers and motion blur, with no counterpart in Image A"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic traffic and a sports car on a highway with exit signs, purple-orange sunset",
+        "Image B: hovering drone-like vehicles, overcast sky, brown silhouetted industrial skyline, minimap HUD",
+        "Different vehicle types, lighting and HUD styles"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has hovering drone-like vehicles and a minimap HUD, Image B has a ground race car with thruster glow",
+        "Image A uses brown silhouetted industrial skyline under overcast dusk, Image B has detailed lit windowed towers under a starry night sky",
+        "Different road style: A has a lava-orange edge glow and low-poly blocky models, B has a highway with signage and smooth reflective paint"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky voxel-style hovercraft with a minimap in a dusk neon city",
+        "Image B: smooth-bodied sports car with motion blur and a highway exit sign at sunset",
+        "Different building styles, palettes and HUDs: dark purple towers vs. brown-tiled skyscrapers with ring markers"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a sleek single car and a rear chase camera, Image B is a dusk city with blocky hovering pod vehicles",
+        "Different building styles: lit-window towers with gold ring markers in A, tall dark monolith towers in B",
+        "Different HUD and palette: no minimap and an orange/navy palette in A, a track minimap and a teal/orange palette in B"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A: realistic-style cars with motion blur on a highway at sunset; B: blocky hovering craft",
+        "different sky and lighting: purple-orange dusk vs. blue twilight",
+        "different HUD and scenery: exit gantry signs vs. circuit minimap and stone arch"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: purple-orange sunset sky, blocky towers with large pixel-grid windows, realistic cars and a highway exit sign",
+        "B: gray overcast sky with dense tiny-window skyscrapers, voxel hover-vehicles and a minimap HUD",
+        "different vehicle types and road markings (white edge line vs orange and neon barriers)"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sunset highway, ringed skyscrapers, exit sign, rear-chase view of a sleek car",
+        "B: dark overcast sky, brown industrial silhouettes, blocky hovering drone-like vehicles, minimap HUD",
+        "Different vehicle design, palette and lighting"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: realistic night city with lit windows, a single sleek car and cyan thrusters",
+        "Image B: blocky low-poly hovering drone-like vehicles in a rust-orange, overcast setting",
+        "Image B has a minimap outline in the corner; Image A has road signs and a different palette"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A has voxel-style hover pods with a gray sky and sun glare, B has a realistic sports car on a highway with a purple-orange sunset sky",
+        "Different building styles: A's dark towers with dotted lit windows, B's blocky towers with tan and blue window grids",
+        "Different HUD: A has a minimap loop in the corner, B has highway exit signs and no minimap"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sunset purple-orange sky with a highway, traffic and exit gantry; B: blue dusk sky with hovering vehicles and a stone arch",
+        "Different vehicle styles: smooth realistic racer vs blocky voxel-style hover craft",
+        "Different HUD: no HUD vs circular minimap in the corner"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses blocky voxel hover-vehicles with a sunset glare and a minimap HUD, while Image B has a sleek single race car with thruster glow",
+        "Different building styles: dark, dim window dots in A versus bright blue and cream striped towers in B",
+        "Different atmosphere and scene: A has a hazy dusk with a gate arch and wet textured asphalt, B has a starry night with highway exit signs"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has hovering drone-like vehicles and a minimap HUD, Image B has a road car chase view with traffic",
+        "Different lighting: dark overcast with brown silhouetted skyline vs purple-orange sunset with textured buildings",
+        "Different road and scenery: lava-glow edges and flat low-poly arches vs highway exit signs and gridded skyscrapers"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has hovering voxel-style craft and a minimap, Image B has a realistic road car with cyan thrusters",
+        "Different city styles: dark purple towers with an arch gate vs. lit-window blocky buildings with highway exit signs",
+        "Different lighting: dusk haze with blurry green horizon vs. starry night with orange sunset glow"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sunset highway with a chase camera behind a sleek car and motion blur; B: low-angle view of blocky hovering vehicles",
+        "Different city styles: A has wide brick-textured towers and a gantry sign; B has tall thin dark towers and a stone arch",
+        "Different palettes and HUD: A is warm purple and orange with no minimap; B is cool blue dusk with a track minimap"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky voxel hover-vehicles, dusk blue sky, dark towers with a minimap HUD",
+        "Image B: smooth sports car with motion blur, orange sunset sky, brick-textured buildings with ring markers and a highway exit sign",
+        "Different art style, vehicle type and lighting palette"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky voxel-style hovercraft racers and a minimap, Image B has a realistic rear-view sports car with traffic",
+        "Image A is a dusk sci-fi city with dark towers and an arch gate, Image B is a sunset highway with a gantry sign reading 'EXIT 4B HARBOUR'",
+        "The art styles differ: A has chunky low-poly props, B has smooth car models and motion-blurred road"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has blocky voxel hover-vehicles and a minimap HUD, Image B has a smooth realistic open-wheel car with a road-sign overlay",
+        "Image A has dark, dim buildings with dotted lit windows, Image B has bright striped brick-textured towers with ring markers under a purple sunset sky",
+        "Different road surface and lane style: A has orange and yellow dashes on a glossy dark road, B has a multi-lane highway with white edge line and motion blur"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic sports car on a multi-lane highway at night with a starry sky",
+        "Image B: blocky voxel hover vehicles and a gray hazy sky with a low sun",
+        "Different building styles and HUD (exit sign vs. minimap)"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has hovering drone-like vehicles and a minimap, while Image B has a single car with a rear chase camera and a highway exit sign",
+        "Image A is a dark overcast scene with orange silhouetted blocky city, Image B is a sunset with purple sky and sun glare",
+        "Different art styles: flat low-poly in A, textured buildings with motion blur and glossy car in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: realistic night city with lit windows and a sleek rear-view car",
+        "Image B: blocky low-poly hover drones on an orange-brown industrial skyline under an overcast sky",
+        "Different HUD: Image B has a minimap, Image A has none, and the two frames differ in camera and lighting style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic sports cars with traffic on a highway under a purple sunset, with exit signs",
+        "Image B: blocky hovering drone-like vehicles on an overcast, brown-silhouetted city with a minimap HUD",
+        "Different palettes, vehicle designs and camera setups"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky voxel-style hover vehicles and a minimap HUD, while Image B has a sleek realistic race car",
+        "Image A uses dusk blue/purple towers with an arch gate, while Image B uses starry night with warm lit-window buildings and highway signage",
+        "Different road and lighting treatment: wet reflective road with lane lines vs. dark motion-blurred highway with orange dashes"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: purple-orange sunset sky, blocky towers, highway signs and a sleek realistic car",
+        "B: grey overcast sky, windowed skyscrapers, hovering voxel-style vehicles, and a minimap in the corner",
+        "Different road and vehicle design: A has a multi-lane highway with traffic, B has a narrow track with orange curbs"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "heatsink--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has blocky voxel hover-craft and a minimap, while Image B has a smooth realistic sports car with motion blur",
+        "Image A has a grey sky with dark brown silhouetted buildings and a sun glare, while Image B has a purple-orange gradient sunset sky with tiled striped towers",
+        "Image B has traffic cars, an exit gantry sign, and lane markings, which Image A does not have"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky hover-craft vehicles and a minimap HUD, Image B: realistic rear-view sports car on a highway",
+        "Image A: dusk gradient sky with tall dark purple towers, Image B: starry night sky with windowed lit buildings",
+        "Different road and scenery style: stone arch and futuristic gantry in A, highway exit sign and lamp posts in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sunset highway, tall brick-grid towers, realistic sports car with motion blur",
+        "B: dusky overcast sky, orange silhouetted skyline, blocky hovering drone-style vehicles",
+        "Different HUD and camera: B has a minimap and a low chase view, A has a high rear view with road signage"
+      ]
+    }
+  ]
+}

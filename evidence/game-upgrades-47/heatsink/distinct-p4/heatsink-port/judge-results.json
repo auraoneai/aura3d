@@ -1,0 +1,721 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:04:27.754Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.69,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 27,
+    "sameGameYes": 21,
+    "differentRate": 0.5625,
+    "ci95": [
+      0.4227477150100165,
+      0.6929894535958907
+    ],
+    "confidentDifferent": 4,
+    "confidentDifferentRate": 0.08333333333333333,
+    "same_game": false,
+    "same_game_confidence": 0.69,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show multirotor drone-style racing vehicles with propellers",
+        "similar road barriers with white posts and a start gate arch",
+        "similar soft, hazy post-processing and painterly lighting"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A drones are blocky low-poly, Image B drone is smooth and detailed",
+        "different rendering style: flat orange city silhouettes vs textured alien terrain with a neon grid road",
+        "both show quadcopter racers on guardrailed roads, which keeps some chance of one game with different tracks"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.65,
+      "tells": [
+        "blocky voxel vehicles and buildings in A vs smooth detailed drone and terrain in B",
+        "dusk city with sun glare vs alien planet with a neon grid track",
+        "different rendering and material style, with a minimap only in A"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: alien planet, purple grid track, smooth realistic drone",
+        "Image B: dusk city, asphalt road, blocky voxel-style vehicles",
+        "Different palettes, art styles and HUD (minimap only in B)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show quadcopter-style racing drones on a road with guardrails",
+        "orange and dark vehicle color scheme in both",
+        "very different environments and model detail, which weakens the match"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "blocky low-poly voxel city versus smooth textured alien terrain",
+        "different vehicle modeling: chunky orange hover-racer versus realistic quadcopter drone",
+        "HUD minimap in A and a neon grid road in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A has a purple alien planet with a teal mountain canyon and a neon grid track, while Image B has a dusk city with skyscrapers and asphalt road",
+        "Image A has a realistic quad-drone with smooth glossy materials, while Image B has blocky low-poly voxel-style hover vehicles",
+        "Different track and HUD style: Image A has white squiggle lines on a grid, Image B has lane markings and a minimap"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "quadcopter racing drones on a road track in both",
+        "orange and dark drone color scheme",
+        "very different art detail and environment (blocky city vs smooth alien world)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky voxel drones in A versus smooth detailed drone model in B",
+        "A has a dark dusk city with a minimap HUD, B has a stylized alien planet with a neon grid track",
+        "different rendering and texture style: gritty asphalt and bloom in A, painterly flat-shaded terrain in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A uses blocky voxel-style vehicles and buildings, while Image B uses a smooth, detailed drone model",
+        "Different environment art: dusk neon city with a minimap versus an alien planet with a grid track and no HUD",
+        "Different lighting and palette: warm orange glow on dark blue asphalt versus a pastel teal and purple sky"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "quadcopter-style racing drones with black and orange bodies in both",
+        "elevated road with guardrails and lane markings",
+        "very different environments (alien planet vs. dark city) could be separate tracks of one game"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky voxel drones and buildings in A vs smooth detailed drone and terrain in B",
+        "different rendering style: gritty sunset city with bloom vs stylized alien grid road",
+        "A has a corner track minimap, B shows no comparable HUD"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "quad-rotor racing drones in both frames",
+        "road with low guardrails and a minimap-style race setup",
+        "orange and black accent palette on the drones"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: alien planet with a neon grid track and a realistic drone",
+        "Image B: blocky voxel-style vehicles on an asphalt city road with a minimap HUD",
+        "Different palettes and track materials (purple/teal vs dusk blue/orange)"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "quadcopter drones with orange and dark bodies and teal accents in both",
+        "road with guardrails and lane markings in both",
+        "very different art style (blocky city vs smooth alien terrain) argues against"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 5,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "blocky voxel vehicles in A vs smooth detailed quadcopter in B",
+        "dark asphalt city at sunset vs neon grid track on alien planet",
+        "different HUD and track styles (minimap loop in A, none in B)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 5,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A uses blocky low-poly voxel-style vehicles and buildings, while Image B has a smooth, detailed quadcopter model",
+        "Different environments: a dusk neon city with a minimap HUD versus an alien planet with a grid road and no HUD",
+        "Different lighting and palette: warm, grainy city glow versus a soft purple-teal pastel sky"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 5,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "quadcopter racing drones with orange and black cylindrical rotor housings in both",
+        "elevated road with guardrail posts and painted lane lines in both",
+        "different environments (alien planet vs dusk city) could be separate tracks of one game"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 6,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "quadcopter racing drones with four rotor pods in both",
+        "similar raised road with guardrails and dashed lane markings",
+        "different themed environments (dusk city vs alien planet) but a similar low-poly vehicle design"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 6,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: alien planet with a neon grid track and a realistic quadcopter drone",
+        "Image B: blocky voxel-style vehicles on an asphalt city road at sunset with a minimap HUD",
+        "Different art style, palette, and track materials"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 6,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky low-poly vehicles and buildings in A vs smoother realistic drone and terrain in B",
+        "dusk neon city with minimap in A vs alien planet and grid road in B",
+        "different road and material rendering (wet asphalt vs glowing grid)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 7,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "quadcopter-style racing drones with orange and teal accents in both",
+        "similar paved road with guard rails and lane markings",
+        "different environments and model detail, which lowers confidence"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 7,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both show quadcopter-style racing drones with rotors and landing legs",
+        "similar road barriers with small white posts and a start/finish gate over the track",
+        "different environments (alien planet vs. city) but the same soft, hazy post-processing"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 7,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is blocky flat-shaded low-poly with a dusk city silhouette, while Image B has detailed textured alien terrain",
+        "Different drone models: voxel-like drones in A, a detailed glossy orange-canopy drone in B",
+        "Different track surfaces: asphalt with lane lines in A, a neon purple grid in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 8,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "orange and black quadcopter-style drones in both",
+        "similar road with side barriers and posts",
+        "very different environment art (voxel city vs smooth alien terrain)"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 8,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show quadcopter-style drone racers with rotors and landing legs",
+        "Both have road barriers with white posts and a start/finish gate over the track",
+        "Different environments (alien planet vs. city), so the match is uncertain"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 8,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "quadcopter drone racers in both frames",
+        "similar guardrail and road-lane construction",
+        "orange and black vehicle color scheme"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 9,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "blocky low-poly city and vehicles vs smoother detailed drone model",
+        "asphalt road with lane markings vs neon grid track",
+        "different lighting and palette: dusk city glow vs pastel alien planet"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 9,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show quadcopter racing drones with orange and black bodies",
+        "elevated road with dark side barriers in both",
+        "different art detail and lighting, likely just different tracks"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 9,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky voxel drones and buildings in A versus smooth detailed drone and terrain in B",
+        "dusk city sunset glow versus alien planet with a neon grid track",
+        "A has a loop minimap HUD while B shows no comparable HUD"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 10,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "blocky low-poly vehicles vs. smooth detailed drone model",
+        "dusk neon city with minimap vs. alien planet with grid track",
+        "different lighting and material treatment"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 10,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both feature quadcopter racing drones with dark bodies and colored accents",
+        "similar low chase camera on an elevated track with side barriers",
+        "very different themes (alien planet vs. dusk city) and model detail, which weakens the match"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 10,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky voxel-style vehicles and buildings in A versus smooth detailed quadcopter and rocky terrain in B",
+        "gritty asphalt city at sunset versus neon grid track on an alien planet",
+        "minimap HUD in A with no comparable HUD in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 11,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "blocky voxel city and vehicles vs smooth detailed drone model",
+        "different environment rendering (dusk city with sun glare vs alien planet with neon grid track)",
+        "minimap HUD in A, none in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 11,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both feature quadcopter drone racers on an elevated road with side barriers",
+        "similar low chase-camera view",
+        "art fidelity and lighting differ strongly, which could be different tracks or different games"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 11,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both show drone-style quadcopter racers with rotors from a rear chase camera",
+        "similar road with guardrail posts and a gate over the track",
+        "different biome and render style (alien grid track vs. blocky city), possibly different tracks of one game"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 12,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.65,
+      "tells": [
+        "blocky voxel drones and buildings in A versus smooth detailed drone model in B",
+        "photoreal wet asphalt city at sunset versus stylized alien planet with neon grid track",
+        "different lighting and rendering style, with bloom and lens flare in A and soft pastel haze in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 12,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "blocky low-poly craft and buildings in A versus a smooth detailed quadcopter in B",
+        "dusk city with a minimap HUD versus an alien landscape with a neon grid track",
+        "different lighting and texture treatment, with A's wet-road reflections and B's painterly sky"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 12,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show quadcopter drone racers from a low chase camera",
+        "elevated road with side barriers and dashed lane markings in both",
+        "very different art style and palette (alien neon vs. dusk city), which argues against"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 13,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: alien planet with purple sky and a neon grid track",
+        "Image B: dusk city skyline, asphalt road and blocky voxel-style vehicles",
+        "Different vehicle designs and HUD (B has a minimap, A has none)"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 13,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "flat low-poly blocky drones and buildings in A versus smoother detailed drone and terrain in B",
+        "dusk orange city palette versus purple-teal alien sky and planet",
+        "different road surfaces: plain asphalt with painted lines versus glowing grid with white squiggle lines"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 13,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "blocky low-poly voxel vehicles and buildings in A versus smooth, detailed drone model in B",
+        "dusk neon city with minimap HUD versus alien mountains and giant planet with a grid-textured track",
+        "different track surface and lighting style: wet reflective asphalt versus flat purple grid with white squiggle lines"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 14,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both show drone-style quadcopter racers with rotors and landing legs",
+        "similar road barriers with small white posts and a finish gate over the track",
+        "different environments: alien mountains and a purple grid track in A, a night city with blocky vehicles in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 14,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "quadcopter racing drones with similar orange and black parts",
+        "same low chase camera on a guardrailed road",
+        "very different environment styles that could be separate tracks"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 14,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A uses blocky voxel-style vehicles and buildings, while Image B has a smooth, detailed drone model",
+        "different environments and lighting: sunset city with a corner minimap vs. alien planet with a grid track and no HUD",
+        "different track surface: rough asphalt with painted lane dashes vs. a neon grid with glowing line decals"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 15,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "blocky low-poly city and vehicles vs smooth, detailed alien terrain and drone model",
+        "different HUD: track minimap in A, none in B",
+        "different track surface and lighting: asphalt with lane markings vs neon grid road under a purple planet sky"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 15,
+      "a": "heatsink--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: alien planet with purple grid track and smooth realistic drone",
+        "Image B: dusk city with asphalt road, blocky voxel-style vehicles, minimap HUD",
+        "Different art style, palette and lighting"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 15,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "quadcopter drone racers in both frames",
+        "elevated road with side rails and dashed lane markings",
+        "orange and black vehicle accents despite different themed tracks"
+      ]
+    }
+  ]
+}

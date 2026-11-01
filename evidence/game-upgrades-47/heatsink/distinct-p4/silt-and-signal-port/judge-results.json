@@ -1,0 +1,728 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:22:01.403Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch1--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch3--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--ch5--settle-60s",
+      "silt-and-signal-port--ch6--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.954,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.954,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a voxel-style futuristic city with hover vehicles and a minimap HUD",
+        "Image B has a flat, outlined cel-shaded look with a character on a hoverboard in a pine-forest landscape",
+        "The palettes and lighting differ: dusk blue and orange against purple and teal"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dark industrial city with voxel-style drone vehicles on asphalt",
+        "Image B: ink-outlined cartoon style with pine trees and a teal track",
+        "Image B: a character on a hoverboard instead of a vehicle, with different HUD and lighting"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: character on a hoverboard in a low-poly outdoor landscape with pine trees and an orange sky",
+        "Image B: blocky voxel-style hover vehicles on an asphalt road in a dark neon city with a minimap HUD",
+        "Different palettes, scenery and rendering styles"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dark neon cyberpunk city with hovering vehicles and a minimap",
+        "Image B: hand-painted ink-outlined style with a human hoverboard rider on cobblestone",
+        "Different art style, palette and HUD (A has a track minimap, B has none)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: cel-shaded, ink-outlined cartoon style with a runner on a hoverboard and pine trees",
+        "Image B: dark cyberpunk city with voxel-style hover vehicles and glowing, wet-looking lighting",
+        "Different HUD, palette and camera: B has a minimap and a dusk neon palette, while A is pastel with a teal track"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark cyberpunk highway with hovering drone vehicles and a minimap HUD",
+        "Image B: ink-outlined, hand-painted look with a rider on a hoverboard on a cobblestone plaza",
+        "Different rendering styles: dim, dusky lighting vs. flat pastel cel shading"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: voxel-style hover vehicles on a futuristic city highway with a sunset glow",
+        "Image B: outlined, cel-shaded look with a character on a hoverboard in a purple pine-forest landscape",
+        "Different art styles, palettes and HUD (minimap in A, none in B)"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: hand-painted, inked cel-shaded look with a skateboarder on cobblestone and low-poly pine trees",
+        "Image B: realistic bloom, a wet asphalt road, a dark city skyline and voxel-style hover vehicles",
+        "Different HUD and camera: B has a minimap and a low chase view, A has none and a high third-person view"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dark industrial city with hovering drone-like vehicles and a minimap HUD",
+        "Image B: ink-outlined, cel-shaded cartoon style with a hoverboard rider on a water track",
+        "Different palettes and settings: orange-brown dusk city vs. green hills with pine trees"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dusk cyberpunk city with hovercraft racers and a track minimap, in a voxel-like style",
+        "Image B is a hand-inked cartoon valley with pine trees and a character on a hoverboard over a water track",
+        "The two frames differ in rendering style (realistic lighting and bloom in A, flat outlined cel shading in B) and in HUD (minimap in A, none in B)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: orange-brown dusk city with hovering drone racers on an asphalt highway",
+        "Image B: purple sky with an outlined, cel-shaded hand-drawn look, a rider on a hoverboard and pine trees",
+        "Different art style, palette and HUD (minimap in A, none in B)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: realistic dusk city with bloom and voxel-style hover vehicles",
+        "Image B: cel-shaded, ink-outlined cartoon landscape with a rider on a hoverboard",
+        "Different settings, rendering styles and HUD (minimap in A, none in B)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hand-drawn, outlined, flat-shaded style with a human character on a hoverboard",
+        "Image B: dark neon cyberpunk city with voxel-like hover vehicles and a track minimap",
+        "Different palettes and lighting: warm sepia/orange dusk vs cool blue night with glowing highlights"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized outdoor mountain scene with a snowboard-like character and pine trees",
+        "Image B: dark futuristic city with hovering voxel vehicles and a minimap HUD",
+        "Different rendering and palette: flat outlined orange/teal vs. realistic bloom and wet asphalt"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized skateboarder in a pine-forest valley with a posterized, desaturated teal-grey palette",
+        "Image B: dusk cyberpunk city with orange silhouetted skyline and hover-racer vehicles",
+        "Different HUD and camera: B has a minimap and a low chase view, A has no HUD and a ring-framed view"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: low-poly sci-fi highway with hovering drones and a minimap HUD",
+        "Image B: hand-drawn, inked cel-shaded look with a cobblestone texture and a character on a hoverboard",
+        "Different rendering styles and subject matter (dark dusk cityscape vs. pastel stylized plaza)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic dusk city with bloom and a minimap",
+        "Image B: ink-outlined cartoon style with pine trees and a hoverboard rider",
+        "different art style, lighting and HUD"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: stylized outdoor mountains with pine trees and a skateboarder, flat posterized look",
+        "B: dusk city street with skyscrapers, sun glare, hovering voxel-style vehicles",
+        "B has a minimap HUD and realistic glossy asphalt, absent in A"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: blocky low-poly hovering drones on an asphalt city highway at dusk",
+        "Image B: stylized outlined snowboarder on an icy slope with pine trees and mountains",
+        "Different art styles and lighting: dark orange silhouettes vs. teal and peach cel-shaded look"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night mountain snowboard/hoverboard scene with stylized pine trees and a ring gate",
+        "Image B: dusk industrial city highway with hovering drone-style racers and a minimap HUD",
+        "Different art styles, palettes and vehicles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized ink-outlined, flat-shaded surfaces with a cobblestone ground and a hoverboard character",
+        "Image B: realistic bloom lighting, wet asphalt road and a dark night city of lit windows",
+        "Image B: voxel-style hover vehicles and a track minimap HUD that Image A lacks"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: muted teal posterized landscape with a human skateboarder",
+        "Image B: neon-lit night city with voxel-style hover vehicles and a minimap HUD",
+        "Different art style, palette and camera setup"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night mountain scene with a hoverboard rider, low-poly pine trees and a large ring gate",
+        "Image B: city highway with skyscrapers and voxel-style hover vehicles",
+        "Different art styles: painterly flat shading in A, blocky voxel models with a track minimap in B"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized low-poly night mountains with a character on a hoverboard and ring gates",
+        "Image B: voxel-style hovercraft racers on a sunset city highway with a minimap",
+        "Different art styles, lighting and vehicle types"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: orange industrial cityscape with racing drones on a highway",
+        "Image B: night mountain forest with a hoverboard rider and ring gates",
+        "Different vehicles, palette, environment and HUD (minimap only in A)"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: hand-drawn, inked cel-shaded outdoor valley with a character on a hoverboard and a water track",
+        "Image B: dark neon city at dusk with voxel-style hovercraft, wet asphalt, and a minimap HUD",
+        "Different art style, palette, lighting and vehicle type"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: hand-painted, ink-outlined stylized look with a skateboarder on a cobblestone plaza",
+        "Image B: realistic lit asphalt road, blocky hover vehicles and dense dark skyscrapers with a sun lens flare",
+        "Different HUD and rendering: Image B has a minimap loop, Image A has none"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a voxel-style futuristic city with hover vehicles and a minimap HUD",
+        "Image B is an outlined cel-shaded purple wilderness with a character on a hoverboard",
+        "The art style, palette and lighting differ completely"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dark neon cityscape with voxel-style hovercraft and a minimap HUD",
+        "Image B: outlined cel-shaded cartoon look with pine trees and a character on a hoverboard",
+        "Different palettes, lighting and rendering style (moody night glow vs flat pastel dusk)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: muted teal-grey landscape with a skateboarding human character and a ring gate",
+        "Image B: neon-lit night city with voxel-style hover-racers and a minimap HUD",
+        "Different art styles and palettes: flat outlined shading vs. glowing, reflective, saturated lighting"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a low-poly sci-fi highway with hover-drones and a minimap HUD; Image B is a hand-drawn, ink-outlined painterly style",
+        "Image B has a human rider on a hoverboard over cobblestone ground with stylized pine trees, with no vehicles or HUD",
+        "Different lighting and palette: dark dusk with orange silhouettes in A, soft pastel peach and mint in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: hand-inked cartoon outlines, a character on a hoverboard and a green hillside with pine trees",
+        "Image B: dark futuristic city with drone-style racers on an asphalt highway and a minimap HUD",
+        "Different palettes and rendering: pastel cel-shading in A, dim orange-brown lit low-poly in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized night mountain scene with low-poly pine trees and a character on a hoverboard",
+        "Image B: dusk city with voxel skyscrapers, hover racers and a minimap HUD",
+        "Different palettes, lighting, camera and art styles"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized outdoor mountains and pines with a skateboarder in a large ring, desaturated teal palette",
+        "Image B: dark futuristic city highway with hovering racer drones and a minimap in orange dusk lighting",
+        "Different art style, scenery, vehicles and HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: hovering drone racers on a dark city highway with a minimap HUD",
+        "Image B: snowboarder on an icy slope with pine trees and outlined, painterly rendering",
+        "Different palettes and art styles: blocky low-poly orange silhouettes vs teal and peach cel-shaded scenery"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: hand-drawn, outlined cel-shaded look with a pastel low-poly pine forest and a cobblestone ground",
+        "Image B: dark realistic city with lit-window skyscrapers, wet asphalt, lens flare and bloom",
+        "Different subjects: a skateboarding character versus hovering vehicles on a road, with a track minimap only in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hand-drawn, outlined, flat-shaded art with a character on a hoverboard on cobblestone ground",
+        "Image B: dark neon cyberpunk city with glowing, reflective asphalt and blocky hover-racers",
+        "Image B has a minimap HUD, and the lighting and palette differ completely from Image A's warm orange sunset and pastel green"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: voxel-style hover vehicles in a dark neon city with a minimap HUD",
+        "Image B: outlined cel-shaded character on a board in a mountain pine landscape",
+        "Completely different art style, lighting and palette"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark futuristic highway with hovering drone-style vehicles and a minimap HUD",
+        "Image B: hand-drawn, ink-outlined illustration look with a hoverboard rider on cobblestone",
+        "Different art style and scenery: night city skyline versus pastel low-poly pine trees and arches"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: orange-brown industrial city with hovering drone racers on an asphalt highway",
+        "Image B: purple sky, pine trees and an ink-outlined cel-shaded look with a rider on a hoverboard",
+        "Different HUD: minimap track outline in A, none in B"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: cel-shaded, hand-inked cartoon look with a pine forest and a character on a hoverboard",
+        "Image B: realistic dusk lighting, bloom and a dark city of blocky voxel-style hover vehicles",
+        "Different HUDs: Image B has a track minimap, Image A has none"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: voxel-style hovercraft racers in a dusk city with a minimap HUD",
+        "Image B: a skateboarder in a stylized, posterized mountain forest inside a giant ring",
+        "Different palettes and rendering: warm orange sunset glow vs. muted teal-gray flat-shaded look"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: voxel-style hovercraft racers on a sunset city highway with a minimap HUD",
+        "Image B: outlined, cel-shaded look with a character on a hoverboard in a purple forest",
+        "Different palettes and rendering: warm, photoreal bloom vs. flat toon shading"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a hand-drawn cel-shaded cartoon style with ink outlines; Image B uses a low-poly 3D look with realistic dusk lighting",
+        "Image A is a pine-tree landscape with a teal track and a hoverboard rider; Image B is a dark city highway with hovering drone-like racers",
+        "The HUD differs: B has a minimap in the corner, A has none"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: realistic dark city with bloom and voxel hovercraft",
+        "Image B: cel-shaded ink-outline style with grassy hills and a character on a hoverboard",
+        "Different HUD: minimap in A, none in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: night cyberpunk city with blocky hovercraft and a minimap HUD",
+        "Image B: outlined, painterly stylized mountain scene with a snowboard-like character and pine trees",
+        "Different palettes and rendering: dark neon-lit realistic lighting vs flat orange-teal outlined shading"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a hand-drawn, outlined painterly look with a skateboarder on a cobblestone plaza",
+        "Image B has a neon night city with voxel-style hover racers and a track minimap",
+        "Palette and lighting differ: warm sunset pastels vs. dark blue dusk with glowing lights"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: hoverboard rider, low-poly pine trees, snowy mountains at night",
+        "Image B: voxel-style hover racers on a city highway with skyscrapers",
+        "Different art styles, palettes and HUDs (B has a track minimap, A has none)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:16:01.341Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--golden--settle-60s",
+      "drift-and-deliver-port--noenv--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.917,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.917,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright, hazy daytime city with a realistic teal hatchback and a grid minimap",
+        "Image B: dark dusk sci-fi highway with hovering drone-style racers and a loop track outline",
+        "Different palette, lighting and vehicle styles"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dusk sci-fi hover-racer with neon, dark skyscrapers and a track-loop minimap",
+        "Image B is a daytime beige city street with a realistic teal car and a grid minimap",
+        "Different palette, vehicle style, lighting and HUD"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sci-fi hover racers on a dark futuristic highway with a looped track-outline HUD",
+        "Image B: realistic small car in a daytime-style city grid with a speedometer dial and grid minimap",
+        "Different vehicle types, building styles and HUD designs"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dark sci-fi city at sunset with hovering voxel racers and a loop-track minimap",
+        "B: bright pastel daytime street with a realistic teal car and a grid minimap",
+        "Different art style, lighting and vehicle types"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime city with a textured hatchback, Image B is a futuristic dusk highway with hovering drones",
+        "Different HUD: round speedometer and grid minimap vs. a looped track outline",
+        "Different palette and lighting: warm golden low-poly streets vs. dark brown silhouettes under a cloudy sky"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: futuristic hovercraft racers and a track-loop minimap",
+        "Image B: realistic city car, street lamps and traffic lights, grid minimap with speedometer",
+        "Different scenery, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a realistic daytime-style city with a teal hatchback, street lamps and a grid minimap; Image B has hovering drone-like racers on a dark elevated highway",
+        "Different HUD: orange analog speedometer and square minimap vs. a thin track-outline loop map",
+        "Different palette and setting: warm orange sunset with detailed buildings vs. brown silhouetted futuristic skyline under a cloudy dusk sky"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic city street with a teal hatchback, speedometer dial and grid minimap",
+        "Image B: futuristic hover-drone racers on an elevated highway with silhouetted orange skyline and outline track map",
+        "Different palette and HUD: warm sunset daylight in A, dark stormy sky in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: futuristic hover-craft racers on a dark track with a bloom-heavy sunset and a loop-shaped track minimap",
+        "B: realistic hatchback on a daytime city street with traffic lights, lampposts and a grid minimap with a speedometer dial",
+        "Different art styles: dark voxel sci-fi city vs bright low-poly pastel buildings"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic textured car in a daytime city with a grid minimap and dial speedometer",
+        "Image B: futuristic hovering racers on a night highway with a loop track minimap",
+        "Different palettes and scenery: warm sunset buildings against dark purple skyscrapers"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-scale city with a regular car, traffic lights and a grid minimap; Image B is a futuristic hover-racer scene with dark towers and a loop track map",
+        "Different HUD styles: a dial speedometer and grid minimap in A, a thin outline circuit map in B",
+        "Different palettes and lighting: warm orange sunset in A, cool blue dusk with glowing neon in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: futuristic hovercraft racers on a dark night-city track with a lens-flare sun and a loop-shaped track minimap",
+        "B: realistic compact car in a bright, daytime, cartoon-style street grid with traffic lights and a grid minimap with a speedometer dial",
+        "Different HUD style, vehicle type and lighting palette"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic city street with a compact car and a grid minimap",
+        "Image B: futuristic hover-drone racers on an elevated highway with a loop track outline",
+        "Different HUD, palette and setting (warm daytime city vs. dark dusk sci-fi)"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime beige low-poly city with a realistic teal car, versus Image B: dark neon sci-fi night city with hovering craft",
+        "Different HUD: grid minimap in A, loop track outline in B",
+        "Different palette and lighting: warm hazy sepia vs. cool blue-purple with glow and reflections"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright, hazy daytime city with a realistic teal car and a grid minimap",
+        "Image B: dark sci-fi city at sunset with hovering voxel vehicles and strong bloom",
+        "Different HUD: grid minimap versus loop track outline"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has futuristic hovering voxel racers on a dark sci-fi highway, Image B has a realistic small city car on streets with lampposts and traffic lights",
+        "different HUDs: a loop track outline in A, a speedometer dial and grid city minimap in B",
+        "different art and lighting: dark silhouetted skyscrapers with a sun flare in A, bright pastel buildings with an orange sky gradient in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic daytime-to-dusk city street with a small hatchback, speedometer dial and grid minimap",
+        "Image B shows futuristic hovering drones or racers on an elevated highway with silhouetted orange skyline and a loop track-outline HUD",
+        "Different vehicle style, scenery, palette and HUD design"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dark sci-fi hover racers on an elevated highway at dusk with orange silhouettes",
+        "Image B: bright daytime city street with a realistic teal hatchback and traffic lights",
+        "Different HUD: loop track outline vs grid minimap"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: hovering sci-fi pods on a dark futuristic highway with a lens-flare sunset",
+        "B: realistic small hatchback on a bright, flat-shaded daytime city street",
+        "Different HUDs: A has a loop track outline, B has a speedometer and a grid minimap"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime city with a scanned-looking small car and a grid minimap",
+        "Image B is a dark futuristic highway with hovering drone-like racers and a loop-track minimap",
+        "The two frames differ in palette, vehicle type, scenery and HUD style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime city with a realistic hatchback, traffic lights and a grid minimap",
+        "Image B: dark futuristic city with hovering vehicles, a glowing sun flare and a loop track minimap",
+        "Different HUD styles (analog speedometer vs. track outline) and different vehicle and building designs"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hover-racers with neon-lit dark skyscrapers and a track minimap",
+        "Image B: realistic daytime city car with warm sunset buildings and a gauge/grid minimap",
+        "Different vehicle style, palette, and HUD design"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic hovercraft race on a track with a loop minimap, while Image B is a realistic city driving scene with a hatchback",
+        "Different HUDs: a small loop track map versus a round speedometer and a grid city minimap",
+        "Different art and palette: dark neon purple/blue towers versus a warm orange sunset over a detailed street with lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a futuristic hover-racer on a neon night highway with a loop track minimap",
+        "Image B is a realistic city car on a daytime street with a speedometer and grid minimap",
+        "Different vehicle styles, lighting and HUD design"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic city street with a small hatchback, minimap and dial speedometer",
+        "Image B: futuristic hover drones on an elevated highway with dark dusk sky",
+        "Different HUD style (grid minimap vs. outline track map) and different palettes"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: futuristic hovering racers on an elevated highway with a dark orange silhouetted skyline",
+        "Image B: realistic small hatchback driving down a daytime city street with a minimap and speedometer",
+        "Different HUD styles (loop track outline vs. grid minimap and dial gauge) and different vehicle styles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hover-racer vehicles and dark neon skyscrapers at dusk",
+        "Image B: realistic hatchback in a daytime-style city with street lamps and traffic lights",
+        "Different HUDs: loop track minimap vs grid city minimap and speedometer dial"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hovering drones on a futuristic elevated highway with a track-outline minimap",
+        "Image B: realistic city street with a small hatchback, a dial speedometer and a grid minimap",
+        "Different vehicle types, scenery and HUD styles"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright daytime city with a realistic teal car and a grid minimap",
+        "Image B: dark dusk sci-fi highway with hovering drone racers and a loop track minimap",
+        "Different palette, lighting and vehicle style"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: futuristic hover-racers on a dark, glowing night-city track",
+        "Image B: realistic hatchback on a daytime city street with traffic lights and a grid minimap",
+        "Different HUD styles: a loop track outline in A, a dial speedometer and grid minimap in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic city car with a speedometer and grid minimap; Image B: hovering sci-fi vehicles with a loop-shaped track minimap",
+        "A has dense orange dusk and cartoon buildings with street lamps and traffic lights; B has dark skyscrapers with a bright sun flare and a wet textured road",
+        "Different HUD styles and vehicle designs: a hatchback in A against blocky hover craft in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-scale city with a small hatchback car and a grid minimap, while Image B has hovering sci-fi racers on a futuristic highway",
+        "Different lighting: warm golden sunset in A, cool dusk blue with neon glow in B",
+        "Different HUD: orange speedometer dial and grid map in A, a thin track-outline minimap in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: dark sci-fi night city with hovering voxel racers and strong sun glare",
+        "B: bright pastel daytime city street with a realistic teal car",
+        "Different HUD: A has a loop track outline, B has a grid minimap"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic city streets with a civilian car and a speedometer plus grid minimap",
+        "Image B: futuristic hover racers on a track with a loop-track minimap",
+        "Different scenery, palette and lighting: orange sunset streets versus a dark blue-purple sci-fi skyline"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: futuristic hover vehicles, dark neon dusk city with skyscraper towers",
+        "Image B: realistic teal car on a bright, hazy daytime street with traffic lights and lamps",
+        "Different HUDs: curved track outline minimap vs grid minimap"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime cartoon city with a realistic hatchback, speedometer dial and grid minimap",
+        "Image B: dark sci-fi city with hovering racers, bloom-heavy sunset and a loop track outline",
+        "Different HUD styles, vehicle types and lighting palettes"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has futuristic hovering voxel-style racers and a track-loop minimap, while Image B has a realistic small city car",
+        "Image A has a dark, gritty cyberpunk city with a sun flare, while Image B has bright, clean, cartoon-style buildings with street lamps and traffic lights",
+        "Different HUDs: a loop-shaped track map in A, a speedometer dial and grid city minimap in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: futuristic hovering racers with a dark, orange-silhouetted industrial skyline",
+        "Image B: realistic hatchback on a daytime city street with traffic lights and lamp posts",
+        "Different HUDs: track outline map in A, speedometer dial and grid minimap in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime city with a realistic hatchback, traffic lights and a grid minimap",
+        "Image B: dark sci-fi city with hovering racers, bloom and a loop track minimap",
+        "Different HUD styles and vehicle types"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a hovering futuristic racer on a neon night highway with a track-outline minimap",
+        "Image B is a realistic small car in a sunset daytime city with a speedometer dial and a grid minimap",
+        "Different art styles, lighting and HUD design"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-style daytime/sunset city with a small teal car, speedometer dial and grid minimap",
+        "Image B is a futuristic hover-drone race on an elevated highway with dark silhouetted orange towers and a loop track outline",
+        "Different vehicles, scenery, palette and HUD styles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright, flat-shaded daytime city with a realistic teal hatchback and a grid minimap",
+        "Image B: dark sunset sci-fi city with bloom, hovering pod vehicles and a wet textured road",
+        "Different HUD: grid minimap vs. loop track outline"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright, hazy daytime city with a realistic teal hatchback and a grid minimap",
+        "Image B is a dark neon-lit night scene with futuristic hovering racers and a loop-track minimap",
+        "The palette, lighting, vehicle style and HUD design differ throughout"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime city with a street-level hatchback, Image B a futuristic hover-drone race on an elevated highway",
+        "Different HUDs: dial speedometer and grid minimap vs. outline track-loop map",
+        "Different palettes and lighting: warm golden sunset with lit buildings vs. dark overcast sky with silhouetted orange-brown skyline"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dark dusk sci-fi highway with hovering drones and orange silhouetted skyline",
+        "Image B: bright daytime city street with a realistic teal car and traffic lights",
+        "Different HUDs: a loop track outline in A, a grid minimap in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-style city street with a teal hatchback, sunset sky and a grid minimap",
+        "Image B shows hovering sci-fi vehicles and a stone arch on a dark highway with a loop-track minimap",
+        "Different HUD styles (analog speedometer vs. track outline) and different lighting and palette"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hover racers, dark neon skyscrapers, circuit-loop minimap",
+        "Image B: realistic teal hatchback in a daytime city with streetlamps and traffic lights, grid minimap and gauge",
+        "Different art style, palette and HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: futuristic hovering voxel vehicles on a dark, wet, glowing sci-fi highway",
+        "B: realistic hatchback on a bright, flat-shaded daytime city street with traffic lights and lamps",
+        "different HUD: A has a loop track minimap, B has a speedometer dial and a grid city minimap"
+      ]
+    }
+  ]
+}
