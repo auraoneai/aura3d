@@ -33,6 +33,11 @@ for spec in ${AURA3D_SPECS}; do
     export DISPLAY=:99 AURA3D_HEADED_XVFB=1
     sleep 2
     echo "[task-run] headed Chromium under Xvfb (pid ${XVFB_PID}, DISPLAY=${DISPLAY})"
+  elif [[ "${spec}" =~ ^@env-(GL_[A-Z_]+)=([0-9][0-9,]*)$ ]]; then
+    # GU47 phase 7 (g09): capture knobs (GL_TEX_WAIT_S, GL_SETTLE, GL_PAIR_MS) ride in SPECS_CSV as `@env-NAME=digits`
+    # sentinels, because the task yaml passes no env. Only GL_* names and digit/comma values are accepted.
+    export "${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
+    echo "[task-run] env ${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
   else
     FILTERED_SPECS="${FILTERED_SPECS:+${FILTERED_SPECS} }${spec}"
   fi

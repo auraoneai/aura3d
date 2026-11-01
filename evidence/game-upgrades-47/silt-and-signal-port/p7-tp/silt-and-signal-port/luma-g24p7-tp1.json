@@ -1,0 +1,26 @@
+[
+ {
+  "target": "g24-texpending-default",
+  "wait": 25000,
+  "total": 33,
+  "pending": 14
+ },
+ {
+  "target": "g24-texpending-default",
+  "wait": 95000,
+  "total": 33,
+  "pending": 14
+ },
+ {
+  "target": "g24-texpending-ch4",
+  "wait": 25000,
+  "total": 22,
+  "pending": 5
+ },
+ {
+  "target": "g24-texpending-ch4",
+  "wait": 95000,
+  "total": 22,
+  "pending": 5
+ }
+]
