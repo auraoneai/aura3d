@@ -68,6 +68,7 @@ describe("GU47 game-checks registration", () => {
     // 4.7.6: every live game passes these, so they gate as errors; the WP-36 and band checks still warn.
     expect(GU47_SEVERITY_BY_CHECK["art-direction"]).toBe("error");
     expect(GU47_SEVERITY_BY_CHECK["look-identity"]).toBe("error");
+    expect(GU47_SEVERITY_BY_CHECK["prop-exclusivity"]).toBe("error");
   });
 });
 

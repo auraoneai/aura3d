@@ -765,7 +765,8 @@ export const GU47_SEVERITY_BY_CHECK = Object.freeze({
   "art-direction": "error",
   "look-identity": "error",
   "borrowed-asset": GU47_CHECK_SEVERITY,
-  "prop-exclusivity": GU47_CHECK_SEVERITY,
+  // 4.7.8: no live game shares a prop file with another any more.
+  "prop-exclusivity": "error",
   "luma-band": GU47_CHECK_SEVERITY
 });
 const gu47Severity = (check) => GU47_SEVERITY_BY_CHECK[check] ?? GU47_CHECK_SEVERITY;
