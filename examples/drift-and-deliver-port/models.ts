@@ -14,9 +14,6 @@ const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/models/$
 
 export const MODEL_ASSETS = defineModelAssets({
   courier: glb("courier.glb", "5bad4129b1109d866de42b3666bc482073a9a08ed03c7d901f543add48f2cbba"),
-  // GU47 WP-36 gridlockCourierTeal (GC-M3): Meshy retexture of courier.glb (teal, cream roof, orange stripe), baked to
-  // the same +z / y = 0 / 1.9-unit convention; the shift look drives it, `?look=original` keeps courier.glb
-  courierTeal: glb("courierTeal.glb", "4a89b4aa70c0951b4874c3a396aa18701f0aecf9a2c2dc8cc49b6594c5f18c06"),
   sedan: glb("sedan.glb", "fac209266bd3ed4195b3a809025a773017f64364be1a7641ffa0846945fed39b"),
   hatch: glb("hatch.glb", "4bda108ecb13d9890661e4f9a611904f7c32634d77f4e7baa364bcc880193c98"),
   van: glb("van.glb", "327356a17ddfb9d7c54eb84f8e57a062e451f6228594dad7914f47e80e2978c9"),
@@ -33,15 +30,15 @@ export const MODEL_ASSETS = defineModelAssets({
 }, { license: LICENSE, queryParam: null }).refs;
 
 export type ModelKey = keyof typeof MODEL_ASSETS;
-export type PropKey = Exclude<ModelKey, CarKey>;
+export type PropKey = Exclude<ModelKey, "courier" | "sedan" | "hatch" | "van" | "truck">;
 
-type CarKey = "courier" | "courierTeal" | "sedan" | "hatch" | "van" | "truck";
+type CarKey = "courier" | "sedan" | "hatch" | "van" | "truck";
 
 const GLB_LENGTH = 1.9;
 /** Target length along the car in metres. The car GLBs are baked to face +z with their lowest point at y = 0. */
-const CAR_LENGTH: Record<CarKey, number> = { courier: 4.4, courierTeal: 4.4, sedan: 4.5, hatch: 3.7, van: 4.7, truck: 6.0 };
+const CAR_LENGTH: Record<CarKey, number> = { courier: 4.4, sedan: 4.5, hatch: 3.7, van: 4.7, truck: 6.0 };
 
-export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "courier" | "courierTeal">> = { sedan: "sedan", hatch: "hatch", van: "van", pickup: "truck" };
+export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "courier">> = { sedan: "sedan", hatch: "hatch", van: "van", pickup: "truck" };
 
 /** A runtime-addressable car model: the app moves it with `nodes.require(id).setPosition/setRotation`. */
 /**
@@ -70,7 +67,7 @@ export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
  * Traffic of one car kind as ONE instanced model (one draw per kind instead of one node per car). The app moves the cars
  * with `nodes.require(id).setInstances(transforms)` every frame; `start` holds the first transforms.
  */
-export function trafficInstances(id: string, key: Exclude<CarKey, "courier" | "courierTeal">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[], glossy = false) {
+export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[], glossy = false) {
   const scale = carScale(key);
   // GU47 WP-28 GC-L2: traffic casts in the shift look (one instanced shadow draw per kind and cascade)
   return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false, ...(glossy ? { materialOverrides: [TRAFFIC_PAINT] } : {}) }).runtime({ id });
