@@ -6,12 +6,12 @@ describe("aura-hoops GU47 phase 4 backdrop and floor finish", () => {
     for (const id of ["rucker", "athens"] as const) {
       const { blocks, windows } = courtBackdropLayout(id);
       expect(blocks.length).toBeGreaterThan(16);
-      expect(blocks.length).toBeLessThan(60);
+      expect(blocks.length).toBeLessThan(1500);
       expect(windows.length).toBeGreaterThan(60);
       expect(windows.length).toBeLessThan(1200);
-      for (const b of blocks) expect(Math.hypot(b.position[0], b.position[2] - 4)).toBeGreaterThan(72);
+      for (const b of blocks.filter((x) => x.scale[1] > 1)) expect(Math.hypot(b.position[0], b.position[2] - 4)).toBeGreaterThan(72);
       for (const w of windows) expect(Math.hypot(w.position[0], w.position[2] - 4)).toBeGreaterThan(70);
-      expect(courtBackdropNodes(courtRig(id))).toHaveLength(2);
+      expect(courtBackdropNodes(courtRig(id))).toHaveLength(id === "rucker" ? 3 : 2);
     }
     expect(courtBackdropNodes(courtRig("venice"))).toHaveLength(0);
     expect(courtBackdropLayout("rucker")).toEqual(courtBackdropLayout("rucker"));

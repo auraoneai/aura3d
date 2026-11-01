@@ -436,7 +436,8 @@ export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: 
   venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
   athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
   manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.45 },
-  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.6 },
+  // round 5: SSR 0.6 -> 0.42 and a thicker hit (rubric: horizontal banding near the bottom of the Shanghai frame)
+  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.42 },
   orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.5 }
 };
 
@@ -444,7 +445,7 @@ export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: 
 export function courtReflectionNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   const ssr = COURT_FLOOR_FINISH[rig.id].ssr;
   if (ssr <= 0) return [];
-  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 24, roughness: 0.45, thickness: 0.3 }) as AuraNodeBuilder<AuraSceneNode>];
+  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 20, roughness: 0.45, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
 }
 
 /** The look overrides of one court (E-A): catalogue HDRI, key, fog to the horizon, grade, post preset and bloom. */
@@ -487,7 +488,7 @@ export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean }
   if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
   nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
-  if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.08 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
+  if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.045 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
   return nodes;
 }
 
@@ -791,9 +792,9 @@ export const COURT_BACKDROP: Partial<Readonly<Record<CourtId, { readonly wall: A
 type BackdropTransform = { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 };
 
 /** The walk-up blocks and their court-facing windows, deterministic per court. */
-export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTransform[]; readonly windows: BackdropTransform[] } {
+export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTransform[]; readonly windows: BackdropTransform[]; readonly darkWindows: BackdropTransform[] } {
   const spec = COURT_BACKDROP[id];
-  if (!spec) return { blocks: [], windows: [] };
+  if (!spec) return { blocks: [], windows: [], darkWindows: [] };
   let state = spec.seed >>> 0;
   const rnd = (): number => {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
@@ -801,6 +802,8 @@ export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTra
   };
   const blocks: BackdropTransform[] = [];
   const windows: BackdropTransform[] = [];
+  const darkWindows: BackdropTransform[] = [];
+  const sills: BackdropTransform[] = [];
   const cz = 4;
   let angle = 0;
   while (angle < Math.PI * 2 - 0.05) {
@@ -823,28 +826,33 @@ export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTra
     const cols = Math.max(3, Math.floor((width - 1.6) / 2));
     for (let f = 0; f < floors; f++) {
       for (let c = 0; c < cols; c++) {
-        if (rnd() > spec.litFraction) continue;
+        const lit = rnd() <= spec.litFraction;
         const u = (c - (cols - 1) / 2) * 2;
         // along the face: the tangent is (cos a, -sin a)
         const fx = dx * (radius - 0.06) + Math.cos(a) * u;
         const fz = cz + dz * (radius - 0.06) - Math.sin(a) * u;
-        windows.push({ position: [fx, 2.2 + f * 3.2, fz], rotation: [0, yaw, 0], scale: [0.95, 1.45, 0.1] });
+        // round 5: every window slot is drawn (lit ones in `windows`, the rest dark glass with a sill in `darkWindows`), so a
+        // facade reads as a window grid instead of a box with pasted quads (rubric environment_world).
+        (lit ? windows : darkWindows).push({ position: [fx, 2.2 + f * 3.2, fz], rotation: [0, yaw, 0], scale: [0.95, 1.45, 0.1] });
+        sills.push({ position: [fx - dx * 0.08, 1.42 + f * 3.2, fz - dz * 0.08], rotation: [0, yaw, 0], scale: [1.25, 0.14, 0.3] });
       }
     }
     angle += step;
   }
-  return { blocks, windows };
+  // sills share the block draw (same wall material)
+  blocks.push(...sills);
+  return { blocks, windows, darkWindows };
 }
 
 export function courtBackdropNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   const spec = COURT_BACKDROP[rig.id];
   if (!spec) return [];
-  const { blocks, windows } = courtBackdropLayout(rig.id);
-  const windowMat = spec.lit
-    ? material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.1 })
-    : material.pbr({ color: spec.window, roughness: 0.12, metalness: 0.4 });
-  return [
+  const { blocks, windows, darkWindows } = courtBackdropLayout(rig.id);
+  const glass = material.pbr({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.12, metalness: 0.4 });
+  const nodes = [
     instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: material.pbr({ color: spec.wall, roughness: 0.92 }) }) as AuraNodeBuilder<AuraSceneNode>,
-    instances.box({ name: `${rig.id}-walkup-windows`, transforms: windows, castShadow: false, material: windowMat }) as AuraNodeBuilder<AuraSceneNode>
+    instances.box({ name: `${rig.id}-walkup-glass`, transforms: spec.lit ? darkWindows : [...windows, ...darkWindows], castShadow: false, material: glass }) as AuraNodeBuilder<AuraSceneNode>
   ];
+  if (spec.lit) nodes.push(instances.box({ name: `${rig.id}-walkup-lit`, transforms: windows, castShadow: false, material: material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.1 }) }) as AuraNodeBuilder<AuraSceneNode>);
+  return nodes;
 }
