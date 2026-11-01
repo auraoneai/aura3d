@@ -18,7 +18,13 @@ const FRAGMENTS = {
   original: { track: trackFragment(false), mineral: mineralFragment(false), solid: solidFragment(false) }
 } as const;
 
-export const trackSpec = (look: OrbitLook = "gouache"): CustomSpec => ({ receiveShadow: true, glsl: { vertex: TRACK_VERTEX, fragment: FRAGMENTS[look].track }, side: "double" });
+/**
+ * GU47 phase 4: gouache custom surfaces do not sample the key's cascade map. On the software-WebGL2 runner the
+ * `a3dSunShadowAuto` term read fully shadowed on every track pixel (`?dbg=shadow` captures g15p4-r2/r3, with and
+ * without the ribbons casting), so the painted road never got its key light and every frame read "flat, ambient".
+ * Grounding comes from the soft rider shadow quads; `?look=original` keeps receiving.
+ */
+export const trackSpec = (look: OrbitLook = "gouache"): CustomSpec => ({ receiveShadow: look === "original", glsl: { vertex: TRACK_VERTEX, fragment: FRAGMENTS[look].track }, side: "double" });
 
 export interface SolidExtra {
   readonly transparent?: boolean;
@@ -27,7 +33,7 @@ export interface SolidExtra {
 }
 
 export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}, look: OrbitLook = "gouache"): CustomSpec => ({
-  receiveShadow: true,
+  receiveShadow: look === "original",
   glsl: { vertex: SOLID_VERTEX, fragment: FRAGMENTS[look].solid },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
@@ -40,7 +46,7 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, band
 });
 
 export const mineralSpec = (base: Rgb, opal: boolean, look: OrbitLook = "gouache"): CustomSpec => ({
-  receiveShadow: true,
+  receiveShadow: look === "original",
   glsl: { vertex: MINERAL_VERTEX, fragment: FRAGMENTS[look].mineral },
   uniforms: { baseColor: { type: "color3", value: [...base] }, opal: { type: "f32", value: opal ? 1 : 0 } },
   side: "double"

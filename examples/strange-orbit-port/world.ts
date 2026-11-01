@@ -566,7 +566,9 @@ export function buildWorld(options: WorldOptions): World {
       // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
       const tint = look === "gouache"
         ? [{
-          ...(i === 0 ? { clearcoat: 1, clearcoatRoughness: 0.12 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
+          // GU47 phase 4 (rubric: "near-uniform white, blown, fully matte"): the hero's white enamel is knocked down a
+          // touch and every rider mirrors the captured nebula/giant probe harder (envMapIntensity), so the fairings read glossy.
+          ...(i === 0 ? { color: "#e2dcd4", colorMode: "multiply" as const, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.8 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const, clearcoat: 0.6, clearcoatRoughness: 0.18, envMapIntensity: 1.5 }),
           rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
@@ -638,7 +640,7 @@ export function buildWorld(options: WorldOptions): World {
         normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
         uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
         indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
-      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.85 : 0.65)) }).runtime({ id: `rider-shadow-${i}` }));
+      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.95 : 0.8)) }).runtime({ id: `rider-shadow-${i}` }));
     }
   }
 

@@ -65,7 +65,7 @@ export function lightPosition(elevationDeg: number, azimuthDeg: number, distance
  * Gas giant placement (SO47-E2): outside the orbit ring on -X, so at the start grid (riders face +Z, left is +X) it
  * fills the right of the sky while the 18-degree key comes from the left.
  */
-const GIANT_POSITION: Vec3 = [-880, 70, 120];
+export const GIANT_POSITION: Vec3 = [-880, 70, 120];
 
 export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
   gouache: {
@@ -83,7 +83,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     environment: { kind: "capture", intensity: 1.0 },
     // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.0017 hazes
     // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
-    fog: { color: "#3b3460", density: 0.0017, maxOpacity: 0.78, heightMist: 1 },
+    fog: { color: "#3b3460", density: 0.0021, maxOpacity: 0.78, heightMist: 1 },
     post: {
       // GU47 phase 3 (rubric post 4.5: "milky veil"): less bloom, more contrast.
       bloom: { intensity: 0.22, threshold: 0.8, radius: 0.5 },
@@ -126,8 +126,11 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
 };
 
 /** Linear output exposure multiplier for a look (`output.exposure`). */
-export function lookExposure(look: OrbitLook): number {
-  return 2 ** LOOKS[look].exposureEV;
+export function lookExposure(look: OrbitLook, search?: string | null): number {
+  // `?ev=<n>` overrides the EV for calibration captures on the software-WebGL2 runner (debug only, -2..4).
+  const raw = search ? new URLSearchParams(search).get("ev") : null;
+  const ev = raw === null ? Number.NaN : Number(raw);
+  return 2 ** (Number.isFinite(ev) && ev >= -2 && ev <= 4 ? ev : LOOKS[look].exposureEV);
 }
 
 export interface SectorRow {

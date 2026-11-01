@@ -27,7 +27,12 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
 #speed { font-size: 46px !important; line-height: 1; }
 #order li.you { color: var(--ember); }
 #banner { font-family: "Graphik Web", sans-serif; font-size: 20px; font-weight: 500; color: var(--jade); text-shadow: 0 0 16px rgba(127, 224, 207, 0.55); }
-#notice { font-family: "Graphik Web", sans-serif; font-size: 22px; font-weight: 500; color: var(--warm); }
+#notice { font-family: "Graphik Web", sans-serif; font-size: 22px; font-weight: 500; color: var(--warm); top: 150px; bottom: auto; }
+/* GU47 phase 4 (rubric ui_hud/composition): tips sit under the banner, never over the bike; the HUD draws above the
+   countdown/results letterbox bars (z 2) instead of being clipped by them; the countdown digit sits in the lower third,
+   off the gas giant. */
+#hud { z-index: 3; }
+#countdown { place-items: end center; padding-bottom: 12vh; box-sizing: border-box; }
 .meter { height: 8px; border-radius: 4px; background: rgba(160, 222, 214, 0.14); }
 .meter > i { background: linear-gradient(90deg, var(--jade), var(--ember)); box-shadow: 0 0 12px rgba(127, 224, 207, 0.5); }
 #progress { height: 4px; }
@@ -56,7 +61,7 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
   #banner { left: max(8px, env(safe-area-inset-left)); transform: none; max-width: calc(100% - 148px); font-size: 16px; }
   #hud .bottom { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); gap: 8px; }
   #speed { font-size: 34px !important; }
-  #notice { font-size: 18px; max-width: 92vw; }
+  #notice { font-size: 18px; max-width: 92vw; top: 196px; }
   .keys { display: none; }
   #menu .panel { background: linear-gradient(180deg, rgba(7, 11, 18, 0.62), rgba(7, 11, 18, 0.5)); border-radius: 14px; padding: 14px; width: min(480px, calc(100vw - 24px)); backdrop-filter: blur(6px); }
   .orbit-tag { left: max(14px, env(safe-area-inset-left)); right: auto; bottom: max(16px, env(safe-area-inset-bottom)); font-size: 20px; }
