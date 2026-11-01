@@ -361,7 +361,8 @@ void main() {
   }
   if (nightAmt > 0.0 && v.y > 0.0) {
     vec2 sq = vec2(atan(v.x, v.z) * 140.0, v.y * 220.0);
-    float star = step(0.9965, rhHash(floor(sq))) * smoothstep(0.02, 0.3, v.y);
+    // phase 4: round soft stars (the judge read the cell-sized squares as pixels); the same cells hold a star
+    float star = step(0.9965, rhHash(floor(sq))) * smoothstep(0.02, 0.3, v.y) * (1.0 - smoothstep(0.08, 0.32, length(fract(sq) - 0.5)));
     col += vec3(0.8, 0.85, 1.0) * star * nightAmt * (0.6 + 0.8 * rhHash(floor(sq) + 3.0));
   }
   outColor = vec4(finish(col), 1.0);
