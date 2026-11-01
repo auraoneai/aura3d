@@ -1015,7 +1015,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       // Phase 4 (sibling judge: "same centred rear chase camera" was the top tell against roadster-rush and heatsink-port): the
       // eye rides 2.1 m out over the sea-side lanes, so the car sits off the vanishing point and the coast fills one side.
       const offCentre = row ? 2.1 * look.seaSide : 0;
-      const chaseBack = row ? 6.3 : 8.5, eyeDrop = row ? 0.55 : 0, lookLift = row ? 0.25 : 0;
+      // Phase 5 (4.7.3, sibling tell vs heatsink-port "rear chase camera on a guardrailed road"): the eye rides 1.1 m higher and
+      // looks further down onto the car, a three-quarter-from-above view over the sea-side lanes instead of a bumper-height chase.
+      const chaseBack = row ? 6.6 : 8.5, eyeDrop = row ? -0.55 : 0, lookLift = row ? 0.1 : 0;
       return {
         vehicleInstances: allSlots.length,
         reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); signGate = 0; gateSigns.forEach((sign, k) => sign.setVisible(k === 0)); },

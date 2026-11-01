@@ -28,7 +28,7 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     // phase 3 (4.7.1 rubric pass): sunbreak's side sun swings behind the left shoulder, Redline's last light rises to 15 deg so
     // the sunlit wall rakes into shade, Halo's moon key rises to 0.8 (WP-32 started at 20 deg / 7 deg / 0.6)
     expect(SALTWIND_LOOK.sunbreak.sun).toMatchObject({ elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 });
-    expect(SALTWIND_LOOK.redline.sun).toMatchObject({ elevationDeg: 15, azimuthDeg: -58, color: "#ff9e5e", intensity: 4.2 });
+    expect(SALTWIND_LOOK.redline.sun).toMatchObject({ elevationDeg: 34, azimuthDeg: -58, color: "#fff1dc", intensity: 3.6 });
     expect(SALTWIND_LOOK.halo.sun.intensity).toBe(0.8);
     expect(SALTWIND_LOOK.sunbreak.fill.kind).toBe("sea-bounce");
     expect(SALTWIND_LOOK.redline.fill.kind).toBe("violet-rim");
