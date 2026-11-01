@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { renderer, scene } from "../../../packages/engine/src";
 import { ssrRoughnessGate } from "../../../packages/engine/src/agent-api/rendererDiagnostics";
 import { COURT_FLOOR_FINISH, courtBackdropLayout, courtBackdropNodes, courtRig, courtReflectionNodes } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
 
@@ -32,6 +33,8 @@ describe("aura-hoops GU47 phase 4 backdrop and floor finish", () => {
       const built = (node as unknown as { readonly value: { readonly roughness?: number } }).value;
       expect(built.roughness).toBe(0.3);
       expect(ssrRoughnessGate(built.roughness)).toBe(1);
+      const report = renderer.diagnostics(scene().add(node));
+      expect(report.warnings.some((w) => w.startsWith("SSR_ROUGHNESS_GATED"))).toBe(false);
     }
   });
 });
