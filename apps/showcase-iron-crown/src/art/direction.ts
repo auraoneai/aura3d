@@ -70,7 +70,6 @@ export default defineArtDirection({
     // aura.assets.json provenance and the lane report.
     { role: "prop", assetKey: "ironcrownThrone", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownKingStatue", maxTriangles: 28000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownMonasteryLion", maxTriangles: 48000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "ironcrownSearchlight", maxTriangles: 19000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownRooftopAircon", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownRooftopPowerBox", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
@@ -79,10 +78,13 @@ export default defineArtDirection({
     { role: "prop", assetKey: "ironcrownDockCrate", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownDockBarrel", maxTriangles: 11000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownColosseumBust", maxTriangles: 18000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownAirbaseFuelTank", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownAirbaseDrum", maxTriangles: 3000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "ironcrownAirbaseAmmoCrates", maxTriangles: 11000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // Still borrowed: no CC0 catalog asset fits these without degrading the venue (lane report, Phase 9).
+    // Phase 9b: the Airstrip and Monastery keep their 4.7.7 props (the CC0 swaps lost a blind panel against 4.7.7).
+    { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
+    { role: "set-dressing", assetKey: "auroraPadBeacon", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
+    { ...MESHY_PROP, assetKey: "bunkerBarrelMeshy" },
+    { ...MESHY_PROP, assetKey: "bunkerCrateMeshy" },
+    { ...MESHY_PROP_E, assetKey: "clashDragonStatueMeshy" },
     { ...MESHY_PROP_E, assetKey: "courierNeonStorefrontMeshy" },
     { ...MESHY_PROP, role: "world", assetKey: "gullsiegeGatehouseMeshy" },
     { ...MESHY_PROP, role: "world", assetKey: "gullsiegeWatchtowerMeshy" },

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "f421e21616c0151340aea6a037af1e06cc2371aafb1deea72709b94b378f1ef2",
+  "sourceSha256": "a631bbe03c8ddcd6e0fef5941b3d5ebbe66331f1b428eed3b32c3bde223b2845",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -657,13 +657,6 @@
         "maxTextureSize": 1024
       },
       {
-        "role": "prop",
-        "assetKey": "ironcrownMonasteryLion",
-        "maxTriangles": 48000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
         "role": "set-dressing",
         "assetKey": "ironcrownSearchlight",
         "maxTriangles": 19000,
@@ -721,24 +714,38 @@
       },
       {
         "role": "prop",
-        "assetKey": "ironcrownAirbaseFuelTank",
-        "maxTriangles": 16000,
+        "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "maxTextureSize": 2048,
+        "assetKey": "auroraFuelDepotTankMeshy"
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "auroraPadBeacon",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       },
       {
         "role": "prop",
-        "assetKey": "ironcrownAirbaseDrum",
-        "maxTriangles": 3000,
+        "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "maxTextureSize": 2048,
+        "assetKey": "bunkerBarrelMeshy"
       },
       {
         "role": "prop",
-        "assetKey": "ironcrownAirbaseAmmoCrates",
-        "maxTriangles": 11000,
+        "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "maxTextureSize": 2048,
+        "assetKey": "bunkerCrateMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048,
+        "assetKey": "clashDragonStatueMeshy"
       },
       {
         "role": "prop",

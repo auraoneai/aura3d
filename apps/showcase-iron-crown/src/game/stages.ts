@@ -400,17 +400,17 @@ const AIRBASE = makeStage(
   [
     modelProp(stageAssets.patrolJetAircraftMeshy, "ab-jet-center", [0.4, 0.15, -3.0], 3.8, -0.35),
     modelProp(stageAssets.patrolCoastalRadarTowerMeshy, "ab-tower-l", [-4.0, 0, -2.8], 3.5, 0.25),
-    modelProp(assets.ironcrownAirbaseFuelTank, "ab-fuel-r", [3.8, 0, -2.6], 2.6, -0.2),
-    modelProp(assets.ironcrownAirbaseDrum, "ab-drum-1", [-2.6, 0, -1.5], 0.85, 0.2),
-    modelProp(assets.ironcrownAirbaseDrum, "ab-drum-2", [-2.1, 0, -1.45], 0.85, -0.4),
-    modelProp(assets.ironcrownAirbaseAmmoCrates, "ab-crate-1", [2.5, 0, -1.5], 0.95, 0.3),
-    modelProp(assets.ironcrownSearchlight, "ab-light-l", [-3.5, 0, -1.25], 0.9, 0),
-    modelProp(assets.ironcrownSearchlight, "ab-light-r", [3.5, 0, -1.25], 0.9, 0)
+    modelProp(stageAssets.auroraFuelDepotTankMeshy, "ab-fuel-r", [3.8, 0, -2.6], 2.6, -0.2),
+    modelProp(stageAssets.bunkerBarrelMeshy, "ab-drum-1", [-2.6, 0, -1.5], 0.85, 0.2),
+    modelProp(stageAssets.bunkerBarrelMeshy, "ab-drum-2", [-2.1, 0, -1.45], 0.85, -0.4),
+    modelProp(stageAssets.bunkerCrateMeshy, "ab-crate-1", [2.5, 0, -1.5], 0.95, 0.3),
+    modelProp(stageAssets.auroraPadBeacon, "ab-light-l", [-3.5, 0, -1.25], 0.9, 0),
+    modelProp(stageAssets.auroraPadBeacon, "ab-light-r", [3.5, 0, -1.25], 0.9, 0)
   ]
 );
 
 /* ------------------------------------------------------------------ */
-/* 5 · Himalayan monastery — cold air, temple, lion guardians.         */
+/* 5 · Himalayan monastery — cold air, temple, dragon guardians.       */
 /* ------------------------------------------------------------------ */
 const MONASTERY = makeStage(
   "himalayan-monastery",
@@ -420,8 +420,8 @@ const MONASTERY = makeStage(
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
     modelProp(stageAssets.showcaseTeaHouse, "mo-monastery", [0, 0, -3.4], 4.2, 0),
-    modelProp(assets.ironcrownMonasteryLion, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
-    modelProp(assets.ironcrownMonasteryLion, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
+    modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
+    modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
     modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
     modelProp(assets.ironcrownBrazierPylon, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
     modelProp(stageAssets.propPineTree, "mo-pine-l", [-4.3, 0, -2.6], 3.2, 0.2),

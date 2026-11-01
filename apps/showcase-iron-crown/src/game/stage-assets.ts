@@ -8,6 +8,718 @@ import { defineAuraAssets } from "@aura3d/engine";
  * matches the shared catalog and that every `stageAssets.<id>` used in stages.ts is defined here.
  */
 export const stageAssets = defineAuraAssets({
+  "auroraFuelDepotTankMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auroraFuelDepotTankMeshy.2c8aec52.glb",
+    hash: "sha256-34ac7757254ddceb6bc2e78aae86a30a05519f7485de7e34393749bbb470ac5e",
+    bounds: [
+      1.903,
+      1.369,
+      0.86
+    ],
+    sizeBytes: 1457144,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aurora-fuel-depot-tank-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aurora Lander padside cryogenic fuel depot) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:46:15.110Z",
+        "evidence": [
+          "aura-evidence/meshy/auroraFuelDepotTankMeshy.rights.22dc5b69488a.json",
+          "aura-evidence/meshy/auroraFuelDepotTankMeshy.metadata.2386e1d62cb5.json",
+          "public/aura-assets/auroraFuelDepotTankMeshy.meshy-candidate.c50bbccb.png"
+        ],
+        "checkedAt": "2026-10-14T20:46:15.110Z"
+      },
+      "sourcePath": "artifacts/meshy/aurora-fuel-depot-tank-v1/model.glb",
+      "outputPath": "public/aura-assets/auroraFuelDepotTankMeshy.2c8aec52.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.953,
+          -0.684,
+          -0.431
+        ],
+        "max": [
+          0.95,
+          0.684,
+          0.429
+        ],
+        "size": [
+          1.903,
+          1.369,
+          0.86
+        ],
+        "center": [
+          -0.002,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auroraFuelDepotTankMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/auroraFuelDepotTankMeshy.meshy-candidate.c50bbccb.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-c50bbccb2c1b9dfb2e0ebe52a85af4d3544d1176d7bfe297fb8904ef48ac9200",
+        "checkedAt": "2026-10-14T21:03:11.495Z"
+      }
+    },
+  },
+  "auroraPadBeacon": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auroraPadBeacon.c94a5b6b.glb",
+    hash: "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+    bounds: [
+      0.6,
+      0.98,
+      0.52
+    ],
+    sizeBytes: 7948,
+    metadata: {
+      "materials": [
+        "base-material",
+        "pylon-material",
+        "lamp-material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 3,
+        "materialCount": 3,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "base",
+          "pylon",
+          "lamp"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 3 nodes across 3 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-aurora-lander/assets/models/auroraPadBeacon.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/scripts/build-models.mjs",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "retrievedAt": "2026-08-23T18:00:57Z",
+        "checkedAt": "2026-08-23T18:00:57Z"
+      },
+      "sourcePath": "apps/showcase-aurora-lander/assets/models/auroraPadBeacon.glb",
+      "outputPath": "public/aura-assets/auroraPadBeacon.c94a5b6b.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -0.3,
+          0,
+          -0.26
+        ],
+        "max": [
+          0.3,
+          0.98,
+          0.26
+        ],
+        "size": [
+          0.6,
+          0.98,
+          0.52
+        ],
+        "center": [
+          0,
+          0.49,
+          0
+        ],
+        "maxDimension": 0.98,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "base-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "pylon-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "lamp-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-23T18:02:05.938Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraPadBeacon",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/auroraPadBeacon.png",
+          "sha256": "sha256-1b4cb4faa10178a636c554aec3ad001e9f4991d57f0f4bd38a6900b755859eb0",
+          "assetHash": "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+          "checkedAt": "2026-08-23T18:02:05.938Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraPadBeacon"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "base",
+        "pylon",
+        "lamp"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auroraPadBeacon.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Original grounded polar pad beacon with readable base, pylon, and lamp silhouette; paired beacons visibly identify landing zones in current desktop and mobile artifacts.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/auroraPadBeacon.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraPadBeacon",
+        "sha256": "sha256-1b4cb4faa10178a636c554aec3ad001e9f4991d57f0f4bd38a6900b755859eb0",
+        "assetHash": "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 23,
+        "checkedAt": "2026-08-23T18:02:05.938Z",
+        "foregroundBounds": {
+          "x": 258,
+          "y": 155,
+          "width": 239,
+          "height": 445
+        }
+      }
+    },
+  },
+  "bunkerBarrelMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bunkerBarrelMeshy.d1eec7e3.glb",
+    hash: "sha256-9235ea2c824c4fed713ec57b119a81550e85cd5db09b008736f10703db3ef196",
+    bounds: [
+      1.207,
+      1.903,
+      1.206
+    ],
+    sizeBytes: 997844,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/bunker-barrel/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:26:13.001Z",
+        "evidence": [
+          "aura-evidence/meshy/bunkerBarrelMeshy.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/bunkerBarrelMeshy.metadata.67d43010d08d.json",
+          "public/aura-assets/bunkerBarrelMeshy.meshy-candidate.fa18ae1e.png"
+        ],
+        "checkedAt": "2026-10-17T09:26:13.001Z"
+      },
+      "sourcePath": "artifacts/meshy/bunker-barrel/model.glb",
+      "outputPath": "public/aura-assets/bunkerBarrelMeshy.d1eec7e3.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.604,
+          -0.952,
+          -0.604
+        ],
+        "max": [
+          0.603,
+          0.951,
+          0.602
+        ],
+        "size": [
+          1.207,
+          1.903,
+          1.206
+        ],
+        "center": [
+          0,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bunkerBarrelMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bunkerBarrelMeshy.meshy-candidate.fa18ae1e.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-fa18ae1e069351123c32ead199cbc1888987deebdd7a5325a250fc713d8593f7",
+        "checkedAt": "2026-10-17T10:24:42.669Z"
+      }
+    },
+  },
+  "bunkerCrateMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bunkerCrateMeshy.6699a89d.glb",
+    hash: "sha256-bcc87cf2eafece1ba8682167efefd3a82d250792a1b64617b9db47efe7541722",
+    bounds: [
+      1.903,
+      1.248,
+      1.381
+    ],
+    sizeBytes: 1084372,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/bunker-crate/model.glb",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-17T09:28:49.456Z",
+        "evidence": [
+          "aura-evidence/meshy/bunkerCrateMeshy.rights.31c26fbae5b8.json",
+          "aura-evidence/meshy/bunkerCrateMeshy.metadata.20130abb8d23.json",
+          "public/aura-assets/bunkerCrateMeshy.meshy-candidate.a05b143d.png"
+        ],
+        "checkedAt": "2026-10-17T09:28:49.456Z"
+      },
+      "sourcePath": "artifacts/meshy/bunker-crate/model.glb",
+      "outputPath": "public/aura-assets/bunkerCrateMeshy.6699a89d.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.625,
+          -0.692
+        ],
+        "max": [
+          0.951,
+          0.623,
+          0.69
+        ],
+        "size": [
+          1.903,
+          1.248,
+          1.381
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bunkerCrateMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/bunkerCrateMeshy.meshy-candidate.a05b143d.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-a05b143d32d5b34317831ef3ebb443d50b3f96e5dadd9bc453aa17f2142439c2",
+        "checkedAt": "2026-10-17T10:24:43.318Z"
+      }
+    },
+  },
+  "clashDragonStatueMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+    hash: "sha256-fbf0831582ce2001b993f4e51b22d9e88493585b3bdd25801b2d089e1d01a839",
+    bounds: [
+      0.6555,
+      1.8973,
+      1.0329
+    ],
+    sizeBytes: 794028,
+    metadata: {
+      "materials": [
+        "BakedMaterial"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-14T20:41:04.404Z",
+        "evidence": [
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
+          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
+          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
+        ],
+        "checkedAt": "2026-10-14T20:41:04.404Z"
+      },
+      "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
+      "outputPath": "public/aura-assets/clashDragonStatueMeshy.fbf08315.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.3288,
+          -0.9494,
+          -0.5182
+        ],
+        "max": [
+          0.3267,
+          0.9479,
+          0.5147
+        ],
+        "size": [
+          0.6555,
+          1.8973,
+          1.0329
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.8973,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for turboHeroRaceCarMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/clashDragonStatueMeshy.thumb.svg",
+      "quality": "production",
+      "role": "primaryVehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
+        "checkedAt": "2026-10-14T21:02:59.667Z"
+      }
+    },
+  },
   "courierNeonStorefrontMeshy": {
     type: "model",
     format: "glb",
