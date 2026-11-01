@@ -1,7 +1,7 @@
 /**
  * Thermal Drift scene (C12 look and lights, C13 instancing, RH-06 per-app manifest, route budget).
  */
-import { readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildThermalDriftScene, INSTANCE_COUNTS, MODEL_NODE_COUNT } from "../../../apps/showcase-heatsink/src/scene";
 import { CIRCUITS, DRONE_SPECS } from "../../../apps/showcase-heatsink/src/data";
@@ -20,7 +20,7 @@ describe("heatsink scene", () => {
     expect(JSON.stringify(snapshot.nodes)).not.toContain("night-city");
     expect(JSON.stringify(snapshot.nodes)).not.toContain("aura-look:");
     const skies = (id: keyof typeof CIRCUITS) => sceneOf(id).filter((n) => n.kind === "environment") as unknown as { environment: string; background: boolean; intensity: number; texture: { url: string } }[];
-    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.8, "/hdri/kloppenheim_02_1k.hdr"]]);
+    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.7, "/hdri/kloppenheim_02_1k.hdr"]]);
     expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[1.1, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
     expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
   });
@@ -36,11 +36,11 @@ describe("heatsink scene", () => {
       expect(shadowed, id).toHaveLength(1);
       expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 3 });
       const directional = all.filter((n) => n.kind === "light" && n.light === "directional") as unknown as { name: string; color: string; intensity: number }[];
-      expect(directional.find((l) => l.name === "td coolant rim")).toMatchObject({ color: "#35d6ff", intensity: 0.35 });
+      expect(directional.find((l) => l.name === "td coolant rim")).toMatchObject({ color: "#35d6ff", intensity: id === "grand" ? 0.55 : 0.35 });
       expect(directional.some((l) => l.name === "td vent up-fill"), id).toBe(id === "vesper");
     }
     const key = nodes.find((n) => n.name === "td key light") as unknown as { color: string; intensity: number };
-    expect(key).toMatchObject({ color: "#ffb070", intensity: 1.6 });
+    expect(key).toMatchObject({ color: "#ffb070", intensity: 2 });
   });
   it("has no hemisphere, one bloom, one colour grade, one fog and an explicit AO pass", () => {
     expect(lightsOf("hemisphere")).toHaveLength(0);
@@ -51,7 +51,7 @@ describe("heatsink scene", () => {
   });
   it("authors the per-circuit fog, volumetric god rays on DUSTFALL only, and grain on every circuit (HS-05, HS-12, GU47 phase 3)", () => {
     const effectsOf = (id: keyof typeof CIRCUITS, effect: string) => sceneOf(id).filter((n) => n.kind === "effect" && n.effect === effect) as unknown as Record<string, unknown>[];
-    expect(effectsOf("grand", "fog")[0]).toMatchObject({ color: "#4a3a30", density: 0.016 });
+    expect(effectsOf("grand", "fog")[0]).toMatchObject({ color: "#4a3a30", density: 0.02 });
     expect(effectsOf("dustfall", "fog")[0]).toMatchObject({ color: "#8a5a2e", density: 0.02 });
     expect(effectsOf("vesper", "fog")[0]).toMatchObject({ color: "#4a4670", density: 0.014 });
     expect((["grand", "dustfall", "vesper"] as const).map((id) => effectsOf(id, "volumetric-fog").length)).toEqual([0, 1, 0]);
@@ -145,10 +145,19 @@ describe("heatsink scene", () => {
 });
 
 describe("heatsink asset manifest (RH-06)", () => {
-  it("lists exactly the 26 heatsink models with full sha256 hashes, matching aura.assets.json", () => {
-    expect(HEATSINK_ASSET_KEYS).toHaveLength(26);
+  it("lists exactly the 26 heatsink models plus the WP-36 Meshy admissions, with full sha256 hashes", () => {
+    // GU47 WP-36: Meshy admissions (`heatsink_<key>`) are isolated imports: their rights and metadata rows live in
+    // aura-evidence/meshy/, not in the shared root catalog.
+    const wp36 = HEATSINK_ASSET_KEYS.filter((k) => k.startsWith("heatsink_"));
+    expect(wp36).toEqual(["heatsink_thermalArchIron"]);
+    expect(HEATSINK_ASSET_KEYS).toHaveLength(26 + wp36.length);
+    for (const key of wp36) {
+      const def = (assets as unknown as Record<string, { url: string; hash: string }>)[key]!;
+      expect(def.hash, key).toMatch(/^sha256-[0-9a-f]{64}$/);
+      expect(readdirSync("aura-evidence/meshy").some((f) => f.startsWith(`${key}.rights.`)), key).toBe(true);
+    }
     const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")).assets as { key?: string; id?: string; url: string; hash?: string; sha256?: string }[];
-    for (const key of HEATSINK_ASSET_KEYS) {
+    for (const key of HEATSINK_ASSET_KEYS.filter((k) => !k.startsWith("heatsink_"))) {
       const def = (assets as unknown as Record<string, { url: string; hash?: string }>)[key]!;
       expect(def.url, key).toMatch(/^\/aura-assets\/heatsink/);
       const row = manifest.find((a) => a.url === def.url);

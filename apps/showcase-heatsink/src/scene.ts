@@ -433,11 +433,17 @@ export function liftTowardsWhite(hex: string, amount: number): string {
   return `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
+/**
+ * GU47 phase 4 (PRD 6.1 identity, distinctness vs heatsink-port: "orange quadcopter drones in both"): every drone glows
+ * molten amber at its silhouette edges, as if the hull were still hot from the foundry.
+ */
+export const DRONE_HEAT_RIM = { color: "#ff6a1a", power: 2.6, intensity: 1.4 } as const;
+
 /** HS-10 interim livery: DRONE_SPECS colour (lifted 30% towards white) multiplied over the authored maps, lacquered. */
 export function droneLivery(color: string): AuraModelMaterialOverride {
   // GU47 phase 4 (rubric ibl_reflections: "drone metals show little environment reflection"): a little metal and a
   // stronger environment term under the lacquer.
-  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.8, clearcoatRoughness: 0.1, metallic: 0.45, roughness: 0.32, envMapIntensity: 1.7 };
+  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.8, clearcoatRoughness: 0.1, metallic: 0.45, roughness: 0.32, envMapIntensity: 1.7, rim: DRONE_HEAT_RIM };
 }
 
 /** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
