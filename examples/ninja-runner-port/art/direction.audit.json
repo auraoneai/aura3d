@@ -24,12 +24,12 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.45
+        "intensity": 0.22
       },
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3.3
+        "intensity": 4.619999999999999
       },
       {
         "type": "point",

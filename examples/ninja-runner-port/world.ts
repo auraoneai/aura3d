@@ -98,9 +98,15 @@ const VERGE_TINT: Record<string, string> = {
   village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
 };
 
-function paintSurfaces() {
+/**
+ * GU47 phase 4: the evening's rooftop run is laid in indigo glazed tiles (PRD 6.1 G20 palette, indigo #2b3550). The
+ * 4.6.2 teal-green tile was a sibling tell against Serpentine Sky Run ("teal tile edges", judge g20p4 sibling, 0.593 same).
+ */
+const EVENING_ROOF_TILE = "#46598a";
+
+function paintSurfaces(evening = false) {
   return {
-    cobble: surface(paintCobble(512, 1), 2.4), dirt: surface(paintDirt(256, 2), 1.6), tiles: surface(paintTiles(256, 3, "#527c70"), 1.8, [0.5, 0.5]),
+    cobble: surface(paintCobble(512, 1), 2.4), dirt: surface(paintDirt(256, 2), 1.6), tiles: surface(paintTiles(256, 3, evening ? EVENING_ROOF_TILE : "#527c70"), 1.8, [0.5, 0.5]),
     planks: surface(paintPlanks(256, 4), 1.4), grass: surface(paintGrass(256, 5), 0.8)
   } as const;
 }
@@ -319,7 +325,7 @@ export function buildWorld(options: WorldOptions): World {
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
 
-  const ground = paintSurfaces();
+  const ground = paintSurfaces(evening);
   /* ground groups that share a surface and tint become one mesh (one draw call) */
   const merged = new Map<string, { surf: Surface; tint: string; rough: number; positions: number[]; normals: number[]; uvs: number[]; indices: number[] }>();
   for (const g of buildRouteGroups(2)) {
