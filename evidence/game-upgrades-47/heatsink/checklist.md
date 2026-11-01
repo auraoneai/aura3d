@@ -44,3 +44,13 @@ Status per acceptance line: `done` (verified by a unit test or static check), `c
 - [ ] HS-21 same_game false >= 0.8 vs every neighbour: heatsink-port 0.64 (fails), roadster-rush 0.84, drift-and-deliver-port 0.90 (`distinct/`)
 - [x] HS-18 card HUD: HUD and minimap visible under the title card (both looks)
 - [x] HS-17 title pose >= 4 m from chase, looking down the track: done (`view.test.ts`)
+
+## Phase 4 (4.7.2, 2026-10-31; software WebGL2 remote runner)
+
+- [x] Every changed view beats 4.6.2 in the blind panel: g03p4r3b and g03p4r4 3/0/0 on default, dustfall, vesper
+- [x] Shadows render on the runner (PCSS 3 cascades sampled, contact-shadow pass executed); tighter key, contact shadows
+- [ ] Rubric every category >= 7: not met (round 3: lighting, atmosphere, post 7; floor modeling_assets 5, blocked on WP-36)
+- [ ] same_game false >= 0.8 vs every neighbour: 7 of 8 pass; heatsink-port 0.69-0.75 (needs WP-36 HS-10 liveries)
+- [x] WP-36 thermalArchIron admitted and on both arches; the other 32 rows blocked: Meshy keys refuse API calls
+- [x] game-checks 0 errors / 0 warnings (DUSTFALL 25 s now 56.0, every luma frame in band)
+- [x] Gates: typecheck NEW_ERRORS 0, heatsink unit files pass one at a time, eslint clean

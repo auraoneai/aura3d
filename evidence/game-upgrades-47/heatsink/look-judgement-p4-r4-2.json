@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 4.5,
+    "ibl_reflections": 6,
+    "environment_world": 6,
+    "atmospheric_effects": 7,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 5.5,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits right of the vanishing point and backlights the canyon in golden-hour tones. The orange-on-charcoal palette matches the recipe."
+    },
+    {
+      "category": "shadows",
+      "seen": "The tall buildings should throw long shadows across the road, but none are visible. The drones show no clear contact shadows, so they look like they float on the asphalt."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet road shows a bright specular streak under the sun. The building windows and the drones do not appear in it, so it reads as a highlight lobe rather than environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city is built from extruded boxes with tiled emissive window textures and a blocky arch gate. It has believable scale but little architectural detail or street-level dressing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far towers and a warm glow spreads around the sun. The fog falloff sits roughly in the 30–180 m range."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has some wet sheen. The barriers and buildings use flat diffuse materials, and the drone bodies are basic red and white shading with little roughness variation or wear."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player drone is assembled from primitive cylinders and boxes. The rival on the left is a plain cylinder, and the rail barriers are simple beams."
+    },
+    {
+      "category": "composition",
+      "seen": "The player drone sits right of center and fills roughly 8–10% of the frame, under the 15–25% target. The top menu bar and several HUD panels crowd the edges, and a centered crosshair competes with the subject."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits behind and above the drone with a horizon near mid-frame and an FOV that appears to be about 60°. The subject is offset and small."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun and some vignette and grain are present. Grading is warm but somewhat muddy in the midtones, and the bloom halos look uniform rather than filmic."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The race HUD (position, lap, time, radar, speed, core temperature bars) is legible and stylistically consistent. It is cluttered by a persistent top bar of drone, track, and mode selector buttons and a control-hint strip, which together cover much of the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
