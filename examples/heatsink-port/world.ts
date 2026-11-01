@@ -117,6 +117,13 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   const high = quality === "high";
   const look = resolveLook(lookInput, quality);
   setShading(look);
+  /*
+   * GU47 phase 4: the sky dome (3000 m), the abyss plane and the additive strips defaulted to shadow casters, so from the
+   * key light the dome covered the whole course and every receiver read as fully shadowed (no cast shadow could show, and
+   * phase-4 round 2's glass-shadow term darkened the whole causeway). Twilight turns them off; `?look=original` keeps
+   * the 4.6.2 casters value for value.
+   */
+  const noCast = look.wake.enabled ? { castShadow: false } : {};
   const models = modelSet(quality);
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
@@ -152,9 +159,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
   /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
   if (look.dressing.beacons) b.add(geometry.custom(dynamicFrom(buildBeacons(track)), { name: "beacons", material: material.custom(beaconSpec()), castShadow: false }).runtime({ id: fogTracked("beacons", "beacons") }));
-  b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
+  b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { ...noCast, name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
-  b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+  b.add(primitives.sphere({ ...noCast, name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
   /* the Meshy models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }));
@@ -229,7 +236,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < BOLTS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
   }
 
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
@@ -252,7 +259,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < STREAKS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
   }
 
   /* exhaust / dust points */
@@ -266,7 +273,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
       tint: { itemSize: 3, data: f32(new Array<number>(POINTS * 3).fill(1)) },
       fade: { itemSize: 1, data: f32(new Array<number>(POINTS).fill(0)) }
     }
-  }), { name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
+  }), { ...noCast, name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
 
   /* IC-18 ion wake: one dynamic strip (+1 draw), rebuilt every frame from the drone's last 1.2 s; twilight look only */
   if (look.wake.enabled) {
@@ -292,7 +299,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
         tint: { itemSize: 3, data: f32(new Array<number>(n * 3).fill(1)) },
         fade: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) }
       }
-    }), { name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
+    }), { ...noCast, name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
   }
 
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */

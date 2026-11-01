@@ -47,4 +47,12 @@ describe("heatsink-port twilight environment (GU47 IC-04)", () => {
     const original = nodes().find((n) => n.name === "drone-hull") as JsonNode & { castShadow?: boolean };
     expect(original.castShadow).toBe(false);
   });
+
+  it("GU47 phase 4: the sky dome, abyss and additive strips never cast under twilight (the dome shadowed the whole course); original keeps its casters", () => {
+    const casters = (look: string) => new Set((nodes(look) as (JsonNode & { castShadow?: boolean })[]).filter((n) => n.castShadow).map((n) => n.name));
+    const tw = casters("?look=twilight");
+    for (const name of ["sky", "abyss", "bolts", "streaks", "exhaust", "spores"]) expect(tw.has(name), name).toBe(false);
+    for (const name of ["rocks", "arches", "drone-hull"]) expect(tw.has(name), name).toBe(true);
+    expect(casters("?look=original").has("sky")).toBe(true);
+  });
 });
