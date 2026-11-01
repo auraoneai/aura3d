@@ -124,9 +124,9 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.9, rotationDeg: SUN_AZIMUTH_DEG },
     /* GU47 phase 3 (twilight shards glow violet in world.ts: the panel read the dark ones as stray diamonds): at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
-    lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.54, 0.74, 0.8] },
+    lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.44, 0.62, 0.68] },
     /* GU47 phase 4: the judge read "flat even ambient, no cast shadow, uniform haze"; a stronger low sun over less ambient, shadows that cut the glass, warm sun-side haze */
-    shade: { sunGain: 1.55, ambientGain: 0.82, glassShadow: 0.2, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
+    shade: { sunGain: 1.55, ambientGain: 0.72, glassShadow: 0.3, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
     assets: { sentryModel: true },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
