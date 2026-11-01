@@ -1,0 +1,719 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:13:39.196Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s",
+      "heatsink-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.842,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 39,
+    "sameGameYes": 8,
+    "differentRate": 0.8297872340425532,
+    "ci95": [
+      0.6985994892711489,
+      0.9111374190873607
+    ],
+    "confidentDifferent": 36,
+    "confidentDifferentRate": 0.7659574468085106,
+    "same_game": false,
+    "same_game_confidence": 0.842,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: sunset city highway with skyscrapers and an open-wheel race car",
+        "Image B: alien planet with teal rock formations and a purple grid track, flown by a drone",
+        "Different palettes, scenery and vehicles"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.35,
+      "tells": [
+        "different vehicle types and model styles (low-poly car vs detailed drone)",
+        "warm sunset city vs cool alien canyon palette",
+        "different road and rendering look (motion blur, signs vs glowing teal veins)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, Image B a night city highway with a race car",
+        "Different palettes: muted teal and lavender versus navy and orange with lit windows",
+        "Different vehicles and environments: hovering drone, mountains and mushrooms versus a formula-style car, skyscrapers and road signs"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person behind-the-vehicle racing views with orange-accented vehicles",
+        "similar stylized, smooth low-poly look and strong gradient skies",
+        "overhead structure framing the top of the screen in both"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien landscape with a drone on a neon grid road, while Image B is a night city highway with a race car",
+        "Different vehicles and camera setups: hovering drone with a purple/teal palette versus a dark orange-and-navy racer with exhaust glow",
+        "Different scenery and materials: smooth rocky mountains and a giant planet versus blocky lit skyscrapers and an asphalt road"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien-planet scene with a drone on a neon grid road; Image B is a sunset city highway with a race car",
+        "Different vehicles, scenery and palette: purple/teal alien mountains vs. orange-lit skyscrapers",
+        "Different road and lighting: glowing grid with line art vs. asphalt with motion blur and sun glare"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a city highway with skyscrapers at a warm sunset, while Image B is an alien mountain landscape with a giant planet",
+        "Different vehicles: a rear-view open-wheel race car versus a front-facing orange quadcopter drone",
+        "Different palettes and ground: orange/purple dusk with asphalt versus teal/violet with a neon grid floor"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A shows an alien teal canyon with a moon and a drone vehicle",
+        "Image B shows a sunset city highway with skyscrapers and a formula-style car",
+        "Palettes and settings differ: cool teal/pink vs warm orange/purple urban"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city highway with a racing car; Image B is an alien mountain landscape with a drone",
+        "Different environments and palettes: warm orange urban dusk vs cool teal-purple alien sky",
+        "Different vehicles and road surfaces: asphalt with lane markings vs neon grid track"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "third-person rear chase camera with dark top bar in both",
+        "stylized neon gradient skies and orange vehicle accents",
+        "very different biomes and vehicles (city car vs alien drone)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: alien teal canyon with a giant moon and a drone vehicle",
+        "Image B: night city with lit skyscrapers, a highway and an orange racing car",
+        "Different palettes and environments: teal/purple vs navy/orange"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien landscape with a drone on a purple grid road; Image B is a night city highway with a race car",
+        "Different palettes: teal and purple pastel against dark navy and orange",
+        "Different scenery and vehicles: rocky mountains and a giant planet against blocky lit skyscrapers and an exit sign"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a teal alien canyon with a drone and a giant moon",
+        "Image B is an orange-sunset city highway with a formula-style car and road signs",
+        "Different vehicles, palettes and environments with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a city highway at sunset with a racing car, while Image B is an alien planet with a drone",
+        "Different settings and palettes: warm orange/pink dusk versus teal/purple alien sky",
+        "Different track styles: asphalt with lane markings versus a neon grid surface with rock formations"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal landscape with a drone; Image B is a sunset city highway with a race car",
+        "Different palettes: cool teal and lavender versus warm orange and purple",
+        "Different vehicles, environments and road materials, with no shared HUD or style elements"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien teal canyon with a giant pale moon and a drone vehicle",
+        "Image B: night city skyscrapers on a highway with an orange racing car",
+        "Different palettes, environments and vehicle types"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city highway with a low-poly orange racing car",
+        "Image B is an alien mountain landscape with a purple planet, a neon grid road and an orange drone",
+        "Different environments, palettes and vehicle types, though both use orange accents"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a sunset city highway with a racing car, Image B is an alien mountain landscape with a drone",
+        "Different palettes: warm orange/purple urban dusk versus teal/violet alien tones",
+        "Different road and scenery styles: asphalt with lane markings and skyscrapers versus a neon grid track with rock formations"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "matching dark top letterbox/frame bar",
+        "same rear chase-camera racing setup",
+        "orange accents on both vehicles, similar rendering style"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both are third-person racing views behind a vehicle on a road",
+        "similar stylized low-poly look with strong atmospheric sky gradients",
+        "orange accents on the vehicles; a racing-game structure with a gantry/gate ahead"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 3,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet with a drone on a purple grid track, teal rocky mountains",
+        "Image B: sunset city highway with a formula-style car and skyscrapers",
+        "Different vehicles, environments, palettes and road materials"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien teal canyon with a giant moon and a drone vehicle",
+        "Image B: night city with lit skyscrapers and a formula-style car on a highway",
+        "Different palettes and settings: teal/purple vs. navy/orange, with different vehicles"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien landscape with a hovering drone on a purple grid road",
+        "Image B is a night city highway with a rear-view race car and skyscrapers",
+        "Different palettes and vehicles (teal/purple fantasy vs dark navy/orange urban)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a sunset city highway with a racing car, Image B is an alien mountain landscape with a drone",
+        "Different palettes: warm orange and purple urban dusk versus teal, purple and violet alien tones",
+        "Different ground and scenery: asphalt with lane markings versus a neon grid track with rock formations"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien-planet scene with a drone on a purple grid road and teal rocky mountains",
+        "Image B is a dark night city highway with lit skyscrapers and an orange open-wheel race car",
+        "Different vehicles, palettes and environments, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 4,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien teal canyon with a drone, while Image B is a sunset city highway with a race car",
+        "Different palettes: cool teal and purple versus warm orange and gold",
+        "Different vehicles and scenery: a glowing-line dark floor with crystals and mushrooms versus asphalt, skyscrapers and road signs"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 4,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both use a behind-the-vehicle chase camera with a dark overhead structure at the top of the frame",
+        "orange accents on the vehicles and a similar stylized, graded look",
+        "different biomes (sunset city vs alien canyon) could be separate levels of one racing game"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 4,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: alien planet with a drone on a neon grid road, teal and purple palette",
+        "Image B: sunset city highway with a racing car and a skyscraper canyon, orange and pink palette",
+        "Different vehicles, environments and lighting styles"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "matching dark top band with light edge strip",
+        "orange and teal accent palette on vehicles",
+        "same rear chase camera on a road with lane markings"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A shows a city highway at sunset with a formula-style car; Image B shows an alien mountain landscape with a drone",
+        "Different palettes and lighting: warm orange dusk against cool teal and purple alien sky",
+        "Different road surfaces and vehicles: asphalt with lane markings against a neon grid track"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 5,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet with a drone over a purple grid road and teal rock formations",
+        "Image B: night city highway with a car, lit skyscrapers and orange lane markings",
+        "Different vehicles, environments, palettes and lighting style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 5,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 32,
+      "pass": 5,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a sunset city skyway with a racing car and a rear chase camera",
+        "Image B is an alien landscape with a purple grid road and a drone vehicle",
+        "The two scenes differ in palette, scenery and vehicle style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 5,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien teal canyon with a drone, while Image B is a sunset city highway with a racing car",
+        "Different palettes and lighting: cool teal and lavender versus warm orange and purple dusk",
+        "Different vehicles, scenery and HUD: a drone with glowing track lines versus a car with road signs and skyscrapers"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 5,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an alien planet with a drone over a neon grid road; Image B is a sunset city highway with a race car",
+        "Different vehicles and camera setups: hovering drone vs. open-wheel car with motion blur",
+        "Different palettes and scenery: teal/purple rocky mountains vs. orange/pink skyscrapers and asphalt"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same behind-the-vehicle chase camera and framing",
+        "orange accent colors on both vehicles",
+        "similar dark overhead structure with light edge at top of both frames"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 6,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien planet with a drone over a neon grid road; Image B is a sunset city highway with a race car",
+        "different vehicles, scenery and palettes (teal/purple vs warm orange/blue)",
+        "different rendering styles: stylized rocky terrain vs blocky buildings and motion blur"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 6,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "warm sunset city vs cool alien teal canyon",
+        "different vehicle styles (open-wheel car vs detailed drone)",
+        "different rendering and look (motion-blurred low-poly vs textured realistic)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 6,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien teal canyon with a giant moon, a drone vehicle and glowing mushrooms",
+        "Image B is a night city highway with lit skyscrapers, orange lane markings and a race car",
+        "Different vehicles, palettes and environments, and the HUD and sign styles don't match"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 6,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both frames have a dark overhead structure across the top edge",
+        "orange accents on the car and the drone",
+        "similar third-person chase camera and soft cinematic grading"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 6,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an alien landscape with a drone on a neon grid road, while Image B is a city highway with a race car",
+        "Different environments and palettes: teal/purple fantasy sky versus orange sunset skyscrapers",
+        "Different vehicles and art styles: stylized orange drone versus open-wheel car with motion blur on asphalt"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 6,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city highway with a racing car, Image B is an alien mountain landscape with a drone",
+        "Different environments and palettes: dark blue and orange urban versus teal and purple alien",
+        "Different vehicles and road surfaces: asphalt with lane markings versus a neon grid track"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 7,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city highway with a racing car, Image B is an alien mountain landscape with a drone",
+        "Different environments: lit skyscrapers vs. giant planet, teal rocks and a neon grid track",
+        "Different vehicles and rendering style: dark, orange-lit car vs. glossy orange-and-black drone"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 7,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "different vehicle rendering styles",
+        "city sunset vs alien teal world",
+        "similar chase camera and orange accents"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 7,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien teal canyon with a giant moon and a drone vehicle",
+        "Image B: night city skyline with a highway and a formula-style race car",
+        "Different palettes, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 7,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city highway with a racing car, while Image B is an alien planet with a drone",
+        "Different environments and palettes: warm orange/dusk skyscrapers vs teal/purple rocky terrain and a grid road",
+        "Different vehicles and HUD: a car with a street sign overlay vs a hovering orange drone"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 7,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal canyon with a drone, while Image B is a sunset city highway with an open-wheel race car",
+        "Different palettes: cool teal and lavender against warm orange and magenta",
+        "Different vehicles, environments and road designs, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 7,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: alien planet with a drone on a neon grid track and teal rock formations",
+        "Image B: sunset city highway with a racing car and brick-textured skyscrapers",
+        "Different vehicles, environments and color palettes (purple/teal vs orange/pink urban)"
+      ]
+    }
+  ]
+}

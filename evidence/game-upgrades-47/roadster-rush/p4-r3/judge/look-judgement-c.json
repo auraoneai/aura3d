@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/gameplay-early.b.jpg",
+      "sha256": "14664bc0e04c90bf4d2cc7b85a643a30d446046a689de6ccec09d7be982ffbc8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/mid-drive.b.jpg",
+      "sha256": "d8f0a02300a763c6d7c2711f7e106630419e5033f7994a1eb0179c0d6388a687"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-2/roadster-rush--default--settle-25s.jpg",
+      "sha256": "87a099674f82f9642490fe97b9ec04612cab4fe3778db8cf28b3e02cd4d9b879"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-5/roadster-rush--night--settle-60s.jpg",
+      "sha256": "20f68bb4af95ce782ff7bb5fde53349f2a6ef6fdde7deab9ed45dad50f20730e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low sun sits on the horizon behind the gantry and throws a strong warm specular streak down the asphalt in frames 1-2. The building facades stay cool blue-purple and get no warm rim or bounce light from the low sun, so the key light reads only on the road and the car."
+    },
+    {
+      "category": "shadows",
+      "seen": "The traffic cars in frame 3 have soft contact shadows. With a sun this low, the towers and the tall truck should cast long shadows across the lanes, and none are visible. The player car's shadow is faint, and the orange tow ramp shows no grounding shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The player car's blue paint shows some specular highlights, and the night road in frame 4 has a blue sheen. The paint does not reflect the sky or the buildings. The glass towers show no reflections."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The skyline is made of identical box towers with one tiled window texture repeated on every face. Golden rings float in mid-air above the street, and pink shapes are clipped at the top edge of frame 4. The overhead gantry signs ('SKYWAY CENTRAL', 'EXIT 4B HARBOUR') and the streetlights are the only variety."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A light haze toward the horizon and a bloomed sun disk give some depth. There is little distance fog in the 30-180 m range, so the far buildings keep near-full contrast. The night frame has stars but no haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The traffic vehicles look like blurry photoscans with smeared textures (teal sedan, white van). The tow-truck ramp in frame 3 is an untextured flat orange plane. The building texture is a flat 2D pattern with no depth or roughness variation. Asset fidelity is inconsistent across the scene."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player hypercar has a readable silhouette with a wing, exposed wheels and cyan thrusters. The buildings are plain boxes. The tow ramp is a single slab that appears to cut into the road surface."
+    },
+    {
+      "category": "composition",
+      "seen": "The car sits dead centre at roughly 15-20% of the frame with the vanishing point above it, which matches the recipe but stays static. Frame 2 is cluttered with rings scattered at random angles. In frame 3 the truck dominates the left third and a van is cropped hard on the right edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is low and centred with an FOV of about 60-65 degrees. Its framing never changes between frames, with no lateral lag or banking."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A strong radial motion blur smears the road in frames 1-2. The bright glare strip in frame 2 has a jagged, stair-stepped edge on the right lane. The night frame is crushed toward black with little tonal separation, and the grade swings between purple and warm without a cinematic film character."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The top-left panel shows score, distance, a speed gauge and an AIR bar, and the top right has pause, music and a BOLTS counter. These are clean and readable. The HUD is absent in frames 3-4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

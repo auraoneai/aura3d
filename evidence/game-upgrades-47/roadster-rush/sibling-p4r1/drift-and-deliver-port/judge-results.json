@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:12:53.538Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ],
+    "framesB": [
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--golden--settle-60s",
+      "drift-and-deliver-port--noenv--settle-60s",
+      "drift-and-deliver-port--original--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.838,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 44,
+    "confidentDifferentRate": 0.9166666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.838,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime sunset city with a small teal hatchback, speedometer and minimap HUD",
+        "Image B is a night highway with a neon futuristic open-wheel racer and glowing thrusters, no HUD",
+        "Different building styles and lighting: pastel low-poly blocks with street lamps vs dark towers with dotted windows"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a stylized synthwave highway with a futuristic open-wheel racer and motion blur",
+        "Image B is a low-poly city street with a small teal hatchback, street lamps, traffic lights and a minimap/speedometer HUD",
+        "The two frames differ in vehicle type, road setting and building style, though both are sunset cities"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a dark night highway with a neon futuristic racer, while Image B is a bright daytime city street with a small cyan hatchback",
+        "Both use blocky buildings with similar blue and yellow window patterns, which suggests a shared asset style",
+        "Image B has a minimap HUD and traffic lights and lamps that Image A lacks, and the lighting and mood differ strongly"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized synthwave highway with a sunset glow, motion blur and a futuristic open-wheel racer",
+        "B: bright daytime city street with a pale cyan hatchback and a minimap HUD",
+        "Different palettes, lighting and building styles: dark purple/orange vs. light, flat beige/blue"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "A is a dark night highway with a neon-style race car and teal thrusters; B is a daytime or sunset city street with a small teal hatchback",
+        "Different building styles: A has dense striped-window towers in blue and tan, while B has larger, more detailed facades with storefronts and lampposts",
+        "Different HUD and camera: B has a speedometer and minimap, A has none; the chase camera framing also differs"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a street-level city with a small teal hatchback, lamp posts, traffic lights and a minimap/speedometer HUD",
+        "Image B is an elevated highway with a futuristic open-wheel racer, motion blur and overhead gantry signs",
+        "Building styles differ: A has detailed windowed facades, B has dark dotted block towers"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: bright, pastel, hazy daytime city with a small teal car and a minimap",
+        "B: dark synthwave sunset highway with a neon-lit open-wheel racer and motion blur",
+        "Different building styles, lighting and palette, with no shared HUD"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a flat-shaded city street with a pale blue compact car and a minimap, while Image B is an elevated highway with an open-wheel racer",
+        "Different lighting: A has a hazy beige-orange sky, B has dramatic purple-orange sunset glare and motion blur",
+        "Different buildings and HUD: A has bright blocky shopfronts and lampposts, B has dark dotted towers and overhead gantry signs"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: bright, flat-shaded daytime city street with a small teal car and a minimap HUD",
+        "B: dusk highway with a sunset glow, motion blur, a futuristic open-wheel racer and overhead gantry signs",
+        "Different art styles and lighting: pastel low-poly storefronts vs dark purple-blue towers with a dramatic lens glow"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a stylized synthwave highway with a futuristic open-wheel racer and motion blur",
+        "B is a street-level city with a small cyan hatchback, street lamps, traffic lights, and a minimap with speedometer HUD",
+        "The palettes and building styles differ: dark purple and orange towers in A, flat beige and blue facades in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a stylized synthwave highway with a futuristic open-wheel racer and motion blur",
+        "Image B is a daytime city street with a small teal hatchback, street lamps and traffic lights",
+        "Image B has a minimap and speedometer HUD, while Image A has no HUD and a different color palette and lighting"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized futuristic skyway with an open-wheel racer and motion blur; Image B is a street-level city with a small hatchback",
+        "Different building styles: dotted dark towers vs. flat colorful windowed blocks with lamp posts and traffic lights",
+        "Different HUD: A has overhead highway signs; B has a round speedometer and a grid minimap"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a bright, hazy daytime city with a small teal hatchback and a minimap HUD",
+        "Image B is a dark neon night highway with a futuristic open-wheel racer and glowing thrusters",
+        "Different building styles and lighting: flat pastel blocks versus dark blue towers with dotted windows"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a night highway with a neon futuristic race car; B is a daytime city street with a small teal hatchback",
+        "Different HUD: B has a speedometer dial and minimap, A has none visible",
+        "Different art style: A has dark, glowing, stylized lighting; B has flat, warm sunset lighting with street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a low-poly city street with a small teal hatchback, speedometer and minimap HUD",
+        "B is a elevated highway with a futuristic open-wheel racer, motion blur and overhead gantry signs",
+        "Different building styles and car models: A has window-textured storefronts, B has dark dotted tower blocks"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated skyway with motion blur and overhead signs",
+        "Image B is a small teal hatchback on a street with lamps, traffic lights and pedestrians, plus a minimap and speedometer",
+        "The cars, road settings and HUD styles differ, even though both have a sunset city palette"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-shaded, low-poly city street with a small cyan hatchback and a minimap HUD",
+        "Image B: stylized sunset highway with motion blur, glow and an open-wheel racer",
+        "Different building styles, lighting and palettes: pale daytime blocks vs dark purple towers"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night highway with a neon futuristic racer; Image B is a bright, hazy daytime city street with a small teal car",
+        "Different building styles: A has blocky towers with dotted lit windows, B has detailed storefronts with large panes",
+        "Different HUD and scenery: B has a minimap, street lamps and traffic lights; A has an overhead exit sign and glowing rings"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized neon sunset highway with a futuristic open-wheel racer; Image B is a bright daytime city street with a small teal hatchback",
+        "Different lighting and palette: dark purple/orange glow and motion blur versus washed-out beige, pastel daylight",
+        "Different scenery and HUD: elevated freeway with gantry signs versus street-level shops, lamps, traffic lights and a minimap"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A: low-poly city street with a teal hatchback, street lamps, traffic lights and a minimap/speedometer HUD",
+        "B: elevated highway with a futuristic open-wheel racer, motion blur, glowing sun glare and overhead gantry signs",
+        "Different building styles (colorful storefronts vs dark dotted-window towers) and different vehicle and camera feel"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly city street with a small teal hatchback, speedometer and minimap HUD",
+        "Image B: neon synthwave highway with an open-wheel racer, motion blur and a glowing sunset reflection",
+        "Different building styles, car models and overall art direction"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a stylized synthwave highway with a futuristic open-wheel racer and motion blur",
+        "Image B is a daytime city street with a small teal hatchback, streetlamps, traffic lights, and a minimap and speedometer HUD",
+        "The two frames differ in palette and in how the buildings are modeled (dark purple towers vs. bright blocky towers)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a night highway with a neon-lit futuristic race car; B is a daytime city street with a small teal hatchback",
+        "Different HUD: B has a speedometer dial and minimap, A has none visible",
+        "Different building styles: A has dense dark windowed towers with glowing rings; B has warm, flat-shaded storefronts with street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a small teal hatchback, lamp posts, traffic lights and a minimap/speedometer HUD",
+        "Image B is a synthwave highway with an open-wheel racer, motion blur, glowing road reflections and an exit sign",
+        "The building styles differ: A has detailed windowed facades, B has dark blocky towers with dotted textures"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated highway with dark, dusky buildings and strong motion blur",
+        "Image B is a small teal city car on a daytime street with pale, flat-shaded buildings, street lamps and a minimap",
+        "The two frames differ in vehicle type, lighting, palette and HUD style"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a bright, flat-shaded daytime city street with a small teal hatchback and a minimap HUD",
+        "B is a dusk synthwave highway with a purple/orange palette, glowing sun reflection, motion blur and a futuristic open-wheel racer",
+        "Building styles differ: A has blocky pastel facades with shopfronts, B has dark towers with grid-dotted windows"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated skyway with motion blur and overhead gantry signs",
+        "Image B is a low-poly city driving game with a small teal hatchback, street lamps, traffic lights, a minimap and a speedometer",
+        "The building styles and HUDs differ: A has dark dotted towers with glowing rings, B has flat-colored storefront blocks"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a dark night highway with a neon racing car and glowing thrusters, while Image B is a bright daytime city street with a small realistic hatchback",
+        "Both use similar blocky skyscrapers with window grids and a warm orange horizon, which hints at a shared engine or asset style",
+        "Image B has a minimap HUD and street props such as traffic lights and lamps that Image A lacks, and the vehicle styles and lighting differ strongly"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: small teal hatchback in a daytime-sunset city with a speedometer and minimap HUD",
+        "Image B: neon futuristic open-wheel racer on a night highway with no HUD",
+        "Different building styles: blocky pastel buildings with streetlamps vs. dense dark towers with lit window grids"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime city street with a small teal hatchback and a minimap and speedometer HUD",
+        "Image B is a night highway with a neon futuristic open-wheel racer and no HUD",
+        "Building styles differ: A has chunky colored facades with lamp posts, B has dark towers with dotted window grids"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a low-poly city street with a small teal hatchback, a speedometer and a minimap",
+        "Image B is a neon synthwave highway with an open-wheel racer, motion blur and an overhead exit sign",
+        "The two frames differ in art style, vehicles, lighting and HUD"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a city street at sunset with a small teal hatchback, a speedometer dial and a minimap in the HUD",
+        "Image B is a night highway with a futuristic open-wheel racer, neon thrusters and no HUD",
+        "Different building styles and lighting: A has warm, low-poly buildings with street lamps; B has dense dark towers with a dotted window texture"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, hazy, pastel daytime city with a small teal hatchback and a minimap",
+        "Image B is a dusk synthwave highway with a neon-lit open-wheel racer, motion blur and strong orange-purple lighting",
+        "The building styles, palettes and vehicle types differ, and the HUD only appears in A"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a night highway with a neon-lit futuristic race car; B is a daytime city street with a small teal hatchback",
+        "Different HUD: B has a speedometer dial and grid minimap, A has none",
+        "Different building styles: A has dark blue windowed towers with a highway overhead sign; B has warm-toned street-level shopfronts, lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a bright, hazy daytime city with a pastel low-poly teal hatchback and a minimap HUD",
+        "B is a dusk synthwave highway with a dark open-wheel racecar, motion blur and strong orange glow",
+        "Different building styles, lighting and palette: flat colored blocky facades vs dark lit-window towers"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a daytime city street with a small teal hatchback; B is a night highway with a neon futuristic racer",
+        "Different HUD: A has a speedometer dial and grid minimap, B has no HUD and uses an overhead exit sign",
+        "Different art style: A has flat blocky buildings in warm sunset light, B has dense lit-window towers, dark blue night palette and glow"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized synthwave highway with a futuristic open-wheel racer; Image B is a realistic-ish city street with a small hatchback",
+        "Different building styles: A uses dark, striped towers with ring decorations; B uses detailed facades with lamps and traffic lights",
+        "Different HUD and rendering: B has a minimap and speedometer, while A has motion blur and no HUD"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly daytime city streets with a small teal hatchback and a minimap/speedometer HUD",
+        "Image B: neon synthwave highway with a futuristic open-wheel racer, motion blur and a purple-orange sunset",
+        "Different building styles, car models and lighting palettes"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized futuristic highway with an open-wheel racer, motion blur and glowing sunset; Image B is a low-poly city street with a small hatchback",
+        "Different HUD: A has overhead highway signs, B has a round speedometer and a grid minimap",
+        "Different building styles: A has dark dotted-texture towers, B has flat colorful storefronts with lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated highway with motion blur and overhead gantry signs; Image B is a small hatchback on a city street",
+        "Image B has a speedometer dial and a grid minimap, with street lamps, traffic lights and pedestrians; Image A has none of these",
+        "Different building styles: Image A has dark dotted-texture towers, Image B has lit window facades with yellow trim"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: a futuristic open-wheel racer on an elevated highway with motion blur and a sunset glow",
+        "Image B: a small cyan hatchback on a street-level city road with traffic lights and a minimap",
+        "Different building styles and HUD: dark purple dotted towers and gantry signs versus pale blocky storefronts"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a bright, hazy daytime city with a small teal car; Image B is a dark neon night highway with a futuristic racer",
+        "Different vehicle and camera style: a realistic small hatchback on a street with a minimap vs. a open-wheel glowing racer on an elevated highway",
+        "Different building and lighting styles: pastel boxy buildings with streetlamps vs. dark blue towers with lit windows and an orange horizon"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A shows a futuristic open-wheel racer on an elevated highway with motion blur and a dusk glow; B shows a small teal hatchback on a daytime city street",
+        "A has dark, saturated purple and orange buildings with an overhead gantry sign; B has pale beige blocky buildings, street lamps and traffic lights",
+        "The HUDs differ: A shows sign text, B shows a grid minimap, and the art styles and lighting differ"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a dark night highway with a futuristic neon race car, Image B is a bright daytime street with a small turquoise city car",
+        "Both use blocky skyscrapers with similar blue and yellow window patterns, which hints at a shared asset style",
+        "Image B has a minimap HUD and street furniture (lamps, traffic lights), while Image A has none and has a different lighting and gameplay mood"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated highway with motion blur and overhead signs; Image B is a small hatchback on a street with lampposts and traffic lights",
+        "Different building styles: A has dark, dotted-texture towers; B has bright, flat, colorful low-poly facades",
+        "Different HUD: B has a speedometer dial and minimap, while A shows none and has only gantry text"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "roadster-rush--dusk--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A is a stylized synthwave highway with a futuristic open-wheel racer and motion blur",
+        "B is a bright low-poly city street with a small teal hatchback, street lamps, traffic lights and a minimap",
+        "Different HUD, vehicle style and lighting palette (neon purple/orange vs warm daylight)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "roadster-rush--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futuristic open-wheel racer on an elevated highway with motion blur and overhead gantry signs; Image B is a small hatchback in a street-level city grid",
+        "Different HUD: B has a speedometer dial and minimap, A has neither",
+        "Different building styles: A uses dark dotted towers with glowing rings, B uses detailed windowed buildings with lampposts and traffic lights"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "roadster-rush--night--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a night highway with a stylized futuristic racer and neon glow; B is a daytime city street with a small hatchback",
+        "Different HUDs: B has a speedometer and minimap, A shows none",
+        "Different lighting and palette: A is dark navy with orange accents, B is warm sunset with a hazy sky"
+      ]
+    }
+  ]
+}
