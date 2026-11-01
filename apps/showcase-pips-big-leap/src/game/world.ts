@@ -185,8 +185,8 @@ function solidOf(p: PlatSpec): SolidBox {
 export const OWNED_PROP_FIT = {
   /** Kenney windmill (sails 1.0 x its height) inside the old 0.64-wide windmill. */
   windmill: 0.64,
-  /** Kenney watch tower (1.09 x its height) inside the old 0.67-wide watchtower. */
-  sail: 0.61,
+  /** The "sail" kind is a second windmill (1.0 x its height) inside the old 0.67-wide watchtower. */
+  sail: 0.67,
   /** Clay ember pot (1.4 x its height) inside the old 0.52-wide brazier pylon (vents and lava dressing). */
   emberPot: 0.37,
   /** Moss disc pad (spring base, checkpoint pad) inside the old 0.6-wide pedestal column. */
@@ -194,6 +194,15 @@ export const OWNED_PROP_FIT = {
   /** Bouncer spring inside the pedestal's width, sitting on the moss disc. */
   bouncer: 0.6
 } as const;
+
+/**
+ * Decor drawn as its own skinned model node in the diorama look too (skinned meshes cannot be
+ * instanced): the bee that flies where the hawk drone hung (GU47 phase 9), wings flapping.
+ */
+export const SKINNED_DECOR_KINDS: ReadonlySet<DecorSpec["kind"]> = new Set(["hawk"]);
+
+/** The Kenney windmill's sails face +x; a quarter turn shows them to the course like the old windmill. */
+const WINDMILL_FACE = Math.PI / 2;
 
 /**
  * Today's decor, one model node per prop (`?look=original`). The diorama look draws the
@@ -226,6 +235,7 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
         model(assets.hawk, { name: `${d.id}:hawk`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.5 * s, scaleMode: "fit" })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
+          .animate({ clip: "Flying", loop: true })
       ];
     case "mushroom":
       return [
@@ -249,13 +259,13 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
       return [
         model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s * OWNED_PROP_FIT.windmill })
           .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
+          .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
     case "sail":
       return [
-        model(assets.props.watchtower, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s * OWNED_PROP_FIT.sail })
+        model(assets.props.windmill, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s * OWNED_PROP_FIT.sail })
           .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
+          .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
     case "cloud":
       return [
@@ -353,17 +363,18 @@ export interface PropInstance {
 /** The diorama decor table: today's asset and fitted size per kind; tiny props cast no shadow-map shadows. */
 export function decorInstance(d: DecorSpec): PropInstance | null {
   const s = d.s ?? 1;
-  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0): PropInstance =>
-    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: d.yaw ?? 0, castShadow, receiveShadow });
+  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0, turn = 0): PropInstance =>
+    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: (d.yaw ?? 0) + turn, castShadow, receiveShadow });
   switch (d.kind) {
     case "tree": return at(assets.props.conifer, "height", 3.2 * s);
     case "conifer": return at(assets.props.conifer, "height", 3.4 * s);
-    case "hawk": return at(assets.hawk, "maxDimension", 1.5 * s);
+    // The bee is skinned (its wings flap), and skinned meshes cannot be instanced: it draws as its own model node.
+    case "hawk": return null; // SKINNED_DECOR_KINDS
     case "mushroom": return at(assets.props.crystalShard, "height", 1.05 * s);
     case "flower": return at(assets.sunseed, "height", 0.72 * s, false);
     case "rock": return at(assets.props.boulder, "maxDimension", 1.15 * s);
-    case "windmill": return at(assets.props.windmill, "height", 3.6 * s * OWNED_PROP_FIT.windmill);
-    case "sail": return at(assets.props.watchtower, "height", 2.6 * s * OWNED_PROP_FIT.sail);
+    case "windmill": return at(assets.props.windmill, "height", 3.6 * s * OWNED_PROP_FIT.windmill, true, true, 0, WINDMILL_FACE);
+    case "sail": return at(assets.props.windmill, "height", 2.6 * s * OWNED_PROP_FIT.sail, true, true, 0, WINDMILL_FACE);
     case "cloud": return at(assets.props.rockB, "maxDimension", 1.9 * s, false, false);
     case "fan": return at(assets.props.turbine, "height", 2.2 * s);
     case "vent": return at(assets.props.brazier, "height", 1.35 * s * OWNED_PROP_FIT.emberPot);
@@ -836,6 +847,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     } else if (diorama) {
       const prop = decorInstance(d);
       if (prop) props.push(prop);
+      else for (const node of decorNodes(d)) builder.add(node);
     } else {
       for (const node of decorNodes(d)) builder.add(node);
     }

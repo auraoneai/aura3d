@@ -70,7 +70,6 @@ const direction: GameArtDirection = {
     // GU47 phase 9 (PRD D2): owned props. CC0 catalog files (Kenney, Quaternius, Polygonal Mind)
     // and the WP-36 Meshy moss disc, admitted into this app's aura.assets.json with provenance.
     { role: "set-dressing", assetKey: "pipsWindmill", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "pipsWatchtower", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsCrate", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsBarrel", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsCrystal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
@@ -82,7 +81,7 @@ const direction: GameArtDirection = {
     { role: "set-dressing", assetKey: "pipsArch", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsTileMossDisc", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsWindTurbine", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "pipsPillar", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsColumn", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsBee", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 }
   ],
   // One entry per gameplay event; the pack lives in src/game/vfx.ts.

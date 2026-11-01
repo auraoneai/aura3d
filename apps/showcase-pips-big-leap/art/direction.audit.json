@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "25397914dcea8a786ddaf10dcdb3257b8e22114735c5c04f4736e0ef9abd2274",
+  "sourceSha256": "5af97b2b659e5f8db8964aaec0b965820372b32777f2c914f82bf088e581bae0",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -179,6 +179,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsBee",
+            "triangles": 0,
+            "textures": 0,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -217,13 +224,6 @@
             "assetKey": "propBoulder",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsBee",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -542,6 +542,20 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsBee",
+            "triangles": 0,
+            "textures": 0,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsBee",
+            "triangles": 0,
+            "textures": 0,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -573,13 +587,6 @@
             "assetKey": "pipsSungate",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsBee",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -922,13 +929,6 @@
           },
           {
             "assetKey": "pipsWindmill",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsWatchtower",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -1303,7 +1303,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "pipsWatchtower",
+            "assetKey": "pipsWindmill",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -1660,9 +1660,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "pipsPillar",
+            "assetKey": "pipsColumn",
             "triangles": 0,
-            "textures": 1,
+            "textures": 2,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2033,9 +2033,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "pipsPillar",
+            "assetKey": "pipsColumn",
             "triangles": 0,
-            "textures": 1,
+            "textures": 2,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2758,13 +2758,6 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "pipsWatchtower",
-        "maxTriangles": 20000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
         "assetKey": "pipsCrate",
         "maxTriangles": 8000,
         "textureSet": "BC",
@@ -2842,7 +2835,7 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "pipsPillar",
+        "assetKey": "pipsColumn",
         "maxTriangles": 20000,
         "textureSet": "BC",
         "maxTextureSize": 1024

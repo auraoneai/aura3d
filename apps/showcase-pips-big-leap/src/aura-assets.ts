@@ -27,7 +27,6 @@ export const assets = {
     boulder: shared.propBoulder,
     rockB: shared.propRockB,
     windmill: catalog.pipsWindmill,
-    watchtower: catalog.pipsWatchtower,
     crate: catalog.pipsCrate,
     barrel: catalog.pipsBarrel,
     crystalShard: catalog.pipsCrystal,
@@ -39,7 +38,7 @@ export const assets = {
     arch: catalog.pipsArch,
     pedestal: catalog.pipsTileMossDisc,
     turbine: catalog.pipsWindTurbine,
-    pylon: catalog.pipsPillar
+    pylon: catalog.pipsColumn
   }
 } as const;
 

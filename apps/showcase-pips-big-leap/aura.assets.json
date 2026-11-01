@@ -1537,6 +1537,165 @@
       ]
     },
     {
+      "id": "pipsColumn",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+      "outputPath": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+      "url": "/aura-assets/pipsColumn.cd8f72cf.glb",
+      "hash": "sha256-cd8f72cf5ac7323f040847d5f5b6491bb247411725395dae063ab93a2c078a95",
+      "sizeBytes": 341488,
+      "bounds": [
+        1.017,
+        3.508,
+        1.017
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.512,
+          0,
+          -0.509
+        ],
+        "max": [
+          0.506,
+          3.508,
+          0.509
+        ],
+        "size": [
+          1.017,
+          3.508,
+          1.017
+        ],
+        "center": [
+          -0.003,
+          1.754,
+          0
+        ],
+        "maxDimension": 3.508,
+        "grounded": true
+      },
+      "materials": [
+        "Atlas_01_Mat",
+        "Atlas_01_Trans_Mat"
+      ],
+      "materialMetadata": [
+        {
+          "name": "Atlas_01_Mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Atlas_01_Trans_Mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 2,
+        "textureCount": 2,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Column_Regular"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+        "sourcePage": "https://github.com/ToxSam/cc0-models-Polygonal-Mind/tree/main/projects/crystal-crossroads",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Polygonal Mind",
+        "sourceFamily": "os3a",
+        "retrievedAt": "2026-11-01T19:15:00Z",
+        "evidence": [
+          "catalog source id os3a:crystal-crossroads-002 (cc0-claims pips-big-leap); black inverted-hull outline primitive removed with gltf-transform, column geometry unchanged"
+        ],
+        "checkedAt": "2026-11-01T19:15:00Z"
+      },
+      "textures": [
+        "Atlas_01_Albedo",
+        "Atlas_01_Trans"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Column_Regular"
+      ],
+      "thumbnailUrl": "/aura-assets/pipsColumn.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "stone column decor (w4, w5)",
+      "audio": {
+        "author": "Polygonal Mind"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "pipsCrate",
       "type": "model",
       "format": "glb",
@@ -2436,154 +2595,6 @@
       "quality": "candidate",
       "role": "set-dressing",
       "suitabilityReason": "lantern post decor",
-      "audio": {
-        "author": "kenney"
-      },
-      "warnings": [
-        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
-    },
-    {
-      "id": "pipsPillar",
-      "type": "model",
-      "format": "glb",
-      "source": "public/aura-assets/pipsPillar.ade07fc3.glb",
-      "outputPath": "public/aura-assets/pipsPillar.ade07fc3.glb",
-      "url": "/aura-assets/pipsPillar.ade07fc3.glb",
-      "hash": "sha256-ade07fc3a0c00466b96f2e4238e1cdc2be917ae66a36888d93df7fb703b82651",
-      "sizeBytes": 27792,
-      "bounds": [
-        0.222,
-        1.125,
-        0.222
-      ],
-      "boundsMetadata": {
-        "min": [
-          -0.111,
-          0,
-          -0.111
-        ],
-        "max": [
-          0.111,
-          1.125,
-          0.111
-        ],
-        "size": [
-          0.222,
-          1.125,
-          0.222
-        ],
-        "center": [
-          0,
-          0.563,
-          0
-        ],
-        "maxDimension": 1.125,
-        "grounded": true
-      },
-      "materials": [
-        "colormap"
-      ],
-      "materialMetadata": [
-        {
-          "name": "colormap",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "animations": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": {
-        "humanoid": false,
-        "status": "non-humanoid",
-        "confidence": "low",
-        "skinCount": 0,
-        "jointCount": 0,
-        "matchedBones": [],
-        "missingBones": [
-          "hips",
-          "spine",
-          "head",
-          "leftArm",
-          "rightArm",
-          "leftLeg",
-          "rightLeg"
-        ],
-        "messages": [
-          "No humanoid skeleton signals detected."
-        ]
-      },
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 1,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "pillar-large"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "public/aura-assets/pipsPillar.ade07fc3.glb",
-        "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/tree/main/kenney/graveyard-kit",
-        "license": "CC0-1.0",
-        "licenseName": "CC0 1.0 Universal",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "author": "kenney",
-        "sourceFamily": "kenney",
-        "retrievedAt": "2026-11-01T16:40:00Z",
-        "evidence": [
-          "catalog source id kenney:graveyard-kit:pillar-large (cc0-claims pips-big-leap); external colormap embedded with gltf-transform, geometry unchanged"
-        ],
-        "checkedAt": "2026-11-01T16:40:00Z"
-      },
-      "textures": [
-        "colormap"
-      ],
-      "dependencies": [],
-      "orientation": {
-        "source": "unknown",
-        "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
-      },
-      "nodeNames": [
-        "pillar-large"
-      ],
-      "thumbnailUrl": "/aura-assets/pipsPillar.thumb.svg",
-      "quality": "candidate",
-      "role": "set-dressing",
-      "suitabilityReason": "stone pillar decor",
       "audio": {
         "author": "kenney"
       },
@@ -4609,154 +4620,6 @@
       "suitabilityReason": "moss-felt clay disc tile: spring base and checkpoint pad",
       "audio": {
         "author": "AuraOne (Meshy text-to-3d)"
-      },
-      "warnings": [
-        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
-    },
-    {
-      "id": "pipsWatchtower",
-      "type": "model",
-      "format": "glb",
-      "source": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-      "outputPath": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-      "url": "/aura-assets/pipsWatchtower.98ede77b.glb",
-      "hash": "sha256-98ede77b68cad61269ad44ddbdc122dbc50369862ad8afa8ac65b320ff9a1bf9",
-      "sizeBytes": 31488,
-      "bounds": [
-        3.049,
-        2.785,
-        3.049
-      ],
-      "boundsMetadata": {
-        "min": [
-          -1.524,
-          0,
-          -1.524
-        ],
-        "max": [
-          1.524,
-          2.785,
-          1.524
-        ],
-        "size": [
-          3.049,
-          2.785,
-          3.049
-        ],
-        "center": [
-          0,
-          1.393,
-          0
-        ],
-        "maxDimension": 3.049,
-        "grounded": true
-      },
-      "materials": [
-        "colormap"
-      ],
-      "materialMetadata": [
-        {
-          "name": "colormap",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "animations": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": {
-        "humanoid": false,
-        "status": "non-humanoid",
-        "confidence": "low",
-        "skinCount": 0,
-        "jointCount": 0,
-        "matchedBones": [],
-        "missingBones": [
-          "hips",
-          "spine",
-          "head",
-          "leftArm",
-          "rightArm",
-          "leftLeg",
-          "rightLeg"
-        ],
-        "messages": [
-          "No humanoid skeleton signals detected."
-        ]
-      },
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 1,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "tower-watch"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-        "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/tree/main/kenney/pirate-kit",
-        "license": "CC0-1.0",
-        "licenseName": "CC0 1.0 Universal",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "author": "kenney",
-        "sourceFamily": "kenney",
-        "retrievedAt": "2026-11-01T16:40:00Z",
-        "evidence": [
-          "catalog source id kenney:pirate-kit:tower-watch (cc0-claims pips-big-leap); external textures embedded with gltf-transform, geometry unchanged"
-        ],
-        "checkedAt": "2026-11-01T16:40:00Z"
-      },
-      "textures": [
-        "colormap"
-      ],
-      "dependencies": [],
-      "orientation": {
-        "source": "unknown",
-        "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
-      },
-      "nodeNames": [
-        "tower-watch"
-      ],
-      "thumbnailUrl": "/aura-assets/pipsWatchtower.thumb.svg",
-      "quality": "candidate",
-      "role": "set-dressing",
-      "suitabilityReason": "watchtower decor",
-      "audio": {
-        "author": "kenney"
       },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"

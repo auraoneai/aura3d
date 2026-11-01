@@ -8,20 +8,19 @@ type AuraGeneratedAssetDefinitions = {
   readonly "pipsBouncer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsBrambleback": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsCheckpointFlag": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "pipsColumn": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsCrate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsCrystal": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsEmberPot": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsGoldenAcorn": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsHeart": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsLantern": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "pipsPillar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsPip": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsSidekick": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsStar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsSungate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsSunseed": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsTileMossDisc": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "pipsWatchtower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsWindmill": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsWindTurbine": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
@@ -1371,6 +1370,146 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "pipsColumn": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipsColumn.cd8f72cf.glb",
+    hash: "sha256-cd8f72cf5ac7323f040847d5f5b6491bb247411725395dae063ab93a2c078a95",
+    bounds: [
+      1.017,
+      3.508,
+      1.017
+    ],
+    sizeBytes: 341488,
+    metadata: {
+      "materials": [
+        "Atlas_01_Mat",
+        "Atlas_01_Trans_Mat"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 2,
+        "textureCount": 2,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Column_Regular"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+        "sourcePage": "https://github.com/ToxSam/cc0-models-Polygonal-Mind/tree/main/projects/crystal-crossroads",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Polygonal Mind",
+        "sourceFamily": "os3a",
+        "retrievedAt": "2026-11-01T19:15:00Z",
+        "evidence": [
+          "catalog source id os3a:crystal-crossroads-002 (cc0-claims pips-big-leap); black inverted-hull outline primitive removed with gltf-transform, column geometry unchanged"
+        ],
+        "checkedAt": "2026-11-01T19:15:00Z"
+      },
+      "sourcePath": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+      "outputPath": "public/aura-assets/pipsColumn.cd8f72cf.glb",
+      "license": "CC0-1.0",
+      "author": "Polygonal Mind",
+      "boundsMetadata": {
+        "min": [
+          -0.512,
+          0,
+          -0.509
+        ],
+        "max": [
+          0.506,
+          3.508,
+          0.509
+        ],
+        "size": [
+          1.017,
+          3.508,
+          1.017
+        ],
+        "center": [
+          -0.003,
+          1.754,
+          0
+        ],
+        "maxDimension": 3.508,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Atlas_01_Mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Atlas_01_Trans_Mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Column_Regular"
+      ],
+      "textures": [
+        "Atlas_01_Albedo",
+        "Atlas_01_Trans"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipsColumn.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "stone column decor (w4, w5)"
+    },
+  },
   "pipsCrate": {
     type: "model",
     format: "glb",
@@ -2148,135 +2287,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "set-dressing",
       "suitabilityReason": "lantern post decor"
-    },
-  },
-  "pipsPillar": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/pipsPillar.ade07fc3.glb",
-    hash: "sha256-ade07fc3a0c00466b96f2e4238e1cdc2be917ae66a36888d93df7fb703b82651",
-    bounds: [
-      0.222,
-      1.125,
-      0.222
-    ],
-    sizeBytes: 27792,
-    metadata: {
-      "materials": [
-        "colormap"
-      ],
-      "animations": [],
-      "animationClips": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": false,
-      "humanoidStatus": "non-humanoid",
-      "humanoidConfidence": "low",
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 1,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "pillar-large"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "public/aura-assets/pipsPillar.ade07fc3.glb",
-        "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/tree/main/kenney/graveyard-kit",
-        "license": "CC0-1.0",
-        "licenseName": "CC0 1.0 Universal",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "author": "kenney",
-        "sourceFamily": "kenney",
-        "retrievedAt": "2026-11-01T16:40:00Z",
-        "evidence": [
-          "catalog source id kenney:graveyard-kit:pillar-large (cc0-claims pips-big-leap); external colormap embedded with gltf-transform, geometry unchanged"
-        ],
-        "checkedAt": "2026-11-01T16:40:00Z"
-      },
-      "sourcePath": "public/aura-assets/pipsPillar.ade07fc3.glb",
-      "outputPath": "public/aura-assets/pipsPillar.ade07fc3.glb",
-      "license": "CC0-1.0",
-      "author": "kenney",
-      "boundsMetadata": {
-        "min": [
-          -0.111,
-          0,
-          -0.111
-        ],
-        "max": [
-          0.111,
-          1.125,
-          0.111
-        ],
-        "size": [
-          0.222,
-          1.125,
-          0.222
-        ],
-        "center": [
-          0,
-          0.563,
-          0
-        ],
-        "maxDimension": 1.125,
-        "grounded": true
-      },
-      "materialMetadata": [
-        {
-          "name": "colormap",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "orientation": {
-        "source": "unknown",
-        "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
-      },
-      "nodeNames": [
-        "pillar-large"
-      ],
-      "textures": [
-        "colormap"
-      ],
-      "dependencies": [],
-      "thumbnailUrl": "/aura-assets/pipsPillar.thumb.svg",
-      "quality": "candidate",
-      "role": "set-dressing",
-      "suitabilityReason": "stone pillar decor"
     },
   },
   "pipsPip": {
@@ -4010,135 +4020,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "prop",
       "suitabilityReason": "moss-felt clay disc tile: spring base and checkpoint pad"
-    },
-  },
-  "pipsWatchtower": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/pipsWatchtower.98ede77b.glb",
-    hash: "sha256-98ede77b68cad61269ad44ddbdc122dbc50369862ad8afa8ac65b320ff9a1bf9",
-    bounds: [
-      3.049,
-      2.785,
-      3.049
-    ],
-    sizeBytes: 31488,
-    metadata: {
-      "materials": [
-        "colormap"
-      ],
-      "animations": [],
-      "animationClips": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": false,
-      "humanoidStatus": "non-humanoid",
-      "humanoidConfidence": "low",
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 1,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "tower-watch"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-        "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/tree/main/kenney/pirate-kit",
-        "license": "CC0-1.0",
-        "licenseName": "CC0 1.0 Universal",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "author": "kenney",
-        "sourceFamily": "kenney",
-        "retrievedAt": "2026-11-01T16:40:00Z",
-        "evidence": [
-          "catalog source id kenney:pirate-kit:tower-watch (cc0-claims pips-big-leap); external textures embedded with gltf-transform, geometry unchanged"
-        ],
-        "checkedAt": "2026-11-01T16:40:00Z"
-      },
-      "sourcePath": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-      "outputPath": "public/aura-assets/pipsWatchtower.98ede77b.glb",
-      "license": "CC0-1.0",
-      "author": "kenney",
-      "boundsMetadata": {
-        "min": [
-          -1.524,
-          0,
-          -1.524
-        ],
-        "max": [
-          1.524,
-          2.785,
-          1.524
-        ],
-        "size": [
-          3.049,
-          2.785,
-          3.049
-        ],
-        "center": [
-          0,
-          1.393,
-          0
-        ],
-        "maxDimension": 3.049,
-        "grounded": true
-      },
-      "materialMetadata": [
-        {
-          "name": "colormap",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "orientation": {
-        "source": "unknown",
-        "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
-      },
-      "nodeNames": [
-        "tower-watch"
-      ],
-      "textures": [
-        "colormap"
-      ],
-      "dependencies": [],
-      "thumbnailUrl": "/aura-assets/pipsWatchtower.thumb.svg",
-      "quality": "candidate",
-      "role": "set-dressing",
-      "suitabilityReason": "watchtower decor"
     },
   },
   "pipsWindmill": {
