@@ -1987,16 +1987,21 @@ function installQa() {
           // the crack lamp and the exit shutter face one way: stand on that side, looking back at them
           const facing = ch === "P" ? pushFace(rows, x, z).map((v) => -v) : ch === "E" ? wallFace(rows, x, z).map((v) => -v) : null;
           if (facing && (facing[0] || facing[1])) {
-            for (let d = dist * CELL; d >= CELL * 0.6; d -= 0.3) {
-              const px = tx + facing[0] * d, pz = tz + facing[1] * d;
+            // straight out from the face first, then along the corridor (a face one cell from the opposite wall)
+            const aim = [tx + facing[0] * CELL * 0.3, tz + facing[1] * CELL * 0.3] as const;
+            const spots: [number, number][] = [];
+            for (let d = dist * CELL; d >= CELL * 0.6; d -= 0.3) spots.push([tx + facing[0] * d, tz + facing[1] * d]);
+            for (const k of [1.6, -1.6, 2.2, -2.2]) spots.push([aim[0] + facing[1] * k * CELL + facing[0] * 0.4, aim[1] + facing[0] * k * CELL + facing[1] * 0.4]);
+            for (const [px, pz] of spots) {
               if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
+              if (!sim.hasLOS(px, pz, aim[0], aim[1])) continue;
               p.x = px; p.z = pz; p.hp = 9999; p.pitch = 0;
               p.yaw = Math.atan2(tx - px, -(tz - pz));
               if (!p.weapons.includes(weapon)) p.weapons.push(weapon);
               p.weapon = weapon;
               qaFrozen = true;
               syncScenePose(noInput);
-              return { ok: true, floor: i, cell: [x, z], distance: +d.toFixed(2), facing };
+              return { ok: true, floor: i, cell: [x, z], at: [+px.toFixed(2), +pz.toFixed(2)], facing };
             }
           }
           for (let k = 0; k < 16; k++) {
