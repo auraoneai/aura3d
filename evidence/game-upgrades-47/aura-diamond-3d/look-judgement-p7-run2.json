@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "63f53b2c27325b99dfccfa7ef9c54bd4f1a1975592d2ff42b90fcd0d33700eb3"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1b-2/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "989fc8e58159906a9c9b6e6dc1276742f333307ae48cdcd9c71435db68c4ffa4"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1-5/aura-diamond-3d--dome--settle-60s.jpg",
+      "sha256": "46868fd0f5ec5d4d8e2fb56ceb6b878b4860d00fb186644613a29a35cdda68b2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 3.5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Lighting is mostly flat and even across the field. The only key cue is a warm orange hotspot behind the mound in Harbor. Players read as uniformly lit white shapes with little form shading, and no flood-light direction is legible."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players have small soft contact shadows. Dome shows long dark diagonal bands from roof trusses that add structure. Harbor and Midtown have almost no cast shadows from stands or walls, and player shadows are faint and short."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Grass and dirt mirror the players and the 'HARBOR SANDLOT' / 'TYPHOON DOME' wall text like glass. A dry turf field should not show mirror-clear planar reflections. The reflections suit only the rainy Midtown frame, and even there they are too sharp."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The infield is an unrealistic scalloped blob shape with round lobes at the bases. Stands are small box rows with colored dots for crowd. Backdrops are a grey sky with a noisy rock-texture wall (Harbor), flat skyline blocks with grid windows (Midtown), and a blurred photo-like interior (Dome). The stadium feels sparse and empty, unlike the dark crowded arena the recipe calls for."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Midtown has thin rain streaks and a cool tint, and Dome has slight distance blur. There is no visible indoor haze or volumetric light from floods. Harbor's sky is a flat grey gradient."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Dirt uses a noisy, high-contrast mottled texture that reads like carpet or water ripples, especially the pink Midtown infield. Turf is flat green with faint mowing lines. Uniforms are untextured white. Scoreboards and canopies use a leafy camo-like pattern that does not match their purpose."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players are low-poly blocky figures with cap and glove shapes and minimal anatomy. The mound is a flat extruded disc with a hard rim. Bases are plain slabs. The bat is an orange cylinder, and the stands are repeated boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The infield fills roughly 60 to 70% of the frame, well above the 25 to 40% target. The catcher is cropped at the bottom edge. HUD panels in frame 1 cover the left foul area and the outfield wall text."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a fixed elevated perspective view from behind home plate, not an orthographic broadcast angle. The field of view feels wider than 40° and shows visible perspective convergence of the foul lines. It reads the play clearly but frames the plate too close to the bottom edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild vignette and soft bloom on the white uniforms, with depth-of-field blur on the Dome background. No color grade unifies the arena mood, and the Midtown teal/pink grade washes out contrast."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The top nav bar, linescore, count/outs/bases cards and bottom control strip are legible and consistent dark glass panels. They are crowded into the upper-left and overlap scene content. A ghosted 'HARBOR SANDLOT' string shows through behind the scoreboard panel. The 'QUICK PLAY' header has very low contrast."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}
