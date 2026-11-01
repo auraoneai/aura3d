@@ -5,11 +5,15 @@
   "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
   "variants": {
     "silt-and-signal-port--ch0": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
-    "silt-and-signal-port--ch1": { "mean": [150, 185], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
+    "silt-and-signal-port--ch1": { "mean": [129, 164], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
     "silt-and-signal-port--ch2": { "darkFrac": [null, 0.35], "p95": [190, null] },
     "silt-and-signal-port--ch3": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
     "silt-and-signal-port--ch4": { "mean": [95, 150], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
-    "silt-and-signal-port--ch5": { "darkFrac": [null, 0.35], "p95": [190, null] },
+    "silt-and-signal-port--ch5": { "darkFrac": [null, 0.35], "p95": [162, null] },
     "silt-and-signal-port--ch6": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] }
+  },
+  "rederived": {
+    "silt-and-signal-port--ch1.mean": { "from": [150, 185], "to": [129, 164], "panel": "g24p7r1a", "capture": "g24p7-r1-ch1", "date": "2026-11-01" },
+    "silt-and-signal-port--ch5.p95": { "from": [190, null], "to": [162, null], "panel": "g24p7r1a", "capture": "g24p7-r1-ch5", "date": "2026-11-01" }
   }
 }

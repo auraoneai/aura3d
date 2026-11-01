@@ -1,0 +1,224 @@
+{
+ "run": "g24p7-tp1",
+ "spec": "tests/browser/audit-fix/silt-and-signal-port-texpending.spec.ts",
+ "rows": [
+  {
+   "view": "default",
+   "waitMs": 25000,
+   "total": 33,
+   "pending": [
+    {
+     "node": "terrain",
+     "stage": "decode /examples/silt-and-signal-port/assets/textures/ground_Color.jpg; body /examples/silt-and-signal-port/assets/textures/ground_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/ground_Roughness.jpg",
+     "pendingMs": 99204
+    },
+    {
+     "node": "plaza",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; body /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 99203
+    },
+    {
+     "node": "road",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; body /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 99203
+    },
+    {
+     "node": "cistern-deck",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/bricks_Color.jpg; body /examples/silt-and-signal-port/assets/textures/bricks_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/bricks_Roughness.jpg",
+     "pendingMs": 99203
+    },
+    {
+     "node": "cliffs",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "limestone",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "plaster-0",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "plaster-1",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "plaster-2",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "plaster-3",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "plaster-4",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "roof-tiles",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "rocks-small",
+     "stage": "queued",
+     "pendingMs": 99203
+    },
+    {
+     "node": "piers",
+     "stage": "queued",
+     "pendingMs": 99203
+    }
+   ]
+  },
+  {
+   "view": "default",
+   "waitMs": 95000,
+   "total": 33,
+   "pending": [
+    {
+     "node": "terrain",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/ground_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/ground_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/ground_Roughness.jpg",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaza",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 210347
+    },
+    {
+     "node": "road",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 210347
+    },
+    {
+     "node": "cistern-deck",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/bricks_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/bricks_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/bricks_Roughness.jpg",
+     "pendingMs": 210347
+    },
+    {
+     "node": "cliffs",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "limestone",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaster-0",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaster-1",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaster-2",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaster-3",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "plaster-4",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "roof-tiles",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "rocks-small",
+     "stage": "queued",
+     "pendingMs": 210347
+    },
+    {
+     "node": "piers",
+     "stage": "queued",
+     "pendingMs": 210347
+    }
+   ]
+  },
+  {
+   "view": "ch4",
+   "waitMs": 25000,
+   "total": 22,
+   "pending": [
+    {
+     "node": "terrain",
+     "stage": "decode /examples/silt-and-signal-port/assets/textures/grass_Color.jpg; body /examples/silt-and-signal-port/assets/textures/grass_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/grass_Roughness.jpg",
+     "pendingMs": 60131
+    },
+    {
+     "node": "road",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; body /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 60131
+    },
+    {
+     "node": "bank",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/ground_Color.jpg; body /examples/silt-and-signal-port/assets/textures/ground_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/ground_Roughness.jpg",
+     "pendingMs": 60131
+    },
+    {
+     "node": "rocks-small",
+     "stage": "body /examples/silt-and-signal-port/assets/textures/rock_Color.jpg; body /examples/silt-and-signal-port/assets/textures/rock_NormalGL.jpg; body /examples/silt-and-signal-port/assets/textures/rock_Roughness.jpg",
+     "pendingMs": 60130
+    },
+    {
+     "node": "piers",
+     "stage": "queued",
+     "pendingMs": 60130
+    }
+   ]
+  },
+  {
+   "view": "ch4",
+   "waitMs": 95000,
+   "total": 22,
+   "pending": [
+    {
+     "node": "terrain",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/grass_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/grass_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/grass_Roughness.jpg",
+     "pendingMs": 160572
+    },
+    {
+     "node": "road",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/paving_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/paving_Roughness.jpg",
+     "pendingMs": 160572
+    },
+    {
+     "node": "bank",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/ground_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/ground_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/ground_Roughness.jpg",
+     "pendingMs": 160572
+    },
+    {
+     "node": "rocks-small",
+     "stage": "pixels /examples/silt-and-signal-port/assets/textures/rock_Color.jpg; pixels /examples/silt-and-signal-port/assets/textures/rock_NormalGL.jpg; pixels /examples/silt-and-signal-port/assets/textures/rock_Roughness.jpg",
+     "pendingMs": 160572
+    },
+    {
+     "node": "piers",
+     "stage": "queued",
+     "pendingMs": 160572
+    }
+   ]
+  }
+ ]
+}
