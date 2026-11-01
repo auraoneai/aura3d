@@ -4,7 +4,10 @@
   "lane": "g08",
   "scope": "software WebGL2 (remote headless Chromium, SwiftShader); engine draw calls from app.diagnostics().drawCalls at steady state. Not a GPU frame-time or real-device claim.",
   "budget": {
-    "drawCalls": { "1280x720": 450, "390x844": 260 },
+    "drawCalls": {
+      "1280x720": 450,
+      "390x844": 260
+    },
     "triangles": 1200000,
     "steadyHeapMB": 300,
     "routeTransferDeltaMB": 12,
@@ -13,32 +16,192 @@
   "beforeSource": "apps/showcase-aura-diamond-3d/route-health.json performance (runs g08-w2-after-grp1..grp3, evidence/aura-diamond-3d/audit-fix/after/meta.jsonl); null where the run did not record the metric",
   "variants": {
     "sandlot": {
-      "before": { "drawCalls": { "1280x720": 528, "390x844": 276 }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 273, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 528,
+          "390x844": 276
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 273,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     },
     "skyline": {
-      "before": { "drawCalls": { "1280x720": 370, "390x844": 177 }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 215, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 370,
+          "390x844": 177
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 215,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     },
     "canyon": {
-      "before": { "drawCalls": { "1280x720": 505, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 242, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 505,
+          "390x844": null
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 242,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     },
     "ivy": {
-      "before": { "drawCalls": { "1280x720": 394, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 257, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 394,
+          "390x844": null
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 257,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     },
     "dome": {
-      "before": { "drawCalls": { "1280x720": 337, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 242, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 337,
+          "390x844": null
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 242,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     },
     "lunar": {
-      "before": { "drawCalls": { "1280x720": 379, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 228, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "before": {
+        "drawCalls": {
+          "1280x720": 379,
+          "390x844": null
+        },
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "jsHeapMB": 228,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
       "after": null
     }
   },
   "expectedDrawDelta": {
     "note": "Phase-1 estimate per row (lane report g08.md); measured after-rows are phase 2.",
     "rows": {}
+  },
+  "phase6": {
+    "note": "PRD D7 draw budget, phase 6 (4.7.4). 1280x720 settle-60s GL_META (app.diagnostics: drawCalls, triangles), software WebGL2 on the remote runner. before = phase-4 r5 capture (luma-after.json, run g08p4r5, the panel-won 4.7.2 look); after = runs g08p6r1 (all parks) and g08p6r3 (Ivy, final: far tower pair instanced, near pair single). Budget 450 not raised.",
+    "changes": [
+      "Ivy: 7 ivy-wall panels -> 1 instanced draw; 4 unlit flood towers -> far and near instanced pairs",
+      "Harbor: 2 rocks -> 1 instanced draw (per-instance colours over a white replace override)",
+      "all parks: on-deck mats 2 -> 1 instanced draw",
+      "all parks: ground-flush slabs (base paths, plates, chalk, warning track, on-deck mats), the 13 belts and the fake ball disc leave the key shadow pass",
+      "?look=original unchanged"
+    ],
+    "ivyIterations": [
+      {
+        "run": "g08p6r1",
+        "note": "four towers and trophy+statue as instance groups: the near towers behind the camera stopped culling",
+        "drawCalls": 399,
+        "triangles": 6730209
+      },
+      {
+        "run": "g08p6r2",
+        "note": "towers as far and near instanced pairs: the near pair still did not cull",
+        "drawCalls": 399,
+        "triangles": 6514649
+      }
+    ],
+    "trianglesNote": "Five parks lose about 7.5k triangles. Ivy ends 0.14M (2.3%) above 4.7.2: the seven vine panels as one instance group draw in every pass where single panels were culled. The triangle counter was already about 5x its 1.2M budget before phase 6 (fans, PRD D7 open item); not fixed here.",
+    "budgetDrawCalls1280x720": 450,
+    "parks": {
+      "sandlot": {
+        "before": {
+          "drawCalls": 456,
+          "triangles": 6146573
+        },
+        "after": {
+          "drawCalls": 404,
+          "triangles": 6139097
+        },
+        "underBudget": true
+      },
+      "skyline": {
+        "before": {
+          "drawCalls": 458,
+          "triangles": 5824703
+        },
+        "after": {
+          "drawCalls": 411,
+          "triangles": 5817227
+        },
+        "underBudget": true
+      },
+      "canyon": {
+        "before": {
+          "drawCalls": 441,
+          "triangles": 5908018
+        },
+        "after": {
+          "drawCalls": 394,
+          "triangles": 5900542
+        },
+        "underBudget": true
+      },
+      "ivy": {
+        "before": {
+          "drawCalls": 469,
+          "triangles": 6159719
+        },
+        "after": {
+          "drawCalls": 394,
+          "triangles": 6301469
+        },
+        "underBudget": true
+      },
+      "dome": {
+        "before": {
+          "drawCalls": 426,
+          "triangles": 5583958
+        },
+        "after": {
+          "drawCalls": 379,
+          "triangles": 5576482
+        },
+        "underBudget": true
+      },
+      "lunar": {
+        "before": {
+          "drawCalls": 444,
+          "triangles": 5907013
+        },
+        "after": {
+          "drawCalls": 397,
+          "triangles": 5899537
+        },
+        "underBudget": true
+      }
+    }
   }
 }
