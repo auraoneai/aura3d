@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-fc-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "favela",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly muddy, dark mood; stands partly cut off at the top edge; otherwise good textured dirt, strong shadows and a clear centre circle",
+     "No crowd visible, so the stands look empty; the top band is dark and sparse; the court is a bit muddy brown",
+     "Somewhat dark and murky overall; stands mostly black; blotchy dirt texture; but good lighting, long shadows, centre circle and clear players"
+    ]
+   },
+   {
+    "variant": "glacier",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright specular hotspot in the lower right; strong vignette; light horizontal banding on the ice",
+     "Lens-flare hotspot in the lower right is a bit strong; heavy vignette; small crowd sprites",
+     "Large bright specular hotspot bottom right; scan-line banding stripes across upper pitch; slightly dark vignette"
+    ]
+   },
+   {
+    "variant": "kyoto",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass texture is noisy and a little muddy; dark overall",
+     "Grass texture is noisy and somewhat muddy, with brown patches; dark stands; vignette",
+     "Grass texture noisy and slightly muddy; dark overall; faint reflection artifacts"
+    ]
+   },
+   {
+    "variant": "lagos",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm palette is a little monochrome; a light haze over the stands",
+     "Monochrome orange cast is slightly flat; minor haze on the stands",
+     "Somewhat monochrome orange palette, slightly low contrast in stands"
+    ]
+   },
+   {
+    "variant": "munich",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some noise and horizontal streak artefacts in the grass; heavy vignette",
+     "Dark stands; heavy vignette; faint horizontal banding lines on the grass",
+     "Slightly dark and noisy grass; faint horizontal banding lines on pitch"
+    ]
+   },
+   {
+    "variant": "uyuni",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale, low-saturation look; flat grey surface; stands look a bit crude",
+     "Greyish, somewhat low-contrast palette; faint horizontal banding lines on the pitch; the stands are muted",
+     "Pale low-saturation palette, somewhat flat; faint banding stripes on pitch"
+    ]
+   }
+  ]
+ }
+]
