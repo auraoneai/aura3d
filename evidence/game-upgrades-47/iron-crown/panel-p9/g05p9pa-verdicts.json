@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "crown-arena",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overall the frame is very dark. The right fighter's dark brown outfit nearly blends into the dark red background, which hurts readability. The flat grey discs (gongs or shields) at the left and right edges look plain and out of place. The black sky is empty.",
+     "Large flat grey disc/shield objects at the left and right edges are cut off by the frame and look like out-of-place placeholder panels; the right fighter's dark brown outfit partly blends into the dark red background, so it is less readable; the overall image is slightly dark. Even so, the warm gold palette, reflective floor, statue detail and atmosphere are clearly better.",
+     "Large flat grey disc objects are cut off at the left and right edges and look unfinished. The dark right fighter is hard to see against the dark red background. Overall the frame is a bit dark, though the warm lighting, reflective floor, braziers and gold statues give a strong, consistent mood and good depth."
+    ]
+   }
+  ]
+ }
+]

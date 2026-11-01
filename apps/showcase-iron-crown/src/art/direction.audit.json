@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "6618a4714e3836f042116ccc903c0d5a843e2ea930a9c5309e0efe878d9c97d8",
+  "sourceSha256": "f421e21616c0151340aea6a037af1e06cc2371aafb1deea72709b94b378f1ef2",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -54,9 +54,9 @@
     },
     "models": [
       {
-        "assetKey": "billiardsClubChairMeshy",
+        "assetKey": "ironcrownThrone",
         "triangles": 0,
-        "textures": 0,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
@@ -68,21 +68,14 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "clashDragonStatueMeshy",
+        "assetKey": "ironcrownKingStatue",
         "triangles": 0,
-        "textures": 0,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "clashDragonStatueMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "ironcrownBrazierPylon",
+        "assetKey": "ironcrownKingStatue",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
@@ -96,16 +89,23 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "auraClashStageSpeakerTowerMeshy",
+        "assetKey": "ironcrownBrazierPylon",
         "triangles": 0,
-        "textures": 0,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "auraClashStageSpeakerTowerMeshy",
+        "assetKey": "ironcrownSearchlight",
         "triangles": 0,
-        "textures": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ironcrownSearchlight",
+        "triangles": 0,
+        "textures": 4,
         "unlit": false,
         "overridesTextures": false
       },
@@ -644,59 +644,101 @@
       },
       {
         "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownThrone",
+        "maxTriangles": 12000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "auraClashStageSpeakerTowerMeshy"
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownKingStatue",
+        "maxTriangles": 28000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "auroraFuelDepotTankMeshy"
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownMonasteryLion",
+        "maxTriangles": 48000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "auroraPadBeacon",
-        "maxTriangles": 2000,
-        "textureSet": "BC",
-        "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownSearchlight",
+        "maxTriangles": 19000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "billiardsClubChairMeshy"
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownRooftopAircon",
+        "maxTriangles": 10000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "bunkerBarrelMeshy"
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownRooftopPowerBox",
+        "maxTriangles": 7000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "bunkerCrateMeshy"
+        "maxTextureSize": 1024
       },
       {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048,
-        "assetKey": "clashDragonStatueMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
+        "role": "set-dressing",
+        "assetKey": "ironcrownStreetLamp",
+        "maxTriangles": 31000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "courierDeliveryKioskMeshy"
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownDockVendorCart",
+        "maxTriangles": 28000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownDockCrate",
+        "maxTriangles": 7000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownDockBarrel",
+        "maxTriangles": 11000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownColosseumBust",
+        "maxTriangles": 18000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownAirbaseFuelTank",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownAirbaseDrum",
+        "maxTriangles": 3000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownAirbaseAmmoCrates",
+        "maxTriangles": 11000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",
@@ -704,27 +746,6 @@
         "textureSet": "BC+N+ORM+E",
         "maxTextureSize": 2048,
         "assetKey": "courierNeonStorefrontMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "galleryMarbleBustExhibitMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "gullsiegeBarrelMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "gullsiegeCrateMeshy"
       },
       {
         "role": "world",
@@ -753,20 +774,6 @@
         "maxTriangles": 2000,
         "textureSet": "BC",
         "maxTextureSize": 512
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "neonCyberPylonMeshy"
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "neonStreetLampProp",
-        "maxTriangles": 280000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
       },
       {
         "role": "world",
@@ -802,13 +809,6 @@
         "maxTriangles": 32000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048,
-        "assetKey": "reactorFusionTurbineMeshy"
       },
       {
         "role": "backdrop",

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "desert-airbase",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The gas cylinder behind the right fighter is far too big and crowds that side of the frame; there is a bright reflection streak in the bottom-left corner of the floor; the jet's shadow looks a little offset, so it seems to hover; the right fighter's dark red suit blends into the red cylinder behind it. Even so, contrast, colour saturation, material sheen and sky detail are clearly better than in A.",
+     "Props are badly out of scale: the gas cylinder is huge and dwarfs the fighter, and the jet looks toy-sized. The jet seems to float slightly above the deck. The floor has some glossy streaks. Not a desert mood, since the scene has a blue sea-like horizon.",
+     "The red gas cylinder behind the right fighter is far too large, which breaks the sense of scale. The jet still looks slightly suspended and the strong vignette darkens the lower corners. Even so, it has much better contrast, richer materials (glossy jet, rusty barrels) and clearer separation between the fighters and the background."
+    ]
+   }
+  ]
+ }
+]
