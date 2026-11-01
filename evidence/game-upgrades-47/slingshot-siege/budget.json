@@ -165,5 +165,79 @@
         "darkFrac": 0.2301
       }
     }
+  },
+  "phase7DrawBudget": {
+    "source": "GL_META settle-60s of capture round g12p7-r4 (GU47 phase 7, 4.7.6 build, software WebGL2 1280x720, evidence/game-upgrades-47/slingshot-siege/p7-r4/); beforeG12p6 = the phase-6 shipped build (the 'after' block above)",
+    "changes": "island trees and rocks baked into three GLBs (95 meshes -> 8); solid blocks as one instanced node per family; fg crates/barrels, knoll + stone bridge instanced; mounds/patches/pebbles/headlands one instanced sphere; banner, flag and sling-fork primitives instanced per shape. Presentation only (D8); budgets unchanged (D7).",
+    "budget": {
+      "level1": 200,
+      "gullKeep": 260
+    },
+    "verdict": "Both written budgets met. Level 1 (default/ch0, level id 0): 189 <= 200. Gull Keep (ch4, level 20, the sign reads GULL KEEP; the 32-piece fort): 226 <= 260. The other views: ch1 177, ch2 176 (under 200); ch3 221 and ch5 217 are mid-campaign levels between the two written budgets (above 200, under 260); no budget is written for them.",
+    "views": {
+      "default": {
+        "drawCalls": 189,
+        "triangles": 2891798,
+        "textureBytes": 310599808,
+        "beforeG12p6": {
+          "drawCalls": 463,
+          "triangles": 2642438
+        }
+      },
+      "ch0": {
+        "drawCalls": 189,
+        "triangles": 2891798,
+        "textureBytes": 310599808,
+        "beforeG12p6": {
+          "drawCalls": 463,
+          "triangles": 2642438
+        }
+      },
+      "ch1": {
+        "drawCalls": 177,
+        "triangles": 2735382,
+        "textureBytes": 310601856,
+        "beforeG12p6": {
+          "drawCalls": 476,
+          "triangles": 2399616
+        }
+      },
+      "ch2": {
+        "drawCalls": 176,
+        "triangles": 2736330,
+        "textureBytes": 310601856,
+        "beforeG12p6": {
+          "drawCalls": 479,
+          "triangles": 2401770
+        }
+      },
+      "ch3": {
+        "drawCalls": 221,
+        "triangles": 3257470,
+        "textureBytes": 310601856,
+        "beforeG12p6": {
+          "drawCalls": 495,
+          "triangles": 3008110
+        }
+      },
+      "ch4": {
+        "drawCalls": 226,
+        "triangles": 3294492,
+        "textureBytes": 310605952,
+        "beforeG12p6": {
+          "drawCalls": 573,
+          "triangles": 2973132
+        }
+      },
+      "ch5": {
+        "drawCalls": 217,
+        "triangles": 3165546,
+        "textureBytes": 310601856,
+        "beforeG12p6": {
+          "drawCalls": 491,
+          "triangles": 2916186
+        }
+      }
+    }
   }
 }
