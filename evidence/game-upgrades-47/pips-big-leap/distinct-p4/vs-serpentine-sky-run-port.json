@@ -1,0 +1,733 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:48:56.820Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ],
+    "framesB": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.852,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 46,
+    "confidentDifferentRate": 0.9583333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.852,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple dusk sky, cloud sea and floating islands with a human ninja-style runner",
+        "Image B: brown-orange enclosed scene with an acorn-capped chibi character and industrial metal towers",
+        "Different palettes, character styles and environment themes"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn character, low-poly pine trees, bright green daytime",
+        "Image B: human ninja-like character on brick road, red sunset sky with cloud sea",
+        "Different art style, palette and scenery (floating islands vs. platforms with drones)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-capped chibi character in an enclosed rust-brown industrial hall with metal cage towers",
+        "Image B: humanoid warrior on a tiled bridge above a golden cloud sea with floating tree islands",
+        "Different character styles, scene composition and lighting: dim, closed-in lighting in A and a bright sun-glow open sky in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: open sky with floating islands, a brick bridge and a humanoid ninja-style character",
+        "Image B: enclosed brown industrial setting with a cartoon acorn-headed character and metal cage towers",
+        "Different character designs, art styles and environment themes, with only a shared red-orange palette"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn character on a green lawn with low-poly pine trees and a blue sky",
+        "Image B: pink-purple sky, cloud sea, brick path and a human samurai-style character",
+        "Different palette, scenery and character style"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark blue night palette with cloud sea and floating islands; Image B: warm orange daylight with overcast sky",
+        "Different characters: a humanoid ninja-like figure vs. an acorn-capped creature",
+        "Different scenery and art style: glowing tiled bridge and lanterns vs. windmill, crates, barrel and wooden platforms"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different protagonists: a blue-clad human warrior vs. an orange acorn-capped creature",
+        "Pink sky, cloud sea and floating islands vs. a dark brown indoor industrial scene",
+        "Different settings and palettes: pastel open-air path vs. warm brown machinery and platforms"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple night sky, cloud sea and floating islands with a human ninja character",
+        "Image B: bright daytime low-poly pine forest with an acorn character and drones",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night scene with a blue palette, a moon, a cloud sea and a humanoid warrior on a tiled bridge",
+        "Image B is a daytime scene with warm orange and brown tones, an acorn-headed character, a windmill and wooden crates",
+        "Both are third-person, stylized, floating-platform worlds, which only weakly suggests a shared engine"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a realistic-proportioned warrior in A, a cartoon acorn-capped figure in B",
+        "A has a moon, cloud sea and a brick bridge with lanterns; B has glossy metallic platforms and crystal rings",
+        "Both are night scenes with stars and floating platforms, but the art styles and materials differ"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hazy orange sunset sky over a sea of clouds, with a humanoid character on a brick path",
+        "Image B: low-poly green pine forest under a blue sky, with an acorn character",
+        "Different character styles, palettes and scenery (floating islands and lanterns vs. drones, portal arch and grass platforms)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: warm brown/orange indoor palette with an acorn-capped character and mechanical towers",
+        "Image B: cold blue night sky, cloud sea and floating islands with a human warrior",
+        "Different art style, lighting and setting, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night-blue cloud sea, floating islands, human warrior on a glowing tiled bridge",
+        "Image B: bright daytime green platforms, low-poly pines, acorn character, purple drones",
+        "Different palette, character design and world theme"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: warm orange desert sky, a cloud sea and a brick path, with a human character in teal",
+        "Image B: dark blue starry night, metallic purple platforms and ring portals, with an acorn-capped character",
+        "Different palette, scenery and character design, and no shared art style or props"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: purple dusk sky, cloud sea and floating islands with a human ninja character",
+        "Image B: bright daytime green low-poly pine forest with an acorn character",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different protagonists: acorn-capped creature vs. topknot warrior in blue",
+        "Different settings and palettes: overcast sky with wooden platforms vs. pink dusk sky with cloud sea and a long tiled bridge",
+        "Different art styles: cartoon props (barrel, crate, windmill) vs. floating rock islands and lanterns"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night sky, deep blue palette, acorn-headed character with metallic ring and crystal props",
+        "Image B: pink-peach daytime cloud sea, brick path, human warrior character, lanterns",
+        "Different art style and lighting, with no shared characters or props apart from floating platforms"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink pastel sky, cloud sea, floating islands, humanoid warrior on a bridge",
+        "Image B: dark brown interior, copper scaffold towers, acorn-capped character",
+        "Different palettes, settings and character styles"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a green low-poly pine forest with an acorn character under a blue sky, Image B is a pink dusk sky over a cloud sea with a human character",
+        "Different palettes: saturated greens and blues against pastel pink and peach",
+        "Different scenery: Image A has a stone gate and purple drones, Image B has floating tree islands, lanterns, and a tiled bridge path"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: green low-poly pine forest and an acorn character under a blue daytime sky",
+        "Image B: pink-purple sunset sky, cloud sea, and a humanoid warrior on a tiled bridge",
+        "Different art style and palette: saturated cartoon green vs. pastel dreamy haze"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a purple-orange sunset sky, a sea of golden clouds and a pink brick walkway, while Image B has a pale blue sky and green grass",
+        "different characters: a human runner in teal clothes versus an acorn-headed creature",
+        "different scenery and props: floating islands and lamp posts versus low-poly pine trees, purple drones and a carved wooden archway"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-capped character in a dark brown indoor scene with ornate scaffold towers",
+        "Image B: humanoid anime-style character on a brick road above clouds with floating islands and a sun",
+        "Different settings, character styles and palettes (dark brown interior vs. open hazy sky)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different protagonists: humanoid runner in teal vs acorn-capped creature",
+        "Red-orange sunset with cloud sea and brick road vs pale blue sky with grey-lavender platforms",
+        "Different scenery and props: floating tree islands and lanterns vs wooden tower, sci-fi ring and acorns"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a realistic anime-style girl in teal against a chibi acorn-hat character",
+        "Image A is an open sky with floating islands over a cloud sea, Image B is an enclosed brown industrial interior with metal towers",
+        "Different art style and palette: soft pastel sepia and green against a dark red-brown with heavy detailed textures"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different protagonists: a humanoid in teal clothing vs. an acorn-capped creature",
+        "Open sky with floating islands and sand clouds vs. an enclosed dark brown interior with scaffold towers",
+        "Different level geometry: a tiled green-edged bridge path vs. a plain cream platform with blocks"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: acorn character, low-poly green pine forest, blue daytime sky",
+        "Image B: human ninja-like character on a pink brick bridge above clouds with floating islands",
+        "Completely different palettes (green/blue vs pink/purple haze) and art styles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: starry night sky with floating metal-ringed crystal gems and an acorn-capped cartoon character",
+        "B: hazy twilight gradient sky over a cloud sea with a realistic-style warrior on a tiled road",
+        "Different art styles, character design and ground materials (glossy purple metal platforms vs. blue cobbled path with lanterns)"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-capped cartoon character in an enclosed brown/orange industrial setting",
+        "Image B: realistic-styled humanoid on a blue night bridge with floating islands and a moon",
+        "Different palette, scenery and character art style, with no shared assets"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an enclosed brown interior with an acorn-capped character and mechanical towers",
+        "Image B is an open red sunset sky with a cloud sea, floating islands and a brick bridge",
+        "The two frames differ in character design, scenery and palette"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "different protagonists: humanoid runner in teal vs acorn-cap character",
+        "A has a purple-orange sunset sky over golden cloud sea; B has a pale blue daytime sky",
+        "A has a long brick-tiled path with lamp posts; B has floating lavender slabs with rocks and a tower"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night starfield with deep blue palette and an acorn-capped cartoon character on metallic platforms with ring and crystal props",
+        "Image B: golden sunset sky over a cloud sea, with a human warrior on a brick path and floating tree islands",
+        "Different character styles, lighting and world themes"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: warm brown indoor setting with an acorn-capped creature and mechanical towers",
+        "Image B: cool blue night sky, moon and floating islands over a cloud sea with a human warrior",
+        "Different character design, palette, lighting and environment style"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-headed character on a cartoon platform world with a windmill, barrel and crate under an overcast grey sky",
+        "Image B: samurai-style character on a tiled bridge above pink clouds with floating islands",
+        "Different palettes (orange/grey vs pink/purple), different character designs and different scenery"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-headed cartoon character on a floating toy-like world with a windmill, barrel and crate, under a pale overcast sky",
+        "Image B: realistic humanoid warrior on a tiled bridge with floating tree islands over a golden sand-cloud sea at sunset",
+        "Different art styles and palettes: cartoon pastel vs painterly warm orange glow"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: enclosed brown interior with an acorn-capped character and industrial scaffold towers",
+        "Image B: open purple-orange sky, cloud sea, floating islands and a human runner on a long road",
+        "Different palettes, lighting and character styles (warm brown vs. saturated pastel gradient)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "different characters: acorn-cap creature vs. blue-clad humanoid",
+        "different settings: pale daytime platforms with rocks and a sci-fi ring vs. purple dusk with brick road and cloud sea",
+        "different palettes and scenery: pale blue-gray sky vs. saturated purple sky, floating tree islands and lanterns"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different protagonists: humanoid ninja-like runner vs. acorn-capped character",
+        "Different environments: purple cloud sea with floating islands vs. dark blue starry sky with metallic ring portals",
+        "Different materials and palette: matte tiled path vs. glossy chrome and crystal surfaces"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "different characters: humanoid warrior vs acorn-capped creature",
+        "night sky with moon vs bright daytime blue sky",
+        "different environments: tiled bridge over clouds vs gray platforms with floating rocks and sci-fi ring"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "different protagonists: stylized acorn-hat child vs. realistic blue-clad warrior",
+        "palette and lighting differ: dark brown industrial interior vs. bright pink cloud sky",
+        "different art styles: heavy metal cage towers vs. floating islands and tiled bridge"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "different protagonists: human warrior in teal vs acorn-headed creature",
+        "Image A has a warm orange desert-cloud sky and floating islands; Image B has a blue sky and low-poly pine forest",
+        "different environments: brick bridge path vs green grass platforms with drones and gate"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-capped cartoon character, windmill and wooden crate on pale overcast sky",
+        "Image B: humanoid warrior on a brick road with floating islands in a red sunset cloud sea",
+        "Different art style and palette: bright toy-like pastoral vs. dramatic saturated red atmosphere"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-headed character on pale lavender platforms in a blue sky",
+        "Image B: human warrior on a tiled road above orange cloud sea at sunset",
+        "Different palettes, characters and level themes"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "different protagonists: blue-clad humanoid vs acorn-capped character",
+        "pink/magenta cloud-sea sunset vs pale blue daytime sky",
+        "brick path with lamps vs smooth lavender platforms with sci-fi ring and wooden tower"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple-orange sunset sky, golden cloud sea, floating islands, pastel pink brick path",
+        "Image B: low-poly green pine forest, blue daytime sky, acorn character on grass platforms",
+        "Different characters, palettes and lighting, no shared level or art style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different characters: teal-clad humanoid runner vs. acorn-capped creature",
+        "Red-orange sunset cloud sea and brick road vs. dark blue starry night with glossy metallic platforms",
+        "Different scenery: floating tree islands and lanterns vs. ringed crystal portals and floating slabs"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "different protagonists: humanoid ninja-like warrior vs acorn-capped creature",
+        "night blue cloud-sea setting with tiled path vs bright daytime sky with floating platforms",
+        "different environment props: floating tree islands and lanterns vs rocks, wooden tower and sci-fi ring portal"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: warm brown/orange interior with an acorn-capped chibi character and industrial cage towers",
+        "Image B: cool blue night palette with a cloud sea, floating islands and a realistic humanoid on a tiled bridge",
+        "Different art style, character design and lighting"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night sky with stars, deep blue palette, acorn-capped character",
+        "Image B: pink dusk sky over a cloud sea, human ninja-style character on a brick path",
+        "Different art style and lighting: glossy metallic platforms and crystal rings vs soft pastel haze with floating tree islands"
+      ]
+    }
+  ]
+}

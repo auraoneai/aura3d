@@ -26,6 +26,8 @@ import {
   SLAB_RADIUS,
   CRYSTAL_OVERRIDES,
   SEED_OVERRIDES,
+  PIP_GLOSS,
+  CONTACT_SHADOWS,
   SURFACES,
   ambientEmitterNode,
   auroraNode,
@@ -559,7 +561,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   const aurora = auroraNode(spec, look, scale);
   if (aurora) builder.add(aurora);
   for (const n of millpondNodes(spec, look)) builder.add(n);
-  builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
+  builder.add(effects.contactShadows(CONTACT_SHADOWS));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));
   if (look.lens !== "none") builder.add(miniatureDofNode());
@@ -825,6 +827,12 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     // C19: NPCs are camera obstacles too, so the boom shortens instead of
     // letting a 1.35 m runner fill the foreground.
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
+    // GU47 phase 4: the diorama draws no voxel NPCs. Every rubric judgement named the blocky
+    // helper/sidekick as the style clash in the frame (modeling, composition, animation); the
+    // rigged hedgehog and beetle villagers (PBL-A3, WP-36) take their places when they land.
+    // The NPCs are pure decor (no runtime node, no collider); the camera obstacle stays so the
+    // camera and collision world are identical in both looks (PRD D8).
+    if (diorama) continue;
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
     builder.add(
@@ -839,7 +847,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   // with `scaleMode: "fit"` sizes Pip's bespoke GLB prominently in frame with
   // his feet grounded on the platform top surface.
   builder.add(
-    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.25, scaleMode: "fit" })
+    model(assets.pip, { name: nodeName.hero, castShadow: true, targetHeight: 1.25, scaleMode: "fit", ...(diorama ? { materialOverrides: PIP_GLOSS } : {}) })
       .position(spec.spawn[0], spec.spawn[1], spec.spawn[2])
       .rotate(0, spec.spawnYaw ?? Math.PI, 0)
       .animate({ clip: PIP_CLIPS.idle, loop: true })

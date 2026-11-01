@@ -48,7 +48,11 @@ export interface WorldLook {
   /** The engine look the overrides retune (it keeps the AO, bloom and grade children). */
   readonly baseLook: AuraLookId;
   readonly hdri: { readonly id: AuraHdriId; readonly intensity: number; readonly rotationDeg: number };
-  /** One shadowed key per world (PCSS, 3 cascades at High; the tier table degrades it). */
+  /**
+   * One shadowed key per world (PCSS, 3 cascades at High; the tier table degrades it). GU47 phase 4:
+   * the key sits to the side of the course (azimuth 65-110 or 290-300) so tree, prop and Pip shadows
+   * fall across the lawn instead of away from the lens, with a small light size for crisp edges.
+   */
   readonly key: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly lightSize: number; readonly softness: number };
   /** Cool rim, an unshadowed directional opposite the key (E-A rim override). */
   readonly rim: { readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
@@ -184,15 +188,15 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "garden mid-morning",
     baseLook: "outdoor-day",
     hdri: { id: "autumn_field_puresky", intensity: 1.0, rotationDeg: 0 },
-    key: { elevationDeg: 48, azimuthDeg: 35, color: "#fff2dc", intensity: 3.0, lightSize: 0.9, softness: 0.55 },
-    rim: { azimuthDeg: opposite(35), color: "#b8d2ff", intensity: 0.5 },
-    hemisphere: { skyColor: "#d6e8f6", groundColor: "#5a6a34", intensity: 0.32 },
+    key: { elevationDeg: 38, azimuthDeg: 100, color: "#fff2dc", intensity: 3.6, lightSize: 0.45, softness: 0.42 },
+    rim: { azimuthDeg: opposite(100), color: "#b8d2ff", intensity: 0.5 },
+    hemisphere: { skyColor: "#d6e8f6", groundColor: "#5a6a34", intensity: 0.16 },
     background: "#cfe3f1",
     hdriSky: true,
     exposureEv: 0,
     fog: { color: "#c4d6e4", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.42, maxOpacity: 0.16 },
     base: { felt: "#5f8a3e", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#6a9a48" },
-    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.04, tint: 0, vignette: { intensity: 0.05, color: "#1c140b" } },
+    post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.16, temperature: 0.04, tint: 0, vignette: { intensity: 0.05, color: "#1c140b" } },
     ambient: { kind: "petals", color: "#f4d4d8", maxParticles: 260, rate: 34, size: [0.035, 0.07], lifetime: [6, 9], speed: [0.1, 0.32], gravity: -0.05, drag: 0.4, additive: false },
     practicals: [],
     dust: "#c9b48a",
@@ -202,16 +206,16 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     id: "w1",
     hour: "canopy dawn shafts",
     baseLook: "outdoor-day",
-    hdri: { id: "autumn_field_puresky", intensity: 0.92, rotationDeg: 70 },
-    key: { elevationDeg: 50, azimuthDeg: 40, color: "#ffe2b8", intensity: 3.0, lightSize: 0.7, softness: 0.5 },
-    rim: { azimuthDeg: opposite(40), color: "#9fc2ff", intensity: 0.45 },
-    hemisphere: { skyColor: "#d2e4ee", groundColor: "#4a5a2a", intensity: 0.3 },
+    hdri: { id: "autumn_field_puresky", intensity: 0.95, rotationDeg: 70 },
+    key: { elevationDeg: 34, azimuthDeg: 80, color: "#ffe2b8", intensity: 3.6, lightSize: 0.45, softness: 0.42 },
+    rim: { azimuthDeg: opposite(80), color: "#9fc2ff", intensity: 0.45 },
+    hemisphere: { skyColor: "#d2e4ee", groundColor: "#4a5a2a", intensity: 0.15 },
     background: "#e6e4d2",
     hdriSky: true,
     exposureEv: 0,
     fog: { color: "#cdd8dc", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.38, maxOpacity: 0.16 },
     base: { felt: "#4f7a36", clay: "#5c4129", skirt: "#2a1d12", mound: "#5f8a40" },
-    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.08, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.06, color: "#120d07" } },
+    post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.14, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.06, color: "#120d07" } },
     ambient: { kind: "spores", color: "#e6eeb0", maxParticles: 320, rate: 40, size: [0.025, 0.05], lifetime: [7, 10], speed: [0.06, 0.2], gravity: 0.02, drag: 0.5, additive: true },
     practicals: [],
     dust: "#a08a62",
@@ -222,15 +226,15 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "millpond golden hour",
     baseLook: "golden-hour",
     hdri: { id: "industrial_sunset_puresky", intensity: 0.95, rotationDeg: 250 },
-    key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.8, lightSize: 0.8, softness: 0.5 },
-    rim: { azimuthDeg: opposite(320), color: "#a8c4ff", intensity: 0.45 },
-    hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.3 },
+    key: { elevationDeg: 24, azimuthDeg: 290, color: "#ffc489", intensity: 3.4, lightSize: 0.45, softness: 0.42 },
+    rim: { azimuthDeg: opposite(290), color: "#a8c4ff", intensity: 0.45 },
+    hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.15 },
     background: "#f6d4a8",
     hdriSky: true,
     exposureEv: 0,
     fog: { color: "#e8c8a4", density: 0.001, heightDensity: 0.05, heightFalloff: 0.4, maxOpacity: 0.1 },
     base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
-    post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.1, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
+    post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.16, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
     practicals: [],
     lensFlare: { intensity: 0.55 },
@@ -243,15 +247,15 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "dandelion-fluff dawn",
     baseLook: "alpine-snow",
     hdri: { id: "autumn_field_puresky", intensity: 0.96, rotationDeg: 200 },
-    key: { elevationDeg: 40, azimuthDeg: 30, color: "#fff0e0", intensity: 3.0, lightSize: 0.6, softness: 0.4 },
-    rim: { azimuthDeg: opposite(30), color: "#c6b8ff", intensity: 0.5 },
-    hemisphere: { skyColor: "#e4e6fa", groundColor: "#7a6a86", intensity: 0.3 },
+    key: { elevationDeg: 36, azimuthDeg: 110, color: "#fff0e0", intensity: 3.4, lightSize: 0.45, softness: 0.42 },
+    rim: { azimuthDeg: opposite(110), color: "#c6b8ff", intensity: 0.5 },
+    hemisphere: { skyColor: "#e4e6fa", groundColor: "#7a6a86", intensity: 0.15 },
     background: "#f4dcd2",
     hdriSky: true,
     exposureEv: 0,
     fog: { color: "#d8e2ec", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.36, maxOpacity: 0.16 },
     base: { felt: "#9a8a9a", clay: "#7a6476", skirt: "#3a2c3c", mound: "#b8a6b0" },
-    post: { preset: "daylight-outdoor", contrast: 1.12, saturation: 1.08, temperature: 0.04, tint: 0.02, vignette: { intensity: 0.05, color: "#2a1c24" } },
+    post: { preset: "daylight-outdoor", contrast: 1.2, saturation: 1.14, temperature: 0.04, tint: 0.02, vignette: { intensity: 0.05, color: "#2a1c24" } },
     ambient: { kind: "fluff", color: "#fff4e4", maxParticles: 300, rate: 32, size: [0.04, 0.085], lifetime: [7, 10], speed: [0.12, 0.34], gravity: 0.03, drag: 0.45, additive: false },
     practicals: [],
     dust: "#e6d6c0",
@@ -262,7 +266,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "lava-lit basalt cellar",
     baseLook: "interior-industrial",
     hdri: { id: "hangar_interior", intensity: 0.6, rotationDeg: 30 },
-    key: { elevationDeg: 55, azimuthDeg: 20, color: "#ffb48a", intensity: 1.4, lightSize: 1.2, softness: 0.7 },
+    key: { elevationDeg: 42, azimuthDeg: 70, color: "#ffb48a", intensity: 1.4, lightSize: 0.5, softness: 0.35 },
     rim: { azimuthDeg: 200, color: "#7d8fd8", intensity: 0.3 },
     hemisphere: { skyColor: "#3a2a2a", groundColor: "#ff6a2a", intensity: 0.5 },
     background: "#3a1c12",
@@ -285,7 +289,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "amber hollow-tree palace",
     baseLook: "interior-warm",
     hdri: { id: "warm_bar", intensity: 0.6, rotationDeg: 200 },
-    key: { elevationDeg: 50, azimuthDeg: 25, color: "#ffe6c8", intensity: 1.4, lightSize: 1.0, softness: 0.65 },
+    key: { elevationDeg: 44, azimuthDeg: 65, color: "#ffe6c8", intensity: 1.4, lightSize: 0.5, softness: 0.35 },
     rim: { azimuthDeg: 205, color: "#8fa8e8", intensity: 0.35 },
     hemisphere: { skyColor: "#f0d6b0", groundColor: "#4a301a", intensity: 0.45 },
     background: "#2e1c10",
@@ -307,11 +311,12 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hour: "firefly night garden",
     baseLook: "polar-night",
     hdri: { id: "rooftop_night", intensity: 0.55, rotationDeg: 300 },
-    key: { elevationDeg: 30, azimuthDeg: 300, color: "#b8ccff", intensity: 1.3, lightSize: 0.8, softness: 0.6 },
+    key: { elevationDeg: 30, azimuthDeg: 300, color: "#b8ccff", intensity: 1.3, lightSize: 0.45, softness: 0.32 },
     rim: { azimuthDeg: opposite(300), color: "#7fe8d8", intensity: 0.35 },
     hemisphere: { skyColor: "#2a3a6a", groundColor: "#141a2a", intensity: 0.35 },
     background: "#0b1230",
-    exposureEv: 1.35,
+    // Phase 4: 1.35 -> 1.15; the lilac start slab bloomed to a glare sheet in p4-r1 (mean 89 vs the 55-80 band).
+    exposureEv: 1.15,
     fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
@@ -363,7 +368,9 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
       color: look.key.color,
       intensity: look.key.intensity,
       // Phase 3: a little depth and normal bias; the default left diagonal acne bands on the big near slabs.
-      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0015, normalBias: 0.14 }
+      // Phase 4: more depth bias for the acne bands the lower side key drew on the felt lawn (p4-r1); normal bias
+      // stays small, since 0.35 already lifted Pip's shadow off his feet in w3 (p4-r2).
+      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0035, normalBias: 0.22 }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },

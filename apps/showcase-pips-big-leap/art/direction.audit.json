@@ -26,7 +26,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.6
           },
           {
             "type": "directional",
@@ -36,7 +36,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.32
+            "intensity": 0.16
           }
         ],
         "hasAmbient": false,
@@ -228,13 +228,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "helperChar",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -264,7 +257,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plat:mover-lane",
             "practical": false
           },
@@ -274,7 +267,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plat:timed-1",
             "practical": false
           },
@@ -284,7 +277,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plat:timed-2",
             "practical": false
           },
@@ -294,7 +287,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:earth",
             "practical": false
           },
@@ -304,7 +297,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:grass",
             "practical": false
           },
@@ -375,7 +368,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.6
           },
           {
             "type": "directional",
@@ -385,7 +378,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,
@@ -605,13 +598,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "showcaseSidekickRunner",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -651,7 +637,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:grass",
             "practical": false
           },
@@ -661,7 +647,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:earth",
             "practical": false
           },
@@ -671,7 +657,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:mushroom",
             "practical": false
           },
@@ -747,7 +733,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.8
+            "intensity": 3.4
           },
           {
             "type": "directional",
@@ -757,7 +743,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,
@@ -970,13 +956,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "helperChar",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -1041,7 +1020,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:dock",
             "practical": false
           },
@@ -1051,7 +1030,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:wood",
             "practical": false
           },
@@ -1115,7 +1094,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.4
           },
           {
             "type": "directional",
@@ -1125,7 +1104,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,
@@ -1334,13 +1313,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "showcaseSidekickRunner",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1709,13 +1681,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "helperChar",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -1775,7 +1740,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:stone",
             "practical": false
           },
@@ -1785,7 +1750,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:ember",
             "practical": false
           },
@@ -2191,7 +2156,7 @@
             "practical": false
           },
           {
-            "name": "matte clay",
+            "name": "glazed clay",
             "node": "plats:marble",
             "practical": false
           },
@@ -2484,13 +2449,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "showcaseSidekickRunner",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },

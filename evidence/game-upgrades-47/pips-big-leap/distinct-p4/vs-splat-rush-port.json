@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:48:13.714Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ],
+    "framesB": [
+      "splat-rush-port--default--settle-60s",
+      "splat-rush-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.925,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.925,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a realistic-textured acorn character and sci-fi ring portal; Image B has a flat-shaded red ball",
+        "Image A has a pale blue daytime sky with muted lavender platforms; Image B has a pink and orange sunset with cartoon clouds",
+        "Image B's low-poly floating islands and hot air balloons have a different art style and scale from A's platform course"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel sunset sky, flat-shaded cartoon clouds and a red ball",
+        "Image B: night starfield with glossy metallic and crystal materials and an acorn character",
+        "Different lighting, palette and rendering style"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink sunset sky, cloud sea, red ball, floating islands and hot air balloons",
+        "Image B: dark brown industrial setting with detailed metal scaffold towers and an acorn-hat character",
+        "Different art styles: flat stylized low-poly vs. detailed textured realistic rendering"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic PBR materials with an acorn character and sci-fi ring structure on purple platforms",
+        "Image B: flat stylized cartoon clouds, floating grass islands and hot air balloons with a red ball",
+        "Different lighting and palette: hazy pale blue in A, saturated cyan with speed lines in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn-capped character on a wooden platform with a windmill and crates; Image B has a red glossy ball on a cloud floor",
+        "Image A uses realistic soft lighting with an overcast sky; Image B uses a flat, stylized pink sunset gradient with cartoon clouds",
+        "Different scenery: floating islands, hot air balloons and wooden pillars in B; none of these appear in A"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn-headed character, low-poly pine trees and purple drones on a platform course",
+        "Image B has a plain red ball in a bright cartoon sky with floating islands, balloons and puffy clouds",
+        "Different rendering styles: A has dark, realistic shading and blurred ground, B has flat, bright, unlit colors"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink sunset sky, cloud floor and a red ball with floating islands and balloons",
+        "Image B: green grass platforms, low-poly pine trees and an acorn character with purple drones",
+        "Different palettes, lighting and character designs"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright daytime sky with cartoon clouds, floating islands and a plain red ball",
+        "Image B: dark starry night with glossy metallic platforms and rings, plus an acorn-capped character",
+        "Different art styles: flat low-poly in A, glossy high-contrast bloom lighting in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial interior with an acorn-hat character",
+        "Image B: bright blue sky with floating grass islands, clouds and a red ball",
+        "Different palette, lighting and art style: gritty realistic metal vs. clean cartoon"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright flat-shaded cartoon sky with a red ball and floating islands",
+        "Image B: realistic lit scene with an acorn character, wooden props and an overcast sky",
+        "Different rendering styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pastel pink sunset sky, cloud sea, red glossy ball",
+        "Image B: acorn character on green grass with low-poly pine trees and daylight blue sky",
+        "Different palette, character type and lighting style"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright blue sky with floating grass islands, clouds and hot air balloons around a red ball",
+        "Image B: dark brown indoor setting with ornate metal towers and an acorn-capped character",
+        "Completely different palette, lighting and art style (cartoon pastel vs. warm, dark, detailed)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an indoor, brown and amber scene with a mushroom-capped character and detailed scaffold towers",
+        "Image B is an outdoor pastel pink and purple sunset sky with floating islands and hot air balloons, and a red glossy ball",
+        "The art styles differ: realistic textured props in A, flat low-poly cartoon shapes in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: acorn character on a forest platform course with purple drones, realistic-looking lighting",
+        "Image B: red ball over bright floating islands, balloons and puffy clouds, flat cartoon shading",
+        "Different art style, palette, and player object"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized pink sunset sky with red ball and floating islands",
+        "Image B: realistic blue sky with acorn-capped character and metallic sci-fi props",
+        "Different rendering style and lighting: flat pastel vs. detailed PBR materials"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: acorn character on a green platform with low-poly pine trees and a darker, more realistic lighting style",
+        "Different palette, character type and camera setup"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and hot air balloons around a red ball",
+        "Image B: acorn character on a grass platform with low-poly pines and drones",
+        "Different art style and lighting: flat saturated blue sky versus realistic shadows and depth haze"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark starry night scene with glossy metallic platforms and an acorn character, Image B is a bright daytime sky with cartoon clouds",
+        "Different art styles: realistic reflective materials with bloom in A, flat low-poly pastel shading in B",
+        "Different player objects: humanoid acorn-cap character in A, plain red ball in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink sunset sky with flat, stylized lavender clouds and a red ball character",
+        "Image B: realistic overcast sky with detailed PBR-style wood textures and an acorn-capped character",
+        "Different scenery and art style: floating islands with hot air balloons vs. windmill, crates and barrels on a wooden platform"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn-capped character, windmill and wooden crates under a hazy overcast sky, while Image B has a red ball in a saturated blue sky",
+        "Image A uses realistic, soft lighting with detailed textures, while Image B uses flat, bright cartoon shading with low-poly clouds",
+        "Image A is a ground-based platformer, while Image B shows floating islands and hot air balloons with speed lines"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial setting with an acorn-capped character",
+        "Image B: bright blue sky with floating grass islands, clouds and balloons, controlling a red ball",
+        "Different palette, lighting and art style (realistic metal textures vs flat cartoon shading)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial setting with an acorn-capped character and metal cage towers",
+        "Image B: pastel pink sky, floating grass islands and a red glossy ball",
+        "Different art style, palette and lighting (realistic textures vs flat cartoon shading)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink sunset sky, purple cloud floor, red ball, floating islands with hot air balloons",
+        "Image B: acorn-headed character on green grass among low-poly pine trees, with drones and a wooden arch",
+        "Different palette, lighting and character: stylized pastel look versus realistic daylight shading"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat, saturated cartoon style with a red ball, floating grass islands, hot air balloons and speed lines",
+        "Image B: realistic, hazy PBR rendering with a acorn-capped character and metallic sci-fi props on lavender platforms",
+        "Different palette and camera: bright cyan gradient sky in A, muted pale fog in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn character on a green platform course with low-poly pines and drones, while Image B has a red glossy ball on a cloud floor",
+        "Image A uses a pale blue daytime sky, Image B a pink and yellow sunset",
+        "Image B has stylized pastel clouds, floating islands and hot air balloons that do not appear in Image A"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night starfield with metallic rings and glossy platforms, acorn-capped character",
+        "Image B: pastel sunset sky with floating grass islands, hot air balloons and a red ball",
+        "Different palette, lighting and rendering style (dark glossy vs. soft flat pastel)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark brown indoor scene with a detailed acorn-capped character and ornate mechanical towers",
+        "Image B is a pastel pink-purple sky with floating islands, hot air balloons and a plain red ball",
+        "Different art styles and palettes: gritty textured brown versus flat soft stylized pastels"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright blue sky with floating islands, clouds and hot air balloons around a red ball",
+        "Image B: dark brown indoor scene with an acorn-capped character and rusty industrial towers",
+        "Different palette, lighting and art style: flat cartoon vs. warm, textured, moody"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized pastel sunset with a red ball character and cloud floor",
+        "Image B: realistic-textured acorn character on pale platforms against a blue sky",
+        "Different lighting, palette and material rendering"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark starry night with glossy metallic platforms and an acorn-capped character, Image B is a bright daytime sky with floating grass islands",
+        "Different art styles: A has reflective, realistic, moody lighting, B has flat, pastel, low-poly cartoon shading",
+        "Different player objects and scenery: A has a humanoid character and ring portals, B has a red ball, hot air balloons and towers"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial interior with an acorn-capped character",
+        "Image B: bright pastel sunset sky with floating islands and a red ball",
+        "Different art styles: gritty metal textures vs flat stylized clouds"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic PBR rendering with an acorn character, sci-fi ring portal and a wooden tower on purple slabs",
+        "Image B: flat cartoon low-poly style with a red ball, puffy clouds, floating grass islands and hot air balloons",
+        "Different characters, palettes and lighting (hazy pale blue vs saturated cyan sky)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: pastel pink sunset sky with floating islands and a red ball",
+        "Image B: dark brown interior with steampunk scaffold towers and an acorn-capped character",
+        "Different art style and palette: soft low-poly cartoon versus detailed textured warm-lit realism"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial scene with an acorn-capped character",
+        "Image B: bright blue sky with floating grass islands and a plain red ball",
+        "Different palette, lighting and art style (gritty, realistic textures vs. flat cartoon shading)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn character on a brown wooden platform with a hazy overcast sky and realistic soft lighting",
+        "Image B: saturated flat blue sky with low-poly clouds, floating grass islands, and a red ball",
+        "Different art styles: detailed PBR-style props in A versus simple cartoon shading in B"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a pastel pink sunset sky with a cloud floor, floating islands and a red ball",
+        "Image B is a daytime blue sky with low-poly pine trees, a green field and an acorn character",
+        "Different palettes, lighting, characters and art style"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized pink sunset sky with a flat cloud floor and a red ball character",
+        "Image B: overcast pale sky with realistic-looking textured wood, crates and a barrel, and an acorn-capped character",
+        "Different lighting, palette and rendering style"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a detailed acorn character with realistic PBR shading, drones, and a dark forest of low-poly pines",
+        "Image B is a flat-shaded cartoon sky scene with a plain red ball, puffy clouds, and floating islands",
+        "The two frames differ in rendering style and palette (muted, dramatic lighting vs bright saturated blue)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright blue sky with floating grass islands, clouds and hot air balloons around a red ball",
+        "Image B: dark brown indoor scene with ornate metal towers and an acorn-capped character",
+        "Completely different palette, lighting and art style (cartoon pastel vs. warm dark realistic)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky, floating islands and a red ball on a cloud floor",
+        "Image B: green grass platforms, low-poly pine trees and an acorn character with a daytime blue sky",
+        "Different art style and palette, with a stylized flat look in A and a more realistic lit look in B"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: dark starry night sky with metallic ring portals and glossy platforms",
+        "Image B: pastel sunset sky with floating grass islands, hot air balloons and flat-shaded clouds",
+        "Different player characters: acorn-capped character in A, red glossy ball in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B: low-poly pine forest with an acorn character and drones on a grass platform course",
+        "Different art style and lighting: flat saturated cartoon vs. shaded, realistic-lit scene"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a bright, cartoon blue sky with floating islands and a red ball; Image B is a dark brown industrial interior with an acorn-capped character",
+        "Image A has flat, simple low-poly clouds and saturated colors; Image B has detailed, gritty metal textures and moody lighting",
+        "The two frames have different player objects and camera setups (a sphere in open sky vs. a humanoid on a platform corridor)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown indoor scene with a detailed acorn-capped character",
+        "Image B: pastel sunset sky with a red glossy ball and floating islands",
+        "Different palette, materials and art style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel sunset sky, flat-shaded cartoon clouds and a red ball",
+        "Image B: dark starry night, glossy metallic platforms and a realistic acorn character",
+        "Different art style and lighting: soft low-poly vs. high-gloss reflective materials"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn-capped character on a wooden platform with windmill, barrel and crate, under an overcast pale sky",
+        "Image B has a red glossy ball on a pink-purple cloud floor with a sunset gradient sky, floating islands and hot air balloons",
+        "Rendering differs: A uses realistic-looking PBR lighting, B uses flat, stylized low-poly shading"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn-headed character on green platforms with low-poly pine trees and purple drones",
+        "Image B has a red glossy ball rolling on a pink cloud floor at sunset with floating islands and hot air balloons",
+        "The lighting and palette differ: bright blue daylight in A, pink and purple dusk in B, with no shared characters or props"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown industrial interior with an acorn-capped character and metal cage towers",
+        "Image B: bright pastel sunset sky with floating islands, hot air balloons, and a red glossy ball",
+        "Different art style, palette, and lighting: realistic gritty textures vs flat cartoon shading"
+      ]
+    }
+  ]
+}

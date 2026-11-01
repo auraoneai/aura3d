@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/c1440--card-2x.jpg",
+      "sha256": "7b4e1bae080d28043f5ffe074ece2fcdd55d3ed443323fb51424d61cd16f5bab"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-4/pips-big-leap--w3--settle-60s.jpg",
+      "sha256": "d0ca9faeb6cddfb7974103b0fcd3dac50b704112cd946f455bfedd2b7b15af33"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-6/pips-big-leap--w5--settle-60s.jpg",
+      "sha256": "6064a504b2e86c6e70aa7a1634ac84bdedff56e241a764dbbbb9356c473f2bfc"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-7/pips-big-leap--w6--settle-60s.jpg",
+      "sha256": "9e0bf52907a7825b767b0c5704994f6f1183ab128404dde97571a3b11789638c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 6,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5.5,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Forest frame has a readable warm sun and green bounce. The Clouds frame is washed out, with lavender platforms and pale sky at near-equal value. The Ember frame is lit evenly in brown against a flat dark-brown void, so the key light gives no clear direction."
+    },
+    {
+      "category": "shadows",
+      "seen": "The grass in the forest frame shows large stair-stepped, pixelated shadow-map blocks. The character's shadow on the Clouds platform is a blurry, blocky smear, which points to a low-resolution shadow map stretched over a large frustum. Shadows in the Ember frame are softer but have no contact darkening at the feet."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The glossy purple floor in the Starfall frame reflects the platforms and lights. The crystal rings and the metal portal in the Clouds frame pick up environment highlights. The cream platform blocks in the Clouds and Ember frames read as matte, with no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Every level is a single linear runway of floating rectangular slabs. Clouds and Ember have empty backdrops, with a blank sky and a flat brown wall. The forest frame frames the path with tree walls on both sides, but the trees repeat."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The forest and Clouds frames have light distance haze. The Ember frame has no depth fog against a flat backdrop. The Starfall frame has a sparse dot starfield and a few sparkles, but no volumetric or aerial perspective."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The platforms are untextured flat cream and lavender, with soft rounded bevels and no surface detail. They clash with the high-detail PBR props: the ornate brass towers, the chrome portal and the carved gate. The grass is a flat green gradient."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The acorn hero is charming and well modeled. The faceted low-poly pine trees and the bare dead trees in the forest frame clash in fidelity with the dense, kitbashed-looking brass towers and drones. The style is inconsistent across the asset set."
+    },
+    {
+      "category": "composition",
+      "seen": "Every frame is a centered symmetrical corridor with the hero at frame center and the goal at the vanishing point, which repeats across levels. The hero is about 12–15% of frame height, below the 18–25% target. The floating chocolate-like rock blob in the forest frame obscures the right midground."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low third-person chase view looking straight down the path. The genre recipe calls for a side-on follow camera. At this low angle the platform tops are hard to read for jump distances."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The Clouds frame has a heavy dark-blue blur and vignette along the bottom edge that looks like a depth-of-field or near-plane artifact. Tonemapping flattens contrast in the Clouds and Ember frames. The bloom on the Starfall floor is mild and acceptable."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD appears only in the forest frame. Its parchment pills for hearts, sun-seeds, acorns and time are legible and on-theme. The dev level-select bar across the top and the long objective text box add clutter, and the other frames show no HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

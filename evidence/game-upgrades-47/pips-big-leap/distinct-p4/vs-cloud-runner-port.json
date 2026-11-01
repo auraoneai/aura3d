@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:49:49.043Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ],
+    "framesB": [
+      "cloud-runner-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.794,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 44,
+    "confidentDifferentRate": 0.9166666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.794,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating purple platforms in a pale blue sky, acorn character",
+        "Image B: grounded dirt path with low-poly trees, cracked boulders and a human child character",
+        "Different palettes and scenery: pastel sky-island look vs earthy green and orange landscape"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-headed character on floating platforms with a windmill and crates, in a stylized toy-like world",
+        "Image B: human child in green on a dirt road with low-poly trees and cracked boulders",
+        "Different skies, scenery and character style: overcast cloud void vs. blue sky with a horizon sea"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: floating platforms, acorn character, purple drones, faceted low-poly pine trees",
+        "Image B: dirt path, cracked boulders, crumpled-texture foliage, human child character",
+        "Different palettes and sky: saturated clear blue with bright greens vs hazy, muted, earthy tones"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime outdoor scene with low-poly trees and cracked boulders; Image B is a night-sky scene with glossy metallic platforms",
+        "Different protagonists: a human boy in green in A and an acorn-capped character in B",
+        "Different palettes and materials: earthy greens and browns in A, saturated blue and purple with reflective chrome in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is an outdoor daytime scene with green grass, blue sky and a dirt path",
+        "Image B is an enclosed brown interior with steampunk towers and an acorn-capped character",
+        "Different characters: a small human boy versus an orange acorn creature"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: enclosed, dark red-brown industrial setting with metal cages and an acorn-hat character",
+        "Image B: bright outdoor daylight scene with blue sky, green grass and low-poly trees",
+        "Different character styles and lighting: glossy toy-like figure vs. a human child in a green outfit"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human child character, cracked boulders, orange cliff, dirt path",
+        "Image B: acorn character, flat-shaded low-poly cone pines, floating platforms, purple drones",
+        "Different palettes and lighting: hazy muted sky and ocean vs. bright saturated blue sky and green turf"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: hazy realistic sky, dirt road, cracked boulders and a child character",
+        "Image B: floating platforms, acorn character, purple drones and a stylized faceted-pine look",
+        "Different art style and level structure (open outdoor path vs. sky-island platformer)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating lavender platforms in a pale blue sky with an acorn-headed character",
+        "Image B: grounded dirt path, green meadow, low-poly trees and cracked boulders",
+        "Different character styles and palettes: A is hazy pastel with sci-fi and wooden props, B is earthy natural terrain"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-headed character on floating platforms with a windmill, barrel and crate in a stylized toy-like world",
+        "Image B: human child in green on a dirt road with low-poly trees and cracked boulders in a natural landscape",
+        "Different sky, palette and art style: overcast hazy sky with warm orange tones vs. blue sky with green meadows and a cliff"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a human child character on a dirt road with cracked boulders and an orange cliff, while Image B has an acorn character on floating platforms with drones",
+        "Image A's trees have crumpled, textured low-poly foliage and hazy distant ocean, whereas Image B's pine trees are clean, flat-shaded cones",
+        "Image B uses a bright, saturated sky and a carved archway and sci-fi props that do not appear in Image A"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-sky space setting with floating platforms and glowing crystal rings, while Image B is a daytime outdoor path with trees and boulders",
+        "Different protagonists: an acorn-capped character in A, a small curly-haired child in green in B",
+        "Different palettes and materials: saturated blue/purple glossy metal in A, earthy green/orange low-poly nature in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an enclosed, dark orange-brown industrial setting with metal cage towers, while Image B is an outdoor daytime scene with blue sky and green grass",
+        "Different characters: an acorn-capped chibi in A and a curly-haired child in green clothes in B",
+        "Different art styles: glossy stylized props in A and low-poly faceted trees with cracked boulders in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a bright outdoor scene with low-poly trees, a blue sky and a green meadow; Image B is a dark indoor scene with brown steampunk towers",
+        "Different protagonists: a small human boy in green clothes versus an orange acorn-capped character",
+        "Different lighting and palette: cool daylight versus warm amber glow with a brown backdrop"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human boy character on a dirt road with low-poly trees and cracked boulders",
+        "Image B: acorn-capped character on floating platforms with a windmill, barrel and crate",
+        "Different art styles and skies: hazy blue horizon with water vs. overcast white void"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: grounded dirt path with low-poly trees and cracked boulders, human boy character",
+        "Image B: floating lavender platforms in open sky with an acorn-capped character",
+        "Different art style and palette: earthy green/orange vs pale blue/lavender, with different character design"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: acorn character on floating platforms with purple drones and faceted low-poly cone trees",
+        "Image B: human child on a dirt path with cracked boulders, cliff and leafy painterly trees",
+        "Different art styles and settings: clean stylized cartoon vs. textured, hazy realistic-leaning look"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: bright outdoor daylight with grass, low-poly trees and a dirt path, and a human boy character",
+        "Image B: dark reddish-brown industrial interior with metal cage towers and an acorn-capped character",
+        "Different character models and overall palette and lighting"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-sky space setting with floating metallic platforms and glowing crystal rings; Image B is a daytime outdoor dirt path with trees and cliffs",
+        "Different protagonists: an acorn-capped character versus a curly-haired child in green",
+        "Different palettes and materials: saturated blue/purple glossy metal versus earthy green/orange low-poly nature with cracked boulders"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: enclosed brown indoor scene with an acorn-capped character and mechanical towers",
+        "Image B: outdoor daylight scene with blue sky, green grass, low-poly trees and a human child character",
+        "Different palettes and character styles (monochrome warm orange vs. natural green/blue)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn character, floating platforms, and purple drones",
+        "Image B: human child on a dirt path with cracked boulders and a rolling log",
+        "Different scenery and style: faceted low-poly pines versus crumpled-texture trees and a rock cliff"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating purple-grey platforms in a bright blue sky, acorn-capped character and sci-fi portal",
+        "Image B: grounded dirt road with low-poly trees, cracked boulders and a green grass landscape",
+        "Different character designs and palettes (acorn character vs. child in green outfit)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an enclosed, dark red-brown industrial setting with metal cage towers, while Image B is a bright outdoor scene with green grass, trees and sky",
+        "Different protagonists: an acorn-capped chibi character versus a dark-haired kid in green clothes",
+        "Different art styles: A has a glossy toy-like look with orange ember particles, B has low-poly textured trees, cracked boulders and a flat dirt path"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a human child character on a dirt path with cracked boulders and a cliff, while Image B has an acorn-headed character on floating platforms",
+        "Different tree styles: crumpled low-poly foliage with twisted trunks in A, and flat-faceted cone pines in B",
+        "Different environments: open flat horizon with hazy sky in A, and floating obstacle-course platforms with drones and an ornate gate in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 3,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly faceted trees, cracked boulders, and a human child character on a dirt road",
+        "Image B: acorn-capped character on floating platforms with a windmill, barrel, and crate in a cloudy sky",
+        "Different art styles and palettes: muted green and blue hazy landscape vs. warm orange toy-like platformer"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 3,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-sky space setting with floating platforms and glossy metallic rings; Image B is a daytime landscape with trees and a dirt path",
+        "Different protagonists: an acorn-capped character in A and a curly-haired child in green in B",
+        "Different palettes and materials: saturated blue and purple glow in A, natural green and orange with low-poly foliage in B"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 3,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is an outdoor daytime scene with a blue sky, green grass and a dirt path, while Image B is an enclosed brown interior with warm orange lighting",
+        "different protagonists: a human boy in green clothes versus an orange acorn-capped creature",
+        "different art styles: low-poly trees and cracked boulders versus detailed metallic scaffold towers and stone architecture"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn character with flat-shaded low-poly pine trees and floating platforms",
+        "Image B: human child with crumpled-texture trees, cracked boulders and a dirt road",
+        "Different palette and setting: bright saturated green and blue sky vs hazy muted sky, sea and orange cliff"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an outdoor daytime scene with a blue sky, green grass and a dirt path; Image B is an enclosed dark brown interior with warm orange lighting",
+        "Different protagonists: a human boy in green clothes versus an orange acorn-capped creature",
+        "Different art styles: low-poly trees and cracked boulders versus detailed metallic scaffold towers and stone platforms"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-sky space setting with floating metallic platforms and glowing crystal rings, while Image B is a daytime outdoor path with trees and boulders",
+        "Different characters: an acorn-capped figure in A and a child in a green outfit in B",
+        "Different palettes and lighting: saturated blue and purple glow in A, natural green and tan daylight in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 4,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-headed character on floating platforms with a windmill and crates, overcast sky",
+        "Image B: human child in green on a dirt road with low-poly trees and cracked boulders",
+        "Different scenery, character design and lighting: A is warm orange toy-like, B is natural outdoor with blue sky"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 4,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: enclosed brown-orange industrial setting with metal cage towers and an acorn-capped character",
+        "Image B: open daylight landscape with low-poly trees, cracked boulders and a dirt path",
+        "Different character styles and palettes: glossy toy-like figure vs. a curly-haired kid in green"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 4,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: grounded dirt road with low-poly trees, cracked boulders and a human child character",
+        "Image B: floating lavender platforms in a pale sky with an acorn-headed character and sci-fi ring props",
+        "Different art style and palette: earthy green and orange in A, pastel blue and lavender in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 4,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has an acorn character with flat-shaded low-poly pines and floating platforms with drones",
+        "Image B has a human child character with crumpled-texture trees, cracked boulders and a dirt road",
+        "Different sky and palette: clear pale blue with sharp green in A, hazy overcast with an earthy tan and orange palette in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 4,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human child on a dirt road with crinkled low-poly trees and cracked boulders, hazy horizon",
+        "Image B: acorn character on floating platforms with flat faceted pine trees and purple drones",
+        "Different palettes and world structure: earthy open landscape vs. bright, clean sky-platform course"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is an enclosed brown indoor scene with an acorn-capped character and mechanical towers; B is an outdoor daylight scene with sky, trees and boulders",
+        "Different characters and art styles: orange stylized acorn creature vs green-clothed human boy with curly hair",
+        "Different palettes and lighting: warm monochrome amber vs blue sky with saturated green grass and dirt path"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 5,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night starfield with floating metallic platforms and glowing crystal rings, while Image B is a daytime grassy trail with trees and boulders",
+        "Different characters: an acorn-capped sprite in A and a green-clothed human child in B",
+        "Different palettes and lighting: saturated blue/purple glow in A, natural green/orange daylight in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 5,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-capped character on floating platforms with a windmill and pagoda, overcast pale sky",
+        "Image B: human child on a dirt path with low-poly trees, cracked boulders and a cliff, blue sky and water",
+        "Different art style and world: toy-like wooden props versus a naturalistic low-poly landscape"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 5,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human child character on a dirt path with cracked boulders and a hazy horizon",
+        "Image B: acorn character on floating platforms with flat-shaded low-poly pines and purple drones",
+        "Different art styles: textured, crumpled foliage in A and clean faceted geometry in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 5,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human child character on dirt path with cracked boulders and a hazy horizon",
+        "Image B: acorn-capped character on floating platforms with purple drones and flat-faceted pine trees",
+        "Different art styles: A uses crinkled, painterly textures, B uses clean flat-shaded low-poly shapes"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 5,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating purple-grey platforms in a pale blue sky with an acorn character",
+        "Image B: grounded dirt road with green grass, low-poly trees and cracked boulders",
+        "Different character designs and palettes (acorn-headed figure vs. green-clad human boy)"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 5,
+      "a": "pips-big-leap--w4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: bright outdoor daylight, green meadow, dirt path, low-poly trees",
+        "Image B: dark reddish-brown industrial interior with metal cages and ember particles",
+        "Different protagonists: a curly-haired boy in green versus an acorn-capped character"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 6,
+      "a": "pips-big-leap--w5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is an outdoor daylight scene with a blue sky, grass and a dirt path, while Image B is an enclosed dark brown interior with warm orange lighting",
+        "Different protagonists: a human child in green clothes versus an orange acorn-capped creature",
+        "Different art styles: low-poly trees and cracked boulders versus ornate metallic scaffold towers and a stone archway"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 6,
+      "a": "pips-big-leap--academy--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has an acorn character and flat-shaded low-poly cone pines on floating platforms, with purple drones",
+        "Image B has a human child character, crumpled-texture trees, cracked boulders, and a dirt path by a sea horizon",
+        "The two frames differ in lighting and sky: A is clear, bright and saturated, B is hazy and muted"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 6,
+      "a": "pips-big-leap--w1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: acorn character on floating platforms with stylized low-poly cone pines and purple drones",
+        "Image B: human child on a dirt path with cracked boulders, crinkled leaf-texture trees and a hazy lake horizon",
+        "Different art direction: flat bright cartoon shading versus a muted, painterly, textured look"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 6,
+      "a": "pips-big-leap--w6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night starfield with glossy metallic platforms and crystal rings",
+        "Image B: daytime low-poly trees, dirt path and cracked boulders",
+        "Different protagonists: acorn-capped sprite vs. curly-haired child in green"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 6,
+      "a": "pips-big-leap--w3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: grounded dirt path with low-poly trees, cracked boulders and a human child character",
+        "Image B: floating lavender platforms in open sky with an acorn-headed character and sci-fi ring props",
+        "Different character designs, palettes and environment themes"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 6,
+      "a": "pips-big-leap--w2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn-headed character on floating toy-like platforms with windmill and crates",
+        "Image B: human child on a dirt path with low-poly trees and cracked boulders",
+        "Different scenery, character design and art style"
+      ]
+    }
+  ]
+}
