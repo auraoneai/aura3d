@@ -140,6 +140,14 @@ const saltwindReady = async (page: Page): Promise<void> => {
   await page.waitForFunction("(() => { const h = window.__AURA_ROADSTER_HOURS__; const r = h?.ready; if (!(typeof r === 'function' ? r() : r === true)) return false; return typeof h.texturesReady !== 'function' || h.texturesReady() === true; })()", undefined, { timeout: 420_000, polling: 500 });
 };
 
+/** Cumulus Dash (G25 phase 7): wait (bounded, 420 s) until no textured material reports `pending` (lesson R4), so the judged
+ *  shots never see a texture still uploading; on timeout log the rows still pending (GL_TEXPEND) and shoot anyway. */
+const cumulusTextures = async (page: Page): Promise<void> => {
+  const pending = "(() => (window.__AURA3D_LIVE_APPS__?.all()[0]?.diagnostics?.()?.renderer?.runtime?.texturedMaterials ?? []).filter((r) => r && r.status === 'pending').map((r) => ({ node: r.nodeName, level: r.levelName, stage: r.stage ?? null, pendingMs: r.pendingMs ?? null })))()";
+  const done = await page.waitForFunction(`${pending}.length === 0`, undefined, { timeout: 420_000, polling: 2000 }).then(() => true, () => false);
+  if (!done) process.stdout.write(`GL_TEXPEND cloud-runner-port--default ${JSON.stringify(await page.evaluate(pending)).slice(0, 600)}\n`);
+};
+
 /** Saltwind Highway chase-camera crops (G22; the game's hook crops win on a name clash). */
 export const SALTWIND_CROPS: readonly GameLumaCrop[] = [
   { name: "car", x: 0.40, y: 0.55, w: 0.20, h: 0.25 },
@@ -181,7 +189,7 @@ const DRAFTS: readonly Draft[] = [
   ...SALTWIND_LEVELS.map((id, i) => ({ ...t("roadster-hours-port", id, `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1`, saltwindReady), crops: SALTWIND_CROPS })),
   t("where-the-wind-wanders-port", "default", "/apps/showcase-where-the-wind-wanders-port/"),
   t("silt-and-signal-port", "default", "/apps/showcase-silt-and-signal-port/"),
-  t("cloud-runner-port", "default", "/apps/showcase-cloud-runner-port/")
+  t("cloud-runner-port", "default", "/apps/showcase-cloud-runner-port/", cumulusTextures)
 ];
 
 /** GU47 variant rows, in inventory order (see VARIANT_PARAMS). */
