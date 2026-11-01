@@ -68,7 +68,7 @@ const ROCK_ASSET = defineAuraAssets({
   craterlineMoonRock: {
     type: "model",
     format: "glb",
-    url: new URL("./assets/models/craterline_moon_rock.glb", import.meta.url).href,
+    url: new URL("./assets/models/craterline_moon_rock.glb", import.meta.url).pathname,
     sha256: "1224634a56d33a61bced90bc98433a9cc5f4943a1d22b505bc2265725bc0e25b",
     sizeBytes: 1704652,
     metadata: {
