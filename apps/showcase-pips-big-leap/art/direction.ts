@@ -69,7 +69,6 @@ const direction: GameArtDirection = {
     { role: "set-dressing", assetKey: "propRockB", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     // GU47 phase 9 (PRD D2): owned props. CC0 catalog files (Kenney, Quaternius, Polygonal Mind)
     // and the WP-36 Meshy moss disc, admitted into this app's aura.assets.json with provenance.
-    { role: "set-dressing", assetKey: "pipsWindmill", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsCrate", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsBarrel", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "pipsCrystal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },

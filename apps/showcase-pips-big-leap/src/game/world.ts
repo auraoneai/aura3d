@@ -183,10 +183,6 @@ function solidOf(p: PlatSpec): SolidBox {
  * widest horizontal extent at today's size). Colliders and camera obstacles are unchanged.
  */
 export const OWNED_PROP_FIT = {
-  /** Kenney windmill (sails 1.0 x its height) inside the old 0.64-wide windmill. */
-  windmill: 0.64,
-  /** The "sail" kind is a second windmill (1.0 x its height) inside the old 0.67-wide watchtower. */
-  sail: 0.67,
   /** Clay ember pot (1.4 x its height) inside the old 0.52-wide brazier pylon (vents and lava dressing). */
   emberPot: 0.37,
   /** Moss disc pad (spring base, checkpoint pad) inside the old 0.6-wide pedestal column. */
@@ -201,7 +197,11 @@ export const OWNED_PROP_FIT = {
  */
 export const SKINNED_DECOR_KINDS: ReadonlySet<DecorSpec["kind"]> = new Set(["hawk"]);
 
-/** The Kenney windmill's sails face +x; a quarter turn shows them to the course like the old windmill. */
+/**
+ * The windmill and sail kinds draw the Kenney wind turbine (0.49 x its height, inside both old
+ * footprints at today's size: no catalog CC0 storybook windmill is a whole building, the
+ * fantasy-town "windmill" is only the sail rotor). Its rotor faces +x; a quarter turn shows it to the course.
+ */
 const WINDMILL_FACE = Math.PI / 2;
 
 /**
@@ -257,13 +257,13 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
       ];
     case "windmill":
       return [
-        model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s * OWNED_PROP_FIT.windmill })
+        model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
     case "sail":
       return [
-        model(assets.props.windmill, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s * OWNED_PROP_FIT.sail })
+        model(assets.props.windmill, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
@@ -373,8 +373,8 @@ export function decorInstance(d: DecorSpec): PropInstance | null {
     case "mushroom": return at(assets.props.crystalShard, "height", 1.05 * s);
     case "flower": return at(assets.sunseed, "height", 0.72 * s, false);
     case "rock": return at(assets.props.boulder, "maxDimension", 1.15 * s);
-    case "windmill": return at(assets.props.windmill, "height", 3.6 * s * OWNED_PROP_FIT.windmill, true, true, 0, WINDMILL_FACE);
-    case "sail": return at(assets.props.windmill, "height", 2.6 * s * OWNED_PROP_FIT.sail, true, true, 0, WINDMILL_FACE);
+    case "windmill": return at(assets.props.windmill, "height", 3.6 * s, true, true, 0, WINDMILL_FACE);
+    case "sail": return at(assets.props.windmill, "height", 2.6 * s, true, true, 0, WINDMILL_FACE);
     case "cloud": return at(assets.props.rockB, "maxDimension", 1.9 * s, false, false);
     case "fan": return at(assets.props.turbine, "height", 2.2 * s);
     case "vent": return at(assets.props.brazier, "height", 1.35 * s * OWNED_PROP_FIT.emberPot);

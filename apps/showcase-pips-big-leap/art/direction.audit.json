@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "5af97b2b659e5f8db8964aaec0b965820372b32777f2c914f82bf088e581bae0",
+  "sourceSha256": "497d761f35d92e5410c98a74321f89556008c743ea4c59afea3b155ffa515b87",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -928,7 +928,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "pipsWindmill",
+            "assetKey": "pipsWindTurbine",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -1303,7 +1303,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "pipsWindmill",
+            "assetKey": "pipsWindTurbine",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -2746,13 +2746,6 @@
         "role": "set-dressing",
         "assetKey": "propRockB",
         "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "pipsWindmill",
-        "maxTriangles": 20000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },

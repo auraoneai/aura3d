@@ -80,12 +80,12 @@
       "provenance": "meshy-generated (GU47 WP-36 leapTileMossDisc; course-tile anchor of the compiler-authored course)"
     },
     {
-      "typedRef": "assets.pipsWindmill",
+      "typedRef": "assets.pipsWindTurbine",
       "role": "setDressing",
       "status": "typed-secondary-asset",
       "quality": "candidate",
-      "hash": "sha256-057181dde02f0",
-      "provenance": "CC0 catalog (kenney:fantasy-town-kit:windmill)"
+      "hash": "sha256-6d108da5e7006",
+      "provenance": "CC0 catalog (kenney:city-kit-industrial:windmill)"
     }
   ],
   "claimStatus": {
