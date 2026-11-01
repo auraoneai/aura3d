@@ -21,6 +21,7 @@ test.beforeAll(async () => { server = await startExampleDevServer(); });
 test.afterAll(async () => { await server?.close(); });
 
 const INSTRUMENT = (): void => {
+  if (typeof window === "undefined" || typeof window.createImageBitmap !== "function") return;
   const w = window as unknown as { __E6P7__: { bitmapCalls: number; bitmapSettled: number; imgBlobDecodes: number; imgBlobDecoded: number } };
   w.__E6P7__ = { bitmapCalls: 0, bitmapSettled: 0, imgBlobDecodes: 0, imgBlobDecoded: 0 };
   const original = window.createImageBitmap.bind(window);
@@ -49,8 +50,13 @@ for (const [name, path] of GAMES) {
   test(`e6p7-game-${name}`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.addInitScript(INSTRUMENT);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => { if (errors.length < 12) errors.push(`pageerror ${String(error).slice(0, 300)}`); });
+    page.on("console", (message) => { if (message.type() === "error" && errors.length < 12) errors.push(`console ${message.text().slice(0, 300)}`); });
+    const t00 = Date.now();
     await page.goto(`${server.origin}${path}`, { waitUntil: "domcontentloaded", timeout: 180_000 });
-    await page.waitForFunction(READY, undefined, { timeout: 600_000, polling: 1000 });
+    const ready = await page.waitForFunction(READY, undefined, { timeout: 900_000, polling: 1000 }).then(() => true, () => false);
+    log(`E6P7_READY ${JSON.stringify({ name, ready, s: Math.round((Date.now() - t00) / 1000), errors })}`);
     const t0 = Date.now();
     let last = "";
     for (let i = 0; i < 18; i += 1) {

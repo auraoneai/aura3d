@@ -252,14 +252,20 @@ export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step:
   const response = await fetch(url);
   if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
   onStep?.("body");
-  const blob = await response.blob();
+  // GU47 e6 phase 7: the body is read once. A Blob read (`response.blob()` then `blob.arrayBuffer()`) was measured at
+  // tens of seconds per map on the loaded software runner; the decode blob is built from the bytes already in memory.
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const blob = new Blob([bytes], { type: response.headers.get("content-type") ?? "" });
   onStep?.("decode");
   const bitmap = await decodeProductionTextureImage(blob, () => onStep?.("decode-fallback"));
   onStep?.("pixels");
   try {
-    const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
-    const pixels = await decodePngTexturePixels(new Uint8Array(await blob.arrayBuffer()));
-    if (pixels) productionPrimitiveBitmapPixels.set(bitmap, pixels);
+    // Only a PNG carries exact CPU pixels (decodePngTexturePixels returns undefined for anything else).
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+      const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
+      const pixels = await decodePngTexturePixels(bytes);
+      if (pixels) productionPrimitiveBitmapPixels.set(bitmap, pixels);
+    }
     return bitmap;
   } catch (error) { bitmap.close(); throw error; }
 }
