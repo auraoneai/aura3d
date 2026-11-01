@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildSheet } from "../../../examples/ninja-runner-port/meshes";
 import { fallsSpec } from "../../../examples/ninja-runner-port/materials";
 import { lookMode } from "../../../examples/ninja-runner-port/districtLook";
+import { fallsCliff } from "../../../examples/ninja-runner-port/world";
+import { COURSE_LENGTH, groundFrame } from "../../../examples/ninja-runner-port/course";
 
 describe("GU47 phase 6 gate view", () => {
   it("opens the gate band in the evening; ?look=original keeps 4.6.2", () => {
@@ -22,5 +24,20 @@ describe("GU47 phase 6 gate view", () => {
   it("softens the falls only on request", () => {
     expect(fallsSpec().uniforms?.fallsSoft?.value).toBe(0);
     expect(fallsSpec(1).uniforms?.fallsSoft?.value).toBe(1);
+  });
+
+  it("keeps the falls cliff off the run", () => {
+    const end = groundFrame(COURSE_LENGTH - 90, 0, 0);
+    const rocks = fallsCliff(end);
+    expect(rocks).toHaveLength(3);
+    for (const r of rocks) {
+      // half the footprint diagonal of a cliffA slab at this scale
+      const reach = (Math.hypot(1.028 * r.scale[0], 1.239 * r.scale[2])) / 2;
+      for (let d = 2300; d <= COURSE_LENGTH; d += 2) {
+        const f = groundFrame(d, 0, 0);
+        expect(Math.hypot(f.x - r.position[0], f.z - r.position[2])).toBeGreaterThan(reach + 5);
+      }
+      expect(r.position[1] + (1.902 * r.scale[1]) / 2).toBeCloseTo(end.y + 23.5, 5);
+    }
   });
 });

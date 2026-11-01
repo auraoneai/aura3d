@@ -56,6 +56,7 @@ export const waterSpec = (): CustomSpec => ({
   uniforms: {
     waterTime: { type: "f32", value: 0 },
     waterSky: { type: "f32", value: 0 },
+    waterLake: { type: "f32", value: 0 },
     waterZenith: { type: "color3", value: [...ORIGINAL_SKY.skyZenith] },
     waterHorizon: { type: "color3", value: [...ORIGINAL_SKY.skyHorizon] },
     waterKey: { type: "vec3", value: [-0.5, 0.8, 0.3] }

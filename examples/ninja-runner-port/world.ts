@@ -284,9 +284,22 @@ const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location
 
 /** GU47 phase 4: the evening's worn path stones take a soft sheen of the sky (IBL) at grazing angles; 4.6.2 keeps 0.92. */
 const EVENING_PATH_ROUGHNESS = 0.68;
-/** GU47 phase 6: evening valley falls bend (m) and the lake's sky share past the forest (see applyLook). */
+/** GU47 phase 6: evening valley falls bend (m). */
 const FALLS_BEND = 9;
-const GATE_LAKE_SKY = 0.4;
+
+/**
+ * Cliff behind the evening valley falls: three tall cliffA slabs (manifest size 1.028 x 1.902 x 1.239, centred origin)
+ * whose tops sit at the sheet's crest (end frame y + 23). The sheet stands 30 m right of and 30 m past the end frame
+ * (course distance 2550, heading -z); every slab keeps at least 8 m right of the path centre line, or sits past the
+ * course end (z < -100), so none stands on the run.
+ */
+export function fallsCliff(end: { x: number; y: number; z: number }): { position: Vec3; yaw: number; scale: Vec3; tint: string }[] {
+  const slab = (x: number, z: number, height: number, yaw: number) => {
+    const k = height / 1.902;
+    return { position: [end.x + x, end.y + 23.5 - height / 2, end.z + z] as Vec3, yaw, scale: [k * 1.1, k, k] as Vec3, tint: "#8f877e" };
+  };
+  return [slab(34, -64, 58, 0.3), slab(56, -60, 52, 2.2), slab(8, -126, 60, 4.1)];
+}
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
@@ -378,6 +391,9 @@ export function buildWorld(options: WorldOptions): World {
     }
   }
 
+  // GU47 phase 6: in the evening the valley falls pour from a rock cliff (three more cliffA instances in the existing
+  // layer: +0 draws, +3 x 3581 triangles) instead of hanging in the sky ("no visible source", blind panel g20p6g).
+  if (evening && modelSink.cliffA) modelSink.cliffA.push(...fallsCliff(groundFrame(COURSE_LENGTH - 90, 0, 0)));
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
   for (const [id, list] of Object.entries(modelSink)) {
     if (list.length === 0) continue;
@@ -583,9 +599,10 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     sky.setUniform?.("sunDirection", [...look.toKey]);
     sky.setUniform?.("moonDirection", moonDir);
     const river = node("river");
-    // GU47 phase 6: past the forest the valley lake keeps more of its own deep teal (sky share 1 -> 0.4), so it reads as
-    // water instead of the "flat pink ground" the judges named under the gate's peach horizon.
-    river.setUniform?.("waterSky", 1 - (1 - GATE_LAKE_SKY) * smooth(2200, 2300, s));
+    river.setUniform?.("waterSky", 1);
+    // GU47 phase 6: past the forest the valley lake turns deep teal with ripple glints (judges: "flat pink ground",
+    // then "flat grey plane" at a 0.4 sky share).
+    river.setUniform?.("waterLake", smooth(2200, 2300, s));
     river.setUniform?.("waterZenith", [...look.skyZenith]);
     river.setUniform?.("waterHorizon", [...look.skyHorizon]);
     river.setUniform?.("waterKey", [...look.toKey]);
