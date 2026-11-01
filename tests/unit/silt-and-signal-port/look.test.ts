@@ -30,10 +30,10 @@ describe("GU47 WP-34 look table", () => {
     expect(siltLookMode("?look=original")).toBe("original");
     expect(siltLookMode("?chapter=4&start=1")).toBe("inked");
     expect(siltLookMode("?chapter=4&start=1&look=original")).toBe("original");
-    // GU47 phase 2 (D11): ch1 noon and ch6 dawn open in the original look unless ?look=inked
-    expect(siltLookMode("?chapter=1&start=1")).toBe("original");
-    expect(siltLookMode("?chapter=1&start=1&look=inked")).toBe("inked");
-    expect(siltLookMode("?chapter=6&start=1")).toBe("original");
+    // GU47 phase 6 (4.7.4): ch1 noon and ch6 dawn open in the reworked inked look; ?look=original still opts out
+    expect(siltLookMode("?chapter=1&start=1")).toBe("inked");
+    expect(siltLookMode("?chapter=1&start=1&look=original")).toBe("original");
+    expect(siltLookMode("?chapter=6&start=1")).toBe("inked");
     expect(siltLookMode("?chapter=0&start=1")).toBe("inked");
   });
 
@@ -71,8 +71,9 @@ describe("GU47 WP-34 look table", () => {
       expect(list.find((n) => n.effect === "vignette")?.intensity).toBe(0.22);
       expect(list.find((n) => n.effect === "film-grain")?.intensity).toBe(0.03);
     }
-    // bleached noon, saturated dusk and dawn
-    expect(chapterLook(1).grade.saturation).toBeLessThan(chapterLook(0).grade.saturation);
+    // phase 6 (4.7.4): the bleached noon read worse than 4.6.2 in phase 2, so noon is a saturated green meadow too; saturated dusk and dawn
+    expect(chapterLook(1).grade.saturation).toBeGreaterThan(1);
+    expect(chapterLook(1).ground).toBe("orchard");
     expect(chapterLook(6).grade.saturation).toBeGreaterThan(1);
   });
 

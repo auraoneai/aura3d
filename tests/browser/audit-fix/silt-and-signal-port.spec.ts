@@ -224,6 +224,26 @@ test.describe("g24 duneglide", () => {
     await ctx.close();
   });
 
+  /* ------------------------------------------------- g24-t: lean title frames (GU47 phase 6, one screenshot each) */
+  // The g24-a probe takes 10+ screenshots plus settle renders; on the software-GL runner every one costs a presented
+  // frame of the inked title (minutes each), so g24-a ran out of its hour twice (phase 3 and phase 6). g24-t waits for
+  // the title to load and settle on its own clock, then takes one full-page JPEG (HUD and title card included).
+  for (const [label, vp, file] of [
+    ["desktop", { width: 1280, height: 720 }, "title.1280x720"],
+    ["phone", { width: 390, height: 844, touch: true }, "title.390x844"]
+  ] as const) {
+    test(`g24-t title ${label}`, async ({ browser }) => {
+      const { ctx, page, ok } = await openPage(browser, `title-${label}`, at(""), vp);
+      if (ok) {
+        await page.waitForTimeout(90_000);
+        const full = await page.screenshot({ type: "jpeg", quality: 90, timeout: 1_800_000 });
+        meta(file, { kind: "shot", lean: true, diag: await diag(page).catch(() => null) });
+        chunked("G24_JPG", file, full);
+      }
+      await ctx.close();
+    });
+  }
+
   /* ---------------------------------------------------------------- g24-b: play states (RH-05, C4, C10, C13, C14) */
 
   for (const [label, w, h, touch] of [["desktop", 1280, 720, false], ["phone", 390, 844, true]] as const) {
