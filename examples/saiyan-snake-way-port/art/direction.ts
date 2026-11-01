@@ -38,7 +38,7 @@ export default defineArtDirection({
     key: { type: "directional", colorTemperatureK: 2600, shadow: true },
     fill: "ibl+bounce",
     practicals: 2,
-    environment: { preset: "neutral", background: "sky" },
+    environment: { preset: "sunset", background: "sky" },
     exposureEV: 0.13
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.24], fovDeg: [62, 84], mobile: "both" },
@@ -50,7 +50,9 @@ export default defineArtDirection({
     { role: "prop", assetKey: "cart", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "prop", assetKey: "feast", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "lantern", maxTriangles: 12000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "island", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "backdrop", assetKey: "island", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
+    // GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent landmark
+    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "orb-pickup", kind: "serpent-orb" },

@@ -12,7 +12,7 @@ import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direc
 
 /**
  * GU47 WP-27 look contract. The snapshot mirrors what world.ts mounts: one shadowed sun, the camera-side violet fill
- * (unshadowed), the hemisphere sky light (not an ambient light), the neutral environment, the rigged runner and the seven
+ * (unshadowed), the hemisphere sky light (not an ambient light), the dusk sky probe (sunset preset), the rigged runner and the eight
  * Meshy props. Triangles are 0 (not measured in phase 1; the audit skips the floor check for 0).
  */
 function mountedSceneMirror(): ArtDirectionSnapshot {
