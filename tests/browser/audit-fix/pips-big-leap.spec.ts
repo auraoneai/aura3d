@@ -211,6 +211,61 @@ async function autoplayToResults(page: Page, budgetMs: number): Promise<boolean>
   }
 }
 
+/**
+ * Results screen on software GL: the autoplay demo runs the same fixed sim steps through the QA `stepFrames` hook (no render
+ * per step), the autopilot is switched off with its own button the moment the gate completes (so the 2.4 s auto-advance does
+ * not load the next world), then the page renders for a while before the shot.
+ */
+async function stepAutoplayToResults(page: Page, maxSteps: number): Promise<{ reached: boolean; steps: number }> {
+  let steps = 0;
+  while (steps < maxSteps) {
+    const done = await page.evaluate((n) => {
+      const qa = (window as any).__AURA_QA__;
+      qa?.stepFrames?.(n);
+      const ev = (window as any).__AURA3D_SHOWCASE_PIPS_BIG_LEAP__;
+      const panel = document.getElementById("pbl-complete");
+      const complete = Boolean(panel && !panel.hidden) || Boolean(ev?.gate?.complete);
+      if (complete) {
+        const auto = document.getElementById("aura-btn-auto");
+        if (auto?.getAttribute("aria-pressed") === "true") (auto as HTMLElement).click();
+      }
+      return complete;
+    }, 120);
+    steps += 120;
+    if (done) return { reached: true, steps };
+    await page.waitForTimeout(100);
+  }
+  return { reached: false, steps };
+}
+
+async function waitFrames(page: Page, frames: number, budgetMs: number): Promise<number> {
+  return page.evaluate(({ frames, budgetMs }) => new Promise<number>((resolve) => {
+    let n = 0;
+    const t0 = performance.now();
+    const tick = () => { n += 1; if (n >= frames || performance.now() - t0 > budgetMs) resolve(n); else requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }), { frames, budgetMs });
+}
+
+function resultsTest(T: string, viewport: { width: number; height: number }, phone: boolean) {
+  return async ({ browser }: { browser: import("@playwright/test").Browser }) => {
+    const net = freshNet();
+    const context = await browser.newContext(phone ? { viewport, hasTouch: true, isMobile: true, deviceScaleFactor: 1 } : { viewport });
+    const page = await prepare(context, net);
+    await open(page, "?autoplay=1");
+    await waitSim(page, 20_000);
+    const { reached, steps } = await stepAutoplayToResults(page, 60 * 120);
+    const rendered = reached ? await waitFrames(page, 40, 240_000) : 0;
+    log(`PBL_META ${JSON.stringify({ target: T, id: "results-reached", reached, steps, via: "qa.stepFrames", framesAfter: rendered })}`);
+    if (reached) {
+      await page.waitForTimeout(800);
+      await shot(page, T, "06-results");
+    }
+    log(`PBL_DONE ${T}`);
+    await context.close();
+  };
+}
+
 test.describe("pips-big-leap audit fixes", () => {
   test.setTimeout(3_300_000);
   test.beforeAll(async () => { server = await startExampleDevServer(); });
@@ -375,6 +430,8 @@ test.describe("pips-big-leap audit fixes", () => {
   };
   // Every world at steady state with render-path and contact-shadow diagnostics (RH-04, LIGHT-06), split in two so
   // each half fits the per-test budget on software GL.
+  test("grpR1 pbl-results 1280x720: results panel through qa.stepFrames autoplay (RH-05)", resultsTest("a1280", { width: 1280, height: 720 }, false));
+  test("grpR2 pbl-results 390x844: results panel through qa.stepFrames autoplay (RH-05)", resultsTest("p390", { width: 390, height: 844 }, true));
   test("grpC pbl-worlds 1280x720: academy, w1-w4", worldsTest(["academy", "w1", "w2", "w3", "w4"]));
   test("grpE pbl-worlds 1280x720: w5, w6", worldsTest(["w5", "w6"]));
 

@@ -1436,6 +1436,14 @@ void app.ready().then(async () => {
   installQaHooks("qa", {
     ready: () => appReady,
     state: () => ({ world: run.world, look: ensureWorld(run.world).built.presentation.mode }),
+    // Capture tooling only: run the same fixed sim steps the frame loop runs (autopilot included), without rendering each
+    // one, so software-GL capture runners reach the results panel. Stops at the gate or whenever the loop would be idle.
+    stepFrames: (n: number) => {
+      for (let i = 0; i < n; i += 1) {
+        if (!appReady || run.paused || overlayOpen() || swapping || run.complete) break;
+        simStep(SIM_STEP_SECONDS);
+      }
+    },
     app,
     extras: { crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]) }
   });

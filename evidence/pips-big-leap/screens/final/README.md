@@ -1,4 +1,27 @@
-# Pip's Big Leap: final screens (4.7.2 candidate, GU47 phase 4, 2026-10-31)
+# Pip's Big Leap: final screens (4.7.4, GU47 phase 6, 2026-11-01)
+
+All 14 frames now show the 4.7.x look. The two results screens and the card were retaken on branch `gu47/g06` at 1e3e2489f
+(the 4.7.2 look, unchanged since 22ae79e75, on the 4.7.3 engine) with `tests/browser/audit-fix/pips-big-leap.spec.ts` on the remote
+ACR runner (crmmeprodacr, headless Chromium, software WebGL2). Runs: `g06p6-r1-1` (grpR1: `1280-06-results`), `g06p6-r1-2`
+(grpR2: `390-06-results`) and `g06p6-r1-3` (grpA card: `card-2x`). Raw frames:
+`evidence/game-upgrades-47/pips-big-leap/p6-r1/pips-big-leap/frames/`.
+
+- **Results:** every earlier screens run hit the ACR 3600 s step limit before autoplay reached the Sun-Gate, because the
+  4.7.2 scene renders about 1,084 draw calls and 2.0 M triangles per frame in software GL, and the sim advances at most 0.1 s per
+  rendered frame. The new grpR tests drive the same `?autoplay=1` demo through the QA hook `__AURA_QA__.stepFrames`, which runs the
+  game's own `simStep` (autopilot included) without rendering every step. As soon as the gate completes, the test turns the
+  autopilot off with its own Auto button, then lets the page render 24-40 frames before the shot. The outcome matches the
+  2026-10-29 frames exactly: World 1 cleared in 32.7 s of sim time, 4/6 seeds, 5 acorns, at both sizes.
+- **Results frames:** `1280-06-results` has canvas mean luma 135.9, 56 draw calls and 1.02 M triangles; `390-06-results` has
+  124.8, 58 draw calls and 1.02 M triangles (the panel hides most of the HUD). Blind 3-judge panel against the 2026-10-29 results
+  frames: **3/0/0 in both** (`evidence/game-upgrades-47/pips-big-leap/panels/g06p6res-verdicts.json`).
+- **Card:** `card-2x.jpg` was retaken natively at 1440x900 and matches the phase-4 card (same build look). `card-1x.jpg` is a
+  `sips` downscale. The index posters were rebuilt with `node tools/site/build-card-images.mjs` (only the pips-big-leap posters
+  are committed).
+- The other 10 frames are the phase-4 set below (2026-10-31, the same look). This shows layout, content and look on software GL,
+  not real-GPU look or frame rate.
+
+## Phase 4 set (4.7.2)
 
 Retaken on the phase-4 build (branch `gu47/g06`, 22ae79e75: side key with crisp PCSS shadows, glazed clay slab bodies, glossy
 Pip, stronger contact shadows, no voxel NPCs in the diorama, short controls chips) with `tests/browser/audit-fix/pips-big-leap.spec.ts`
