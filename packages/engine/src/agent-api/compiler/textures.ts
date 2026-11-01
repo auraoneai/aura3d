@@ -145,6 +145,22 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
   };
 }
 
+const textureClockMs = (): number => (typeof performance !== "undefined" ? performance.now() : Date.now());
+
+/**
+ * GU47 e6 (g09 handoff): the last step a textured upgrade reached, so a row stuck in `pending` names where it waits
+ * (diagnostics `texturedMaterials[].stage` / `pendingMs`). Bookkeeping only; no draw state changes.
+ */
+export function markTextureStage(resource: { textureStage?: string }, stage: string): void {
+  resource.textureStage = stage;
+}
+
+/** `pendingMs` for a diagnostics row: time since the upgrade started, only while it is still pending. */
+export function texturePendingMs(resource: { textureStatus: string; texturePendingSince?: number }): number | undefined {
+  if (resource.textureStatus !== "pending" || resource.texturePendingSince === undefined) return undefined;
+  return Math.round(textureClockMs() - resource.texturePendingSince);
+}
+
 export function blankProductionPrimitiveTextureState(): {
   texturedMaterial: TexturedPBRMaterial | null;
   textureStatus: "none" | "pending" | "textured" | "fallback";
@@ -229,10 +245,13 @@ export async function upgradeProductionPrimitiveTextures(
       if (urls.length === 0 && !proceduralOnly && !hasTextureRef) continue;
       if (resource.textureStatus !== "none") continue;
       resource.textureStatus = "pending";
+      resource.texturePendingSince = textureClockMs();
+      markTextureStage(resource, "start");
       try {
         await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
       } catch (error) {
         resource.textureStatus = "fallback";
+        markTextureStage(resource, "failed");
         const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
         resource.textureWarnings.push(message);
         warn(message);
@@ -281,6 +300,7 @@ export async function upgradeProductionPrimitiveResource(
   };
   const slotWarn = (w: string): void => { resource.textureWarnings.push(w); };
   const load = (url: string): Promise<ImageBitmap> => {
+    markTextureStage(resource, `fetch ${url}`);
     let pending = bitmapLoads.get(url);
     if (!pending) {
       pending = loadProductionPrimitiveBitmap(url).then((bitmap) => {
@@ -307,6 +327,7 @@ export async function upgradeProductionPrimitiveResource(
       intent.occlusionUrl ? load(intent.occlusionUrl) : Promise.resolve(undefined),
       intent.emissiveUrl ? load(intent.emissiveUrl) : Promise.resolve(undefined)
     ]);
+    markTextureStage(resource, "decoded");
     const failure = baseResults.find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
     const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
@@ -339,6 +360,7 @@ export async function upgradeProductionPrimitiveResource(
       slots.push(slot);
     }
     if (needsScalarAtlas) {
+      markTextureStage(resource, "scalar-atlas import");
       const { createExtensionScalarAtlas } = await import("@aura3d/rendering/extension-scalar-atlas");
       const atlas = createExtensionScalarAtlas(atlasPixels, maxTextureSize);
       own(atlas.texture);
@@ -585,6 +607,7 @@ export async function upgradeProductionPrimitiveResource(
     }
     resource.textureDisposer = disposeTextures;
     resource.textureStatus = "textured";
+    markTextureStage(resource, "done");
     resource.textureSlots = slots;
   } catch (error) {
     disposeTextures();

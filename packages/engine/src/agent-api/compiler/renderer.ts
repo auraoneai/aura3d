@@ -23,7 +23,7 @@ import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHd
 import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
-import { upgradeProductionPrimitiveTextures } from "./textures.js";
+import { texturePendingMs, upgradeProductionPrimitiveTextures } from "./textures.js";
 import { upgradeCustomMaterialTextures } from "./customTextures.js";
 import { createProductionRuntimeBackgroundImage } from "./backgroundImage.js";
 import { createProductionParitySurfaces } from "./paritySurfaces.js";
@@ -388,7 +388,9 @@ export async function createProductionRuntimeSceneRenderer(
             status: resource.textureStatus,
             slots: resource.textureSlots,
             pixelBacked: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
-            warnings: resource.textureWarnings
+            warnings: resource.textureWarnings,
+            ...(resource.textureStage !== undefined ? { stage: resource.textureStage } : {}),
+            ...(texturePendingMs(resource) !== undefined ? { pendingMs: texturePendingMs(resource)! } : {})
           }))
         )
         },
