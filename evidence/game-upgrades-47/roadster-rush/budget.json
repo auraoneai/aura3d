@@ -13,7 +13,7 @@
     ],
     "textureMaxPx": 2048,
     "routeJsGzipDelta": "reported (tools/bundle-report/report.mjs), phase 2",
-    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High desktop budget (PRD §6.4)."
+    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High desktop budget (PRD \u00a76.4)."
   },
   "source": "evidence/apex-overdrive/audit-2026-10-29/summary.tsv (after rows: the instanced build on 4.6.x, software WebGL2)",
   "before": {
@@ -210,5 +210,82 @@
     "AO-W2 road decals (one instanced plane, <= 32 live)": 1,
     "net scene draws (expected, desktop dense)": -65,
     "note": "Expected deltas from the authored node list; measured numbers are phase 2 (diagnostics().drawCalls in the remote capture)."
+  },
+  "afterPhase4": {
+    "source": "GU47 phase 4 remote runs on build g02p4-r3-1649 (software WebGL2): final-screens meta.jsonl (g02p4-r3c-1 desktop, g02p4-r3-6 phone; the desktop results shot did not land) and steady-state luma JSON under evidence/game-upgrades-47/roadster-rush/p4-r3/",
+    "maxDesktopDrawCalls": 172,
+    "maxPhoneDrawCalls": 161,
+    "rows": {
+      "1280x720/title": {
+        "drawCalls": 87,
+        "meanLuma": 70.36,
+        "darkFrac": 0.0035
+      },
+      "1280x720/gameplay-early": {
+        "drawCalls": 149,
+        "meanLuma": 67.86,
+        "darkFrac": 0.0028
+      },
+      "1280x720/key-ramp": {
+        "drawCalls": 161,
+        "meanLuma": 64.5,
+        "darkFrac": 0.0037
+      },
+      "1280x720/mid-drive": {
+        "drawCalls": 172,
+        "meanLuma": 60.08,
+        "darkFrac": 0.0126
+      },
+      "390x844/title": {
+        "drawCalls": 87,
+        "meanLuma": 108.48,
+        "darkFrac": 0.0053
+      },
+      "390x844/gameplay-early": {
+        "drawCalls": 149,
+        "meanLuma": 104.15,
+        "darkFrac": 0.0054
+      },
+      "390x844/key-ramp": {
+        "drawCalls": 161,
+        "meanLuma": 99.29,
+        "darkFrac": 0.0112
+      },
+      "390x844/results": {
+        "drawCalls": 161,
+        "meanLuma": 76.86,
+        "darkFrac": 0.0657
+      },
+      "roadster-rush--default/settle-25s": {
+        "drawCalls": 152,
+        "meanLuma": 75.88,
+        "darkFrac": 0.0201
+      },
+      "roadster-rush--default/settle-60s": {
+        "drawCalls": 144,
+        "meanLuma": 57.88,
+        "darkFrac": 0.0419
+      },
+      "roadster-rush--dusk/settle-25s": {
+        "drawCalls": 144,
+        "meanLuma": 44.5,
+        "darkFrac": 0.1622
+      },
+      "roadster-rush--dusk/settle-60s": {
+        "drawCalls": 151,
+        "meanLuma": 43.71,
+        "darkFrac": 0.0901
+      },
+      "roadster-rush--night/settle-25s": {
+        "drawCalls": 131,
+        "meanLuma": 33.96,
+        "darkFrac": 0.1898
+      },
+      "roadster-rush--night/settle-60s": {
+        "drawCalls": 125,
+        "meanLuma": 26.66,
+        "darkFrac": 0.5115
+      }
+    }
   }
 }

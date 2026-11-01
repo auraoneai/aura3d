@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/gameplay-early.b.jpg",
+      "sha256": "14664bc0e04c90bf4d2cc7b85a643a30d446046a689de6ccec09d7be982ffbc8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/mid-drive.b.jpg",
+      "sha256": "d8f0a02300a763c6d7c2711f7e106630419e5033f7994a1eb0179c0d6388a687"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-4/roadster-rush--dusk--settle-60s.jpg",
+      "sha256": "53184f74601861b686234c909d5e886cc1612add37e286552e38d92844d3f2f1"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-5/roadster-rush--night--settle-60s.jpg",
+      "sha256": "20f68bb4af95ce782ff7bb5fde53349f2a6ef6fdde7deab9ed45dad50f20730e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low sun sits on the vanishing point and throws a warm specular streak down the road, which matches the golden-hour key. The building facades read flat purple-blue with no warm rim on their sun-facing edges. The player car is lit mostly by tint, so in frame 4 it turns uniformly orange."
+    },
+    {
+      "category": "shadows",
+      "seen": "The player car and the traffic have no readable contact shadow, so the vehicles float on the asphalt. The edge of the sun glare on the road steps in visible blocks, most clearly right of center in frame 2. Frame 3 shows one large shadow band across the left lanes, and nothing else casts a defined shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car body shows a few blue and orange highlights but no coherent reflection of the sky or the buildings. The road has a strong sun reflection that reads as a hot smear, not a wet or glossy surface response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Every tower is the same extruded box with an identical tiled window texture. The yellow billboard is blank. Behind the towers there is only a flat horizon plane. Gantry signs (SKYWAY CENTRAL, EXIT 4B HARBOUR), streetlights and traffic add some context."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant towers and traffic keep almost full contrast, so there is little to no distance fog in the 30–180 m range. The only atmospheric cue is a soft halo around the sun disc. The night frame has stars but no haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt is smeared into directional streaks that read as a blurred texture rather than road grain. The building windows are low-resolution, repeating color blocks. The trucks and cars look flat-shaded with little roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player car has a reasonable silhouette with a rear wing and exposed wheels. The traffic vehicles and trucks are low-detail. The towers are plain boxes. The gold collectible rings float high beside the buildings with no visible relation to the track."
+    },
+    {
+      "category": "composition",
+      "seen": "The chase framing is centered on the vanishing point, and the car takes roughly 10–14% of the frame, slightly under the 15–25% target. The lower third is a large area of empty, blurred road."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low, centered chase cam with an FOV that looks somewhat wider than 60°. The framing is stable across all four frames, and road blur conveys speed."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun and a vignette are present. The radial road streaks are heavy enough to smear the surface detail. The night frame is crushed and dark, with low contrast on the road. There is no visible film grain or grade beyond the warm and purple tint."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is a clean dark glass panel with the score, a speed arc, an AIR bar and a BOLTS counter, all readable and on-palette. The HUD is absent in frames 3 and 4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

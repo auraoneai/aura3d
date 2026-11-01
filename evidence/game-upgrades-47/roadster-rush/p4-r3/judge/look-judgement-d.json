@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/gameplay-early.b.jpg",
+      "sha256": "14664bc0e04c90bf4d2cc7b85a643a30d446046a689de6ccec09d7be982ffbc8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/screens-desktop/1280x720/mid-drive.b.jpg",
+      "sha256": "d8f0a02300a763c6d7c2711f7e106630419e5033f7994a1eb0179c0d6388a687"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-2/roadster-rush--default--settle-25s.jpg",
+      "sha256": "87a099674f82f9642490fe97b9ec04612cab4fe3778db8cf28b3e02cd4d9b879"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p4-r3/roadster-rush/frames/g02p4-r3-5/roadster-rush--night--settle-60s.jpg",
+      "sha256": "20f68bb4af95ce782ff7bb5fde53349f2a6ef6fdde7deab9ed45dad50f20730e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-2 have a low sun directly ahead and a strong warm specular streak down the asphalt, which reads as golden hour. The building faces are lit evenly blue-purple with no rim or warm side light. Frame 3 goes flat and gray. In the night frame the car picks up an orange tint, but the headlights cast no amber cone onto the road."
+    },
+    {
+      "category": "shadows",
+      "seen": "The player car has almost no visible contact shadow in any frame. With the sun low and straight ahead, the truck and van should cast long shadows toward the camera, and none are readable. Frame 3 shows only faint soft blobs under the sedan and truck."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The blue car body shows a few specular glints. The sun reflection on the road has a hard stair-stepped, blocky edge to the right of the center line in frame 2, which looks like a low-resolution reflection or masking artifact. Frame 4's wet-looking blue road sheen does not match any visible light source."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The buildings are extruded boxes with one repeating tiled window texture. There is no street-level detail, the lamp posts are repeated identically, and the gantry signs are simple. Gold collectible rings float beside the lamp posts and along the lane. Two unexplained pinkish objects are clipped at the top edge of frame 4."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some warm haze sits toward the sun disc, which is a soft sphere. Distance fog barely separates the building layers, so far towers read nearly as saturated as near ones. Frame 4 has a starfield and an orange horizon band but no night haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The traffic cars use noisy, blurry photoscan-style textures that clash with the clean stylized player car. The flatbed ramp in frame 3 is an untextured flat orange plane. The building windows are flat color tiles with no emissive variation by day."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player car and the truck cab have reasonable detail. The ramp is a plain slab, the buildings are primitive boxes, and the sedan's silhouette is soft and low-poly next to the hero car."
+    },
+    {
+      "category": "composition",
+      "seen": "The hero car sits centered in the lower third, about 18% of the frame width, on a strong central vanishing point framed by towers. Rings, traffic, and the glare streak crowd the center in frame 2. The palette leans purple-blue synthwave instead of the brief's warm asphalt, burnt orange, and charcoal."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera holds an identical position in all frames, at an FOV of roughly 60-65°. No speed-driven FOV change, roll, or offset is visible, even when the speed reading changes between frames."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy radial motion blur in frames 1-2 smears the asphalt into streaks, and the glare region shows banding and blocky edges. Bloom on the sun is mild. Frame 3 has no blur at all, so the treatment is inconsistent between frames. The night grade in frame 4 crushes the shadows."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are clean and readable: score, speed gauge, cyan AIR meter, pause, music, and bolts counter, with orange accents that fit the palette. The HUD is entirely absent in frames 3 and 4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

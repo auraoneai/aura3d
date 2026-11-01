@@ -3,7 +3,7 @@
  * unit-tested; main.ts applies the plan through E-C's runtime overrides (`app.post.setEffectEnabled`) at boot and whenever the
  * quality tier changes.
  *
- * - Motion blur (S7, shutter 0.22 since GU47 phase 3; 0.35 smeared the deck in the stills) and god rays (S4, density 0.06): High and Ultra only, never on a coarse-pointer phone
+ * - Motion blur (S7, shutter 0.12 and max 8 px since GU47 phase 4; 0.35, then 0.22, smeared the deck in the stills) and god rays (S4, density 0.06): High and Ultra only, never on a coarse-pointer phone
  *   (PRD §6.2, AO-PF1 "no S4/S7 on phone"); motion blur and the sun lens flare are off on reduced motion (PRD §6.3).
  * - The look's cinematic-film preset carries an empty depth-of-field node: off for a racer (the road ahead must stay sharp).
  * - Chromatic aberration stays at the preset's static 0.002 except on reduced motion and Low (the engine drops it on Low).

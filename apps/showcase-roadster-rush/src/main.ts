@@ -27,7 +27,7 @@ import {
   APEX_MOTION_BLUR,
   APEX_PALETTE,
   APEX_PRACTICALS,
-  APEX_SUN,
+  APEX_KEY,
   apexLookAt,
   hexToUnit,
   parseTodParam
@@ -300,14 +300,17 @@ function apexLookNode(): AuraSceneNode {
   const sunset = APEX_LOOK[0];
   const look = looks
     .preset("golden-hour", {
-      sun: APEX_SUN,
+      // GU47 phase 4: the shadowed key stands at APEX_KEY (21 deg), above the 7 deg disc the dome draws (art/look.ts)
+      sun: APEX_KEY,
       fogDensityScale: APEX_FOG_DENSITY_SCALE,
       hdri: APEX_IBL_HDRI,
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
       background: APEX_PALETTE.charcoal,
-      // AO-L4: 3 cascades to 140 m with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low)
-      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 140, filter: "pcss", mapSize: 2048 } },
+      // AO-L4: 3 cascades with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low). GU47 phase 4: 140 -> 90 m,
+      // the reach of the shadow-casting near traffic pools (beyond 90 m the far LODs cast nothing), so the same 2048 map
+      // spends its texels where shadows exist; at 140 m the carrier's long shadow showed stair-steps in the glare.
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 90, filter: "pcss", mapSize: 2048 } },
       // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
       fog: { color: sunset.fog.color, near: 30, far: 180 },
       // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
@@ -353,12 +356,13 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .runtime({ id: FILL_LIGHT_ID })
     )
     .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
-    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero
-    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 12, intensity: 0.9, lights: "sun" }))
+    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero (GU47 phase 4: 0.3 -> 0.7 m rays,
+    // so the tyres and sills sit in the shadow instead of on it)
+    .add(effects.contactShadows({ length: 0.7, thickness: 0.08, steps: 16, intensity: 1, lights: "sun" }))
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
-    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 14 }))
+    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 8 }))
     .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
   // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
   if (!REDUCED_MOTION) {
@@ -578,7 +582,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       scaleMode: "fit",
       targetMaxDimension: 4.35,
       // AO-M1: cobalt metallic clearcoat (material.carPaint values) with a warm tangerine rim (E-D); same model, same bounds
-      materialOverrides: apexHeroPaint()
+      materialOverrides: apexHeroPaint(meshyVehicles.enabled)
     })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
@@ -685,7 +689,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   }
 
   // 4. Ground traffic: per type, a shadow-casting full-detail pool for the first 90 m and a shadowless far-LOD pool beyond,
-  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals.
+  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals. GU47 phase 4: the
+//    ramps are lit tangerine painted steel with a faint glow (the flat emissive slab read as a placeholder in every judge round).
   for (const vType of VEHICLE_TYPES) {
     const spec = VEHICLE_ASSET[vType];
     for (const part of ["near", "far"] as const) {
@@ -705,7 +710,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   }
   s.addMany([
     instances
-      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#f2a23c", emissive: "#ff8a3d", emissiveIntensity: 0.5 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
+      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.pbr({ color: "#e0782f", metalness: 0.55, roughness: 0.42, emissive: "#ff8a3d", emissiveIntensity: 0.12 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
       .runtime(game.runtimeNode(poolId("carrier-ramps"))),
     // GU47 phase 3 (rubric shadows: traffic read as floating): soft contact occlusion under the near traffic, the decal
     // shader's contact ellipse on its own instanced plane (+1 draw, <= TRAFFIC_CONTACT_CAPACITY live, fades by 160 m)
@@ -1023,7 +1028,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     // GU47 AO-L2: the scene light follows the same row as the dome. The look's key keeps the disc's direction and takes the
     // row's colour and intensity; the camera-side fill and the IBL (1.0 / 0.55 / 0.18) dim with it. AO-E3: fog colour too.
     const frame = apexLookAt(tod);
-    const toward = frame.sunDir;
+    const toward = frame.keyDir;
     const blend = { transitionSeconds: 0.35 };
     keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);

@@ -40,6 +40,15 @@ export const APEX_IBL_ROTATION_DEG = 205;
 
 /** The look preset and its overrides at boot (AO-L1); the runtime rows below retune it per time of day (AO-L2). */
 export const APEX_SUN = { elevationDeg: 7, azimuthDeg: 175 } as const;
+/**
+ * GU47 phase 4 (rubric shadows): the shadowed key stands higher than the drawn disc. A 7 deg key grazes the deck (sin 7 deg =
+ * 0.12 of its irradiance reaches the asphalt), so under the IBL and the camera-side fill its shadows were invisible in every
+ * software WebGL2 capture. At 21 deg (sin = 0.36) the key still comes from ahead, still backlights the traffic, and every car
+ * throws a readable shadow about 2.6x its height long toward the camera (17 deg stretched them 3.3x and stair-stepped their
+ * edges). Disc, corona, lens flare, sky and tower glint stay on APEX_SUN (the classic "sun cheat": the light is not where the
+ * sun is drawn). Per row: `key` below.
+ */
+export const APEX_KEY = { elevationDeg: 21, azimuthDeg: 168 } as const;
 export const APEX_FOG_DENSITY_SCALE = 0.7;
 /** golden-hour fog range 30/180 divided by the 0.7 density scale (AO-E3: near 43, far 257). */
 export const APEX_FOG_RANGE = { near: 30 / APEX_FOG_DENSITY_SCALE, far: 180 / APEX_FOG_DENSITY_SCALE } as const;
@@ -49,7 +58,7 @@ export const APEX_GRADE = { contrast: 1.12, saturation: 1.08 } as const;
 /** Racer bloom (AO-P2): intensity / threshold / scatter for the corona, brake bars, plumes and lamps. */
 export const APEX_BLOOM = { intensity: 0.55, threshold: 0.85, scatter: 0.5 } as const;
 /** High-tier post (AO-P3, AO-P4): motion blur strength and god-ray density; both off on reduced motion or below High. */
-export const APEX_MOTION_BLUR = 0.22;
+export const APEX_MOTION_BLUR = 0.12;
 export const APEX_GOD_RAY_DENSITY = 0.06;
 /** Output-overlay flashes (AO-P4): crash warm, rocket cyan; peak never above 0.3 (PRD §6.3 reduced flash). */
 export const APEX_FLASH_PEAK = 0.3;
@@ -64,6 +73,8 @@ export interface ApexLookRow {
   readonly environmentIntensity: number;
   /** Key: the look's one shadowed directional. Elevation is where the dome draws the disc. */
   readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
+  /** Shadow-key direction (GU47 phase 4): higher than the disc so cast shadows read on the deck (APEX_KEY). */
+  readonly key: { readonly elevationDeg: number; readonly azimuthDeg: number };
   /** Camera-side fill (unshadowed directional from behind the chase camera), replaces the old ambient (AO-L1). */
   readonly fill: { readonly color: string; readonly intensity: number };
   /** Fog colour follows the time of day; near/far stay the AO-E3 range. */
@@ -94,9 +105,11 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     tod: 0,
     sky: "apex-bluehour-dome",
     hdri: APEX_IBL_HDRI,
-    environmentIntensity: 1.0,
-    sun: { elevationDeg: 7, azimuthDeg: 175, color: "#ff9a4f", intensity: 3.1 },
-    fill: { color: "#8ea2e0", intensity: 0.6 },
+    // GU47 phase 4: IBL 1.0 -> 0.8, fill 0.6 -> 0.5, key 3.1 -> 3.6, so the key/ambient ratio lets the cast shadows read
+    environmentIntensity: 0.8,
+    sun: { elevationDeg: 7, azimuthDeg: 175, color: "#ff9a4f", intensity: 3.6 },
+    key: { ...APEX_KEY },
+    fill: { color: "#8ea2e0", intensity: 0.5 },
     fog: { color: "#c98a6a", ...APEX_FOG_RANGE },
     post: "cinematic-film",
     grade: { ...APEX_GRADE, temperature: 0.18, tint: 0.02 },
@@ -109,8 +122,9 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     tod: 0.5,
     sky: "apex-bluehour-dome",
     hdri: APEX_IBL_HDRI,
-    environmentIntensity: 0.55,
-    sun: { elevationDeg: 3.5, azimuthDeg: 175, color: "#ff6a3a", intensity: 1.7 },
+    environmentIntensity: 0.48,
+    sun: { elevationDeg: 3.5, azimuthDeg: 175, color: "#ff6a3a", intensity: 2.0 },
+    key: { elevationDeg: 13, azimuthDeg: 168 },
     fill: { color: "#6f84d0", intensity: 0.45 },
     fog: { color: "#4a4778", ...APEX_FOG_RANGE },
     post: "cinematic-film",
@@ -126,6 +140,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     hdri: APEX_IBL_HDRI,
     environmentIntensity: 0.18,
     sun: { elevationDeg: 3.5, azimuthDeg: 175, color: "#8ea4d8", intensity: 0.35 },
+    key: { elevationDeg: 24, azimuthDeg: 160 },
     fill: { color: "#4a5aa0", intensity: 0.42 },
     fog: { color: "#151a2c", ...APEX_FOG_RANGE },
     post: "cinematic-film",
@@ -171,6 +186,8 @@ export interface ApexLookFrame {
   readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
   /** Unit vector toward the sun (Y up; azimuth clockwise from +Z, the look-preset convention). */
   readonly sunDir: V3;
+  /** Unit vector toward the shadowed key (GU47 phase 4; the disc stays on sunDir). */
+  readonly keyDir: V3;
   readonly fill: { readonly color: string; readonly intensity: number };
   readonly fog: { readonly color: string; readonly near: number; readonly far: number };
   readonly grade: { readonly temperature: number; readonly tint: number };
@@ -201,6 +218,7 @@ export function apexLookAt(todRaw: number): ApexLookFrame {
     environmentIntensity: lerp(a.environmentIntensity, b.environmentIntensity, k),
     sun: { elevationDeg, azimuthDeg, color: mixHex(a.sun.color, b.sun.color, k), intensity: lerp(a.sun.intensity, b.sun.intensity, k) },
     sunDir: sunDirection(elevationDeg, azimuthDeg),
+    keyDir: sunDirection(lerp(a.key.elevationDeg, b.key.elevationDeg, k), lerp(a.key.azimuthDeg, b.key.azimuthDeg, k)),
     fill: { color: mixHex(a.fill.color, b.fill.color, k), intensity: lerp(a.fill.intensity, b.fill.intensity, k) },
     fog: { color: mixHex(a.fog.color, b.fog.color, k), near: lerp(a.fog.near, b.fog.near, k), far: lerp(a.fog.far, b.fog.far, k) },
     grade: { temperature: lerp(a.grade.temperature, b.grade.temperature, k), tint: lerp(a.grade.tint, b.grade.tint, k) },
