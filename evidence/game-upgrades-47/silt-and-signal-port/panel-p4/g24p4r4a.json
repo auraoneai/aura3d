@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze flattens the far distance a little. The large vertical glowing pole runs through the middle of the frame and cuts the composition in two.",
+     "Slight warm haze lowers contrast on the distant buildings. The blocky white buildings are still plain. The tree is cut off at the left edge. Otherwise it has a strong sunset mood, a large readable player, and a clear vanishing-point composition.",
+     "Hazy warm grade lowers contrast a little on the white buildings; the central glowing pole cuts straight through the composition"
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night scene is fairly dark and low-contrast on the hills. Posterization banding is visible in the sky. The vertical pole overlaps the centre of the ring.",
+     "Night palette is fairly dark and blue, so the left hillside is murky. The ring's vertical bar splits the frame down the middle. The player overlaps the ring's lower edge. Mood and depth are good, the player is readable, and the river path leads the eye.",
+     "Night scene is fairly dark, and the left hillside is murky; the big ring with its centre pole frames the shot but clutters it slightly; the sky has posterised banding"
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A huge white pillar sits right next to the camera and blocks the centre of the frame, almost touching the player. There is posterization banding in the sky and on the water, and the left ground is a little murky.",
+     "A big white pillar sits right in front of the camera and blocks the centre of the view. The water's specular highlights are blown out and blotchy. Mild teal haze. The player is visible but pressed against the pillar. Still has better mood, lighting and scale than A.",
+     "A large white pillar sits in the centre, blocking the view and partly overlapping the player; the stream surface is blown out and has blotchy artifacts; the sky shows banding"
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The overcast grey sky and green hills are slightly desaturated and flat, and the sky shows banding. The vertical pole splits the ring.",
+     "Overcast grey-green grade is somewhat washed and low in contrast. The sky has visible banding. The ring's vertical bar splits the frame. Floating disc props appear at the right. The player is large and readable, and the river path gives good depth.",
+     "The overcast grey sky is a little flat and banded; the ring and pole clutter the centre slightly; the green hills are somewhat low in contrast"
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The purple night grade is a little dim, the sky shows posterization banding, and the vertical pole cuts through the arch.",
+     "Purple night grade is a little dim in the left foreground. The pale road and specular streaks are a bit bright. The ring bar splits the centre. Otherwise it has atmospheric moonlight, a readable player, and good depth.",
+     "The purple night grade is somewhat dim on the left; the stream surface has noisy speckle artifacts; the sky shows posterised blotches"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze softens the background and contrast is somewhat low. The central pole splits the composition.",
+     "Warm haze softens the distant contrast a little. The block buildings are plain. The tree is cut off at the left edge. The player is large and well framed, with a cohesive sunset palette.",
+     "A warm haze lowers contrast a little; the centre pole splits the frame; the white buildings are somewhat plain"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/screens/gameplay-early.1280x720.jpg",
+      "sha256": "f910699d82f674c87d7a922f08b202df31a4b7c0aec920782fafd6d798817ed9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4-5/silt-and-signal-port--ch4--settle-60s.jpg",
+      "sha256": "c1d0d318bc1581214e825eeebd377e12f2c6be9a2da7a7ca01bad4534460436e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4-7/silt-and-signal-port--ch5--settle-60s.jpg",
+      "sha256": "e4a070568e77e636612f19c6420f3f94b04c33b8c23a8e174d4df329e8f533c6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4b-1/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "d702d1d636861b49777ff0f7cdb385ca3c52d150b0a2826a6752b362d4026867"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 3.5,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 5,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1 and 4 have a warm orange dusk sky, but the key light reads flat on the white buildings and cobblestones. No low-sun raking light or rim light is visible on the rider."
+    },
+    {
+      "category": "shadows",
+      "seen": "The hoverboard casts no clear contact shadow, so the rider floats ungrounded. Trees in frames 1 and 4 cast almost no shadow, and only frames 2 and 3 show small, soft tree shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Apart from a faint sheen on the night road in frame 3, surfaces show no environment reflections. The teal rings and the board read as flat-shaded."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The town buildings are blank white extruded boxes with tiny window decals. The valley and river course in frame 2 is more coherent but sparse, with scattered identical pine trees."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze is present in the warm frames. The sky in frame 2 has hard, stair-stepped posterized cloud bands instead of soft fog falloff."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone and river ground use a busy ink-speckle texture that turns noisy. The buildings, rings, and poles have almost no material variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly pines, cylinders, and box buildings are simple. The rider is the most detailed asset, but his silhouette is small and muddy."
+    },
+    {
+      "category": "composition",
+      "seen": "A tall teal vertical pole sits dead center in every frame and splits the view through each ring. The rider takes up about 5–8% of the frame, well below the 15–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is high and distant with the rider at the bottom center. The framing is identical in all four frames, with no sense of speed, banking, or FOV change."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The posterize and outline filter produces aliased, jagged ink edges on the building crenellations in frame 1 and visible banding steps in the sky in frames 2 and 3."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The rider's pose is the same crouch in all four frames regardless of context, and frame 1 shows speed 0."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels in frame 1 are clean and readable, with a serif objective title and a brass compass. The control-hint block at the bottom right is long and heavy, and the HUD is absent from the other frames."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
