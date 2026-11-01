@@ -3,86 +3,86 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p4-final/screens/1280-04-mid.jpg",
-      "sha256": "62e7e5ebbd62c693113db8962943a67bbbc2895c5047bba375a7d2f7d2d24b68"
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "0282933b19bfea4a0056973db2038e4e3ef1378a59e83c79e44bd446996c5cd0"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--moon--settle-60s.jpg",
-      "sha256": "4727e0f14a995a044518fcf68ee8a68c8caec6498cb44f963826768cc62c0d69"
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-6/top-tennis--moon--settle-60s.jpg",
+      "sha256": "b90a1a08635237fc1fd4d74d631f345e23157eecf503605d7eeae09cb6e487d5"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--clay--settle-60s.jpg",
-      "sha256": "249f2a9fdab5eedde673c8f289f3558561bb778f24b12b0c9a98ea9b4b351037"
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-3/top-tennis--clay--settle-60s.jpg",
+      "sha256": "cde7fd64b733a4b25d23d3f02eaab5fda8895e2e0b41f0f28aedbcdf30492233"
     },
     {
-      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r3/top-tennis--desert--settle-60s.jpg",
-      "sha256": "923073d8fd8549910c62c2dbd265b08faa5dbe81efd587576dfa52d801fcc285"
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-4/top-tennis--desert--settle-60s.jpg",
+      "sha256": "5189e9978cfae09f0c43ef9d57bab79cdf6ccaafa0c91e87d0cf1028fca38de3"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5,
-    "shadows": 5.5,
-    "ibl_reflections": 2.5,
-    "environment_world": 4.5,
-    "atmospheric_effects": 3.5,
-    "material_quality": 3.5,
-    "modeling_assets": 4,
-    "composition": 5,
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5.5,
     "camera": 6,
-    "postprocessing": 4,
-    "ui_hud": 6.5
+    "postprocessing": 5,
+    "ui_hud": 4
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Each venue has a different key, but none reads as an indoor flood rig at 55°/45°. Moon is a single hard light over a black void. Paris is monochrome orange with a hot spot near the net. Dubai is flat beige ambient with almost no modeling of form. Frame 1 has a soft central spotlight with a dark vignette and a green cast over the blue court."
+      "seen": "Lighting is inconsistent across venues. The Moon frame has one hard key over a black void with no fill, so the stands fall into near-black. The Dubai frame is flat and washed out with almost no key/fill contrast. Only the Paris frame has a deliberate warm low key. None of the frames reads as a 55°/45° arena flood rig."
     },
     {
       "category": "shadows",
-      "seen": "Players and the umpire chair cast directional shadows. They are long and sharp in Moon and Paris, short and soft in Dubai. The net shadow is visible in Paris. There is little contact occlusion where the stands meet the floor, and the shadow edges in Moon look hard and slightly aliased."
+      "seen": "Player and net shadows are crisp and directional in the Moon and Paris frames, and the net shadow lands correctly on the clay. In the blue-court frame, shadows are faint, and the stands cast soft, smeared blocks onto the floor."
     },
     {
       "category": "ibl_reflections",
-      "seen": "No surface shows environment reflections or specular response. The court, stands, net posts and player kits all shade as matte diffuse, and the light poles look identical in every venue."
+      "seen": "The 'THE MOON 0-0 0-0' and 'WORLD TOUR' signage is mirrored onto the court surface as a ghostly planar reflection, even on the matte clay in Paris. Nothing else shows environment reflection or specular response."
     },
     {
       "category": "environment_world",
-      "seen": "The stands, umpire chair, bench and signs sit on a bare floor plane. Beyond them is a void (Moon), a flat orange plane (Paris) or a beige plane (Dubai). Light poles have no fixtures. The Eiffel Tower is a blurred backdrop cut off by the frame top. There is no arena roof, walls or interior-industrial structure."
+      "seen": "There are three venues: the Moon, Paris with a lattice-tower prop, and Dubai. Each is a large empty single-color floor plane around the court, with blurred cardboard-like background structures and bare light poles. The arena feels unfinished outside the stands."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "No indoor haze or light shafts are visible. Frame 1 has a greenish fog-like wash and a vignette. Paris has a faint warm gradient. Moon and Dubai have no atmosphere at all."
+      "seen": "There is no indoor haze or light shafts. Dubai has only a global low-contrast wash. The Moon background is a black void with a flat sphere."
     },
     {
       "category": "material_quality",
-      "seen": "Court surfaces are flat single colors with a faint diagonal noise texture in frame 1. The service-box highlight is a flat pale-yellow quad. Crowd, stands and bench use untextured solid colors, and the clay court has no grain or scuffing."
+      "seen": "Surfaces are flat colors. The blue court has a faint diagonal stripe texture in the first frame. Clay, grass-green surround, and sand floors look like uniform plastic with no roughness variation, wear, or line paint texture."
     },
     {
       "category": "modeling_assets",
-      "seen": "Crowd members are repeated capsule figures in rainbow solids with identical poses. Players are low-poly, and the Moon variant swaps in white astronaut suits. The umpire chair and bench are simple boxes. The net is a thin line with visible kinks. Signage text is clipped to 'AURA SL M'."
+      "seen": "Players and crowd are chunky low-poly figures, and the crowd is cloned in identical rows. The umpire chair and bench are plain boxes. The net is a thin line with no mesh detail."
     },
     {
       "category": "composition",
-      "seen": "In frames 2–4 the court fills about 30% of the frame, which is within target, but the upper third is wasted on empty floor and backdrop. In frame 1 the court fills about 70% of the frame and the HUD panels crowd the stands. The ball is barely visible in any frame."
+      "seen": "In the first frame the court fills about 65% of the frame, above the 25–40% target. In the other frames the court sits at about 35%, but the lower third is empty floor. The far player's head occludes the 'AURA SLAM' banner, leaving it reading 'AURA SL M'."
     },
     {
       "category": "camera",
-      "seen": "Frames 2–4 use an elevated three-quarter broadcast view close to the recipe. Frame 1 switches to a much tighter, steeper perspective, so the shots are inconsistent."
+      "seen": "The camera uses an elevated perspective broadcast angle with a centered, symmetric court. The first frame is close to top-down, so the angle varies between shots, and the projection is perspective rather than orthographic."
     },
     {
       "category": "postprocessing",
-      "seen": "Frame 1 has a heavy vignette and a green-teal color cast that muddies the blue court. Paris is crushed into a single orange hue. Dubai is low-contrast and washed out. There is no bloom on lights and no consistent arena grade."
+      "seen": "The first frame has a vignette and a soft bloom hotspot at the right edge. Background props get a depth-of-field blur. Dubai is grey and low-contrast. There is no consistent arena grade."
     },
     {
       "category": "ui_hud",
-      "seen": "Frame 1 has a clean scoreboard, power bar, ball-speed dial, mode pills and a controls strip, all readable. Frames 2–4 show only in-world signage with low-res pixel text and no overlay HUD."
+      "seen": "There is no screen-space HUD. The score appears only as small in-world text on the back wall. The target service box is a flat unlit pale-yellow overlay with a pink ring, and it clashes with the scene lighting."
     }
   ],
   "nextChange": {
-    "category": "ibl_reflections",
-    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
-    "api": "environments.hdri(url) or the look's preset env"
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
   },
   "judge": "prism"
 }

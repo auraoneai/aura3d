@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p6/top-tennis/frames/g01p6-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "c9fcaac88084cc7d2405f0edb4b19226e44124a187496a0a9dbb209bab7b3e2e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--moon--settle-60s.jpg",
+      "sha256": "4727e0f14a995a044518fcf68ee8a68c8caec6498cb44f963826768cc62c0d69"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--clay--settle-60s.jpg",
+      "sha256": "249f2a9fdab5eedde673c8f289f3558561bb778f24b12b0c9a98ea9b4b351037"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r3/top-tennis--desert--settle-60s.jpg",
+      "sha256": "923073d8fd8549910c62c2dbd265b08faa5dbe81efd587576dfa52d801fcc285"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6.5,
+    "ibl_reflections": 2.5,
+    "environment_world": 5,
+    "atmospheric_effects": 2.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 3.5,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional key gives long raking shadows in the Moon and Paris frames. The Dubai frame is flat and washed out, with beige floor, stands and sky at nearly the same value. Frame 1 has faint light pools on the green surround, but there is no flood-light structure at the 55°/45° angle the recipe calls for."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players cast hard, grounded shadows and the net casts a readable line shadow in Paris. The stand boxes and the umpire chair cast blocky shadows with no contact darkening or ambient occlusion where crowd meets bench or chair meets floor."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No specular response or environment reflection on any surface. The court, net posts, light poles and floor all read as matte, even under the Moon frame's strong key."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Each venue is a court and three floating stand boxes on an infinite flat plane. Beyond them is a black void (Moon) or flat ground meeting a blurred tower backdrop card (Paris, Dubai). No walls, roof, rigging or arena interior, so the interior-industrial look is missing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts or depth fog. The only depth cue is the blurred backdrop image in Paris and Dubai, which reads as a flat card."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are flat albedo. The blue hard court in frame 1 has a faint diagonal hatch texture. The clay court and the Dubai floor are a single uniform color, with no grain, wear marks or roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The crowd is one low-poly seated figure repeated in rows with random shirt colors. Players are simple capsule-style figures. The umpire chair and bench are untextured boxes. The tower backdrop has detail, but it is a distant prop."
+    },
+    {
+      "category": "composition",
+      "seen": "The court sits centered and takes roughly 30–40% of the frame in the wide shots, which fits the recipe. Large areas of empty floor in the lower corners and the void above the stands waste frame space. The rainbow crowd competes with the court instead of sitting dark as the recipe expects."
+    },
+    {
+      "category": "camera",
+      "seen": "A high broadcast-style perspective view looks down the court length, plus a tighter, steeper view in frame 1. The camera is perspective, not orthographic. The far-end sponsor boards and the far player overlap, which clips the 'AURA SLAM' text."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom, color grading or vignette. Court line edges show aliasing stair-steps. Dubai's lack of contrast suggests no tonemapping or exposure control."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The score ('PARIS 0-0 0-0') is small pixel-font text printed on the far stand wall, with no screen-space scoreboard. Frame 1 shows no score at all. The highlighted service box and the pink target ring are clear gameplay cues."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
