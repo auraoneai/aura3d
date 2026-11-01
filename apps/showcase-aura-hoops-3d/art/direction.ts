@@ -59,6 +59,8 @@ export default defineArtDirection({
     { role: "world", assetKey: "hoopsCourtShell", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "hoopsScoreboard", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 phase 4 WP-36 blacktopFloodlightRig: the Meshy retexture drawn for the Rucker floods on the new look (6,064 tris).
+    { role: "set-dressing", assetKey: "hoops_blacktopFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsTrophy", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
