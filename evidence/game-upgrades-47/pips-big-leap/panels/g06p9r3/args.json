@@ -1,0 +1,19 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "variants": [
+   {
+    "variant": "w2",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/wp38/evidence/game-upgrades-47/before/pips-big-leap/frames/gu47-before-pips-big-leap-2/pips-big-leap--w2--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p9-r3/pips-big-leap/frames/g06p9-r3-3/pips-big-leap--w2--settle-60s.jpg",
+    "refKind": "same variant in 4.6.2"
+   },
+   {
+    "variant": "w3",
+    "before": "/Users/gurbakshchahal/platforms/aura3d-gu47/wp38/evidence/game-upgrades-47/before/pips-big-leap/frames/gu47-before-pips-big-leap-2/pips-big-leap--w3--settle-60s.jpg",
+    "after": "/Users/gurbakshchahal/platforms/aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p9-r3/pips-big-leap/frames/g06p9-r3-4/pips-big-leap--w3--settle-60s.jpg",
+    "refKind": "same variant in 4.6.2"
+   }
+  ]
+ }
+]

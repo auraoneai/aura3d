@@ -56,31 +56,32 @@ const direction: GameArtDirection = {
   assets: [
     { role: "hero", assetKey: "pipsPip", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "RunFast", "Regular_Jump", "Dead", "Victory_Cheer"] } },
     { role: "enemy", assetKey: "pipsBrambleback", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["Idle", "Quick_Walk", "Attack", "Hit_Reaction", "Dead", "Chest_Pound_Taunt"] } },
-    // NPC runners: kept until the rigged villagers (PBL-A3, WP-36) replace them.
-    { role: "character", assetKey: "showcaseSidekickRunner", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
+    // NPCs (original look only; the diorama draws none): the helper and this game's own sidekick.
+    { role: "character", assetKey: "pipsSidekick", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
     { role: "character", assetKey: "helperChar", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
     { role: "prop", assetKey: "pipsSunseed", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsGoldenAcorn", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsCheckpointFlag", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsSungate", maxTriangles: 10000, textureSet: "BC", maxTextureSize: 1024 },
-    // Borrowed shared props: mounted today, replaced by the woodland set (PBL-A2, WP-36).
+    // Generic shared nature props (terms.json assetOwners.generic).
     { role: "set-dressing", assetKey: "propConifer", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "propBoulder", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "propRockB", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeWindmillMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeWatchtowerMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeCrateMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "gullsiegeBarrelMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "skylineCrystalShardMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "fpsEnergyCorePickupMeshy", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "auraClashCornerBrazierPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "neonStreetLampProp", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "heatsinkBoostPad", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "heatsinkArch", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "prop", assetKey: "galleryShiftPedestal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "reactorFusionTurbineMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "blockfallReactorContainmentPylonMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "heatsinkDroneNighthawk", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 }
+    // GU47 phase 9 (PRD D2): owned props. CC0 catalog files (Kenney, Quaternius, Polygonal Mind)
+    // and the WP-36 Meshy moss disc, admitted into this app's aura.assets.json with provenance.
+    { role: "set-dressing", assetKey: "pipsCrate", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsBarrel", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsCrystal", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "pipsHeart", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsStar", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsEmberPot", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsLantern", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "pipsBouncer", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsArch", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "pipsTileMossDisc", maxTriangles: 8000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsWindTurbine", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsColumn", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "pipsBee", maxTriangles: 20000, textureSet: "BC", maxTextureSize: 1024 }
   ],
   // One entry per gameplay event; the pack lives in src/game/vfx.ts.
   vfx: [

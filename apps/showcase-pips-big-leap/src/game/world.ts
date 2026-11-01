@@ -178,6 +178,33 @@ function solidOf(p: PlatSpec): SolidBox {
 // ---------------------------------------------------------------- decor
 
 /**
+ * GU47 phase 9 (PRD D2): the owned props replace borrowed ones of a different shape, so a few
+ * kinds shrink their fitted size to stay inside the old prop's ground footprint (the
+ * widest horizontal extent at today's size). Colliders and camera obstacles are unchanged.
+ */
+export const OWNED_PROP_FIT = {
+  /** Clay ember pot (1.4 x its height) inside the old 0.52-wide brazier pylon (vents and lava dressing). */
+  emberPot: 0.37,
+  /** Moss disc pad (spring base, checkpoint pad) inside the old 0.6-wide pedestal column. */
+  pedestal: 0.6,
+  /** Bouncer spring inside the pedestal's width, sitting on the moss disc. */
+  bouncer: 0.6
+} as const;
+
+/**
+ * Decor drawn as its own skinned model node in the diorama look too (skinned meshes cannot be
+ * instanced): the bee that flies where the hawk drone hung (GU47 phase 9), wings flapping.
+ */
+export const SKINNED_DECOR_KINDS: ReadonlySet<DecorSpec["kind"]> = new Set(["hawk"]);
+
+/**
+ * The windmill and sail kinds draw the Kenney wind turbine (0.49 x its height, inside both old
+ * footprints at today's size: no catalog CC0 storybook windmill is a whole building, the
+ * fantasy-town "windmill" is only the sail rotor). Its rotor faces +x; a quarter turn shows it to the course.
+ */
+const WINDMILL_FACE = Math.PI / 2;
+
+/**
  * Today's decor, one model node per prop (`?look=original`). The diorama look draws the
  * same props through `decorInstance` + `propInstanceNodes` (PBL-PF1), where the small
  * props (crates, barrels, banners, star cores) cast no shadow-map shadows.
@@ -208,6 +235,7 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
         model(assets.hawk, { name: `${d.id}:hawk`, castShadow: true, receiveShadow: true, targetMaxDimension: 1.5 * s, scaleMode: "fit" })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
+          .animate({ clip: "Flying", loop: true })
       ];
     case "mushroom":
       return [
@@ -231,13 +259,13 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
       return [
         model(assets.props.windmill, { name: `${d.id}:windmill`, castShadow: true, receiveShadow: true, targetHeight: 3.6 * s })
           .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
+          .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
     case "sail":
       return [
-        model(assets.props.watchtower, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s })
+        model(assets.props.windmill, { name: `${d.id}:sail`, castShadow: true, receiveShadow: true, targetHeight: 2.6 * s })
           .position(d.x, d.y, d.z)
-          .rotate(0, yaw, 0)
+          .rotate(0, yaw + WINDMILL_FACE, 0)
       ];
     case "cloud":
       return [
@@ -253,7 +281,7 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
       ];
     case "vent":
       return [
-        model(assets.props.brazier, { name: `${d.id}:vent`, castShadow: true, receiveShadow: true, targetHeight: 1.35 * s })
+        model(assets.props.brazier, { name: `${d.id}:vent`, castShadow: true, receiveShadow: true, targetHeight: 1.35 * s * OWNED_PROP_FIT.emberPot })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -279,7 +307,7 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
       ];
     case "star":
       return [
-        model(assets.props.energyCore, { name: `${d.id}:star`, castShadow: tinyShadows, targetMaxDimension: 0.9 * s })
+        model(assets.props.star, { name: `${d.id}:star`, castShadow: tinyShadows, targetMaxDimension: 0.9 * s })
           .position(d.x, d.y + 0.55 * s, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -335,24 +363,25 @@ export interface PropInstance {
 /** The diorama decor table: today's asset and fitted size per kind; tiny props cast no shadow-map shadows. */
 export function decorInstance(d: DecorSpec): PropInstance | null {
   const s = d.s ?? 1;
-  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0): PropInstance =>
-    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: d.yaw ?? 0, castShadow, receiveShadow });
+  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0, turn = 0): PropInstance =>
+    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: (d.yaw ?? 0) + turn, castShadow, receiveShadow });
   switch (d.kind) {
     case "tree": return at(assets.props.conifer, "height", 3.2 * s);
     case "conifer": return at(assets.props.conifer, "height", 3.4 * s);
-    case "hawk": return at(assets.hawk, "maxDimension", 1.5 * s);
+    // The bee is skinned (its wings flap), and skinned meshes cannot be instanced: it draws as its own model node.
+    case "hawk": return null; // SKINNED_DECOR_KINDS
     case "mushroom": return at(assets.props.crystalShard, "height", 1.05 * s);
     case "flower": return at(assets.sunseed, "height", 0.72 * s, false);
     case "rock": return at(assets.props.boulder, "maxDimension", 1.15 * s);
-    case "windmill": return at(assets.props.windmill, "height", 3.6 * s);
-    case "sail": return at(assets.props.watchtower, "height", 2.6 * s);
+    case "windmill": return at(assets.props.windmill, "height", 3.6 * s, true, true, 0, WINDMILL_FACE);
+    case "sail": return at(assets.props.windmill, "height", 2.6 * s, true, true, 0, WINDMILL_FACE);
     case "cloud": return at(assets.props.rockB, "maxDimension", 1.9 * s, false, false);
     case "fan": return at(assets.props.turbine, "height", 2.2 * s);
-    case "vent": return at(assets.props.brazier, "height", 1.35 * s);
+    case "vent": return at(assets.props.brazier, "height", 1.35 * s * OWNED_PROP_FIT.emberPot);
     case "pillar": return at(assets.props.pylon, "height", 3.4 * s);
     case "arch": return at(d.id.includes("vista") ? assets.sungate : assets.props.arch, "height", 3.4 * s);
     case "crystal": return at(assets.props.crystalShard, "height", 1.9 * s);
-    case "star": return at(assets.props.energyCore, "maxDimension", 0.9 * s, false, true, 0.55 * s);
+    case "star": return at(assets.props.star, "maxDimension", 0.9 * s, false, true, 0.55 * s);
     case "lantern": return at(assets.props.streetLamp, "height", 2.3 * s);
     case "crate": return at(assets.props.crate, "maxDimension", 0.95 * s, false);
     case "barrel": return at(assets.props.barrel, "height", 0.98 * s, false);
@@ -364,10 +393,11 @@ export function decorInstance(d: DecorSpec): PropInstance | null {
 /** A hazard's dressing mesh (crystal shard, or a brazier on lava) at today's place and size. */
 export function hazardInstance(hz: HazardSpec): PropInstance {
   const h = hz.h ?? 0.5;
+  const lava = hz.type === "lava";
   return {
-    asset: hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard,
+    asset: lava ? assets.props.brazier : assets.props.crystalShard,
     measure: "height",
-    size: Math.max(0.55, Math.min(1.1, h * 1.4)),
+    size: Math.max(0.55, Math.min(1.1, h * 1.4)) * (lava ? OWNED_PROP_FIT.emberPot : 1),
     position: [hz.x, hz.y - Math.min(h, 0.24), hz.z],
     yaw: 0,
     castShadow: true,
@@ -375,9 +405,9 @@ export function hazardInstance(hz: HazardSpec): PropInstance {
   };
 }
 
-/** A spring base or checkpoint pad (the shared pedestal); tiny, so it casts no shadow-map shadow. */
+/** A spring base or checkpoint pad (the moss disc); tiny, so it casts no shadow-map shadow. */
 export function pedestalInstance(x: number, y: number, z: number, size: number): PropInstance {
-  return { asset: assets.props.pedestal, measure: "maxDimension", size, position: [x, y, z], yaw: 0, castShadow: false, receiveShadow: true };
+  return { asset: assets.props.pedestal, measure: "maxDimension", size: size * OWNED_PROP_FIT.pedestal, position: [x, y, z], yaw: 0, castShadow: false, receiveShadow: true };
 }
 
 /** Group key and node name suffix: one draw class per asset, fit measure and shadow flags. */
@@ -700,7 +730,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
           name: `hazard:${hz.id}:mesh`,
           castShadow: true,
           receiveShadow: true,
-          targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4))
+          targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4)) * (hz.type === "lava" ? OWNED_PROP_FIT.emberPot : 1)
         }).position(hz.x, hz.y - Math.min(h, 0.24), hz.z)
       );
     }
@@ -745,14 +775,14 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
   for (const hpt of spec.hearts) {
     builder.add(
-      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
+      model(assets.props.heart, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
         .position(hpt.x, hpt.y - 0.18, hpt.z)
         .runtime(game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] }))
     );
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
-  // Springs — 3D Meshy boost pad + pedestal base (diorama: tiny props cast no
+  // Springs — bouncer spring on a moss-disc base (diorama: tiny props cast no
   // shadow-map shadows, PBL-PF1; contact shadows still ground them).
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
@@ -760,13 +790,13 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       props.push(pedestalInstance(base[0], base[1], base[2], 0.92));
     } else {
       builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 })
+        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 * OWNED_PROP_FIT.pedestal })
           .position(base[0], base[1], base[2])
       );
     }
     builder.add(
-      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.82 })
-        .position(base[0], base[1] + 0.14, base[2])
+      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.82 * OWNED_PROP_FIT.bouncer })
+        .position(base[0], base[1] + 0.08, base[2])
         .runtime(game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] }))
     );
   }
@@ -782,13 +812,13 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       props.push(pedestalInstance(cp.x, cp.y, cp.z, 0.78));
     } else {
       builder.add(
-        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 })
+        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 * OWNED_PROP_FIT.pedestal })
           .position(cp.x, cp.y, cp.z)
       );
     }
   }
 
-  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
+  // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + heart lock.
   // Diorama: the ring is sun-seed gold and marked practical (a light source, not fill).
   const g = spec.gate;
   builder.add(
@@ -801,7 +831,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       .runtime(game.runtimeNode(nodeName.gateRing, { tags: ["gate"] }))
   );
   builder.add(
-    model(assets.props.energyCore, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
+    model(assets.props.heart, { name: nodeName.gateLock, castShadow: false, targetMaxDimension: 0.65 })
       .position(g.x, g.y + 1.25, g.z)
       .runtime(game.runtimeNode(nodeName.gateLock, { tags: ["gate"] }))
   );
@@ -817,6 +847,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     } else if (diorama) {
       const prop = decorInstance(d);
       if (prop) props.push(prop);
+      else for (const node of decorNodes(d)) builder.add(node);
     } else {
       for (const node of decorNodes(d)) builder.add(node);
     }
