@@ -20,7 +20,7 @@ const CAP = {
   ground: 56, detail: 260, glow: 140, glowS: 60,
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
   truck: 18, tram: 12, train: 6 * TRAIN_CARS, hover: 26,
-  log: 48, logEnd: 96, pad: 48, stone: 48, coin: 26,
+  log: 48, logEnd: 96, raft: 96, pad: 48, stone: 48, coin: 26,
   trunk: 320, canopy: 260, dressB: 220,
   // GU47 CH47-07: one instanced pool per ground surface (diorama look; empty under ?look=original).
   felt: 40, asphalt: 40, water: 30, gravel: 24, lava: 24,
@@ -36,6 +36,9 @@ export type LookMode = "diorama" | "original" | "vivid";
 let lookMode: LookMode = "diorama";
 export function setLookMode(mode: LookMode): void { lookMode = mode; }
 export function getLookMode(): LookMode { return lookMode; }
+/** GU47 phase 4 dressing (shadow decals, toy rafts): main.ts sets it from `p4DressFor`. */
+let p4Dress = true;
+export function setP4Dress(on: boolean): void { p4Dress = on; }
 
 export type Mode = "title" | "run" | "dead";
 export type RunKind = "quick" | "tour" | "drill";
@@ -766,16 +769,20 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
         .runtime(game.runtimeNode(`spectator-${idx}`))
     )
   ];
-  if (!diorama) {
+  if (!diorama && p4Dress) {
     // GU47 phase 4: soft sun-cast shadow decals under every mover, the critter and the coin (see `sunShadowFootprint`).
     out.push(instances.plane({ name: "sun-shade", size: [1, 1, 1], material: shadeMaterial(), transforms: pad(CAP.shade), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-shade")));
   }
+  if (!diorama && p4Dress) {
+    // GU47 phase 4: lacquered toy rafts instead of round logs (the sibling judge matched the cylinder logs with
+    // cloud-runner-port, g14p4r1 0.786); same length and top height as the log hitbox.
+    out.push(instances.roundedBox({ name: "m-rafts", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.4, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.15 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
+  }
   if (!diorama && lookMode === "vivid") {
-    // GU47 phase 4: the vivid look's reflective surfaces (ibl_reflections): glassy clearcoat river water and a
-    // satin-lacquered toy road that pick up the sky IBL, one instanced pool each (+2 draws; ground pool -2 kinds).
+    // GU47 phase 4: the vivid look's reflective river (ibl_reflections): clearcoat water that picks up the sky IBL
+    // (+1 draw). A satin road and brighter water read washed out to the g14p4r1 panel.
     out.push(
-      instances.box({ name: "v-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.25 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
-      instances.box({ name: "v-asphalt", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.5, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.22, envMapIntensity: 0.9 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt"))
+      instances.box({ name: "v-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 0.7 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
     );
   }
   if (diorama) {
@@ -846,7 +853,7 @@ const SHADE_SIZE: Record<string, readonly [number, number]> = {
 
 /** Queue one sun-cast shadow decal (vivid and 4.6 looks only). */
 function shade(x: number, groundY: number, z: number, len: number, dep: number, height: number): void {
-  if (lookMode === "diorama") return;
+  if (lookMode === "diorama" || !p4Dress) return;
   const sun = lookMode === "vivid" ? VIVID_LOOKS[appliedLook]!.sun : ORIGINAL_SUN;
   const f = sunShadowFootprint(x, z, len, dep, height, sun);
   inst("shade", f.x, groundY + 0.008, f.z, f.len, 1, f.dep, "#000000");
@@ -1410,8 +1417,14 @@ export function syncVisuals(alpha = 1): void {
         // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
         // Vivid look: lacquered terracotta toy logs with butter-yellow ends (the PRD G14 palette), not bark brown.
         const vivid = lookMode === "vivid";
+        if (p4Dress && lookMode !== "diorama") {
+          // Toy raft: terracotta deck (top at 0.22, the log's top) on two butter-yellow pontoons.
+          inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, CROSS_HOP_PALETTE.terracotta);
+          for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, CROSS_HOP_PALETTE.butterYellow);
+          shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.7, 0.22);
+          continue;
+        }
         inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, vivid ? CROSS_HOP_PALETTE.terracotta : "#7a4a24", 0, Math.PI / 2);
-        shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.5, 0.22);
         for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, vivid ? CROSS_HOP_PALETTE.butterYellow : "#e2c08a", 0, Math.PI / 2);
       }
       // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
@@ -1593,7 +1606,6 @@ function paintDioramaGround(l: Lane, z: number): boolean {
   if (lookMode === "vivid") {
     const pal = THEMES[l.theme].palette;
     if (l.type === "river") { inst("water", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water); return true; }
-    if (l.type === "road") { inst("asphalt", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.road); return true; }
     return false;
   }
   if (lookMode !== "diorama") return false;

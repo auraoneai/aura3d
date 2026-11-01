@@ -33,10 +33,20 @@ describe("cross-hop shadow decals (GU47 phase 4)", () => {
     expect(names("diorama")).not.toContain("sun-shade");
   });
 
-  it("gives the vivid look glossy water and road pools", () => {
+  it("gives the vivid look glossy water and toy rafts", () => {
     const v = names("vivid");
     expect(v).toContain("v-water");
-    expect(v).toContain("v-asphalt");
+    expect(v).toContain("m-rafts");
     expect(names("original")).not.toContain("v-water");
+  });
+});
+
+describe("cross-hop phase-4 dressing per view", () => {
+  it("dresses the vivid look and the panel-won 4.6 views only", async () => {
+    const { p4DressFor, P4_ORIGINAL_THEMES } = await import("../../../apps/showcase-cross-hop/src/game/look");
+    expect(p4DressFor("vivid", 1)).toBe(true);
+    expect(p4DressFor("diorama", 5)).toBe(false);
+    for (let t = 0; t < 6; t++) expect(p4DressFor("original", t)).toBe(P4_ORIGINAL_THEMES.includes(t));
+    expect(p4DressFor("original", null)).toBe(false);
   });
 });
