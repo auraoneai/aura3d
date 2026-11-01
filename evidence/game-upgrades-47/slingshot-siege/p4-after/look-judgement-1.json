@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g12/evidence/slingshot-siege/screens/final/1280x720/03-action-01-state-aiming-backend-webgl2-backgrou.jpg",
+      "sha256": "4dc4ff1546c4a83bfabd5692cf56fa6173b324fd9481eb48bdd5ba9f24ac2c96"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-2/slingshot-siege--ch0--settle-60s.jpg",
+      "sha256": "28952a32d8ef2409e508d0240ed330479e33568e4b4e7a9b80a30ae7b050aa54"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-5/slingshot-siege--ch3--settle-60s.jpg",
+      "sha256": "178ff8d77df6d1fe529b84a6415dfd23fc3f7c4eb4c2128608436645da16eb4d"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-6/slingshot-siege--ch4--settle-60s.jpg",
+      "sha256": "2f3bead4b8d259114b4087b405c5acfa095c5a1c5b306f2abe960181df0ab832"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional sun changes from grey noon to amber sunset across the frames. The rocks pick up warm light, but the large grass plane stays a flat saturated green with almost no shading falloff. There is no visible rim or back light separating the props from the ground. The look is daylight countryside, not the deep-space-blue, teal and magenta key/rim setup the recipe calls for."
+    },
+    {
+      "category": "shadows",
+      "seen": "Cone trees, grass posts, crates and the barrel cast hard-edged shadows on the grass, and the depressions show shadowed bowls. Contact shadows under the windmill and arch are weak, and the rocks barely ground into the island."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No visible reflections anywhere. The water is a flat light-blue plane with no sky or specular response, the barrel's metal hoops look matte, and there is no environment lighting tint on the props."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A floating disc island of flat green grass with primitive cone trees and stick-like posts sits between two photoscanned boulders. The background is a plain gradient sky over a flat sea horizon. The detailed photoreal rocks clash with the low-detail stylized ground. There is no space backdrop."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The sunset frames tint the sky orange, but there is no depth fog, haze on the distant sea, particles or dust. The horizon line is a hard cut between sky and water."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Material quality is uneven. The rocks use high-frequency scanned albedo. The crates, barrel and stone arch have hand-painted stylized textures. The grass, cone trees and posts are untextured single-colour Lambert surfaces, and the yellow path tiles are flat quads."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The windmill, stone arch, crates, barrel, slingshot and bird characters are reasonable stylized models. The trees are bare cones, the grass blades are thin boxes, and the bowl depressions are simple cut circles. The enemy fortress on the right is small and partly hidden behind a boulder."
+    },
+    {
+      "category": "composition",
+      "seen": "The bottom third of the frame is empty flat grass. The targets (arch, windmill, red crate fortress) sit small in the midground, and the two boulders take up most of the upper frame and box in the play space. In frame 1, the tutorial panel and ammo slots cover the centre foreground."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera uses a low, wide perspective from behind the island edge and is identical across all frames. This is far from the recipe's orthographic 60° top-down view. Mid-flight readability of the projectile path is unclear from this angle."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is basic tonemapping and a mild warm grade in the sunset frames. No bloom on the red flags or highlights, no ambient occlusion in crevices, and no depth of field. Frame 1 looks slightly washed out and grey compared with the others."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has a parchment-style score card with stars, a level banner, round icon buttons, egg ammo slots with a yellow selection ring, and a clear tutorial panel. Problems: the website-style tab bar takes the top strip, the control-hint footer is dense small text, and the 'TAP Yolk Drop' button is low-contrast and hard to read."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

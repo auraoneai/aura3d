@@ -97,6 +97,11 @@ export interface ChapterLook {
    * gradient and clouds unfogged.
    */
   readonly skyFog: boolean;
+  /**
+   * GU47 phase 4 (4.7.2): the glossy sea's image-reflection strength. 1.6 by day (the sky reflects in it); low at
+   * night, where the starfield image light at 1.8 turned the sea white (rounds g12p3r3, g12p4r1).
+   */
+  readonly seaReflection: number;
 }
 
 /** Brand palette (PRD WP-22 identity). */
@@ -143,11 +148,11 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     preset: "outdoor-day",
     // GU47 phase 3: the warm spruit_sunrise image light bleached the props and turned the cliffs yellow (round g12p3r1).
     hdri: "kloppenheim_06_puresky",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 330,
+    environmentIntensity: 0.22,
+    environmentRotationDeg: 288,
     exposureEv: -0.35,
-    sun: { elevationDeg: 38, azimuthDeg: 325, color: "#ffe6c8", intensity: 3.0 },
-    shadowSoftness: 1.2,
+    sun: { elevationDeg: 32, azimuthDeg: 288, color: "#ffe6c8", intensity: 5.4 },
+    shadowSoftness: 0.7,
     fog: { color: "#d8e6f0", near: 400, far: 4000 },
     horizon: "#78aee0",
     sky: {
@@ -172,18 +177,19 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rockTexture: true,
     rockTint: "#ffffff",
     solidBlocks: true,
-    skyFog: false
+    skyFog: false,
+    seaReflection: 1.6
   },
   {
     chapter: 1,
     timeOfDay: "bright noon",
     preset: "outdoor-day",
     hdri: "outdoor-midday",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 340,
+    environmentIntensity: 0.22,
+    environmentRotationDeg: 284,
     exposureEv: -0.4,
-    sun: { elevationDeg: 62, azimuthDeg: 340, color: "#fff6e6", intensity: 3.2 },
-    shadowSoftness: 0.9,
+    sun: { elevationDeg: 50, azimuthDeg: 284, color: "#fff6e6", intensity: 5.6 },
+    shadowSoftness: 0.6,
     fog: { color: "#d4e2ee", near: 400, far: 4000 },
     horizon: "#6aa2dc",
     sky: {
@@ -208,18 +214,19 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rockTexture: true,
     rockTint: "#ffffff",
     solidBlocks: true,
-    skyFog: false
+    skyFog: false,
+    seaReflection: 1.6
   },
   {
     chapter: 2,
     timeOfDay: "breezy late morning after rain",
     preset: "outdoor-day",
     hdri: "outdoor-midday",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 315,
+    environmentIntensity: 0.25,
+    environmentRotationDeg: 292,
     exposureEv: -0.3,
-    sun: { elevationDeg: 48, azimuthDeg: 315, color: "#f4f6ff", intensity: 2.8 },
-    shadowSoftness: 2.0,
+    sun: { elevationDeg: 40, azimuthDeg: 292, color: "#f4f6ff", intensity: 5.0 },
+    shadowSoftness: 1.0,
     fog: { color: "#d2e2ec", near: 400, far: 4000 },
     horizon: "#80b4e2",
     sky: {
@@ -244,18 +251,19 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rockTexture: true,
     rockTint: "#ffffff",
     solidBlocks: true,
-    skyFog: false
+    skyFog: false,
+    seaReflection: 1.6
   },
   {
     chapter: 3,
     timeOfDay: "golden hour",
     preset: "golden-hour",
     hdri: "kloppenheim_06_puresky",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 300,
+    environmentIntensity: 0.25,
+    environmentRotationDeg: 284,
     exposureEv: -0.3,
-    sun: { elevationDeg: 22, azimuthDeg: 300, color: "#ffc183", intensity: 3.0 },
-    shadowSoftness: 1.4,
+    sun: { elevationDeg: 20, azimuthDeg: 284, color: "#ffc183", intensity: 5.0 },
+    shadowSoftness: 0.9,
     fog: { color: "#f0c9a2", near: 400, far: 4000 },
     horizon: "#e8b48c",
     sky: {
@@ -280,18 +288,19 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rockTexture: true,
     rockTint: "#ffffff",
     solidBlocks: true,
-    skyFog: false
+    skyFog: false,
+    seaReflection: 1.6
   },
   {
     chapter: 4,
     timeOfDay: "red sunset",
     preset: "golden-hour",
     hdri: "belfast_sunset_puresky",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 295,
+    environmentIntensity: 0.25,
+    environmentRotationDeg: 280,
     exposureEv: -0.35,
-    sun: { elevationDeg: 16, azimuthDeg: 295, color: "#ff9a62", intensity: 3.0 },
-    shadowSoftness: 1.6,
+    sun: { elevationDeg: 15, azimuthDeg: 280, color: "#ff9a62", intensity: 5.0 },
+    shadowSoftness: 1.0,
     fog: { color: "#d99a86", near: 400, far: 4000 },
     horizon: "#d88a70",
     sky: {
@@ -316,7 +325,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     rockTexture: true,
     rockTint: "#ffffff",
     solidBlocks: true,
-    skyFog: false
+    skyFog: false,
+    seaReflection: 1.6
   },
   {
     chapter: 5,
@@ -350,10 +360,11 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     flare: false,
     weather: "none",
     terrain: ISLAND,
-    worldWater: true,
+    worldWater: false,
     rockTexture: false,
     solidBlocks: false,
-    skyFog: true
+    skyFog: true,
+    seaReflection: 0.08
   }
 ];
 

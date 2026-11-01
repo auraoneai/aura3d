@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky makes the mood dull. The ground is a very saturated, plasticky green. Small cone trees are scattered evenly across the field.",
+     "Flat, overcast grey sky that feels a bit dull; the cone trees are very simple; the sign is a little obtrusive, but there are no real defects",
+     "Flat, featureless grey overcast sky that feels dull. The rock cliffs are dark and a little muddy. The mound and craters on the green read as dark holes. Small cone trees are scattered evenly and look repetitive. Overall the frame is well grounded, with strong cast shadows and saturated props."
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Hazy warm sky. The red crate fort on the right is a bit blocky and stands out. Rocks on the left are fairly dark.",
+     "Warm sunset grade slightly muddies the shadow side of the left cliff; the cone trees are simple; the red crate tower on the right is a bit plain, but the frame is coherent with good mood and contrast",
+     "The warm sunset haze softens the horizon a little. The large rocks are fairly dark on their shadow sides. The red crate tower on the right is slightly cluttered against the rock. Small cone trees repeat. Otherwise the mood is strong and warm, with good shadows and contrast."
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange tint over the whole frame makes it slightly monochrome. Rocks are fairly dark. Grey block pillars look basic.",
+     "Heavy orange sky grade tints the whole scene, and the shadow areas of the cliffs and ground run somewhat dark; the stone pillar fort is simple blocky geometry, but there are no glitches",
+     "The orange sunset tint is heavy and makes the sky and rocks quite monochrome. The water at the far left goes dark grey. The pillar structure on the right is a little plain and blocky. Otherwise it has strong mood, shadows and readable props."
+    ]
+   }
+  ]
+ }
+]

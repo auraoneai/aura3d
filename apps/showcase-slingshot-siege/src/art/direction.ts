@@ -60,6 +60,8 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "gullsiegeWatchtowerMeshy", maxTriangles: 150000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "gullsiegeGatehouseMeshy", maxTriangles: 150000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "gullsiegeWindmillMeshy", maxTriangles: 150000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // GU47 phase 4 WP-36 (SS47-A1): the game's own Meshy sea-stack islet on the far sea (../art/setPieces.ts).
+    { role: "backdrop", assetKey: "sling_seaStackIsland", maxTriangles: 150000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "propRockA", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "propRockB", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },

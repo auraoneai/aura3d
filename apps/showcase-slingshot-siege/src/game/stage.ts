@@ -32,6 +32,7 @@ import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
+import { SEA_STACK_PLACEMENT, setPieces } from "../art/setPieces";
 import { levelSignNodes } from "./sign";
 
 // ----------------------------------------------------------------- pools --
@@ -141,10 +142,19 @@ export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverri
  * exactly the sim's box (scale = 2 x half extents). Painted wood, chalky stone, clear glass, pale ice, glossy obsidian.
  * Presentation only: the sim's material table (materials.ts) is unchanged.
  */
+/**
+ * GU47 phase 4 (4.7.2): the flat sea and shallows as a glossy clear-coated surface, so the chapter HDRI reflects in
+ * them (the judge read the old 0.2-0.22 roughness sea as matte, ibl_reflections 3.5-4).
+ */
+function seaGloss(color: AuraColor, envMapIntensity: number): AuraMaterialSpec {
+  return material.physical({ color, roughness: 0.08, metallic: 0, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity });
+}
+
 export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMaterialSpec>> = {
   // Mid-value wood and stone: at #bdb6a8 the stone pillars blew out to blank white under the warm sunset sun (g12p3r1).
-  wood: material.pbr({ color: "#a8703f", roughness: 0.74, metallic: 0, rim: { color: "#ffe2b8", power: 3, intensity: 0.1 } }),
-  stone: material.pbr({ color: "#8f897e", roughness: 0.86, metallic: 0, rim: { color: "#fff6e6", power: 3, intensity: 0.08 } }),
+  // GU47 phase 4: painted toy blocks under a satin lacquer, so the sky picks out their edges (ibl_reflections).
+  wood: material.physical({ color: "#a8703f", roughness: 0.7, metallic: 0, clearcoat: 0.55, clearcoatRoughness: 0.22, envMapIntensity: 1.2, rim: { color: "#ffe2b8", power: 3, intensity: 0.1 } }),
+  stone: material.physical({ color: "#8f897e", roughness: 0.8, metallic: 0, clearcoat: 0.3, clearcoatRoughness: 0.35, envMapIntensity: 1.1, rim: { color: "#fff6e6", power: 3, intensity: 0.08 } }),
   glass: material.physical({
     color: "#bfe9f5", roughness: 0.06, metallic: 0, opacity: 0.55, clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6,
     envMapIntensity: 1.4, rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
@@ -309,11 +319,11 @@ export function chapterPracticals(row: ChapterLook): StageNode[] {
 export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[] {
   const out: StageNode[] = [
     effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.52, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
-    effects.contactShadows({ length: 0.18, thickness: 0.035, steps: 12, intensity: 0.85, lights: "sun" }),
+    effects.contactShadows({ length: 0.32, thickness: 0.05, steps: 16, intensity: 1, lights: "sun" }),
     // effects.bloom drops `name`; stamp it so the runtime and the tests can find the day/night bloom node.
     { ...effects.bloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
   ];
-  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.3, intensity: 0.5, density: 0.62 }));
+  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.35, intensity: 0.75, density: 0.7 }));
   if (!options.reducedMotion) out.push(effects.vignette({ intensity: row.vignette }));
   out.push(effects.antiAlias({ mode: "fxaa" }));
   return out;
@@ -377,7 +387,7 @@ export function beachDressingNodes(row: ChapterLook, options: StageOptions): Sta
     instances.cone({
       name: "dressing-sea-grass", material: pbr("#ffffff", { roughness: 0.9 }), transforms: d.grass,
       colors: tone(mixHex(t.turf, "#c8c27a", 0.25), d.grass.length, "#556b34", 0.18),
-      castShadow: false, receiveShadow: true, ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.5 } })
+      castShadow: true, receiveShadow: true, ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.5 } })
     }),
     instances.sphere({
       name: "dressing-shells", material: pbr("#ffffff", { roughness: 0.55 }), transforms: d.shell,
@@ -510,17 +520,20 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
       .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
     // Shallows and seabed under the animated sea (SS47-E3); the seabed is also the sea when world water is off.
-    primitives.cylinder({ name: "stage-shallows", material: pbr(shallowColor, { roughness: 0.2, metallic: 0.05 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-shallows", material: seaGloss(shallowColor, row.seaReflection), castShadow: false, receiveShadow: true })
       .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]),
-    primitives.cylinder({ name: "stage-ocean", material: pbr(mixHex(terrain.sea, "#0b2a38", 0.45), { roughness: 0.22, metallic: 0.1 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ocean", material: seaGloss(mixHex(terrain.sea, "#0b2a38", 0.45), row.seaReflection), castShadow: false, receiveShadow: true })
       .position(1.5, -0.45, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
     ...(row.worldWater ? [seaNode(row, options)] : []),
     primitives.sphere({ name: "terrain-mounds", material: pbr("#ffffff", { roughness: 0.92, metallic: 0.02 }), instances: moundInst, instanceColors: moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), castShadow: false, receiveShadow: true }),
     primitives.sphere({ name: "grass-patches", material: pbr("#ffffff", { roughness: 0.95 }), instances: patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), instanceColors: patchColors, castShadow: false, receiveShadow: true }),
     primitives.box({ name: "dirt-path", material: pbr(dirtColor, { roughness: 0.96, metallic: 0 }), instances: pathInst, instanceColors: pathInst.map((_, i) => (i % 2 === 0 ? dirtColor : mixHex(dirtColor, groundColor, 0.28))), castShadow: false, receiveShadow: true }),
-    primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: false, receiveShadow: false }),
+    primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: true, receiveShadow: false }),
     primitives.sphere({ name: "foreground-pebbles", material: pbr(rockTintSmall, { roughness: 0.94 }), instances: pebbleInst, castShadow: false, receiveShadow: true }),
     primitives.sphere({ name: "distant-headlands", material: pbr("#ffffff", { roughness: 1, metallic: 0 }), instances: headlandInst, instanceColors: headlandColors, castShadow: false, receiveShadow: false }),
+    // GU47 WP-36 (SS47-A1): the game's own Meshy sea-stack islet on the far sea (1 draw, no shadow, no collider).
+    model(setPieces.sling_seaStackIsland, { name: "far-sea-stack", position: SEA_STACK_PLACEMENT.position, rotation: [0, SEA_STACK_PLACEMENT.rotationY, 0], castShadow: false, receiveShadow: false })
+      .scale(SEA_STACK_PLACEMENT.scale),
     model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
       .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
     model(assets.gullsiegeBridgeMeshy, {
