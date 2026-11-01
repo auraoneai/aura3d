@@ -3,85 +3,80 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing.jpg",
-      "sha256": "d901f9277d0943a2b7dccc6d1a78c1bc78e747336613dda41ae01fc7a933e203"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-1/aura-diamond-3d--skyline--settle-60s.jpg",
-      "sha256": "dfce81f259956acf14d11108fcf66d00b872f44189b0b2ef109bac753b901fb9"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-2/aura-diamond-3d--canyon--settle-60s.jpg",
+      "sha256": "0b7c750078193b36aaaafb368dfbaeba783ea6d675e87b061637b5ca4c9676c6"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-3/aura-diamond-3d--lunar--settle-60s.jpg",
-      "sha256": "4057057a660836a10a486fb7d766c550cb41da698c7e9db1da3a0ab1afc52bb2"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-3/aura-diamond-3d--lunar--settle-60s.jpg",
+      "sha256": "d64fb227a2cff131b9ee391ffd24f22a91202cec0b68d236287d0f5a1711cb8f"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-2/aura-diamond-3d--canyon--settle-60s.jpg",
-      "sha256": "35d9cc00b9bd3e135de7edfa060e220d14dd4b4626027a0bc77f7c7c12b76fce"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-1/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "63dd0d1471fd0c7287ce6b0eb4fb5d2991d7301ca4dc0a8b8b39e48b1a579203"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5,
+    "lighting": 4.5,
     "shadows": 3.5,
     "ibl_reflections": 2.5,
     "environment_world": 5,
-    "atmospheric_effects": 3,
-    "material_quality": 4,
+    "atmospheric_effects": 2.5,
+    "material_quality": 3.5,
     "modeling_assets": 4.5,
-    "composition": 6,
-    "camera": 6.5,
+    "composition": 5.5,
+    "camera": 6,
     "postprocessing": 4,
-    "animation_quality": 4,
     "ui_hud": 6
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Lighting is mostly flat ambient. Harbor has a warm orange hotspot over the mound. Lunar is a dim grey wash with no flood-light pools. No 55°/45° key direction is readable on the players."
+      "seen": "No directional flood key is readable. The infield and grass are lit almost evenly, with only a faint warm hotspot near the mound in Harbor. The Lunar frame is uniformly dim gray-beige with no light pools from the visible stadium lights."
     },
     {
       "category": "shadows",
-      "seen": "There are only faint contact shadows under the fielders. No crisp cast shadows from the batter or catcher fall across the dirt. Lunar shows thin stray shadow lines across the infield, which suggests shadow-map artifacts."
+      "seen": "Players have only faint, soft contact smudges at their feet. The mound has a slight darker rim, but no player, bat or wall casts a directional shadow."
     },
     {
       "category": "ibl_reflections",
-      "seen": "Uniforms, bases and the mound all have the same matte response. There is no environment reflection or specular sheen even on the Midtown glass towers, which read as noisy textures."
+      "seen": "Every surface reads fully matte: white uniforms, bases, helmets and the scoreboard glass show no specular highlights or environment reflection."
     },
     {
       "category": "environment_world",
-      "seen": "The arena themes are varied: harbor boats, Midtown skyline, Lunar night, Canyon boulders. However, the stands are tiny low-poly blocks of colored dots. The skyline buildings have a noisy, garbled texture. Large empty walls make the backgrounds feel sparse."
+      "seen": "Each arena has a theme (harbor stands, giant canyon boulders, lunar night, a midtown skyline). The props are crude, though. The canyon boulders sit at odd scale behind the wall, and the skyline buildings use smeared, stretched textures with flat cyan billboard rectangles."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is essentially no indoor haze or depth fog. Only Midtown has a slight teal tint. The distant outfield and stands are as sharp as the foreground."
+      "seen": "There is no indoor haze, depth fog or light shafts. The canyon sky is a flat gray band, and the lunar sky is black with point dots."
     },
     {
       "category": "material_quality",
-      "seen": "The infield dirt uses a large-scale smeared noise texture. It looks blotchy pink in Midtown and flat beige in Lunar. The turf is a uniform flat green or teal with no mowing pattern or grain."
+      "seen": "Infield dirt uses a large blotchy noise pattern that reads as camouflage, most visibly as pink mottling in Midtown. The grass is flat color with faint mow stripes, and the uniforms are untextured white."
     },
     {
       "category": "modeling_assets",
-      "seen": "Player models are simple and identical, with basic proportions, a blocky glove and a stick-like bat. The outfield wall and scoreboard are simple boxes. The infield shape has angular polygonal edges."
+      "seen": "Players are low-poly figures with simple caps and gloves. Bases are plain slabs. The infield is a lumpy cloverleaf shape rather than a regulation diamond cut."
     },
     {
       "category": "composition",
-      "seen": "Behind-home framing puts the batter, catcher and the whole infield in view, which is readable. The players occupy only a small part of the frame, and the top third is spent on the sparse stands and sky."
+      "seen": "The infield dirt fills roughly 60% of the frame, above the 25–40% target. The horizon and stands are squeezed into the top band, and in Harbor the scoreboard HUD covers the left stands."
     },
     {
       "category": "camera",
-      "seen": "The elevated broadcast perspective works for gameplay, with all fielders visible. It uses perspective rather than the expected orthographic-like long-lens look."
+      "seen": "All four frames use the same fixed high perspective behind home plate. It reads clearly but is not the orthographic broadcast view the recipe asks for, and the outfielders shrink to a few pixels."
     },
     {
       "category": "postprocessing",
-      "seen": "Harbor shows a heavy orange bloom and vignette blotch over the mound. The other frames have no grading or tonemapping character. Lunar looks underexposed and muddy."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "All fielders hold identical static poses across all frames. The batter stance is the only variation, seen in Harbor. Nothing conveys motion."
+      "seen": "No bloom, grading or vignette is evident beyond a slight warm cast in Harbor. Lunar looks crushed and desaturated rather than graded."
     },
     {
       "category": "ui_hud",
-      "seen": "The Harbor HUD has a clean linescore, count, outs, bases and matchup panels in a dark broadcast style, plus a controls strip. The panels are low contrast, and a 'quick play' label overlaps text. The top nav bar is utilitarian."
+      "seen": "The line score, count, outs, bases and matchup panels are tidy. The inning header numerals are low contrast, the HTML nav bar along the top dominates, and the controls strip reads as debug text."
     }
   ],
   "nextChange": {

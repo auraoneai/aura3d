@@ -58,9 +58,9 @@ describe("aura-diamond look table (GU47 WP-18)", () => {
   });
 
   it("uses the PRD sun angles (DIA-L1) and the PRD post presets and operators (DIA-P1)", () => {
-    expect([PARK_LOOKS.sandlot.sun.elevationDeg, PARK_LOOKS.sandlot.sun.azimuthDeg]).toEqual([9, 250]);
-    expect([PARK_LOOKS.canyon.sun.elevationDeg, PARK_LOOKS.canyon.sun.azimuthDeg]).toEqual([72, 20]);
-    expect([PARK_LOOKS.ivy.sun.elevationDeg, PARK_LOOKS.ivy.sun.azimuthDeg]).toEqual([24, 110]);
+    expect([PARK_LOOKS.sandlot.sun.elevationDeg, PARK_LOOKS.sandlot.sun.azimuthDeg]).toEqual([17, 225]);
+    expect([PARK_LOOKS.canyon.sun.elevationDeg, PARK_LOOKS.canyon.sun.azimuthDeg]).toEqual([56, 140]);
+    expect([PARK_LOOKS.ivy.sun.elevationDeg, PARK_LOOKS.ivy.sun.azimuthDeg]).toEqual([28, 125]);
     expect([PARK_LOOKS.lunar.sun.elevationDeg, PARK_LOOKS.lunar.sun.azimuthDeg]).toEqual([42, 300]);
     expect(PARK_ORDER.map((p) => PARK_LOOKS[p].post.preset)).toEqual(["cinematic-film", "neon-night", "daylight-outdoor", "daylight-outdoor", "arena-fight", "space"]);
     expect(PARK_ORDER.filter((p) => PARK_LOOKS[p].post.toneMapping === "agx")).toEqual(["sandlot", "ivy"]);

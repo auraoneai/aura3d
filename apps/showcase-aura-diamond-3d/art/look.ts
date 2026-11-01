@@ -62,7 +62,13 @@ export interface ParkLook {
    * HDRI only lights the scene. `?sky=hdri` draws the HDRI instead (QA A/B pair).
    */
   readonly sky?:
-    | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number }
+    | {
+        readonly model: "preetham";
+        readonly turbidity: number;
+        readonly rayleigh: number;
+        /** Sun disc of the drawn sky when it differs from the key (phase 4: Harbor's sunset sky keeps its 9 degree sun). */
+        readonly sun?: { readonly elevationDeg: number; readonly azimuthDeg: number };
+      }
     | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly stars?: number };
   readonly sun: {
     readonly elevationDeg: number;
@@ -122,6 +128,8 @@ export interface ParkLook {
   /** What a landing ball kicks up, and how a home run is celebrated (VFX pack kinds). */
   readonly landingFx: "diamond-clay-puff" | "diamond-canyon-dust" | "diamond-regolith-arc";
   readonly celebration: "diamond-hr-firework" | "diamond-dome-confetti" | "diamond-regolith-arc";
+  /** GU47 phase 4: screen-space reflections strength where a surface is glossy (wet track, sealed infield, harbour). */
+  readonly ssr?: number;
 }
 
 /** Core palette of the art direction (turf green, terracotta clay, chalk, dugout shade). */
@@ -138,11 +146,15 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
   sandlot: {
     park: "sandlot",
     postcard: "Harbor Sandlot at last light over the water",
-    timeOfDay: "last light, sun 9 degrees above the sea",
+    timeOfDay: "last light, sun 17 degrees above the sea",
     baseLook: "golden-hour",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.9, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
-    sun: { elevationDeg: 9, azimuthDeg: 250, color: "#ff9a52", intensity: 2.5, colorTemperatureK: 2600 },
+    hdri: { id: "belfast_sunset_puresky", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    // Phase 4 panel (g08p4r2, 1-2 worse): with the drawn sun at the key's 17 degrees the sunset sky went grey and read as
+    // haze. The sky keeps the 9 degree last-light sun; only the shadow key stands higher.
+    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4, sun: { elevationDeg: 9, azimuthDeg: 250 } },
+    // GU47 phase 4: at 9 degrees the key grazed the clay (cos 81 = 0.16), so the IBL lit the ground and no cast shadow
+    // read; 17 degrees and a stronger key over a dimmer IBL give the players long last-light shadows.
+    sun: { elevationDeg: 17, azimuthDeg: 225, color: "#ff9a52", intensity: 3.3, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
     // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
     fog: { color: "#d9a57c", density: 0.001, intensity: 0.08 },
@@ -163,15 +175,16 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     crowd: ["#c8553d", "#f2c14e", "#3b7ea1", "#e8e2cf", "#7d4e8f", "#d9883f", "#2f6b5e"],
     signature: { splinter: "#d9b78a", flash: "#ffe2b0", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
-    celebration: "diamond-hr-firework"
+    celebration: "diamond-hr-firework",
+    ssr: 0.45
   },
   skyline: {
     park: "skyline",
     postcard: "Midtown Skyline in rain-wet blue hour under sodium and LED towers",
     timeOfDay: "blue hour after rain",
     baseLook: "night-city",
-    hdri: { id: "rooftop_night", intensity: 1.6, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
-    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.0, colorTemperatureK: 9000 },
+    hdri: { id: "rooftop_night", intensity: 1.35, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
+    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.4, colorTemperatureK: 9000 },
     rim: false,
     fog: { color: "#1c2c44", density: 0.0045, intensity: 0.24 },
     exposureEv: 1.0,
@@ -192,17 +205,22 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     weather: { kind: "drizzle", intensity: 0.22, density: 0.35, color: "#a9c4e4" },
     signature: { splinter: "#cdb48f", flash: "#eaf0f8", flashIntensity: 1.25, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
-    celebration: "diamond-hr-firework"
+    celebration: "diamond-hr-firework",
+    ssr: 0.7
   },
   canyon: {
     park: "canyon",
     postcard: "Canyon Rim at hard desert noon",
-    timeOfDay: "high noon, sun 72 degrees",
+    timeOfDay: "hard desert midday, sun 56 degrees",
     baseLook: "outdoor-day",
-    hdri: { id: "outdoor-midday", intensity: 1.1, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "outdoor-midday", intensity: 0.66, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     // Blind panel: the pale horizon blew the sky out to near white; a deep desert blue down to a dusty horizon.
     sky: { model: "gradient", zenith: "#2f6db4", horizon: "#9dbad6", ground: "#c9b28e" },
-    sun: { elevationDeg: 72, azimuthDeg: 20, color: "#fff6e6", intensity: 3.6, colorTemperatureK: 6000 },
+    // GU47 phase 4: a 72 degree key put each shadow under the feet and the bright IBL filled it; 56 degrees and a
+    // stronger key against a dimmer IBL give a hard, readable desert shadow.
+    // Phase 4 round 2: azimuth 20 is the camera side, so every shadow fell behind its player; 140 back-lights from the
+    // first-base side and the shadows fall towards the broadcast lens.
+    sun: { elevationDeg: 56, azimuthDeg: 140, color: "#fff6e6", intensity: 4.5, colorTemperatureK: 6000 },
     rim: false,
     fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
     exposureEv: -0.15,
@@ -227,10 +245,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
   ivy: {
     park: "ivy",
     postcard: "Ivy Classic at spring sunrise",
-    timeOfDay: "spring sunrise, sun 24 degrees",
+    timeOfDay: "spring sunrise, sun 28 degrees",
     baseLook: "golden-hour",
-    hdri: { id: "spruit_sunrise", intensity: 0.95, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
-    sun: { elevationDeg: 24, azimuthDeg: 110, color: "#ffd2a1", intensity: 2.3, colorTemperatureK: 3800 },
+    hdri: { id: "spruit_sunrise", intensity: 0.64, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
+    sun: { elevationDeg: 28, azimuthDeg: 125, color: "#ffd2a1", intensity: 3.1, colorTemperatureK: 3800 },
     rim: { color: "#b9cfe6", intensity: 0.35, elevationDeg: 30, azimuthDeg: 290 },
     fog: { color: "#e6d9c8", density: 0.003, intensity: 0.3 },
     exposureEv: 0.08,
@@ -259,8 +277,8 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Typhoon Dome in a storm, god rays through the roof",
     timeOfDay: "storm outside, truss lights inside",
     baseLook: "interior-industrial",
-    hdri: { id: "hangar_interior", intensity: 0.7, rotationDeg: 0, background: true, backgroundIntensity: 0.85 },
-    sun: { elevationDeg: 74, azimuthDeg: 30, color: "#e9f1ff", intensity: 1.6, colorTemperatureK: 7200 },
+    hdri: { id: "hangar_interior", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 0.85 },
+    sun: { elevationDeg: 60, azimuthDeg: 150, color: "#e9f1ff", intensity: 2.1, colorTemperatureK: 7200 },
     rim: false,
     fog: { color: "#3a4256", density: 0.004, intensity: 0.34 },
     godRays: { density: 0.004, intensity: 0.55, color: "#c9d6f2", lightPosition: [12, 58, -30] },
@@ -282,18 +300,19 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     crowd: ["#8f83f2", "#e4e3dc", "#f0b44a", "#2c3550", "#d0546b", "#4fa3a0", "#a7adbd"],
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
-    celebration: "diamond-dome-confetti"
+    celebration: "diamond-dome-confetti",
+    ssr: 0.5
   },
   lunar: {
     park: "lunar",
     postcard: "Lunar Park under a black sky with Earth rising",
     timeOfDay: "lunar day, black sky, Earth above the rim",
     baseLook: "space",
-    hdri: { id: "deep_space_starfield", intensity: 0.75, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "deep_space_starfield", intensity: 0.62, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
     // GU47 phase 3: round 1's 42 degree key striped the flat infield with shadow acne under the engine's auto bias; an
     // explicit depth and normal bias keeps the players' shadows and drops the stripes.
-    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.0, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
+    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.3, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
     rim: { color: "#6f8fb8", intensity: 1.1, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
     exposureEv: 0.7,
@@ -395,7 +414,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
   } else if (park.id === "lunar") {
     const spots: readonly [number, number][] = [[-c * 0.7, -c * 0.55 - 6], [c * 0.7, -c * 0.55 - 6], [-c * 0.48, 16], [c * 0.48, 16]];
     spots.forEach(([x, z], i) => {
-      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 3.2, base: [x, z], angle: 0.56, penumbra: 0.35, distance: 190, cone: true, flare: false });
+      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cde0fc", intensity: 3.2, base: [x, z], angle: 0.56, penumbra: 0.35, distance: 190, cone: true, flare: false });
     });
   }
   return tier === "low" ? rig.slice(0, 4).map((p) => ({ ...p, flare: false })) : rig;
@@ -496,8 +515,20 @@ export interface DiamondLookPlan {
   /** Volumetric god rays (High tier only, PRD 6.2/6.4). */
   readonly godRays: ParkLook["godRays"] | null;
   readonly weather: ParkLook["weather"] | null;
-  /** Explicit key-light shadow bias (null: the engine's auto bias). */
-  readonly keyShadow: ParkLook["sun"]["shadow"] | null;
+  /** Explicit key-light shadow options (null: the engine's defaults). */
+  readonly keyShadow: DiamondKeyShadow | null;
+  /** Screen-space reflections strength (null: none). */
+  readonly ssr: number | null;
+}
+
+/** Key shadow as mounted: the row's bias plus the shadow range that keeps the infield and outfield in the near cascades. */
+export interface DiamondKeyShadow {
+  readonly bias: number;
+  readonly normalBias: number;
+  readonly mapSize?: 1024 | 2048 | 4096;
+  readonly filter?: "hard" | "pcf" | "pcss";
+  readonly intensity?: number;
+  readonly fit?: { readonly center: readonly [number, number, number]; readonly extent: number; readonly depth?: number };
 }
 
 /**
@@ -505,6 +536,13 @@ export interface DiamondLookPlan {
  * normal offset clear them and keep the players' shadows (contact shadows ground the feet).
  */
 const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
+
+/**
+ * GU47 phase 4: the key's shadow box. Round 1 kept camera cascades over 115 m and still showed no player shadow on
+ * software WebGL2; a fixed box over the diamond (home plate to the outfielders, 96 m across, about 5 cm per texel at
+ * 2048) puts every texel where the players stand, at full strength.
+ */
+export const KEY_SHADOW_RANGE = { mapSize: 2048, filter: "pcf", intensity: 1, fit: { center: [0, 0, -24], extent: 48, depth: 160 } } as const;
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 
@@ -529,14 +567,15 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
       vignette: 0.16,
       godRays: null,
       weather: null,
-      keyShadow: null
+      keyShadow: null,
+      ssr: null
     };
   }
   const row = PARK_LOOKS[parkId];
   const rowSky = skyMode === "analytic" ? row.sky : undefined;
   let sky: DiamondSkyPlan | null = null;
   if (rowSky?.model === "preetham") {
-    sky = { model: "preetham", turbidity: rowSky.turbidity, rayleigh: rowSky.rayleigh, sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg } };
+    sky = { model: "preetham", turbidity: rowSky.turbidity, rayleigh: rowSky.rayleigh, sun: rowSky.sun ?? { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg } };
   } else if (rowSky?.model === "gradient") {
     sky = {
       model: "gradient",
@@ -583,7 +622,8 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
     vignette: row.post.vignette,
     godRays: tier === "high" && row.godRays ? row.godRays : null,
     weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null,
-    keyShadow: row.sun.shadow ?? DEFAULT_KEY_SHADOW
+    keyShadow: { ...(row.sun.shadow ?? DEFAULT_KEY_SHADOW), ...KEY_SHADOW_RANGE },
+    ssr: row.ssr ?? null
   };
 }
 
