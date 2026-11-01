@@ -38,3 +38,17 @@ Status per acceptance line, phase 1 (code on `gu47/g11`). "phase 2" = needs remo
 | camera | FOV 66 (was 72), render only |
 | BZ-11, BZ-12, BZ-13 | still blocked on WP-36 Meshy assets |
 | panel | phase-3 frames vs the phase-2 (current default) frames, 3 blind judges: see the lane report |
+
+## Phase 4 (4.7.2)
+
+| Row | Phase-4 status |
+|---|---|
+| BZ-12 doors | WP-36 `bzBlastDoor` admitted (`aura.assets.json`, `aura-assets.local.ts`, rights and metadata in `aura-evidence/meshy/`) and hung on every door on an olive steel leaf; slides with the sim's door (collision unchanged) |
+| BZ-10 decals | refs carry `kind: "aura-asset-ref"`; tints carry the soot and paint tone. The engine still draws the decal as a tinted quad, not shaped by the map's alpha |
+| BZ-01 key | PCF instead of PCSS; on F1-F5 the key rakes 5 cells down the corridor. No readable spot cast shadow on software WebGL2 |
+| grounding | wall-foot and wall-head contact shade bands, contact blobs under hostiles and props |
+| environment | two service pipes under the ceiling on every corridor face (not F6) |
+| reflections | floor roughness 0.34 (wet floors lower), `effects.screenSpaceReflections`, lamp glints on the F2 flood and the wet floors |
+| viewmodel | pistol 0.25 and higher; the machine-gun viewmodel still does not show in the HUD frames (open) |
+| BZ-11, BZ-12 (rest), BZ-13, BZ-14 | blocked: Meshy keys refuse API calls (23 rows; rigs not swapped in, they lack idle and attack clips) |
+| panel | g11p4a 5/5 and g11p4b 8/8 views better than 4.6.2 |
