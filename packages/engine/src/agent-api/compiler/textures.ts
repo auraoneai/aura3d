@@ -179,14 +179,20 @@ export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[numbe
 
 export const productionPrimitiveBitmapPixels = new WeakMap<ImageBitmap, { readonly width: number; readonly height: number; readonly data: Uint8Array }>();
 
-export async function loadProductionPrimitiveBitmap(url: string): Promise<ImageBitmap> {
+export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step: "fetch" | "body" | "decode" | "pixels") => void): Promise<ImageBitmap> {
   if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
     throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
   }
+  onStep?.("fetch");
   const response = await fetch(url);
   if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
+  onStep?.("body");
   const blob = await response.blob();
+  // GU47 e6: on a CPU-bound software-WebGL2 runner this decode was measured not settling for 20 s+ on a 121 KB JPG
+  // (stage `decode <url>` in the texturedMaterials diagnostics).
+  onStep?.("decode");
   const bitmap = await createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  onStep?.("pixels");
   try {
     const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
     const pixels = await decodePngTexturePixels(new Uint8Array(await blob.arrayBuffer()));
@@ -209,6 +215,33 @@ export function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number;
   return { width: bitmap.width, height: bitmap.height, data: new Uint8Array(image.data) };
 }
 
+/**
+ * GU47 e6 (g09 texPending handoff): textured upgrades in flight at once. The queue used to run one resource at a time,
+ * so one slow map fetch (tens of seconds on a busy software-WebGL2 runner) held every later resource back, and only the
+ * queue head ever read `pending` (the rest read `none`, like untextured materials), so `texPending` never exceeded 1.
+ */
+export const PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY = 4;
+
+function primitiveTextureIntentFor(
+  resource: ProductionRuntimePrimitiveResource,
+  qrMaterials: boolean
+): ReturnType<typeof createProductionPrimitiveTextureIntent> | null {
+  const intent = createProductionPrimitiveTextureIntent(resource.materialSpec);
+  const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
+    (url): url is string => typeof url === "string" && url.length > 0
+  );
+  // S7 (main GPU run 38144924567): a procedural-only spec (material.fabric,
+  // brushedMetal, blackRubber, frostedGlass: no URL maps) was skipped here, so
+  // flag-on never rasterized it and the frame equalled flag-off bit for bit.
+  // Flag-on, a procedural input alone is enough to run the textured upgrade.
+  const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
+  // threejs-parity ST-01 (L4): live `texture.*` handles carry no URL.
+  const hasTextureRef = Boolean(
+    intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
+  ) || Object.keys(intent.extensionRefs ?? {}).length > 0;
+  return urls.length === 0 && !proceduralOnly && !hasTextureRef ? null : intent;
+}
+
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
@@ -216,47 +249,56 @@ export async function upgradeProductionPrimitiveTextures(
   samplingContext?: ProductionTextureSamplingContext
 ): Promise<void> {
   const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
-  for (const entry of entries) {
-    for (const resource of entry.resources) {
-      const spec = resource.materialSpec;
-      const intent = createProductionPrimitiveTextureIntent(spec);
-      for (const procedural of intent.proceduralInputs) {
-        // Flag-on (PRD-04 P2-9): procedural kinds rasterize via generateProceduralMaterialTexture
-        // inside upgradeProductionPrimitiveResource — no rasterizer warning.
-        if (qrMaterials) continue;
-        // Static channel (collectGeneratedCodeWarnings) already warns; record
-        // per-resource without duplicating into runtime warnings.
-        resource.textureWarnings.push(
-          `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
-        );
-      }
-      const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
-        (url): url is string => typeof url === "string" && url.length > 0
-      );
-      // S7 (main GPU run 38144924567): a procedural-only spec (material.fabric,
-      // brushedMetal, blackRubber, frostedGlass: no URL maps) was skipped here, so
-      // flag-on never rasterized it and the frame equalled flag-off bit for bit.
-      // Flag-on, a procedural input alone is enough to run the textured upgrade.
-      const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
-      // threejs-parity ST-01 (L4): live `texture.*` handles carry no URL.
-      const hasTextureRef = Boolean(
-        intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
-      ) || Object.keys(intent.extensionRefs ?? {}).length > 0;
-      if (urls.length === 0 && !proceduralOnly && !hasTextureRef) continue;
-      if (resource.textureStatus !== "none") continue;
-      resource.textureStatus = "pending";
-      resource.texturePendingSince = textureClockMs();
-      markTextureStage(resource, "start");
-      try {
-        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
-      } catch (error) {
-        resource.textureStatus = "fallback";
-        markTextureStage(resource, "failed");
-        const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
-        resource.textureWarnings.push(message);
-        warn(message);
+  const seen = new Set<ProductionRuntimePrimitiveResource>();
+  // Collect every resource that needs an upgrade and mark it pending ("queued") before any work starts, so the
+  // diagnostics count the whole queue. Entries added while the queue runs are picked up by the next sweep.
+  const sweep = (): ProductionRuntimePrimitiveResource[] => {
+    const queued: ProductionRuntimePrimitiveResource[] = [];
+    for (const entry of entries) {
+      for (const resource of entry.resources) {
+        if (seen.has(resource)) continue;
+        seen.add(resource);
+        const intent = createProductionPrimitiveTextureIntent(resource.materialSpec);
+        for (const procedural of intent.proceduralInputs) {
+          // Flag-on (PRD-04 P2-9): procedural kinds rasterize via generateProceduralMaterialTexture
+          // inside upgradeProductionPrimitiveResource — no rasterizer warning.
+          if (qrMaterials) continue;
+          // Static channel (collectGeneratedCodeWarnings) already warns; record
+          // per-resource without duplicating into runtime warnings.
+          resource.textureWarnings.push(
+            `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
+          );
+        }
+        if (!primitiveTextureIntentFor(resource, qrMaterials)) continue;
+        if (resource.textureStatus !== "none") continue;
+        resource.textureStatus = "pending";
+        resource.texturePendingSince = textureClockMs();
+        markTextureStage(resource, "queued");
+        queued.push(resource);
       }
     }
+    return queued;
+  };
+  const upgradeOne = async (resource: ProductionRuntimePrimitiveResource): Promise<void> => {
+    markTextureStage(resource, "start");
+    const spec = resource.materialSpec;
+    const intent = createProductionPrimitiveTextureIntent(spec);
+    try {
+      await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
+    } catch (error) {
+      resource.textureStatus = "fallback";
+      markTextureStage(resource, "failed");
+      const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
+      resource.textureWarnings.push(message);
+      warn(message);
+    }
+  };
+  for (let queue = sweep(); queue.length > 0; queue = sweep()) {
+    let next = 0;
+    const worker = async (): Promise<void> => {
+      while (next < queue.length) await upgradeOne(queue[next++]!);
+    };
+    await Promise.all(Array.from({ length: Math.min(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY, queue.length) }, worker));
   }
 }
 
@@ -299,13 +341,24 @@ export async function upgradeProductionPrimitiveResource(
     return binding;
   };
   const slotWarn = (w: string): void => { resource.textureWarnings.push(w); };
+  // GU47 e6: the stage lists every unsettled map load with its step (`fetch|body|decode|pixels <url>`).
+  const loadSteps = new Map<string, string>();
+  const showLoadSteps = (): void => {
+    if (loadSteps.size > 0) markTextureStage(resource, [...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
+  };
   const load = (url: string): Promise<ImageBitmap> => {
-    markTextureStage(resource, `fetch ${url}`);
     let pending = bitmapLoads.get(url);
     if (!pending) {
-      pending = loadProductionPrimitiveBitmap(url).then((bitmap) => {
+      loadSteps.set(url, "fetch");
+      showLoadSteps();
+      pending = loadProductionPrimitiveBitmap(url, (step) => { if (loadSteps.has(url)) { loadSteps.set(url, step); showLoadSteps(); } }).then((bitmap) => {
+        loadSteps.delete(url);
+        showLoadSteps();
         ownedBitmaps.push(bitmap);
         return bitmap;
+      }, (error: unknown) => {
+        loadSteps.delete(url);
+        throw error;
       });
       bitmapLoads.set(url, pending);
     }

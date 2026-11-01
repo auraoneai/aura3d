@@ -46,3 +46,28 @@ test("a failed upgrade reports stage failed", async () => {
   expect(value.textureStatus).toBe("fallback");
   expect(value.textureStage).toBe("failed");
 });
+
+test("every queued resource reads pending, and one stalled fetch does not hold the others back", async () => {
+  const slow = defineAuraAssets({ stall: { type: "texture", format: "png", url: "/stall.png", hash: "stall" } });
+  vi.stubGlobal("fetch", vi.fn((url: string) => url.includes("stall") ? new Promise<Response>(() => undefined) : Promise.resolve(new Response(new Uint8Array([0, 1, 2, 3])))));
+  vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1, height: 1, close: vi.fn() })));
+  const stalled = resource("stalled", { texture: slow.stall });
+  const later = [resource("a", { texture: assets.map }), resource("b", { texture: assets.map })];
+  const untextured = resource("plain", { color: "#ffffff" });
+  void run([stalled, ...later, untextured]);
+  // Synchronously after the call: the whole queue is pending, the untextured resource is not.
+  expect([stalled, ...later].map((r) => r.textureStatus)).toEqual(["pending", "pending", "pending"]);
+  expect(untextured.textureStatus).toBe("none");
+  await vi.waitFor(() => expect(later.map((r) => r.textureStatus)).toEqual(["textured", "textured"]));
+  expect(stalled.textureStatus).toBe("pending");
+  expect(stalled.textureStage).toBe("fetch /stall.png");
+});
+
+test("a decode that never settles is named as decode, not fetch", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([0, 1, 2, 3]))));
+  vi.stubGlobal("createImageBitmap", vi.fn(() => new Promise(() => undefined)));
+  const value = resource("decoding", { texture: assets.map });
+  void run([value]);
+  await vi.waitFor(() => expect(value.textureStage).toBe("decode /map.png"));
+  expect(value.textureStatus).toBe("pending");
+});
