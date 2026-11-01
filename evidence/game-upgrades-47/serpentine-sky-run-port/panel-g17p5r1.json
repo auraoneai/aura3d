@@ -1,0 +1,143 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pink haze lowers contrast a little near the horizon; the dragon is cut off at the right edge; the bright road is slightly washed out.",
+     "Heavy pink haze lowers contrast near the horizon; the path near the sun is a little washed out; the floating island and dragon are cropped at the right edge; the player is slightly off-centre.",
+     "Pink haze somewhat washes out the horizon and road; the dragon is cropped at the right edge; the player sits slightly off the road centre."
+    ]
+   },
+   {
+    "variant": "stage1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild pink haze and a slightly washed-out road; the dragon is cropped at the frame edge.",
+     "Pink haze softens contrast around the sun and horizon; the dragon is cropped at the right edge.",
+     "Pink haze lowers contrast at the horizon; the dragon is cropped at the right edge."
+    ]
+   },
+   {
+    "variant": "stage2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The amber tint is fairly monochrome; the road edges have a greenish cast; the player blends a little into the warm palette; the dragon is cropped.",
+     "An overall orange/sepia cast flattens the colour separation; the haze near the sun washes out the far path; the bridge edges have a slight greenish tint.",
+     "Heavy amber monochrome tint; somewhat hazy, muddy sky; greenish edges on the road."
+    ]
+   },
+   {
+    "variant": "stage3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy sepia haze reduces sky contrast; the road edges have an olive-green tint; the overall look is a bit muddy and monochrome; the dragon is cropped.",
+     "Dusty beige haze lowers sky contrast and the palette is somewhat monochrome; there is a slight green tint on the bridge sides.",
+     "Sepia haze washes out the sky and clouds and lowers overall contrast; olive tint on the road edges."
+    ]
+   },
+   {
+    "variant": "stage4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very saturated red monochrome; the red player and red torii gates lose some separation from the background; the dragon is cropped.",
+     "An intense red monochrome grade makes the player's red outfit blend into the path somewhat; the sky is oversaturated.",
+     "Very strong red monochrome grade; the player's red outfit blends into the red road, so the player is harder to pick out."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong purple monochrome tint; the dragon is cropped; otherwise the mood and contrast are good.",
+     "The purple monochrome grade is a bit heavy; the player is somewhat dark against the path; the dragon is cropped at the right edge.",
+     "Heavy purple monochrome grade; the clouds look slightly noisy or grainy."
+    ]
+   },
+   {
+    "variant": "stage6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright white caustic or crack decals on the road look noisy and glitchy; the dark blue scene slightly lowers readability; the dragon is cropped.",
+     "Bright white squiggly caustic/crack patterns on the near path look noisy and slightly glitchy; the frame is dark blue overall; the player is somewhat dim.",
+     "Bright white caustic or crack pattern on the road looks like a glitch and distracts from the scene; the clouds are grainy."
+    ]
+   },
+   {
+    "variant": "stage7",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The blue tone is close to monochrome; the dragon is cropped; otherwise a strong moonlit night mood.",
+     "A strong blue tint; the player is a little dark; the dragon is cropped at the right edge.",
+     "Cold blue grade is fairly monochrome; the clouds are slightly grainy; the dragon is cropped at the right edge."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The road is somewhat blown out to near white under the bloom; the dragon is cropped.",
+     "The path is slightly washed out toward the bright sun; the dragon is cropped at the right edge.",
+     "The road is somewhat washed out near the camera; the sky gradient bands from purple to orange."
+    ]
+   }
+  ]
+ }
+]
