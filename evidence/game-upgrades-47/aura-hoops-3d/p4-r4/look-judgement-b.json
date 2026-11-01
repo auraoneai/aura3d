@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r4/aura-hoops-3d/frames/g07p4-r4-scr/screens-1280x720--03-action-03-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "7867f2dbbae3641150c2739914ed98c8e6f46a72de47e300ac8c40a4093f270b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r4/aura-hoops-3d/frames/g07p4-r4-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "c61596d5de4d073d5aed81267aac871b226ed9a093e871dd23a601cbc713b548"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r4/aura-hoops-3d/frames/g07p4-r4-2/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "bfa54ffeca9d6ebd7991dd1280193de7f7ed739d3d176cc1f7bd5eb82ea01dc0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r4/aura-hoops-3d/frames/g07p4-r4-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "ac8601a422bda0ff7ac6406b01598defb19c9323b8d49a6e11d9dcdf18d29ead"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 4.5,
+    "postprocessing": 5.5,
+    "animation_quality": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Each court preset sets a clear mood: dusk purple at Rucker, warm low sun in frame 3, blue night in frame 4. The players get flat fill with little key-to-rim separation, and frame 2's gym reads as an evenly lit olive wash with no flood direction."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 3 casts long directional shadows from players and the hoop pole. In frames 1, 2 and 4 the players sit on faint blobs or have no visible contact shadow, so feet look pasted onto the floor."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 4 shows screen-space reflections of the lamp posts and players on a glossy blue floor, plus a specular streak. The other frames have matte, unreflective courts, and the character skin and cloth show no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The frame 3 skyline is flat purple boxes with rectangular window decals and blown white gaps between them. The bleachers are untextured stepped slabs. The frame 2 gym is mostly hidden by blur. The trophy and ball cart are the only props with real detail."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 has faint rain streaks and frame 2 has floating dust specks. None of the frames show indoor haze or volumetric light, and depth separation comes from DOF rather than atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The court surfaces are single flat colors with no wear, wood grain or paint texture. Clothing is uniform matte color with no folds. The frame 4 tower has a noisy blue glass texture that clashes with the rest of the scene."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Characters are low-detail stylized figures with uncanny faces and identical builds. Court lines are broken into misaligned segments, and stray white hook shapes float near players' feet. The pixel-block lettering on the floor in frames 2 and 4 looks aliased."
+    },
+    {
+      "category": "composition",
+      "seen": "Ten players are spread in a flat row with no focal grouping. The hoop is cropped at the top-right edge in frames 2 to 4 and at the top of frame 1. Large empty floor fills the lower third, and the court subject runs well past the 25–40% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is low and close, roughly 20–30° above the floor with a wide perspective. That misses the elevated broadcast angle near 70° at FOV 40 the recipe calls for, and frame 1 crowds the players into the lens."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Film grain is visible in frame 1. Frame 2 uses heavy background DOF bokeh, and frame 4 has mild bloom on the lamps. The look holds up as tasteful but generic and does not reach the arena-fight grade the recipe specifies."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Most players stand in stiff idle poses with arms angled out and identical stances. Frame 3 shows a crouch to pick up the ball, but the frame 1 walk poses look rigid and have no foot planting."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard, stamina bar, court tag and control strip are clean and on-theme with orange and cyan accents. The top mode and court bar is dense debug-style chrome that competes with the scene."
+    }
+  ],
+  "nextChange": {
+    "category": "animation_quality",
+    "change": "play the asset's real clips (idle/run/jump) rather than transform tweens",
+    "api": "the asset's clip handle (assets.x animations)"
+  },
+  "judge": "prism"
+}

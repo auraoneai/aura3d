@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-scr/screens-1280x720--03-action-02-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "00f9b19dd6d0c500c4be2e90fe1fc62e7e1701ad2b3016f8584506dc59dba53b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "02f7a934de1e1a3ecbb7519de509e3d89188944d220cfda14d85128f0c5ddbd8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-2/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "6275cd29ee1aaeca0f0c1e20d738c75cfa41521aa3579c21ef56b89f2cf72a55"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 5.5,
+    "camera": 5,
+    "postprocessing": 5.5,
+    "animation_quality": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a warm golden-hour backlight with a blown-out sky gap between buildings. Frames 2 and 3 use flat, low-contrast fill, and the players get little rim or key separation from the court."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 3 shows blocky, aliased shadow-map edges where the bleacher shadow falls on the court at left. In frame 2, player contact shadows are faint or missing, so the players look like they float. Frame 1 has soft but smeared long shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Only frame 4 shows a reflective court with a single vertical specular streak. The other frames show matte surfaces with no visible environment reflection on the floor or ball."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The Rucker buildings are plain boxes with flat cream window quads. The indoor gym in frame 2 is a heavily blurred photo-like backdrop. The blue tower in frame 4 has a smeared, distorted texture. The bleachers are untextured stepped slabs."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1 has light sun haze and frame 4 has sparse rain streaks. Frames 2 and 3 have almost no depth haze, and the indoor haze the recipe calls for is absent."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Skin, jerseys and shorts are flat single-tone shading with no cloth detail. The court paint looks like plain unlit color, and the court lines are segmented with visible gaps at the arcs. The ball and the backboard graffiti are the only textured hero assets."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Characters are low-poly with blocky heads, angular jaws and helmet-like hair cards. Limbs have hard faceted joints. The three-point and key arcs are visibly polygonal."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 1 crops a player at the right edge and puts the ball handler in a cluster. Frames 2 to 4 place the court subject in roughly the target share of the frame, but the far players are tiny and stand in a scattered line."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low perspective chase or three-quarter view, not the elevated 70° broadcast angle. Frame 1 is too close for reading team spacing."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 2 applies a strong depth-of-field blur that hides the backdrop and gives a tilt-shift look. Tonemapping is mildly filmic, and there is some mild glow in frame 1. There is no visible color grading coherence between courts."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Off-ball players stand in stiff near-A-poses with arms out, and their poses repeat identically across frames 2 to 4. The dribble crouch reads, but the off-ball bodies have no weight shift."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard, status banner, location tag and control hint bar are clean and consistent with orange/cyan team accents. The top menu bar is dense and debug-like and crowds the view."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}

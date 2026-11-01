@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r1/aura-hoops-3d/frames/g07p4-r1-scr/screens-1280x720--03-action-03-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "f2029b97c5721cdfbc55507c8714ef79c48bc2e977945932cd9bbd45dc5263e1"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r1/aura-hoops-3d/frames/g07p4-r1-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "db4f0f91b22acd1ee011ffcca8831395283399a515cbac1e358086ca0f6d0b8f"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r1/aura-hoops-3d/frames/g07p4-r1-5/aura-hoops-3d--venice--settle-60s.jpg",
+      "sha256": "b763b1ee2c9a31cc828b5af0e18c7809f2dd3ae4cf1d2ac09d40a3324147b367"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r1/aura-hoops-3d/frames/g07p4-r1-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "14c9a12ea5fd87d3dfe879adf76726834f6f79f31e6fea055ee0014043dfae6e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Each court has a different grade: warm golden-hour Rucker, green indoor haze, washed-out pastel Venice, purple night Shanghai. None of them gives a defined key-flood direction, and the Venice frame looks flat and overexposed."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are soft blobs, and the dark ellipse under each foot reads as a decal rather than a cast shadow. The Rucker frame shows faint contact darkening but no directional shadows from the bleachers or hoop."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The Shanghai court has a glossy floor with streaky light reflections and a hot specular under the dribbler, which is the best surface response in the set. The other courts are matte with no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Backdrops are blurred billboard-like plates. The palm tree in Venice floats above the bleachers, and the Shanghai tower and lamps look pasted in. The bleachers and the ball cart repeat on every court, and the Rucker background buildings are low-detail blocks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The indoor court has heavy depth-of-field haze and floating dust near the hoop. Venice has milky fog that flattens contrast. Rucker and Shanghai show little volumetric depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Clothing is flat unlit-looking color: magenta shorts, grey and white tees. Skin has no subsurface or roughness variation. The court paint and lines are plain flat fills, and the backboards use a noisy texture."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Characters are low-poly with stiff, blocky limbs and mitten-like hands. Faces are simplistic with slightly uncanny proportions, and crowd and bench players are the same few duplicated models."
+    },
+    {
+      "category": "composition",
+      "seen": "In three frames the dribbler sits low-left with a large empty foreground of floor and a cropped hoop at the right edge. In the Rucker frame players are cut off at the frame edges and a player overlaps the HUD."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low perspective sideline angle, not the broadcast-high orthographic framing the recipe asks for. The Rucker view is very close, so players crowd the frame and the play structure is hard to read."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is DOF blur on the indoor backdrop, bloom on lights, and a vignette in Rucker. The grades differ strongly between courts, and the Venice frame looks washed out with lifted blacks."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The dribble pose crouches low with the ball near the floor and reads as dynamic. The other players stand in identical T-ish idle poses with arms out, and the Rucker players look mid-stride but rigid."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The Rucker HUD is clean: a 'FIRST TO 11' scoreboard, a court tag, a 'CLEARED — PLAY' banner and a control hint bar in consistent monospace orange/cyan styling. The top mode bar is dense and plain, and the other frames show no HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

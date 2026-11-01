@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-scr/screens-1280x720--03-action-02-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "00f9b19dd6d0c500c4be2e90fe1fc62e7e1701ad2b3016f8584506dc59dba53b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "02f7a934de1e1a3ecbb7519de509e3d89188944d220cfda14d85128f0c5ddbd8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-2/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "6275cd29ee1aaeca0f0c1e20d738c75cfa41521aa3579c21ef56b89f2cf72a55"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 6,
+    "animation_quality": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Golden-hour Rucker frames use a low sun with bright rim light past the buildings, but the court and characters sit under a flat purple fill. Faces and shirts show little key-to-shadow modelling, and the 55°/45° key flood the recipe expects is not visible."
+    },
+    {
+      "category": "shadows",
+      "seen": "Long directional player shadows read well in frame 3, but the shadow cast from the bleachers onto the court at left is visibly stair-stepped from low shadow-map resolution. There is no contact occlusion under feet beyond the decal rings."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The night court in frame 4 shows one blurred specular streak on the floor and a faint glossy sheen. The indoor gym floor in frame 2 has almost no reflection of players or lights, and character materials show no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "City buildings are untextured extruded boxes with flat cream window quads. The bleachers are plain stepped slabs with no crowd. The indoor gym backdrop exists only as a heavy blur. The blue tower in frame 4 looks like a stretched texture on a simple prism. The ball cart and graffiti backboard are the only props with detail."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light purple distance haze and sun bloom between buildings in frames 1 and 3. Sparse rain streaks and dust motes near the hoop in frames 2 and 4. The recipe's indoor haze appears only weakly in the gym frame, which relies on blur instead."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Clothing, skin, and hair are flat single-color shading with no fabric, skin, or roughness variation. The court surface is a uniform color with painted lines and no wood or asphalt texture. The ball's seams are the only readable surface detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Characters are low-poly with blocky heads, mitten-like hands, card-like hair clumps, and rigid limb segments. Shoes are simple wedges. Shorts and shirts are rigid shells with no drape."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball handler sits near the lower-centre third with readable court lines, but players crowd and overlap in frame 1. The bottom-left floor glyph and empty foreground court take up a lot of the frame in frames 2 and 4."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low perspective three-quarter view at roughly 20–30° elevation. It is not the orthographic 70° broadcast angle the recipe calls for. Frame 1 is a close chase cam that crops a player at the right edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Strong depth-of-field blur on the gym background, bloom on the sun gaps, and a warm or purple grade per venue. The DOF in frame 2 is heavy enough to hide the environment rather than support focus, and no arena-fight-style contrast punch is visible."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Most players stand in near-identical stiff idle poses with arms angled out. The dribbler's crouch in frame 3 is plausible, but limbs bend at hard segment joints and no weight shift or secondary motion is visible across the frames."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "A clean scoreboard with team tags, a timer, a venue label, a stamina bar, and a controls strip in a consistent mono typeface. The top mode/court button bar looks like a debug menu and competes with the in-game HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}
