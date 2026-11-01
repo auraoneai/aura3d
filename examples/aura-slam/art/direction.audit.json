@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "4770f07bbf415adc514a78db359da12e6e242bd01374d8f3c61cc3787a0fd01d",
+  "sourceSha256": "ca0042bb4db42724c5a22756fe5c4931a313ae36037a6d9b6b92fe84aff82cc4",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -62,21 +62,21 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "tennisScoreboardScreen",
+        "assetKey": "rooftopScoreboardRigMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "tennisFloodlightHead",
+        "assetKey": "rooftopFloodlightTowerMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "tennisFloodlightHead",
+        "assetKey": "rooftopFloodlightTowerMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -555,14 +555,14 @@
       },
       {
         "role": "prop",
-        "assetKey": "tennisScoreboardScreen",
+        "assetKey": "rooftopScoreboardRigMeshy",
         "maxTriangles": 40000,
-        "textureSet": "BC",
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
       },
       {
         "role": "prop",
-        "assetKey": "tennisFloodlightHead",
+        "assetKey": "rooftopFloodlightTowerMeshy",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
