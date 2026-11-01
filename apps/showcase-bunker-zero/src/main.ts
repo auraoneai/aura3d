@@ -91,7 +91,7 @@ const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.4 } as const;
 const BZ_CEIL_TEXTURE = "concrete034" as const;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 /** GU47 phase 4: baked contact shade at the wall foot (the key's cast shadow alone did not ground the walls; rubric 3). */
-const BZ_WALL_AO = { near: 0.22, far: 0.6, y: 0.006, nearOpacity: 0.16, farOpacity: 0.12 } as const;
+const BZ_WALL_AO = { near: 0.22, far: 0.6, y: 0.006, nearOpacity: 0.24, farOpacity: 0.15, ceil: 0.4, ceilOpacity: 0.3 } as const;
 /** GU47 phase 4: two service pipes under the ceiling on each corridor face (olive enamel over steel; F3 rust-brown). */
 const BZ_PIPES = [{ d: 0.16, off: 0.14, drop: 0.3 }, { d: 0.09, off: 0.1, drop: 0.52 }] as const;
 const BZ_PIPE_COLOR = "#4b5136";
@@ -196,6 +196,7 @@ function buildScene() {
     const glintInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const glintHalo: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoNear: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const aoCeil: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const aoFar: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const pipeInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
 
@@ -246,6 +247,10 @@ function buildScene() {
             scale: dx !== 0 ? [wide, 0.004, CELL] : [CELL, 0.004, wide]
           });
         }
+        aoCeil.push({
+          position: [wx + dx * (CELL / 2 + 0.006), wallH - BZ_WALL_AO.ceil / 2, wz + dz * (CELL / 2 + 0.006)],
+          scale: dx !== 0 ? [0.004, BZ_WALL_AO.ceil, CELL] : [CELL, BZ_WALL_AO.ceil, 0.004]
+        });
         if (slot !== 5) for (const pipe of BZ_PIPES) {
           const off = CELL / 2 + pipe.off;
           pipeInst.push({
@@ -290,7 +295,12 @@ function buildScene() {
       primitives.box({
         name: `f${slot} wall-foot shade wide`, instances: aoFar, castShadow: false, receiveShadow: false,
         material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_WALL_AO.farOpacity })
-      }).runtime(staticNode(slot, "ao-far"))
+      }).runtime(staticNode(slot, "ao-far")),
+      // GU47 phase 4: the same baked shade where the wall meets the ceiling (rubric: no wall-ceiling contact darkening)
+      primitives.box({
+        name: `f${slot} wall-head shade`, instances: aoCeil, castShadow: false, receiveShadow: false,
+        material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_WALL_AO.ceilOpacity })
+      }).runtime(staticNode(slot, "ao-ceil"))
     );
     if (pipeInst.length) {
       nodes.push(primitives.cylinder({
@@ -538,7 +548,8 @@ function buildScene() {
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
     model(assets[VIEWMODEL_ASSET.pistol], { name: "vm pistol" })
-      .position(0, 0, 0).scale(0.2)
+      // GU47 phase 4: 0.2 read as a small detached gun (rubric camera)
+      .position(0, 0, 0).scale(0.25)
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
     // GU47 phase 4: the rifle GLB carries emissiveFactor 1 with its colour map as emissive, so in hand it bloomed into a
     // yellow ghost at the bottom of every HUD frame (r3 1280-03); the viewmodel drops the self-glow and reads by the lamp.
@@ -1240,7 +1251,7 @@ function syncScenePose(inp: SimInput) {
   const [swayX, swayY] = viewmodelSway(inp.turn / Math.max(poseDt, 1 / 240), sim.state.time, moveMag, reducedMotion());
   const dip = reloadDip(p.reloading, p.weapon === "rocket" ? 1.4 : 1.1, reducedMotion());
   const vmx = p.x + ox + fx * (0.62 - recoil) + rx * (side + swayX);
-  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
+  const vmy = EYE - 0.3 + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
   const vmz = p.z + fz * (0.62 - recoil) + rz * (side + swayX);
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
