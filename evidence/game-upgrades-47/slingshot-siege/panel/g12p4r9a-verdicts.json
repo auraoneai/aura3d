@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky; rocks are a bit dark and muddy; the ground is a simple flat green with cone trees.",
+     "Sky is flat grey and overcast, which dulls the mood a little; the rock cliffs are dark and slightly muddy; the cone trees are simple low-poly shapes; overall it is richer, with warm saturated wood and stone materials, a readable level sign, a defined shoreline and dock, and stronger contrast and shadows.",
+     "The sky is flat and grey, and the large rocks look dark and heavy. The grass is a saturated, slightly toy-like green, and the small cone trees and posts repeat a lot. Otherwise the shadows are strong, contrast is good, there's a level-name sign, the warm wood props read clearly and the composition holds together."
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey overcast sky; rocks are slightly dark; the stone pedestal on the right is a plain grey block.",
+     "Sky is flat grey; the cliffs are a bit dark and muddy; the cone trees are simplistic; otherwise the materials are saturated and well shaded, the 'QUARRY RISE' sign is readable, the stone pedestal and enemies read clearly, and the composition has good depth.",
+     "The sky is flat and grey, and the rocks are dark. The cone trees and posts repeat a lot. Otherwise contrast and shadows are good, the 'Quarry Rise' sign and the stone tower targets read well, and the props are warm and detailed."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey sky; dark rock faces; the ground looks simple and toy-like.",
+     "Sky is grey and overcast; the rocks are slightly dark and muddy; the cone trees are basic; otherwise the colour, contrast, material detail, signage, shoreline and shadow grounding are all clearly stronger.",
+     "The sky is flat and grey and the rocks are slightly dark. The scattered cone trees and posts repeat. Otherwise lighting, contrast and shadows are good, and the slingshot, targets and play area read clearly."
+    ]
+   }
+  ]
+ }
+]

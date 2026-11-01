@@ -1,0 +1,735 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:41:48.006Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "slingshot-siege--ch0--settle-25s",
+      "slingshot-siege--ch0--settle-60s",
+      "slingshot-siege--ch2--settle-25s",
+      "slingshot-siege--ch2--settle-60s",
+      "slingshot-siege--default--settle-25s",
+      "slingshot-siege--default--settle-60s"
+    ],
+    "framesB": [
+      "where-the-wind-wanders-port--bell--settle-25s",
+      "where-the-wind-wanders-port--bell--settle-60s",
+      "where-the-wind-wanders-port--default--settle-25s",
+      "where-the-wind-wanders-port--default--settle-60s",
+      "where-the-wind-wanders-port--epilogue--settle-25s",
+      "where-the-wind-wanders-port--epilogue--settle-60s",
+      "where-the-wind-wanders-port--found0--settle-25s",
+      "where-the-wind-wanders-port--found0--settle-60s",
+      "where-the-wind-wanders-port--found2--settle-25s",
+      "where-the-wind-wanders-port--found2--settle-60s",
+      "where-the-wind-wanders-port--found3--settle-25s",
+      "where-the-wind-wanders-port--found3--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.912,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.912,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a miniature golf-style course with a flat green surface, rocky cliffs and a hazy gray sky",
+        "Image B is a dense flower meadow with a lake, a cottage and a hooded character, in a painterly pastel style",
+        "The two frames differ in lighting, palette and scale, and they share no HUD or asset style"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a night scene with dense painterly flowers and grass, while Image B is a daytime diorama with flat green ground and simple cone trees",
+        "Image B has photoreal rock scans and a pale gray sky with stylized props, a different material style from A's soft low-poly foliage",
+        "Image B has a diegetic wooden sign and island-map layout, while A shows a cloaked character and a purple cat spirit in a realistic garden"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized miniature golf-course island with flat green terrain, cone trees and a gray overcast sky",
+        "Image B: dense painterly flower meadow with a pink dusk sky and a hooded character with a purple spirit cat",
+        "Different art direction and lighting: smooth props and rocks in A, soft hand-painted foliage in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: soft painterly stylized meadow with dense grass, flowers and a red-roofed cottage under a pastel sky",
+        "Image B: miniature golf-style course with flat green ground, cone trees and photoreal rock textures under a gray overcast sky",
+        "Different lighting, palette and rendering style, and Image B has a signpost and props with a different HUD/world design"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: painterly flower meadow with pink dusk sky and soft haze",
+        "Image B: flat-shaded miniature island with hard shadows and gray overcast sky",
+        "Different art styles, scale, and HUD/sign style"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: painterly, dusky pink sky with dense flower meadow and cottage",
+        "Image B: realistic rock textures with flat green miniature-golf course and grey sky",
+        "Different character and prop styles and a different HUD (wooden 'Driftwood Cove' sign in B)"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: miniature golf-style island with realistic rock textures and a muted gray sky",
+        "Image B: dense flowery meadow with a hooded character and painterly pastel look",
+        "Different art styles and lighting: flat green low-poly terrain vs. lush grass and a bright blue sky"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: gray overcast sky, flat green miniature-golf island with photoscanned rocks",
+        "B: bright blue sky, dense flowery meadow with hand-painted stylized foliage",
+        "Different art style, palette and camera: A is an elevated diorama view, B is a third-person character view"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dense flower meadow with painterly, soft stylized foliage and a bright blue sky",
+        "Image B: flat green miniature-golf island with realistic rock textures and a gray overcast sky",
+        "Different art style and lighting, with a diorama-like board layout and wooden sign in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized, painterly meadow with dense flowers and a red-roofed cottage",
+        "Image B is a low-poly diorama island with photoreal rock scans and a flat green terrain",
+        "Different lighting and palette: soft pastel sky versus a flat gray sky with PBR materials"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night scene with a starry sky, dense flower meadow and a hooded character with a purple spirit",
+        "Image B is a daytime miniature island with a grey overcast sky, flat green terrain and a 'Driftwood Cove' sign",
+        "The rendering differs: A is stylized low-poly foliage, B is photoreal rock textures with simple cone and box props"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: mini-golf course with rocky cliffs, flat green terrain, crates and a windmill",
+        "Image B: dense flower meadow with a cottage, lake, and a hooded character with a pink spirit",
+        "Different art styles: A uses gritty photoreal rocks and a flat green course, B uses soft painterly low-poly foliage with a pastel sky"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-green low-poly board-game island with grey overcast sky and photoreal rock meshes",
+        "Image B: dense painterly flower meadow with pink dusk sky and a lake backdrop",
+        "Different art styles, lighting and scene types, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized, dense flower meadow with a blue sky and a red-roofed cottage",
+        "Image B is a low-poly island with photoreal rock textures, a flat gray sky and a sign reading 'Greenhouse Perch'",
+        "Different lighting, palette and camera: A is bright and saturated with third-person character view, B is muted with an overhead diorama view"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night scene with dense flowers and grass, a hooded character and a purple cat spirit",
+        "Image B is a daytime miniature golf-style island with a 'Driftwood Cove' sign, a windmill and large photoreal rocks",
+        "Different art styles and lighting: stylized low-poly foliage in A versus a clean toy-like course with realistic rock textures in B"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: miniature golf-style island with rocky cliffs and flat green terrain, grey overcast sky",
+        "Image B: dense flower meadow, red-roofed cottage and a hooded character with a pink spirit, warm pastel sky",
+        "Different art direction: A has heavy PBR rock textures and simple low-poly cones, B has painterly stylized foliage"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night scene with a dense flower meadow, stylized painterly foliage and a hooded character",
+        "Image B is a daytime miniature island with flat green terrain, PBR rock cliffs and a wooden sign",
+        "Different palette, lighting and art style: soft painterly night vs clean bright daylight diorama"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat green miniature-golf island with photoscanned rocks and a grey overcast sky",
+        "Image B: dense flowery meadow with a hooded character, lake and red-roofed cottage under a painterly blue sky",
+        "Different art style and camera: A is a tabletop-style diorama, B is a close third-person view"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night meadow with dense flowers, a cottage and a hooded character",
+        "Image B is a daytime miniature island with photoreal rock textures and a flat green course",
+        "Different art styles, lighting and scenery with no shared assets"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: mini-golf island with flat green ground, realistic rock textures and a grey overcast sky",
+        "Image B: dense flower meadow, painterly low-poly trees and a bright blue sky",
+        "Different art style, scale and subject: a tabletop-like course versus a third-person character walking through a cottage landscape"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night scene with a dense flower meadow, cottage and hooded character in a painterly, stylized look",
+        "Image B: daylight island with flat green terrain, photoreal rock textures and a 'Driftwood Cove' sign",
+        "Different palette, lighting and art style, with no shared HUD or asset language"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat-shaded miniature golf-style island with a gray overcast sky and photoreal rock textures",
+        "Image B: painterly flower meadow at dusk with a pink sky, a cottage and a hooded character",
+        "Different art styles, lighting and palettes, and no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: mini-golf course with a flat green island, photoreal rock textures and a sign reading 'Driftwood Cove'",
+        "Image B: hand-painted flower meadow with a cottage and a hooded character with a pink spirit",
+        "Different palettes and rendering: A uses muted, realistic lighting, B uses soft pastel, stylized foliage"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a mini-golf course with flat green terrain, cone trees and realistic rock textures",
+        "Image B is a flower meadow with a hooded character, a pink spirit, and a red-roofed cottage",
+        "Different palette and lighting: gray overcast sky in A, warm pastel sky in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: painterly, hand-drawn style with dense flower meadow and a dusk pink sky",
+        "Image B: clean PBR rock and stone textures, flat green island and a grey overcast sky",
+        "Different subject matter and HUD: a hooded character with a spirit companion versus a diorama island with a 'Driftwood Cove' sign"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: soft pastel storybook meadow with dense flowers and grass",
+        "Image B: realistic rock textures with a flat minimalist green golf-style course",
+        "Different art direction, lighting and sky treatment"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat low-poly golf-style island with photoscanned rocks and a plain gray sky",
+        "Image B: dense hand-painted flower meadow with a warm pastel sky and lake",
+        "Different art style, lighting and camera, with a character and cottage only in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-green miniature golf-style island with a sign, crates and a windmill under a gray overcast sky",
+        "Image B: dense painterly flower meadow, cottage and lake under a pink dusk sky",
+        "Different art styles: stylized props with realistic rock textures vs. soft hand-painted foliage"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-shaded green island with photoscanned rocks, grey overcast sky",
+        "Image B: dense painterly meadow with flowers, warm pastel sky, hooded character with pink spirit",
+        "Different art styles, lighting and camera/scale"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly meadow with dense flowers, grass and a bright blue sky",
+        "Image B: photoscanned rock cliffs, flat gray sky and a plain green board-style island",
+        "Different art direction, palette and camera: A is a third-person view with a character, B is a top-down tabletop view with signage"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-shaded green island with photoscanned rocks and a mini-golf layout",
+        "Image B: dense hand-painted meadow with a hooded character and a pink spirit",
+        "Different art styles, lighting and sky treatment"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: miniature island diorama with realistic rock textures, flat green ground and cone trees under a gray sky",
+        "Image B: dense painterly flower meadow, hand-painted backdrop and warm pastel sky",
+        "Different art styles, lighting and camera: tabletop overview versus third-person character with a pink companion"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: miniature golf-style course with flat green ground, cone trees, and realistic rock textures under a gray-blue sky",
+        "Image B: dense painterly flower meadow with hooded character, purple cat spirit, and cottage at a pink dusk",
+        "Different art styles, lighting, and camera perspective"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night scene with a stylized flower meadow, a cottage and a glowing purple cat, while Image B is a daytime island with a flat overcast sky",
+        "Image A uses low-poly painterly foliage with a dark blue-teal palette, while Image B uses photoreal scanned rocks next to flat-shaded green terrain",
+        "Image B has a 'Greenhouse Perch' sign, a ballista and bird characters that appear nowhere in Image A"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: painterly, hand-textured flower meadow with a pink dusk sky",
+        "Image B: clean PBR-style rocks and a flat green mini-golf board with a gray overcast sky",
+        "Different character and prop styles: a hooded figure and cottage versus a windmill, crates and a bird slingshot"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: flat-green miniature golf-style island with gray overcast sky and dark realistic rock textures",
+        "Image B: dense painterly flower meadow with bright blue sky and soft pastel palette",
+        "Different art direction: stylized props and hard-edged cones versus hand-painted foliage and a hooded character"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly meadow with a hooded character, pink spirit and a red-roofed cottage",
+        "Image B is a miniature-golf island with photoreal rock textures, flat green turf and a 'Driftwood Cove' sign",
+        "Different lighting and palette: soft pastel dusk versus grey overcast sky with harder shading"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: soft painterly low-poly meadow with dense flowers and grass, pale hazy sky",
+        "Image B: realistic textured rocks, flat green golf-course terrain, and a 'Driftwood Cove' sign",
+        "Different art style, lighting and scene type (cottage and lake vs. miniature island course)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: miniature golf course with a flat green surface, cone trees, and a 'Driftwood Cove' sign",
+        "Image B: dense flower meadow with a hooded character, a pink spirit, and a red-roofed cottage by a lake",
+        "Different rendering: A has a gray sky with realistic rock textures, B has a soft pastel storybook look"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat green miniature golf-style island with textured rocks and a gray overcast sky",
+        "Image B: dense hand-painted flower meadow with a cottage and a hooded character",
+        "Different art styles and lighting: A has a harsh, realistic PBR look, B has a soft pastel storybook look"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "slingshot-siege--ch0--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime miniature golf island with flat green terrain and stylized props",
+        "Image B is a night meadow with dense flowers, cottage, lake and falling snow particles",
+        "Different art style, lighting and scene composition, with no shared characters, HUD or assets"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: miniature-diorama island with realistic rock textures and a grey overcast sky",
+        "Image B: pastel, painterly meadow with dense flowers and a hooded character with a pink companion",
+        "Different art styles: A has flat green terrain and a wooden sign, B has a stylized cottage and lake backdrop"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat grey sky, photoreal rocks, and a flat-shaded green island with a board-game look",
+        "Image B: painterly pastel scene with dense grass and flowers, a red-roofed cottage, and a backdrop of lake and hills",
+        "Different art styles and a different kind of camera and scene (an island diorama vs. a third-person character in a meadow)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: painterly low-poly meadow with dense flowers and a dusky pink sky",
+        "Image B: flat green miniature island with photoreal rock textures and a grey sky",
+        "Different rendering styles and palettes, with a character in A and a tabletop-style map with signage in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dense hand-painted flower meadow with red-roofed cottage and lake",
+        "B: miniature island diorama with flat green terrain, rocks and wooden props",
+        "Different art style, lighting and sky: soft pastel storybook vs. gray overcast realistic-PBR rocks"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "slingshot-siege--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a mini-golf course with a Driftwood Cove sign, realistic rock textures and flat-shaded green terrain",
+        "Image B is a painterly low-poly meadow with dense flowers and a hooded character with a pink spirit companion",
+        "Different lighting and palette: grey overcast sky and heavy PBR shading in A, soft pastel storybook look in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-shaded miniature island with photoscanned rocks, overcast grey sky",
+        "Image B: dense painterly flower meadow, lake and bright blue sky",
+        "Different character and prop styles: bird figures and a golf-like course vs. a cloaked human with a pink spirit and a cottage"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "slingshot-siege--ch2--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized painterly low-poly meadow with dense flowers and soft pastel sky",
+        "B: photoreal scanned rock textures with flat green low-poly island and simple cone trees",
+        "Different art direction, lighting and palette, with no shared characters or assets"
+      ]
+    }
+  ]
+}
