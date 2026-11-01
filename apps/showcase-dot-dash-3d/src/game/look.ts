@@ -235,7 +235,9 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
   garden: row({
     board: "garden",
     pcb: "white-mask LED lighting board, ENIG gold",
-    mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#8dff6a", traceGlow: "#c4ff7a",
+    // Phase 7 (4.7.6): blind panel g13p7a judged garden worse (1/2/0): the pale lime shard LEDs (#8dff6a, luma ~220)
+    // vanished on the white mask. A deeper LED green (luma ~157) keeps the hue and reads against the board.
+    mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#22c95a", traceGlow: "#c4ff7a",
     lamp: { color: "#fff0d8", intensity: 2200, temperatureK: 4000 },
     grade: { contrast: 1.06, saturation: 1.08, temperature: 0, tint: -0.04, lut: "/luts/dot-dash-3d/garden.cube" }
   }),

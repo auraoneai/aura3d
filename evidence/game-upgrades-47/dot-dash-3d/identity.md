@@ -46,7 +46,7 @@ visible environment (PRD §6.1: secondary IBL-only use with its own rotation and
 | classic (Relay Grid) | green FR-4 relay board, bare copper | `#1f4a38` | `#c8743a` | `#5ff3ff` | `#ffb070` | `#ffc58a` / 3000 K / 3400 | 1.08, 1.06, +0.08, 0 |
 | spiral (Coil Loop) | purple RF coil board, ENIG gold | `#3b2457` | `#d9a648` | `#ff9ee0` | `#ffd27a` | `#ffcf9c` / 3200 K / 3300 | 1.10, 1.04, +0.04, +0.06 |
 | twin (Twin Pylons) | blue power board, HASL tin | `#1c3a6e` | `#c9ced6` | `#9ff7ff` | `#bfeaff` | `#ffe0bc` / 3600 K / 3300 | 1.07, 1.02, -0.04, -0.02 |
-| garden (Overgrowth) | white-mask LED lighting board, ENIG gold | `#cfd5c4` | `#cfa24c` | `#8dff6a` | `#c4ff7a` | `#fff0d8` / 4000 K / 2900 | 1.06, 1.08, 0, -0.04 |
+| garden (Overgrowth) | white-mask LED lighting board, ENIG gold | `#cfd5c4` | `#cfa24c` | `#22c95a` | `#c4ff7a` | `#fff0d8` / 4000 K / 2900 | 1.06, 1.08, 0, -0.04 |
 | foundry (Smelter Rows) | red heavy-copper power board | `#7a2018` | `#d4834a` | `#ffd27a` | `#ff9a5a` | `#ffbe80` / 2800 K / 3200 | 1.10, 1.02, +0.10, +0.02 |
 | zerocore (Zero-Core) | matte black reactor board, ENIG gold | `#141418` | `#d7a74e` | `#ff5fdc` | `#ff9cf0` | `#ffd9b0` / 3400 K / 3600 | 1.12, 1.05, +0.02, +0.08 |
 
