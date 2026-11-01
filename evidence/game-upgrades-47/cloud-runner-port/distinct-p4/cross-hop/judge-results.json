@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:16:59.308Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-play-1420",
+      "title-settle-60s"
+    ],
+    "framesB": [
+      "cross-hop--original--settle-60s",
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.928,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 45,
+    "sameGameYes": 3,
+    "differentRate": 0.9375,
+    "ci95": [
+      0.8316430233725778,
+      0.9785171568687727
+    ],
+    "confidentDifferent": 45,
+    "confidentDifferentRate": 0.9375,
+    "same_game": false,
+    "same_game_confidence": 0.928,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized low-poly forest, river path and a HUD with hearts, checkpoint and progress bar",
+        "Image B: frog character crossing roads and rails with toy vehicles and a train",
+        "Different art style, lighting and palette: painterly dramatic sky versus flat green ground and hazy gray sky"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a Frogger-style road crossing with toy cars and a frog, Image B is a third-person cliff-run platformer with a human character",
+        "Different art styles: flat saturated toy models and a hazy sunset sky versus low-poly trees, cracked boulders and a blue sky",
+        "Image B has a distinct HUD (hearts, progress bar, timer, ability bar) that Image A lacks"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A has a stylized low-poly landscape with a boy character, a rendered cloudy sky, and a HUD with hearts and a progress bar",
+        "Image B is a flat-colored frogger-style road, rail and river crossing with a frog and toy-like vehicles",
+        "The two frames differ in sky, ground and character type, and Image B has no HUD"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a Crossy Road-style lane-crossing game with a frog, trains and traffic on flat green strips",
+        "Image B shows a child on a dirt path with low-poly trees, cracked boulders, a cliff and a tornado cloud",
+        "The scenery, characters and palettes differ, and no shared objects or HUD style appear"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly trees, cloudy sky, river path with HUD hearts, progress bar and checkpoint label",
+        "Image B: frog crossing flat green lanes of toy-like cars, with a plain gradient sky and a pale sun",
+        "Different art direction, camera and scenery, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Frogger-style road crossing with toy cars and a frog, while Image B is a dirt-path runner with a boy character",
+        "A has a warm orange sunset sky and flat green lanes, B has a cloudy blue sky with a tornado-like cloud and cracked boulders",
+        "Different art styles: A uses glossy toy vehicles, B uses low-poly textured trees and a painterly rock cliff"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a Frogger-style game with toy cars, flat green lanes and a plain sky",
+        "Image B is a cliff-run game with canyon walls, low-poly trees, a dirt path and a styled HUD",
+        "Different characters and lighting: a frog under flat light versus a human runner with painterly, warm lighting"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars, trains and rivers, a Crossy Road-style game",
+        "Image B is a cliff-canyon runner with a human character and a quest HUD",
+        "Different art styles: flat bright lanes in A, painterly low-poly rocks and trees in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person runner with a human character, HUD hearts and a progress bar, in a realistic sky and cliff scene",
+        "Image B is a Frogger-style game with a green frog, toy vehicles and flat lanes under a warm hazy sun",
+        "The lighting, palette and scenery differ: A has detailed textured terrain and blue cloudy sky, B has flat green ground and no HUD"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized runner with a character on a log, cliffs, pine trees and a styled HUD with hearts and progress bar",
+        "Image B: Frogger-style scene with a frog, trains, and traffic on flat green lanes, no HUD",
+        "Different art direction and lighting: painterly, richly lit scenery vs. flat green lanes with a hazy gray sky"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a Frogger-style game with a frog, toy cars and a warm sunset sky",
+        "Image B is a third-person runner with a human character, a river path and low-poly trees under a blue cloudy sky",
+        "The HUDs differ: Image A has none, Image B has hearts, a progress bar, a checkpoint label and an ability bar"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized low-poly canyon run with a human character, hearts, progress bar and quest-style HUD",
+        "Image B: flat green Frogger-style road with toy cars, trains and a frog, no HUD",
+        "Different lighting and palette: warm painterly glow in A, flat gray-blue sky in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person runner with a human character, cliffs, painterly clouds and a styled HUD (hearts, progress bar, score)",
+        "Image B is a Frogger-style road crossing with a frog, toy cars and trains on flat green lanes, with no HUD",
+        "Different art style and lighting: soft, detailed terrain and sky in A versus flat, simple geometry and a plain gradient sky in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a character crossing a log-shaped brown cylinder (Image A: large log; Image B: logs over water)",
+        "Similar green grass with flat saturated colors and the same soft engine lighting",
+        "Third-person camera behind a small character on a lane-based path"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a Frogger-style game with a frog and toy cars on flat green lanes",
+        "Image B has a human child character, low-poly trees, cracked boulders, a dirt path and a tornado",
+        "Different art style and environment: cartoon traffic scene versus a natural landscape"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a flat-shaded frogger-style scene with toy cars and a plain sky, while Image B is a painterly landscape with cliffs, clouds and trees",
+        "Image B has a styled HUD with hearts, a progress bar and a score, and Image A has none",
+        "The characters differ: a green frog in A and a humanoid runner on a log in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: canyon run with a human character, rocks, trees and a styled HUD (hearts, progress bar, objective text)",
+        "Image B: Frogger-style lanes with a frog, toy cars and trains, no HUD",
+        "Different art styles and lighting: soft painterly canyon vs flat green lanes under a pale sun"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: canyon cliffs, textured low-poly trees and boulders, with an HUD showing hearts, a progress bar and a 'Cliff Run' prompt",
+        "Image B: flat green lanes of traffic, a frog character, a plain sky and no HUD",
+        "Different art style and lighting: A is painterly and warm with soft clouds, B is clean, flat-shaded and toy-like"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person runner on a river path with low-poly trees, a progress bar and a checkpoint HUD",
+        "Image B is a Frogger-style game with toy cars, trucks and trains on flat lanes under a warm sunset sky",
+        "The two frames differ in palette, lighting, scenery, characters and HUD (A has hearts, a timer and an ability bar, B has no HUD)"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Brown cylindrical log with rounded ends appears in both frames",
+        "Same flat green grass and dirt-colored ground with soft lighting",
+        "Third-person camera behind a small character on a lane-style path"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly trees, cloudy sky, and a river with a HUD showing hearts, checkpoint and progress bar",
+        "Image B: frog crossing lanes of toy-like cars on flat green strips with a plain gradient sky",
+        "Different art direction, world layout, and gameplay (run along a river vs. road-crossing)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a flat-colored frogger-style scene with toy cars and a plain sky, while B is a painterly canyon landscape with clouds and cliffs",
+        "Different HUD: B has hearts, a progress bar, a score and a text banner, and A has none",
+        "Different characters and environments: a green frog on lanes versus a human runner on a dirt path"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: third-person runner on a canyon path with a HUD (hearts, progress bar, prompts), low-poly trees and cracked boulders",
+        "Image B: Frogger-style lanes of toy vehicles and trains, with a frog and a flat green field",
+        "Different art style and lighting: warm sunlit realistic-stylized canyon vs a dim sunset with a flat toy-like look"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a flat green Crossy Road-style frog and traffic scene; Image B is a painterly canyon runner",
+        "Different HUD: none in A, hearts, progress bar and ability prompts in B",
+        "Different art style and lighting: plain flat lighting vs. rich textured cliffs and low-poly trees"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized low-poly trees, river path and a HUD with hearts, checkpoint and progress bar",
+        "Image B: frog character crossing roads and rail tracks with toy-like vehicles and a flat green ground",
+        "Different art style, lighting and camera setup, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy Road-style lane crossing with a frog, trains and toy vehicles on flat green strips; Image B is a third-person runner on a dirt path",
+        "Different art styles: A is plain, flat-lit and low-detail; B has painterly textured cliffs, detailed pines and a cloudy sky",
+        "HUD differs: A shows none; B has hearts, a progress bar, a score and a prompt banner"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trucks, a different genre from Image B's character running on a dirt path",
+        "Image B has a HUD with hearts, progress bar, score and a realistic sky and cliffs, while A has none and uses flat green terrain",
+        "The characters, scenery and lighting differ: a frog in a warm sunset haze versus a human runner in a bright daytime landscape"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: low-poly trees, river path, human runner, checkpoint HUD with hearts and progress bar",
+        "Image B: frog crossing lanes of toy cars and trains on flat green strips with a plain gradient sky",
+        "Different art style, scenery and HUD: A has a rich painterly sky, B has none"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a frog crossing road, rail and river lanes with toy-like cars, flat green ground and a plain sky",
+        "Image B is a third-person runner on a dirt path with a cliff, pine trees, realistic clouds and a HUD with hearts and a score",
+        "Different art style, character, lighting and scenery"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a Crossy Road-style lane layout with a frog, cars and trains, while Image B is a scenic path with trees, boulders and a tornado",
+        "Different palettes and art: flat green lanes with toy vehicles versus a textured dirt road with low-poly trees and cracked rocks",
+        "Different protagonists and camera framing: a frog on lanes versus a child on a log"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Frogger-style road crossing with toy vehicles and a frog, Image B is a child character on a dirt path with a log",
+        "Different scenery: sunset sky and flat lanes versus a stormy sky, cracked boulders, low-poly trees and a cliff",
+        "Different palettes and lighting: warm orange haze versus cool gray-blue sky with natural greens"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat-colored Frogger-style road with toy cars and a frog",
+        "Image B is a painterly low-poly landscape with a tornado sky and a human child character",
+        "Different palette, scenery and character type, with no shared assets"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Frogger-style road-crossing game with toy cars and a frog on flat green lanes",
+        "Image B is a third-person runner with a human character, detailed trees, water and clouds",
+        "The HUDs differ: Image B has hearts, a progress bar and an ability bar, while Image A shows none"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a frogger-style game with toy cars, flat green lanes, and a plain sky",
+        "Image B has a painterly cliff-run scene with rocks, stylized trees, and a detailed HUD with hearts and a progress bar",
+        "Different characters and art styles: green frog versus a humanoid runner"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a Frogger-style road-crossing game with a frog and toy cars, Image B is a third-person runner with a human character",
+        "Different scenery: flat green lanes with a plain sky versus a river valley with low-poly trees and painterly clouds",
+        "Different HUD: Image A has none, Image B has hearts, a progress bar, a checkpoint label and a skill bar"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a frogger-style game with a frog, toy cars and trains on flat green lanes",
+        "Image B shows a child character on a dirt path with cracked boulders, low-poly trees and a tornado cloud",
+        "Different palette and art style: bright flat toy look versus a painterly, textured natural scene"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: third-person runner with canyon cliffs, stylized low-poly trees and a polished HUD (hearts, progress bar)",
+        "Image B: Frogger-style lanes of toy cars and trains under a flat orange sunset sky, with no HUD",
+        "Different art style, palette and gameplay: realistic textured rocks and a human character versus glossy toy vehicles and a frog"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly trees, cracked boulders and a tornado cloud on a dirt path with a child character",
+        "Image B: toy-like cars, trucks and trains on lanes with a frog character, a Frogger-style game",
+        "Different scenery, palette and lighting: overcast earthy tones vs. warm sunset over saturated green"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "identical brown cylindrical logs in both",
+        "same flat saturated green grass and soft lighting",
+        "lane-crossing setup with a character on a log, though the art style differs"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a Crossy Road-style frog with lanes of cars and a train, with no HUD",
+        "Image B is a third-person runner with painterly low-poly trees, a water path and cloudy sky",
+        "Image B has a distinct HUD (hearts, progress bar, checkpoint, ability bar) that is absent from A"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized canyon runner with a human character and a polished HUD (hearts, progress bar, prompts)",
+        "Image B: flat green field with a frog, trains and toy-like vehicles, and no HUD",
+        "Different art styles and lighting: soft painterly rocks and trees versus flat shading with a hazy sun"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars, trains and logs with a flat green, hazy-sky look",
+        "Image B is a humanoid runner on a dirt path with a canyon, realistic clouds and pine trees",
+        "Image B has a distinct HUD (hearts, progress bar, score, prompt text) that Image A lacks"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: low-poly trees, river path and a rounded cream HUD with hearts and a progress bar",
+        "Image B: Frogger-style lanes of toy cars, trucks and trains with a frog character",
+        "Different lighting and palette: realistic blue sky and clouds vs. flat orange sunset gradient"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: cliff canyon with low-poly trees, cracked boulders and a stylized human runner with a game HUD (hearts, progress bar, objective text)",
+        "Image B: Frogger-style lanes of toy cars, trains and a frog on a flat green field with no HUD",
+        "Different art style, lighting, camera setup and gameplay"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: running character on a dirt path with cliffs, pine trees and a HUD with hearts and a progress bar",
+        "Image B: top-down view of a frog crossing lanes of toy cars with a flat green ground and warm sunset sky",
+        "Different art style, scenery and camera framing, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a flat-shaded Crossy Road-style lane map with toy vehicles and a frog; Image B is a realistic-textured scenic trail with a human runner",
+        "Different HUD: Image A has none, Image B has hearts, progress bar, score and text prompts",
+        "Different lighting and palette: Image A is hazy gray with plain green ground, Image B has a painterly sky, cliffs and rich foliage"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: child character on a dirt path with low-poly trees, cracked boulders and a tornado cloud",
+        "Image B: frog crossing lanes of cars, trucks and trains, Frogger-style",
+        "Different scenery, palette and camera framing"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic-stylized landscape with cliffs, a cloudy sky and a HUD with hearts and a progress bar, while Image B is a flat, toy-like Frogger scene",
+        "Image B has a plain gradient sky and a flat green ground with lanes of toy vehicles, with no matching terrain or textures",
+        "The characters differ: a humanoid runner in A and a green frog in B, and only the log shape is shared"
+      ]
+    }
+  ]
+}
