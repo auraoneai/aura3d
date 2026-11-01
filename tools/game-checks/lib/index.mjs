@@ -756,6 +756,18 @@ function checkAppCatalog({ game, root }) {
  * through wave 2; WP-38 flips this to "error" for the 4.7.0 release gate (`run.mjs --all --strict` must pass either way).
  */
 export const GU47_CHECK_SEVERITY = "warn";
+/**
+ * Per-check severity. The WP-38 gate flips a check to "error" once every live game passes it, so a check that waits on
+ * an outside dependency (borrowed-asset and prop-exclusivity wait on the WP-36 Meshy batch) does not hold the others back.
+ */
+export const GU47_SEVERITY_BY_CHECK = Object.freeze({
+  "art-direction": GU47_CHECK_SEVERITY,
+  "look-identity": GU47_CHECK_SEVERITY,
+  "borrowed-asset": GU47_CHECK_SEVERITY,
+  "prop-exclusivity": GU47_CHECK_SEVERITY,
+  "luma-band": GU47_CHECK_SEVERITY
+});
+const gu47Severity = (check) => GU47_SEVERITY_BY_CHECK[check] ?? GU47_CHECK_SEVERITY;
 const RECIPE = "docs/prds/game-upgrades-47/lanes/ei.md";
 const posix = (p) => p.split(sep).join("/");
 
@@ -794,7 +806,7 @@ const AUDIT_PROBLEM = {
 function checkArtDirection({ game, src, root }) {
   const rel = findArtDirection(root, game, src);
   if (!rel) {
-    return [finding("art-direction", GU47_CHECK_SEVERITY, game, `apps/${game.appFolder}/art/direction.ts`, 0, `no art/direction.ts: ship defineArtDirection({ id, genre, palette, lighting, signatureEffect, ... }) in the game's folder and an auditArtDirection unit test that writes art/direction.audit.json (recipe: ${RECIPE})`)];
+    return [finding("art-direction", gu47Severity("art-direction"), game, `apps/${game.appFolder}/art/direction.ts`, 0, `no art/direction.ts: ship defineArtDirection({ id, genre, palette, lighting, signatureEffect, ... }) in the game's folder and an auditArtDirection unit test that writes art/direction.audit.json (recipe: ${RECIPE})`)];
   }
   const audit = readArtDirectionAudit(join(root, rel), root);
   const auditRel = posix(relative(root, audit.path));
@@ -802,9 +814,9 @@ function checkArtDirection({ game, src, root }) {
     if (p === "violations") {
       const list = audit.record.violations;
       const rules = [...new Set(list.map((v) => v?.rule ?? v?.code ?? "?"))].slice(0, 6).join(", ");
-      return finding("art-direction", GU47_CHECK_SEVERITY, game, auditRel, 0, `auditArtDirection reported ${list.length} violation(s) (${rules}): fix the scene or the direction, rerun the test`);
+      return finding("art-direction", gu47Severity("art-direction"), game, auditRel, 0, `auditArtDirection reported ${list.length} violation(s) (${rules}): fix the scene or the direction, rerun the test`);
     }
-    return finding("art-direction", GU47_CHECK_SEVERITY, game, p === "missing" ? rel : auditRel, 0, AUDIT_PROBLEM[p] ?? p);
+    return finding("art-direction", gu47Severity("art-direction"), game, p === "missing" ? rel : auditRel, 0, AUDIT_PROBLEM[p] ?? p);
   });
 }
 
@@ -863,12 +875,12 @@ function checkLookIdentity({ game, root, inventory }) {
       const h = primaryHdriOf(root, o.game.appFolder, o.record.environment);
       return h && ((h.sha256 && myHdri.sha256 && h.sha256 === myHdri.sha256) || h.id === myHdri.id);
     });
-    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `primary HDRI "${myHdri.raw}"${myHdri.sha256 ? ` (sha256 ${myHdri.sha256.slice(0, 12)})` : ""} is also the primary sky of ${dup.map((o) => o.game.slug).join(", ")}: pick a free HDRI in the same mood family or an authored sky (PRD 6.1)`));
+    if (dup.length) out.push(finding("look-identity", gu47Severity("look-identity"), game, mine.rel, 0, `primary HDRI "${myHdri.raw}"${myHdri.sha256 ? ` (sha256 ${myHdri.sha256.slice(0, 12)})` : ""} is also the primary sky of ${dup.map((o) => o.game.slug).join(", ")}: pick a free HDRI in the same mood family or an authored sky (PRD 6.1)`));
   }
   const effect = normText(mine.record.signatureEffect);
   if (effect) {
     const dup = others.filter((o) => normText(o.record.signatureEffect) === effect);
-    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `signatureEffect "${mine.record.signatureEffect}" is shared with ${dup.map((o) => o.game.slug).join(", ")}: each live game owns its signature effect`));
+    if (dup.length) out.push(finding("look-identity", gu47Severity("look-identity"), game, mine.rel, 0, `signatureEffect "${mine.record.signatureEffect}" is shared with ${dup.map((o) => o.game.slug).join(", ")}: each live game owns its signature effect`));
   }
   const primaries = new Set((mine.record.palette?.primary ?? []).map(normHex).filter(Boolean));
   if (primaries.size) {
@@ -878,7 +890,7 @@ function checkLookIdentity({ game, root, inventory }) {
       const floor = Math.min(primaries.size, theirs.size);
       return common.length >= 3 || (common.length >= 2 && common.length === floor) ? [`${o.game.slug} (${common.join(" ")})`] : [];
     });
-    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `palette.primary is shared with ${dup.join(", ")}: give the game its own primary hexes`));
+    if (dup.length) out.push(finding("look-identity", gu47Severity("look-identity"), game, mine.rel, 0, `palette.primary is shared with ${dup.join(", ")}: give the game its own primary hexes`));
   }
   return out;
 }
@@ -972,7 +984,7 @@ function checkBorrowedAsset({ game, root, terms, inventory }) {
     if (isGenericAsset(id, terms) || okMarker(at.f, at.no, "borrowed-asset")) continue;
     const owner = assetOwnerOf(id, terms, universe, inventory);
     if (!owner || owner.owner === game.slug) continue;
-    out.push(finding("borrowed-asset", GU47_CHECK_SEVERITY, game, at.f.rel, at.no, `asset key "${id}" belongs to ${owner.owner} (${owner.via}): replace it with an asset this game owns (D2: no borrowed keys across games)`));
+    out.push(finding("borrowed-asset", gu47Severity("borrowed-asset"), game, at.f.rel, at.no, `asset key "${id}" belongs to ${owner.owner} (${owner.via}): replace it with an asset this game owns (D2: no borrowed keys across games)`));
   }
   return out;
 }
@@ -993,7 +1005,7 @@ function checkPropExclusivity({ game, root, terms, inventory }) {
     if (owner && owner.owner !== game.slug) continue; // borrowed-asset reports it
     const sharers = others.filter((g) => assetKeysUsed(root, g).has(id) && !(owner && owner.owner === g.slug)).map((g) => g.slug);
     if (owner?.owner === game.slug || sharers.length === 0) continue;
-    out.push(finding("prop-exclusivity", GU47_CHECK_SEVERITY, game, at.f.rel, at.no, `asset key "${id}" is also used by ${sharers.join(", ")}: no two live games share a non-generic asset key (D2); give each game its own`));
+    out.push(finding("prop-exclusivity", gu47Severity("prop-exclusivity"), game, at.f.rel, at.no, `asset key "${id}" is also used by ${sharers.join(", ")}: no two live games share a non-generic asset key (D2); give each game its own`));
   }
   return out;
 }
@@ -1013,21 +1025,21 @@ function checkLumaBand({ game, root }) {
   const hasBands = existsSync(join(root, bandsRel));
   const decode = `node evidence/audit-fix/e5/decode-luma.mjs after=<acr-run.log> --out ${dir}`;
   if (!existsSync(join(root, captureRel))) {
-    return [finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, hasBands
+    return [finding("luma-band", gu47Severity("luma-band"), game, captureRel, 0, hasBands
       ? `luma-bands.json is declared but no steady-state capture is committed: capture remotely, then ${decode}`
       : `no committed steady-state capture (luma-after.json) and no declared luma-bands.json: declare the WP's bands and commit the decoded after-capture (${decode})`)];
   }
   let spec = null;
   if (hasBands) {
     try { spec = JSON.parse(readFileSync(join(root, bandsRel), "utf8")); } catch { spec = undefined; }
-    if (!spec || spec.schema !== LUMA_BANDS_SCHEMA) return [finding("luma-band", GU47_CHECK_SEVERITY, game, bandsRel, 0, `luma-bands.json is not valid ${LUMA_BANDS_SCHEMA} JSON`)];
+    if (!spec || spec.schema !== LUMA_BANDS_SCHEMA) return [finding("luma-band", gu47Severity("luma-band"), game, bandsRel, 0, `luma-bands.json is not valid ${LUMA_BANDS_SCHEMA} JSON`)];
   }
   let rows;
   try { rows = loadCapture(join(root, captureRel)).metas; } catch { rows = []; }
   const results = evaluateBands(rows, spec, { slug: game.slug });
-  if (results.length === 0) return [finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, `no steady-state GL_META rows for ${game.slug} (settle-<s>s shots with s >= 20) in luma-after.json`)];
-  const out = results.filter((r) => !r.pass).map((r) => finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, `${r.target} ${r.id}: ${r.misses.slice(0, 3).map(fmtMiss).join("; ")}${r.misses.length > 3 ? ` (+${r.misses.length - 3} more)` : ""}`));
-  if (!hasBands) out.push(finding("luma-band", GU47_CHECK_SEVERITY, game, bandsRel, 0, "no luma-bands.json: the capture was checked against the PRD default band only (darkFrac <= 0.6, clipFrac <= 0.05); declare the WP's acceptance bands"));
+  if (results.length === 0) return [finding("luma-band", gu47Severity("luma-band"), game, captureRel, 0, `no steady-state GL_META rows for ${game.slug} (settle-<s>s shots with s >= 20) in luma-after.json`)];
+  const out = results.filter((r) => !r.pass).map((r) => finding("luma-band", gu47Severity("luma-band"), game, captureRel, 0, `${r.target} ${r.id}: ${r.misses.slice(0, 3).map(fmtMiss).join("; ")}${r.misses.length > 3 ? ` (+${r.misses.length - 3} more)` : ""}`));
+  if (!hasBands) out.push(finding("luma-band", gu47Severity("luma-band"), game, bandsRel, 0, "no luma-bands.json: the capture was checked against the PRD default band only (darkFrac <= 0.6, clipFrac <= 0.05); declare the WP's acceptance bands"));
   return out;
 }
 

@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { GAME_CHECKS, GU47_CHECK_SEVERITY, resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
+import { GAME_CHECKS, GU47_CHECK_SEVERITY, GU47_SEVERITY_BY_CHECK, resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 // GU47 WP-9 (E-I): the five new game-checks, on throwaway fixture repos.
@@ -61,7 +61,10 @@ afterEach(() => {
 describe("GU47 game-checks registration", () => {
   it("registers the five checks at warn level until WP-38 flips them", () => {
     expect(GU47_CHECK_SEVERITY).toBe("warn");
-    for (const id of ["art-direction", "look-identity", "borrowed-asset", "prop-exclusivity", "luma-band"]) expect(typeof GAME_CHECKS[id]).toBe("function");
+    for (const id of ["art-direction", "look-identity", "borrowed-asset", "prop-exclusivity", "luma-band"]) {
+      expect(typeof GAME_CHECKS[id]).toBe("function");
+      expect(["warn", "error"]).toContain(GU47_SEVERITY_BY_CHECK[id as keyof typeof GU47_SEVERITY_BY_CHECK]);
+    }
   });
 });
 
