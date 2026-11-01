@@ -1,8 +1,42 @@
 # Changelog
 
-Version: 4.7.7
+Version: 4.7.8
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.8 (2026-11-01)
+
+GameUpgrades47 phase 9 (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Phase 9 (4.7.8)" sections). Games that borrowed models, props and sounds from other games now use assets they own, where an owned asset looks at least as good. The planned route was new Meshy models (WP-36), but Meshy refuses every paid call (HTTP 402). The replacements are CC0 catalog assets (Kenney, Poly Haven, Quaternius, Polygonal Mind), each admitted into the game's own asset folder with licence and provenance records. No two games share a catalog file. Gameplay, rules, determinism and the reference replays are unchanged.
+
+Every changed view passed two blind three-judge panels: one against the 4.6.2 frame of the same view, and one against the 4.7.7 frame. A swap that lost to 4.7.7 on any view was reverted.
+
+### Games
+
+| Game | Now owned | Borrowed keys left | Second panel (vs 4.7.7) |
+|---|---|---|---|
+| Aura Links 3D | 12 CC0 models and 7 synthesised sound cues; the re-keyed race-car rover is gone | 0 | same on all six courses |
+| Aura FC 3D | all 17 borrowed models | 0 | same |
+| Glint Courier | the meteor rock (Poly Haven moon rock, LOD0 only, same draw count) | 0 | same |
+| Lamplight Line | two landmark towers (Kenney, retinted cream and terracotta; 63k fewer triangles) | 0 | same |
+| Bunker Zero | 5 of 6 props; the exit shutter and crack lamp now face the room | 1 (no CC0 launcher) | same on all 8 views |
+| Iron Crown | Colosseum Ruins, Crown Arena, Bangkok Dock and Neo-Tokyo Rooftop | 17 | better on those four venues; Desert Airbase and Himalayan Monastery lost (0/3) and keep their 4.7.7 props |
+| Aura Diamond 3D | removed 5 borrowed keys that never rendered | 0 | frames unchanged |
+| Aura Hoops 3D | the opt-in 4.6.2 look now uses the game's own bleachers | 0 | default frames unchanged |
+
+**Aura Slam 3D and Pip's Big Leap keep their 4.7.7 assets.** Their CC0 swaps beat 4.6.2 but lost to 4.7.7: Aura Slam on clay, desert and grass, and Pip's Big Leap on worlds 2-6. Both were reverted, so their borrowed-asset warnings stay.
+
+### Tooling
+
+- **Game-checks:** 0 errors, 65 warnings, down from 125.
+  - 42 are `borrowed-asset` rows (Pip's Big Leap, Iron Crown, Aura Slam 3D, Bunker Zero) that wait for owned assets of at least the same quality.
+  - 23 are `luma-band` rows that cannot be cleared without widening a band (texture loading at Bunker Zero's 25 s shots; lamp crops off screen; Cross Hop's opt-in 4.6.2 look).
+  - `prop-exclusivity` now fails as an error: it reports 0 findings across the 25 live games.
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game scores 7 or more in all 12 categories (model judge, software WebGL2).
+- **The remaining borrowed assets need new models.** Iron Crown's gatehouse, towers and arches, Aura Slam's grandstand, and Pip's woodland props have no CC0 replacement that looks as good, and Meshy still answers paid calls with HTTP 402.
+- **Real-GPU judgement is owner-only (PRD D5).**
 
 ## 4.7.7 (2026-11-01)
 
