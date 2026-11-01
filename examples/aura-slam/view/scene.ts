@@ -339,8 +339,12 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .torus({
         name: "serve-aim-ring",
         // Owner feedback 2026-10-31: the pale cream ring vanished on the lime service-box highlight. A thicker hot-red
-        // ring reads against the lime box and the blue, green, clay and sand courts alike.
-        size: [0.5, 0.5, 0.09],
+        // ring reads against the lime box and the blue, green, clay and sand courts alike. The unit torus is radius 0.43,
+        // tube 0.045 and lies in XY before the quarter turn, so `size` z only sets its height on the court: the band
+        // width comes from `params.tube`. Radius ~0.5 m, band ~0.15 m (the 0.5 / 0.09 size drew a 4.5 cm hairline
+        // that the broadcast camera resolved to 1-2 px).
+        size: [1.15, 1.15, 0.12],
+        params: { tube: 0.13 },
         material: material.emissive({ color: "#ff2a5f", emissive: "#ff2a5f", emissiveIntensity: 0.9 })
       })
       .rotate(Math.PI * 0.5, 0, 0)
