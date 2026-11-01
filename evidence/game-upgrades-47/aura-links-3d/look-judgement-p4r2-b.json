@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "b6f7fc4e3c424e49f63a71ab0f75aaf127f33fb610e7e62ae065e7635ee1aa61"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-3/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "51966559114c997452fa380ddb7eb2e213b62ac6f39820508c0ce7f5f8d29027"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-4/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "4ea1066a90dc91d33f4f007992ac92fc3fe1695ddef828c15621051aff8f7f93"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-2/aura-links-3d--neonBay--settle-60s.jpg",
+      "sha256": "89a69bcc19cafa817d38508f39ab4f642a01eefa3056af525c469e336144d27d"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 4,
+    "camera": 4.5,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a warm sun glare low on the horizon, but the golfer and caddie are lit almost evenly with weak form shading. Frames 2 and 3 read as flat ambient fill. Frame 4 night gives the teal ground one uniform brightness with no pools of light or falloff."
+    },
+    {
+      "category": "shadows",
+      "seen": "Characters have only faint blob contact shadows in frames 1 to 3. Tree shadows in frame 2 are thin dark smears far from the trunks. Frame 4 is the only frame with a crisp cast shadow from the golfer, so shadow behaviour is inconsistent across course presets."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The club shaft shows a simple metallic gradient. The golf cart, ball and skin show no environment reflection or sky tint, so surfaces do not pick up the cloudy or night sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The fairways are flat endless planes running to a straight horizon with scattered cone tufts. Frame 3 has no trees at all, just a brown plane with a visible repeating hex-cobble pattern. Trees are stacked sphere blobs placed in two rows at the sides, and there is no green, flag, bunker shaping or terrain undulation in view, apart from one sand strip in frame 1."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1 has mild distance haze and soft clouds. Frame 3 has orange ember particles and frame 4 has sparse white motes. None of these give real depth, and the frame 4 sky is a flat navy gradient with no stars or moon glow."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The tee-box grass has a decent fine fibre texture with mowing variation. The fairway tiling becomes obvious in frames 2 and 3. Clothing and skin are plain diffuse colour, the cart is untextured grey-white plastic, and the tee markers are flat red boxes."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The golfer and caddie are low-poly figures with blocky caps and stiff hands. The cart is a simplistic extruded shell. Trees are three-sphere stacks on cylinders, and ground detail is tiny cones. The assets are coherent but primitive."
+    },
+    {
+      "category": "composition",
+      "seen": "In frames 2 to 4 the golfer is jammed against the left edge and the caddie is cut in half by the frame border. The right half of the frame is empty fairway, and a large flat red tee marker becomes the focal accent instead of the ball."
+    },
+    {
+      "category": "camera",
+      "seen": "A low chase camera sits behind and beside the golfer at roughly human eye height. This differs from the recipe's elevated 70° broadcast framing, and the subject takes up well under the 25–40% target in frames 2 to 4."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the white aim line in frame 4 and sun glare in frame 1. There is no visible colour grading cohesion between presets, frame 2 is oversaturated green, and the image is soft without AO in the contact areas."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

@@ -181,9 +181,12 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     // white; belfast_sunset_puresky then read as a grey-pink overcast under the haar (blind panel 0-3 vs 4.6.2:
     // "heavy grey-white fog, muddy, grass desaturated"). Blind-panel fix: the kloppenheim_06 pure sky (blue sky, low
     // cold sun, peak 19.6 at 4.9 deg elevation, brightest texel u 0.612 = 57.8 deg in the engine frame).
-    hdri: { id: "kloppenheim_06_puresky", intensity: 1.0, drawn: true, sunAzimuthInHdriDeg: 57.8, want2k: false },
+    hdri: { id: "kloppenheim_06_puresky", intensity: 0.6, drawn: true, sunAzimuthInHdriDeg: 57.8, want2k: false },
     sun: { azimuthDeg: 95, elevationDeg: 12 },
-    key: { color: "#ffe0bd", intensity: 3.1, colorTemperatureK: 4200 },
+    // GU47 phase 4 (shadows): at 12 deg the 3.1 key put only 0.64 on flat turf against a full-strength sky, so the
+    // golfer's and the trees' cast shadows did not read (shadow map sampled, 3 cascades: run g10p4-x1); a stronger low
+    // sun over a 0.6 sky keeps the turf level and gives the shadows contrast
+    key: { color: "#ffe0bd", intensity: 5.2, colorTemperatureK: 4200 },
     rim: { color: "#b8d2e6", intensity: 0.22, azimuthDeg: 275 },
     exposureEv: 0,
     background: "#9fb8cc",
@@ -206,9 +209,10 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "parkland maples over still ponds",
     timeOfDay: "warm late afternoon",
     base: "golden-hour",
-    hdri: { id: "autumn_field_puresky", intensity: 1.0, drawn: true, sunAzimuthInHdriDeg: 53.6, want2k: true },
+    hdri: { id: "autumn_field_puresky", intensity: 0.62, drawn: true, sunAzimuthInHdriDeg: 53.6, want2k: true },
     sun: { azimuthDeg: 235, elevationDeg: 30 },
-    key: { color: "#ffc58a", intensity: 2.7, colorTemperatureK: 3900 },
+    // GU47 phase 4 (shadows): stronger sun over a dimmer sky, as St Auroras
+    key: { color: "#ffc58a", intensity: 3.9, colorTemperatureK: 3900 },
     rim: { color: "#9db7d6", intensity: 0.22, azimuthDeg: 55 },
     exposureEv: 0,
     background: "#d7b48c",
@@ -231,9 +235,10 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "a basalt crater rim above lava pools",
     timeOfDay: "dusk, lava light and god rays through ash",
     base: "golden-hour",
-    hdri: { id: "industrial_sunset_puresky", intensity: 0.8, drawn: true, sunAzimuthInHdriDeg: 53.6, want2k: false },
+    hdri: { id: "industrial_sunset_puresky", intensity: 0.6, drawn: true, sunAzimuthInHdriDeg: 53.6, want2k: false },
     sun: { azimuthDeg: 265, elevationDeg: 7 },
-    key: { color: "#ff9a5a", intensity: 2.5, colorTemperatureK: 2600 },
+    // GU47 phase 4 (shadows): stronger sun over a dimmer sky
+    key: { color: "#ff9a5a", intensity: 3.4, colorTemperatureK: 2600 },
     rim: { color: "#8e86c9", intensity: 0.22, azimuthDeg: 85 },
     exposureEv: 0.15,
     background: "#5a3a35",
@@ -255,9 +260,10 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "alpine terraces above a cloud sea",
     timeOfDay: "hard cobalt noon",
     base: "alpine-snow",
-    hdri: { id: "outdoor-midday", intensity: 1.1, drawn: true, sunAzimuthInHdriDeg: 49.4, want2k: true },
+    hdri: { id: "outdoor-midday", intensity: 0.8, drawn: true, sunAzimuthInHdriDeg: 49.4, want2k: true },
     sun: { azimuthDeg: 160, elevationDeg: 62 },
-    key: { color: "#fffaf0", intensity: 3.3, colorTemperatureK: 5800 },
+    // GU47 phase 4 (shadows): a harder noon sun over a dimmer sky (luma band LINKS-03 re-measured on the recapture)
+    key: { color: "#fffaf0", intensity: 3.7, colorTemperatureK: 5800 },
     rim: { color: "#d6e8ff", intensity: 0.18, azimuthDeg: 340 },
     // GU47 phase 3: -0.1 EV gave mean luma 198 and a washed white sky and mint tee (PRD LINKS-03 band: mean 145-175,
     // clip <= 0.02); thinner haze and more saturation bring back the cobalt noon; -0.5 EV still gave 183.5 (run

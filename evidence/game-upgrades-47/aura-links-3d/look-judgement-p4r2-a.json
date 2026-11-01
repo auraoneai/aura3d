@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "b6f7fc4e3c424e49f63a71ab0f75aaf127f33fb610e7e62ae065e7635ee1aa61"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-3/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "51966559114c997452fa380ddb7eb2e213b62ac6f39820508c0ce7f5f8d29027"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-4/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "4ea1066a90dc91d33f4f007992ac92fc3fe1695ddef828c15621051aff8f7f93"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r2/aura-links-3d/frames/g10p4-r2-2/aura-links-3d--neonBay--settle-60s.jpg",
+      "sha256": "89a69bcc19cafa817d38508f39ab4f642a01eefa3056af525c469e336144d27d"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a warm sun glow in the upper right and soft fill. Frame 2 is evenly lit with almost no contrast on the fairway. Frame 4's night key is a hard white light on teal grass, with no falloff or local light sources."
+    },
+    {
+      "category": "shadows",
+      "seen": "Golfer and cart shadows read in frames 1 and 4. Frame 4's golfer shadow is sharp, but the trees cast weak or absent contact shadows in frames 2 and 3, and the long tree shadows in frame 1 are faint bands."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The club shaft and head show no environment reflection. The white golf cart in frame 1 is a flat matte white with no specular response to the sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The fairways are vast empty planes that run to a hard horizon. Frame 3 is a featureless brown dirt plain with tiny cone props, and frame 4's sky is a flat navy fill with no gradient, moon or stars."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1 has mild distance haze. Frame 3 has floating orange ember particles. Frames 2 and 4 have almost no aerial perspective, so the horizon line is crisp and the scale reads small."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass is a visibly repeating tiled texture. Frame 3's ground uses an obvious hex-cobble tile that looks like a placeholder. The trees are untextured smooth spheres, and the tee markers are plain red boxes."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The trees are stacked-sphere primitives and the background props are tiny cones. The golfers are low-detail rigged figures with stiff hands. The cart in frame 1 is the most detailed asset in the set."
+    },
+    {
+      "category": "composition",
+      "seen": "In frames 2 to 4 the golfer is pushed to the far left edge and a second figure is cropped by the frame. The center is empty grass, and the white aim line is the only element leading the eye."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low third-person view behind the tee, not the orthographic 70° broadcast view the recipe expects. Framing of the subject changes between frame 1 and frames 2 to 4."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 1 has mild bloom and a filmic tone. The other frames look flat and over-saturated (frame 2) or muddy (frame 3), with no visible color grading consistency or vignette."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has a clean dark HUD panel with hole, strokes, score, wind and club readouts, plus a gradient power bar. The bottom control strip and the '52%' label are tiny and low contrast. Frames 2 to 4 show no HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
