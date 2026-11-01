@@ -364,7 +364,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     if (opts.fog) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
     if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
     // GC-L3: contact shadows under cars, posts and props (High only; PRD §6.4 drops them on Low)
-    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.35, thickness: 0.4, steps: 12, intensity: 0.8, lights: "sun" }));
+    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.6, thickness: 0.5, steps: 16, intensity: 1, lights: "sun" }));
     if (opts.post) {
       b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.35 }));
       b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));

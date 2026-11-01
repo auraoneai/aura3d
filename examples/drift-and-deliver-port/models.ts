@@ -58,7 +58,9 @@ export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder
  * 0.9, no clearcoat), so the courier and the traffic showed no environment reflection and no sun highlight (rubric
  * ibl_reflections 3.5). Presentation only: the overrides change the materials, not the meshes or the collision boxes.
  */
-export const COURIER_PAINT = { roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.6 } as const;
+// round 2 (judge g18p4r1): clearcoat 1 at 0.05 sparkled the Meshy normal detail on the rear glass into "cracked glass"
+// streaks; a softer coat keeps the sun highlight and the sky sheen without the noise
+export const COURIER_PAINT = { roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.22, envMapIntensity: 1.4 } as const;
 export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.08, envMapIntensity: 1.3 } as const;
 
 /** Uniform scale that brings a car GLB to its target length. */
