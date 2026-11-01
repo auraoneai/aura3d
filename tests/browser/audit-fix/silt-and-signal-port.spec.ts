@@ -273,6 +273,38 @@ test.describe("g24 duneglide", () => {
     await ctx.close();
   });
 
+  /* -------------------------------------- g24-p: GU47 phase 4 shadow probe (noon inked ch1, QA `siltshadow` knob) */
+
+  test("g24-p shadow probe", async ({ browser }) => {
+    const arms: readonly (readonly [string, string])[] = [
+      ["p-default", ""],
+      ["p-2048-1-160", "&siltshadow=2048,1,160"],
+      ["p-4096-2-120", "&siltshadow=4096,2,120"],
+      ["p-notoon", "&toon=0"]
+    ];
+    for (const [arm, q] of arms) {
+      const { ctx, page, ok } = await openPage(browser, arm, at(`?manual=1&start=1&chapter=1&look=inked${q}`), { width: 1280, height: 720 });
+      if (ok) {
+        await silt(page, "api.render();");
+        await settle(page, arm, 5 * 60_000);
+        await silt(page, "api.render(); api.render();");
+        const shadow = await silt<unknown>(page, `
+          const d = api.info ? api.info().diagnostics : null;
+          if (!d) return null;
+          const pick = (o) => { try { return JSON.parse(JSON.stringify(o, (k, v) => typeof v === "number" || typeof v === "string" || typeof v === "boolean" || v === null || typeof v === "object" ? v : undefined)); } catch { return String(o); } };
+          const keys = Object.keys(d);
+          const shadowKeys = keys.filter((k) => /shadow/i.test(k));
+          const r = d.renderer || {};
+          return { keys, shadow: shadowKeys.map((k) => [k, pick(d[k])]), rendererKeys: Object.keys(r), rendererShadow: Object.keys(r).filter((k) => /shadow/i.test(k)).map((k) => [k, pick(r[k])]),
+            tap: pick(globalThis.__A3D_SHADOW_TAP_TIER__ ?? null), dense: pick(globalThis.__A3D_DENSE_SHADOW_CAP__ ?? null) };
+        `).catch((e) => ({ error: String(e).slice(0, 200) }));
+        log(`G24_META ${JSON.stringify({ name: arm, kind: "shadow", shadow }).slice(0, 12000)}`);
+        await grab(page, arm);
+      }
+      await ctx.close();
+    }
+  });
+
   test("g24-c render A/B", async ({ browser }) => {
     for (const [arm, q] of [["auto", ""], ["production", "&aura3d-render=production"]] as const) {
       const { ctx, page, ok } = await openPage(browser, `ab-${arm}`, at(`${QA_PLAY}${q}`), { width: 1280, height: 720 });

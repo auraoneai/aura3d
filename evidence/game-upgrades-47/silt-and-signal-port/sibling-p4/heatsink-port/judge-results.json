@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:41:50.039Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s",
+      "heatsink-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from Duneglide, a browser 3D arcade game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.929,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.929,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sci-fi drone on dark neon-teal alien track with giant pale moon and crystal spikes",
+        "B: hand-drawn outlined character on a hoverboard in a pine-forest hill landscape at night",
+        "Different vehicles, scenery and rendering style (smooth glossy vs. cel-shaded ink outlines)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A is a flat, posterized green valley with pine trees and a hoverboard rider; B is a neon alien canyon with a purple planet",
+        "Different vehicles: a humanoid on a board vs. a detailed orange quadcopter drone",
+        "Different rendering styles: A has outlined, cel-shaded, low-fi textures, while B has realistic textures and a glowing grid road"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a hand-drawn, sketchy cel-shaded style with warm orange and brown tones and a cobblestone ground; B is a realistic dark teal sci-fi scene",
+        "A has a human hoverboard rider and low-poly pine trees; B has a realistic orange and black drone and alien mountains with a large moon",
+        "Completely different palettes, lighting and materials: flat outlined shading in A versus smooth PBR-like shading in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: flat, cel-shaded low-poly night scene with a human snowboarder and a glowing ring gate",
+        "B: realistic textured drone on a neon grid road with an alien planet and aurora sky",
+        "Different art styles, vehicles and palettes (dark blue/teal pines vs purple/teal sci-fi canyon)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a dark teal alien canyon with a drone, B is a warm orange sunset town with a hoverboard rider",
+        "Rendering style differs: A is smooth and moody with a moon, B is flat cel-shaded with an ink-outline look",
+        "Palettes and scenery differ: A has cool teal and purple tones with crystals and mushrooms, B has brown cobblestone, white blocks and green pines"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat, cel-shaded, hand-drawn look with warm orange sunset and a cobblestone ground, while Image B is realistic, with a cool purple-teal alien sky",
+        "A has a hoverboard rider in a low-poly town with pines; B has a detailed orange drone on a neon grid highway",
+        "The two frames differ in palette, materials and scenery (white blocky buildings vs. layered rock mountains and a giant planet)"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dark teal alien canyon with a giant pale moon and a glowing drone",
+        "B: green hills with pine trees and a flat, posterized outlined art style",
+        "Different vehicles and characters: a drone vs. a person on a hoverboard in a ring"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a cool purple/teal alien sci-fi scene with a drone on a neon grid road; Image B is a warm orange sunset with a hoverboarding character",
+        "Different rendering styles: A uses realistic PBR-like shading, B uses a flat cel-shaded, outlined, hand-drawn look",
+        "Different scenery and vehicles: A has alien mountains and a giant planet; B has low-poly pine trees, white blocky buildings and cobblestone ground"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a sketchy, hand-drawn cel-shaded style with a warm orange sky and a cobblestone ground, while B is a realistic dark teal alien canyon",
+        "A has a hoverboard rider with ink outlines, while B has a photoreal textured drone",
+        "The palettes and lighting differ: A is warm and desaturated, B is cool teal with a glowing moon and a dark glossy track"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: orange drone over a teal alien canyon with a pale moon and crystal spikes; B: a hoverboard rider in a night pine-forest valley",
+        "A: smooth, painterly teal and lavender palette with a glossy 3D vehicle; B: dark blue night palette with a flat cel-shaded, outlined look",
+        "Different scenery and objects: A has mushrooms and neon track lines, B has a giant glowing ring gate and low-poly pine trees"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: flat cel-shaded, outlined green hills with a hoverboard-riding human",
+        "B: glossy realistic orange drone on a neon grid road under an alien purple planet sky",
+        "Completely different palettes, materials and settings (pastel pine valley vs. dark sci-fi canyon)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a drone on a neon grid road under an alien purple planet sky; B is a hoverboard rider on a icy track with pine trees at night",
+        "A has realistic textured PBR-style mountains, while B has flat, cel-shaded, outlined low-poly shapes",
+        "Palettes and vehicles differ: purple/teal/orange sci-fi vs. deep blue night with a glowing white ring gate"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic sci-fi alien canyon with a drone on a neon grid road, while Image B is a flat, ink-outlined toon style",
+        "Image A has a cool teal and purple palette with a giant planet, while Image B has a warm orange and brown sunset palette",
+        "The vehicles differ: a hovering quadcopter drone versus a character on a hoverboard in a cobblestone town with pine trees"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a teal alien canyon with a drone, B is a warm orange sunset town with a hoverboard rider",
+        "Different rendering styles: A has realistic dark glossy materials, B has flat cel-shaded, ink-outlined shapes",
+        "Different palettes and scenery: cool teal/purple with a giant moon vs. orange/brown cobblestone with white blocks and pine trees"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: pastel green hills, pine trees and a character on a hoverboard in a flat, cel-shaded, outlined style",
+        "B: dark teal alien canyon with a giant moon and a realistic textured orange drone",
+        "Completely different palette, lighting and rendering style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a stylized, flat-shaded, cel-like world: warm orange sunset, cobblestone ground, low-poly pines, white block buildings",
+        "B is a cool purple and teal alien landscape with a neon grid road and a realistic textured drone",
+        "Different player vehicles and camera setups: a hoverboard rider in A, a drone in B, with very different palettes and rendering styles"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: flat cel-shaded night scene with a skateboarder and low-poly pine trees",
+        "B: realistic textured drone on a neon grid road with an alien planet sky",
+        "Different vehicles, art styles and color palettes (dark blue/teal vs purple/orange)"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a dark teal alien canyon with a drone, B is a warm orange sunset town with a hoverboard rider",
+        "different rendering styles: A has smooth, realistic-looking surfaces, B has flat, cel-shaded, hand-drawn outlines",
+        "different palettes and scenery: A has a cool teal and purple moon sky, B has orange sky, cobblestone ground and low-poly pines"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: orange drone on a dark road in a teal alien canyon with a pale moon",
+        "B: hoverboard rider with a glowing ring gate in a blue night pine forest",
+        "Different art styles: A is smooth and semi-realistic, B is flat, outlined and cel-shaded"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: alien neon-purple world with a drone and a grid track",
+        "B: green pastoral valley with pine trees and a hoverboard rider, drawn in a posterized ink-outline style",
+        "Different vehicles, palettes and rendering styles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: pastel green hills, pine trees and a character on a hoverboard with a flat, outlined look",
+        "B: dark teal alien canyon with a large moon and a photoreal orange drone",
+        "Palettes, lighting and rendering styles differ completely"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: warm orange sky, flat cel-shaded illustrated style with ink outlines and cobblestone ground",
+        "B: dark teal alien canyon with a realistic textured drone, moon, and glowing neon lines",
+        "Different vehicles (hoverboard rider vs. drone) and completely different palettes and rendering"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a flat-shaded, hand-drawn look with a warm orange sunset and a cobblestone ground, while B is a realistic, cool purple-teal alien scene with a neon grid road",
+        "A has a character on a hoverboard among low-poly pines and white blocky buildings, while B has a detailed orange drone and rocky mountains",
+        "The lighting and materials are very different, with A's painterly cel-shading against B's glossy realistic rendering and giant planet sky"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a sci-fi alien landscape with a drone on a neon grid road under a purple planet sky",
+        "Image B is a hand-drawn, ink-outlined style with a hoverboard rider on a cobblestone plaza at sunset",
+        "The palettes and rendering differ: cool purple-teal realism versus warm orange-brown toon shading"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a stylized, flat, ink-outlined, sepia/orange scene with a hoverboard rider on cobblestone ground",
+        "B is a dark teal alien canyon with a realistic textured drone and a glowing moon",
+        "Different palettes, rendering styles, vehicles and environments"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: flat, posterized green valley with a hoverboard rider and ring gate",
+        "B: neon purple alien planet with a grid road and a realistic orange drone",
+        "Very different art styles, palettes and vehicles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dark teal alien canyon with a giant pale moon and a drone vehicle",
+        "B: green pastoral hills with pine trees and a human on a hoverboard, in a flat posterized outline style",
+        "Very different palette, materials and rendering (smooth sci-fi glow vs. cel-shaded, dithered look)"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: alien sci-fi world with a drone, neon grid road and a giant purple planet",
+        "B: stylized night forest with a hoverboard rider, low-poly pines and a glowing ring gate",
+        "Different vehicles, scenery and palettes (purple/orange vs. deep blue/teal)"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: a drone flying over a dark teal alien landscape with a pale moon and mushroom-like plants",
+        "B: a hand-drawn, outlined character on a hoverboard in a night pine-forest scene with glowing rings",
+        "The two frames differ in vehicle, scenery, palette and rendering style"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a warm orange sunset with a flat, cel-shaded illustrated look and a hoverboard rider",
+        "B is a dark teal alien canyon with realistic textured PBR materials and a drone vehicle",
+        "The palettes, lighting and rendering styles are entirely different"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: warm orange sunset sky with flat, cel-shaded, hand-drawn look and cobblestone ground",
+        "B: cool purple-teal alien planet with realistic textured rocks and neon grid road",
+        "Different vehicles: hoverboard rider vs. detailed orange drone"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic sci-fi alien canyon with a drone on a neon grid road; Image B is a stylized cel-shaded town with a hoverboard rider",
+        "Different palettes: cool purple/teal in A, warm orange/brown with pastel green in B",
+        "Different rendering: smooth glowing PBR-like textures in A, outlined flat-shaded hand-drawn look in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 4,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a warm orange, flat-shaded cel-style world with a hoverboard rider on a cobblestone ground; B is a cool purple/teal sci-fi world with a drone",
+        "Different vehicles and settings: A has white blocky buildings, low-poly pines and ring arches; B has a neon grid road, alien rock spires and a giant planet",
+        "Rendering differs: A has outlined, posterized textures; B has realistic, detailed shading and glowing line effects"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic sci-fi alien canyon with a drone, while Image B is a stylized cel-shaded town with a hoverboard rider",
+        "Palettes differ: cool purple, teal and navy in A, warm orange and brown with pastel green in B",
+        "Rendering differs: smooth PBR lighting with a neon grid road in A, flat ink-outlined toon look with a cobblestone texture in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sci-fi drone on neon grid road under alien purple-teal sky with giant planet",
+        "B: hoverboard rider on icy track in night pine forest with dark blue flat shading and ink outlines",
+        "Different vehicles, scenery and rendering style (glossy realistic vs cel-shaded illustrated)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized low-poly night scene with a hoverboard rider and a glowing ring gate; B: realistic orange drone over a teal alien canyon",
+        "Different art styles: flat toon shading with outlines in A, smoother textured rendering in B",
+        "Different palettes and settings: deep blue pine-forest hills in A, teal and pink alien landscape with a big moon in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: flat, painterly green hills with stylized pine trees and a character on a hoverboard",
+        "B: dark teal alien canyon with a giant moon and a realistic textured drone",
+        "Very different palettes and rendering styles (pastel cel-shaded vs. moody neon-lit sci-fi)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: alien neon sci-fi canyon with a drone and a purple planet; B: green pastoral valley with pine trees and a hoverboard rider",
+        "A: realistic, smooth PBR-style rendering; B: posterized, outlined, cel-shaded look with dithered shading",
+        "Different vehicles and objectives: a drone on a grid road versus a rider flying through giant rings over a river"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a dark teal alien canyon with a drone vehicle; B is a warm orange sunset town with a hoverboard rider",
+        "A has realistic, moody lighting and glowing cyan lines; B has flat cel-shaded, ink-outlined, cobblestone-textured visuals",
+        "Different palettes, scenery and vehicles: A has crystals, mushrooms and a moon; B has low-poly pines, white buildings and loop rings"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: painterly cel-shaded orange/sepia look with cobblestone ground and a hoverboard rider",
+        "B: dark teal sci-fi alien canyon with a realistic textured drone",
+        "Clearly different palettes, rendering styles and vehicles"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 5,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dark teal alien canyon with a drone vehicle and a pale moon",
+        "B: warm orange sunset with a toon-outlined cobblestone town and a hoverboard rider",
+        "Completely different palettes, art styles and vehicles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a sketchy, cel-shaded illustration with an orange sunset and a cobblestone ground, while B is a realistic dark teal alien canyon",
+        "Different vehicles: a hoverboard rider in A and a textured orange drone in B",
+        "Different palettes and lighting: warm brown and orange vs cool teal and navy with a large moon"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: dark teal alien canyon with a giant pale moon and a drone vehicle",
+        "B: green hills with pine trees and a flat, posterized, outlined look, with a human rider on a hoverboard",
+        "Different palettes, rendering styles and vehicles"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 5,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat, cel-shaded, hand-drawn style with a warm orange sunset and a cobblestone ground",
+        "Image B uses a realistic, glossy 3D look with a cool purple/teal alien sky and a neon grid road",
+        "The vehicles differ: a character on a hoverboard in A, a detailed orange drone in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat, hand-drawn, ink-outlined style with a warm orange sky and a cobblestone ground",
+        "Image B uses realistic, textured 3D rendering with a purple and teal alien sky and a neon grid road",
+        "Different vehicles: a character on a hoverboard versus a quadcopter drone"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: sci-fi drone on neon grid road with alien purple planet sky",
+        "B: hoverboard rider in a low-poly pine forest at night, with a glowing ring gate",
+        "Different art styles and vehicles: A is realistic, painterly and glossy; B is flat, cel-shaded and outlined"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: orange drone vehicle on a dark teal alien canyon with a pale moon and crystal spires",
+        "B: hoverboard rider on a night mountain slope with low-poly pine trees and a glowing ring gate",
+        "Different palettes and art styles: teal/pink sci-fi realism vs. deep-blue cel-shaded outlines"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A: flat posterized green valley with pine trees and a hoverboard rider; B: alien purple planet with a neon grid road and a drone",
+        "A: muted overcast palette with outlined cel-shaded look; B: glossy, saturated, realistic materials with an aurora sky",
+        "different vehicles and scenery: giant ring gates and a river path vs. layered rock spires and a grid track"
+      ]
+    }
+  ]
+}

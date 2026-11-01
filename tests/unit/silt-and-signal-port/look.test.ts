@@ -82,8 +82,9 @@ describe("GU47 WP-34 look table", () => {
     const key = low.find((n) => n.light === "directional" && n.shadow)!;
     expect(key.shadow.cascades).toBe(1);
     expect(key.shadow.filter).toBeUndefined();
+    // GU47 phase 4: PCSS is opt-in (`?siltpcss=1`); without it High uses the tier PCF filter (no remote PCSS shadow)
     const high = nodes(0).find((n) => n.light === "directional" && n.shadow)!;
-    expect(high.shadow.filter).toBe("pcss");
+    expect(high.shadow.filter).toBeUndefined();
   });
 
   it("DG-P1: depth plus colour ink, umber by day and indigo at night, 0 by 600 m, 4 bands by day and 6 at night", () => {

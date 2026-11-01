@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:41:52.611Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ],
+    "framesB": [
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-d--settle-60s",
+      "last-train-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from Duneglide, a browser 3D arcade game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.848,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.848,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized flat-shaded green valley with a river and a hoverboard rider, posterized, outlined look",
+        "B: realistic night city street with a tram, cobblestones and lit windows",
+        "Different art style, setting, and gameplay and camera context"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a warm sunset town with a tram and cobblestones, B is a cool night mountain scene with a glowing ring",
+        "Different characters and vehicles: a red tram and peg-figure pedestrians versus a backpacker on a hoverboard",
+        "Different palettes and scenery: orange and yellow painterly buildings versus deep blue night with low-poly teal pines"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: green valley with a river, pine trees and a hoverboard rider among large rings",
+        "B: European-style town with a red tram, cobblestones and rails",
+        "Different rendering: A is posterized with dark outlines, B is textured and warm-lit"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a realistic-ish dusk street with a tram and textured buildings; B is a flat cel-shaded, outlined style with a warm orange sky",
+        "Different characters and vehicles: peg-like pedestrians and a tram versus a hoverboard rider with glowing rings",
+        "Different palette and lighting: cool purple night with lit windows versus a sepia/brown and mint-green palette"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: green valley with a character on a hoverboard and a large ring gate",
+        "B: European town street with a red tram on cobblestones at sunset",
+        "Different visual styles: A is flat posterized with outlines, B is textured and warm-lit"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a street scene with a tram, tracks and a town of detailed colorful buildings; B is a hoverboard rider among loop rings and white blocky buildings",
+        "A has a muted, realistic painterly palette with a soft sunset sky; B is heavily posterized with an orange sky and flat white geometry",
+        "Different gameplay and camera: A is a high-angle overview of a tram, B is a third-person view behind a rider"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a sunset European town with a red tram on rails; B is a night mountain scene with a hoverboarder",
+        "Different palettes: warm orange and cream in A, cold blue and teal in B",
+        "Different scenery and objects: cobblestones, pastel buildings and peg-like people in A; low-poly pines and a glowing ring gate in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a daytime town with a red tram and cobblestones, B is a night mountain scene with a skater and glowing rings",
+        "A has warm, hazy pastel lighting; B has a cold blue night palette with strong glow",
+        "Different subjects and camera: A is an overhead street view, B is a third-person view of a character on a board"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A uses a flat, ink-outlined, painterly cel-shaded look with a hoverboard rider, while Image B is a softer, textured, more realistic render",
+        "Image A has giant glowing arches, rings and white block buildings, while Image B has a red tram, tracks and colorful townhouses",
+        "Different palettes and cobblestone textures: A is warm orange-brown with mint accents, B has a muted teal sky and detailed tiled pavement"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a flat, cel-shaded illustrated look with outlines and a warm orange sky, while B uses realistic textured 3D rendering",
+        "A has a hoverboard character with white block buildings and low-poly pine trees, while B has a red tram and detailed European townhouses at dusk",
+        "Different palettes and lighting: A is muted orange and mint, B is a cool night purple-blue with lit windows"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a European street with a tram, cobblestones and warm sunset lighting; B is an alpine valley with a river, pines and overcast sky",
+        "Different rendering styles: A has painterly textures with soft depth of field; B has posterized flat shading with heavy outlines",
+        "Different gameplay elements: a tram and pedestrians in A; a hoverboard rider and giant rings in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized flat low-poly snowboarder with cel-shaded outlines and glowing ring gate",
+        "B: realistic textured tram and European buildings in a cobblestone street",
+        "Different art styles, palettes and settings (mountain forest vs. city street)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a stylized, flat, ink-outlined, pastel look; B has textured, realistic-ish buildings with a tilt-shift look",
+        "A has a hoverboard rider with giant rings and low-poly trees; B has a red tram, rails and capsule pedestrians",
+        "Different palettes and rendering: muted orange and teal cel-shading vs. saturated red, yellow and brick textures"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A uses a flat, posterized cel-shaded style with white blocky buildings, while B uses detailed textured realistic buildings and a tram",
+        "Different scenery: A has hoverboard rider, giant rings and a glowing arch; B has a streetcar, rails and capsule people",
+        "Different palettes and lighting: A is orange-brown with mint-green trees; B is a cooler dusk sky with red roofs and yellow facades"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a realistic painted town with a red tram and rail tracks; B is a stylized scene with a hoverboard rider and giant rings",
+        "A has textured, detailed buildings with tilt-shift blur; B has flat white blocky buildings with outlined cel shading",
+        "A's palette is multicolored and muted with a warm sunset; B's is orange-brown with teal accents"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A uses a realistic textured painterly look with a tram, rails and detailed European buildings",
+        "Image B uses flat white blocky shapes with ink outlines, low-poly pine trees and a hoverboard rider",
+        "Different subject matter and rendering: capsule people on grey cobbles vs. a stylized brown cobble plaza with giant rings"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: night mountain scene with a snowboarder and glowing ring gates; B: daytime town with a tram and rows of buildings",
+        "Different palettes: A is dark blue with teal pines, B is warm with red roofs and yellow facades",
+        "Different rendering: A has flat cel-shaded outlines, B has painterly textures and simple capsule people"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night mountain scene with a snowboard-style rider and glowing ring gates",
+        "Image B is a daytime/sunset town with a red tram, cobblestones and capsule-shaped pedestrians",
+        "The art styles differ: dark teal low-poly pines with ink outlines versus warm painterly textured buildings"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: green valley with a character on a hoverboard flying through giant rings",
+        "B: European-style town with a red tram, tracks and a cobblestone plaza",
+        "Different palettes and rendering: A is posterized with outlines in muted green and gray, B is a warm sunset with painterly textures"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A uses a flat, posterized, painterly look with white block buildings and low-poly trees",
+        "Image B is a realistic textured scene with a red tram, detailed Victorian-style buildings and capsule people",
+        "Different gameplay and camera: hoverboard rider with a giant arch and rings vs. a tram street scene"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a green valley with a river, pine trees and a hoverboard rider passing through glowing rings",
+        "B is a cobblestone town street with a red tram and rows of buildings at sunset",
+        "Different palettes and subjects: A is muted grey-green with heavy posterized outlines; B is warm and textured with capsule people"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic textured tram street with detailed buildings, while Image B has a flat, inked, cel-shaded look with white block buildings",
+        "Different characters and vehicles: a tram and capsule pedestrians vs. a hoverboard rider",
+        "Different scenery and ground: grey paving stones, tracks and red-roofed houses vs. mint pine trees, giant rings and brown cobbles"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night mountain scene with a hoverboard rider and glowing ring gates; B is a dusk town with a tram and cobblestones",
+        "A has dark blue, moonlit, low-poly teal pines with ink outlines; B has warm orange and yellow painterly buildings",
+        "Different gameplay and camera: A is a third-person board run through rings; B is a high-angle view of a tram street"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a European street with a tram and cobblestones, B is a mountain slope with a glowing ring and pine trees",
+        "A has realistic textured buildings and peg-like pedestrians, B has flat low-poly trees with a cel-shaded rider on a board",
+        "A has a dusk purple-pink sky, B has a deep blue night sky with a moon and heavy bloom"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized flat-shaded low-poly hills with posterized, outlined look and hoverboard rider in a ring",
+        "B: realistic textured European street at dusk with a tram, cobblestones and lit windows",
+        "Different scenery, lighting, rendering style and gameplay premise"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a realistic, textured night-time tram street with lit windows; B is a flat, cel-shaded hoverboard scene with ink outlines",
+        "Different palettes and lighting: cool dusk blues and purples in A, warm orange sunset with pale mint in B",
+        "Different gameplay and camera: A shows a tram with townsfolk, B shows a hoverboard rider with giant rings and arches"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tram in a town with painterly textured buildings and a gray cobblestone plaza; Image B is a hoverboard rider among giant rings and white block buildings",
+        "Image A has realistic muted lighting with a soft blurred look, while Image B has a flat cel-shaded look with brown outlines and an orange-brown sky",
+        "Image A has varied colored buildings and low-poly pegs, while Image B has a mostly white, brown and mint palette with a different ground texture"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: hilly green valley with a river, pine trees and a giant ring gate; B: cobblestone city street with a tram and townhouses",
+        "A: posterized, outlined, flat-shaded look; B: textured, painterly buildings with soft lighting and depth blur",
+        "Different gameplay and characters: A has a hoverboard rider; B has a tram and capsule-shaped pedestrians"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a textured, painterly town with a red tram and rails; Image B is a flat-shaded, outlined, stylized scene with a hoverboard rider",
+        "Different rendering styles: A has soft shading and detailed textures, B has ink outlines and cel-shaded white blocks and pine trees",
+        "Different gameplay and scenery: A is a tram street with peg-like pedestrians, B is a skating run through giant rings and arches"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a realistic-textured dusk street with a tram and lit windows; B is a flat cel-shaded, outlined, posterized style",
+        "Different palettes: A has cool purple-blue night with dark cobbles, B has warm orange-brown sunset and mint-green trees",
+        "Different subjects and camera: A is a static street view of a tram and pedestrians; B is a third-person hoverboard rider with giant rings"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a tram and buildings in a town scene; B is a hoverboard rider among giant rings and white block buildings",
+        "Different palettes: A has warm yellow and red buildings under a teal-to-peach sky; B is monochrome white with an orange-brown sky",
+        "Different rendering: A has a painterly cobblestone ground; B has an outlined, cel-shaded look with a stippled ground"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a European street with a red tram, textured buildings and a gray cobblestone ground",
+        "B has a hoverboard rider, low-poly pine trees, white blocky buildings and giant rings, all in an orange painterly style",
+        "Different gameplay and subject, with different palettes and shading (A is realistic and textured, B is flat and cel-shaded)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: urban street with a red tram, tall cream buildings, and cobblestones",
+        "B: green valley with pine trees, a river, and a giant glowing ring, with a posterized outline filter",
+        "Different settings, palettes, and rendering styles (warm sunset vs. cool overcast)"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a sunset European street with a red tram and cobblestones; Image B is a night mountain scene with a glowing ring and a hoverboard rider",
+        "Different palettes and lighting: warm orange dusk against cold deep-blue moonlight",
+        "Different gameplay and scenery: city buildings and rails against low-poly pines, a river and ring gates"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a European town with a red tram on cobblestones and warm sunset lighting",
+        "B is a green valley with pine trees, a river and a giant glowing ring in a muted, posterized style",
+        "The two frames have different gameplay (tram vs hoverboard rider), different palettes and different scenery"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a realistic textured tram street scene, B is a stylized cel-shaded hoverboard scene",
+        "Different art style: A has painterly detailed buildings, B has flat white blocks with outlines",
+        "Different gameplay and camera: A shows a tram and pedestrians, B shows a rider with glowing rings and an arch"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: night mountain slope with a hoverboard rider and glowing ring gates; B: daytime European town with a tram",
+        "Different palettes: dark blue and teal against warm sunset yellow, orange and red",
+        "Different scenery and style: low-poly pines and an ink-outline character against painterly buildings and cobblestones"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A uses flat cel-shaded, outlined, posterized art with white block buildings and teal pine trees; Image B uses painterly textured realistic houses and a tram",
+        "Image A shows a hoverboard rider with giant rings and a glowing arch; Image B shows a tram on tracks with peg-figure pedestrians",
+        "Different lighting and palette: orange-brown dusk haze in A versus soft yellow-teal gradient sky in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a realistic-textured town with a red tram and rails; B is a stylized, posterized, cel-shaded landscape with a hoverboarder",
+        "different art styles: A has detailed painted textures, B has flat white blocks, low-poly pine trees and cobblestone speckle",
+        "different gameplay objects: tram and townsfolk vs. glowing arch, giant rings and hoverboard"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: dusk European street with a red tram and cobblestones; B: green valley with a river and pine trees",
+        "A: realistic textured buildings and lit windows; B: flat posterized, outlined cel-shaded look",
+        "A: tram and peg-like pedestrians; B: a skateboarding character and giant glowing ring gates"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized flat low-poly snowboard/hill scene with glowing ring gates and cel-shaded outlines",
+        "B: realistic textured European street with tram, cobblestones and lit windows",
+        "Different art style, setting, and gameplay and camera"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a realistic painted-texture tram street with detailed buildings; Image B is a flat cel-shaded, outlined style",
+        "Different subjects: a tram and peg-doll pedestrians versus a hoverboard rider, pine trees and ring arches",
+        "Different ground and palette: gray brick cobbles with a teal-gold sky versus orange-brown scale-pattern cobbles with white blocky geometry"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A shows a hoverboard rider flying through rings over a green valley, B shows a tram in a cobblestone town",
+        "Different palettes: A is muted green and gray with posterized outlines, B is warm sunset orange with painterly buildings",
+        "Different scenery and camera: A has low-poly pines with a third-person chase view, B has an elevated street view with a tram and townspeople"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A: night alpine snowboard scene with glowing ring gate and low-poly pines",
+        "B: daytime European town with a red tram, cobblestones and textured buildings",
+        "Different art styles: flat ink-outlined stylization vs painterly textured realism with capsule pedestrians"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A uses a flat, ink-outlined, painterly cartoon style with a sepia and mint palette, while Image B uses soft, realistic textured 3D shading",
+        "Different scenery: giant arches, rings and low-poly pines in A versus a tram, tracks and European townhouses in B",
+        "Different ground and character styles: A has a hand-drawn cobble pattern and a hoverboard rider, B has a gray tiled street and simple peg-people figures"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is realistic, textured, dusk-lit European street with a tram; Image B is a flat, ink-outlined, painterly look",
+        "Image B has a hoverboard rider, pine trees and giant rings under an orange sky, unlike A's tram and townhouses",
+        "Different render styles: A uses soft realistic shading and lit windows; B uses cel-shaded outlines and a stippled cobble ground"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A uses a flat, stylized cel-shaded look with white block buildings and low-poly pine trees",
+        "Image B is a realistic textured night scene with a tram, detailed houses and window lighting",
+        "Different characters and camera: a hoverboard rider in A, a tram and peg-like pedestrians in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a stylized, flat-shaded, ink-outlined look with white blocky buildings; B is a textured, realistic-style scene with detailed houses and a tram",
+        "Different ground treatment: A has a speckled brown cobble pattern, B has gray 3D-looking paving stones and rails",
+        "Different gameplay and camera: A is a hoverboard character with glowing arches, B is a tram street scene with capsule people"
+      ]
+    }
+  ]
+}

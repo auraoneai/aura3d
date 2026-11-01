@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/screens/gameplay-early.1280x720.jpg",
+      "sha256": "f910699d82f674c87d7a922f08b202df31a4b7c0aec920782fafd6d798817ed9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4-5/silt-and-signal-port--ch4--settle-60s.jpg",
+      "sha256": "c1d0d318bc1581214e825eeebd377e12f2c6be9a2da7a7ca01bad4534460436e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4-7/silt-and-signal-port--ch5--settle-60s.jpg",
+      "sha256": "e4a070568e77e636612f19c6420f3f94b04c33b8c23a8e174d4df329e8f533c6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r4/silt-and-signal-port/frames/g24p4-r4b-1/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "d702d1d636861b49777ff0f7cdb385ca3c52d150b0a2826a6752b362d4026867"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 4.5,
+    "camera": 5.5,
+    "postprocessing": 4,
+    "animation_quality": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1 and 4 have a warm orange sunset sky. The plaza and buildings are lit flat with no low-sun directional key: the white blocks show almost no warm/cool side contrast, and the subject has no rim light. Frames 2 and 3 switch to overcast green day and purple night, so the golden-hour look is not held."
+    },
+    {
+      "category": "shadows",
+      "seen": "Trees cast soft blobs in frames 2 and 3, but the rider and hoverboard have only a faint or absent contact shadow on the cobbles in frames 1 and 4. Buildings cast nothing readable onto the plaza."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The road in frame 3 has a dull bluish sheen, but no surface reflects sky or sun. The cyan arch and the rings show no environment response, and the river in frame 2 is painted blue, not reflective."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The town is built from untextured white boxes with small window decals and sawtooth stepped walls in the distance. The cobblestone plaza and repeated low-poly pines are consistent. Biomes jump between desert town, green valley, and purple night with no shared palette."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A warm distance haze on the far wall in frame 1 and a pale valley haze in frame 2 suggest fog. Cloud and sky shapes in frames 2 and 3 have hard stair-stepped edges instead of soft volumes, and there is no dust or particles."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Buildings are flat white with no roughness or albedo variation. The rings in frame 4 have a muddy brown noisy texture. The cobblestone is the only material with detail, and the posterize filter crushes it into speckle."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Pines are simple stacked cones. Buildings are primitive boxes. The rider is a small figure on a guitar-shaped board with two thin cyan struts. The large cyan arch with its vertical beam is a plain torus segment plus a cylinder."
+    },
+    {
+      "category": "composition",
+      "seen": "A cyan vertical beam runs through screen center in every frame and splits the view and the route ahead in half. The subject sits at about 4 to 6 percent of frame height, well under the 15 to 25 percent target, and the arch dominates the upper half."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits behind and above the rider at a roughly 60 to 70 degree FOV. The rider is locked bottom-center with identical framing in all four frames, with no lean, offset, or height variation."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A posterize and ink-outline filter produces color banding in the sky, jagged stepped silhouettes on distant walls in frame 1, and speckled noise on the cobbles and road. This reads as artifacting, not a cinematic film grade. There is no bloom on the glowing arch and no vignette."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The rider holds the same crouched pose in all four frames, including frame 3 where speed streaks on the road imply motion. The board shows no tilt or bank."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has tidy dark translucent panels: a serif objective header, a speed/altitude panel with a green bar, a controls legend, and a brass compass. Typography and spacing are clean. The controls text block is dense, and the HUD is missing from the other frames."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

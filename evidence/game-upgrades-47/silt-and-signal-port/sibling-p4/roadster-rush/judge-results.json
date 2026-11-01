@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T23:41:51.685Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from Duneglide, a browser 3D arcade game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.91,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.91,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a sunset city highway with a racing car; B is a green valley with a hoverboard rider",
+        "A uses realistic blurred lighting and warm glow; B uses a flat, posterized, outlined cel-shaded look",
+        "Different palettes and vehicles: purple/orange urban dusk versus muted green/grey pastoral"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, flat-shaded hoverboard scene with pale blocky buildings and low-poly pines; B is a realistic racing scene with a car on a highway",
+        "Different rendering styles: A has cel-shaded outlines and a cobblestone ground texture; B has glossy lighting, motion blur and detailed dark skyscrapers",
+        "Different vehicles and settings: a rider on a board versus a sports car on a night highway with signage"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: night mountain scene with a character on a hoverboard, flat low-poly pine trees and an ink-outlined, cel-shaded look",
+        "B: sunset city highway with a realistic sports car, motion blur and textured skyscrapers",
+        "Different gameplay, palette, camera and rendering style (blue stylized night vs warm photoreal dusk)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, ink-outlined, cel-shaded look with a pale desert-orange sky, while B is a realistic dark night scene",
+        "A has a character on a hoverboard in a cobblestone plaza with pine trees; B has a sports car on a highway with lit skyscrapers",
+        "The two frames use completely different palettes, materials and rendering styles"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night city highway with a racing car; B is a mountain pine-forest with a character on a hoverboard",
+        "Different art styles: A uses blocky lit buildings and a realistic car, B uses painterly outlined low-poly shapes",
+        "Different scenery and palette: A has orange dusk and lit windows, B has a flat blue moonlit scene with a glowing ring gate"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, cel-shaded daytime scene with a hoverboard rider, pine trees and white blocky buildings; B is a realistic night highway with a race car",
+        "Different rendering styles: A has flat posterized textures and outlines, B has glossy lit surfaces and motion blur",
+        "Different palettes and settings: A is warm orange and mint green, B is dark navy with lit windows and road signage"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "A is a night-city highway racer with a car and a sunset glow; B is a green valley with a character on a hoverboard",
+        "A has realistic shading and motion blur; B has flat, outlined, posterized rendering with a muted overcast palette",
+        "Both have ring objects, but they look different: thin gold rings in A and a large glassy ring in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a sunset city highway with a racing car; B is a night mountain forest with a character on a hoverboard",
+        "Different art styles: A has blocky buildings and a motion-blurred road, B has hand-drawn outlined characters and low-poly pines",
+        "Different palettes and objects: A is warm purple and orange with thin yellow rings, B is cold blue with a large glowing white ring"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat, painterly cel-shaded style with outlines and a cobblestone ground, while Image B is a realistic-ish 3D render with motion blur",
+        "Different vehicles: a hoverboard rider vs. a sleek blue race car on a highway",
+        "Different settings and palettes: pale white blocks and green pines in an orange haze vs. dark brick skyscrapers under a purple-yellow sunset"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a realistic-ish highway racer with a car and motion blur; B is a cel-shaded, outlined hoverboard scene",
+        "Different rendering styles: A has smooth dusk lighting on dark asphalt, B has flat white blocks and a posterized cobblestone texture",
+        "Different scenery and vehicles: A has skyscrapers, traffic and road signs; B has pine trees, giant rings and a rider on a board"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night city highway with a racing car and glowing windows; B is a daytime green valley with a hoverboarder",
+        "A has dark, saturated, high-contrast lighting; B has a muted, posterized, outlined look",
+        "Different vehicles, scenery and camera style: A's chase cam on a car vs B's figure inside a large ring"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a flat, hand-drawn cel-shaded look with ink outlines and pale white blocks; B is a realistic-lit 3D racing scene with a dark road and motion blur",
+        "A has a character on a hoverboard in a cobblestone plaza with pine trees; B has a car on a highway between skyscrapers",
+        "Different palettes and HUD context: A's muted orange-and-teal sketch tones versus B's purple-orange neon dusk with road signage"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is an urban highway with a sports car at sunset; B is a mountain forest at night with a hoverboard character",
+        "different art styles: blocky buildings and motion blur vs. painterly low-poly pines with outlined characters",
+        "different palettes and lighting: orange/purple dusk vs. cool blue moonlit scene"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a racing game on a highway with a sports car, B is a character on a hoverboard in a plaza",
+        "A uses dark, saturated city buildings with motion blur, B uses a flat, pale ink-outlined cel-shaded style with cobblestone ground",
+        "The sunset skies are similar, but scenery, materials and camera setup differ clearly"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night-time highway with a racing car; Image B is a hand-drawn, painterly hoverboard scene",
+        "Image A uses dark, high-contrast lighting with lit building windows; Image B has pale, outlined, flat-shaded white blocks and pine trees",
+        "Different vehicles and rendering: glowing thrusters on a sleek car versus a human rider on a board with ink outlines and a cobblestone texture"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: night mountain valley with a character on a hoverboard and low-poly pine trees, painterly outlined look",
+        "B: sunset city highway with a sleek race car, tall brick-textured skyscrapers and motion blur",
+        "Different palettes (dark blue and teal vs warm orange and purple), different art styles and gameplay"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night-city highway racer with a futuristic car, glowing sunset palette, and dense skyscrapers",
+        "B is a pastoral green valley with a hoverboard walker and pale, outlined, posterized rendering",
+        "Different camera, art style, and scenery; B's giant ring and ink-outline look don't match A's polished lighting"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: flat, posterized pastel valley with a hoverboard rider and a giant ring, outlined cel-shaded look",
+        "B: realistic sunset highway with a racing car, motion blur and dense skyscrapers",
+        "Different gameplay, camera and palette: muted green and gray vs saturated purple and orange"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A uses a flat, hand-drawn, outlined painterly look with a cobblestone ground; B is a realistic dark synthwave city highway",
+        "Different vehicles and characters: a hoverboard rider vs a blue race car with motion blur",
+        "Different palettes and scenery: pale low-poly pines and white blocks vs dark purple skyscrapers and road signs"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night city highway with a racing car and building facades; B is a mountain forest with a hoverboard rider",
+        "Different rendering styles: A has realistic lighting and motion blur, B has flat painterly low-poly shading with outlines",
+        "Different palettes and scenery: A has orange dusk and lit windows, B has blue-teal pines and a glowing ring"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-ish highway racer with a car; Image B is a hand-drawn, ink-outlined hoverboard scene",
+        "Different rendering styles: smooth lit buildings with motion blur vs flat cel-shaded pastel shapes with outlines",
+        "Different vehicles and scenery: city towers and traffic vs pine trees, cobblestone plaza and ring arches"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: pastel green valley with a hoverboard rider and a river path",
+        "B: night city highway with a futuristic race car and lit skyscrapers",
+        "Different art styles: A is flat and outlined, B is glossy and dark"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, cel-shaded daytime scene with a hoverboard rider, pine trees and white blocky buildings; B is a realistic night highway with a race car",
+        "Different art styles: A uses flat outlined textures and a warm orange sky, B uses glossy lit surfaces, a starry dark sky and windowed skyscrapers",
+        "Different gameplay and camera context: A is a plaza with giant rings, B is a road with traffic and exit signs"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized, flat-shaded hoverboard scene with a cobblestone ground and low-poly pine trees",
+        "Image B is a realistic-looking racing game with a highway, a sports car and motion blur",
+        "The palettes and rendering differ: A is a muted orange and teal with outlined, painterly shading, B is a saturated purple and orange with a glossy 3D look"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a sunset city highway with a racing car; B is a night mountain forest with a hoverboard rider",
+        "Different art styles: blocky buildings and motion blur vs. painterly, outlined low-poly trees and character",
+        "Different palettes and HUD elements: warm purple/orange vs. cool blue night, with a large glowing ring in B"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a stylized outdoor snowboard/hoverboard scene with pine trees and a hand-drawn, outlined look",
+        "B is a realistic night city highway with a hovering race car and lit-window skyscrapers",
+        "Different character, scenery and rendering style: cel-shaded blue-green palette vs. orange-blue dusk and glossy materials"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a flat, hand-drawn cel-shaded look with low-poly pine trees and a hoverboard rider",
+        "Image B is a realistic-lit racing scene with a sports car on a highway, motion blur and tall brick skyscrapers",
+        "The palettes and art styles differ: muted orange and teal in A, purple and orange sunset with detailed textures in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: pastel green valley with a hoverboard rider and pine trees, flat cel-shaded look with outlines",
+        "B: neon sunset city highway with a blue sports car, glossy lit materials and motion blur",
+        "Different camera, scenery and palette: gray-green overcast vs purple-orange dusk"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a realistic-ish sunset city highway with a car; B is a stylized outlined valley with a hoverboard rider",
+        "Different rendering: A has smooth lighting and motion blur; B has flat posterized shading with ink outlines",
+        "Different palettes and settings: A has purple/orange dusk with dark asphalt; B has muted green/grey overcast"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a hand-drawn, outlined, painterly cel-shaded style with white blocky buildings and a cobblestone ground",
+        "Image B uses smooth realistic 3D rendering with a motion-blurred asphalt highway, dark windowed skyscrapers and a sports car",
+        "Different characters and settings: a hoverboard rider among pine trees versus a car on a highway with signage"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a sunset city highway with a racing car; B is a night mountain forest with a character on a hoverboard",
+        "Different art styles: A has realistic-ish textured buildings and motion blur, B has flat low-poly shapes with ink outlines",
+        "Different palettes and scenery: A is warm orange and purple urban, B is cold blue and teal wilderness"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night city highway with a racing car and glowing neon lighting",
+        "B is a pastel daytime valley with a skateboarding character and an outlined, posterized look",
+        "Different palettes, rendering styles, and settings"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, hand-inked cel-shaded style with pale cobblestone ground and a hoverboard rider",
+        "B is a realistic night highway with a racing car, lit windows and a starry sky",
+        "Completely different palettes, rendering, and camera/vehicle setups"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a dark night highway with a realistic racing car, B is a daytime cobblestone plaza with a hoverboard rider",
+        "Different rendering styles: A has glowing lit windows and motion blur, B has flat toon outlines with posterized shading",
+        "Different scenery and palette: A has skyscrapers in navy and orange, B has pine trees, white blocks and a pastel orange sky"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a painterly, flat-shaded hoverboard scene with pale cel-shaded buildings and low-poly trees; B is a realistic racing car on a highway",
+        "Different palettes: A is warm orange-brown with mint green; B is purple, dark and neon with a night-city feel",
+        "Different vehicles and environments: A has a rider on a hoverboard, cobblestone ground and giant rings; B has a car, asphalt, motion blur and road signs"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a realistic-looking night highway with a racing car and motion blur; Image B is a stylized cel-shaded scene with a hoverboard rider",
+        "Different rendering styles: A has dark, saturated lighting and boxy buildings; B has pale ink-outlined shapes and a cobblestone ground",
+        "Different gameplay and scenery: A has traffic and exit signs; B has pine trees and giant rings"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: night-time hand-drawn, outlined cel-shaded look with a character on a hoverboard and pine trees",
+        "B: sunset city highway with a realistic-style race car and motion blur",
+        "Different palettes, camera setups and gameplay (ring-gate sliding vs. highway racing)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: stylized hand-drawn character on a hoverboard in a forested night mountain valley with outlined, cel-shaded look",
+        "B: futuristic race car on a city highway with lit skyscrapers and an orange dusk horizon",
+        "Different scenery, vehicles and rendering style (flat, outlined low-poly vs. realistic glossy lighting)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a realistic-ish 3D highway racer with a vehicle, dusk city towers and motion blur; B is a stylized hoverboard scene in a plaza",
+        "B uses ink-outline, cel-shaded, painterly rendering with pale white blocks and cobblestone ground, unlike A's dark, saturated, textured look",
+        "Different palettes and scenery: A has purple-orange sunset with dark asphalt and neon; B has muted beige-teal with pine trees and giant rings"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a pastoral green valley with a hoverboard rider and a cel-shaded, outlined look",
+        "B is a night city highway with a racing car and lit-window skyscrapers",
+        "Different palettes and rendering: muted pastel greens vs dark navy and orange glow"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night-city highway racer with a sunset glow, B is a pastoral green valley with a river",
+        "A has a realistic blue race car with motion blur, B has a flat-shaded outlined character on a hoverboard",
+        "Different rendering styles: A has saturated purple and orange lighting, B has a desaturated posterized look with ink outlines"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night-time highway with a racing car; Image B is a painterly, ink-outlined hoverboard scene",
+        "Image A has dark, high-contrast lighting with window-lit skyscrapers; Image B has a pastel, desaturated palette with white blocky buildings and low-poly trees",
+        "Image B has a hand-drawn cel-shaded look and a cobblestone texture; Image A has smooth 3D shading and motion blur"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a racing game with a car on a highway; B has a character on a hoverboard in a plaza",
+        "A uses dark, saturated, realistic-ish 3D with motion blur; B uses a flat, painterly, cel-shaded look with outlines",
+        "Different scenery and ground: A has skyscrapers and asphalt; B has pine trees, white blocks and cobblestones"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch2--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a sunset city highway with a racing car and skyscrapers; B is a night mountain forest with a hoverboard rider",
+        "Different art styles: A has blocky buildings and motion-blurred asphalt, B has painterly low-poly pines with ink outlines",
+        "Different palettes and lighting: A is warm purple and orange, B is cold blue and teal"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch4--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a flat-shaded, posterized, outlined green valley with a hoverboard rider, while B is a realistic sunset highway with a race car",
+        "Different palettes and lighting: muted gray-green overcast vs saturated purple-orange dusk with motion blur",
+        "Different scenery and gameplay: rings over a river and pine trees vs city towers, traffic and road signs"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a night highway with a racing car and lit-window skyscrapers; B is a daytime cobblestone plaza with a hoverboard rider",
+        "A uses realistic dark lighting with neon glow; B uses a flat cel-shaded, outlined painterly look",
+        "Different scenery and palette: A has dark navy and orange, B has pastel green trees, white blocks and brown ground"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "silt-and-signal-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a flat, cel-shaded, hand-drawn look with a cobblestone ground, low-poly pine trees and a hoverboard rider",
+        "Image B is a realistic-style 3D highway with motion blur, a glossy racing car and tall windowed skyscrapers",
+        "The palettes and rendering differ: muted orange and teal in A, saturated purple and gold dusk in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "silt-and-signal-port--ch0--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a painterly, outlined, flat-shaded style with a cobblestone ground and a hoverboard rider",
+        "Image B is a realistic-leaning 3D highway scene with a sports car, motion blur and glowing windowed skyscrapers",
+        "The two have different art styles, vehicles, environments and camera setups"
+      ]
+    }
+  ]
+}

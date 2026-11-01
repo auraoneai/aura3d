@@ -61,3 +61,18 @@ E-I captures / measured budgets on the remote runner; "WP-36" = waits for genera
 | rubric >= 7 per category | not met: min 3 (shadows), max 6.5 (HUD); `look-judgement.json` validates; modeling/material/animation blocked on WP-36 |
 | final screens and card on the current build | done (title and results frames not retaken) |
 | game-checks | 0 errors, 14 warnings (luma-band only; bands not widened) |
+
+## Phase 4 (4.7.2) status
+
+| item | status |
+|---|---|
+| cast shadows show in the inked look | done for the PCF chapters: root cause was the 4.2.0 cascade fit widened to every caster (the 4200 m sky dome, course-long meshes), an ~8400 m light ortho on every cascade (probe `p4-r1/probe`, g24-p); inked look sets the 4.3.0 fit and the sky no longer casts. ch2, ch4, ch5 show tree and pier shadows; the 9 deg dusk plaza (default, ch0) still shows none |
+| DG-L5 PCSS long shadows | opt-in (`?siltpcss=1`): no PCSS shadow on the remote runner at light size 2.5 or 0.6 (p4-r2, p4-r3); low-sun chapters use the PCF key; needs a real-GPU check |
+| composition (beacon) | done: beacon at the 24 m capture radius (48 m, was 66 m), no dark ring body, column 45% width, waiting rings scaled 48/66 |
+| rider grounding | rider ground shadow shape (+1 draw, inked, not Low) |
+| water reflection | canal mirrors the chapter sky (horizon to zenith) with a broad glitter path |
+| every changed view beats 4.6.2 | done: panel `g24p4r4a` (final code) 3/0/0 on default, ch0, ch2, ch3, ch4, ch5; `g24p4r2a` 3/0/0 on the same six |
+| rubric >= 7 per category | not met: `look-judgement-p4r4b.json` (= `look-judgement.json`) min 3.5 (ibl), `look-judgement-p4r4a.json` min 3 (ibl); only ui_hud reaches 7 |
+| distinctness vs 8 genre neighbours | done: `sibling-p4/<slug>/judge-results.json`, all same_game false at 0.848-0.943 |
+| WP-36 assets (30 rows) | blocked: Meshy keys refuse API calls (orchestrator cutoff note). Arrived but not used: `duneCourierOchre` (static, unrigged retexture) and `duneCourierRig` (rig of the old courier mesh: old texture, no idle clip) |
+| game-checks | 0 errors, 14 warnings (luma-band; bands not widened) |
