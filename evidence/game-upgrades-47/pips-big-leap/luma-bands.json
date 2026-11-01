@@ -2,14 +2,262 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "pips-big-leap",
   "note": "WP-16 PBL-L1 / PBL-E1 / PBL-E2 acceptance bands (software WebGL2, steady-state 25 s and 60 s shots). Difference metrics the band schema cannot express (w3 row 0 minus row 5 >= 15; w4 cell 7 >= 25 over the top corners; w5 throne crop >= 1.3x lanterns-off) are checked from the same capture in the phase-2 report.",
-  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05], "crops": { "bottom-band": { "std": [20, null] } } },
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.05
+    ],
+    "crops": {
+      "bottom-band": {
+        "std": [
+          20,
+          null
+        ]
+      }
+    }
+  },
   "variants": {
-    "academy": { "mean": [140, 160], "std": [45, null] },
-    "w1": { "mean": [115, 140], "std": [45, null] },
-    "w2": { "mean": [125, 150], "std": [45, null] },
-    "w3": { "mean": [150, 175], "p5": [null, 70], "std": [45, null] },
-    "w4": { "mean": [60, 90], "p95": [235, null], "std": [45, null] },
-    "w5": { "mean": [85, 115], "std": [45, null] },
-    "w6": { "mean": [55, 80], "std": [45, null], "cells": { "top": { "mean": [25, 50] } } }
-  }
+    "academy": {
+      "mean": [
+        94,
+        114
+      ],
+      "std": [
+        45,
+        null
+      ]
+    },
+    "w1": {
+      "mean": [
+        91,
+        116
+      ],
+      "std": [
+        45,
+        null
+      ]
+    },
+    "w2": {
+      "mean": [
+        125,
+        150
+      ],
+      "std": [
+        45,
+        null
+      ],
+      "crops": {
+        "bottom-band": {
+          "std": [
+            15,
+            null
+          ]
+        }
+      }
+    },
+    "w3": {
+      "mean": [
+        150,
+        175
+      ],
+      "p5": [
+        null,
+        70
+      ],
+      "std": [
+        34,
+        null
+      ]
+    },
+    "w4": {
+      "mean": [
+        60,
+        90
+      ],
+      "p95": [
+        106,
+        null
+      ],
+      "std": [
+        25,
+        null
+      ],
+      "crops": {
+        "bottom-band": {
+          "std": [
+            14,
+            null
+          ]
+        }
+      }
+    },
+    "w5": {
+      "mean": [
+        85,
+        115
+      ],
+      "std": [
+        45,
+        null
+      ],
+      "crops": {
+        "bottom-band": {
+          "std": [
+            13,
+            null
+          ]
+        }
+      }
+    },
+    "w6": {
+      "mean": [
+        55,
+        80
+      ],
+      "std": [
+        45,
+        null
+      ],
+      "cells": {
+        "top": {
+          "mean": [
+            25,
+            50
+          ]
+        }
+      },
+      "crops": {
+        "bottom-band": {
+          "std": [
+            17,
+            null
+          ]
+        }
+      }
+    }
+  },
+  "rederived": {
+    "academy.mean": {
+      "from": [
+        140,
+        160
+      ],
+      "to": [
+        94,
+        114
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "w1.mean": {
+      "from": [
+        115,
+        140
+      ],
+      "to": [
+        91,
+        116
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-2",
+      "date": "2026-11-01"
+    },
+    "w2.crops.bottom-band.std": {
+      "from": [
+        20,
+        null
+      ],
+      "to": [
+        15,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "w3.std": {
+      "from": [
+        45,
+        null
+      ],
+      "to": [
+        34,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-4",
+      "date": "2026-11-01"
+    },
+    "w4.p95": {
+      "from": [
+        235,
+        null
+      ],
+      "to": [
+        106,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "w4.std": {
+      "from": [
+        45,
+        null
+      ],
+      "to": [
+        25,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "w4.crops.bottom-band.std": {
+      "from": [
+        20,
+        null
+      ],
+      "to": [
+        14,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "w5.crops.bottom-band.std": {
+      "from": [
+        20,
+        null
+      ],
+      "to": [
+        13,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "w6.crops.bottom-band.std": {
+      "from": [
+        20,
+        null
+      ],
+      "to": [
+        17,
+        null
+      ],
+      "panel": "g06p7r1",
+      "capture": "g06p7-r1-7",
+      "date": "2026-11-01"
+    }
+  },
+  "rederivedNote": "Phase 7 (4.7.6): re-derived by the lane rule (two-sided: same width re-centred on the mean of the 25 s and 60 s readings; one-sided floor: floor(0.9 x lower reading)) from capture g06p7-r1 (crmmeprodacr, image g06p7r1, 4.7.5 engine, texPending 0) after blind panel g06p7r1 judged every view better than 4.6.2 (3/0/0). darkFrac/clipFrac ceilings untouched."
 }
