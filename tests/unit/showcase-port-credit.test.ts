@@ -82,3 +82,14 @@ describe("Built with Aura3D credit placement (audit cross-cutting, splat-rush C3
     expect(appPagePath("splat-rush")).toMatch(/apps\/showcase-splat-rush-port\/index\.html$/);
   });
 });
+
+describe("port page links to the app's public files", () => {
+  it("rewrites the example's ../../apps/<app>/public/ dev path to the app root and does not add the app link twice", () => {
+    const exampleHtml = '<!doctype html><html><head><link rel="stylesheet" href="../../apps/showcase-ninja-runner-port/public/fonts/ink-scroll.css" /><title>x</title></head><body><script type="module" src="./main.ts"></script></body></html>';
+    const appHtml = '<!doctype html><html><head><link rel="stylesheet" href="./fonts/ink-scroll.css" /><title>x</title></head><body></body></html>';
+    const html = composePortPage({ exampleHtml, appHtml });
+    expect(html).not.toContain("../../apps/");
+    expect(html.match(/fonts\/ink-scroll\.css/g)).toHaveLength(1);
+    expect(html).toContain('href="./fonts/ink-scroll.css"');
+  });
+});

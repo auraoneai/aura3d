@@ -138,7 +138,10 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
   const found = extractAppExtras(appHtml);
   // The credit is always the canonical one, so a fix to its placement reaches every page on the next sync.
   const extras = { ...found, noteStyle: found.noteStyle ? CREDIT_STYLE : "", note: found.note ? CREDIT_NOTE : "" };
-  let html = exampleHtml;
+  // An example page reaches its app's public files through the dev path ../../apps/showcase-<slug>/public/<file>; the
+  // built app serves the same files from its own root, so the app page uses ./<file> (and the app's own link is not added
+  // a second time).
+  let html = exampleHtml.replace(/\b(href|src)="\.\.\/\.\.\/apps\/showcase-[^/"]+\/public\//g, '$1="./');
 
   const hasHref = (href) => html.includes(`href="${href}"`);
   const headAdditions = [
