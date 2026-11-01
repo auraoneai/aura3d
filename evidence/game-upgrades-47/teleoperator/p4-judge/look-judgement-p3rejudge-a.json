@@ -1,0 +1,80 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/teleoperator/screens/final/1280-02-early.jpg",
+      "sha256": "efc1b0ff591c6af80e0d3a614ee76971b34655d7d7dd740d74794de9f6320194"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The 'Marine Dusk' sky preset is active, but the scene reads as flat, neutral daylight. A warm glow appears only at the far horizon. There is no low, directional golden-hour key light raking across the facades or the road."
+    },
+    {
+      "category": "lighting",
+      "seen": "The player robotaxi's white body is near-clipped with almost no form shading, so its volume reads as a flat white cutout."
+    },
+    {
+      "category": "shadows",
+      "seen": "Buildings, the cable car and the player car cast no clear directional shadows. The player car has no visible contact shadow grounding it. The only ground darkening is a faint patch under the parked sedan at left."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The player car's white paint and black rear glass show no environment reflections, specular highlights or fresnel. Building windows are dark flat texture and do not reflect the sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Brick-textured mid-rise blocks, sidewalks, overhead wires, cable car tracks and lane markings give a readable San Francisco street. The facades are repeated flat textures with little parallax depth."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light distance haze softens the end of the street. There is no volumetric light, no sun shafts and no warm fog falloff in the 30–180 m range. The amber pool on the road is the only atmospheric accent."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The player vehicle shows jagged, noisy silhouette edges, which look like alpha or texture-seam artifacts. Its paint has no roughness or clearcoat variation. The asphalt is a uniform dark plane with no wear or wetness."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tree at right is a primitive green sphere on a thin cylinder, which clashes with the more detailed cable car and buildings. The robotaxi model is blobby, with low-detail rectangular tail lights."
+    },
+    {
+      "category": "composition",
+      "seen": "The player car fills roughly 30–35% of the frame, above the 15–25% target. HUD panels and nametags crowd the top-center vanishing point, where the road and horizon glow should lead the eye."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is low, centered and close behind the car. The FOV looks near 60 but slightly tight for the subject size."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible bloom on the tail lights or headlight pool, no film grain, no vignette and no color grade toward warm asphalt and burnt orange. Tone mapping clips the white car."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is cohesive and polished: dark translucent panels, a teal and orange accent palette, a circular minimap, a speedometer arc and a fare card. It is heavily cluttered, though. The debug-style fleet, camera and sky selector bars at the bottom and the rival nametags take up a large share of the play view."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

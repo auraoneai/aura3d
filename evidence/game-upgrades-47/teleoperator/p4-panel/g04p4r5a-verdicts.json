@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "fog",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Fog makes the far background somewhat flat and teal-grey; puddle reflection blobs on the road look smeary; some textures on buildings look low-res",
+     "Light fog with good depth and readable city, traffic and lane markings. The player pod has clear detail (black canopy, tail lights). Minor issues: the sky is a slightly flat teal, there is a dark rectangular shadow patch on the right lane, a dark horizontal line spans the lower frame, and the soft reflection blobs on the road are a bit smeary.",
+     "Fog is fairly mild, so the background buildings lose some definition. There is a large hard-edged dark shadow rectangle on the road to the right of the player, and a small headlight glow blob on the road. Some building textures look smeared. A truck at the right edge is cropped."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large dark rectangular shadow patch on the road right of the player looks odd; cyan scan-line band crosses the frame; some building textures are smeary; overall slightly dark",
+     "Good warm sunset mood with a sun glow at the horizon, strong contrast and depth, and a readable player pod with tail lights. Minor issues: the cyan route ribbon crosses the road as a floating band, a vertical cyan pole line runs into the sky, there is a hard black horizontal seam across the road and a dark rectangular shadow patch at right, and the pod body reads somewhat dark.",
+     "There is a hard dark shadow rectangle on the road to the right of the player and a headlight glow blob. The cyan scan-line band across the scene is slightly distracting. Some building textures are smeared."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Checkerboard/blocky shadow-map artifacts on the road around the player; the sky near the horizon is blown out to white; road surface is a bit flat grey; dark rectangular shadow patch on the right",
+     "Clean daylight with a readable player pod, good depth and city detail. Defects: a visible checkerboard/dithered shadow pattern on the road around the player, a hard dark shadow rectangle at right, the cyan route ribbon floats across the road, the sky is somewhat blown white at the horizon, and the asphalt is a bit flat grey.",
+     "Faint blocky checker-pattern shadow artifacts appear on the road around the player. There is a hard dark shadow rectangle on the right, and the horizon sky is slightly overexposed. A truck at the right edge is cropped."
+    ]
+   }
+  ]
+ }
+]

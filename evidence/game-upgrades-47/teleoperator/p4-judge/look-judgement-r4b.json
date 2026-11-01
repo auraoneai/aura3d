@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/teleoperator/p4-r4/teleoperator/frames/g04p4-r4-3/desktop--02-early.jpg",
+      "sha256": "17bfe65e87c973238ba7f6f37daeea008424f204ed98b35615bf9e2f75130196"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm low sun glows at the street's vanishing point, but the player pod's back face is almost pure black. Building facades get flat, even light with little warm/cool separation. The golden-hour key reads only in the distant sky."
+    },
+    {
+      "category": "shadows",
+      "seen": "Cars, the cable car, and parked vehicles cast no clear contact or cast shadows on the asphalt. The low sun direction does not produce long shadows across the road, and buildings show no shadow falloff on the street."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The player vehicle's dark glossy shell reflects no sky or buildings. Its surface shows only a grainy black texture, and the asphalt has no specular response to the bright horizon."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The San Francisco hill street with brick buildings, overhead cable-car wires, and a cable car is recognizable. Facades are repeated flat window textures. The left glass tower has a strange cyan streak artifact, and the trees are untextured dark blobs."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Mild warm haze softens the far end of the street. Fog density does not visibly change with distance across the 30–180 m range, and the mid-ground stays crisp and flat. There are no light shafts despite the low sun."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The player pod looks like a noisy, crushed-black texture with no clear paint or glass definition. The asphalt is a uniform grey, and the brick has no roughness variation or normal detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pod has a reasonable rounded silhouette and the cable car is readable. Building geometry is boxy with flat window cards, trees are low-poly spheres, and the parked car at left is a simple shape."
+    },
+    {
+      "category": "composition",
+      "seen": "The subject fills about 30% of the frame, above the 15–25% target, and sits right of center. The fare panel at top center covers the vanishing point and the sun, which is the strongest visual area."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the vehicle with a plausible FOV near 60. The vehicle occludes much of the road ahead, and there is no visible speed framing or tilt."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no clear filmic tone mapping, bloom on the sun or taillights, or color grade toward the burnt-orange/charcoal palette. Blacks are crushed on the vehicle, and the overall image looks ungraded."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The panels are clean and consistent: location card, fare card, cash, round speedometer, minimap. Combined with the floating nameplates and the bottom debug-style preset bar, they cover a large share of the screen."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

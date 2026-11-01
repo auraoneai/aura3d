@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g04p4-r5/desk/desktop-02-early.jpg",
+      "sha256": "d6ad9f2ad92b3524b6f9d3bfd8afc36000e81d0d0d9a92f0597bfe1ea601fde2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm low sun glows at the end of the street (Marine Dusk preset), but the player car's rear faces the camera almost pure black. Only the taillights and a small floor light pool lift it, so the hero subject reads as a silhouette with no key or rim light."
+    },
+    {
+      "category": "shadows",
+      "seen": "The cars have weak contact shadows and look like they float slightly on the asphalt. The buildings cast no clear long shadows across the street, even with a low sun. The foreground road darkens as a uniform gradient instead of showing shaped shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The player car's dark body shows no environment or sky reflection and no specular highlight from the sunset. The road has no wet or sheen response. The beige parked car's surfaces look matte and flat."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The San Francisco street has brick facades, bay windows, a cable car (Line 59), lane markings and a downhill vanishing point, so the place is readable. The right-hand tree is a dark untextured sphere that breaks the realism."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Warm haze builds toward the horizon and the distant facades fade, which matches the golden-hour fog brief. Teal translucent route/lidar beams hang mid-air, and they read as HUD artifacts more than atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The building textures look smeared and low resolution at close range. The player car surface shows speckled noise, like shadow-map acne or dithering, across the black panels. The tree has a flat unlit green material."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pod-shaped player car has a clean silhouette, and the cable car carries reasonable detail. The parked beige car is low-poly with simple wheels, and the tree is a primitive sphere."
+    },
+    {
+      "category": "composition",
+      "seen": "The hero car takes about 25-30% of the frame, center-right, which is at or above the 15-25% target. The top-center fare panel covers the sky and vanishing point. Stacked rival name tags (Kaya, Elena, Marcus, Devon) clutter the road ahead."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits close and low, with an FOV that looks near 60. The car's size blocks much of the road ahead, so the view gives a weak read of the upcoming track."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom around the horizon sun. The shadows are crushed to black on the car and in the foreground. No filmic grade, vignette or grain is visible, so the cinematic-film target is not met."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The individual widgets are polished: circular speedometer, round minimap, location card, fare panel. Together with two rows of fleet/cam/sky buttons they take up a large share of the screen, and the name-tag stack overlaps the gameplay view."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

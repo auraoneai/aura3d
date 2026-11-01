@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createAuraApp } from "@aura3d/engine";
@@ -14,7 +14,9 @@ const ROOT = join(__dirname, "../../..");
 
 /** Triangle and texture counts straight from each GLB's JSON chunk (the app manifest carries neither). */
 function glbStats(url: string): { triangles: number; textures: number } {
-  const bytes = readFileSync(join(ROOT, "public", url));
+  // Route-local files (the WP-36 Meshy pod) ship from the app's own public tree.
+  const rootFile = join(ROOT, "public", url);
+  const bytes = readFileSync(existsSync(rootFile) ? rootFile : join(ROOT, "apps/showcase-teleoperator/public", url));
   const json = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString("utf8")) as {
     meshes?: { primitives: { indices?: number; attributes: { POSITION: number } }[] }[];
     accessors: { count: number }[];

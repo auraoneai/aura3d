@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/teleoperator/p4-r3/teleoperator/frames/g04p4-r3-1/teleoperator--golden--settle-60s.jpg",
+      "sha256": "c045d0a60fe61f76d8289981d7f8ff975f75bcc2693be433c2ab39677908f506"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits at the end of the street and backlights the scene with a golden horizon, which matches the recipe. The foreground road and the pod are underlit, though, and the ambient fill is flat and dim, so the vehicles read as dark silhouettes with little rim or bounce light."
+    },
+    {
+      "category": "shadows",
+      "seen": "Long directional shadows fall from the buildings and from the truck on the right. The truck's shadow is a hard-edged, near-black rectangle with no softening or ambient lift, and the left-side street shadows read as flat dark bands."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The pod's white body shows almost no environment reflection, and its rear glass is a pure black slab. The asphalt has a faint warm sheen toward the sun but no reflections of cars or buildings."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city block is dense, with brick and stone facades, high-rises, overhead wires, streetlamps and traffic. Large translucent cyan planes and vertical beams cut through the buildings and across the road, which looks like debug or checkpoint volumes. The trees are dark-green spheres on sticks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some haze appears near the horizon glow. The mid-distance buildings and traffic show almost no aerial-perspective falloff, so the 30–180 m fog band the recipe calls for is barely visible."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The facades have decent photographic texture. The pod reads as flat matte white with a black rear. The road has no visible grain or wear, and the lane markings are flat unlit yellow."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The building meshes have reasonable architectural detail, including bay windows, cornices and arches. The pod and the small orange car are simple low-detail shapes, and the trees and some props are primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "The pod sits right of center at roughly 18–20% of the frame and the road converges toward the sun, which works. The truck clipped into the right edge crowds the frame, and the cyan planes cut the image horizontally."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase view behind the pod with an FOV that looks close to 60. The framing is functional. There is no visible speed cue such as motion blur or FOV push."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The grade is warm, but the blacks are crushed. The sun, taillights and headlight spill show little or no bloom. A detached bright hotspot sits on the road left of the pod, and there is no visible film grain or lens character."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a circular minimap at bottom left with a route line. There is no speed, position, timer or dispatch objective readout, and the minimap's style does not match the cinematic grade."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

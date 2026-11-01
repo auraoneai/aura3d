@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:23:36.081Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s",
+      "heatsink-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.824,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 42,
+    "sameGameYes": 6,
+    "differentRate": 0.875,
+    "ci95": [
+      0.7529927291394518,
+      0.9414302824959915
+    ],
+    "confidentDifferent": 40,
+    "confidentDifferentRate": 0.8333333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.824,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal canyon with a giant moon and a drone, Image B is a realistic city street with a pod vehicle",
+        "Different palettes: cool teal and purple versus warm orange sunset and brick buildings",
+        "Both show cyan glowing track lines, but the scenery and vehicles differ and only B has a minimap HUD"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night city street with orange buildings and a pod car, Image B is an alien mountain landscape with a giant planet and a drone",
+        "Different palettes: warm orange and black vs purple, teal and blue",
+        "Different HUD and ground: minimap with wet asphalt vs no HUD with a neon grid road"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic foggy city street with cars and a minimap HUD",
+        "Image B is a stylized alien canyon with a moon and glowing crystals, controlling a drone",
+        "Different scenery, vehicles and HUD style, though both use a teal-toned palette"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic city street with a pod car and minimap HUD",
+        "Image B is an alien planet with a drone, purple grid road and a large ringed moon",
+        "Different scenery, palette and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "dark teal alien canyon with giant moon versus bright daylight realistic city",
+        "different vehicles and art style: orange quadcopter drone versus white and black pod with low-poly buildings",
+        "cyan guide lines on the ground in both frames, which weakly suggests a shared game"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime city with a pod vehicle and a minimap HUD",
+        "Image B is an alien planet with a neon grid track and an orange drone",
+        "Different palettes and scenery: gray, red and beige city versus purple and teal alien terrain"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a vehicle from a rear chase camera with a glowing teal line crossing the scene",
+        "Both use a dark ground with teal glow accents and a dark sky",
+        "The environments differ (alien canyon vs. orange city), which could point to different levels or to different games"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet with neon grid track and a drone",
+        "Image B: realistic foggy city street with a minimap and road vehicles",
+        "Different palette, scenery and HUD style"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a realistic foggy city street with a minimap and road traffic; Image B is an alien canyon with a giant moon and glowing crystals",
+        "Different controlled vehicles: a white pod car seen from behind versus an orange and black quadcopter drone",
+        "Different palettes and styles: desaturated grey-brown urban haze versus saturated teal and purple sci-fi with cyan glow lines"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, Image B is a realistic city street with a pod vehicle",
+        "different scenery, palette and lighting (cool moonlit vs warm sunset)",
+        "Image B has a circular minimap HUD and an urban setting that Image A lacks"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a night city street with an autonomous pod car, minimap HUD and orange brick buildings",
+        "Image B is an alien planet with a giant moon, rock mountains and a purple grid road",
+        "Different vehicles (road pod vs. orange quadcopter drone) and different palettes and art styles"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an alien planet with a neon grid road and a drone",
+        "Image B is a realistic dusk city with an autonomous pod vehicle and a minimap",
+        "Different scenery, palette and vehicles, though both have a cyan guide line"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet, neon grid road and a drone",
+        "Image B: realistic foggy city street with a minimap and an autonomous pod car",
+        "Different palettes and art styles: saturated purple/teal versus muted gray"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "teal glowing route lines on the road in both frames",
+        "similar smooth low-poly rendering and road markings",
+        "vehicle-focused chase camera in both, despite different settings"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night city street with an autonomous pod car and a minimap HUD, while Image B is an alien teal canyon with a drone",
+        "Different palettes: orange and brick buildings with a black sky versus teal and purple alien landscape with a large moon",
+        "Different vehicles and scenery: cars, buildings and trees versus crystal spikes, mushrooms and rock formations"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daylight city street with a pod vehicle, buildings and a minimap HUD",
+        "Image B is an alien planet with purple grid road, mountains and an orange drone",
+        "Different palettes, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic city street with an autonomous pod car and a minimap HUD",
+        "Image B is an alien planet with a neon grid road and an orange drone",
+        "Different scenery, palette and vehicle style, with no shared HUD or asset language"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "Image A is a dark alien canyon with a giant moon and a drone, while Image B is a bright daylight city with a pod vehicle",
+        "Image B has a minimap HUD and realistic buildings that have no counterpart in A's stylized sci-fi look",
+        "Both frames show cyan guide lines on the ground, which weakly suggests a shared engine or game"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal landscape with a drone and a giant moon, while Image B is a realistic city street with a pod vehicle",
+        "Different palettes and lighting: A is cool teal and purple, B is warm sunset orange",
+        "Both have thin cyan guide lines, but the scenery, vehicles and HUD (minimap only in B) differ"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien mountain landscape with a purple planet and a drone on a neon grid road",
+        "Image B is a realistic night city with a pod vehicle, a minimap, and wet asphalt reflections",
+        "Different palettes and scenery, though both have a glowing cyan line motif"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city street with an autonomous pod vehicle and a minimap, Image B is an alien canyon with a drone",
+        "Different palettes: orange and brown urban tones versus teal and purple alien tones",
+        "Different scenery and HUD: city buildings with traffic versus rock formations, giant moon and glowing crystals"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic foggy city street with cars and a minimap HUD",
+        "Image B is an alien canyon with a giant moon, glowing crystals and a drone",
+        "Different scenery, palette and vehicle type, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime city with buildings and road traffic, Image B is an alien mountain landscape with a purple planet",
+        "Different vehicles: a boxy autonomous pod in A, an orange drone in B",
+        "Different HUD and palette: a circular minimap with muted realistic colors in A, a neon grid road with a violet teal palette in B"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien planet with a neon grid track and a drone",
+        "Image B is a foggy realistic city street with cars and a minimap",
+        "Different palettes, lighting and HUD styles"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 3,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a realistic foggy city street with a pod vehicle, minimap HUD and traffic",
+        "Image B is an alien teal landscape with a large moon, glowing crystals and an orange drone",
+        "Different scenery, vehicles and camera/HUD style, with no shared assets"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 3,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night city street with an autonomous pod car, minimap HUD and orange buildings",
+        "Image B is an alien mountain landscape with a purple planet sky and a drone on a neon grid road",
+        "Different environments, palettes and vehicle types with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 3,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both frames use a cyan glowing line motif on a dark ground",
+        "Both show a rear-view vehicle (drone and pod car) in a third-person chase camera",
+        "Both have a stylized low-poly look with a teal and orange palette"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet, purple grid road and a drone",
+        "Image B: realistic dusk city street with a pod vehicle and minimap",
+        "Different scenery, palette and vehicle style"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien teal canyon with a giant moon and a drone, Image B is a realistic city street with a pod vehicle",
+        "different palettes: cool teal/purple vs warm orange sunset and brick buildings",
+        "different HUD: B has a circular minimap, A has none"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daylight city street with a pod vehicle and a minimap HUD",
+        "Image B is an alien teal-and-purple canyon with a drone and a glowing moon",
+        "The palettes, lighting and scenery are unrelated"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a daytime city street with a self-driving pod, a minimap and low-poly trees, while Image B is an alien planet with a drone on a neon grid track",
+        "Different palettes and lighting: pale overcast city versus purple and teal sci-fi glow",
+        "Different vehicles, scenery and HUD: a circular minimap in A, none in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien planet with a neon grid road, drone and giant moon; Image B is a foggy realistic city street with cars",
+        "Different palettes: saturated purple/teal/orange vs. desaturated gray-teal with brick red",
+        "Image B has a circular minimap HUD and a third-person vehicle chase view that Image A lacks"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 4,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime city street with a self-driving pod, a minimap HUD and low-poly cars; Image B is an alien planet with a drone, purple grid track and giant moon",
+        "Different palettes and lighting: neutral bright overcast vs. saturated purple/teal",
+        "Different vehicles and scenery: realistic urban buildings vs. stylized rocky mountains and neon grid"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 4,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien planet with a neon grid road and a drone",
+        "Image B is a foggy realistic city street with cars and a minimap",
+        "Different palette, art style and HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 4,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien planet with a neon grid road and a drone, Image B is a realistic city street with a pod vehicle",
+        "Different palettes and lighting: purple and teal fantasy sky vs. warm sunset urban tones",
+        "Both show a third-person rear chase camera and a cyan guide line, which is the only common cue"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 4,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a realistic city street with an autonomous pod vehicle and a minimap HUD",
+        "Image B is an alien teal landscape with a drone, a large moon and glowing mushrooms",
+        "The two frames differ in scenery, palette and vehicle, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a night city street with orange buildings and a pod vehicle, while Image B is a teal alien canyon with a drone",
+        "Different scenery, palette and lighting: warm orange urban glow versus cool teal and purple alien atmosphere",
+        "Image A has a circular minimap HUD, and Image B has no matching HUD element"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: alien planet with a purple sky and a drone on a neon grid road",
+        "Image B: realistic night city with wet asphalt and a pod vehicle",
+        "Image B has a circular minimap HUD, and the two scenes share no palette or scenery"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "teal glowing route lines on the ground in both",
+        "same rear chase camera behind a futuristic vehicle",
+        "similar smooth stylized low-poly materials and shading"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic foggy city street with cars and a minimap HUD",
+        "Image B is an alien canyon with a moon, glowing crystals and a drone",
+        "Different scenery, vehicles and palette; only the teal tint is shared"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 5,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "cyan guide lines on the ground in both frames",
+        "third-person view from behind a futuristic vehicle",
+        "clean stylized low-poly look with orange accents"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 5,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic foggy city street with cars and a minimap HUD",
+        "Image B is an alien canyon with a moon, glowing crystals and a drone",
+        "Different scenery, vehicles and palette; only a shared teal tint links them"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 5,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Cyan glowing curved lines on the ground in both frames",
+        "Same third-person chase camera behind a futuristic vehicle",
+        "Stylized low-poly look with a teal and orange palette"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 5,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime city street with autonomous pod vehicles and a minimap HUD",
+        "Image B is an alien planet with purple neon grid track and a drone",
+        "Different palettes, scenery and vehicle types, no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 5,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a foggy realistic city street with an autonomous pod vehicle and a minimap HUD",
+        "Image B is a stylized alien landscape with a purple planet and a neon grid track",
+        "Different palettes, scenery and vehicles: muted gray-teal urban versus saturated purple sci-fi with an orange drone"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien planet with a neon grid road and a drone, Image B is a realistic city with a pod car",
+        "different palettes: purple/teal fantasy against warm sunset urban tones",
+        "both have a rear chase camera and glowing cyan path lines, but the art style and scenery differ"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, Image B is a realistic city street with a pod vehicle",
+        "Different scenery, palette and lighting (pastel moonlit sky vs. orange sunset city)",
+        "Image B has a minimap HUD and traffic, and Image A has none; only the cyan glowing lines are shared"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "teleoperator--night--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night city street with an autonomous pod car and a minimap HUD",
+        "Image B is an alien planet with mountains and a neon grid track driven by an orange drone",
+        "Different palettes, scenery and vehicle types, with no shared HUD or art style"
+      ]
+    }
+  ]
+}
