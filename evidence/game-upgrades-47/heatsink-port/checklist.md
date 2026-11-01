@@ -42,3 +42,18 @@ Status: done = code in phase 1; P2 = needs a phase-2 capture, judge or measureme
 | IC-23 banner | no longer overlaps the objective line (<= 900 px: 152 px; <= 500 px: 172 px) |
 | IC-26 final screens and card | retaken on the phase-3 build (g19p3-scr-2), previews rebuilt; rubric in `look-judgement.json` (min 3.5 shadows; see the lane report) |
 | IC-26 sibling judge | 2 of 5 neighbours pass on the r3 frame (roadster-rush, teleoperator); the rest wait on WP-36 assets (drone retexture, rib arch) |
+
+## Phase 4 (4.7.2, 2026-10-31)
+
+| Item | Status |
+|---|---|
+| Default view vs 4.6.2 (blind 3-judge panel) | phase-4 look kept: better 3/0/0 in g19p4r6 and g19p4r7 (head = r7 code); `?look=original` unchanged |
+| Cast shadows (root cause) | fixed: sky dome / abyss / strips no longer cast (twilight), key raised to ~35 degrees at the sun azimuth, contact shadow drawn in the road shader, 2048 map |
+| IC-13 sentry (WP-36 ionSentryDrone) | done: admitted via `import-meshy` (rights + meta), 9,076 / 6,004 tris, swapped in as the twilight sentry core |
+| IC-13 heavy, IC-14, IC-15, IC-16, IC-17 (WP-36) | blocked: Meshy keys refuse API calls |
+| IC-23 HUD at 640x360 | one slim row and compact meters (twilight) |
+| Luma bands (`luma-after.json` default rows from r7) | all pass except the mean 85 vs 62-75 (band not widened); bottom cells now pass |
+| Rubric (goal 1, every category >= 7) | not met: min 3 (shadows), two runs; see the lane report |
+| Distinctness (goal 2, 8 neighbours) | not met: 4 of 8 pass (drift-and-deliver, last-train, silt-and-signal, teleoperator) |
+| Final screens and card | retaken on the r7 build (g19p4-r7-scr), previews rebuilt |
+| Gates | typecheck NEW_ERRORS 0; 17 unit files pass one at a time; eslint clean; game-checks 0 errors |

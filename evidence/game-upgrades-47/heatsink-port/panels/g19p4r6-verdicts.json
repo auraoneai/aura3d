@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Drone sits off-centre on the right, close to the frame edge. The distance is a little hazy and pastel, and the floor grid is somewhat flat and low-contrast. The floating purple diamonds look like intentional pickups.",
+     "The drone sits off-centre to the right and blends a little into the purple floor. Mild haze lowers contrast on the distant cliffs and the overhanging rock. The overhanging rock slab on the right looks slightly odd. Otherwise the colour, depth and sky are rich, and the planet, track lines and gate give strong composition and mood.",
+     "Drone sits off-centre to the right and partly blocks the track; slight haze washes out the mid-ground; purple diamonds float in the air with no clear anchor; the floor's tile grid and glowing squiggles look busy"
+    ]
+   }
+  ]
+ }
+]

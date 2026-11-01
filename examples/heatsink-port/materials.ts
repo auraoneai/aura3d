@@ -38,6 +38,9 @@ export const lightUniforms = (fog: Rgb = shading.fog.color): NonNullable<CustomS
   litScale: { type: "f32", value: shading.lit.scale },
   bounceColor: { type: "color3", value: [...shading.lit.bounce] },
   topFill: { type: "color3", value: [...shading.lit.topFill] },
+  sunGain: { type: "f32", value: shading.shade.sunGain },
+  ambientGain: { type: "f32", value: shading.shade.ambientGain },
+  hazeSun: { type: "color3", value: [...shading.shade.hazeSun] },
   sunDir: { type: "vec3", value: [...SUN_DIR] },
   sunColor: { type: "color3", value: [...SUN_COLOR] },
   skyAmbient: { type: "color3", value: [...SKY_AMBIENT] },
@@ -56,6 +59,10 @@ export const roadSpec = (): CustomSpec => ({
     glass: { type: "f32", value: shading.causeway.glass },
     veinHdr: { type: "f32", value: shading.causeway.veinHdr },
     seams: { type: "f32", value: shading.causeway.seams },
+    glassShadow: { type: "f32", value: shading.shade.glassShadow },
+    neonReflect: { type: "f32", value: shading.shade.neonReflect },
+    contact: { type: "vec4", value: [0, -1e4, 0, 0] },
+    contactDir: { type: "vec3", value: [0, 0, 1] },
     ionSpeed: { type: "f32", value: 0 }
   },
   side: "double"
@@ -152,7 +159,7 @@ export const pointsSpec = (): CustomSpec => ({
 /** the drone's contact shadow: an alpha-blended dark blob drawn over the road (HP-08) */
 export const blobSpec = (): CustomSpec => ({
   glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
-  uniforms: { blobAlpha: { type: "f32", value: 0.5 } },
+  uniforms: { blobAlpha: { type: "f32", value: 0.5 }, blobCore: { type: "f32", value: shading.shade.blobCore } },
   transparent: true,
   depthWrite: false,
   blending: "normal",

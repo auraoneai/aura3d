@@ -34,14 +34,25 @@ describe("heatsink-port twilight environment (GU47 IC-04)", () => {
     expect(envs[0]!.rotation).toBeCloseTo((SUN_AZIMUTH_DEG * Math.PI) / 180, 6);
   });
 
-  it("puts the engine key along the shader sun with 3 cascades over 220 m (IC-03)", () => {
+  it("puts the engine key at the shader sun's azimuth, ~35 degrees up, with 3 cascades over 220 m (IC-03, GU47 phase 4)", () => {
     const key = nodes("?look=twilight").find((n) => n.name === "key") as JsonNode & { position?: number[]; shadow?: { cascades?: number; maxDistance?: number }; color?: string };
-    expect(key.position).toEqual([220, 92, -248]);
+    expect(key.position).toEqual([218, 229, -245]);
+    const [x, y, z] = key.position as [number, number, number];
+    expect(Math.abs(Math.atan2(z, x) - Math.atan2(-0.62, 0.55))).toBeLessThan(0.01);
+    expect((Math.atan2(y, Math.hypot(x, z)) * 180) / Math.PI).toBeCloseTo(35, 0);
     expect(key.intensity).toBe(2.9);
     expect(key.shadow).toMatchObject({ cascades: 3, maxDistance: 220 });
     const drone = nodes("?look=twilight").find((n) => n.name === "drone-hull") as JsonNode & { castShadow?: boolean };
     expect(drone.castShadow).toBe(true);
     const original = nodes().find((n) => n.name === "drone-hull") as JsonNode & { castShadow?: boolean };
     expect(original.castShadow).toBe(false);
+  });
+
+  it("GU47 phase 4: the sky dome, abyss and additive strips never cast under twilight (the dome shadowed the whole course); original keeps its casters", () => {
+    const casters = (look: string) => new Set((nodes(look) as (JsonNode & { castShadow?: boolean })[]).filter((n) => n.castShadow).map((n) => n.name));
+    const tw = casters("?look=twilight");
+    for (const name of ["sky", "abyss", "bolts", "streaks", "exhaust", "spores"]) expect(tw.has(name), name).toBe(false);
+    for (const name of ["rocks", "arches", "drone-hull"]) expect(tw.has(name), name).toBe(true);
+    expect(casters("?look=original").has("sky")).toBe(true);
   });
 });

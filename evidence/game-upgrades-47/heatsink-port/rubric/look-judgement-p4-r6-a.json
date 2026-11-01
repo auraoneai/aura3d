@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/strike-card2x.jpg",
+      "sha256": "beb6ed1d0510819b80a60582a66f59217451e322323102c8ef3a5c3b71824e64"
+    },
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/mid-action-640.jpg",
+      "sha256": "dc2e755b99e30d9122eb2eb0d43df7266df65c946285199c0303f2d3193375a4"
+    },
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/results-640.jpg",
+      "sha256": "c46756cc8c1670b6ae22b194101691e121f1a61009eecce9db6cbcdd69a254c8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/heatsink-port/p4-r6/heatsink-port/frames/g19p4-r6-1/heatsink-port--default--settle-60s.jpg",
+      "sha256": "a7dff5e40a76092828185ef3fc2a2489f3a34018a3f507202d435894491f334b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "No directional key light is visible. The whole scene sits in an even cool lavender/teal ambient wash. The mountains have no lit and shadowed sides and there is no low sun, so the golden-hour recipe is not met."
+    },
+    {
+      "category": "shadows",
+      "seen": "In frame 4 the hovering drone casts no shadow on the purple track. The black gate posts, guard rails and roadside crystals have no ground contact shadows. Frame 1 shows only a vague dark smear behind the craft."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The glass dome on the drone shows a soft highlight, but the track, rails and gate show no environment reflection of the bright planet and aurora sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The ringed planet, aurora sky, banded teal mountains, glowing cyan rivulets on the tiled track and alien mushrooms give a clear identity. The roadside props are sparse and the gate is a plain black box."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some distance haze lightens the far track and mountains in frames 1 and 4, and the aurora adds sky depth. There is no volumetric light, particles beyond speed streaks, or graded fog falloff."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The track is a flat matte purple grid with emissive lines. The mountains use a single stretched banded texture. The gate is untextured black. Only the drone has worn orange and charcoal paint detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The quadcopter racer is reasonably detailed, with arms, rotors, cameras and a dome. The terrain is low-poly cones with faceted silhouettes, and the gates and rails are primitive boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 the subject sits centered at roughly 10–12% of the frame, below the 15–25% target. The HUD crowds the top band. Frame 4 has a pleasing planet-centered layout but leaves the drone off to the side, small."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low and centered behind the craft with a moderate FOV near 60. In frame 2 it swings to a side angle with a gate wall occluding the left third, which reads awkwardly."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Speed streaks and a blurred backdrop behind the results modal are present. There is no visible bloom on the cyan emissives or engine flare, no film grain or grade, and no cinematic tone curve. The image looks slightly washed and low-contrast."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Radial speed lines and a red tint or damage flash on the craft in frame 2 imply motion feedback. Rotors and banking cannot be judged from stills, and there is no motion blur."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

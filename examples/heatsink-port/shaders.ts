@@ -30,8 +30,11 @@ float fbm(vec2 p) {
   return s;
 }
 // original atmosphere: density 0.0004, hDensity 0.0022, hBase 18, hFalloff 0.031, maxFog 0.96
+// GU47 phase 4: hazeSun (zero under ?look=original) warms the haze toward the sun azimuth, so the distance is not one flat tone
 vec3 applyFog(vec3 color, vec3 world) {
-  return a3dFogHeight(color, fogColor, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
+  vec3 vd = normalize(world - cameraPosition);
+  float sunward = pow(max(dot(normalize(vec3(vd.x, 0.0, vd.z) + vec3(1e-4, 0.0, 0.0)), normalize(vec3(sunDir.x, 0.0, sunDir.z))), 0.0), 3.0);
+  return a3dFogHeight(color, fogColor + hazeSun * sunward, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
 }
 float gSun = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
 vec3 gWorld = vec3(0.0); // fragment world position, set next to gSun (IC-02 glow pools)
@@ -57,7 +60,8 @@ vec3 lit(vec3 albedo, vec3 N) {
   vec3 sunFlat = normalize(vec3(sunDir.x, 0.0, sunDir.z) + vec3(1e-4, 0.0, 0.0));
   float bounceW = max(dot(N, sunFlat), 0.0) * (1.0 - abs(N.y)) + 0.25 * max(-N.y, 0.0);
   float topW = max(N.y, 0.0);
-  return albedo * (hemi + sunColor * ndl * gSun + bounceColor * bounceW + topFill * topW) * litScale + glowPools(albedo, N);
+  // GU47 phase 4: sunGain / ambientGain (1 / 1 under ?look=original) so the low key and its cast shadows read
+  return albedo * (hemi * ambientGain + sunColor * ndl * gSun * sunGain + bounceColor * bounceW + topFill * topW) * litScale + glowPools(albedo, N);
 }
 `;
 
@@ -127,11 +131,27 @@ void main() {
   // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen;
   // round g19p3-r3 lifts the near floor a little (r2 bottom corner cells 39.5 vs the IC-01 floor of 40)
   color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
-  color += vRoad * seam * 0.12 * seams;
+  // GU47 phase 4: engine cast shadows (gantries, rocks, the drone) cut the glass sheen too (glassShadow = 0 under ?look=original)
+  color *= 1.0 - glassShadow * (1.0 - gSun) * glass;
+  // GU47 phase 4: the drone's contact shadow in the road itself (contact.w = 0 under ?look=original): an ellipse along the
+  // heading under the hull, so the hover reads grounded on every frame
+  vec3 dc = vWorld - contact.xyz;
+  vec2 t2 = normalize(contactDir.xz + vec2(1e-4, 0.0));
+  float cr = length(vec2(dot(dc.xz, t2) / 3.6, dot(dc.xz, vec2(-t2.y, t2.x)) / 2.7));
+  color *= 1.0 - contact.w * pow(1.0 - smoothstep(0.0, 1.0, cr), 1.5) * step(abs(dc.y), 3.0);
+  // GU47 phase 4: the glass reflects the curb neon and the beacons (every 44 m at the edges) as soft streaks toward the viewer
+  float bs = s - (floor((s - 22.0) / 44.0 + 0.5) * 44.0 + 22.0);
+  float beaconRefl = exp(-bs * bs / 18.0) * exp(-pow((abs(u) - 0.88) / 0.05, 2.0));
+  float curbRefl = exp(-pow((abs(u) - 0.88) / 0.06, 2.0)) * (0.55 + 0.45 * fres);
+  color += (vRoad * beaconRefl * 0.9 + neon * curbRefl * 0.10) * neonReflect;
+  // GU47 phase 4: twilight seams glow ion blue-violet, not the district colour (the orange grid was a sibling tell: "orange accents in road markings")
+  color += mix(vRoad, vec3(0.22, 0.5, 0.95), 0.85 * glass) * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
-  color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;
-  color += vec3(0.75, 0.9, 1.0) * dash * 0.28;
+  // GU47 phase 4: the obsidian causeway carries no road paint (white dashes and edge lines were the sibling tell "same highway
+  // with dashed white lane lines"); its lanes read by the ion veins and the cyan curb glow. Unchanged under ?look=original.
+  color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55 * (1.0 - glass);
+  color += vec3(0.75, 0.9, 1.0) * dash * 0.28 * (1.0 - glass);
   color += neon * curb * (0.16 + 0.06 * sin(u_time * 2.0 + s * 0.05));
   outColor = vec4(applyFog(color, vWorld), 1.0);
 }`;
@@ -360,7 +380,8 @@ in vec2 vUv;
 out vec4 outColor;
 void main() {
   float r = length(vUv * 2.0 - 1.0);
-  float a = (1.0 - smoothstep(0.2, 1.0, r)) * blobAlpha;
+  // GU47 phase 4 (blobCore = 0 under ?look=original): a denser core under the hull so the drone reads grounded
+  float a = mix(1.0 - smoothstep(0.2, 1.0, r), pow(1.0 - smoothstep(0.0, 1.0, r), 1.4), blobCore) * blobAlpha;
   outColor = vec4(0.0, 0.0, 0.0, a);
 }`;
 
@@ -371,8 +392,10 @@ attribute float wakeAlpha;
 out vec2 vUv;
 out vec3 vColor;
 out float vAlpha;
+out float vCam;
 void main() {
   vUv = uv;
+  vCam = length((modelMatrix * vec4(position, 1.0)).xyz - cameraPosition);
   vColor = wakeColor;
   vAlpha = wakeAlpha;
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
@@ -382,11 +405,13 @@ export const WAKE_FRAGMENT = /* glsl */ `
 in vec2 vUv;
 in vec3 vColor;
 in float vAlpha;
+in float vCam;
 out vec4 outColor;
 void main() {
   float across = 1.0 - abs(vUv.x * 2.0 - 1.0);
   float core = pow(across, 0.6) + 1.4 * pow(across, 6.0);
-  float a = clamp(core * vAlpha * wakeGain, 0.0, 4.0);
+  // GU47 phase 4: fade the ribbon where it passes the lens (it blew out a side of the 640 px strike frame)
+  float a = clamp(core * vAlpha * wakeGain, 0.0, 4.0) * smoothstep(3.0, 10.0, vCam);
   outColor = vec4(vColor * a, min(a, 1.0));
 }`;
 
