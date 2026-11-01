@@ -1,0 +1,64 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "bluehour",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Fairly dark overall, and the road and sidewalks are muddy near the edges. The rear windshield has jagged reflection artefacts and a faint dotted pattern shows at the vanishing point. Still, the car reads clearly and the lit windows, street lamps and blue sky give it strong mood and depth.",
+     "The scene is fairly dark and the near road is murky. The car's rear window and bumper look smeared and dirty. A faint dotted grid artifact appears on the horizon at the end of the street."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The car's material looks crumpled or warped, with blown-out specular streaks on the rear windshield and plate area. There is slight blocky shadow banding on the left building. Otherwise the warm light, cast shadows and contrast are good.",
+     "The rear window has a harsh specular blowout with streaky reflections. Some building facades look over-saturated orange, and the car body looks a little blotchy."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Blown-out highlight streaks on the rear windshield and a slightly warped-looking car body. There is some blocky shadow artefacting on the left facade. The warm sidewalks are a bit oversaturated.",
+     "The rear window shows a harsh specular hotspot with streaky reflection artifacts. The orange saturation is slightly heavy on some facades."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Jagged, glitchy reflection streaks on the rear windshield and the car body looks crinkled. Facades show minor blocky shadow banding. Dark foreground asphalt is slightly muddy.",
+     "The rear window has a bright specular blowout with crackle-like streaks. The car's paint looks slightly mottled, and the dark road crushes some detail."
+    ]
+   }
+  ]
+ }
+]
