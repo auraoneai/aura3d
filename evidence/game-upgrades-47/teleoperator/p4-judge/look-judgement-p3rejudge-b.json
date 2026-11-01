@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/teleoperator/screens/final/1280-02-early.jpg",
+      "sha256": "efc1b0ff591c6af80e0d3a614ee76971b34655d7d7dd740d74794de9f6320194"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 2.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 3.5,
+    "modeling_assets": 4,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 3.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The 'Marine Dusk' preset gives a warm glow only at the far end of the street. The foreground is lit flat and evenly, with no low-sun directional key, no rim light on the car, and no headlight amber pooling on the road."
+    },
+    {
+      "category": "shadows",
+      "seen": "The buildings cast no visible shadows across the street. The player car has only a faint dark smear beneath it and no defined contact shadow. The cable car and parked car look like they float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The white car body shows no environment reflection, no specular highlight, and no sky gradient. The black rear window is a flat void. The asphalt and building glass show no reflections either."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The textured brick buildings, cable car, overhead wires, and double-yellow lines read as San Francisco. However, the window tiling repeats heavily, some facades on the right are washed-out untextured white, and the street furniture is sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Mild distance haze and warm tint appear toward the horizon. There is no depth fog gradient in the 30–180 m band and no light shafts or particles."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The player car's white material looks unlit or emissive, with a jagged, noisy silhouette edge that suggests alpha or aliasing artifacts. The parked car on the left is blurry and low-detail. The road is a uniform matte surface with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tree is a green sphere on a cylinder trunk. The player car is a blobby pod with minimal detail beyond its tail-light bars. The cable car is the most detailed asset in the frame."
+    },
+    {
+      "category": "composition",
+      "seen": "The vanishing-point street and the cable car give the frame depth. However, the car fills about 40% of the frame height, larger than the 15–25% target, and the HUD panels and nametags crowd the focal area at the top center."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits at about 60° FOV, which suits the genre. The car sits low in the frame and the framing is serviceable, though the camera is slightly too close for the recipe's subject size."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom on the tail lights, no tone-mapped filmic grade, no vignette, and no antialiasing on the car edges. The frame does not have a cinematic-film look."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are clean and consistent: fare card, minimap, gauge speedometer, and location card. The screen is cluttered by the dense debug-style selector bar at the bottom and overlapping AI nametags at the center."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

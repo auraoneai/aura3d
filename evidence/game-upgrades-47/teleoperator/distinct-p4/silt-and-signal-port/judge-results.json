@@ -1,0 +1,736 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:23:32.927Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ],
+    "framesB": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch0-original--settle-60s",
+      "silt-and-signal-port--ch1--settle-60s",
+      "silt-and-signal-port--ch1-original--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch2-original--settle-60s",
+      "silt-and-signal-port--ch3--settle-60s",
+      "silt-and-signal-port--ch3-original--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--ch4-original--settle-60s",
+      "silt-and-signal-port--ch5--settle-60s",
+      "silt-and-signal-port--ch5-original--settle-60s",
+      "silt-and-signal-port--ch6--settle-60s",
+      "silt-and-signal-port--ch6-original--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.937,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.937,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a hand-inked, cel-shaded cartoon style with outlined shapes, while Image B is a realistic night city with bloom and wet reflections",
+        "Image A is a pastoral valley with a river and pine trees, while Image B is a dense urban street with a minimap HUD",
+        "Different protagonists: a hoverboard rider in A, a pod-like vehicle in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-lit night city with cars and a minimap",
+        "Image B is a flat, cel-shaded, outlined hillside with low-poly pines and a skateboarding character",
+        "Different art styles, lighting, and HUD (minimap vs. giant rings)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat cel-shaded purple alien landscape with outlined low-poly pines and a skateboarding character",
+        "Image B: realistic-lit night city with a self-driving pod car, wet reflective asphalt and a minimap HUD",
+        "Different art style, lighting model and gameplay perspective"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized cartoon look with outlined, posterized shading, low-poly pine trees and a night hillside",
+        "Image B: realistic foggy city street with PBR-style lighting, buildings and traffic",
+        "Different HUD and gameplay: a skater passing through a ring versus a minimap and a driving view"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized, inked cartoon look with a hillside landscape and a hoverboarding character",
+        "Image B is a realistic foggy city street with a self-driving pod and a minimap HUD",
+        "Different rendering style, palette and subject, so no shared art direction"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a flat cel-shaded cartoon style with thick ink outlines",
+        "Image B uses a realistic foggy city with soft lighting and a minimap HUD",
+        "Different subjects: a character on a hoverboard in a forest versus a car driving on a city street"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized low-poly mountain scenery with a hoverboard character and giant ring at night",
+        "Image B: realistic foggy city street with a driving pod vehicle and a minimap HUD",
+        "Different palettes, subjects and camera setups (deep blue/teal night vs gray-green urban haze)"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized low-poly skateboarder, pine forest and a giant black ring with posterized outlines",
+        "Image B: city street at sunset with a pod vehicle, minimap HUD and realistic lighting",
+        "Different art style, palette and gameplay setting (nature vs urban driving)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic city street with a self-driving pod, minimap and dusk lighting",
+        "Image B is a cel-shaded cartoon with thick outlines, low-poly pine trees and a human character",
+        "Different art styles, materials and camera setups, with no shared assets"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized outdoor snowboarding scene with a rider, pine trees and outlined cel-shaded surfaces",
+        "Image B is a realistic city street with a driverless pod vehicle, traffic and a minimap HUD",
+        "The two frames differ in art style, setting and gameplay (snowboarding vs. city driving)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night city street with a driving vehicle and minimap HUD",
+        "Image B is an ink-outlined, cel-shaded fantasy scene with a hoverboard character and cobblestone ground",
+        "Different art styles, lighting and palettes (dark neon street vs. warm pastel dusk)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright daytime city with realistic buildings and a self-driving pod vehicle",
+        "Image B: night mountain forest with low-poly pines and a cel-shaded, outlined ring style",
+        "Different HUD and art style: circular minimap in A, none in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses flat cel-shaded cartoon style with black outlines and low-poly pine trees",
+        "Image B uses realistic lit city scene with night lighting, reflections and a minimap HUD",
+        "Different subjects: hoverboard character in a forest versus a pod vehicle on a city street"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a hand-drawn, inked cartoon style with posterized textures, Image B uses smooth realistic 3D rendering",
+        "Image A shows a hoverboarding character in a hilly pine landscape, Image B shows a driverless pod vehicle in a dense city",
+        "Different HUD: Image B has a circular minimap, Image A has none"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a flat, cel-shaded, outlined look with a purple alien landscape and a hoverboard rider",
+        "Image B is a realistic-lit city street with a pod vehicle, traffic and a minimap HUD",
+        "The art style, palette and lighting model differ completely"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a foggy, realistic-style city street with a driving HUD and minimap",
+        "Image B is a stylized, ink-outlined fantasy scene with a hoverboard character and a warm orange sky",
+        "The two frames differ in palette, materials, camera and HUD"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a cel-shaded, outlined cartoon style with flat bright green trees and a brown dirt ground",
+        "Image B is a realistic, foggy, muted city street with a driving vehicle and a minimap HUD",
+        "The two have different lighting, palettes and camera setups (a third-person on-foot character versus a car chase view)"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic city street with an autonomous pod vehicle and a minimap HUD",
+        "Image B has an ink-outlined cel-shaded fantasy look with a character, giant dark rings and a cyan beam",
+        "The two frames have different palettes, lighting and rendering styles"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a painterly, hand-inked stylized look with a sepia sunset sky and a cobblestone texture",
+        "Image B uses a realistic city street with glass towers, cars and a minimap HUD",
+        "The characters differ: a hoverboard rider versus a pod-like autonomous vehicle"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: night mountain scenery with low-poly pine trees, a hoverboard rider and giant rings",
+        "Image B: daytime city street with buildings, cars and a minimap HUD",
+        "Different palettes, characters and camera setups"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night city street with a driverless pod vehicle, a minimap HUD and realistic reflective wet asphalt",
+        "Image B is a stylized outdoor mountain scene with a snowboarder or skateboarder, outlined cel-shaded rendering and an icy track",
+        "The two frames use different art styles, settings, characters and camera setups"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic city street at sunset with a pod vehicle and minimap HUD",
+        "Image B is a stylized night mountain scene with a hoverboard character and giant rings",
+        "Different palettes, scenery and rendering style (muted urban realism vs. flat low-poly pines)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: cartoon outlined, cel-shaded countryside with a hoverboard rider",
+        "Image B: realistic foggy city street with a pod vehicle and minimap",
+        "Different art styles, lighting and HUD (none vs circular minimap)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat, cel-shaded cartoon look with black outlines on a green hills and pine tree landscape",
+        "Image B is a realistic dark city with wet reflective roads, bloom and a minimap HUD",
+        "Different characters and palettes: a surfer on a water channel versus a pod vehicle among city traffic"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: realistic city street with a driving vehicle and a minimap HUD",
+        "Image B: stylized painterly look with outlined shapes, a warm sunset palette and a hoverboard character",
+        "Different rendering styles: smooth PBR-like lighting vs. flat ink-outlined shading"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hand-drawn, ink-outlined stylized look with warm orange sunset and low-poly trees",
+        "Image B: realistic, foggy teal-gray city street with a minimap HUD and driving vehicles",
+        "Different characters and camera: skateboarder on cobblestones versus a car on an asphalt road"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat cel-shaded, ink-outlined style with low-poly pines and a hilly meadow",
+        "Image B: dark realistic night city with glossy wet road, bloom and vehicle lights",
+        "Different HUD and gameplay: a minimap in B, a character on a hoverboard in A"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style city street with a minimap HUD and a self-driving pod",
+        "Image B uses a hand-drawn, inked outline style with a hoverboard character and a cyan road",
+        "Different palettes and lighting: bright hazy white-blue vs. muted pink-brown sky"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic foggy city street with a driving vehicle and minimap HUD",
+        "Image B is a stylized ink-outline cel-shaded forest with a glowing cyan pillar and a hoverboard rider",
+        "Different art style, scenery and camera setup"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a flat, inked cartoon style with a hand-drawn outline look; Image B uses realistic lit city rendering",
+        "Different settings: green hills with a water slide and giant tire arch versus a dense city street with a pod vehicle",
+        "Different HUD and art direction: Image B has a circular minimap and soft dusk lighting that Image A lacks"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a flat, cel-shaded, ink-outlined cartoon style with a hand-drawn character on a hoverboard",
+        "Image B uses a more realistic 3D city with dusk lighting, a pod vehicle and a minimap HUD",
+        "The two frames differ in setting, rendering and art direction, and the only shared element is a cyan glow accent"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with a pod vehicle and a minimap HUD",
+        "Image B is a muted mountain forest scene with a skateboarder in a giant ring",
+        "Different palettes and rendering styles: saturated orange and black versus desaturated grey-green with outlined posterized shading"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a stylized hand-drawn look with outlined low-poly trees and a skateboarder on a cobblestone plaza",
+        "Image B uses realistic city streets, a pod vehicle and a minimap HUD",
+        "Different palettes and rendering: flat pastel and ink outlines against dark, realistic lighting"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic daytime city with cars and a minimap HUD",
+        "Image B: night forest with a hand-inked cel-shaded comic look",
+        "Different characters and scenery: street vehicles versus a figure on a hoverboard under a black ring"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a flat, ink-outlined cartoon style with pine trees and a character on a hoverboard",
+        "Image B uses a realistic dark night city with wet reflective asphalt, lit buildings and a minimap HUD",
+        "The rendering, palette and scenery differ entirely, with no shared assets or visual language"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a hand-drawn, inked cartoon style with outlined trees and a runner on a hoverboard",
+        "Image B is a realistic-leaning city street with textured buildings, cars and a circular minimap",
+        "Different palettes and settings: muted pastel wilderness with a cyan river versus bright urban daylight"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized purple alien landscape with a hoverboard character, giant rings and low-poly pine trees",
+        "Image B is a realistic foggy city street with a driving vehicle and a circular minimap HUD",
+        "Different art direction: flat outlined cel-shading versus soft realistic lighting and fog"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized outlined, painterly low-poly look with a skateboarder on a cobblestone plaza",
+        "Image B: realistic dark night city street with a pod vehicle, wet reflective road and minimap HUD",
+        "Different palettes and rendering: pastel sunset with ink outlines vs. high-contrast neon-lit realism"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a cel-shaded, ink-outlined cartoon style with flat colors; Image B uses realistic lit 3D with soft shading",
+        "Image A shows a pine forest and a character on a hoverboard; Image B shows a city street with cars and a minimap",
+        "The two scenes differ in palette and setting: pastel dusk sky and teal river road versus a dark sunset city with orange brick"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized snowboarder in a pine mountain landscape with an orange sky and outlined, posterized shading",
+        "Image B: realistic-style city street with buildings, cars and a minimap HUD",
+        "Different palette, setting, characters and rendering style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a foggy city street with a driving vehicle, minimap HUD and realistic cars",
+        "Image B is a stylized skateboarder in a giant ring tube over forested hills with posterized outlines",
+        "Different scenery, characters and camera, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: realistic city street with cars and a minimap HUD",
+        "Image B: stylized purple alien landscape with outlined cel-shaded look",
+        "Different art styles, palettes and lighting"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic night city with a car and a minimap HUD",
+        "Image B is a cel-shaded cartoon fantasy scene with thick outlines and a humanoid character",
+        "The art style, lighting and palette differ completely: dark wet asphalt with a glowing teal arc versus a brown cobble ground with green low-poly pines"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, wet night city with realistic lighting and bloom, while Image B is a bright daytime countryside",
+        "Image B has cel-shaded, inked outlines and a posterized look that Image A lacks",
+        "Different subjects: a pod car on city streets with a minimap versus a hoverboard rider flying through rings"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a realistic-style city with a driverless pod and a minimap HUD",
+        "Image B has a hand-drawn, ink-outlined look with hills, pine trees and a river",
+        "The two use different art styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic-style city with dusk lighting and a minimap HUD",
+        "Image B is an ink-outlined, hand-painted cartoon landscape with pine trees, river and hills",
+        "Different rendering styles, palettes and subjects (self-driving pod vs. hoverboard character)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a stylized, hand-drawn cel-shaded look with outlines and cobblestone texture",
+        "Image B uses a realistic city street with PBR-style lighting, vehicles and a minimap HUD",
+        "The two frames differ in character, scenery and rendering: a skateboarder among low-poly pine trees versus a pod vehicle on an urban road"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a realistic foggy city street with cars and a minimap HUD",
+        "Image B is a stylized outdoor scene with a snowboarder, pine trees and an orange sky",
+        "Different art styles: realistic road materials versus flat-shaded, outlined, posterized surfaces"
+      ]
+    }
+  ]
+}

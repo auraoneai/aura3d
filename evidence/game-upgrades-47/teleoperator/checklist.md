@@ -45,3 +45,22 @@ Measured on the remote runner (software WebGL2). Steady rows are in `luma-after.
 | GD-21 | every category >= 7: **not met** (minimum 4; ui_hud 7.5; material and modeling blocked on WP-36). same_game false >= 0.8: heatsink-port 0.728 and last-train-port 0.791 (**not met**; the tram livery is a WP-36 retexture) |
 | screens | final screens and card frames retaken (runs g04p3-r3-3/-4/-5); `screens-fresh` cleared |
 | game-checks | 0 errors; 8 warnings, all luma-band, bands not widened |
+
+## Phase 4 (4.7.2), 2026-11-01
+
+Measured on the remote runner (software WebGL2). The final build is round `p4-r5`. Its steady rows are in `luma-after.json` and its rubric is in `look-judgement.json` (r5a). Details: lane report "Phase 4 (4.7.2)".
+
+| Row | Phase-4 status |
+|---|---|
+| GD-01 | Cast shadows now read; the shadows-on/off probe is in `p4-probe1/`. Key-dominant rig: key dusk 5.5 / noon 7.5, which deviates from the PRD 2.2 / 3.0 values; IBL 0.2 / 0.25. The filter is PCF, not PCSS, and cascades stay 3. Dusk mean 53, p95 122 (**not met**); noon mean 79 (**not met**); clip 0 |
+| GD-02 | night mean 55, darkFrac 0.23 (**met**); p95 137 (**not met**) |
+| GD-05 | fog mean 73 (**not met**, unchanged look) |
+| GD-07 | dusk street is damp: roughness 0.36 under the SSR fade, so dusk reflects too; night unchanged |
+| GD-11 | WP-36 `dispatchPodPearl` livery on the player pod (route-local, rights and meta in `provenance/`). Noon car crop mean 54, spread 162 (**not met**: the livery rear is dark) |
+| GD-12 / GD-16 / GD-19 | the other 30 WP-36 rows: **blocked: Meshy keys refuse API calls** (moved to a later release) |
+| GD-21 rubric | every category >= 7: **not met**. r5 min 3-4 (ibl_reflections); against the same-day re-judge of the phase-3 shots, +0.5 to +2 in 9 of 11 categories |
+| GD-21 distinct | same_game false >= 0.8 against all 8 neighbours (**met**: 0.808-0.937) |
+| panel | golden, noon, fog 3/0/0 better (`g04p4r5a`); all 4 views 2/0/0 better (`g04p4r5b`) |
+| screens | 1280, 390 and card retaken on p4-r5 (runs `g04p4-r5-3/-5/-4`); index previews rebuilt |
+| game-checks | 0 errors; 8 warnings, all luma-band, bands not widened (before: 0 / 8) |
+| gates | typecheck-delta NEW_ERRORS 0; eslint clean on touched files; vitest 17/17 files pass |

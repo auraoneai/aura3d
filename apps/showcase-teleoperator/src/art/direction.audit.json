@@ -25,12 +25,12 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.42
+        "intensity": 0.22
       },
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.2
+        "intensity": 5.5
       },
       {
         "type": "point",
@@ -45,12 +45,12 @@
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 34
+        "intensity": 5.1
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 34
+        "intensity": 5.1
       }
     ],
     "hasAmbient": false,
@@ -208,8 +208,8 @@
       },
       {
         "assetKey": "gridCruiser",
-        "triangles": 29543,
-        "textures": 0,
+        "triangles": 29479,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
@@ -604,7 +604,7 @@
       },
       {
         "node": "player-tail-lamps",
-        "emissiveIntensity": 0.9,
+        "emissiveIntensity": 0.315,
         "practical": true
       }
     ],
