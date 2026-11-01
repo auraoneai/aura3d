@@ -3,68 +3,68 @@
   "round": 1,
   "shots": [
     {
-      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p4-r1/ninja-runner-port/frames/g20p4-r1s-1/desktop--run-1280-page.jpg",
-      "sha256": "7f3887a21ec442e1bd979ca460aebf8dfcb5fb8cbffa856c2c493d6f41a112c5"
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p4-r3/ninja-runner-port/frames/g20p4-r3s-1/desktop--run-1280-page.jpg",
+      "sha256": "015c2544ca0886b9a281e1bf306caa799edb9eb0c18de55b81f1b128a1dec7fc"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5.5,
-    "shadows": 5.5,
+    "lighting": 6,
+    "shadows": 6,
     "ibl_reflections": 4,
     "environment_world": 6,
     "atmospheric_effects": 5,
     "material_quality": 5.5,
-    "modeling_assets": 5.5,
-    "composition": 6.5,
-    "camera": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
     "postprocessing": 5,
-    "ui_hud": 6
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "The sun comes from the upper left and lights the scene evenly, but there is little key/fill contrast. Grass and walls read flat and slightly grey, and nothing shows a warm sun versus cool sky separation."
+      "seen": "A single warm sun from upper right gives readable form on the gate and towers, but the grass and tree canopies are lit almost flat. There is no visible rim or fill separation on the dark-clad player and enemy, so both read as near-silhouettes against the cobbles."
     },
     {
       "category": "shadows",
-      "seen": "The cobblestone path carries soft directional shadows and the trees cast faint shadows on the grass. The player has only a weak contact shadow, and the enemy stands on a flat tan disc marker rather than a grounded shadow. The bushes look under-shadowed at their bases."
+      "seen": "Trees, gate and characters cast sun shadows onto the path and grass with soft edges, which grounds the scene. Contact shadowing is weak under the bushes and buildings. The enemy relies on a flat beige disc decal instead of a real contact shadow, and the decal looks pasted on."
     },
     {
       "category": "ibl_reflections",
-      "seen": "All surfaces look fully matte. The red lacquered gate, roof tiles and stone show no specular response or environment reflection, so materials do not pick up the sky."
+      "seen": "No environment reflection or sky-tinted specular is visible on any surface. The cobbles, wood and stone are all matte, and the shaded sides take no blue sky bounce."
     },
     {
       "category": "environment_world",
-      "seen": "The village is coherent: half-timbered houses, round stone towers with slate cones, a red wooden gate, and a cobblestone road leading to more buildings. The grass field is a large flat expanse with a visibly tiling texture. Background mountains are low-poly cutouts, and the space between areas is sparse."
+      "seen": "The village set is coherent: a lacquered red gate, round stone towers with slate roofs, a half-timbered house, and distant hills. Beyond the props the grass plane is empty and uniform, with sparse bush placement and no ground clutter, flowers or path-edge blending."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is slight distance haze on the far mountains and buildings, roughly in line with the light fog the recipe calls for. The scene has no light shafts, particles or ambient life, and the sky is a static overcast-blue skybox rather than a clear sky blue."
+      "seen": "Mild distance haze softens the hills and far roofs. There are no particles, light shafts, drifting leaves or other ambient motion cues for an outdoor day scene."
     },
     {
       "category": "material_quality",
-      "seen": "The cobblestone has convincing per-stone height and dark grout. The grass is a flat, low-frequency tiled texture with no blades. The gate wood is a saturated orange with little grain, and the stone tower walls are a repeated brick texture."
+      "seen": "The cobblestone texture is the strongest material, with clear stone and grout definition. The tree canopies use a stretched, blotchy red texture on lumpy geometry that reads as painted clay. The grass is a low-detail tiling green, and the wood gate has little grain or roughness variation."
     },
     {
       "category": "modeling_assets",
-      "seen": "The gate and buildings have reasonable silhouettes. The tree canopies are faceted low-poly clumps with visible flat triangles, the bushes are lumpy spheres, and the near-left building edge is a plain box. The characters are small and simple, with an orange scarf on the player."
+      "seen": "The tree canopies are faceted low-poly blobs with visible polygon edges at their silhouettes. The bushes are simple spheres. The characters are small and low-detail, with only an orange scarf distinguishing the player. The buildings are simple primitives with basic window cutouts."
     },
     {
       "category": "composition",
-      "seen": "The road gives strong leading lines to the gate, which frames the village behind it. Bushes are placed symmetrically on both sides. The player sits low and small near the bottom edge, and HUD panels take all four corners."
+      "seen": "The path leads strongly to the gate, which is centered, and the two foreground trees frame it. However, the canopies are oversized and eat the top corners under the HUD panels. The player sits low and small at roughly 10–12% of frame area, below the 18–25% target."
     },
     {
       "category": "camera",
-      "seen": "The camera is a third-person chase view from behind and above, not the side-on follow the recipe specifies. The player fills only about 7–9% of the frame, below the 18–25% target, and the FOV looks wider than 50°."
+      "seen": "The camera is a behind-the-back chase view looking down the path, not the side-on follow camera the platformer recipe expects. The field of view looks near 50–60°, and the elevated angle reads the lane well."
     },
     {
       "category": "postprocessing",
-      "seen": "Tonemapping looks slightly washed out with lifted blacks in the shadows. There is no visible bloom, color grading or depth-of-field, and nothing resembling a tuned daylight-outdoor grade beyond basic exposure."
+      "seen": "No visible tone-mapping character, bloom, color grading or ambient occlusion. Colors are slightly muddy, the sky is a desaturated grey-blue, and the image has no daylight-outdoor grade punch."
     },
     {
       "category": "ui_hud",
-      "seen": "The parchment-style panels with a serif italic font are consistent and readable. The labels collide with their values ('DISTANCE45 m', 'DEFEATED00', 'SCORE30'). The top progress bar with markers is clear, but the four-corner layout crowds the view. No coin-gold accent appears in the HUD."
+      "seen": "Parchment-style panels with a serif typeface are consistent and readable, and the progress bar has named milestones. The labels crowd their values ('DISTANCE45 m', 'DEFEATED00'). The panels are heavy and cover the frame corners, and the ability grid adds clutter."
     }
   ],
   "nextChange": {
