@@ -24,21 +24,29 @@ Pixel numbers are software WebGL2 on the remote runner (phase 2).
 | DD47-M1 | passed corridors +25 over untouched 0.5 s later; no degradations | done in code (pixels phase 2) | `TraceField` + `traces lit` pool; traces.test.ts |
 | DD47-M2 | wall/corridor >= 1.8:1; pins 1 draw; material and composition >= 7 | done in code (pixels/judge phase 2) | epoxy roundedBox walls, pin pool (1 draw) |
 | DD47-M3 | lens >= 4x slab; halo > 128 at 3 px | done in code (pixels phase 2) | LED shards and can vents glow via instanceColorTarget |
-| DD47-A1 | validate --release; no primitive-subject; >= 1.2% of frame (~0.6% today) | blocked (WP-36) |  |
-| DD47-A2 | pairwise silhouette IoU <= 0.6; <= 8 draws | blocked (WP-36) |  |
-| DD47-A3 | fit-grounding and deployable pass; no primitive-subject on any board | blocked (WP-36) |  |
+| DD47-A1 | validate --release; no primitive-subject; >= 1.2% of frame (~0.6% today) | partial (4.7.2) | WP-36 `dotdashCourierPod` admitted (candidate, rights in `apps/showcase-dot-dash-3d/aura-evidence/meshy/`), simplified to 10,468 tris; drawn as the courier body under the core; validate --release not run |
+| DD47-A2 | pairwise silhouette IoU <= 0.6; <= 8 draws | blocked: Meshy keys refuse API calls (4.7.2) |  |
+| DD47-A3 | fit-grounding and deployable pass; no primitive-subject on any board | blocked: Meshy keys refuse API calls (4.7.2) |  |
 | DD47-V1 | each fires on its event; >= 40 hot pixels 80 ms after a disable; liveCount <= 60 | done in code (pixels phase 2) | vfx.ts + main.ts; vfx.test.ts (liveCount <= 60, reduced flash) |
 | DD47-V2 | lamp crop differs >= 4/255 over 1 s paused; <= 120 particles | done in code (pixels phase 2) | `lamp-motes` emitter |
 | DD47-AN1 | roll >= 8 deg in a turn; yaw step <= 45 deg/frame; reduced-motion probe passes | done | motion.test.ts (roll >= 8 deg, step <= 45 deg, 30% on reduced motion) |
 | DD47-AN2 | READY+0.6 s spawn half >= 3x far half; equal within 20% at +1.4 s | done in code (pixels phase 2) | `boardWave`, motion.test.ts |
 | DD47-C1 | sequences in evidence; captures within 2 of disabled; 19 columns at 390x844 | done in code (captures phase 2) | `maybePlayCinematic`, motion.test.ts |
-| DD47-H1 | contrast >= 4.5:1; HUD <= 14% at 390x844; ui_hud >= 7 | done (ui_hud 7, look-judgement.json) | styles.css silkscreen chips; contrast >= 9:1 computed; DIN Pro Medium WOFF numerals (public/dd-fonts) |
+| DD47-H1 | contrast >= 4.5:1; HUD <= 14% at 390x844; ui_hud >= 7 | phase 4: ui_hud 6.5 (two runs, look-judgement.json and p4-r4/look-judgement-2.json; 7 in phase 3, look-judgement-p3.json) | styles.css silkscreen chips; contrast >= 9:1 computed; DIN Pro Medium WOFF numerals (public/dd-fonts) |
 | DD47-W1 | label contrast >= 3:1; +6 draws max | done in code (pixels phase 2) | +3 draws |
 | DD47-PF1 | <= 110 / 90 / 70 draws by tier; JS +20 KB max; fps within 15% | done in code (measured phase 2) | budget.json `expected` |
-| DD47-PR1 | same_game false >= 0.8 vs all 6; every category >= 7; 0 warnings; poster no longer navy (11,24,77) | partial (4.7.1) | new poster and final screens (g13p3-r3); rubric min 4 (atmosphere), not every category >= 7; 14 luma-band warnings; sibling judge open for 4.7.2 |
+| DD47-PR1 | same_game false >= 0.8 vs all 6; every category >= 7; 0 warnings; poster no longer navy (11,24,77) | partial (4.7.2) | sibling: same_game false at 0.94 (slingshot-siege) and 0.964 (where-the-wind-wanders-port), the two genre neighbours; rubric min 4 / 4.5 (two runs), not every category >= 7; 14 luma-band warnings |
 
 ## Phase 3 (4.7.1)
 
-Rubric before/after: `look-judgement-before.json` -> `look-judgement.json` (min 2.5 -> 4, ui_hud 7). Final screens and
+Rubric before/after: `look-judgement-before.json` -> `look-judgement-p3.json` (min 2.5 -> 4, ui_hud 7). Final screens and
 posters retaken (`screens-fresh` clear). Game checks: 0 errors, 14 luma-band warnings (bands not widened; see the lane
 report `docs/prds/game-upgrades-47/lanes/g13.md`, "Phase 3 (4.7.1)"). Software WebGL2.
+
+## Phase 4 (4.7.2)
+
+Rubric: `look-judgement-p3.json` -> `look-judgement.json` and `p4-r4/look-judgement-2.json` (min 4 -> 4 / 4.5; shadows
+5.5 -> 6.5 / 6). Blind panel vs 4.6.2: all seven views better (`g13p4r4`, `g13p4r4z`). Distinctness: pass vs both genre
+neighbours (`p4-r4/sibling-*`). WP-36: `dotdashCourierPod` admitted and swapped in; the other 15 rows blocked (Meshy keys
+refuse API calls). Game checks: 0 errors, 14 luma-band warnings (bands not widened). Software WebGL2. Lane report:
+"Phase 4 (4.7.2)".
