@@ -26,7 +26,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.6
           },
           {
             "type": "directional",
@@ -36,7 +36,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.32
+            "intensity": 0.16
           }
         ],
         "hasAmbient": false,
@@ -262,7 +262,7 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "matte clay",
             "node": "plat-top:mover-lane",
             "practical": false
           },
@@ -368,7 +368,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.6
           },
           {
             "type": "directional",
@@ -378,7 +378,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,
@@ -733,7 +733,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.8
+            "intensity": 3.4
           },
           {
             "type": "directional",
@@ -743,7 +743,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,
@@ -1025,7 +1025,7 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "matte clay",
             "node": "plat-tops:dock",
             "practical": false
           },
@@ -1035,7 +1035,7 @@
             "practical": false
           },
           {
-            "name": "glazed clay",
+            "name": "matte clay",
             "node": "plat-tops:wood",
             "practical": false
           },
@@ -1094,7 +1094,7 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 3
+            "intensity": 3.4
           },
           {
             "type": "directional",
@@ -1104,7 +1104,7 @@
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.3
+            "intensity": 0.15
           }
         ],
         "hasAmbient": false,

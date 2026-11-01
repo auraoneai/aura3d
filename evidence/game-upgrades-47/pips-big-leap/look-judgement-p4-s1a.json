@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/d1280--03-action.jpg",
+      "sha256": "a2d6777dc2fe2e86ae4194e64f4a83c00d79a1033ec53d9a359baae2da7b7907"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/d1280--05-modes.jpg",
+      "sha256": "3ef61e6c9b486029c5badfd440cc2de571e037db7c40466dc38bda762f3a7456"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-3/pips-big-leap--w2--settle-60s.jpg",
+      "sha256": "887150614fdad026c55b7ecfff831939997077d489f5d681c2f4cd0667babf0c"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-5/pips-big-leap--w4--settle-60s.jpg",
+      "sha256": "f05bab0cdde615d40d4680c62cffd8977c37260a6075f8a807792ce51737d29b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has readable daylight on the grass, but frames 3 and 4 are flat. The Ember scene is a single brown-red tone with no key light separating the floor, the walls and the props."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 1 shows no visible contact shadow under Pip on the grass, and the trees cast no shadows onto the ground. Frames 3 and 4 have soft character shadows, and the frame 3 shadow stretches a long way sideways."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Nearly every surface reads as matte. Only the metal cage towers in frame 4 show faint specular, and the blue crystal and rings in frame 1 show no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The floating platform islands, sun-gate arch, windmill and lava-cellar set give each world its own identity. The faceted low-poly trees sit next to high-detail props and look unfinished beside them."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze in frame 1 works. In frame 4 the brown fog swallows the background, and the ember particles are small and sparse."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass in frame 1 uses a low-resolution, blocky noise texture that shows pixel stepping up close. The deck in frame 3 is mostly flat orange with stripes only at the lower left, and the frame 4 floor is untextured. The crate and barrel have good wood grain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Pip is appealing and well modeled, and the crate, barrel and windmill read well. The trees are crude faceted cones. The photoreal metal towers in frame 4 clash with the stylized character."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1, close trees on the right cover about a third of the frame. In frame 3, an empty orange deck fills the lower half. In frame 1, a stray blue-white slab floats beside Pip."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera follows from directly behind Pip instead of side-on as the recipe expects. Pip fills about 12 to 15% of the frame, below the 18 to 25% target."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 3 has a heavy dark vignette. A white diagonal streak artifact crosses the grass in frame 1. Grading in frames 3 and 4 is muddy rather than daylight-outdoor."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The cream pill HUD and the Vale Atlas modal are consistent and legible. The HUD is missing in frames 3 and 4, the atlas cards show stray '...' placeholder lines, and the debug-style world nav bar crowds the top edge."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

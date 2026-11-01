@@ -1,4 +1,14 @@
-# Pip's Big Leap: final screens (4.7.1 candidate, GU47 phase 3, 2026-10-31)
+# Pip's Big Leap: final screens (4.7.2 candidate, GU47 phase 4, 2026-10-31)
+
+Retaken on the phase-4 build (branch `gu47/g06`, 22ae79e75: side key with crisp PCSS shadows, glazed clay slab bodies, glossy
+Pip, stronger contact shadows, no voxel NPCs in the diorama, short controls chips) with `tests/browser/audit-fix/pips-big-leap.spec.ts`
+on the remote ACR runner (crmmeprodacr, headless Chromium, software WebGL2), runs `g06p4-r4-8` (grpA: 1280 title/early/action/modes
+and the 1440x900 card) and `g06p4-r4-9` (grpB: 1280 mid, 390x844 title/early/action/mid/modes). Raw frames:
+`evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/`. Both runs again ended at the ACR step limit before the results
+screens, so `1280-06-results.jpg` and `390-06-results.jpg` are still the 2026-10-29 frames. `card-1x.jpg` is a `sips` downscale of
+`card-2x.jpg`. This shows layout, content and look on software GL, not real-GPU look or frame rate.
+
+## Phase 3 set (4.7.1)
 
 Retaken on the phase-3 build (branch `gu47/g06`, 88891ddb2: per-world look switch, every world in the panel-verified
 felt-and-clay diorama) with `tests/browser/audit-fix/pips-big-leap.spec.ts` on the remote ACR runner (crmmeprodacr, headless

@@ -1,0 +1,100 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/c1440--card-2x.jpg",
+      "sha256": "7b4e1bae080d28043f5ffe074ece2fcdd55d3ed443323fb51424d61cd16f5bab"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-4/pips-big-leap--w3--settle-60s.jpg",
+      "sha256": "d0ca9faeb6cddfb7974103b0fcd3dac50b704112cd946f455bfedd2b7b15af33"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-6/pips-big-leap--w5--settle-60s.jpg",
+      "sha256": "6064a504b2e86c6e70aa7a1634ac84bdedff56e241a764dbbbb9356c473f2bfc"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-7/pips-big-leap--w6--settle-60s.jpg",
+      "sha256": "9e0bf52907a7825b767b0c5704994f6f1183ab128404dde97571a3b11789638c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 6,
+    "environment_world": 5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 2 (clouds) is overexposed and low-contrast; the lavender-white platforms and pale sky merge into one flat value range with no visible key-light direction."
+    },
+    {
+      "category": "lighting",
+      "seen": "Frame 3 is lit in a single orange-brown hue against a flat dark brown backdrop, so the subject has no rim or fill separation from the beige floor."
+    },
+    {
+      "category": "lighting",
+      "seen": "In frame 1 the forest grass reads evenly lit and the trees are flat-shaded per face; the sun direction is only weakly legible."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 1 grass shows large blocky, stair-stepped shadow-map texels, and the character's contact shadow is a pixelated smear."
+    },
+    {
+      "category": "shadows",
+      "seen": "In frame 2 the character's shadow on the platform is a clearly aliased pixel block, detached and offset from the feet."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 4 has a glossy purple floor with plausible reflections and chrome rings picking up highlights. The frame 2 platforms and frame 1 grass show no environment response and look matte and unlit-ish."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Every world is a single straight lane of floating rectangular slabs in an empty void. Set dressing is sparse: a few rocks, two towers, two rings. Frame 3 has no sky or distant geometry, only a brown wall."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frames 1 and 2 have distance haze and frame 4 has drifting sparkles, but frame 3 has no depth fog, so the background towers sit at the same value as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Platforms are untextured slabs in grey-lavender (frame 2) and beige (frame 3) with uniform roughness, and the frame 1 grass is a stretched, smeared green texture. The acorn character's cap and skin read well by comparison."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Asset styles clash: flat low-poly pine trees and bare trunks in frame 1 sit next to high-detail scanned-looking rocks, ornate gates and kitbashed purple drones, while the platforms are simple bevelled boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "All four frames use a symmetric center-lane layout with the character at about 10–15% of frame height. The lower 40% of each frame is empty floor, and the goal structures are tiny at the vanishing point."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera follows from low and directly behind the character rather than from the expected side-on angle, so most of the frame is ground plane and jump distances are hard to read."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 2 has a heavy blurred blob across the bottom foreground from depth of field. Tone mapping is washed out in frame 2 and muddy in frame 3. Bloom in frame 4 is acceptable."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The frame 1 HUD pills (hearts, world, sun-seeds, acorns, time) are clean and use a consistent warm cream style, but the top debug-style world-select bar and the small low-contrast text compete with the gameplay HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

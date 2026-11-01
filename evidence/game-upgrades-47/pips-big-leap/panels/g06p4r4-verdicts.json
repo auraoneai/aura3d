@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A brown nut/bush mass to the right of the player looks like it is floating at the edge of the path; ground shadows are blocky and pixelated; heavy dark vignette at the bottom-left",
+     "A large dark-brown blob floats beside the path at the right; shadows on the ground are pixelated and banded; strong blur and darkening at the bottom of the frame; the player is seen from behind and partly overlaps the platforms ahead.",
+     "Large dark brown acorn-cap mesh floats mid-air to the right of the player; a collectible acorn overlaps the player's head; blocky low-res shadow aliasing on the foreground grass; the foreground is slightly blurred"
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Ground shadows are pixelated; strong dark vignette in the bottom-left; a dark nut cluster to the right of the player looks like it is floating",
+     "A dark-brown blob floats at the right; shadows on the grass are pixelated and banded; heavy blur and darkening along the bottom edge.",
+     "Floating brown acorn-cap blob to the right of the path; blocky shadow aliasing on the grass; slight foreground blur"
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The orange floor is somewhat oversaturated, with a slight dark band in the foreground; the sky is a little grey",
+     "The orange floor is nearly one flat colour and very saturated; the foreground is soft and blurry; the sky is a bit grey and plain.",
+     "Floor colour is a bit over-saturated orange; some foreground shadow softness; otherwise warm lighting, a textured island and good depth"
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 1,
+    "afterDefects": [
+     "The foreground floor is blurred, with a dark smear along the bottom edge that suggests the camera is clipping into geometry; the player's shadow is heavily pixelated; still a fairly pale palette",
+     "The player's shadow is pixelated and blocky; the bottom of the frame is strongly blurred with a dark vignette; the pale floor is fairly low contrast.",
+     "Blocky pixelated shadow under the player; strong foreground blur/vignette at the bottom; somewhat hazy sky; the player is readable and the platforms have form and detail"
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The monochrome brown-orange palette is a bit muddy, and the background is a plain brown wall; otherwise moody and well lit, with readable embers",
+     "The brown/orange palette is somewhat monochrome and muddy at the floor; the background is a flat reddish wall.",
+     "Heavy brown monochrome tint lowers colour variety; the foreground is somewhat dark and muddy; good mood, embers and depth"
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very warm, near-monochrome sepia tint; the dark brown background is somewhat murky; the foreground is slightly hazy",
+     "The background is a plain dark-brown wall; the warm palette is a little monochrome; floor shading is soft.",
+     "Strong sepia/orange cast across everything; the dark background is a bit plain; otherwise warm, moody and with good contrast on the player"
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The glossy reflective floor has some blown-out specular highlights and reflection noise; the player sits on the edge of the bright platform rim",
+     "Bloom and reflections on the floor are slightly strong and wash out the bottom edge; the foreground is a little blurred.",
+     "Heavy bloom/glare on the glossy foreground platform; slightly over-bright reflections; the large portal rings crop at the frame edges"
+    ]
+   }
+  ]
+ }
+]
