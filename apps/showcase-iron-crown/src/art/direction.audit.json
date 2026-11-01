@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "8fe9b675804d5ff9bf4326d66927a3580b55b29fa4d6772b120a502127cb0fb8",
+  "sourceSha256": "6618a4714e3836f042116ccc903c0d5a843e2ea930a9c5309e0efe878d9c97d8",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -39,12 +39,12 @@
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 8
+        "intensity": 5
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 5
+        "intensity": 3
       }
     ],
     "hasAmbient": false,
@@ -82,16 +82,16 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "auraClashCornerBrazierPylonMeshy",
+        "assetKey": "ironcrownBrazierPylon",
         "triangles": 0,
-        "textures": 0,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "auraClashCornerBrazierPylonMeshy",
+        "assetKey": "ironcrownBrazierPylon",
         "triangles": 0,
-        "textures": 0,
+        "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
@@ -637,10 +637,10 @@
       },
       {
         "role": "prop",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownBrazierPylon",
+        "maxTriangles": 32000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "auraClashCornerBrazierPylonMeshy"
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",

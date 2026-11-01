@@ -36,6 +36,13 @@ export interface RefinedVenueLook {
   readonly mirror?: number;
   readonly weather?: { readonly type: "snow"; readonly particles: number; readonly streakLimit: number; readonly color: AuraColor };
   readonly prayerFlags?: boolean;
+  /**
+   * Phase 4 (4.7.2): the spawn disc under each fighter. The 4.6.2 disc is near-black, so the fighters' cast and contact
+   * shadows landed on black and never read; a mid-tone disc lets them read.
+   */
+  readonly spawnDisc?: AuraColor;
+  /** Phase 4: contact-shadow strength and reach under the fighters (default 0.8 / 0.3). */
+  readonly contact?: { readonly intensity: number; readonly length: number };
 }
 
 export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>> = {
@@ -46,15 +53,17 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#e8c98a",
       exposureEv: -0.02,
       fogDensityScale: 0.12,
-      environmentIntensity: 0.7,
+      environmentIntensity: 0.32,
       environmentRotationDeg: 330,
-      sun: { elevationDeg: 32, azimuthDeg: -40 },
-      key: { color: "#fff3e2", intensity: 3.4, shadow: { filter: "pcf", mapSize: 2048 } },
+      sun: { elevationDeg: 34, azimuthDeg: -62 },
+      key: { color: "#fff3e2", intensity: 11, shadow: { filter: "pcf", mapSize: 2048 } },
       grade: { contrast: 1.18, saturation: 1.1, temperature: 0, tint: 0 }
     },
     rim: { color: "#fff2dc", intensity: 7 },
-    ringKey: { color: "#ffe6c4", intensity: 8 },
-    ringFill: { color: "#dfe8ff", intensity: 6 },
+    ringKey: { color: "#ffe6c4", intensity: 3 },
+    ringFill: { color: "#dfe8ff", intensity: 2.5 },
+    spawnDisc: "#8d8274",
+    contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
     bloom: { intensity: 0.2, threshold: 0.9 }
@@ -71,13 +80,15 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       grade: { contrast: 1.14, saturation: 1.06, temperature: -0.06, tint: 0 }
     },
     rim: { color: "#d8e6ff", intensity: 10 },
-    ringKey: { color: "#ffe9cc", intensity: 8 },
-    ringFill: { color: "#e4ecff", intensity: 5 },
+    ringKey: { color: "#ffe9cc", intensity: 5 },
+    ringFill: { color: "#e4ecff", intensity: 3 },
     cones: true,
     vignette: 0.22,
     bloom: { intensity: 0.26, threshold: 0.88 },
     followSpot: { color: "#fff1dc", intensity: 30 },
-    mirror: 0.35
+    mirror: 0.35,
+    spawnDisc: "#5e5246",
+    contact: { intensity: 1, length: 0.45 }
   },
   "desert-airbase": {
     lookId: "overcast",
@@ -86,15 +97,17 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#ffb03c",
       exposureEv: 0,
       fogDensityScale: 0.24,
-      environmentIntensity: 0.75,
+      environmentIntensity: 0.62,
       environmentRotationDeg: 200,
-      sun: { elevationDeg: 22, azimuthDeg: -52 },
-      key: { color: "#ffd2a0", intensity: 3.2, shadow: { filter: "pcf", mapSize: 2048 } },
+      sun: { elevationDeg: 26, azimuthDeg: -64 },
+      key: { color: "#ffd2a0", intensity: 4.4, shadow: { filter: "pcf", mapSize: 2048 } },
       grade: { contrast: 1.16, saturation: 1.08, temperature: 0.06, tint: 0 }
     },
     rim: { color: "#fff0dc", intensity: 8 },
-    ringKey: { color: "#ffe2bf", intensity: 8 },
-    ringFill: { color: "#dde8ff", intensity: 6 },
+    ringKey: { color: "#ffe2bf", intensity: 3 },
+    ringFill: { color: "#dde8ff", intensity: 2.5 },
+    spawnDisc: "#9a8a72",
+    contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
     bloom: { intensity: 0.22, threshold: 0.9 }
@@ -106,15 +119,17 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       accent: "#7dd7ff",
       exposureEv: 0.04,
       fogDensityScale: 0.3,
-      environmentIntensity: 0.75,
+      environmentIntensity: 0.62,
       environmentRotationDeg: 300,
-      sun: { elevationDeg: 24, azimuthDeg: 40 },
-      key: { color: "#ffe2c4", intensity: 3, shadow: { filter: "pcf", mapSize: 2048 } },
+      sun: { elevationDeg: 28, azimuthDeg: 58 },
+      key: { color: "#ffe2c4", intensity: 4.2, shadow: { filter: "pcf", mapSize: 2048 } },
       grade: { contrast: 1.15, saturation: 1.04, temperature: -0.04, tint: 0 }
     },
     rim: { color: "#e6f2ff", intensity: 7 },
-    ringKey: { color: "#ffe6c8", intensity: 8 },
-    ringFill: { color: "#dceaff", intensity: 6 },
+    ringKey: { color: "#ffe6c8", intensity: 3 },
+    ringFill: { color: "#dceaff", intensity: 2.5 },
+    spawnDisc: "#8f949a",
+    contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
     bloom: { intensity: 0.2, threshold: 0.9 },

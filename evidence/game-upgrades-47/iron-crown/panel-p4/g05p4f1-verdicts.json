@@ -1,0 +1,83 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bangkok-dock",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Temple roof is still slightly translucent; the left building edge is dark and lacks detail; the floor is fairly dark at the bottom",
+     "The central shrine roof is semi-transparent and looks ghosted. The overall frame is a little dark, and the background is blurry.",
+     "The shrine roof still shows translucent ghosting. The far background is a blurred photo backdrop, and the floor corners are slightly dark. Otherwise the colours are vivid, the fighters have strong rim light, and the mood is good."
+    ]
+   },
+   {
+    "variant": "colosseum-ruins",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark vignette and a dim floor; flat grey sky",
+     "The heavy vignette darkens the corners. The sky is slightly grey and overcast.",
+     "The sky is flat grey and the floor has slight vignette darkening. The arch stones look blocky and untextured."
+    ]
+   },
+   {
+    "variant": "crown-arena",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Quite dark overall; the right fighter's dark outfit blends into the background; heavy red tint",
+     "The scene is dark overall, and the brown-clad fighter blends somewhat into the dark background. There is a little bloom haze.",
+     "The frame is quite dark overall, and the right fighter's dark outfit blends into the background slightly. Some white sparkle dots in the background look like stray artifacts."
+    ]
+   },
+   {
+    "variant": "desert-airbase",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright sky glare at upper right; the right fighter is a little dark against the props",
+     "The sky is plain and empty. There is mild haze in the distance.",
+     "Some haze remains near the horizon, and the deck corners are a little dark. The jet has better material definition and the fighters are clearer."
+    ]
+   },
+   {
+    "variant": "himalayan-monastery",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Temple roof is translucent and ghosted; slightly grey sky; the right fighter's dark outfit is low contrast",
+     "The shrine is still semi-transparent. The sky is grey and overcast with some haze.",
+     "The shrine roof is translucent and ghosted, and the sky is grey and overcast. White snow particles read slightly as noise."
+    ]
+   }
+  ]
+ }
+]

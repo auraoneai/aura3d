@@ -41,3 +41,14 @@ Status per row: done / done-interim / partial / blocked (E-x | WP-36) / phase 2.
 - [ ] luma-band: 8 warnings. Crown p95, Neo-Tokyo darkFrac, Dock and Monastery spread; bands not widened, see the lane report.
 - [ ] borrowed-asset (25) and prop-exclusivity (1): WP-36.
 - [x] Gates: typecheck-delta NEW_ERRORS 0, eslint clean, iron-crown vitest green, game-checks 0 errors (34 warnings).
+
+## Phase 4 (4.7.2)
+
+- [x] Merged origin/main (4.7.1)
+- [x] Shadow probe g05p4-r1: map rendered and sampled, yet no visible cast shadow (engine handoff)
+- [x] WP-36 `ironcrownBrazierPylon` admitted and swapped in (Dock, Monastery, Crown)
+- [x] Key and grounding pass on the four refined venues; panel g05p4f1 better 3/0/0 on five views
+- [ ] Rubric every category >= 7 (not met: min 2.5-3.5, two runs)
+- [x] Distinctness vs bunker-zero 0.924 (pass)
+- [ ] WP-36 remaining 48 rows (pending in pipeline)
+- [x] Gates: typecheck NEW_ERRORS 0, eslint clean, vitest 23/23 files, game-checks 0 errors / 34 warnings

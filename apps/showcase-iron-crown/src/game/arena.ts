@@ -51,7 +51,10 @@ export interface ArenaOptions {
 /** The fighting kit's debug-style markers (camera safe-zone posts, centre aura beam): dropped from a finished arena. */
 const KIT_MARKER_NODES = new Set(["left camera safe boundary marker", "right camera safe boundary marker", "center aura combat lane"]);
 
-function spawnRing(id: string, x: number, color: AuraColor): AuraSceneNode[] {
+/** The 4.6.2 spawn disc (near-black): it swallowed every cast shadow at the fighters' feet. */
+const ORIGINAL_SPAWN_DISC: AuraColor = "#15121a";
+
+function spawnRing(id: string, x: number, color: AuraColor, disc: AuraColor = ORIGINAL_SPAWN_DISC): AuraSceneNode[] {
   return [
     primitives
       .cylinder({ name: `${id}-outer`, material: material.emissive({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4 }), castShadow: false, receiveShadow: false })
@@ -59,7 +62,7 @@ function spawnRing(id: string, x: number, color: AuraColor): AuraSceneNode[] {
       .scale([1.15, 0.012, 1.15])
       .toJSON(),
     primitives
-      .cylinder({ name: `${id}-inner`, material: material.pbr({ color: "#15121a", roughness: 0.7 }), castShadow: false, receiveShadow: true })
+      .cylinder({ name: `${id}-inner`, material: material.pbr({ color: disc, roughness: 0.7 }), castShadow: false, receiveShadow: true })
       .position(x, 0.016, 0.02)
       .scale([0.96, 0.012, 0.96])
       .toJSON()
@@ -67,7 +70,7 @@ function spawnRing(id: string, x: number, color: AuraColor): AuraSceneNode[] {
 }
 
 /** The kit's floor nodes (everything at or below 0.35 m), with the start-lane slabs swapped for spawn rings. */
-export function arenaFloorNodes(stage: IronStage, playerX: number, rivalX: number): AuraSceneNode[] {
+export function arenaFloorNodes(stage: IronStage, playerX: number, rivalX: number, spawnDisc?: AuraColor): AuraSceneNode[] {
   return stage.stage.nodes
     .filter((n: AuraSceneNode) => {
       const raw = n as { transform?: { position?: Vec3 }; position?: Vec3; name?: string };
@@ -79,8 +82,8 @@ export function arenaFloorNodes(stage: IronStage, playerX: number, rivalX: numbe
       if (name === "fighting foreground floor plane") {
         return [{ ...n, position: [0, -0.055, 0], scale: [44, 1, 32] } as AuraSceneNode];
       }
-      if (name === "player start lane glow") return spawnRing("player-spawn", playerX, stage.palette.lane);
-      if (name === "opponent start lane glow") return spawnRing("rival-spawn", rivalX, stage.palette.warning);
+      if (name === "player start lane glow") return spawnRing("player-spawn", playerX, stage.palette.lane, spawnDisc);
+      if (name === "opponent start lane glow") return spawnRing("rival-spawn", rivalX, stage.palette.warning, spawnDisc);
       return [n];
     });
 }
@@ -214,7 +217,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
   }
   return scene()
     .add(refinedLookNode(look, row.key.kind === "follow-spot" && look.followSpot !== undefined))
-    .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0]))
+    .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0], look.spawnDisc))
     .addMany(markDeckPracticals(groundDressing(s.originalDressing)))
     .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, false))
     .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint, false))
@@ -223,7 +226,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
       ...weatherNodes,
       ...(look.prayerFlags ? prayerFlagNodes(s.id, o.reducedMotion) : []),
       koScorchNode(),
-      ...(o.contactShadows ? [effects.contactShadows({ intensity: 0.8, length: 0.3 }).toJSON()] : []),
+      ...(o.contactShadows ? [effects.contactShadows({ intensity: look.contact?.intensity ?? 0.8, length: look.contact?.length ?? 0.3 }).toJSON()] : []),
       effects.vignette({ name: "iron crown vignette", intensity: look.vignette, smoothness: 0.65 }).toJSON(),
       effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
       ...(look.mirror ? [{ ...ssrNode(), intensity: look.mirror } as AuraSceneNode] : []),
