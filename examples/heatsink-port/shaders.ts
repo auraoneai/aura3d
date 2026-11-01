@@ -148,8 +148,10 @@ void main() {
   color += mix(vRoad, vec3(0.22, 0.5, 0.95), 0.85 * glass) * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
-  color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;
-  color += vec3(0.75, 0.9, 1.0) * dash * 0.28;
+  // GU47 phase 4: the obsidian causeway carries no road paint (white dashes and edge lines were the sibling tell "same highway
+  // with dashed white lane lines"); its lanes read by the ion veins and the cyan curb glow. Unchanged under ?look=original.
+  color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55 * (1.0 - glass);
+  color += vec3(0.75, 0.9, 1.0) * dash * 0.28 * (1.0 - glass);
   color += neon * curb * (0.16 + 0.06 * sin(u_time * 2.0 + s * 0.05));
   outColor = vec4(applyFog(color, vWorld), 1.0);
 }`;

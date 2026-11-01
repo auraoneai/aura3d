@@ -105,6 +105,12 @@ export const HEAT_STEPS: readonly (readonly [string, number])[] = [
   ["#000000", 0], ["#5a1e08", 0.12], ["#8a2e0a", 0.22], ["#c8441a", 0.35], ["#e8641e", 0.48], ["#ff8a2e", 0.6], ["#ffc070", 0.75], ["#fff0d8", 0.95]
 ];
 
+/**
+ * GU47 phase 4: the twilight hull's resting emissive (heat step 0): a dim ion-cyan so the copper drone reads as this
+ * game's ion craft, not a plain orange quadcopter (sibling tell vs Thermal Drift). Original keeps step 0 black.
+ */
+export const ION_IDLE: readonly [string, number] = ["#1aa8c8", 0.1];
+
 /** heat 0..1 to a step index; the original look never glows (step 0) */
 export function heatStep(row: HeatsinkLookRow, heat: number): number {
   if (!row.wake.enabled) return 0;

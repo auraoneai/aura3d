@@ -11,7 +11,7 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
-import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, ION_IDLE, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
 import { buildBeacons } from "./art/beacons";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
@@ -405,7 +405,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   let rollNow = 0;
   let finishedFor = 0;
   let vigEnv = 0;
-  let heatShown = 0;
+  let heatShown = row.wake.enabled ? -1 : 0; // twilight applies ION_IDLE on the first frame; original keeps the 4.6.2 start
   let chaseShown = -1;
   let vigShown = -1;
 
@@ -464,7 +464,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       if (part.model) {
         /* IC-12: heat glows on the hull in 8 steps (one setEmissive per step change, so no per-frame material churn) */
         const step = heatStep(row, heatGlow);
-        if (step !== heatShown) { heatShown = step; const [hex, k] = HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
+        if (step !== heatShown) { heatShown = step; const [hex, k] = step === 0 && row.wake.enabled ? ION_IDLE : HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
         continue;
       }
       h.setUniform?.("heat", heatGlow);
