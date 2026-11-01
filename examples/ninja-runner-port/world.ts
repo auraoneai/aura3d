@@ -97,6 +97,14 @@ const PATH_SURFACE: Record<string, readonly [PathKind, string]> = {
 const VERGE_TINT: Record<string, string> = {
   village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
 };
+/**
+ * GU47 phase 5: the evening's verges are autumn grass, gold in the town and olive-umber under the cedars, multiplied over
+ * the same painted grass. The 4.6.2 saturated spring green under a soft sky was a Cloud Runner sibling tell ("similar
+ * saturated green grass", judge g20p4-r3 vs final471, 0.618 same). `?look=original` keeps `VERGE_TINT`.
+ */
+export const EVENING_VERGE_TINT: Record<string, string> = {
+  village: "#f0c48a", alley: "#e8bc86", stairs: "#ecc088", rooftops: "#b0a298", descent: "#f0c48a", riverside: "#e6be8c", bridge: "#e6be8c", forest_entry: "#b29a74", forest: "#a8906e", forest_exit: "#b29a74", water: "#ffffff"
+};
 
 /**
  * GU47 phase 4: the evening's rooftop run is laid in indigo glazed tiles (PRD 6.1 G20 palette, indigo #2b3550). The
@@ -334,7 +342,7 @@ export function buildWorld(options: WorldOptions): World {
     const surf = path ? ground[kind] : g.biome === "rooftops" ? ground.tiles : ground.grass;
     // GU47 phase 3: under the evening's warm key the pale cobbles read blown out (blind panel, g20p3r2); a sandstone tint
     // keeps their texture. The 4.6.2 look keeps the white tint.
-    const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#ddd2c2" : pathTint) : VERGE_TINT[g.biome]!;
+    const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#ddd2c2" : pathTint) : (evening ? EVENING_VERGE_TINT : VERGE_TINT)[g.biome]!;
     const key = `${path ? kind : g.biome === "rooftops" ? "tiles" : "grass"}|${tint}`;
     let m = merged.get(key);
     if (!m) merged.set(key, m = { surf, tint, rough: path ? (evening ? EVENING_PATH_ROUGHNESS : 0.92) : 1, positions: [], normals: [], uvs: [], indices: [] });
@@ -354,7 +362,7 @@ export function buildWorld(options: WorldOptions): World {
 
   const modelSink: ModelSink = {};
   const lanternSpots: Vec3[] = [];
-  for (const layer of buildScenery(modelSink, { paintedTrees: evening })) {
+  for (const layer of buildScenery(modelSink, { paintedTrees: evening, autumnVerge: evening })) {
     if (layer.id === "lanterns") for (const p of layer.placements) lanternSpots.push([p.matrix[12]!, p.matrix[13]!, p.matrix[14]!]);
     const spec = LAYERS.find((l) => l.id === layer.id)!;
     // NR-11: in the evening the lantern layer splits into its three glow groups (day / dusk / night, +2 draws).
