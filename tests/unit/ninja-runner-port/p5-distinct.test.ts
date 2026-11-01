@@ -1,33 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { DUSK_CEDARS, buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
+import { buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 
-/** GU47 phase 5 (sibling distinctness): evening cedars and autumn verges are presentation only. */
+/** GU47 phase 5 (sibling distinctness): the autumn verge is presentation only (bush tint; nothing moves). */
 describe("ninja-runner-port phase 5 evening dressing", () => {
   const plain: ModelSink = {};
-  const dusk: ModelSink = {};
+  const autumn: ModelSink = {};
   const before = buildScenery(plain, { paintedTrees: true });
-  const after = buildScenery(dusk, { paintedTrees: true, autumnVerge: true });
-  const baseline: ModelSink = {};
-  buildScenery(baseline);
+  const after = buildScenery(autumn, { paintedTrees: true, autumnVerge: true });
 
-  it("draws the forest conifers as painted cedars instead of the shared pine model", () => {
-    expect(baseline.pine?.length ?? 0).toBeGreaterThan(0);
-    expect(dusk.pine?.length ?? 0).toBe(0);
-    const cones = after.find((l) => l.id === "cones")?.placements.length ?? 0;
-    const baseCones = buildScenery({}).find((l) => l.id === "cones")?.placements.length ?? 0;
-    expect(cones - baseCones).toBe(3 * baseline.pine!.length);
-    expect(DUSK_CEDARS).toHaveLength(4);
-  });
-
-  it("keeps every other model placement where it was (same random draws)", () => {
-    for (const id of Object.keys(baseline)) {
-      if (id === "pine" || id === "oak") continue;
-      expect(dusk[id]?.length ?? 0, id).toBe(baseline[id]!.length);
-      expect(dusk[id]!.map((p) => JSON.stringify({ ...p, tint: undefined })), id).toEqual(baseline[id]!.map((p) => JSON.stringify({ ...p, tint: undefined })));
+  it("keeps every model placement where it was and only retints the bushes", () => {
+    expect(Object.keys(autumn).sort()).toEqual(Object.keys(plain).sort());
+    for (const id of Object.keys(plain)) {
+      expect(autumn[id]!.map((p) => JSON.stringify({ ...p, tint: undefined })), id).toEqual(plain[id]!.map((p) => JSON.stringify({ ...p, tint: undefined })));
+      if (id !== "bush") expect(autumn[id]!.map((p) => p.tint), id).toEqual(plain[id]!.map((p) => p.tint));
     }
+    expect(autumn.bush!.length).toBeGreaterThan(0);
+    expect(autumn.bush!.some((p) => p.tint === "#e2b48e")).toBe(true);
   });
 
-  it("only the bush tint differs with autumnVerge", () => {
-    expect(before.map((l) => l.placements.length)).toEqual(after.map((l) => l.placements.length));
+  it("keeps every instanced layer's placement count", () => {
+    expect(after.map((l) => l.placements.length)).toEqual(before.map((l) => l.placements.length));
   });
 });

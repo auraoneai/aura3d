@@ -81,7 +81,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffb57a", intensity: 3.4 },
     environmentIntensity: 1.3,
     fog: { color: "#c9a294", density: 0.0019 },
-    sky: { zenith: "#2e4f86", horizon: "#f2b47a", glow: "#ff9c62", cloud: "#f6d2a8", stars: 0, moon: 0 },
+    sky: { zenith: "#40559f", horizon: "#f4ac86", glow: "#ff9c62", cloud: "#fbcab0", stars: 0, moon: 0 },
     lanterns: 0.8, ink: 1
   },
   {

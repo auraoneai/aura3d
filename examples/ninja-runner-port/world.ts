@@ -98,12 +98,13 @@ const VERGE_TINT: Record<string, string> = {
   village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
 };
 /**
- * GU47 phase 5: the evening's verges are autumn grass, gold in the town and olive-umber under the cedars, multiplied over
- * the same painted grass. The 4.6.2 saturated spring green under a soft sky was a Cloud Runner sibling tell ("similar
- * saturated green grass", judge g20p4-r3 vs final471, 0.618 same). `?look=original` keeps `VERGE_TINT`.
+ * GU47 phase 5: the evening's town verges are autumn-gold grass, multiplied over the same painted grass. The 4.6.2
+ * saturated spring green under a soft sky was a Cloud Runner sibling tell ("similar saturated green grass", judge
+ * g20p4-r3 vs final471, 0.618 same). The forest keeps its phase-4 tint (a painted-cedar forest round lost the blind
+ * panel 0/3/0, g20p5f). `?look=original` keeps `VERGE_TINT`.
  */
 export const EVENING_VERGE_TINT: Record<string, string> = {
-  village: "#f0c48a", alley: "#e8bc86", stairs: "#ecc088", rooftops: "#b0a298", descent: "#f0c48a", riverside: "#e6be8c", bridge: "#e6be8c", forest_entry: "#b29a74", forest: "#a8906e", forest_exit: "#b29a74", water: "#ffffff"
+  village: "#f0c48a", alley: "#e8bc86", stairs: "#ecc088", rooftops: "#b0a298", descent: "#f0c48a", riverside: "#e6be8c", bridge: "#e6be8c", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
 };
 
 /**

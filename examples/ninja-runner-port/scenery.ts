@@ -141,11 +141,6 @@ export interface SceneryOptions {
   readonly autumnVerge?: boolean;
 }
 
-/** GU47 phase 5 (evening look): Whispering Forest's conifers are the game's own painted cedars, ink-dark trunks under
- *  indigo-green tiers, instead of the shared generated pine whose orange-red trunks were the top Cloud Runner sibling
- *  tell ("low-poly faceted conifers with orange-red trunks", judge g20p4-r3 vs final471, 0.618 same). Same two random
- *  draws per tree as the model path, so every later placement is unchanged. */
-export const DUSK_CEDARS = ["#1f3b3a", "#26443f", "#1b3236", "#2a4840"] as const;
 
 export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
@@ -283,15 +278,6 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
 
   const pine = (x: number, y: number, z: number, h: number, r: () => number): void => {
-    if (models && options.paintedTrees) {
-      const wk = 0.85 + r() * 0.35, yaw = r() * 6, tone = DUSK_CEDARS[Math.floor(yaw) % DUSK_CEDARS.length]!;
-      put("trunks", x, y - 0.6, z, 0, 0.4 + h * 0.03, h * 0.62, 0.4 + h * 0.03, "#2e2622");
-      for (let t = 0; t < 3; t++) {
-        const k = (1 - t * 0.27) * wk;
-        put("cones", x, y + h * (0.24 + t * 0.2), z, yaw + t, (3.2 + h * 0.09) * k, h * 0.38, (3.2 + h * 0.09) * k, shade(tone, 1 + t * 0.07));
-      }
-      return;
-    }
     if (models) { const wk = 0.85 + r() * 0.35, m = MESHY_MANIFEST.pine!; mput("pine", x, y - 0.4, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
     const tw = 0.45 + h * 0.04;
     put("trunks", x, y - 0.6, z, 0, tw, h * 0.7, tw, "#4a3a2a");
