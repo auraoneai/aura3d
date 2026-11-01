@@ -144,6 +144,22 @@
         "drawCalls": 88,
         "triangles": 552559
       }
+    },
+    "floor1": {
+      "limit": 200,
+      "before": {
+        "run": "g11p4-r5b",
+        "drawCalls": 119,
+        "triangles": 825164,
+        "mean60": 83.26
+      },
+      "after": {
+        "run": "g11p6-r4",
+        "drawCalls": 106,
+        "triangles": 809296,
+        "mean60": 83.27,
+        "note": "contact blobs merged; viewmodels parked, not hidden (no extra draws)"
+      }
     }
   }
 }
