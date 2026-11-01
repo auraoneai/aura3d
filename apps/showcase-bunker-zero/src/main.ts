@@ -540,7 +540,9 @@ function buildScene() {
     model(assets[VIEWMODEL_ASSET.pistol], { name: "vm pistol" })
       .position(0, 0, 0).scale(0.2)
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
-    model(assets[VIEWMODEL_ASSET.mg], { name: "vm mg" })
+    // GU47 phase 4: the rifle GLB carries emissiveFactor 1 with its colour map as emissive, so in hand it bloomed into a
+    // yellow ghost at the bottom of every HUD frame (r3 1280-03); the viewmodel drops the self-glow and reads by the lamp.
+    model(assets[VIEWMODEL_ASSET.mg], { name: "vm mg", materialOverrides: [{ color: "#d8d4cc", colorMode: "multiply" as const, emissive: "#000000", emissiveIntensity: 0, roughness: 0.45, metallic: 0.6 }] })
       .position(0, 0, 0).scale(0.45)
       .runtime(game.runtimeNode("vm-mg", { tags: ["viewmodel"] })),
     model(assets[VIEWMODEL_ASSET.rocket], { name: "vm rocket", targetHeight: 0.48 })
