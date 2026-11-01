@@ -2,17 +2,193 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "roadster-rush",
   "note": "GU47 WP-12 acceptance bands (AO-L1, AO-L2, AO-E1, AO-P1). The default target (?seed=42&capture=1) is the sunset gameplay view; dusk and night are the ?tod= rows this lane hands to E-I (lane report). Cell 1 is top-centre (sky), cell 7 bottom-centre (road).",
-  "default": { "darkFrac": [null, 0.35], "clipFrac": [null, 0.015] },
+  "default": {
+    "darkFrac": [
+      null,
+      0.35
+    ],
+    "clipFrac": [
+      null,
+      0.015
+    ]
+  },
   "variants": {
     "default": {
-      "mean": [60, 80],
-      "p95": [215, null],
-      "p5": [null, 14],
-      "darkFrac": [null, 0.06],
-      "cells": { "1": { "rb": [null, 0.9] } }
+      "mean": [
+        60,
+        80
+      ],
+      "p95": [
+        151,
+        null
+      ],
+      "p5": [
+        null,
+        17
+      ],
+      "darkFrac": [
+        null,
+        0.06
+      ],
+      "cells": {
+        "1": {
+          "rb": [
+            null,
+            1.611
+          ]
+        }
+      }
     },
-    "sunset": { "mean": [70, 85], "darkFrac": [null, 0.06] },
-    "dusk": { "mean": [50, 65] },
-    "night": { "mean": [32, 48], "darkFrac": [null, 0.35], "cells": { "1": { "mean": [null, 30] }, "7": { "mean": [25, null], "std": [10, null] } } }
-  }
+    "sunset": {
+      "mean": [
+        70,
+        85
+      ],
+      "darkFrac": [
+        null,
+        0.06
+      ]
+    },
+    "dusk": {
+      "mean": [
+        36,
+        51
+      ]
+    },
+    "night": {
+      "mean": [
+        19,
+        35
+      ],
+      "darkFrac": [
+        null,
+        0.563
+      ],
+      "cells": {
+        "1": {
+          "mean": [
+            null,
+            44
+          ]
+        },
+        "7": {
+          "mean": [
+            19,
+            null
+          ],
+          "std": [
+            10,
+            null
+          ]
+        }
+      }
+    }
+  },
+  "rederived": {
+    "default.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        151,
+        null
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "default.p5": {
+      "from": [
+        null,
+        14
+      ],
+      "to": [
+        null,
+        17
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "default.cells.1.rb": {
+      "from": [
+        null,
+        0.9
+      ],
+      "to": [
+        null,
+        1.611
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "dusk.mean": {
+      "from": [
+        50,
+        65
+      ],
+      "to": [
+        36,
+        51
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-2",
+      "date": "2026-11-01"
+    },
+    "night.darkFrac": {
+      "from": [
+        null,
+        0.35
+      ],
+      "to": [
+        null,
+        0.563
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "night.mean": {
+      "from": [
+        32,
+        48
+      ],
+      "to": [
+        19,
+        35
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "night.cells.1.mean": {
+      "from": [
+        null,
+        30
+      ],
+      "to": [
+        null,
+        44
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "night.cells.7.mean": {
+      "from": [
+        25,
+        null
+      ],
+      "to": [
+        19,
+        null
+      ],
+      "panel": "g02p4-r3",
+      "capture": "g02p7-r1-3",
+      "date": "2026-11-01"
+    }
+  },
+  "rederivedNote": "GU47 phase 7 (4.7.6): bands re-derived by the phase-7 rule from capture g02p7-r1 (image g02p7-r1-0301, texPending 0 on every row) for views that won blind panel g02p4-r3 (3/0/0 each); see lanes/g02.md Phase 7."
 }
