@@ -56,7 +56,7 @@ describe("grid dispatch look table", () => {
 
 describe("grid dispatch GD-01 explicit rig per sky", () => {
   for (const sky of SKY_ORDER) {
-    it(`${sky}: own HDRI as IBL, one shadowed key on the sun ray (2048, 3 cascades, pcss), a hemisphere, no teal fill`, () => {
+    it(`${sky}: own HDRI as IBL, one shadowed key on the sun ray (2048, 3 cascades, pcf since GU47 phase 4), a hemisphere, no teal fill`, () => {
       const nodes = flatNodes(sky);
       const look = SKY_LOOKS[sky];
       const envs = nodes.filter((n) => n.kind === "environment");

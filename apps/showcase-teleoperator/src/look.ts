@@ -136,13 +136,13 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
     // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
     // GU47 phase 3 round 3: r2 still mean 67 / p95 144 at exposure 1.3: 1.3 -> 1.55.
-    output: { toneMapping: "agx", fallback: "aces", exposure: 3.2 },
+    output: { toneMapping: "agx", fallback: "aces", exposure: 3.8 }, // round 5: r4 mean 53
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
     grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02, lift: 0.02 },
     vignette: 0.26,
     godRays: { density: 0.08, color: "#ffb878", intensity: 0.14 },
     grain: 0.04,
-    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 0.4, asphalt: { color: "#1f242c", roughness: 0.36 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
+    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 0.15, asphalt: { color: "#1f242c", roughness: 0.36 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
     scanStrength: 0.7
   },
   noon: {
@@ -168,7 +168,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     godRays: null,
     grain: 0.03,
     // GU47 phase 3 round 2: noon asphalt #252a32 -> #3a4049: the road is half the frame (r1 mean 86, band 95-120) and the key shadows need a lighter ground to read.
-    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#3a4049", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
+    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#4a515b", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
     scanStrength: 0.75
   },
   fog: {
@@ -256,8 +256,12 @@ export function hazeAt(look: SkyLook, distance: number): number {
 
 /** GD-01: one shadowed key on every sky, 2048 map, 3 cascades, PCSS. */
 /** GU47 phase 3 round 3: softness 1 -> 0.6 (crisper building shadow edges on the street). */
+/**
+ * GU47 phase 4 round 5: pcss -> pcf. Once the key carried the street (r3/r4), PCSS drew a checkerboard of coarse blocker
+ * texels around the pod on the software WebGL2 runner; the PCF kernel keeps the edge soft without it.
+ */
 /** GU47 phase 4: maxDistance 120 -> 90 and split lambda 0.85 put more texels near the car (the pod's shadow drew in blocky texels). */
-export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 90, splitLambda: 0.85, softness: 0.3 } as const;
+export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcf", maxDistance: 90, splitLambda: 0.85, softness: 0.3 } as const;
 
 /** Next sky in the `T` key cycle. */
 export const nextSky = (sky: SkyId): SkyId => SKY_ORDER[(SKY_ORDER.indexOf(sky) + 1) % SKY_ORDER.length]!;
