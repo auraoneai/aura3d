@@ -137,7 +137,8 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   // Matte honey stone: the glazed-ceramic top mirrored the palace HDRI as floor glare (phase 3).
   marble: { body: glazedClay("#a89d8e"), top: material.matteClay({ color: "#d9c7a4", roughness: 0.7 }) },
   gold: { body: material.metal({ color: "#7c5f26", roughness: 0.42 }), top: material.metal({ color: "#c9a24a", roughness: 0.3 }) },
-  crystal: { body: material.clearcoat({ color: "#4f3f85", roughness: 0.25 }), top: material.clearcoat({ color: "#8a7ad0", roughness: 0.18 }) },
+  // Phase 4: deeper amethyst, a rougher base under the coat; the 0.18 lilac top bloomed into a glare sheet in w6 (p4-r1/r2).
+  crystal: { body: material.clearcoat({ color: "#3a2f6a", roughness: 0.4 }), top: material.clearcoat({ color: "#6a5ab4", roughness: 0.34, envMapIntensity: 0.8 }) },
   starlight: { body: felt("#322c58"), top: felt("#9d8fd8") }
 };
 
