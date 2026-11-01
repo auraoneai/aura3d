@@ -120,13 +120,14 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     environmentRotationDeg: 300,
     // phase 3: the side sun swings behind the left shoulder (over the sea), so the car, the cliffs and the turbines face it
     // and every caster throws its shadow forward-right across the road in view (rubric lighting/shadows 4.5/3).
-    // phase 4: warmer 4 pm sun, cleaner sky and thinner warm haze (judge: "overcast grey-blue, the golden low sun never appears")
+    // phase 4: warmer 4 pm sun, deeper zenith, golden (not milky) horizon haze, thinner fog (judge: "overcast grey-blue, the
+    // golden low sun never appears", "milky grey lift")
     sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 },
     fill: { kind: "sea-bounce", color: "#8fc6c4", intensity: 0.55, elevationDeg: 8, azimuthDeg: -110 },
     gantryPoints: null,
-    sky: { zenith: "#2f74c0", horizon: "#ece0c6", band: "#f0dcb4", bandAmount: 0.5, clouds: [0.2, 0.12], night: 0 },
+    sky: { zenith: "#1f63bd", horizon: "#e2c596", band: "#ecc993", bandAmount: 0.55, clouds: [0.2, 0.12], night: 0 },
     ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
-    fog: { color: "#e6ddc8", near: 320, far: 3600, density: 0.00016 },
+    fog: { color: "#e0c9a2", near: 360, far: 4000, density: 0.00012 },
     surfaces: {
       asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
