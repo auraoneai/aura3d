@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm sepia haze flattens contrast a little and the mid-ground is slightly muddy. The ring gate's vertical bar sits right in the centre of the view. Player is clear and well framed.",
+     "A sepia haze slightly lowers contrast and washes out the background. The cobblestone foreground is a bit muddy.",
+     "Warm sepia haze lowers contrast a little and the midground looks a bit washed. The large arch is placed oddly over the pine trees, but the player is large and easy to read."
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overcast sky looks a bit flat with mild banding around the cloud edges. Two large log pillars frame the view tightly. Overall readable, with good depth along the river.",
+     "Two large log pillars frame and partly block the view. The sky looks slightly flat and grey, and the large glowing ring is a little busy.",
+     "Slightly desaturated with a hazy sky band. Two tall log pillars frame the shot in a slightly heavy-handed way, and the grass is fairly flat."
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Night scene is fairly dark, and the left hillside is a large near-black mass. The glowing ring's halo washes over the centre. Visible sky banding and posterised blotches. Player is readable.",
+     "Night scene is quite dark and low-contrast at the edges. The double ring close to the camera clutters the frame and partly overlaps the player. Sky has some blotchy cloud artifacts.",
+     "The night scene is fairly dark and blue, with low contrast on the side terrain. The glowing ring overlaps the player and clutters the centre, and the sky shows blotchy cloud shapes."
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A huge log column blocks the centre of the frame, and the player sits right against it, half-crowded. The ring arc is cut off behind the log. Teal/orange grading makes the left ground muddy and low-contrast. The water band has a hard straight edge.",
+     "A huge log pillar sits in the centre of the frame, blocking the view and crowding the player. The ground on the left is murky and dark, and the teal grade is somewhat muddy.",
+     "A huge log pillar sits dead centre, blocks the view and almost touches the player, so the composition is badly obstructed. The terrain on the left is dark and murky, and the teal grading is muddy."
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey overcast sky looks flat with posterised cloud bands. The two dark rings appear to float in the sky. Some scattered flat discs float on the right slope. Otherwise a clear, deep composition.",
+     "Overcast grey sky is a bit dull, and the large ring overlay crowds the frame. Some small ring props appear to float in the air.",
+     "The overcast grey sky is a bit flat and the grade is slightly desaturated. Floating ring obstacles hang in the sky, and the large reticle-like ring over the player is busy."
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Purple night palette is slightly low-contrast in the dark ground areas. The water/road is a bit blown-out white. A ring segment floats near the left arch. The moody atmosphere reads well.",
+     "Purple night grade is slightly low-contrast in the dark areas, and the bright river surface is a bit blown out. Minor sky blotches.",
+     "Purple dusk lighting slightly flattens the contrast, and the ground on the left is dark. The bright river path is a little overexposed."
+    ]
+   },
+   {
+    "variant": "ch6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Water/ice foreground is slightly overexposed. The ring gate's upper arc looks truncated and odd. The right-side water area is a little washed out. Strong sunset mood and the player reads clearly.",
+     "Ice and water in the foreground are slightly overexposed. The player has a dark bronze tint against the bright surface. Otherwise a strong sunset mood.",
+     "The icy foreground is close to blown out. The ground on the right has harsh posterised blotches, and the arch looks partly clipped at the top."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sepia haze makes the overall frame somewhat muddy and low-contrast. The cobblestone foreground is a little busy. The player is centred and readable.",
+     "A sepia haze slightly lowers contrast and washes out the background. The cobblestone foreground is a bit muddy.",
+     "Warm sepia haze lowers contrast and the midground is somewhat washed out. The foreground trees on the edges are cropped, but the player is large and easy to read."
+    ]
+   }
+  ]
+ }
+]

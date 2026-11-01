@@ -1,14 +1,15 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial } from "@aura3d/rendering";
-import { texturePendingMs } from "../../../../packages/engine/src/agent-api/compiler/textures";
+import { resetSharedProductionTextureDecodes, texturePendingMs } from "../../../../packages/engine/src/agent-api/compiler/textures";
 
 /**
  * GU47 e6 (g09 handoff): a textured-material row stuck in `pending` gave no hint of where it waited. The upgrade now
  * records its last step (`stage`) and, while pending, how long it has waited (`pendingMs`).
  */
 const assets = defineAuraAssets({ map: { type: "texture", format: "png", url: "/map.png", hash: "fixture" } });
-afterEach(() => vi.unstubAllGlobals());
+// GU47 e6 phase 8: decodes are shared per URL across calls; a stalled fixture decode must not leak into the next test.
+afterEach(() => { vi.unstubAllGlobals(); resetSharedProductionTextureDecodes(); });
 function resource(name: string, materialSpec: Record<string, unknown>) {
   return { name, materialSpec, sourceNode: { kind: "primitive", primitive: "box", material: materialSpec },
     material: new PBRMaterial(), geometry: { vertexBuffer: { format: { hasAttribute: (_name: string) => true } } }, textureStatus: "none",

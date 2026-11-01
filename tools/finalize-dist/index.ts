@@ -1,5 +1,6 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
+// @ts-expect-error TS5097: the build runs this file with node --experimental-strip-types, which needs the .ts extension.
 import { findBareWorkspaceImports, specifierPattern } from "./specifiers.ts";
 
 const root = process.cwd();

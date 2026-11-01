@@ -270,6 +270,110 @@ export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step:
   } catch (error) { bitmap.close(); throw error; }
 }
 
+export type ProductionTextureLoadStep = "fetch" | "body" | "decode" | "decode-fallback" | "pixels";
+
+/**
+ * GU47 e6 phase 8 (shared decodes): one decoded image per map URL, shared by every material that references it.
+ * Bunker Zero builds 188 textured materials over ~20 URLs; each material used to fetch and decode its own copy, so on the
+ * loaded software runner the queue landed about one material every 30 s. Holders take a reference with
+ * `acquireSharedProductionTextureImage` and give it back with `release()`. The image is closed when the last holder
+ * releases, and the entry leaves the cache at that moment, so a later acquire decodes afresh and never receives a
+ * closed image. A failed decode leaves the cache too (the next acquire retries). Only the CPU-side decoded image is
+ * shared: every material still builds and disposes its own GPU `Texture`.
+ *
+ * The key carries the decode options as well as the URL. Every map decodes with the same unpack settings today
+ * (`premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip; the sRGB/linear choice is made per GPU texture),
+ * so the option suffix is constant, but a future option would get its own entry.
+ */
+const SHARED_DECODE_OPTIONS_KEY = "premultiplyAlpha=none;colorSpaceConversion=none;flipY=false";
+
+interface SharedProductionTextureDecode {
+  readonly key: string;
+  readonly promise: Promise<ProductionTextureImage>;
+  refs: number;
+  image?: ProductionTextureImage;
+  step?: ProductionTextureLoadStep;
+  readonly listeners: Set<(step: ProductionTextureLoadStep) => void>;
+  /** Set when the last holder released: the image is (or will be, when it lands) closed. */
+  dead: boolean;
+}
+
+const sharedProductionTextureDecodes = new Map<string, SharedProductionTextureDecode>();
+
+/** Distinct decodes started through the shared cache (diagnostics and tests). */
+export const sharedProductionTextureDecodeStats = { decodes: 0, hits: 0 };
+
+export interface SharedProductionTextureImageHandle {
+  readonly image: Promise<ProductionTextureImage>;
+  /** Gives the reference back; idempotent. The last release closes the image. */
+  release(): void;
+}
+
+export function acquireSharedProductionTextureImage(
+  url: string,
+  onStep?: (step: ProductionTextureLoadStep) => void,
+  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> = loadProductionPrimitiveBitmap
+): SharedProductionTextureImageHandle {
+  const key = `${url}#${SHARED_DECODE_OPTIONS_KEY}`;
+  let entry = sharedProductionTextureDecodes.get(key);
+  if (entry) {
+    sharedProductionTextureDecodeStats.hits += 1;
+  } else {
+    sharedProductionTextureDecodeStats.decodes += 1;
+    const listeners = new Set<(step: ProductionTextureLoadStep) => void>();
+    let created: SharedProductionTextureDecode | undefined;
+    const promise = loader(url, (step) => {
+      if (created) created.step = step;
+      for (const listener of listeners) listener(step);
+    }).then((image) => {
+      created!.image = image;
+      listeners.clear();
+      if (created!.dead) image.close();
+      return image;
+    }, (error: unknown) => {
+      listeners.clear();
+      if (sharedProductionTextureDecodes.get(key) === created) sharedProductionTextureDecodes.delete(key);
+      throw error;
+    });
+    // Holders observe the promise; this keeps a decode whose holders all left from surfacing as unhandled.
+    promise.catch(() => undefined);
+    created = { key, promise, refs: 0, listeners, dead: false };
+    entry = created;
+    sharedProductionTextureDecodes.set(key, entry);
+  }
+  const held = entry;
+  held.refs += 1;
+  if (onStep && !held.image) {
+    held.listeners.add(onStep);
+    if (held.step) onStep(held.step);
+  }
+  let released = false;
+  return {
+    image: held.promise.then((image) => {
+      // Defensive: a holder's own reference keeps the entry alive, so its image cannot have been closed.
+      if (held.dead) throw new Error(`shared texture decode for ${url} was released before it was read`);
+      return image;
+    }),
+    release: () => {
+      if (released) return;
+      released = true;
+      if (onStep) held.listeners.delete(onStep);
+      held.refs -= 1;
+      if (held.refs > 0) return;
+      held.dead = true;
+      if (sharedProductionTextureDecodes.get(held.key) === held) sharedProductionTextureDecodes.delete(held.key);
+      held.image?.close();
+    }
+  };
+}
+
+/** Tests: forget every shared decode (does not close images still held). */
+export function resetSharedProductionTextureDecodes(): void {
+  sharedProductionTextureDecodes.clear();
+  sharedProductionTextureDecodeStats.decodes = 0;
+  sharedProductionTextureDecodeStats.hits = 0;
+}
+
 export function bitmapRgbaPixels(bitmap: ProductionTextureImage): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
   const decoded = productionPrimitiveBitmapPixels.get(bitmap);
   if (decoded) return decoded;
@@ -392,7 +496,6 @@ export async function upgradeProductionPrimitiveResource(
   if (extensionEntries.some(([, map]) => map.texCoord === 1) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) {
     throw fail(`"${resource.name}" geometry carries no uv1 set requested by extension texture`);
   }
-  const ownedBitmaps: ProductionTextureImage[] = [];
   const ownedTextures: Texture[] = [];
   const bitmapLoads = new Map<string, Promise<ProductionTextureImage>>();
   // threejs-parity ST-01 (L4): resolved `texture.*` handles per slot — their
@@ -415,18 +518,23 @@ export async function upgradeProductionPrimitiveResource(
   const showLoadSteps = (): void => {
     if (loadSteps.size > 0) markTextureStage(resource, [...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
   };
+  // GU47 e6 phase 8: maps come from the shared per-URL decode cache. Each URL is acquired once per resource and released
+  // with the resource's textures (`disposeTextures`), so the image outlives every material that uploads from it.
+  const releases: (() => void)[] = [];
   const load = (url: string): Promise<ProductionTextureImage> => {
     let pending = bitmapLoads.get(url);
     if (!pending) {
       loadSteps.set(url, "fetch");
       showLoadSteps();
-      pending = loadProductionPrimitiveBitmap(url, (step) => { if (loadSteps.has(url)) { loadSteps.set(url, step); showLoadSteps(); } }).then((bitmap) => {
+      const handle = acquireSharedProductionTextureImage(url, (step) => { if (loadSteps.has(url)) { loadSteps.set(url, step); showLoadSteps(); } });
+      releases.push(handle.release);
+      pending = handle.image.then((bitmap) => {
         loadSteps.delete(url);
         showLoadSteps();
-        ownedBitmaps.push(bitmap);
         return bitmap;
       }, (error: unknown) => {
         loadSteps.delete(url);
+        showLoadSteps();
         throw error;
       });
       bitmapLoads.set(url, pending);
@@ -436,11 +544,13 @@ export async function upgradeProductionPrimitiveResource(
   const own = (texture: Texture): Texture => { ownedTextures.push(texture); return texture; };
   const disposeTextures = (): void => {
     for (const texture of ownedTextures) texture.dispose();
-    for (const bitmap of ownedBitmaps) bitmap.close();
+    for (const release of releases) release();
     ownedTextures.length = 0;
-    ownedBitmaps.length = 0;
+    releases.length = 0;
   };
   try {
+    // GU47 e6 phase 8: every map of the resource (base slots and extension slots) starts decoding at once.
+    const extensionResults = Promise.allSettled(extensionEntries.map(([, map]) => load(map.url)));
     const baseResults = await Promise.allSettled([
       intent.baseColorUrl ? load(intent.baseColorUrl) : Promise.resolve(undefined),
       intent.normalUrl ? load(intent.normalUrl) : Promise.resolve(undefined),
@@ -449,8 +559,9 @@ export async function upgradeProductionPrimitiveResource(
       intent.occlusionUrl ? load(intent.occlusionUrl) : Promise.resolve(undefined),
       intent.emissiveUrl ? load(intent.emissiveUrl) : Promise.resolve(undefined)
     ]);
+    const settledExtensions = await extensionResults;
     markTextureStage(resource, "decoded");
-    const failure = baseResults.find((result) => result.status === "rejected");
+    const failure = [...baseResults, ...settledExtensions].find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
     const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
     const slots: string[] = [];

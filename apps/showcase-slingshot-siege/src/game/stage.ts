@@ -34,6 +34,7 @@ import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
 import { SEA_STACK_PLACEMENT, setPieces } from "../art/setPieces";
 import { levelSignNodes } from "./sign";
+import { BLOCK_FAMILIES, PARKED_BLOCK, blockFamilyNodeId } from "./blockInstances";
 
 // ----------------------------------------------------------------- pools --
 
@@ -525,17 +526,28 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     primitives.cylinder({ name: "stage-ocean", material: seaGloss(mixHex(terrain.sea, "#0b2a38", 0.45), row.seaReflection), castShadow: false, receiveShadow: true })
       .position(1.5, -0.45, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
     ...(row.worldWater ? [seaNode(row, options)] : []),
-    primitives.sphere({ name: "terrain-mounds", material: pbr("#ffffff", { roughness: 0.92, metallic: 0.02 }), instances: moundInst, instanceColors: moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), castShadow: false, receiveShadow: true }),
-    primitives.sphere({ name: "grass-patches", material: pbr("#ffffff", { roughness: 0.95 }), instances: patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), instanceColors: patchColors, castShadow: false, receiveShadow: true }),
+    // GU47 phase 7 (4.7.6, Task B): mounds, grass patches, pebbles and the far headlands share one instanced sphere draw
+    // (they were four, roughness 0.92-1; one 0.94). The headlands sit outside the island's shadow fit, so receiving
+    // shadows changes nothing for them.
+    primitives.sphere({
+      name: "terrain-spheres", material: pbr("#ffffff", { roughness: 0.94, metallic: 0.01 }),
+      instances: [...moundInst, ...patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), ...pebbleInst, ...headlandInst],
+      instanceColors: [...moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), ...patchColors, ...pebbleInst.map(() => rockTintSmall), ...headlandColors],
+      castShadow: false, receiveShadow: true
+    }),
     primitives.box({ name: "dirt-path", material: pbr(dirtColor, { roughness: 0.96, metallic: 0 }), instances: pathInst, instanceColors: pathInst.map((_, i) => (i % 2 === 0 ? dirtColor : mixHex(dirtColor, groundColor, 0.28))), castShadow: false, receiveShadow: true }),
     primitives.box({ name: "grass-tufts", material: pbr("#ffffff", { roughness: 0.9 }), instances: tuftInst, instanceColors: tuftColors, castShadow: true, receiveShadow: false }),
-    primitives.sphere({ name: "foreground-pebbles", material: pbr(rockTintSmall, { roughness: 0.94 }), instances: pebbleInst, castShadow: false, receiveShadow: true }),
-    primitives.sphere({ name: "distant-headlands", material: pbr("#ffffff", { roughness: 1, metallic: 0 }), instances: headlandInst, instanceColors: headlandColors, castShadow: false, receiveShadow: false }),
     // GU47 WP-36 (SS47-A1): the game's own Meshy sea-stack islet on the far sea (1 draw, no shadow, no collider).
     model(setPieces.sling_seaStackIsland, { name: "far-sea-stack", position: SEA_STACK_PLACEMENT.position, rotation: [0, SEA_STACK_PLACEMENT.rotationY, 0], castShadow: false, receiveShadow: false })
       .scale(SEA_STACK_PLACEMENT.scale),
-    model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
-      .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
+    // GU47 phase 7 (4.7.6, Task B): the launch knoll and the stone-bridge prop are one instanced draw of the bridge GLB.
+    instances.model(assets.gullsiegeBridgeMeshy, {
+      name: "launch-knoll-and-bridge", castShadow: true, receiveShadow: true,
+      transforms: [
+        { position: [-7.4, -0.1, 0], rotation: [0, 0, 0], scale: [2.2, 1.1, 2.2] },
+        { position: [0.2, 0.05, -2.4], rotation: [0, 0.1, 0], scale: [2.0, 2.0, 2.0] }
+      ]
+    }).runtime({ id: "launch-knoll", tags: ["stage"] }),
     model(assets.gullsiegeBridgeMeshy, {
       name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0],
       // SS47-E4: the drizzle chapter wets the fort pad (darker, glossier); a tint only, the pad stays above 70 luma.
@@ -549,46 +561,20 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   // SS47-H1: the wooden level sign with the chapter name in SDF text (+3 draws).
   nodes.push(...levelSignNodes(chapter.id));
 
-  // Stylized chapter rocks: the photoreal GLBs keep their silhouettes but get
-  // flat palette-derived materials so they read as the same art style as the fort.
-  const rockPlacements: readonly { x: number; y: number; z: number; s: number; ry: number; kind: "A" | "B" }[] = [
-    { x: -13.5, y: -0.25, z: -10.5, s: 2.4, ry: 0.4, kind: "B" },
-    { x: -6.2, y: -0.25, z: -12.8, s: 2.8, ry: 1.2, kind: "B" },
-    { x: 1.5, y: -0.25, z: -13.4, s: 3.0, ry: 2.1, kind: "B" },
-    { x: 9.8, y: -0.25, z: -12.2, s: 2.7, ry: 0.8, kind: "B" },
-    { x: 15.2, y: -0.25, z: -9.6, s: 2.2, ry: 1.7, kind: "B" },
-    { x: -6.0, y: -0.08, z: -5.4, s: 7.2, ry: 2.5, kind: "A" },
-    { x: 9.4, y: -0.08, z: -4.8, s: 7.8, ry: 0.9, kind: "A" },
-    // Kept clear of the aim sight-line: at its old spot (-5.6, 3.6) this rock sat
-    // directly between the aim camera and the slingshot at x -7.4.
-    { x: -11.6, y: -0.2, z: -3.0, s: 3.4, ry: 0.6, kind: "A" },
-    { x: 8.1, y: 0, z: 2.9, s: 2.8, ry: 1.9, kind: "A" }
-  ];
-  rockPlacements.forEach((place, i) => {
-    const asset = place.kind === "A" ? assets.propRockA : assets.propRockB;
-    nodes.push(
-      model(asset, {
-        name: `hill-${i}`,
-        position: [place.x, place.y, place.z],
-        rotation: [0, place.ry, 0],
-        materialOverrides: place.kind === "A" ? boulderOverrides : rockOverrides
-      }).scale(place.s).runtime({ id: `hill-${i}`, tags: ["dressing"] })
-    );
-  });
-  const treePlacements: readonly [number, number, number, number][] = [
-    [-10.2, 0, -2.8, 0.24],
-    [-5.0, 0, -3.6, 0.22],
-    [3.8, 0, -3.8, 0.25],
-    [10.8, 0, -2.6, 0.26],
-    [11.6, 0, 2.2, 0.22]
-  ];
-  treePlacements.forEach(([x, y, z, s], i) => {
-    const treeAsset = i % 2 === 0 ? assets.propPineTree : assets.propConifer;
-    nodes.push(
-      model(treeAsset, { name: `cloud-${i}`, position: [x, y, z], rotation: [0, i * 1.1, 0] })
-        .scale(s).runtime({ id: `cloud-${i}`, tags: ["cloud"] })
-    );
-  });
+  // Stylized chapter rocks and the island trees. GU47 phase 7 (4.7.6, Task B draw budget): the 9 rock placements
+  // (boulders A, back rocks B) and the 5 trees (3 pines of 23 meshes, 2 conifer rows of 6) were one model() node each,
+  // 95 meshes drawn in every pass (main, contact-shadow depth, two sun cascades). They are now three baked GLBs
+  // (../art/staticSets.placements.json, tools/bake-static-sets.mjs) with the same transforms, geometry and materials,
+  // one primitive per material: 8 meshes, drawn with scaleMode "world" (the bake applied each placement's model()
+  // normalisation). The rocks keep their per-kind material overrides.
+  nodes.push(
+    model(setPieces.sling_rocksB, { name: "hill-rocks-b", position: [0, 0, 0], scaleMode: "world", materialOverrides: rockOverrides })
+      .runtime({ id: "hill-rocks-b", tags: ["dressing"] }),
+    model(setPieces.sling_rocksA, { name: "hill-rocks-a", position: [0, 0, 0], scaleMode: "world", materialOverrides: boulderOverrides })
+      .runtime({ id: "hill-rocks-a", tags: ["dressing"] }),
+    model(setPieces.sling_islandTrees, { name: "island-trees", position: [0, 0, 0], scaleMode: "world" })
+      .runtime({ id: "island-trees", tags: ["cloud"] })
+  );
 
   // ------------------------------------------------------------- slingshot --
   // Hero typed asset — the 3D Meshy siege catapult — as the launcher on the knoll.
@@ -596,13 +582,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     model(assets.gullsiegeCatapultMeshy, { name: "slingshot-base", position: [-7.4, 0.42, 0], rotation: [0, 0.35, 0] })
       .scale(1.35)
       .runtime({ id: SLING_IDS.catapult, tags: ["sling"] }),
-    // Y-fork arms.
-    primitives.cylinder({ name: "sling-fork-l", material: pbr("#8a5a2e", { roughness: 0.75 }) })
-      .position(-7.62, 1.5, -0.22).rotate(0, 0, 0.42).scale([0.055, 0.85, 0.055]).runtime({ id: SLING_IDS.forkL, tags: ["sling"] }),
-    primitives.cylinder({ name: "sling-fork-r", material: pbr("#8a5a2e", { roughness: 0.75 }) })
-      .position(-7.62, 1.5, 0.22).rotate(0, 0, 0.42).scale([0.055, 0.85, 0.055]).runtime({ id: SLING_IDS.forkR, tags: ["sling"] }),
-    primitives.cylinder({ name: "sling-trunk", material: pbr("#7a4e26", { roughness: 0.8 }) })
-      .position(-7.4, 1.0, 0).scale([0.09, 0.8, 0.09]).runtime({ id: "sling-trunk", tags: ["sling"] }),
+    // Y-fork arms and trunk: GU47 phase 7 (4.7.6) draws them in the instanced "flag-poles" cylinders below (static).
     // Pouch + bands + loaded 3D Meshy Hero Gull + waiting Hero Gull squad on the launch knoll.
     model(assets.gullsiegeCrateMeshy, { name: "sling-pouch", position: [-7.4, 1.6, 0] })
       .scale([0.22, 0.08, 0.18]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
@@ -631,12 +611,21 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   // ------------------------------------------------------- piece pools ------
   // Every fortress piece is a real 3D Meshy GLB model (crates, barrels, planks, stone bridge blocks).
   // Block pool = the stone-bridge GLB (stone, glass, ice, obsidian); wood blocks use the crate/plank pools below.
-  for (let i = 0; i < POOL.blocks; i += 1) {
-    nodes.push(row.solidBlocks
-      ? primitives.roundedBox({ name: blockNodeId(i), params: { radius: 0.07, widthSegments: 2 }, material: SOLID_BLOCK_MATERIALS.stone, castShadow: true, receiveShadow: true })
-        .position(0, -120, 0).scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] })
-      : model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
+  // GU47 phase 7 (4.7.6, Task B): on solid-block rows the block pool is one instanced rounded block per family (same
+  // geometry and material as the old per-block nodes), driven through BlockInstancePool (blockInstances.ts). Like the
+  // old pool they mount with the stone material and take their family's material at runtime (first flush).
+  if (row.solidBlocks) {
+    for (const family of BLOCK_FAMILIES) {
+      nodes.push(instances.roundedBox({
+        name: blockFamilyNodeId(family), params: { radius: 0.07, widthSegments: 2 }, material: SOLID_BLOCK_MATERIALS.stone,
+        transforms: Array.from({ length: POOL.blocks }, () => PARKED_BLOCK), castShadow: true, receiveShadow: true
+      }).runtime({ id: blockFamilyNodeId(family), tags: ["piece"] }));
+    }
+  } else {
+    for (let i = 0; i < POOL.blocks; i += 1) {
+      nodes.push(model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
         .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
+    }
   }
   for (let i = 0; i < POOL.crates; i += 1) {
     nodes.push(model(assets.gullsiegeCrateMeshy, { name: crateNodeId(i), position: [0, -120, 0] })
@@ -704,8 +693,6 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       .scale(2.1).runtime({ id: PROP_IDS.gatehouse, tags: ["dressing"] }),
     model(assets.gullsiegeWindmillMeshy, { name: PROP_IDS.windmillProp, position: [4.2, 0, -3.2], rotation: [0, 0.25, 0] })
       .scale(2.2).runtime({ id: PROP_IDS.windmillProp, tags: ["dressing"] }),
-    model(assets.gullsiegeBridgeMeshy, { name: PROP_IDS.stoneBridge, position: [0.2, 0.05, -2.4], rotation: [0, 0.1, 0] })
-      .scale(2.0).runtime({ id: PROP_IDS.stoneBridge, tags: ["dressing"] }),
     model(assets.gullsiegePlanksMeshy, { name: PROP_IDS.plankScatter, position: [5.2, 0.08, 2.1], rotation: [0, 0.7, 0] })
       .scale(1.45).runtime({ id: PROP_IDS.plankScatter, tags: ["dressing"] })
   );
@@ -714,43 +701,65 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   // Static props at the edges of the launch knoll populate the lower third
   // without entering the flight lane (z ≈ 0 between sling and fort).
   nodes.push(
-    model(assets.gullsiegeCrateMeshy, { name: "fg-crate-a", position: [-4.9, 0, 4.6], rotation: [0, 0.35, 0] })
-      .scale(0.6).runtime({ id: "fg-crate-a", tags: ["dressing"] }),
-    model(assets.gullsiegeCrateMeshy, { name: "fg-crate-b", position: [-4.95, 0.8, 4.55], rotation: [0, 0.9, 0] })
-      .scale(0.42).runtime({ id: "fg-crate-b", tags: ["dressing"] }),
-    model(assets.gullsiegeBarrelMeshy, { name: "fg-barrel", position: [-4.0, 0, 4.95], rotation: [0, 0.2, 0] })
-      .scale(0.5).runtime({ id: "fg-barrel", tags: ["dressing"] }),
-    model(assets.gullsiegeCrateMeshy, { name: "fg-sling-crate", position: [-10.2, 0, 3.6], rotation: [0, 0.7, 0] })
-      .scale(0.42).runtime({ id: "fg-sling-crate", tags: ["dressing"] }),
-    model(assets.gullsiegeBarrelMeshy, { name: "fg-sling-barrel", position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0] })
-      .scale(0.38).runtime({ id: "fg-sling-barrel", tags: ["dressing"] }),
-    primitives.cylinder({ name: "fg-banner-pole", material: pbr("#7a4e26", { roughness: 0.82 }), castShadow: true })
-      .position(6.3, 1.35, 5.15).scale([0.06, 2.7, 0.06]),
-    primitives.box({ name: "fg-banner", material: pbr(mixHex(accentColor, "#c8452e", 0.4), { roughness: 0.72 }), castShadow: false })
-      .position(6.66, 2.14, 5.13).scale([0.72, 0.92, 0.035]),
-    primitives.box({ name: "fg-banner-trim", material: pbr(mixHex(accentColor, "#ffe9b0", 0.5), { roughness: 0.5, metallic: 0.25 }), castShadow: false })
-      .position(6.66, 2.62, 5.12).scale([0.76, 0.08, 0.045]),
-    primitives.sphere({ name: "fg-banner-finial", material: pbr(mixHex(accentColor, "#ffe9b0", 0.55), { roughness: 0.45, metallic: 0.3 }), castShadow: false })
-      .position(6.3, 2.75, 5.15).scale([0.13, 0.13, 0.13])
+    // GU47 phase 7 (4.7.6, Task B): the three foreground crates and two barrels as one instanced draw per GLB.
+    instances.model(assets.gullsiegeCrateMeshy, {
+      name: "fg-crates", castShadow: true, receiveShadow: true,
+      transforms: [
+        { position: [-4.9, 0, 4.6], rotation: [0, 0.35, 0], scale: 0.6 },
+        { position: [-4.95, 0.8, 4.55], rotation: [0, 0.9, 0], scale: 0.42 },
+        { position: [-10.2, 0, 3.6], rotation: [0, 0.7, 0], scale: 0.42 }
+      ]
+    }).runtime({ id: "fg-crates", tags: ["dressing"] }),
+    instances.model(assets.gullsiegeBarrelMeshy, {
+      name: "fg-barrels", castShadow: true, receiveShadow: true,
+      transforms: [
+        { position: [-4.0, 0, 4.95], rotation: [0, 0.2, 0], scale: 0.5 },
+        { position: [-9.6, 0, 4.1], rotation: [0, 0.5, 0], scale: 0.38 }
+      ]
+    }).runtime({ id: "fg-barrels", tags: ["dressing"] }),
+    // GU47 phase 7 (4.7.6, Task B): the banner and flag dressing as one instanced draw per shape (same colours, sizes
+    // and places; one roughness per shape). Was 14 nodes: banner pole, banner, trim, finial; bastion, plinth, mast,
+    // finial, pennant, hoist rope, ribbon; the slingshot's two fork arms and trunk. The bastion and the pennant keep
+    // their own nodes (main.ts recolours the pennant).
+    instances.cylinder({
+      name: "flag-poles", material: pbr("#ffffff", { roughness: 0.82 }), castShadow: true, receiveShadow: true,
+      transforms: [
+        { position: [6.3, 1.35, 5.15], scale: [0.06, 2.7, 0.06] },
+        { position: [7.2, 1.14, -0.6], scale: [0.42, 0.18, 0.42] },
+        { position: [7.2, 3.4, -0.6], scale: [0.07, 4.5, 0.07] },
+        // The slingshot's Y-fork arms and trunk (were sling-fork-l/-r and sling-trunk, roughness 0.75-0.8).
+        { position: [-7.62, 1.5, -0.22], rotation: [0, 0, 0.42], scale: [0.055, 0.85, 0.055] },
+        { position: [-7.62, 1.5, 0.22], rotation: [0, 0, 0.42], scale: [0.055, 0.85, 0.055] },
+        { position: [-7.4, 1.0, 0], scale: [0.09, 0.8, 0.09] }
+      ],
+      colors: ["#7a4e26", "#5a5448", "#6a4a2a", "#8a5a2e", "#8a5a2e", "#7a4e26"]
+    }),
+    instances.box({
+      name: "flag-cloths", material: pbr("#ffffff", { roughness: 0.72 }), castShadow: false, receiveShadow: true,
+      transforms: [
+        { position: [6.66, 2.14, 5.13], scale: [0.72, 0.92, 0.035] },
+        { position: [6.66, 2.62, 5.12], scale: [0.76, 0.08, 0.045] },
+        { position: [7.74, 5.42, -0.6], scale: [1.06, 0.022, 0.022] },
+        { position: [7.62, 4.82, -0.605], scale: [0.78, 0.075, 0.02] }
+      ],
+      colors: [mixHex(accentColor, "#c8452e", 0.4), mixHex(accentColor, "#ffe9b0", 0.5), "#3a2c20", mixHex(accentColor, "#f0b45a", 0.5)]
+    }),
+    instances.sphere({
+      name: "flag-finials", material: pbr("#ffffff", { roughness: 0.42, metallic: 0.32 }), castShadow: false, receiveShadow: true,
+      transforms: [
+        { position: [6.3, 2.75, 5.15], scale: [0.13, 0.13, 0.13] },
+        { position: [7.2, 5.7, -0.6], scale: [0.16, 0.16, 0.16] }
+      ],
+      colors: [mixHex(accentColor, "#ffe9b0", 0.55), mixHex(accentColor, "#ffe9b0", 0.55)]
+    })
   );
 
-  // Fortress flag — a stone bastion plus a full-height mast through the central
-  // keep, so the pennant always reads as attached instead of floating.
+  // Fortress flag: the stone bastion and the pennant on the mast through the central keep.
   nodes.push(
     primitives.box({ name: "fortress-flag-bastion", material: pbr(mixHex("#738296", farColor, 0.22), { roughness: 0.82, metallic: 0.05 }), castShadow: true, receiveShadow: true })
       .position(7.2, 0.55, -0.6).scale([1.15, 1.1, 1.15]),
-    primitives.cylinder({ name: "fortress-flag-plinth", material: pbr("#5a5448", { roughness: 0.85 }), castShadow: true })
-      .position(7.2, 1.14, -0.6).scale([0.42, 0.18, 0.42]),
-    primitives.cylinder({ name: "flag-pole", material: pbr("#6a4a2a", { roughness: 0.8 }), castShadow: true })
-      .position(7.2, 3.4, -0.6).scale([0.07, 4.5, 0.07]).runtime({ id: PROP_IDS.flagPole, tags: ["flag"] }),
-    primitives.sphere({ name: "flag-finial", material: pbr(mixHex(accentColor, "#ffe9b0", 0.55), { roughness: 0.4, metallic: 0.35 }), castShadow: false })
-      .position(7.2, 5.7, -0.6).scale([0.16, 0.16, 0.16]),
     primitives.box({ name: "flag-pennant", material: pbr("#ff4d5a", { roughness: 0.7 }), castShadow: false })
-      .position(7.74, 5.15, -0.6).scale([1.04, 0.5, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] }),
-    primitives.box({ name: "flag-hoist-rope", material: pbr("#3a2c20", { roughness: 0.9 }), castShadow: false })
-      .position(7.74, 5.42, -0.6).scale([1.06, 0.022, 0.022]),
-    primitives.box({ name: "flag-ribbon", material: pbr(mixHex(accentColor, "#f0b45a", 0.5), { roughness: 0.68 }), castShadow: false })
-      .position(7.62, 4.82, -0.605).scale([0.78, 0.075, 0.02])
+      .position(7.74, 5.15, -0.6).scale([1.04, 0.5, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
   );
 
   // --------------------------------------------------------------- post ----

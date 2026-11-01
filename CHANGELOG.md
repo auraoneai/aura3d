@@ -1,8 +1,82 @@
 # Changelog
 
-Version: 4.7.5
+Version: 4.7.7
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.7 (2026-11-01)
+
+GameUpgrades47 engine follow-up (lane report `docs/prds/game-upgrades-47/lanes/e6.md`, "Phase 8"). Gameplay, rules, determinism, the reference replays and every game's look are unchanged.
+
+### Engine
+
+- **Materials that use the same texture now share one decode.**
+  - **Before:** each material fetched and decoded its own copy of each image, one map at a time. A scene with many materials over a few images queued hundreds of decodes. Bunker Zero builds 188 textured materials from about 20 images, and on software WebGL2 about one material finished every 30 s.
+  - **Now:** an image is decoded once and released when the last material using it is disposed. A material's maps, including custom-material textures, start together.
+  - **Bunker Zero:** textures still loading at the 60 s capture shot dropped from 19-27 to 0 on 7 of its 8 views (floor 5: 12).
+
+### Tooling
+
+- **Game-checks:** 0 errors, 125 warnings, down from 132.
+  - 104 of the warnings wait on the WP-36 Meshy assets.
+  - The rest are `luma-band` rows that cannot be cleared without widening a band:
+    - 25 s shots and Bunker Zero floor 5 still loading textures;
+    - crops whose subject is off screen in Aura FC 3D and Aura Hoops 3D;
+    - Cross Hop's opt-in 4.6.2 look.
+
+## 4.7.6 (2026-11-01)
+
+GameUpgrades47 phase 7 (`docs/prds/game-upgrades-47/GameUpgrades47-PRD.md`; lane reports in `docs/prds/game-upgrades-47/lanes/`, "Phase 7 (4.7.6)" sections). This release turns on reflections that four games had switched off by mistake, fixes Slingshot Siege's draw budget and a texture-decode stall, and recaptures every game's brightness readings on its current look. Any changed view ships only if a blind three-judge panel still preferred it to the 4.6.2 frame of the same view. Gameplay, rules, determinism and the reference replays are unchanged. All visual numbers are software WebGL2 on the remote runner.
+
+### Engine
+
+- **Textured maps no longer stall on a slow `createImageBitmap`.** When `createImageBitmap` has not settled after 3 s, the texture now decodes through an `<img>` element instead. Some software-GL browsers left these maps pending for minutes. The texture body is now read once, and the PNG pixel pass is skipped for other formats.
+
+### Games
+
+- **Screen-space reflections now run in four games.** They passed `screenSpaceReflections({ roughness: 0.5 })`. The engine reads that value as the frame-wide surface roughness and fades reflections to zero at 0.5, so the effect cost frame time and drew nothing. 4.7.5 added the `SSR_ROUGHNESS_GATED` diagnostic for this case. Each game now uses roughness 0.28 to 0.3 with retuned strengths, and every changed view won its blind panel 3/0/0:
+
+  | Game | Reflections (model judge, two runs, before → after) |
+  |---|---|
+  | Aura Slam 3D | 2.5 / 3 → 4.5 / 4.5 |
+  | Aura Diamond 3D | 2.5 / 3 → 4 / 4 |
+  | Aura Hoops 3D (ran at 26% before) | 5 / 5 → 6 / 6 |
+  | Bunker Zero | 4 / 4.5 → 4.5 / 3.5 (the judges see no gain on software WebGL2) |
+
+- **Slingshot Siege draw budget is met.** Level 1 dropped from 463 to 189 draws (budget 200) and Gull Keep from 573 to 226 (budget 260). Island trees and rocks are baked into three models, and blocks, crates, banners and the sling fork are instanced. Placements, materials and physics are unchanged; triangles rise about 10%.
+- **Gridlock Courier:** the garden's energy shards are now a deeper green, so they stay visible on the pale ground.
+- **Brightness bands follow the panel-won looks.** Every game's brightness readings were recaptured on its current look, with textures fully loaded. A band was re-derived only for a view that won a blind panel, by one fixed rule:
+  - a two-sided band keeps its width and is re-centred on the mean of the 25 s and 60 s readings;
+  - a floor becomes 0.9 × the lower reading;
+  - a ceiling becomes 1.1 × the higher reading.
+
+  Each re-derived band is recorded under `rederived` in the game's `luma-bands.json` with its panel and capture.
+
+### Tooling
+
+- **Game-checks:** 0 errors in all 25 games. Warnings dropped from 298 to 132:
+
+  | Check | Warnings | Why |
+  |---|---|---|
+  | `borrowed-asset` | 100 | waiting on WP-36 Meshy assets |
+  | `prop-exclusivity` | 4 | waiting on WP-36 Meshy assets |
+  | `luma-band` | 28 | see Known limits |
+
+  `art-direction` and `look-identity` now fail as errors, since every live game passes them.
+- **`finalize-dist`** fails the build when a shipped `dist` folder still holds a bare workspace import. This is the 4.7.4 failure.
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game yet scores 7 or more in all 12 categories (model judge, software WebGL2).
+  - Reflections and materials remain the lowest.
+  - One judge reads the Aura Slam moon-court mirror as a glitch.
+  - A real-GPU judgement is owner-only (PRD D5).
+- **WP-36 Meshy batch blocked.** Every Meshy key answers paid API calls with HTTP 402, so no new asset could be generated.
+- **Brightness-band warnings that remain** cannot be cleared without widening a band:
+  - Aura FC 3D (8) and Aura Hoops 3D (2): crops whose subject is not on screen at the capture shot, so there is no reading.
+  - Cross Hop (2): the opt-in 4.6.2 look, which has no panel-won view.
+  - Bunker Zero (16): every band is met, but textures are still loading at the shot: the game loads all seven floors at boot (188 materials). The decode fallback cut the count from 35-39 to 19-27 at 60 s; loading each floor when it is entered is the follow-up.
+- **Distinctness.** Same-genre pairs that still fail are unchanged from 4.7.3. Most need the WP-36 models (shared athletes, trees).
 
 ## 4.7.5 (2026-11-01)
 

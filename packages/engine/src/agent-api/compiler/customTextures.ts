@@ -13,7 +13,7 @@
 import { PortableShaderMaterial, Texture, TextureBinding } from "@aura3d/rendering";
 import type { AuraAssetRef, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
 import { customTextureUniformNames, customUniformNameFor } from "./customMaterial.js";
-import { loadProductionPrimitiveBitmap, type ProductionTextureImage } from "./textures.js";
+import { acquireSharedProductionTextureImage, type ProductionTextureImage } from "./textures.js";
 
 const passed = new WeakSet<ProductionRuntimePrimitiveResource>();
 
@@ -23,18 +23,33 @@ const isAssetTextureRef = (value: unknown): value is AuraAssetRef<"texture"> =>
 
 type BitmapLoader = (url: string) => Promise<ProductionTextureImage>;
 
-async function bindResource(resource: ProductionRuntimePrimitiveResource, warn: (message: string) => void, loadBitmap: BitmapLoader): Promise<void> {
+/** A loaded image plus how to give it back: `close()` for an injected loader, the shared-cache release otherwise. */
+type HeldImage = { readonly image: Promise<ProductionTextureImage>; readonly release: () => void };
+type ImageAcquirer = (url: string) => HeldImage;
+
+const injectedAcquirer = (loadBitmap: BitmapLoader): ImageAcquirer => (url) => {
+  let loaded: ProductionTextureImage | undefined;
+  let released = false;
+  const image = Promise.resolve().then(() => loadBitmap(url)).then((bitmap) => { loaded = bitmap; if (released) bitmap.close(); return bitmap; });
+  return { image, release: () => { if (released) return; released = true; loaded?.close(); } };
+};
+
+// GU47 e6 phase 8: by default asset textures come from the shared per-URL decode cache (see textures.ts).
+const sharedAcquirer: ImageAcquirer = (url) => acquireSharedProductionTextureImage(url);
+
+async function bindResource(resource: ProductionRuntimePrimitiveResource, warn: (message: string) => void, acquire: ImageAcquirer): Promise<void> {
   const material = resource.material;
   const spec = resource.materialSpec?.kind === "custom" ? resource.materialSpec.custom : undefined;
   if (!spec || !(material instanceof PortableShaderMaterial)) return;
   const ownedTextures: Texture[] = [];
-  const ownedBitmaps: ProductionTextureImage[] = [];
+  const releases: (() => void)[] = [];
   const disposeOwned = (): void => {
     for (const texture of ownedTextures) texture.dispose();
-    for (const bitmap of ownedBitmaps) bitmap.close();
+    for (const release of releases) release();
     ownedTextures.length = 0;
-    ownedBitmaps.length = 0;
+    releases.length = 0;
   };
+  const uniforms: { publicName: string; url: string; held: HeldImage }[] = [];
   for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
     const value = isRecord(uniform) ? uniform.value : undefined;
     if (!isAssetTextureRef(value)) continue;
@@ -42,20 +57,29 @@ async function bindResource(resource: ProductionRuntimePrimitiveResource, warn: 
       warn(`[CUSTOM_TEXTURE_ASSET_URL_MISSING] "${resource.name}" uniform "${publicName}": asset "${value.id}" has no url; sampling the white fallback`);
       continue;
     }
-    try {
-      const bitmap = await loadBitmap(value.url);
-      if (material.disposed) { bitmap.close(); disposeOwned(); return; }
-      ownedBitmaps.push(bitmap);
+    // GU47 e6 phase 8: every asset texture of the material starts loading at once.
+    const held = acquire(value.url);
+    releases.push(held.release);
+    uniforms.push({ publicName, url: value.url, held });
+  }
+  const settled = await Promise.allSettled(uniforms.map((entry) => entry.held.image));
+  if (material.disposed) { disposeOwned(); return; }
+  uniforms.forEach(({ publicName, url, held }, index) => {
+    const result = settled[index]!;
+    if (result.status === "fulfilled") {
+      const bitmap = result.value;
       const texture = new Texture({ width: bitmap.width, height: bitmap.height, source: bitmap, colorSpace: "linear", label: `${resource.name}-${publicName}` });
       ownedTextures.push(texture);
       material.setParameter(customUniformNameFor(publicName), new TextureBinding({ name: publicName, texture, required: false }));
-    } catch (error) {
-      const message = `[CUSTOM_TEXTURE_ASSET_LOAD_FAILED] "${resource.name}" uniform "${publicName}" (${value.url}): ${error instanceof Error ? error.message : String(error)}; sampling the white fallback`;
-      resource.textureWarnings.push(message);
-      warn(message);
+      return;
     }
-  }
-  if (ownedTextures.length > 0) {
+    held.release();
+    const error: unknown = result.reason;
+    const message = `[CUSTOM_TEXTURE_ASSET_LOAD_FAILED] "${resource.name}" uniform "${publicName}" (${url}): ${error instanceof Error ? error.message : String(error)}; sampling the white fallback`;
+    resource.textureWarnings.push(message);
+    warn(message);
+  });
+  if (ownedTextures.length > 0 || releases.length > 0) {
     const previous = resource.textureDisposer;
     resource.textureDisposer = () => { previous?.(); disposeOwned(); };
   }
@@ -74,13 +98,14 @@ async function bindResource(resource: ProductionRuntimePrimitiveResource, warn: 
 export async function upgradeCustomMaterialTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
-  loadBitmap: BitmapLoader = loadProductionPrimitiveBitmap
+  loadBitmap?: BitmapLoader
 ): Promise<void> {
+  const acquire = loadBitmap ? injectedAcquirer(loadBitmap) : sharedAcquirer;
   for (const entry of entries) {
     for (const resource of entry.resources) {
       if (passed.has(resource)) continue;
       passed.add(resource);
-      await bindResource(resource, warn, loadBitmap);
+      await bindResource(resource, warn, acquire);
     }
   }
 }
