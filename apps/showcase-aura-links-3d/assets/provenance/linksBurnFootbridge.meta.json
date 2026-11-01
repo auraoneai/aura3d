@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksBurnFootbridge",
+ "sourceId": "kenney:mini-forest:bridge",
+ "sha256": "9d2c3d5ccd977379d966b5777bb0cd37fdc8f83c59044ef9652939e35a013b03",
+ "sizeBytes": 33260,
+ "triangles": 372,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  1.041,
+  0.473,
+  0.801
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "licenseName": "CC0-1.0",
+ "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+ "sourceId": "kenney:mini-forest:bridge",
+ "sourcePage": "https://github.com/gchahal1982/aura3d-cc0-assets/blob/main/kenney/mini-forest/bridge.glb",
+ "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/kenney/mini-forest/bridge.glb",
+ "author": "Kenney",
+ "retrievedAt": "2026-11-01T16:40:00Z",
+ "replaces": "the dunes burn bridge",
+ "changes": "external colormap.png embedded; no geometry change",
+ "rightsBasis": "CC0-1.0 public-domain dedication by Kenney. Admitted 2026-11-01 for Aura Links 3D only (GU47 phase 9, PRD D2); source id claimed for aura-links-3d in the GU47 CC0 claims ledger."
+}
