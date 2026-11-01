@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/screens/gameplay-early.1280x720.jpg",
+      "sha256": "ed0e9536ba4ba37b28752f5023f9e2edbd2c533d28edbcf4120cc121e62138b2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-1/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "b4a09509004d03d9497a6d80031110d20f187f0de03dc12cb148552008ac9359"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-2/silt-and-signal-port--ch4--settle-60s.jpg",
+      "sha256": "768eef82f5b64bddfaea59128c386fd4e6ffcd257c564278f286b3f8e02d9a61"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-5/silt-and-signal-port--ch2--settle-60s.jpg",
+      "sha256": "dd85490772fa7ed9ac9e7850f72038b7e97084bc0c49236c9b5bd787e58d8435"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 4.5,
+    "camera": 5.5,
+    "postprocessing": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1 and 2 have a warm orange sunset sky, but the white town buildings read as nearly flat. There is little sun-side versus shade-side contrast and no low-angle rim light on the rider. Frame 3 is flat overcast grey-green, and frame 4 is a uniform blue night fill with no warm headlight or lantern accents."
+    },
+    {
+      "category": "shadows",
+      "seen": "The rider and board cast no visible ground shadow in any frame. Pines in frame 3 have only small dark blobs at their bases, and the town buildings and arch cast no readable shadows on the cobbles."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The river in frames 3 and 4 is a blue stippled surface that reflects none of the sky, trees, or rings. Only the gold cylinder in frame 2 and the glassy rim of the big ring show any specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The town is built from untextured white boxes with crenellated cutout silhouettes and a few window decals. The valley in frames 3 and 4 has rolling hills, scattered low-poly pines, red rock clumps, and grey floating ellipses that read as unexplained artifacts."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant buildings in frame 1 show slight warm haze. Elsewhere there is no layered distance fog, and in frame 3 the sky shows posterized concentric bands plus dark grey cloud blobs with hard edges."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone ground uses a dithered stipple pattern that turns noisy toward the camera. Building surfaces are plain white with no grime or variation, and the water shares the same stipple treatment as the ground, so the two materials blur together."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pines are stacked faceted cones on cylinder trunks. The rider has a hand-drawn outlined look but is low detail, and the board is a simple oval disc with two cyan struts."
+    },
+    {
+      "category": "composition",
+      "seen": "The rider fills roughly 5% of the frame, well under the 15–25% target. The giant ring's vertical bar splits every frame down the center and sits on top of the focal path."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits high behind the rider at roughly 60–70° FOV. Framing is nearly identical across all four frames, with no lean, low angle, or speed framing."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A posterize and outline filter produces hard banding in the frame 3 sky, a jagged stair-stepped edge on the frame 4 moon, and aliased crenellations on the town walls. There is no film grain, bloom on the sun, or cinematic grade."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
