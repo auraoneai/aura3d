@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "gate",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player (yellow) is crowded and partly hidden by three blue clone ninjas; a raised green-and-cobble ribbon floats over a flat, streaky water plane with no banks; the waterfall looks like a flat card hanging between rock blocks; the colours are oversaturated, with a pink sky clashing against orange rocks and green grass; the rock pillars look like plain boxes; the composition is cluttered.",
+     "Player is a flat, see-through yellow figure that blends into the warm path. Four blue/pink clone figures crowd the subject and look like placeholders. The waterfall sheet seems to hang in mid-air with no base pool, and the rock block above it looks pasted on. The water/sand plane on the right is flat and stripy with no texture. The oversaturated magenta sky and orange boulders clash, and the overall look is garish and lacks cohesion.",
+     "The player is a flat, unshaded yellow figure partly crowded by four pastel-blue ninjas, so the subject is harder to read. The waterfall is a flat translucent sheet with a rock slab perched on top that looks like it is floating. The path and grass strip sit oddly above a flat streaky water plane with hard edges. The pink sky is saturated and gives strong mood, but the composition feels cluttered and the geometry looks more like a placeholder."
+    ]
+   }
+  ]
+ }
+]

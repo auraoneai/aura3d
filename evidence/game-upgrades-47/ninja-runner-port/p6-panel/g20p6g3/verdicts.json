@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "gate",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is a flat, saturated yellow silhouette that looks unlit and is partly crowded by four blue clone figures. The waterfall reads as a flat billboard with hard edges that seems to float at the end of the path. The grass strip ends abruptly against a flat, low-detail water plane, and the distant enemies are tiny. Even so, the warm sunset sky, rich colour contrast, detailed rock masses and stronger sense of depth give it much more mood and polish.",
+     "Waterfall looks like a flat translucent sheet hanging in mid-air with no visible cliff or source. The player and the three blue clone figures look flat and unlit, like solid-colour silhouettes with no material detail. Grass and rock colours are oversaturated and cartoonish, so the frame looks garish. The yellow glowing player is partly blocked by the clones. Water planes at the edges show stretched wave artifacts.",
+     "The waterfall looks like a flat, unlit sheet that seems to hang in mid-air above the horizon, with no visible base or pool; the player is a flat, unlit yellow silhouette surrounded by pastel-blue clone figures, so it reads as a glowing placeholder; the water plane has flat, zig-zag stylised shading; the grass texture is oversaturated"
+    ]
+   }
+  ]
+ }
+]

@@ -40,5 +40,36 @@
     "NR-18": 0,
     "NR-19": 0
   },
-  "after": null
+  "after": null,
+  "phase6Gate": {
+    "note": "GU47 phase 6 gate view (?at=2500), software WebGL2 GL_META at settle-60s. Aurora removed (-1 beam draw in the evening); falls rocks are extra instances in the existing cliff layer (+0 draws). Budget 150 draws unchanged.",
+    "before_p3r4_evening_gate": {
+      "run": "g20p3-r4-7",
+      "drawCalls": 81,
+      "triangles": 7996068,
+      "note": "phase-3 evening build (with aurora), before the phase-4 maples and dusk house"
+    },
+    "after_r1": {
+      "run": "g20p6-r1-7",
+      "drawCalls": 86,
+      "triangles": 7975054
+    },
+    "after_r2": {
+      "run": "g20p6-r2-7",
+      "drawCalls": 86,
+      "triangles": 8007319,
+      "note": "+3 cliffA instances"
+    },
+    "village_recapture": {
+      "run": "g20p6-r1-3",
+      "drawCalls": 130,
+      "triangles": 11154853
+    },
+    "after_r3_shipped": {
+      "run": "g20p6-r3-7",
+      "drawCalls": 86,
+      "triangles": 7994744,
+      "note": "+2 cliffB instances; panel g20p6g3 better 2/1/0"
+    }
+  }
 }
