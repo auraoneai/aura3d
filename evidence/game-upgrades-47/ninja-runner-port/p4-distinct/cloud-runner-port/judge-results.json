@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:04:12.960Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village--settle-60s"
+    ],
+    "framesB": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-title"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.865,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 43,
+    "sameGameYes": 5,
+    "differentRate": 0.8958333333333334,
+    "ci95": [
+      0.7783231187385907,
+      0.9546789490988218
+    ],
+    "confidentDifferent": 42,
+    "confidentDifferentRate": 0.875,
+    "same_game": false,
+    "same_game_confidence": 0.865,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a stylized green canyon with a polished HUD (hearts, progress bar, checkpoint text), while Image B has a medieval rooftop town with no HUD",
+        "Different palettes and lighting: bright blue sky and saturated greens in A, purple dusky sky and muted brown/teal in B",
+        "Different characters and art styles: a runner in a teal outfit with smooth low-poly trees in A, an orange-robed monk with textured tiled roofs in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval rooftop parkour scene with a purple dusk sky and an orange-robed runner",
+        "Image B is a sunlit dirt trail with grass, pines and a rolling log, plus a HUD with hearts and a score",
+        "Different palettes, terrain, character designs and lighting"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: medieval village with cobblestone road and faceted low-poly trees",
+        "Image B: canyon cliffs, smooth beige path and rounded stylized trees",
+        "Image B has a modern HUD (hearts, progress bar, prompts) and Image A has none"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.66,
+      "tells": [
+        "similar grey rounded boulders and faceted low-poly green rock cliffs",
+        "both are third-person runner scenes on a path through bright green grass",
+        "B's title text (sky pearls, staff) fits A's martial-arts character holding a pearl orb"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and ninja runners; Image B is a canyon ridge with sandy ground and boulders",
+        "Different characters: black-and-orange ninjas and blue ghost clones vs. a green-suited kid",
+        "Different visual style and UI: realistic grassy village lighting vs. a stylized title screen with 'Cumulus Dash' menu"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a polished HUD (hearts, progress bar, 'Cliff Run' prompt) while B shows no HUD",
+        "Different art styles: A uses smooth low-poly trees and cracked boulders with a blue sky, B uses spiky teal pines on a pixelated grass texture under a purple sunset sky",
+        "Different characters: A shows a textured human child in teal clothes, B shows a translucent yellow figure in a bubble"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt; Image B shows no HUD",
+        "Different palettes: blue sky and warm orange cliffs vs purple dusk sky and green-grey faceted mountains",
+        "Different characters and settings: a teal-clothed runner on a sandy path vs an orange-robed martial artist on a wooden bridge with enemies and a village"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a stylized character on a dirt path, while Image B has no HUD and a translucent yellow figure in a bubble",
+        "Different palettes: warm orange cliffs and blue sky in A, purple dusk sky and dark teal pines on flat green grass in B",
+        "Different environments and assets: A has a rolling log, a dirt path and rounded bushes, while B has a long bark-textured log, dense conifers and a rocky hill"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized canyon with a green-outfit kid, a title menu, and a 'Built with Aura3D' HUD",
+        "Image B is a medieval village with a cobblestone road, a red gate, and a black-clad character",
+        "Different palettes and scenery: warm orange rock and sand versus overcast sky, houses, and bright green lawns"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A has a purple-pink dusk sky, dark green faceted mountains and a wooden plank bridge, while B has a bright blue sky and orange sandstone cliffs on a dirt path",
+        "Different characters and mechanics: an orange-robed fighter facing enemies in A, a teal runner on a rolling log in B",
+        "B has a modern HUD with hearts, progress bar and score, and A shows no HUD"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "A has flat grey rocks and pixelated grass, while B has cracked-texture boulders and smooth rounded bushes",
+        "different characters: a translucent golden figure in a bubble in A, a green-suited kid in B",
+        "A's pink-purple sky and low-poly pines, versus B's warm orange cliff palette"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval village with stone buildings and a cobblestone road",
+        "Image B: runner game with a dirt path, rolling log, and a modern HUD (hearts, progress bar, score)",
+        "Different art styles: flat, saturated lawn and dark stone in A versus low-poly foliage and orange cliffs in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, and the scene is a canyon with orange cliffs and a log obstacle",
+        "Image B is a medieval village with a cobblestone road, and it has no HUD",
+        "The character models differ: a teal-suited runner in A and ninja figures with ghost clones in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a medieval rooftop town with an orange-robed runner, Image B is a grassy canyon with a green-suited kid",
+        "Different character models and art styles (low-poly town vs. painterly textured rocks and foliage)",
+        "Image B has a title-screen HUD ('Cumulus Dash') with no sign of that game's content in Image A"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a stylized low-poly cliff canyon with a game HUD (hearts, progress bar, 'Cliff Run' prompt), while B has a medieval village with a cobblestone road and no HUD",
+        "Different characters: a curly-haired kid in teal in A, a hooded ninja-like figure with an orange sash in B",
+        "Different palette and lighting: warm, saturated, glowing sky in A against a muted, overcast, gray-green look in B"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has dark teal pine trees, a purple dusk sky and a golden translucent character, while Image B has rounded green low-poly trees and a blue daytime sky",
+        "Image B has a polished HUD (hearts, progress bar, prompts) that Image A does not show",
+        "The two images differ in terrain and palette: a log path with flat green grass versus a smooth sandy road between orange cliffs"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a polished HUD (hearts, progress bar, banner text), while Image B shows no HUD",
+        "Different characters: a stylized cartoon runner in teal against a translucent golden figure inside a bubble",
+        "Different environments and lighting: sandstone cliffs, blue sky and a dirt path against a dense conifer forest, pink dusk sky and a long log"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: medieval village with cobblestone road, red-roofed timber houses and blue ghost runners",
+        "Image B: orange canyon cliffs, dirt path, pine trees, rolling log and a teal-suited runner",
+        "Different HUD: none in A; hearts, progress bar, score and ability meter in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a purple-pink sky, a wooden bridge and a first-person-like fantasy village setting, while Image B has a blue sky with canyon cliffs and a sand path",
+        "Different character styles: orange-robed monk with a bubble shield vs. teal-clothed kid runner",
+        "Image B has a modern HUD (hearts, progress bar, prompts) and cracked boulders and rounded low-poly trees, none of which appear in Image A"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a stylized low-poly cliff canyon with a HUD (hearts, progress bar, 'Cliff Run' prompt), Image B has a medieval village with a cobblestone road and no HUD",
+        "Different palettes and sky: A is saturated with warm orange cliffs and blue sky, B is muted with overcast grey sky",
+        "Different characters and art style: A has a teal-clothed curly-haired kid on a smooth path, B has a black-and-orange ninja figure with textured stone buildings"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show a character running along a log on a green meadow",
+        "Pine trees and rocks or boulders appear in both scenes",
+        "Similar low-poly stylized materials and grass, but the palette and character differ (title screen vs. gameplay)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A has a purple dusk sky, a wooden plank bridge and a fighting character in orange robes, while B has a blue daytime sky and a sandy dirt path",
+        "Different art styles: A uses faceted dark green low-poly mountains and a stylized village, B uses orange sandstone cliffs and lush low-poly bushes",
+        "B has a modern HUD (hearts, progress bar, score, 'Ride the rolling log' banner) and A shows no HUD"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval rooftop town with orange-robed runner, purple dusk sky, no HUD",
+        "Image B: cliff canyon with stylized green trees, cracked boulders and a polished HUD (hearts, progress bar, timer)",
+        "Different art style, palette and character design"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a countryside dirt path with a rolling log, green meadows, and a modern HUD with hearts and a score",
+        "Image B is a medieval rooftop town with tiled roofs and a purple dusk sky, with no HUD",
+        "The characters and art styles differ: a teal-suited kid in A, an orange-robed hooded runner in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a European-style village with a cobblestone road and a red pagoda gate, while Image B is a rocky canyon ridge",
+        "Image A has a gray, overcast sky and flat, saturated green grass, while Image B has warm orange glow and soft-shaded terrain",
+        "Image B has a title-screen HUD with a different character design, a green-gi kid versus a black-clad figure with an orange scarf"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Matching cracked grey-brown boulders with the same texture",
+        "Same saturated green grass and low-poly bush/rock style",
+        "Stylized martial-artist characters with a similar third-person run-along-a-path setup"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and flat green lawn; Image B is a canyon runner with a sand path and low-poly bushes",
+        "Different character models and rendering: A has a dark-clad character with an orange scarf, B has a teal-suited runner",
+        "Image B has a modern runner HUD (hearts, progress bar, score, ability bar) with no equivalent in A"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval village with cobblestone road and faceted low-poly trees, ninja characters",
+        "Image B: canyon cliff run with smooth stylized trees, cracked boulders, and a modern game HUD",
+        "Different character, art style and environment"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a title screen with a teal-clad kid, orange canyon walls and cracked boulders; Image B is a medieval village with a cobblestone road",
+        "Different palettes and sky: warm orange and tan in A, cool overcast blue-gray sky in B",
+        "Different characters and UI: menu buttons and key hints in A, ninja runners with no HUD in B"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: green meadow with cracked boulders, orange cliffs and a title-screen HUD",
+        "Image B: medieval rooftop town at dusk with a purple sky and jagged mountains",
+        "Different characters and art styles: teal-clad kid vs orange-robed monk"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, score and a text banner, while Image B shows none",
+        "Different palettes: A has a blue sky and orange cliffs, B has a purple dusk sky and green faceted rocks",
+        "Different characters and settings: A has a teal runner on a dirt path with a log, B has an orange-robed fighter on a wooden bridge with enemies"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a title screen with a canyon wall, cracked boulders and a green-suited kid. Image B shows a medieval village with a cobblestone road and ninja runners",
+        "Different palettes: warm orange/tan in A, cool overcast sky and saturated green in B",
+        "Different art styles: soft, blobby, painterly shapes in A, faceted low-poly trees and half-timbered houses in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar, and a 'Cliff Run' prompt, while Image B has none",
+        "Different palettes: blue sky with warm orange cliffs versus purple sky with green faceted mountains",
+        "Different art styles and characters: a stylized kid on a dirt path versus an orange-robed fighter on a wooden bridge with enemies"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval rooftop town with orange-robed runner, no HUD",
+        "Image B: cliff canyon with stylized green trees and a modern HUD (hearts, progress bar, prompts)",
+        "Different palettes, art styles and character models"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "matching cracked grey-brown boulders",
+        "same saturated green grass with low-poly rocks and wooden path styling",
+        "similar third-person martial-artist character with staff/orb theme"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A is a title screen with a green meadow, cracked boulders and a teal-clad kid, while B is a medieval rooftop town at dusk",
+        "Different palettes: warm orange/green in A, purple sky with red-roofed buildings in B",
+        "Different characters and settings: a martial-arts kid on a log in A, an orange-robed runner on rooftops in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a medieval rooftop parkour town with a purple dusk sky and an orange-robed monk",
+        "Image B is a green and sandy trail with a rolling log, a teal-suited runner, orange cliffs and a modern HUD",
+        "The palettes, terrain, art style and character designs do not match"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-title",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show a character running along a fallen log through a green meadow with boulders",
+        "Same low-poly, stylized tree and rock look",
+        "Image A is a title screen and Image B is gameplay, so the lighting and palette differ"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a red pagoda gate, Image B is a runner on a dirt path past cliffs and pines",
+        "Different character styles and proportions (dark-clothed figure with orange scarf vs. teal-suited runner)",
+        "Image B has a modern HUD (hearts, progress bar, score) and a different lighting and palette; Image A has no HUD"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has dark teal spiky pines on flat green ground under a purple dusk sky, while Image B has rounded low-poly canopy trees in a canyon with blue daytime sky",
+        "Image A's character is a translucent yellow figure in a bubble, and Image B's is a dark-haired boy in teal clothes",
+        "Image B has a polished HUD (hearts, progress bar, objective text), and Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a purple dusk sky, dark teal pines and a yellow translucent character; Image B has a bright blue daytime sky and a realistic orange cliff",
+        "Image B has a polished HUD (hearts, progress bar, score, 'Ride the rolling log' banner) and a dirt road; Image A has no HUD and a log lying on open grass",
+        "The two frames differ in art style: Image A is low-poly and dark, Image B is brighter with a stylized human character"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and a 'Ride the Rolling Log' prompt, with orange canyon cliffs and a sandy path; Image B shows no HUD and a medieval village with a cobblestone road",
+        "Different characters: a teal-suited runner in A and a black-and-orange ninja with blue ghost runners in B",
+        "Different art style: smooth, stylized low-poly foliage in A and faceted low-poly trees with half-timbered houses in B"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-title",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a muted overcast sky; Image B is a canyon ridge with warm orange cliffs",
+        "Different character designs: a dark-clad figure with an orange scarf versus a green-clad martial artist with spiky hair",
+        "Image B has a styled title-screen HUD with a menu, while Image A has no HUD and a different material style"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: medieval village with cobblestone path and faceted low-poly trees",
+        "Image B: canyon cliffs, smooth beige road and rounded stylized trees",
+        "Image B has a modern HUD with hearts, progress bar and prompts, while Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: medieval village with cobblestone road and flat saturated grass",
+        "Image B: low-poly stylized trees and cliffs with a modern HUD (hearts, progress bar)",
+        "Different character models and art style"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "default-play-0060",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A has a purple-pink dusk sky and a wooden bridge with a fighter and enemies, with no HUD",
+        "Image B has a bright blue sky, orange cliffs, a sandy path, and a teal-clad runner on a log",
+        "Image B has a HUD (hearts, progress bar, score, ability bar) and different low-poly vegetation and rendering style"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has dark teal spiky pines, a purple dusk sky and a translucent orange figure in a bubble, while Image B has rounded low-poly trees, a blue daytime sky and a detailed character",
+        "Image B has a polished HUD (hearts, progress bar, objective text, ability bar) and Image A has none",
+        "The two frames differ in palette and lighting: A is saturated green with a pink-purple sky, B is warm orange cliffs with soft beige path lighting"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "default-play-0520",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval rooftop town, orange-robed runner, dusk purple sky",
+        "Image B: canyon with green low-poly trees, boulders, and a modern HUD with hearts, checkpoint text and ability bar",
+        "Different palettes, art styles and camera setups"
+      ]
+    }
+  ]
+}

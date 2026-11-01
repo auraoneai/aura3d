@@ -1,0 +1,720 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:08:21.171Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village--settle-60s"
+    ],
+    "framesB": [
+      "splat-rush-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.965,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.965,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and hot air balloons",
+        "Image B: forest with pine trees, purple dusk sky and a golden humanoid on a log",
+        "Different art styles: clean stylized low-poly versus rough textured realistic-ish rendering"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands and a red ball",
+        "Image B: realistic medieval village with cobblestone road and ninja characters",
+        "Different art style and lighting: flat saturated colors vs. textured, shadowed, overcast look"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusk purple sky, realistic rock textures, humanoid character on a wooden bridge",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different lighting, palette and art style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusky purple sky, medieval rooftop town, orange-robed runner",
+        "Image B: bright cartoon blue sky with floating islands, balloons and a red ball",
+        "Different palette, lighting and art style (moody realistic vs. flat cheerful low-poly)"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja-like character; Image B is a floating-island sky world with a red ball",
+        "A uses realistic, muted lighting with an overcast sky; B uses flat, saturated, cartoon colors on a plain blue gradient",
+        "The scenery, camera and gameplay style share nothing: third-person ground exploration vs. a ball flying through clouds"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dusky purple sky, dark low-poly pines and a log path in a forest",
+        "Image B: bright cartoon blue sky with floating islands, clouds and hot air balloons",
+        "Different art styles and lighting, with a golden humanoid character in A and a red ball in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: medieval village with a cobblestone road and a character with a realistic, moody sky",
+        "Image B: bright cartoon floating islands, balloons and a red ball against a flat blue gradient sky",
+        "Different art style, lighting and camera: grounded third-person versus airborne low-poly stylization"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusk purple sky, realistic textured rocks and a wooden bridge with a character",
+        "Image B: bright cartoon sky with floating islands, hot air balloons and a red ball",
+        "Different art style and lighting (muted painterly vs flat saturated toon)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, a red ball and hot air balloons",
+        "Image B: realistic medieval village with a cobblestone road and ninja characters",
+        "Different lighting and palette: flat saturated blue vs. muted, shadowed overcast"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands and a red ball",
+        "Image B: dusky purple sky with a medieval rooftop town and a running character",
+        "Different art styles: flat pastel low-poly versus darker textured realistic shading"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusky purple sky, dark pine forest and a log path with a golden humanoid character",
+        "Image B: bright cartoon blue sky with floating islands, hot air balloons and a red ball",
+        "Different art styles: moody textured low-poly vs clean pastel toy-like rendering"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 2,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, a red ball and hot air balloons",
+        "Image B: dusky purple sky with a low-poly green landscape and a wooden bridge",
+        "Image B: a robed fighter character and enemies, which have no counterpart in A"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: medieval village with cobblestone road, ninja characters and realistic lighting",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different art styles and palettes: muted, detailed textures vs. flat, saturated, soft-shaded"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusk medieval rooftop town with a robed runner and a dark, muted palette",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different art styles and lighting: moody low-poly realism vs. flat, saturated, cheerful"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: realistic village with cobblestone road, muted overcast sky and a ninja character",
+        "Different art styles and lighting: flat saturated colors vs. textured, shadowed, post-processed look"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 3,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: dusk purple sky with a wooden bridge, low-poly rocks and a martial-arts character",
+        "Different art style, palette and gameplay: A is a bright, flat, stylized sky world, B is a grounded fantasy landscape with muted tones"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 3,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dusk purple sky, dark forest with pine trees and a log path",
+        "Image B: bright cartoon blue sky with floating islands, balloons and a red ball",
+        "Different art styles: moody low-poly realism vs. clean, soft, pastel toon rendering"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 3,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: realistic medieval village with cobblestone road and ninja characters",
+        "Different lighting and palette: flat saturated blue vs. muted overcast with detailed textures"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusk medieval rooftop town with a runner character and muted purple-olive palette",
+        "Image B: bright cartoon sky with floating islands, clouds, balloons and a red ball",
+        "Different art style and lighting: moody realistic shading vs flat saturated toon look"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja-like character, rendered with realistic lighting",
+        "Image B is a bright cartoon sky with floating islands, balloons and a red ball, in a flat low-poly style",
+        "The two frames differ in palette, lighting and art style, and share no common objects or HUD"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 4,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusky purple sky, medieval rooftop town, orange-robed runner",
+        "Image B: bright cartoon blue sky with floating islands, balloons and a red ball",
+        "Different palette, lighting and art style (moody realistic vs. flat bright toon)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 4,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds, and a red ball",
+        "Image B: dusk pink sky with realistic pine forest and a log path",
+        "Different art styles, palettes, and characters (red ball vs. golden humanoid in a bubble)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 4,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: darker, realistic-stylized fantasy scene with purple dusk sky, wooden bridge, and a martial-artist character",
+        "Image B: bright cartoon sky with floating islands, hot air balloons, and a red ball, with a flat saturated palette",
+        "Different art styles, lighting, and gameplay setting"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 4,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: medieval village with a cobblestone road and ninja characters",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different lighting and palette: dim overcast realistic-style shading vs flat saturated cel-style colors"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, flat-shaded cartoon sky with floating islands and a red ball",
+        "Image B is a realistic-leaning village with cobblestone road, overcast sky and a ninja character",
+        "Different palette, lighting and rendering style, with no shared assets"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 5,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright cartoon sky with floating islands, a red ball and hot air balloons",
+        "Image B is a realistic medieval village with a cobblestone road and ninja characters",
+        "Different art styles and lighting: flat, saturated pastels versus textured, dim, realistic shading"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 5,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja character, with realistic overcast lighting",
+        "Image B is a bright cartoon sky with floating islands, a red ball and hot air balloons, with flat saturated colors",
+        "The two frames have different art styles, palettes and gameplay perspectives"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 5,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B: dusk pine forest with a log path and a golden humanoid character",
+        "Different art styles and palettes: soft pastel cartoon vs. darker textured low-poly"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 5,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusk purple sky, realistic rocks, wooden bridge with a fantasy martial-arts character",
+        "Image B: flat bright cartoon blue sky with floating islands, clouds and a red ball",
+        "Different art styles: painterly low-poly terrain versus clean toy-like pastel shading"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 5,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusky purple sky, medieval rooftop town with a runner in an orange robe",
+        "Image B: bright cartoon blue sky with floating islands, balloons and a red ball",
+        "Different art styles and palettes: moody realistic lighting vs flat pastel cartoon"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 6,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a realistic overcast sky and cobblestone road",
+        "Image B is a bright cartoon sky with floating islands, a red ball and hot air balloons",
+        "Different art style, lighting and camera: third-person ground view vs. flat-shaded aerial view"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 6,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: realistic medieval village with cobblestone road and ninja characters",
+        "Different art styles and lighting: flat saturated blue vs. muted overcast with dynamic shadows"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 6,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, a red ball and hot air balloons",
+        "Image B: dusky purple sky, low-poly green mountains, wooden bridge and a monk-like character",
+        "Different art style and lighting: flat saturated colors in A, darker painterly textures in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 6,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusky purple sky, dark low-poly pines, and a log path on grass",
+        "Image B: bright cartoon sky with floating islands, balloons, and soft white clouds",
+        "Different characters and art style (yellow translucent figure vs. red ball)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 6,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusk medieval rooftop town with a orange-robed runner and a dark, realistic-leaning palette",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different art styles, lighting and camera setups"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 7,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusk medieval rooftop city with a monk character and a muted, dark palette",
+        "Image B: bright cartoon sky with floating islands, balloons and a red ball",
+        "Different art styles and lighting: realistic-ish gloomy shading vs flat saturated toon shading"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 7,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, flat-shaded cartoon sky scene with floating islands and a red ball",
+        "Image B is a realistic-style medieval village with a cobblestone road and ninja characters",
+        "Different palettes and lighting: saturated blue sky vs. muted overcast sky with detailed textures and shadows"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 7,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road, a character and realistic lighting",
+        "Image B is a bright cartoon sky with floating islands, balloons and a red ball",
+        "The art styles, palettes and camera setups are completely different"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 7,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: painterly fantasy scene with a wooden bridge, dusk purple sky and a robed character",
+        "Image B: bright cartoon floating islands, white puffy clouds and hot air balloons under a flat blue sky",
+        "Different art styles and lighting: muted textured realism in A, clean saturated low-detail shading in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 7,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B: dusk pine forest with a log path and a golden humanoid figure",
+        "Different art style and palette: soft stylized pastel vs. darker textured low-poly realism"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 8,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: dusky purple sky over a medieval rooftop town with a running monk character",
+        "Different art styles: flat stylized low-poly vs. textured, moodier lighting"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 8,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dusk purple sky, dark low-poly pines, and a golden humanoid on a log",
+        "Image B: bright cartoon blue sky with floating islands, hot air balloons, and a red ball",
+        "Different art styles and lighting: moody realistic shading vs. flat pastel toon look"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 8,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja-style character, in muted realistic lighting",
+        "Image B is a bright cartoon sky with floating islands, hot air balloons and a red ball, with flat saturated colors",
+        "The scenery, palette, and camera style share nothing, and the art styles differ"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 8,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: medieval village with cobblestone road, ninja runners, and realistic lighting with cloudy sky",
+        "Image B: flat-shaded cartoon floating islands and balloons against a plain blue sky with a red ball",
+        "Different art style and rendering: textured, shadowed scene versus bright, smooth, minimal-shading look"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 8,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B is a grounded fantasy scene with a wooden bridge, a monk character and enemies under a dusky purple sky",
+        "Different palette, lighting and art style: flat cartoon shading versus textured low-poly terrain"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 9,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dusky purple sky, medieval rooftop town and a robed runner",
+        "Image B: bright cartoon blue sky with floating islands and a red ball",
+        "Different palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 9,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 47,
+      "pass": 9,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: medieval village with a cobblestone road and ninja characters, dusky realistic-style lighting",
+        "Image B: bright cartoon sky with floating islands, hot air balloons, and a red ball",
+        "Different palettes, materials, and camera setups"
+      ]
+    }
+  ]
+}

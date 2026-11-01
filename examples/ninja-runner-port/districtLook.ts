@@ -231,9 +231,16 @@ export const ORIGINAL_SKY = {
  * against the 4.6.2 frame's 121, software WebGL2, g20p3-r1; 1.3 still lifted the blacks to 46 against 34 and halved the
  * saturation, and the blind panel called it a grey haze 3/0, g20p3r2). The key carries the frame, the fill stays low.
  */
-export const ENVIRONMENT_GAIN = 0.9;
+export const ENVIRONMENT_GAIN = 0.45;
 /** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
-export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.45 } as const;
+export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.22 } as const;
+/**
+ * GU47 phase 4: the sun's cascaded shadows render and are sampled, but under the phase-3 fill (IBL 0.9, hemisphere 0.45)
+ * a cast shadow took only ~15% off the ground (the oak's shadow on the cobbles 141 vs 151 luma, shadow-off A/B g20p4-pr,
+ * software WebGL2), so the judge saw no cast shadows (shadows 3/10). Half the fill and a 1.4x key: the same shadow reads
+ * 86 vs 112 and the grass under the houses' shadow 60 vs 160 (g20p4-pr `fill` / `combo`). The key gain applies to every row.
+ */
+export const KEY_GAIN = 1.4;
 /**
  * Output exposure of the evening look (aces). GU47 phase 3: back to 1, the 4.6.2 value; the light rig (a higher sun and
  * a stronger sky fill) carries the brightness instead, so the authored sky dome renders at its own values.

@@ -3,91 +3,74 @@
   "round": 1,
   "shots": [
     {
-      "path": "../g20/evidence/ninja-runner-port/screens/final/run-1280.jpg",
-      "sha256": "60a369223d546ec3925e15b3ef0e28533a6d92b0b88641e5452e610d69a00283"
-    },
-    {
-      "path": "../g20/evidence/ninja-runner-port/screens/final/mid-action-1280.jpg",
-      "sha256": "83a5d80bc50b2b1fd692745e071466cc3f0102af857ddb98a80e3ac5fc7d94e7"
-    },
-    {
-      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p3-r4/ninja-runner-port/frames/g20p3-r4-4/ninja-runner-port--rooftops--settle-60s.jpg",
-      "sha256": "963f53c7804d2f2345685cbf647a5b74a5223f687bae04dbb5275a1c5e3230ab"
-    },
-    {
-      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p3-r4/ninja-runner-port/frames/g20p3-r4-6/ninja-runner-port--forest--settle-60s.jpg",
-      "sha256": "f35ddf8d4d44dd39a6357ade0234ecce93ae364c70c8e494ed0b987093241305"
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p4-r3/ninja-runner-port/frames/g20p4-r3s-1/desktop--run-1280-page.jpg",
+      "sha256": "015c2544ca0886b9a281e1bf306caa799edb9eb0c18de55b81f1b128a1dec7fc"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5,
-    "shadows": 3,
-    "ibl_reflections": 3,
+    "lighting": 6,
+    "shadows": 6,
+    "ibl_reflections": 4,
     "environment_world": 6,
     "atmospheric_effects": 5,
-    "material_quality": 4.5,
-    "modeling_assets": 5.5,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
     "composition": 6,
     "camera": 6,
     "postprocessing": 5,
-    "animation_quality": 5,
-    "ui_hud": 7
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Flat, mostly ambient-driven lighting. The gate, towers and houses show weak key/fill separation, the rooftop scene reads evenly lit with no clear sun direction, and the forest frame has washed-out yellow character shading."
+      "seen": "A single warm sun from upper right gives readable form on the gate and towers, but the grass and tree canopies are lit almost flat. There is no visible rim or fill separation on the dark-clad player and enemy, so both read as near-silhouettes against the cobbles."
     },
     {
       "category": "shadows",
-      "seen": "Contact shadows are almost absent. The bushes and trees float on the grass, the buildings show no cast shadows on the ground, and the only ground marks under the runners are a faint blob/decal disc."
+      "seen": "Trees, gate and characters cast sun shadows onto the path and grass with soft edges, which grounds the scene. Contact shadowing is weak under the bushes and buildings. The enemy relies on a flat beige disc decal instead of a real contact shadow, and the decal looks pasted on."
     },
     {
       "category": "ibl_reflections",
-      "seen": "No visible environment reflection response. The stone, roof tiles and wood all read matte and identical, and the translucent shield bubble shows no reflection or fresnel detail from the sky."
+      "seen": "No environment reflection or sky-tinted specular is visible on any surface. The cobbles, wood and stone are all matte, and the shaded sides take no blue sky bounce."
     },
     {
       "category": "environment_world",
-      "seen": "The village is coherent, with a pagoda gate, round stone towers, timber houses and a market stall. However, the grass is a flat tiled plane, the background mountains are low-poly cards, and the forest is repetitive cloned pines on an empty lawn."
+      "seen": "The village set is coherent: a lacquered red gate, round stone towers with slate roofs, a half-timbered house, and distant hills. Beyond the props the grass plane is empty and uniform, with sparse bush placement and no ground clutter, flowers or path-edge blending."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is some distance haze on the rooftop mountains and warm sunset skies in frames 3–4. The village frames show almost no aerial perspective, and the far hills are as crisp as the midground."
+      "seen": "Mild distance haze softens the hills and far roofs. There are no particles, light shafts, drifting leaves or other ambient motion cues for an outdoor day scene."
     },
     {
       "category": "material_quality",
-      "seen": "The cobblestone texture is decent. The grass is a noisy repeating texture, the tree bark and foliage are smeared low-res textures, the stone towers are stretched and blurry, and the orange chimney is a flat untextured box."
+      "seen": "The cobblestone texture is the strongest material, with clear stone and grout definition. The tree canopies use a stretched, blotchy red texture on lumpy geometry that reads as painted clay. The grass is a low-detail tiling green, and the wood gate has little grain or roughness variation."
     },
     {
       "category": "modeling_assets",
-      "seen": "Assets are readable but mixed. The pagoda gate and timber houses are reasonable, the foliage is jagged low-poly cards, the boulders are blobby, and the hero mesh in frames 3–4 looks untextured yellow with a stiff silhouette."
+      "seen": "The tree canopies are faceted low-poly blobs with visible polygon edges at their silhouettes. The bushes are simple spheres. The characters are small and low-detail, with only an orange scarf distinguishing the player. The buildings are simple primitives with basic window cutouts."
     },
     {
       "category": "composition",
-      "seen": "The central path leading lines work well, and the gate frames the opener nicely. However, the player sits low and small at about 10–15% of the frame, the area title banner covers the focal enemies, and the rooftop frame has a cluttered mid-ground."
+      "seen": "The path leads strongly to the gate, which is centered, and the two foreground trees frame it. However, the canopies are oversized and eat the top corners under the HUD panels. The player sits low and small at roughly 10–12% of frame area, below the 18–25% target."
     },
     {
       "category": "camera",
-      "seen": "The camera is chase-cam from behind, not the side-on follow the recipe expects. The framing is consistent but places the hero low, and the rooftop frame shows a high vantage with good depth."
+      "seen": "The camera is a behind-the-back chase view looking down the path, not the side-on follow camera the platformer recipe expects. The field of view looks near 50–60°, and the elevated angle reads the lane well."
     },
     {
       "category": "postprocessing",
-      "seen": "There is no visible grading or bloom in the village frames. The forest has a pink/magenta sky cast, and the hero's yellow glow looks like a flat emissive tint rather than tuned bloom. There is mild aliasing on the foliage edges."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "Running poses read in stills, and the echo clones appear mid-stride. The hero in frame 4 shows a stiff, upright pose on the log, and the clones are identical in pose."
+      "seen": "No visible tone-mapping character, bloom, color grading or ambient occlusion. Colors are slightly muddy, the sky is a desaturated grey-blue, and the image has no daylight-outdoor grade punch."
     },
     {
       "category": "ui_hud",
-      "seen": "The parchment-style panels are clean and legible, with distance, score, combo, a progress bar with markers and an ability grid. The layout is cohesive, but the panels are heavy and the top-left/top-right boxes crowd the frame."
+      "seen": "Parchment-style panels with a serif typeface are consistent and readable, and the progress bar has named milestones. The labels crowd their values ('DISTANCE45 m', 'DEFEATED00'). The panels are heavy and cover the frame corners, and the ability grid adds clutter."
     }
   ],
   "nextChange": {
-    "category": "shadows",
-    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
-    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
   },
   "judge": "prism"
 }

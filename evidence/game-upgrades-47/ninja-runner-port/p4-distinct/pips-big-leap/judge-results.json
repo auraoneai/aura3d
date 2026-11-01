@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:06:42.306Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village--settle-60s"
+    ],
+    "framesB": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.879,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 46,
+    "sameGameYes": 1,
+    "differentRate": 0.9787234042553191,
+    "ci95": [
+      0.8888676347566887,
+      0.9962343289895351
+    ],
+    "confidentDifferent": 44,
+    "confidentDifferentRate": 0.9361702127659575,
+    "same_game": false,
+    "same_game_confidence": 0.879,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night-sky space platformer with an acorn character and a blocky Minecraft-style figure",
+        "Image B: daytime medieval village with a cobblestone road and ninja runners",
+        "Different palettes, scenery and character styles with no shared assets"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: indoor brown scene with an acorn-headed character and ornate metal towers",
+        "Image B: outdoor village with blue sky, green grass, cobblestone road and a ninja-like character",
+        "Different palettes and settings (warm monochrome brown vs. bright naturalistic daylight)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: dusk purple-pink sky, dark teal jagged pines, open meadow with a log path",
+        "Image B: bright pale-blue sky, flat-shaded faceted green pines, floating platform obstacle course",
+        "Different characters and styles: translucent yellow figure in a bubble vs. acorn-hat character and a blocky voxel character"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark brown indoor shrine with an acorn-cap character and a blocky pink-shirt avatar, while Image B is a bright green medieval village with a ninja character and blue ghost clones",
+        "Different palettes and lighting: monochrome orange-brown glow versus blue sky, green grass and cobblestone",
+        "Different art styles: metallic caged towers and a stylized mascot versus low-poly trees and timber-frame houses"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: floating platforms, acorn-headed character and blocky red-shirt figure in a stylized toy-like scene",
+        "Image B: medieval village with cobblestone road, stone houses and a ninja character in a grounded, realistic-leaning style",
+        "Different scenery, character designs and sky/lighting: hazy flat gray sky vs. cloudy dusk sky over green terrain"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: purple dusk sky, green low-poly mountains, wooden bridge, fantasy action scene",
+        "Image B: pale overcast sky, acorn character, floating platforms with windmill, blocky red-shirt figure",
+        "Different art direction and palette: saturated green and purple against muted brown and gray"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pale floating platforms in a hazy blue sky with an acorn character",
+        "Image B: medieval rooftop town with a hooded runner at dusk",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval rooftop city with a monk runner at dusk",
+        "Image B: acorn character on floating platforms with a windmill under a gray overcast sky",
+        "Different palettes and art styles: purple-gold low-poly in A, bright cartoon with a blocky Minecraft-like NPC in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly stylized pine trees, floating platforms, acorn character and blocky voxel NPC",
+        "Image B: realistic medieval village with cobblestone road, stone houses and a ninja-like character",
+        "Different sky and lighting: clean bright blue gradient vs. overcast painterly clouds with a hazy mountain backdrop"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: floating platform obby with an acorn character, blocky Minecraft-style NPC and purple drones",
+        "Image B: medieval village with a cobblestone road, ninja runners and ghost clones",
+        "Different scenery and character styles, and different sky and lighting (clear pale blue vs. cloudy dusk)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: bright blue sky, faceted low-poly pines, and an acorn character with a blocky Minecraft-style companion",
+        "Image B: purple-pink cloudy sky, textured boulders, a wooden bridge, and a robed martial-arts character",
+        "Different art direction: clean flat shading with floating platforms vs. painterly textured terrain with a village"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and ninja runners, Image B is a floating-platform world with an acorn character",
+        "different art styles: low-poly trees and half-timbered houses vs. stylized windmill, crates and blocky red-shirt figure",
+        "different environments and lighting: green grass under a blue-purple sky vs. brown plank ground under a flat pale gray sky"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: outdoor medieval rooftop parkour scene with a monk-like runner",
+        "Image B: enclosed brown interior with an acorn-capped character and a blocky Minecraft-style figure",
+        "Different palette, setting, character styles and art direction"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an outdoor fantasy bridge with green hills, a purple sky and a robed character",
+        "Image B is an enclosed brown interior with scaffold towers and an acorn character",
+        "Different palettes, environment style and character designs"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime fantasy countryside with wooden bridge and green rocky hills",
+        "Image B: night starry sky with glossy floating platforms and acorn character",
+        "Different character styles and art direction (stylized human fighter vs. toy-like acorn figure and blocky Minecraft-style character)"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright low-poly forest with floating platforms and an acorn character",
+        "Image B: medieval rooftop town with a dusk purple sky and a monk runner",
+        "Different art style, palette, lighting and world setting"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: enclosed, brown-lit interior with an acorn character and metal cage towers",
+        "Image B: outdoor forest with pink sky, green grass and a translucent yellow figure",
+        "Different environments, palettes and character styles"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: enclosed brown interior with an acorn character and ornate metal towers",
+        "Image B: open outdoor rooftop scene with a purple sky, mountains and a medieval town",
+        "Different characters, palettes and scenery style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pale floating-platform sky world with an acorn character and a blocky voxel figure; Image B is a grassy low-poly landscape with a wooden bridge",
+        "Different palettes: soft blue-grey haze versus purple sunset sky with saturated green terrain",
+        "Different characters and scenery: acorn creature, rocks and a sci-fi pod versus an orange-robed martial artist, a monster and village houses"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly pine forest under a purple dusk sky, translucent yellow figure in a bubble",
+        "Image B: acorn-headed character on a brown platform with a windmill, pale overcast sky",
+        "Different palettes and art styles: dark teal and green against warm brown and gray"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a dusk purple-pink sky and dark teal spiky pines; Image B has a pale blue sky and flat-shaded green low-poly pines",
+        "Different characters: yellow translucent figure in a bubble vs. acorn character and blocky voxel figure",
+        "Different scene structure: a fallen log over open grassland vs. floating platforms with a gate and drones"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pale sky-platform world with an acorn character and blocky voxel figure",
+        "Image B: grassy medieval village with a cobblestone road and a ninja-like character",
+        "Different palettes and scenery (pastel blue-lavender vs. saturated green and brown), with no shared assets"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is an enclosed indoor setting with an acorn-headed character and ornate metal towers; Image B is an outdoor forest with pine trees and a pink sky",
+        "Different player characters: an orange acorn creature versus a translucent yellow humanoid in a bubble",
+        "Different palettes and lighting: warm brown and tan interior versus saturated green grass and purple-pink sky"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and ninja runners",
+        "Image B is a floating-platform obstacle course with an acorn character, blocky human and drones",
+        "Different art style and palette: A has a warm, overcast realistic-stylized look, B has flat low-poly pines and a clear pale blue sky"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval rooftop parkour scene with a dusky purple sky and orange-robed runner",
+        "Image B is a bright low-poly forest platformer with an acorn character, a blocky character and drones",
+        "Different palette, scenery and character styles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "A is a daytime forest with a pink dusk sky and low-poly pines; B is a night starfield with glossy metallic floating platforms",
+        "Different characters: translucent yellow runner in a bubble vs. a cartoon acorn-head figure and a blocky Steve-like figure",
+        "Different material styles: matte grass and bark in A, reflective chrome and glass rings in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pale sky-platform world with acorn character and blocky avatar",
+        "Image B: green forest with pine trees, pink dusk sky and a log path",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night starfield with floating glossy platforms and an acorn-capped character",
+        "Image B: daytime medieval village with cobblestone road and a ninja character",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an outdoor daytime scene with a green meadow, a wooden bridge and a purple-pink sky, while Image B is an enclosed indoor scene in monochrome brown",
+        "Different characters: an orange-robed martial artist in A, an acorn-capped creature plus a blocky Minecraft-style figure in B",
+        "Different art styles and materials: stylized low-poly rocks in A, grungy metallic scaffold towers in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a bright blue sky with faceted low-poly pines and floating platforms, while Image B has a purple cloudy sky and a wooden bridge",
+        "Different characters: an acorn-headed creature and a blocky figure versus an orange-robed martial artist",
+        "Different scenery and palette: a clean cartoon obstacle course versus a textured rocky fantasy village landscape"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja-like character",
+        "Image B is a low-poly platformer with floating platforms, drones, and an acorn character",
+        "The two frames differ in palette, sky and art style"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a grounded medieval village with a cobblestone road and green grass; Image B is a floating-platform sky course in pale blue haze",
+        "Different characters: ninja runners with ghost clones vs. an acorn-capped creature and a blocky voxel figure",
+        "Different art direction and palette: saturated low-poly greens and browns vs. muted pastel blue-lavender"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval rooftop parkour town at dusk with a monk-like runner",
+        "Image B is a night-sky floating-platform scene with an acorn character and blocky Minecraft-style figure",
+        "Different palettes, scenery and character styles with no shared assets"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright outdoor medieval village with a cobblestone road and green grass",
+        "Image B is a dark brown industrial interior with metal cage towers and an acorn-capped character",
+        "The characters and art styles are unrelated, and B includes a blocky Minecraft-style figure"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: grassy fantasy landscape with wooden bridge and purple sunset sky",
+        "Image B: pale floating platforms in a blue-grey sky with an acorn character and blocky voxel figure",
+        "Different art styles, palettes and character designs"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple-pink dusk sky with a medieval village and a wooden bridge",
+        "Image B: pale blue sky with low-poly pine trees and floating platforms",
+        "Different characters: orange-robed fighter vs. acorn-head character and blocky figure"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "mixed asset styles, including a blocky character in B and pixelated textures in A",
+        "orange/gold translucent-looking characters in both",
+        "acorn theme in B and log path in A"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: outdoor daytime scene with green hills, pine trees and a wooden bridge",
+        "Image B: enclosed brown-orange interior with metal cage towers and an acorn-capped character",
+        "Different character styles (stylized orange fighter vs. cartoon acorn character and blocky Minecraft-like figure) and different lighting palettes"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright low-poly forest with an acorn character and floating platforms",
+        "Image B: dusky medieval rooftop town with a monk runner and a purple-orange sky",
+        "Different palettes, lighting and art style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: floating pale platforms over a hazy blue sky with an acorn character and blocky avatar",
+        "Image B: medieval rooftop town with orange-robed runner at dusk",
+        "Different palette, scenery, and character styles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating platforms, windmill and acorn character in a gray overcast sky",
+        "Image B: forest of low-poly pines on a green field under a pink sunset sky",
+        "Different characters and art style: blocky red figure and acorn kid vs. translucent yellow figure in a bubble"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night-space setting with floating platforms and a glossy acorn character, while Image B is a daytime green landscape with a wooden bridge",
+        "Different palettes: deep blue and lavender in A, earthy green, brown and purple-pink sky in B",
+        "Different character and art styles: a stylized toy-like acorn character plus a blocky voxel figure in A, a robed martial-arts figure and low-poly rocks in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: floating platforms with an acorn character and blocky red-shirt figure on a cloudy sky",
+        "Image B: medieval village with cobblestone road and blue ninja ghost runners",
+        "Different art style, palette and camera setting"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark brown indoor industrial ruin with an acorn-cap character and a blocky Minecraft-style figure",
+        "Image B: bright outdoor medieval village with a green meadow, cobblestone road and ninja runners",
+        "Different palettes, lighting and character styles"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a grounded medieval village with a cobblestone road and green grass",
+        "Image B shows floating pale platforms in a hazy blue sky with an acorn character and a blocky voxel figure",
+        "Different character styles, palettes and scenery"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a floating-island platformer with an acorn character, a blocky red-shirt figure and a windmill",
+        "Image B is a grounded medieval village with a cobblestone road, stone houses and a ninja character",
+        "Different scenery, palette and character style: brown/gray sky versus green grass and warm cloudy sky"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night-sky floating-platform scene with an acorn character and a blocky Minecraft-style figure",
+        "Image B is a daytime medieval village with a cobblestone road and a ninja-like character",
+        "The two frames differ in palette, scenery, and art style"
+      ]
+    }
+  ]
+}

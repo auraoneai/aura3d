@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p4-r3/ninja-runner-port/frames/g20p4-r3s-1/desktop--run-1280-page.jpg",
+      "sha256": "015c2544ca0886b9a281e1bf306caa799edb9eb0c18de55b81f1b128a1dec7fc"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 5,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sun reads as a single directional light, but the grass field is lit almost uniformly with no gradation. The tree canopies go nearly black on their undersides, which suggests weak fill or ambient light. The sky is overcast grey-blue, so the frame does not read as a bright outdoor day."
+    },
+    {
+      "category": "shadows",
+      "seen": "Tree and bush shadows fall on the grass and the player casts a shadow on the cobblestones, so shadow mapping is active. The shadows are soft and blobby with little contact darkening, and the buildings barely ground into the terrain."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No specular response is visible on any surface. Stone, wood, cloth and foliage all look equally matte, with no environment reflection or sky-tinted highlights."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The village has a gate, half-timbered houses, round stone towers and bushes. Beyond the path the grass plane is flat and mostly empty, and the distant hills are a thin, sparse backdrop."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A faint haze sits on the distant hills. The mid-ground shows no depth fog, light shafts or particles, so the depth layers separate weakly."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone path has convincing per-stone variation. The grass is a flat tiled texture with visible repetition. The tree canopies use a noisy, faceted red texture that reads as plastic, and the stone walls show obvious tiling."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tree canopies are low-poly blobs with faceted silhouettes. The gate has reasonable detail, with a tiled roof, beams and plank doors. The characters are simple, with low silhouette detail apart from the orange scarf."
+    },
+    {
+      "category": "composition",
+      "seen": "The path forms strong leading lines into the centered gate, and the trees frame both sides. The large foreground canopies and four HUD panels crowd the corners. The player covers well under the 18–25% frame target."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera follows from behind and above, chase-style, instead of the side-on follow the recipe expects. The field of view looks wider than 50°, which stretches the foreground cobbles."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom, color grading or ambient occlusion. Tone mapping looks flat, and the sky and grass lack the saturation a daylight-outdoor grade should give."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The parchment-style panels are consistent and readable. In the top-right panel the labels collide with their values (\"DISTANCE45 m\", \"DEFEATED00\"). The panels take up all four corners and pull attention from the play space."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
