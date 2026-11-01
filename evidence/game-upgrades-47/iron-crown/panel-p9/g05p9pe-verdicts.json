@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "himalayan-monastery",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Temple roof and pillars look semi-transparent and ghosted, with a pinkish double image. Large dark blobs behind each fighter read as muddy shapes. The sky is a flat grey-white. Fighter faces are low on detail.",
+     "The temple roof is still partly transparent and ghosted. The sky is a flat pale grey, and the white snow particles look a bit like specks. The dark fighter blends into the dark backdrop sculpture behind it. Otherwise it has stronger contrast, more saturated colour, prayer-flag set dressing, fire braziers and better depth and mood.",
+     "Translucent, ghosted temple facade with pink overlapping layers (alpha/z-sorting artifacts); flat grey-white sky; the dark rock clumps behind the fighters look odd; floating white specks; the right fighter's dark costume blends into the dark rock behind them."
+    ]
+   }
+  ]
+ }
+]

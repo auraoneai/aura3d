@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bangkok-dock",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Somewhat dark overall, with a heavy vignette at the bottom; the gate roof is still slightly translucent; the background trees and sky are blurry and look like a low-detail backdrop. Even so, contrast is stronger, the colours are richer, the RAMEN signs read clearly and the props are better defined.",
+     "Pagoda backdrop is semi-transparent and ghosted, with the floor showing through. Background buildings are slightly soft. The overall grade is a bit dark and vignetted, but colour, contrast and the warm rim lighting on the fighters are strong.",
+     "The gate roof and shrine are still partly translucent. Small floating yellow specks sit near the gate. The background is a blurred photo backdrop that doesn't quite match the scene. The foreground floor is a bit dark."
+    ]
+   },
+   {
+    "variant": "neo-tokyo-rooftop",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A bright white glow or haze smears across the left fighter's legs and nearby floor and partly hides the player; the rain streaks are large and look like stretched lines; the wet-floor reflections are streaky and noisy; the sky is still black. Even so, the frame has much stronger mood, a neon wet-rooftop atmosphere and more depth.",
+     "A bright white bloom or haze blob beside the left fighter partly washes out their legs. Rain streaks are thick and uniform, so they look a bit artificial and clutter the upper frame. The background screens are blown out to white. Otherwise the wet reflective floor, neon reflections and more detailed props add strong mood and depth.",
+     "A bright white haze/smoke blob covers part of the left fighter's legs and the floor. The rain streaks are crude, uniform white lines. The sky behind the arena is a black void, and the floor reflections are a little noisy."
+    ]
+   }
+  ]
+ }
+]
