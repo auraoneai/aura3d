@@ -288,6 +288,25 @@ test.describe("top-tennis audit-fix capture", () => {
     });
   }
 
+  // Serve state on each court: the live page quick-starts with the player serving, so the lime service-box highlight and
+  // the serve aim ring show before the toss. One full-screen shot (HUD on) and one canvas-only frame per court.
+  for (const venue of ["hard", "grass", "clay", "desert", "beach", "moon"]) {
+    test(`tt-serve-${venue}`, async ({ page }) => {
+      await open(page, `?venue=${venue}`, { width: 1280, height: 720 });
+      await page.waitForTimeout(6_000);
+      const state = await page.evaluate(() => {
+        const s = (window as unknown as Record<string, any>).__TOP_TENNIS_CONTROL__?.getState?.();
+        return { mode: s?.mode ?? null, phase: s?.phase ?? null, server: s?.server ?? null, venue: s?.venue ?? null, aim: s?.serveAttempt?.aim ?? null };
+      });
+      log(`GL_META ${JSON.stringify({ target: `serve-${venue}`, id: "state", state })}`);
+      await shot(page, `serve-${venue}`, "serve");
+      await grab(page, `serve-${venue}`, "serve");
+      log(`GL_DONE serve-${venue}`);
+      expect.soft(state.server, "player serves first").toBe("player");
+      expect.soft(["serve", "serveToss"].includes(String(state.phase)), `serve phase (${state.phase})`).toBe(true);
+    });
+  }
+
   test("tt-misc-ctxloss", async ({ page }) => {
     await open(page, "?autoplay=1", { width: 1280, height: 720 });
     await page.waitForTimeout(10_000);
