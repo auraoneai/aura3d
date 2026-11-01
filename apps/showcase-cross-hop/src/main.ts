@@ -1,9 +1,9 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
+import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
-import { defaultLookFor } from "./game/look";
+import { defaultLookFor, p4DressFor } from "./game/look";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -44,6 +44,7 @@ setReducedMotion(REDUCED_MOTION);
  */
 const THEME_PARAM = params.get("theme");
 setLookMode(defaultLookFor(params.get("look"), THEME_PARAM !== null ? parseInt(THEME_PARAM, 10) : null));
+setP4Dress(p4DressFor(getLookMode(), THEME_PARAM !== null ? parseInt(THEME_PARAM, 10) : null));
 const DIORAMA = getLookMode() === "diorama";
 if (DIORAMA) document.body.classList.add("ch-diorama");
 

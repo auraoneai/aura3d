@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The ground plane is dull olive-brown and fairly muddy. The frog shows from behind and to the side, and its colours blend a little with the ground. The far background is busy, with trains overlapping each other. Otherwise it has a warm sunset sky with a sun glow, visible shadows, nicely lit floating platforms, and better depth and mood.",
+     "Distant buildings are plain black boxes. Far lanes are crowded and trains bunch up. The sun bloom washes out a little. The sunset lighting, player shadow and visible coin still give it good mood and depth.",
+     "The sunset sky haze is slightly bright and washes out the far horizon a little, and the ground is somewhat muddy and dark. Still, it has a warm mood and a sun glow, the frog casts a shadow, the logs have depth, and the lanes read better."
+    ]
+   },
+   {
+    "variant": "theme4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The ground is a fairly dark, low-contrast teal-green. Background vehicles overlap densely, with trains intersecting trucks. Otherwise it has a moody night sky with a moon glow and stars, a contact shadow under the frog, well-lit platforms and lily pads, and better depth and atmosphere.",
+     "The background is cluttered, with trains and trucks overlapping in the far lanes. It's fairly dark overall and the neon buildings are untextured blocks. The moon and stars, player shadow, lily pads and coin still give a stronger mood.",
+     "The moon glow bloom is a little large, and there is some traffic clutter and overlap in the far lanes. Otherwise it has a night mood with stars, the frog casts a shadow, the logs are beveled, the lily pads add colour, and depth reads better."
+    ]
+   }
+  ]
+ }
+]

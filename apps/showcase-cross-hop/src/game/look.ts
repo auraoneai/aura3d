@@ -286,7 +286,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     sun: { elevationDeg: 40, azimuthDeg: -62, color: "#f6f2ea", intensity: 1.6 },
     hemi: { sky: "#e4e9ef", ground: "#727866", intensity: 0.55 },
     environmentIntensity: 0.55,
-    sky: { zenith: "#4f78ac", horizon: "#9fbcdc", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
+    sky: { zenith: "#3a6cb4", horizon: "#8cb4e2", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
     fog: { color: "#b8cadc", density: 0 },
     floor: "#5f8a46",
     grade: { contrast: 1.16, saturation: 1.16, temperature: -0.02 },
@@ -351,4 +351,35 @@ export const VIVID_DEFAULT_THEMES: readonly number[] = [1, 2, 3, 4];
 export function defaultLookFor(lookParam: string | null, theme: number | null): "vivid" | "original" | "diorama" {
   if (lookParam === "diorama" || lookParam === "original" || lookParam === "vivid") return lookParam;
   return VIVID_DEFAULT_THEMES.includes(theme ?? 0) ? "vivid" : "original";
+}
+
+/** Sun of the 4.6 look (`?look=original`): its key light sits at [-9, 10, 9] looking at the origin. */
+export const ORIGINAL_SUN = { elevationDeg: 38.2, azimuthDeg: -45 } as const;
+/** Longest shadow reach per metre of caster height (keeps low suns from smearing shadows across a lane). */
+export const SHADOW_REACH_MAX = 1.0;
+
+/**
+ * GU47 phase 4: footprint of a sun-cast shadow decal on the ground (vivid and 4.6 looks). The software-WebGL2
+ * captures draw no shadow-map shadow on this scene (probes g14p4-a/b/c: map rendered and sampled, nothing visible), so
+ * every caster gets a soft decal: its footprint (`len` along x, `dep` along z) stretched away from the sun by
+ * `height / tan(elevation)` (capped at `SHADOW_REACH_MAX * height`) and shifted half that way. Pure, for tests.
+ */
+export function sunShadowFootprint(
+  x: number, z: number, len: number, dep: number, height: number,
+  sun: { readonly elevationDeg: number; readonly azimuthDeg: number }
+): { x: number; z: number; len: number; dep: number } {
+  const v = sunVector(Math.max(5, sun.elevationDeg), sun.azimuthDeg);
+  const horiz = Math.hypot(v[0], v[2]) || 1;
+  const dx = -v[0] / horiz, dz = -v[2] / horiz;
+  const reach = Math.min(SHADOW_REACH_MAX, horiz / v[1]) * height;
+  return { x: x + dx * reach * 0.5, z: z + dz * reach * 0.5, len: len + Math.abs(dx) * reach, dep: dep + Math.abs(dz) * reach };
+}
+
+/**
+ * GU47 phase 4: boot themes whose 4.6 look gets the phase-4 dressing (shadow decals, toy rafts). Panel g14p4r1:
+ * theme5 2/1 better with it; theme0 1/2, so theme0 keeps the plain 4.6.2 look. The vivid look always has it.
+ */
+export const P4_ORIGINAL_THEMES: readonly number[] = [5];
+export function p4DressFor(look: "vivid" | "original" | "diorama", theme: number | null): boolean {
+  return look === "vivid" || (look === "original" && P4_ORIGINAL_THEMES.includes(theme ?? 0));
 }
