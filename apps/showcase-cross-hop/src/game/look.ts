@@ -326,26 +326,26 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     bloom: { intensity: 0.4, threshold: 0.82 },
     exposureEv: 0.2
   },
-  { // 5 Critter Core: pastel studio toybox
-    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#fff4ea", intensity: 1.8 },
-    hemi: { sky: "#fbe8f2", ground: "#b6a6d8", intensity: 0.45 },
+  { // 5 Critter Core: candy dusk (GU47 phase 6, panel g14p6r1 3/0/0; the phase-5 dusk sky and candy rafts on the vivid look)
+    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ffc4a4", intensity: 1.8 },
+    hemi: { sky: "#e0b8e4", ground: "#8a6aa8", intensity: 0.55 },
     environmentIntensity: 0.5,
-    sky: { zenith: "#5a98e2", horizon: "#9cc8f2", ground: "#d8c8ee", horizonGlow: 0.2, glow: { elevationDeg: 4, azimuthDeg: 200, color: "#fff2f8", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.3, speed: 0.3, color: "#ffffff" } },
-    fog: { color: "#c4d6f2", density: 0 },
-    floor: "#6fbf62",
-    grade: { contrast: 1.18, saturation: 1.2, temperature: 0 },
-    bloom: { intensity: 0.12, threshold: 0.95 },
-    exposureEv: -0.2
+    sky: { zenith: "#4b3a86", horizon: "#f2a07e", ground: "#c890a8", horizonGlow: 0.7, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb48a", intensity: 0.9, discSize: 0 }, clouds: { coverage: 0.25, speed: 0.3, color: "#ffc8b4" } },
+    fog: { color: "#e8a08c", density: 0 },
+    floor: "#5e9a5a",
+    grade: { contrast: 1.16, saturation: 1.15, temperature: 0.06 },
+    bloom: { intensity: 0.2, threshold: 0.88 },
+    exposureEv: 0
   }
 ];
 
 /**
  * Views whose default is the vivid look: the `?theme=N` variants (quick play and World Tour start on theme 0, so they
- * follow theme 0) that a blind three-judge panel picked over the 4.6.2 frame. The others boot the 4.6 look; both
- * `?look=vivid` and `?look=original` override this. Panel: g14p3r2 theme3 3/0, theme4 3/0; g14p3r3 theme1 3/0, theme2 2/1. Not better after three
- * rounds, so on the 4.6 look: theme0 (g14p3r3 0/3) and theme5 (g14p3r3 1/1/1).
+ * follow theme 0) that a blind three-judge panel picked over the 4.6.2 frame. `?look=vivid` and `?look=original`
+ * override this. Panel: g14p3r2 theme3 3/0, theme4 3/0; g14p3r3 theme1 3/0, theme2 2/1; phase 6 (with the phase-4
+ * dressing) g14p6r1 theme0 3/0/0 and theme5 (candy dusk) 3/0/0. Every theme now boots the vivid look.
  */
-export const VIVID_DEFAULT_THEMES: readonly number[] = [1, 2, 3, 4];
+export const VIVID_DEFAULT_THEMES: readonly number[] = [0, 1, 2, 3, 4, 5];
 
 /** The look a view boots with: an explicit `?look=` wins, otherwise the panel verdict for the starting theme. */
 export function defaultLookFor(lookParam: string | null, theme: number | null): "vivid" | "original" | "diorama" {
@@ -394,4 +394,9 @@ export const P5_DUSK_SKY = { sky: "#4b3a86", horizon: "#f2a07e" } as const;
 export const P5_CANDY_RAFT = { deck: "#ff7fbf", pontoon: "#fff1c9" } as const;
 export function p5DuskFor(look: "vivid" | "original" | "diorama", dressed: boolean, themeId: string): boolean {
   return look === "original" && dressed && P5_DUSK_THEMES.includes(themeId);
+}
+
+/** GU47 phase 6: candy rafts (pink deck, cream pontoons) on Critter Core, in the dressed 4.6 look (phase 5) and the vivid look. */
+export function candyRaftFor(look: "vivid" | "original" | "diorama", dressed: boolean, themeId: string): boolean {
+  return p5DuskFor(look, dressed, themeId) || (look === "vivid" && dressed && P5_DUSK_THEMES.includes(themeId));
 }
