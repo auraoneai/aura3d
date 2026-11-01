@@ -14,7 +14,7 @@
    "moon_rock_01_arm_1k.jpg": "f04ce87fb751ced28add48ad9eb50d0f"
   }
  },
- "processing": "Packed glTF + bin + three 1k JPEG maps into one GLB with @gltf-transform/core (geometry and maps unchanged).",
- "output": { "file": "assets/models/craterline_moon_rock.glb", "sha256": "1224634a56d33a61bced90bc98433a9cc5f4943a1d22b505bc2265725bc0e25b", "sizeBytes": 1704652, "triangles": 18668 },
+ "processing": "Kept only the LOD0 node (the source ships LOD0-LOD3 as overlapping meshes), pruned the rest and packed glTF + bin + three 1k JPEG maps into one GLB with @gltf-transform/core (LOD0 geometry and maps unchanged).",
+ "output": { "file": "assets/models/craterline_moon_rock.glb", "sha256": "839eea481354d50937e229a3e00219ed6257ca4ba0017cba9f22a976977ea962", "sizeBytes": 1486348, "triangles": 9958 },
  "replaces": "moonRock (assets/moon-rock.glb, the aura-diamond-3d catalog file diamondRock.af699d5e)"
 }
