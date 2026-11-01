@@ -10,7 +10,7 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, P5_DUSK_SKY, P5_CANDY_RAFT, type ThemeLook } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
@@ -1271,7 +1271,9 @@ function swapLook(ti: number): void {
   if (lookMode === "diorama") { swapDioramaLook(ti); return; }
   if (lookMode === "vivid") { swapVividLook(ti); return; }
   if (!app) return;
-  const th = THEMES[ti];
+  const base = THEMES[ti];
+  // GU47 phase 5: dusk sky on the dressed Critter Core view (sibling distinctness vs pips-big-leap).
+  const th = p5DuskFor(lookMode, p4Dress, base.id) ? { ...base, palette: { ...base.palette, ...P5_DUSK_SKY } } : base;
   try {
     const n0 = app.nodes as unknown as { remove(id: string): void; add(n: never): void; require(id: string): { setMaterial?(m: unknown): void; setVisible?(v: boolean): void } };
     n0.remove("look");
@@ -1423,8 +1425,9 @@ export function syncVisuals(alpha = 1): void {
         const vivid = lookMode === "vivid";
         if (p4Dress && lookMode !== "diorama") {
           // Toy raft: terracotta deck (top at 0.22, the log's top) on two butter-yellow pontoons.
-          inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, CROSS_HOP_PALETTE.terracotta);
-          for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, CROSS_HOP_PALETTE.butterYellow);
+          const candy = p5DuskFor(lookMode, p4Dress, THEMES[appliedLook]?.id ?? "");
+          inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, candy ? P5_CANDY_RAFT.deck : CROSS_HOP_PALETTE.terracotta);
+          for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, candy ? P5_CANDY_RAFT.pontoon : CROSS_HOP_PALETTE.butterYellow);
           shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.7, 0.22);
           continue;
         }

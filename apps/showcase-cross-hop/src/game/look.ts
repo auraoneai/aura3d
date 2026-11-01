@@ -383,3 +383,15 @@ export const P4_ORIGINAL_THEMES: readonly number[] = [5];
 export function p4DressFor(look: "vivid" | "original" | "diorama", theme: number | null): boolean {
   return look === "vivid" || (look === "original" && P4_ORIGINAL_THEMES.includes(theme ?? 0));
 }
+
+/**
+ * GU47 phase 5 (PRD 1.2 goal 2): the dressed 4.6 look of Critter Core (theme5) read as the same game as
+ * pips-big-leap (sibling judge tells: "same soft pale-blue sky and green ground", "beveled orange-brown slab
+ * platforms"). Presentation only: a dusk sky (violet zenith, coral horizon, matching haze) and candy rafts.
+ */
+export const P5_DUSK_THEMES: readonly string[] = ["crittercore"];
+export const P5_DUSK_SKY = { sky: "#4b3a86", horizon: "#f2a07e" } as const;
+export const P5_CANDY_RAFT = { deck: "#ff7fbf", pontoon: "#fff1c9" } as const;
+export function p5DuskFor(look: "vivid" | "original" | "diorama", dressed: boolean, themeId: string): boolean {
+  return look === "original" && dressed && P5_DUSK_THEMES.includes(themeId);
+}

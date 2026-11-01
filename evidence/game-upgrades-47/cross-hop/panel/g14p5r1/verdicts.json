@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze makes the warm peach sky somewhat muddy, and the far lanes fade into it. The frog's pose is slumped and its back is partly turned. The blue foreground band is still large. Still, the vehicles are more varied and colourful, the frog has a soft contact shadow, and the warm palette gives the scene more mood and cohesion.",
+     "Large flat salmon sky takes up the top third and feels empty; mid-field lanes are flat pastel and low-contrast; the coin floats over a raft (likely intended); distant cars clutter into a dense band",
+     "The warm haze softens contrast toward the horizon and the sky is a flat tan. The pink log platforms look like plastic and are a bit garish. The bottom blue strip is still empty, and the frog's shadow is faint. Still, the varied, colourful vehicles, readable coins, warmer mood and more cohesive palette make it the more polished frame."
+    ]
+   }
+  ]
+ }
+]
