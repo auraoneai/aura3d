@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Version: 4.7.2
+Version: 4.7.3
 
 Current release: Aura3D 4.0.0.
 

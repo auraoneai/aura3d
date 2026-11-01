@@ -1,8 +1,34 @@
 # Changelog
 
-Version: 4.7.2
+Version: 4.7.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.3 (2026-10-31)
+
+GameUpgrades47 phase 5 (`docs/prds/game-upgrades-47/lanes/<lane>.md`, "Phase 5 (4.7.3)" sections): presentation changes aimed at the genre pairs a model judge still read as the same game (`aura3d evidence judge --mode sibling`, 48 trials, pass = `same_game: false` at confidence 0.8 or more). Every shipped change won a blind three-judge panel against the 4.6.2 frame of the same view; changes that lost were reverted. Gameplay, determinism and the reference replays are unchanged. All numbers are software WebGL2 on the remote runner.
+
+### Games
+
+- **Ion Circuit:** dark magenta ion barriers replace the pale grey highway rails. A teal-to-navy polar sky now carries the aurora's violet. The planet is magenta-rose with an amber ring. The default view won the panel 3/0/0. Against Saltwind Highway the judge now says "different game" (0.751, from "same game"). Against Thermal Drift the same-game trials fell from 16 to 2 of 48, but both pairs are still under 0.8.
+- **Saltwind Highway:** Redline moves from a mauve last-light sunset to high-desert noon under a cobalt sky. Every shipped view won the panel 3/0.
+- **Serpentine Sky Run:** default and stages 1-8 won the panel 3/0/0 with the new framing. Against Shadowstep Gauntlet the different-game trials rose from 36% to 42%, still failing.
+- **Cross Hop:** theme 5 no longer shares the sky, ground and raft cues the judge matched with Pip's Big Leap. Same-game trials fell from 7 of 47 to 1-4 of 48, but confidence is still 0.78-0.79.
+- **Cumulus Dash:** re-judged on 4.7.2 frames, it passes against Shadowstep Gauntlet (0.864) and Serpentine Sky Run (0.820). A camera change was tried and reverted.
+- **Shadowstep Gauntlet:** its painted cedars lost the forest panel and were reverted, so nothing ships. The proper fix, retextured dusk pines, waits on the Meshy batch.
+
+### Known limits
+
+Unchanged from 4.7.2:
+- No game reaches 7 in all 12 rubric categories.
+- The WP-36 Meshy batch is blocked: every key answers paid API calls with HTTP 402.
+- Real-GPU runs are owner-only.
+- Distinctness still fails for:
+  - Ion Circuit with Thermal Drift, Saltwind Highway and Craterline GP
+  - Serpentine Sky Run with Shadowstep Gauntlet and Cumulus Dash
+  - Shadowstep Gauntlet with Cumulus Dash
+  - Cross Hop with Pip's Big Leap
+  - Aura Hoops 3D and Aura Diamond 3D with their sports neighbours (shared athlete model)
 
 ## 4.7.2 (2026-10-31)
 
