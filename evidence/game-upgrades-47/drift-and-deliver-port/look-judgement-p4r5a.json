@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r3/screens/drive-1280.jpg",
+      "sha256": "8eb79b6b06d15fdc37cc22d587bdac6db93f0e6a615e99f7dead8c9e0c0e02c2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/screens/pickup-1280.jpg",
+      "sha256": "c1cf261c065d87ddfd2bcf99e205437c80e87426c46447eca3e258458aefc6fa"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/drift-and-deliver-port/frames/g18p4-r5-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "93cbccb372e7479ce58a838b429b46984edee7d0485a17a2671e1c1b39dfe550"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/drift-and-deliver-port/frames/g18p4-r5-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "5184db578fca4e667069fbe40eec0b8f1c4b8948db974d3d94c43e5b7af2f294"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-3 have a convincing low warm sun that rakes the facades and turns the sky at the street's end amber. The night frame (4) is lit almost entirely by flat ambient light. The street lamps emit no light onto the sidewalks. Only a faint headlight pool appears ahead of the car, and the tail lights barely glow."
+    },
+    {
+      "category": "shadows",
+      "seen": "Building shadows fall across the road as broad, soft bands in frames 1 and 3. The hero car has a weak contact shadow and looks slightly floaty. The traffic lights and lamp posts cast little or no readable shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car's rear window and bumper insert show a bright hotspot and crackle-like white streaks that read as a broken reflection or normal map rather than sky reflection. The road and building glass show no environment reflections. The windows are flat painted panels."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Dense city canyon with crosswalks, traffic lights, ornate lamps, palms and pedestrians, but the building modules repeat identically on both sides. In frame 2 the background hills are untextured flat-shaded boxes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far street in frames 1 and 3. In frame 2 the haze is heavy and brown, so the midground becomes muddy and the hills lose their shape."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The facades use flat color blocks with no grime, roughness variation or wear. The car paint has noisy speckled artifacts. The van windshield shows dithered noise. The asphalt is a plain flat brown-grey."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car and taxi van are reasonably detailed. The buildings are simple extruded boxes, and the pedestrians are blocky cuboid figures. The asset fidelity is inconsistent from frame to frame."
+    },
+    {
+      "category": "composition",
+      "seen": "Frames 1 and 2 frame the car well at about 15-20% of the screen with strong vanishing-point leading lines. In frames 3 and 4 the car fills about 30% and crowds the lower center."
+    },
+    {
+      "category": "camera",
+      "seen": "The low chase camera with a roughly 60° FOV fits the genre. The tighter follow distance in frames 3 and 4 hides the road ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The warm grade and mild bloom suit golden hour. The night frame has a flat, low-contrast grade. Frame 2 looks washed and muddy, with no filmic contrast curve."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

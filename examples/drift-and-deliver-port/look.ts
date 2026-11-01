@@ -126,7 +126,7 @@ export interface Textures {
   plaza: TextureHandle;
   sky: TextureHandle;
   /** `normal` (GU47 WP-28 GC-M2): the relief map derived from the albedo, shift look only. */
-  facade: Record<string, { albedo: TextureHandle; emissive: TextureHandle; normal?: TextureHandle }>;
+  facade: Record<string, { albedo: TextureHandle; emissive: TextureHandle; normal?: TextureHandle; orm?: TextureHandle }>;
   shop: { albedo: TextureHandle; emissive: TextureHandle };
 }
 
@@ -157,8 +157,11 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
     walls[kind].forEach((wall, v) => {
       const a = canvas(facadePx, facadePx);
       const e = canvas(facadePx, facadePx);
-      paintFacade(kind, a.g, e.g, facadePx, k * 7 + v + 1, wall);
-      facade[facadeKey(kind, v)] = { albedo: repeating(texture.canvas({ canvas: a.c, colorSpace: "srgb" })), emissive: repeating(texture.canvas({ canvas: e.c, colorSpace: "srgb" })), ...(look === "shift" ? { normal: facadeNormal(a.g, facadePx) } : {}) };
+      // GU47 phase 4: glossy window glass in the shift look (metal-rough map at half the albedo size)
+      const o = look === "shift" ? canvas(facadePx / 2, facadePx / 2) : null;
+      o?.g.scale(0.5, 0.5);
+      paintFacade(kind, a.g, e.g, facadePx, k * 7 + v + 1, wall, o?.g);
+      facade[facadeKey(kind, v)] = { albedo: repeating(texture.canvas({ canvas: a.c, colorSpace: "srgb" })), emissive: repeating(texture.canvas({ canvas: e.c, colorSpace: "srgb" })), ...(look === "shift" ? { normal: facadeNormal(a.g, facadePx) } : {}), ...(o ? { orm: repeating(texture.canvas({ canvas: o.c, colorSpace: "linear" })) } : {}) };
     });
   });
   const sa = canvas(1024, 256);
@@ -312,7 +315,8 @@ export const festoonMaterial = (strength: number) => material.emissive({ color: 
 /** GC-M2: facade material at a window emissive intensity (0.15 by day to 1.4 at blue hour in the shift look). */
 export function facadeMaterial(tex: Textures, key: string, windows: number) {
   const f = tex.facade[key]!;
-  return material.pbr({ color: "#ffffff", roughness: 0.82, metallic: 0.02, texture: asRef(f.albedo), emissiveMap: f.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8, ...(f.normal ? { normal: asRef(f.normal), normalScale: 1 } : {}) });
+  const glass = f.orm ? { roughness: 1, metallic: 1, roughnessMap: asRef(f.orm), metalnessMap: asRef(f.orm) } : { roughness: 0.82, metallic: 0.02 };
+  return material.pbr({ color: "#ffffff", ...glass, texture: asRef(f.albedo), emissiveMap: f.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8, ...(f.normal ? { normal: asRef(f.normal), normalScale: 1 } : {}) });
 }
 
 export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: LookOptions): LookRig {
@@ -360,7 +364,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     if (opts.fog) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
     if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
     // GC-L3: contact shadows under cars, posts and props (High only; PRD §6.4 drops them on Low)
-    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.35, thickness: 0.4, steps: 12, intensity: 0.8, lights: "sun" }));
+    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.6, thickness: 0.5, steps: 16, intensity: 1, lights: "sun" }));
     if (opts.post) {
       b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.35 }));
       b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));
@@ -446,7 +450,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
       const key = TRAFFIC_MODEL[kind];
       const id = `traffic-${kind}`;
-      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] }))));
+      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] })), shift));
       modelTraffic.push({ id, cars, scale: carScale(key) });
     }
   }

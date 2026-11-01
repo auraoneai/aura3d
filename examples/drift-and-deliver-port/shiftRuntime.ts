@@ -11,7 +11,7 @@
  * Presentation only: every input is a read of the sim or the shift; nothing is written back (PRD D8).
  */
 import { geometry, lights, material, type AuraApp } from "@aura3d/engine";
-import { createDaylight, lookFrame, type Daylight } from "./daylight";
+import { createDaylight, followHeading, lookFrame, turnKey, type Daylight } from "./daylight";
 import { facadeMaterial, festoonMaterial, type LookRig } from "./look";
 import { festoonIntensity } from "./festoons";
 import { phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
@@ -109,6 +109,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let menuShown: boolean | null = null;
   let writes = 0;
   let wasDrifting = false;
+  let keyHeading: number | undefined;
   const burst = (kind: string, p: [number, number, number], count?: number) => {
     const scale = fxScale(opts.reducedMotion());
     app.effects?.burst(kind, p, { ...(count !== undefined ? { count: Math.max(1, Math.round(count * scale.count)) } : {}), camera: scale.camera });
@@ -119,7 +120,10 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       time += dt;
       tod = todSeconds(shift.elapsed, shift.length, opts.at);
       row = phaseAt(tod);
-      const f = lookFrame(row);
+      // GU47 phase 4: the key follows the chase heading (smoothed), so it always lights the avenue ahead
+      keyHeading = keyHeading === undefined ? car.heading : followHeading(keyHeading, car.heading, dt);
+      const authored = lookFrame(row);
+      const f = { ...authored, key: { ...authored.key, direction: turnKey(authored.key.direction, keyHeading) } };
       writes = daylight.apply(f);
       node("sky-dome")?.setUniform?.("skyDrift", time * 0.004);
       node("harbour")?.setUniform?.("waterTime", time);

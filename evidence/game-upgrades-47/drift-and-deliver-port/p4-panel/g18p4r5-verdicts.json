@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bluehour",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Road and pavements are quite dark and the foreground is muddy in places. A faint dotted haze or glitch patch shows at the street's vanishing point. Rooftop texture on the car is slightly blotchy. The moody blue sky, lit windows and good car readability make up for it.",
+     "Overall dark, and the road and sidewalks lack contrast. The car's rear bumper and windshield textures look smeared. There is a faint noisy patch at the vanishing point. Still a strong blue-hour mood with lit windows and good depth.",
+     "Road and lower foreground are quite dark and the car's lower body loses some detail; a small noisy or dithered patch at the vanishing point; the car's rear glass has odd jagged highlight streaks"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong warm grade with a slight sepia or brownish tint on the road. Car texture looks crumpled and dirty, with a hot specular glint on the rear window. Some banding and blocky colour patches on the left building.",
+     "Blocky, pixelated shadow and light bands on the left building facade (shadow-map aliasing). Strong specular glare on the rear window, and the car's rear textures look smeared. Warm grading slightly oversaturates the sidewalks. Still has better depth, contrast and atmosphere.",
+     "Blocky, aliased shadow stair-stepping on the left building's facade; the car's rear windshield and bumper have scratchy, glitchy specular streaks; warm grade slightly oversaturates the sidewalks"
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy warm tint makes the road look brownish. Car texture looks crumpled, with a strong specular hotspot on the rear window. Blocky colour patches on the left facade.",
+     "Blocky, aliased shadow bands on the left building. Hot glare on the rear windshield, and the car texture looks a bit smeared. Yellow sidewalks are slightly oversaturated.",
+     "Aliased, blocky shadow edges on the left building; scratchy specular streak artifacts on the car's rear glass and bumper; warm yellow cast is slightly heavy on the sidewalks"
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange cast and a dark brown road. Car shows crackled reflection streaks and a hotspot on the rear window. Slight speckled glitter at the vanishing point. Blocky colour patches on the left building.",
+     "Aliased, blocky shadow edges on the left facade. Busy specular cracks and glare on the rear window and bumper. The orange grade gets slightly muddy on the road.",
+     "Jagged shadow aliasing on the left building; glitchy lightning-like specular streaks on the car's rear windshield and bumper; small sparkly noise at the vanishing point"
+    ]
+   }
+  ]
+ }
+]

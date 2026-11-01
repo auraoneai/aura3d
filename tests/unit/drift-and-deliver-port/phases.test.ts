@@ -29,9 +29,12 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(PHASES[0]!.sun.azimuthDeg).toBe(HDRI_SUN_AZIMUTH_DEG);
   });
 
-  it("rakes the avenues with a 12-15 deg golden sun and keeps the key shadowed at every phase", () => {
-    expect(PHASES[0]!.key.elevationDeg).toBeGreaterThanOrEqual(12);
-    expect(PHASES[0]!.key.elevationDeg).toBeLessThanOrEqual(15);
+  it("rakes the avenues with a 12-15 deg golden sky sun, lifts the shadowed key over the canyon and keeps it at every phase", () => {
+    expect(PHASES[0]!.sun.elevationDeg).toBeGreaterThanOrEqual(12);
+    expect(PHASES[0]!.sun.elevationDeg).toBeLessThanOrEqual(15);
+    // GU47 phase 4: the key clears the canyon walls so its shadows land on the street
+    expect(PHASES[0]!.key.elevationDeg).toBeGreaterThanOrEqual(30);
+    expect(PHASES[1]!.key.elevationDeg).toBeGreaterThanOrEqual(25);
     for (let t = 0; t <= 180; t += 5) expect(phaseAt(t).key.intensity).toBeGreaterThan(0.2);
     expect(lightDir(PHASES[0]!.key)[1]).toBeGreaterThan(0);
   });
