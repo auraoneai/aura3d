@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky; the rock cliffs look dark and muddy; the grass is a saturated, slightly toy-like green; the cone trees are very simple",
+     "The overcast grey sky is a bit dull, and the dark brown rocks are fairly heavy. The cone trees are simple low-poly shapes. The frame is still well saturated and readable, with clear materials, a level name sign, and a detailed shoreline and dock edge.",
+     "Flat overcast grey sky with no gradient or clouds; the rocks look a bit dark and muddy; the grass is very saturated and toy-like"
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey sky; rocks look dark and muddy; the orange shed roof is very saturated; the cone trees are simplistic",
+     "The sky is a flat grey and the rocks are dark and heavy. The scene is otherwise rich and readable: saturated grass, distinct props, a 'Quarry Rise' sign, a stone pedestal for the enemy, and good contact shadows.",
+     "Flat overcast grey sky; the rocks are a little dark; the stone pedestal block on the right looks plain"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overcast grey sky looks slightly dull; rock cliffs are dark; trees are simple cones",
+     "The overcast grey sky is muted, the rocks read as somewhat dark and muddy brown, and the cone trees are simplistic. Otherwise it is well saturated, readable, and more polished, with good grounding shadows.",
+     "Flat overcast grey sky lacks atmosphere; the rocks are slightly muddy and dark"
+    ]
+   }
+  ]
+ }
+]

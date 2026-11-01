@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky that looks dull; rocks are slightly dark and murky; grass cone props look repetitive",
+     "Overcast grey sky is dull and lifeless; the rock cliffs are slightly desaturated. Shadows, field detail and the signage help readability, but the frame lacks colour in the upper half.",
+     "Flat, dull overcast grey sky gives weak mood and a slightly hazy horizon; otherwise crisp shadows, detailed grass cones, a readable sign and good contrast across the play area"
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The warm haze flattens the horizon slightly; left rock is somewhat dark; small target structures are a bit cluttered",
+     "The warm sunset haze makes the sky a little flat and beige, and the left cliff is fairly dark. Otherwise it has strong mood, good shadows and readable structures.",
+     "The warm sunset haze slightly flattens the far horizon, and the red tower on the right is a bit blocky; otherwise strong warm mood, good shadows and clear readability"
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange tint makes the rocks and sky look samey; the left rock is murky; small pillar structures are hard to read",
+     "The orange grade is heavy and pushes everything toward one hue. Several debris chunks appear to float in mid-air near the windmill and the right-hand structure (possibly in-flight physics). The left cliff is dark.",
+     "Small debris or creature seems to float near the windmill blades and on the rock face; the right-side pillar structure looks clipped at the frame edge; the orange sky is a bit monochrome"
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Night lighting makes the rocks almost black with no surface detail; the left crates and slingshot are dim; overall fairly dark, though the play area stays readable",
+     "The night cliffs are nearly black and lose all detail; the slingshot and gull on the left are hard to read in the dark; the foreground crates are dim. The field and structures are still readable, and the starry sky adds atmosphere.",
+     "The rocks and the crates and barrel on the left are very dark and lose detail; the moonlit grass reads slightly over-bright against the dark scene; overall still readable with a strong night mood"
+    ]
+   }
+  ]
+ }
+]

@@ -222,7 +222,10 @@ describe("slingshot-siege chapter weather (SS47-E4)", () => {
 describe("slingshot-siege solid blocks (GU47 phase 3)", () => {
   it("day chapters pool rounded solid blocks; the night keeps the stone-bridge GLB pool", () => {
     const blocks = (c: number) => stage(c).filter((n) => n.name === "v-block-0");
-    expect(blocks(0)[0]!.primitive).toBe("roundedBox");
+    // GU47 phase 7 (4.7.6): day rows draw the blocks as one instanced rounded block per family.
+    const family = stage(0).filter((n) => n.name === "v-blocks-stone");
+    expect(family[0]!.primitive).toBe("roundedBox");
+    expect(blocks(0)).toHaveLength(0);
     expect(blocks(5)[0]!.kind).toBe("model");
     for (const id of ["wood", "stone", "glass", "ice", "obsidian"] as const) expect(SOLID_BLOCK_MATERIALS[id].color).toBeTruthy();
     expect(SOLID_BLOCK_MATERIALS.glass.opacity).toBeLessThan(1);
