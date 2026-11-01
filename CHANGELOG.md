@@ -1,8 +1,28 @@
 # Changelog
 
-Version: 4.7.6
+Version: 4.7.7
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.7 (2026-11-01)
+
+GameUpgrades47 engine follow-up (lane report `docs/prds/game-upgrades-47/lanes/e6.md`, "Phase 8"). Gameplay, rules, determinism, the reference replays and every game's look are unchanged.
+
+### Engine
+
+- **Materials that use the same texture now share one decode.**
+  - **Before:** each material fetched and decoded its own copy of each image, one map at a time. A scene with many materials over a few images queued hundreds of decodes. Bunker Zero builds 188 textured materials from about 20 images, and on software WebGL2 about one material finished every 30 s.
+  - **Now:** an image is decoded once and released when the last material using it is disposed. A material's maps, including custom-material textures, start together.
+  - **Bunker Zero:** textures still loading at the 60 s capture shot dropped from 19-27 to 0 on 7 of its 8 views (floor 5: 12).
+
+### Tooling
+
+- **Game-checks:** 0 errors, 125 warnings, down from 132.
+  - 104 of the warnings wait on the WP-36 Meshy assets.
+  - The rest are `luma-band` rows that cannot be cleared without widening a band:
+    - 25 s shots and Bunker Zero floor 5 still loading textures;
+    - crops whose subject is off screen in Aura FC 3D and Aura Hoops 3D;
+    - Cross Hop's opt-in 4.6.2 look.
 
 ## 4.7.6 (2026-11-01)
 

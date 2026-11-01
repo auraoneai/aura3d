@@ -1,6 +1,6 @@
 # Aura3D And Babylon.js
 
-Version: 4.7.6
+Version: 4.7.7
 
 ## What you get with Aura3D
 
