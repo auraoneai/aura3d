@@ -160,7 +160,7 @@ export function buildGround(ch: Chapter, from = -40, to = ch.length + 80): Groun
 }
 
 /* ---------------------------------------------------------------- foliage, rocks, flowers */
-export interface Placement { pos: V3; scale: number; yaw: number }
+export interface Placement { pos: V3; scale: number; yaw: number; /** Track distance and lateral offset of the foot (GU47 phase 4 ground shadows drape on these). */ s?: number; lat?: number }
 export interface Scatter { trees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[]; roundTrees: Placement[]; pineTrees: Placement[]; boulders: Placement[] }
 const HERO_TREE_CAP = 150, HERO_ROCK_CAP = 90, HERO_NEAR = 24;
 
@@ -206,9 +206,9 @@ export function buildValleyForest(ch: Chapter): Mesh[] {
 
 export function buildScatter(ch: Chapter): Scatter {
   const out: Scatter = { trees: [], bushes: [], rocks: [], flowers: [], roundTrees: [], pineTrees: [], boulders: [] };
-  const heroTree = (base: V3, height: number, lat: number, r: number): boolean => {
+  const heroTree = (base: V3, height: number, lat: number, r: number, s: number): boolean => {
     if (Math.abs(lat) - ROAD_HALF > HERO_NEAR || out.roundTrees.length + out.pineTrees.length >= HERO_TREE_CAP) return false;
-    (r < 0.45 ? out.pineTrees : out.roundTrees).push({ pos: base, scale: height, yaw: r * 40 });
+    (r < 0.45 ? out.pineTrees : out.roundTrees).push({ pos: base, scale: height, yaw: r * 40, s, lat });
     return true;
   };
   const kit = treeKit();
@@ -231,11 +231,11 @@ export function buildScatter(ch: Chapter): Scatter {
           const lat = side * (ROAD_HALF + (op > 0.5 ? shoulder + 1 + rnd() * 46 : wallTop - 1 + rnd() * 30));
           const base = at(s + (rnd() - 0.5) * 0.9, lat, groundHeight(ch, s, lat) - 0.15);
           const size = 4.4 + rnd() * 6;
-          if (!heroTree(base, size * 1.4, lat, rnd())) treeAt(trees, kit, rnd, base, size);
+          if (!heroTree(base, size * 1.4, lat, rnd(), s)) treeAt(trees, kit, rnd, base, size);
         } else if (mode >= 0.55 && rnd() < 0.1) {
           const lat = side * (ROAD_HALF + 2.2 + rnd() * Math.max(1, shoulder - 3));
           const base2 = at(s, lat, groundHeight(ch, s, lat) - 0.15), size2 = 3.6 + rnd() * 3;
-          if (!heroTree(base2, size2 * 1.4, lat, rnd())) treeAt(trees, kit, rnd, base2, size2);
+          if (!heroTree(base2, size2 * 1.4, lat, rnd(), s)) treeAt(trees, kit, rnd, base2, size2);
         }
         if (rnd() < 0.22) {
           const gl = side * (ROAD_HALF + 1.3 + rnd() * 5);
@@ -246,7 +246,7 @@ export function buildScatter(ch: Chapter): Scatter {
           const gl = side * (ROAD_HALF + 0.9 + rnd() * 12);
           const base = at(s, gl, groundHeight(ch, s, gl) - 0.25);
           const rs: V3 = [0.8 + rnd() * 1.9, 0.6 + rnd() * 1.2, 0.8 + rnd() * 1.7], ry = rnd() * 6.28, rt = (rnd() - 0.5) * 0.3, rk = Math.floor(rnd() * 3);
-          if (Math.abs(gl) - ROAD_HALF < 14 && out.boulders.length < HERO_ROCK_CAP) out.boulders.push({ pos: base, scale: 1.1 + (rs[0] + rs[2]) * 0.55, yaw: ry });
+          if (Math.abs(gl) - ROAD_HALF < 14 && out.boulders.length < HERO_ROCK_CAP) out.boulders.push({ pos: base, scale: 1.1 + (rs[0] + rs[2]) * 0.55, yaw: ry, s, lat: gl });
           else rocks.append(rockMesh[rk]!, base, rs, ry, rt);
         }
         for (let k = 0; k < 2; k++) {
