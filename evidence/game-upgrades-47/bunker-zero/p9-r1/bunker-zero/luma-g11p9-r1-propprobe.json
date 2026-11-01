@@ -1,0 +1,186 @@
+[
+ {
+  "target": "prop-probe",
+  "id": "exit-knife",
+  "hud": false,
+  "w": 1280,
+  "h": 720,
+  "mean": 82.26,
+  "p5": 25,
+  "p50": 77,
+  "p95": 156,
+  "darkFrac": 0.0052,
+  "clipFrac": 0,
+  "bands": [
+   61.84,
+   91.82,
+   93.12
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 29,
+   "triangles": 166478,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 0,
+   "simSteps": 20,
+   "hp": 9999,
+   "weapon": "knife",
+   "mag": 8,
+   "kills": 0,
+   "enemiesAlive": 0,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 0,
+   "frameErrors": 0,
+   "drawCalls": 29
+  }
+ },
+ {
+  "target": "prop-probe",
+  "id": "crack",
+  "hud": false,
+  "w": 1280,
+  "h": 720,
+  "mean": 56.77,
+  "p5": 18,
+  "p50": 44,
+  "p95": 147,
+  "darkFrac": 0.0083,
+  "clipFrac": 0,
+  "bands": [
+   34.8,
+   55.42,
+   80.1
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 61,
+   "triangles": 317120,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 0,
+   "simSteps": 20,
+   "hp": 9999,
+   "weapon": "pistol",
+   "mag": 8,
+   "kills": 0,
+   "enemiesAlive": 0,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 0,
+   "frameErrors": 0,
+   "drawCalls": 61
+  }
+ },
+ {
+  "target": "prop-probe",
+  "id": "medkit",
+  "hud": false,
+  "w": 1280,
+  "h": 720,
+  "mean": 64.74,
+  "p5": 16,
+  "p50": 63,
+  "p95": 116,
+  "darkFrac": 0.0304,
+  "clipFrac": 0,
+  "bands": [
+   50.07,
+   80.25,
+   63.9
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 31,
+   "triangles": 181766,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 0,
+   "simSteps": 20,
+   "hp": 9999,
+   "weapon": "pistol",
+   "mag": 8,
+   "kills": 0,
+   "enemiesAlive": 0,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 0,
+   "frameErrors": 0,
+   "drawCalls": 31
+  }
+ },
+ {
+  "target": "prop-probe",
+  "id": "column",
+  "hud": false,
+  "w": 1280,
+  "h": 720,
+  "mean": 45.85,
+  "p5": 10,
+  "p50": 32,
+  "p95": 137,
+  "darkFrac": 0.0708,
+  "clipFrac": 0,
+  "bands": [
+   24.84,
+   47.04,
+   65.65
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 50,
+   "triangles": 222606,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 3,
+   "time": 0,
+   "simSteps": 20,
+   "hp": 9999,
+   "weapon": "pistol",
+   "mag": 8,
+   "kills": 0,
+   "enemiesAlive": 0,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 0,
+   "frameErrors": 0,
+   "drawCalls": 50
+  }
+ }
+]
