@@ -62,6 +62,7 @@ export default defineArtDirection({
     prop("mechWeaponA"),
     prop("mechWeaponB"),
     prop("corridorPulseRifleMeshy"),
+    prop("bzMgViewmodel"),
     prop("bunkerKeyMeshy"),
     prop("bunkerTreasureMeshy"),
     prop("fpsEnergyCorePickupMeshy"),
