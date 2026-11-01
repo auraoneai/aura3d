@@ -13,7 +13,7 @@
 import { PortableShaderMaterial, Texture, TextureBinding } from "@aura3d/rendering";
 import type { AuraAssetRef, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
 import { customTextureUniformNames, customUniformNameFor } from "./customMaterial.js";
-import { loadProductionPrimitiveBitmap } from "./textures.js";
+import { loadProductionPrimitiveBitmap, type ProductionTextureImage } from "./textures.js";
 
 const passed = new WeakSet<ProductionRuntimePrimitiveResource>();
 
@@ -21,14 +21,14 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const isAssetTextureRef = (value: unknown): value is AuraAssetRef<"texture"> =>
   isRecord(value) && value.kind === "aura-asset-ref" && value.type === "texture";
 
-type BitmapLoader = (url: string) => Promise<ImageBitmap>;
+type BitmapLoader = (url: string) => Promise<ProductionTextureImage>;
 
 async function bindResource(resource: ProductionRuntimePrimitiveResource, warn: (message: string) => void, loadBitmap: BitmapLoader): Promise<void> {
   const material = resource.material;
   const spec = resource.materialSpec?.kind === "custom" ? resource.materialSpec.custom : undefined;
   if (!spec || !(material instanceof PortableShaderMaterial)) return;
   const ownedTextures: Texture[] = [];
-  const ownedBitmaps: ImageBitmap[] = [];
+  const ownedBitmaps: ProductionTextureImage[] = [];
   const disposeOwned = (): void => {
     for (const texture of ownedTextures) texture.dispose();
     for (const bitmap of ownedBitmaps) bitmap.close();

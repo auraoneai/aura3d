@@ -16,7 +16,7 @@ import { Texture } from "@aura3d/rendering";
 import { TextureBinding } from "@aura3d/rendering";
 import type { EnvironmentBackgroundOptions } from "@aura3d/rendering";
 import type { AuraMaterialTextureInput, AuraSceneBackgroundImage, AuraSceneSnapshot } from "../nodes/types.js";
-import { bitmapRgbaPixels, loadProductionPrimitiveBitmap } from "./textures.js";
+import { bitmapRgbaPixels, loadProductionPrimitiveBitmap, type ProductionTextureImage } from "./textures.js";
 
 export interface ProductionBackgroundImage {
   /** Current background options; `undefined` until the decode resolves. */
@@ -44,7 +44,7 @@ export function createProductionRuntimeBackgroundImage(
   let options: EnvironmentBackgroundOptions | undefined;
   let disposed = false;
   const ownedTextures: Texture[] = [];
-  const ownedBitmaps: ImageBitmap[] = [];
+  const ownedBitmaps: ProductionTextureImage[] = [];
   const own = (texture: Texture): Texture => {
     ownedTextures.push(texture);
     return texture;

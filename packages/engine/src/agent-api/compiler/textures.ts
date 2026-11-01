@@ -177,9 +177,74 @@ export const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", 
 
 export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[number];
 
-export const productionPrimitiveBitmapPixels = new WeakMap<ImageBitmap, { readonly width: number; readonly height: number; readonly data: Uint8Array }>();
+/**
+ * GU47 e6 phase 7: a decoded map. Normally an `ImageBitmap`; when `createImageBitmap` does not settle within
+ * `PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS`, a decoded `<img>` of the same blob (see `decodeProductionImageFallback`).
+ * Both carry `width`, `height` and `close()`, and both are a `TexImageSource`.
+ */
+export type ProductionTextureImage = ImageBitmap | (HTMLImageElement & { close(): void });
 
-export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step: "fetch" | "body" | "decode" | "pixels") => void): Promise<ImageBitmap> {
+export const productionPrimitiveBitmapPixels = new WeakMap<ProductionTextureImage, { readonly width: number; readonly height: number; readonly data: Uint8Array }>();
+
+/**
+ * GU47 e6 phase 7 (g09 texPending): how long a map waits for `createImageBitmap` before it decodes through an
+ * `<img>` instead. On the loaded software-WebGL2 runner `createImageBitmap` was measured not settling for 20 s+ on a
+ * 121 KB JPG and a 191-byte PNG while `<img>.decode()` of the same blob finished, so textured upgrades sat pending and
+ * captures showed untextured surfaces. A healthy decode settles far inside this bound and keeps the bitmap path.
+ */
+export const PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS = 3000;
+
+const DECODE_TIMED_OUT = Symbol("decode-timed-out");
+
+/**
+ * Decodes `blob` through an `<img>`. The upload is equivalent to the bitmap path: the WebGL2 upload sets
+ * `UNPACK_PREMULTIPLY_ALPHA_WEBGL = false`, `UNPACK_COLORSPACE_CONVERSION_WEBGL = NONE` and `UNPACK_FLIP_Y_WEBGL =
+ * texture.flipY` (false here) before `texImage2D`; an `<img>` source honours those, an `ImageBitmap` source ignores them
+ * and carries `premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip instead (the same three settings).
+ */
+export async function decodeProductionImageFallback(blob: Blob): Promise<HTMLImageElement & { close(): void }> {
+  if (typeof Image !== "function" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+    throw new Error("texture decode fallback requires HTMLImageElement + URL.createObjectURL");
+  }
+  const objectUrl = URL.createObjectURL(blob);
+  const image = new Image() as HTMLImageElement & { close(): void };
+  image.decoding = "async";
+  image.src = objectUrl;
+  try {
+    await image.decode();
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    throw error;
+  }
+  // `close()` mirrors ImageBitmap.close(): owners release the blob URL with the texture.
+  image.close = () => URL.revokeObjectURL(objectUrl);
+  return image;
+}
+
+async function decodeProductionTextureImage(blob: Blob, onFallback?: () => void): Promise<ProductionTextureImage> {
+  const bitmapDecode = createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<typeof DECODE_TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(DECODE_TIMED_OUT), PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS); });
+  try {
+    const first = await Promise.race([bitmapDecode, timeout]);
+    if (first !== DECODE_TIMED_OUT) return first;
+  } finally {
+    clearTimeout(timer);
+  }
+  // The bitmap decode is stalled: decode through an <img>. Whichever finishes first is used; a late loser is released.
+  onFallback?.();
+  const fallback = decodeProductionImageFallback(blob);
+  const winner = await new Promise<ProductionTextureImage>((resolve, reject) => {
+    let failures = 0;
+    const lose = (error: unknown): void => { failures += 1; if (failures === 2) reject(error); };
+    bitmapDecode.then(resolve, lose);
+    fallback.then(resolve, lose);
+  });
+  for (const decode of [bitmapDecode, fallback]) void decode.then((image) => { if (image !== winner) image.close(); }, () => undefined);
+  return winner;
+}
+
+export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step: "fetch" | "body" | "decode" | "decode-fallback" | "pixels") => void): Promise<ProductionTextureImage> {
   if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
     throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
   }
@@ -188,10 +253,8 @@ export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step:
   if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
   onStep?.("body");
   const blob = await response.blob();
-  // GU47 e6: on a CPU-bound software-WebGL2 runner this decode was measured not settling for 20 s+ on a 121 KB JPG
-  // (stage `decode <url>` in the texturedMaterials diagnostics).
   onStep?.("decode");
-  const bitmap = await createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  const bitmap = await decodeProductionTextureImage(blob, () => onStep?.("decode-fallback"));
   onStep?.("pixels");
   try {
     const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
@@ -201,7 +264,7 @@ export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step:
   } catch (error) { bitmap.close(); throw error; }
 }
 
-export function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
+export function bitmapRgbaPixels(bitmap: ProductionTextureImage): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
   const decoded = productionPrimitiveBitmapPixels.get(bitmap);
   if (decoded) return decoded;
   if (typeof document === "undefined") throw new Error("texture compositing requires a DOM canvas");
@@ -323,9 +386,9 @@ export async function upgradeProductionPrimitiveResource(
   if (extensionEntries.some(([, map]) => map.texCoord === 1) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) {
     throw fail(`"${resource.name}" geometry carries no uv1 set requested by extension texture`);
   }
-  const ownedBitmaps: ImageBitmap[] = [];
+  const ownedBitmaps: ProductionTextureImage[] = [];
   const ownedTextures: Texture[] = [];
-  const bitmapLoads = new Map<string, Promise<ImageBitmap>>();
+  const bitmapLoads = new Map<string, Promise<ProductionTextureImage>>();
   // threejs-parity ST-01 (L4): resolved `texture.*` handles per slot — their
   // textures are handle-owned (NOT pushed into ownedTextures; dispose comes
   // from `handle.dispose()`), and their sampler/transform come from the
@@ -346,7 +409,7 @@ export async function upgradeProductionPrimitiveResource(
   const showLoadSteps = (): void => {
     if (loadSteps.size > 0) markTextureStage(resource, [...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
   };
-  const load = (url: string): Promise<ImageBitmap> => {
+  const load = (url: string): Promise<ProductionTextureImage> => {
     let pending = bitmapLoads.get(url);
     if (!pending) {
       loadSteps.set(url, "fetch");
@@ -386,7 +449,7 @@ export async function upgradeProductionPrimitiveResource(
     const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
     const slots: string[] = [];
     const extensionOptions: Record<string, unknown> = {};
-    const extensionSources: ImageBitmap[] = [];
+    const extensionSources: ProductionTextureImage[] = [];
     const atlasPixels: Record<string, { readonly width: number; readonly height: number; readonly data: Uint8Array | Uint8ClampedArray }> = {};
     for (const [slot, map] of extensionEntries) {
       const source = await load(map.url);
@@ -443,7 +506,7 @@ export async function upgradeProductionPrimitiveResource(
       const base = roughnessSource ?? metalnessSource;
       const refSize = roughnessRefPixels ?? metalnessRefPixels;
       const size = base ? { width: base.width, height: base.height } : { width: refSize!.width, height: refSize!.height };
-      const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
+      const readPixels = (bitmap: ProductionTextureImage | undefined): Uint8Array | undefined => {
         if (!bitmap) return undefined;
         const decoded = bitmapRgbaPixels(bitmap);
         if (decoded.width !== size.width || decoded.height !== size.height) {
@@ -551,7 +614,7 @@ export async function upgradeProductionPrimitiveResource(
     // M2 streaming table: resident bytes from the decoded sources (base +
     // full mip-chain estimate) with the chain keyed off the largest source.
     const loadedDims = [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource, ...extensionSources]
-      .filter((source): source is ImageBitmap => source !== undefined)
+      .filter((source): source is ProductionTextureImage => source !== undefined)
       .map((source) => ({ width: source.width, height: source.height }));
     const loadedBaseBytes = loadedDims.reduce((total, dims) => total + dims.width * dims.height * 4, 0);
     const largestDims = loadedDims.reduce(
