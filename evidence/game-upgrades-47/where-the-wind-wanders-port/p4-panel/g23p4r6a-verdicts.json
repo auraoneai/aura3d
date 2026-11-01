@@ -1,0 +1,83 @@
+[
+ {
+  "slug": "where-the-wind-wanders-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player's cloak is pale and desaturated, so the character looks a little ghostly against the bright grass. The foreground is very busy with flower decals.",
+     "The player's model looks pale and desaturated, almost ghostly, so it doesn't stand out well against the foliage. The kite string is a thin bright line cutting across the frame. The windmill blade is cropped awkwardly at the top-right edge.",
+     "The player's robe is pale and greyish, so the figure looks a bit ghostly against the grass. The tree branch at top left is clipped by the frame edge."
+    ]
+   },
+   {
+    "variant": "epilogue",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "This is the default scene, not an epilogue. It has a washed, low-contrast pastel grade, flat water and a noisy, hazy foreground.",
+     "The night scene is fairly dark and the foreground flowers go a bit muddy. The player has a gold rim glow that looks slightly unnatural. The falling square particles are somewhat blocky.",
+     "The night scene is fairly dark and the foreground flowers go murky. The player is lit by a slightly odd golden rim glow. The large dark tree canopy at top left looks like a black blob."
+    ]
+   },
+   {
+    "variant": "found0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player's cloak is pale and desaturated. The foreground flower clutter is dense.",
+     "The player's model is pale and washed out. The kite string is a stark white line across the frame. The windmill is cropped at the top-right edge.",
+     "The player's robe is pale and greyish, so the figure blends in slightly. Otherwise the colour is rich, the contrast is good, and the water has reflections."
+    ]
+   },
+   {
+    "variant": "found2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The overcast sky is slightly grey. The player is pale against the grass. The foreground is busy.",
+     "The player's model is pale and desaturated. The kite string is a bright line across the frame. The sky is a slightly flat grey.",
+     "The sky is slightly flat and pale, and the player is pale and greyish. Otherwise the frame is well saturated with good depth."
+    ]
+   },
+   {
+    "variant": "found3",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The warm dusk sky is slightly muted. The player is pale. The foreground clutter is dense.",
+     "Washed-out, yellowish foreground; flat water with no reflections; low contrast and depth.",
+     "The warm dusk sky is a bit muted, and the player is pale and greyish. Otherwise the contrast and mood are good."
+    ]
+   }
+  ]
+ }
+]

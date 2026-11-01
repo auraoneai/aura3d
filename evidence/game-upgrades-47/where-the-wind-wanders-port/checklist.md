@@ -55,3 +55,18 @@ Status per acceptance line. "phase 2" = needs a remote capture, measurement or j
 | PRD 7.2 | game-checks 0 errors | done: 0 errors, 6 warnings (all luma-band: default/found0 mean ~149-150 vs band 120-145, the 4.6.2 frames read 165; bell is a dusk key with no declared band) |
 | PRD 7.2 | final screens and card retaken | done (run g23p3-r2-5; card previews rebuilt) |
 | PRD 7.2 | page-parity | done (stale duplicate `<style>` removed) |
+
+## Phase 4 (4.7.2)
+
+| Row | Acceptance | Status |
+|---|---|---|
+| PRD 6.5 / G23 | every changed view beats its 4.6.2 frame in a blind 3-judge panel | done: default 3/0/0, found0 3/0/0, found2 3/0/0, found3 2/1/0, epilogue 2/1/0 (panel g23p4r6a); bell lost with the phase-4 look (g23p4r4b 0/3/0) and boots exactly as in 4.7.1 |
+| PRD 1.2 goal 1 | every rubric category >= 7 | not met: two runs, min 3.5 / 4 (ibl_reflections, shadows); `look-judgement-p4r6-run1.json` (= `look-judgement.json`), `look-judgement-p4r6-run2.json` |
+| PRD 1.2 goal 2 | same_game false at >= 0.8 vs each genre neighbour | done: slingshot-siege 0.88, dot-dash-3d 0.964 (48/48 different each; `distinct-p4-ss/`, `distinct-p4-dd/`) |
+| WW47-L2 | sun shadow received on meadow, ground, scenery | done (`defines` fix; the in-source `#define` never reached the engine preprocessor) |
+| WW47-A1 | kite likeness, <= 400 KB, +2 draws, yaw within 25 deg | done: WP-36 bellKite, 0.28 MB, +2 draws (kite, string), yaw upwind + 25 deg toward the view |
+| WW47-A2/A3/A4/W1 | WP-36 retextures and props | blocked: Meshy keys refuse API calls |
+| WW47-AN1 | kite follows the gust; reduced motion 0.3x | done for the kite (gust-scaled reach, bob and roll; motion() 0.3x); washing line blocked (WP-36) |
+| PRD 7.2 | game-checks 0 errors; bands never widened | done: 0 errors, 2 warnings (bell luma-band, unchanged 4.7.1 dusk key; was 6) |
+| PRD 7.2 | final screens and card retaken | done (run g23p4-r6-7; card previews rebuilt) |
+| Gates | typecheck-delta, vitest per file, eslint | NEW_ERRORS 0; 14/14 files (121 tests); eslint clean |

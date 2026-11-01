@@ -9,6 +9,8 @@ export const MODEL_ASSETS = defineModelAssets({
   belltower: { url: new URL("./assets/models/belltower.glb", import.meta.url).pathname, sha256: "sha256-71520d983e45551dbd61b55a38f128976c38621228734943a0dca26849e80c5f" },
   boat: { url: new URL("./assets/models/boat.glb", import.meta.url).pathname, sha256: "sha256-967c9c64c9ef38bfaae193b1937418fdc80b8f9914916bb963eaf98e7211c335" },
   cottage: { url: new URL("./assets/models/cottage.glb", import.meta.url).pathname, sha256: "sha256-9e07d9b0e155bf2dfb86428bb70da138fc0ea51c165fca0d3d276d174f946f2e" },
+  // GU47 WP-36 bellKite (WW47-A1): the paper kite that replaces the wisp in the GU47 look; texture 512 px + meshopt (compress-glb.mjs)
+  kite: { url: new URL("./assets/models/kite.glb", import.meta.url).pathname, sha256: "sha256-033195d62aeb3b2e90659a7b7df3f9f25874a17d3142c28b2b5b658bf3acc19e" },
   hero: { url: new URL("./assets/models/hero.glb", import.meta.url).pathname, sha256: "sha256-c10cbf7d835d6b7f1c53f2ebb13fa65fb34ec6550ac74aa619012145c5a3a230" },
   letter: { url: new URL("./assets/models/letter.glb", import.meta.url).pathname, sha256: "sha256-dbd2c4e10ce2960f0621b9b8099ea80e80791df46a5626d47733829f9dc26087" },
   oak: { url: new URL("./assets/models/oak.glb", import.meta.url).pathname, sha256: "sha256-5dfffb564f540fef386d5a5db032bbd9f041fb75f73491e3e7eab75381eaeb79" },

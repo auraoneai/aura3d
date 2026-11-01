@@ -30,7 +30,7 @@ bool playerFade(vec3 world) {
  * GU47 WW47-L1: the light is no longer hard-coded. `sunDir`, `sunCol`, `sunGain`, `skyCol`, `gndCol`, `fogCol`,
  * `fogDensity`, `fogHeight` and `cloudShadowAmt` are spec uniforms (`daylightUniforms()` in world.ts) written every
  * frame from the daylight driver (daylight.ts), so the painted surfaces and the engine sun share one key.
- * A fragment that defines `WIND_SUN_SHADOW` and includes `<a3d_shadow>` before COMMON receives the engine sun's shadow.
+ * A fragment that includes `<a3d_shadow>` before COMMON receives the engine sun's shadow when its spec sets `defines: { WIND_SUN_SHADOW: 1 }` (the engine preprocessor resolves `#ifdef` from the spec defines only, not from `#define` lines in the source).
  */
 export const COMMON = /* glsl */ `
 #include <a3d_fog>
@@ -50,8 +50,38 @@ float fbm(vec2 p) {
 ${WIND_GLSL}
 ${CLOUD_GLSL}
 /** The share of the sun reaching a ground point: the engine sun shadow (when received) times the drifting cloud shadow. */
+#ifdef WIND_HERO_SHADOW
+/**
+ * GU47 phase 4: the traveller's cast shadow on the meadow and the ground, traced in the shader. The ray from a surface
+ * point toward the sun is tested against a 2.5 m tapered column standing at playerPos (feet), at half weight on top of the
+ * engine shadow the hero GLB casts, plus a soft contact pool
+ * under the feet. heroShadowAmt is 0 in the 4.6 look and Low quality.
+ */
+float heroShadow(vec3 w) {
+  if (heroShadowAmt <= 0.0 || sunDir.y < 0.05) return 1.0;
+  vec3 sd = normalize(sunDir);
+  float s0 = max(0.0, (playerPos.y + 0.1 - w.y) / sd.y);
+  float s1 = max(0.0, (playerPos.y + 2.5 - w.y) / sd.y);
+  vec2 a = w.xz + sd.xz * s0, b = w.xz + sd.xz * s1;
+  vec2 pa = playerPos.xz - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
+  float r = mix(0.46, 0.3, h);
+  float body = (1.0 - smoothstep(r * 0.5, r * 1.4, length(pa - ba * h))) * step(w.y, playerPos.y + 2.3);
+  vec2 f = w.xz - playerPos.xz;
+  float contact = exp(-dot(f, f) / 0.45) * 0.6;
+  return 1.0 - heroShadowAmt * clamp(max(body * 0.45, contact), 0.0, 1.0);
+}
+/** A soft ambient contact pool under the traveller's feet (darkens the sky fill too, so the figure sits on the ground). */
+float heroContact(vec3 w) {
+  vec2 f = w.xz - playerPos.xz;
+  return heroShadowAmt * 0.5 * exp(-dot(f, f) / 0.8) * step(w.y, playerPos.y + 0.9);
+}
+#endif
 float sunVisibility(vec3 world, vec3 n) {
   float clouds = 1.0 - cloudShadowAmt * cloudCover(world.xz, windTime);
+#ifdef WIND_HERO_SHADOW
+  clouds *= heroShadow(world);
+#endif
 #ifdef WIND_SUN_SHADOW
   return clouds * a3dSunShadowAuto(world, n);
 #else
@@ -125,7 +155,6 @@ in float vKind;
 in float vPhase;
 in float vGust;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
@@ -248,6 +277,9 @@ void main() {
   // a passing gust bends the blades over and shows their paler undersides: a light sheen that travels downwind
   col = mix(col, col * vec3(1.18, 1.16, 1.02) + vec3(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
   vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
+#ifdef WIND_HERO_SHADOW
+  lit *= 1.0 - heroContact(vWorld);
+#endif
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -270,7 +302,6 @@ in vec3 vTint;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 void main() {
@@ -304,6 +335,9 @@ void main() {
   vec3 n = normalize(vNormal + vec3((vnoise(p * 2.4 + vec2(e, 0.0)) - h0), 0.0, (vnoise(p * 2.4 + vec2(0.0, e)) - h0)) * 0.9);
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view, vWorld);
+#ifdef WIND_HERO_SHADOW
+  lit *= 1.0 - heroContact(vWorld);
+#endif
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -337,6 +371,25 @@ void main() {
   vec3 refl = reflect(-view, n);
   vec3 skyc = mix(vec3(0.6, 0.8, 0.86), vec3(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
   col = mix(col, skyc, fres * 0.55);
+  // GU47 phase 4 (ibl_reflections): the far shore mirrored in the lake. The reflected ray is traced to the wooded far bank
+  // (z ~ -98, a treeline 6-12 m high), so the water under the far shore carries a rippled, lit-green reflection band.
+#ifdef SHORE_REFLECTION
+  if (refl.z < -0.01) {
+    float th = (-98.0 - vWorld.z) / refl.z;
+    float hx = vWorld.x + refl.x * th;
+    float hy = vWorld.y + refl.y * th;
+    // tree crowns every ~5 m (pines taller and darker), on a rolling bank
+    float crown = abs(sin(hx * 0.62 + 1.7 * vnoise(vec2(hx * 0.11, 2.0))));
+    float pineK = step(0.45, vnoise(vec2(hx * 0.21, 7.3)));
+    float treeTop = -0.55 + 4.2 + 2.6 * vnoise(vec2(hx * 0.05, 1.3)) + crown * mix(2.2, 4.0, pineK);
+    float onShore = (1.0 - smoothstep(treeTop - 0.5, treeTop + 0.5, hy)) * smoothstep(-160.0, -60.0, -th) * step(0.0, th);
+    float bank = 1.0 - smoothstep(-0.55 + 1.2, -0.55 + 2.4, hy);
+    vec3 crownAlb = mix(vec3(0.2, 0.38, 0.14), vec3(0.09, 0.22, 0.12), pineK) * (0.8 + 0.35 * crown);
+    vec3 shoreAlb = mix(crownAlb, vec3(0.3, 0.42, 0.16), bank);
+    vec3 shoreLit = shoreAlb * (skyCol * 0.85 + sunCol * sunGain * 0.3);
+    col = mix(col, mix(shoreLit, deep * 0.6, 0.2), onShore * 0.72);
+  }
+#endif
   float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
   float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
   col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
@@ -452,7 +505,6 @@ in vec3 vWorld;
 in vec2 vUv;
 in float vKind;
 out vec4 outColor;
-#define WIND_SUN_SHADOW 1
 #include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}

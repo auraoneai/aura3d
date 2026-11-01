@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/screens/key-walk.1280x720.jpg",
+      "sha256": "1f7ee73c602497550d9820830eba25aa86158561681d42288ab91726158ba234"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/screens/mid-walk.1280x720.jpg",
+      "sha256": "1ed441c813a58e5e813e979813eba2cf2cf5f97ccc6d430e11634feb54fa5008"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/where-the-wind-wanders-port/frames/g23p4-r6-4/where-the-wind-wanders-port--found3--settle-60s.jpg",
+      "sha256": "9a415ba4b619bfda188cc01cef45b21852d7d197ba7ec8b324f980fae69520bd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r5/where-the-wind-wanders-port/frames/g23p4-r5-1/where-the-wind-wanders-port--bell--settle-60s.jpg",
+      "sha256": "51eb4f8ec62dbdd229a575314cf12a2de8e787666a7114f9161731f180ba51df"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 5,
+    "environment_world": 7,
+    "atmospheric_effects": 6.5,
+    "material_quality": 6,
+    "modeling_assets": 6.5,
+    "composition": 5.5,
+    "camera": 5,
+    "postprocessing": 6,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1 and 2 are lit almost entirely by soft ambient light. No 3/4-front sun direction reads on the cottage walls, the windmill tower, or the bushes, so the forms look flat. Frame 4 shifts to a pink dusk grade that darkens the character into a near-silhouette."
+    },
+    {
+      "category": "shadows",
+      "seen": "The cottage, the windmill, and the large trees cast no visible ground shadows. The only contact cue is a dithered, checkerboard-like patch around the character's feet in frames 3 and 4, which reads as an artifact more than a shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake shows soft sky-tinted ripples. The cottage, windmill, and shoreline trees are not reflected, and none of the materials show any environment response."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 has a haze band over the far shore and floating motes. Frames 1 and 2 have only light distance desaturation, and the background tree line sits on a painted-looking band with no depth falloff."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The roof tiles and the windmill planks read well. The bushes repeat the same pink and white dot texture across every clump. The character's cloak looks dithered or semi-transparent, so grass shows through it in frames 1 and 2."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The cottage, with its chimney, ivy, and arched doors, and the windmill, with its balcony and sails, are well modeled. The background trees look like flat cards. The character is low-detail and reads as an indistinct cloaked shape."
+    },
+    {
+      "category": "composition",
+      "seen": "The cottage anchors each frame. The character's green-brown cloak sits against green grass, so the subject has low contrast and gets lost. Dense foreground foliage fills roughly the bottom 45% of every frame."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera follows from behind and above, not side-on as the platformer recipe expects. It tilts down into the meadow, and the character fills a fairly small share of the frame, below the 18–25% target."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the glowing note by the windmill door and the purple spirit cat. Frame 1 looks slightly washed and milky. The grass blades show shimmer-prone fine detail with little antialiasing."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The top-corner pill labels (0 / 3 discovered, controls hint, Journal, Sound on) are clean and readable but small and generic. The HUD is absent in frames 3 and 4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
