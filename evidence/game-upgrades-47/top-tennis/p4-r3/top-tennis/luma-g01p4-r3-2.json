@@ -1,0 +1,1275 @@
+[
+ {
+  "target": "flow-1280",
+  "id": "mid-a",
+  "quality": "high",
+  "coach": false,
+  "mode": "playing",
+  "phase": "rally",
+  "paused": false,
+  "venue": "hard",
+  "server": "player",
+  "score": {
+   "pg": 0,
+   "ag": 0,
+   "pp": 0,
+   "ap": 0
+  },
+  "player": {
+   "x": 0.38,
+   "y": 1.035
+  },
+  "ai": {
+   "x": -0.5602430189967592,
+   "y": -0.8588454199085082
+  },
+  "particleCount": 8,
+  "screenShake": 0,
+  "camera": {
+   "rig": "classic",
+   "position": [
+    0,
+    25.5,
+    37.1
+   ],
+   "target": [
+    0,
+    0,
+    0.7
+   ],
+   "pan": 0,
+   "fov": 15,
+   "baseFov": 15,
+   "acePunch": 0,
+   "cut": {
+    "active": null,
+    "shot": null,
+    "time": 0.06766666666666667,
+    "intro": 1,
+    "changeover": 0,
+    "skipped": 0
+   },
+   "near": 0.1,
+   "far": 180,
+   "aspect": 1.7777777777777777
+  },
+  "audience": {
+   "visible": true,
+   "count": 240,
+   "draws": 2,
+   "meanHeadYawDeg": 4.395830781538687,
+   "standing": 0
+  },
+  "background": "#0d2230",
+  "spectators": {
+   "error": "AuraRuntimeError: Aura3D runtime node \"spectators\" was not found. Suggested fix: add .runtime({ id: \"spectators\" }) to t"
+  },
+  "grandstand": {
+   "visible": false
+  },
+  "particles": {
+   "visible": true
+  },
+  "diag": {
+   "drawCalls": 198,
+   "triangles": 744734,
+   "fps": 0.07,
+   "renderPath": "hdr-msaa"
+  },
+  "hint": "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R · POWER: SHIFT · PAUSE: P",
+  "renderError": {
+   "hidden": true,
+   "text": "Aura Slam 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload. See the browser help in our how-t"
+  },
+  "rect": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "soundSaved": null,
+  "tournamentHidden": true,
+  "athletes": {
+   "player": {
+    "feet": [
+     790,
+     668
+    ],
+    "head": [
+     794,
+     574
+    ],
+    "inside": true
+   },
+   "ai": {
+    "feet": [
+     474,
+     123
+    ],
+    "head": [
+     470,
+     42
+    ],
+    "inside": true
+   }
+  },
+  "mean": 71.41,
+  "p5": 9,
+  "p50": 78,
+  "p95": 108,
+  "darkFrac": 0.0761,
+  "clipFrac": 0,
+  "probes": [
+   {
+    "id": "spec12",
+    "rgb": [
+     83,
+     73,
+     64
+    ],
+    "sat": 0.229
+   },
+   {
+    "id": "spec13",
+    "rgb": [
+     4,
+     61,
+     37
+    ],
+    "sat": 0.929
+   },
+   {
+    "id": "spec14",
+    "rgb": [
+     9,
+     30,
+     58
+    ],
+    "sat": 0.852
+   },
+   {
+    "id": "spec15",
+    "rgb": [
+     1,
+     11,
+     51
+    ],
+    "sat": 0.972
+   },
+   {
+    "id": "spec16",
+    "rgb": [
+     92,
+     88,
+     84
+    ],
+    "sat": 0.079
+   },
+   {
+    "id": "spec17",
+    "rgb": [
+     31,
+     37,
+     45
+    ],
+    "sat": 0.306
+   },
+   {
+    "id": "spec18",
+    "rgb": [
+     20,
+     12,
+     54
+    ],
+    "sat": 0.78
+   },
+   {
+    "id": "spec19",
+    "rgb": [
+     0,
+     50,
+     26
+    ],
+    "sat": 0.998
+   },
+   {
+    "id": "spec20",
+    "rgb": [
+     25,
+     28,
+     38
+    ],
+    "sat": 0.337
+   },
+   {
+    "id": "spec21",
+    "rgb": [
+     2,
+     51,
+     55
+    ],
+    "sat": 0.969
+   },
+   {
+    "id": "spec22",
+    "rgb": [
+     78,
+     75,
+     75
+    ],
+    "sat": 0.047
+   },
+   {
+    "id": "spec23",
+    "rgb": [
+     41,
+     41,
+     44
+    ],
+    "sat": 0.065
+   },
+   {
+    "id": "player-torso",
+    "rgb": [
+     21,
+     51,
+     63
+    ],
+    "sat": 0.666
+   },
+   {
+    "id": "ai-torso",
+    "rgb": [
+     55,
+     100,
+     87
+    ],
+    "sat": 0.454
+   }
+  ],
+  "spectatorMeanSat": 0.547,
+  "spectatorsInFrame": 12
+ },
+ {
+  "target": "flow-1280",
+  "id": "mid-b",
+  "quality": "high",
+  "coach": false,
+  "mode": "playing",
+  "phase": "serveFault",
+  "paused": false,
+  "venue": "hard",
+  "server": "player",
+  "score": {
+   "pg": 0,
+   "ag": 0,
+   "pp": 0,
+   "ap": 0
+  },
+  "player": {
+   "x": 0.38,
+   "y": 1.035
+  },
+  "ai": {
+   "x": -0.5567170898549113,
+   "y": -0.8652512787200682
+  },
+  "particleCount": 0,
+  "screenShake": 0,
+  "camera": {
+   "rig": "classic",
+   "position": [
+    0,
+    25.5,
+    37.1
+   ],
+   "target": [
+    0,
+    0,
+    0.7
+   ],
+   "pan": 0,
+   "fov": 15,
+   "baseFov": 15,
+   "acePunch": 0,
+   "cut": {
+    "active": null,
+    "shot": null,
+    "time": 0.06766666666666667,
+    "intro": 1,
+    "changeover": 0,
+    "skipped": 0
+   },
+   "near": 0.1,
+   "far": 180,
+   "aspect": 1.7777777777777777
+  },
+  "audience": {
+   "visible": true,
+   "count": 240,
+   "draws": 2,
+   "meanHeadYawDeg": -8.563977234887112,
+   "standing": 0
+  },
+  "background": "#0d2230",
+  "spectators": {
+   "error": "AuraRuntimeError: Aura3D runtime node \"spectators\" was not found. Suggested fix: add .runtime({ id: \"spectators\" }) to t"
+  },
+  "grandstand": {
+   "visible": false
+  },
+  "particles": {
+   "visible": false
+  },
+  "diag": {
+   "drawCalls": 196,
+   "triangles": 351518,
+   "fps": 0.08,
+   "renderPath": "hdr-msaa"
+  },
+  "hint": "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R · POWER: SHIFT · PAUSE: P",
+  "renderError": {
+   "hidden": true,
+   "text": "Aura Slam 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload. See the browser help in our how-t"
+  },
+  "rect": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "soundSaved": null,
+  "tournamentHidden": true,
+  "athletes": {
+   "player": {
+    "feet": [
+     790,
+     668
+    ],
+    "head": [
+     794,
+     574
+    ],
+    "inside": true
+   },
+   "ai": {
+    "feet": [
+     475,
+     122
+    ],
+    "head": [
+     471,
+     40
+    ],
+    "inside": true
+   }
+  },
+  "mean": 75.38,
+  "p5": 9,
+  "p50": 79,
+  "p95": 145,
+  "darkFrac": 0.0759,
+  "clipFrac": 0,
+  "probes": [
+   {
+    "id": "spec12",
+    "rgb": [
+     84,
+     74,
+     65
+    ],
+    "sat": 0.228
+   },
+   {
+    "id": "spec13",
+    "rgb": [
+     4,
+     62,
+     37
+    ],
+    "sat": 0.927
+   },
+   {
+    "id": "spec14",
+    "rgb": [
+     9,
+     30,
+     58
+    ],
+    "sat": 0.853
+   },
+   {
+    "id": "spec15",
+    "rgb": [
+     1,
+     11,
+     51
+    ],
+    "sat": 0.974
+   },
+   {
+    "id": "spec16",
+    "rgb": [
+     92,
+     88,
+     84
+    ],
+    "sat": 0.079
+   },
+   {
+    "id": "spec17",
+    "rgb": [
+     31,
+     37,
+     45
+    ],
+    "sat": 0.307
+   },
+   {
+    "id": "spec18",
+    "rgb": [
+     20,
+     12,
+     54
+    ],
+    "sat": 0.78
+   },
+   {
+    "id": "spec19",
+    "rgb": [
+     0,
+     51,
+     26
+    ],
+    "sat": 0.997
+   },
+   {
+    "id": "spec20",
+    "rgb": [
+     23,
+     27,
+     38
+    ],
+    "sat": 0.39
+   },
+   {
+    "id": "spec21",
+    "rgb": [
+     2,
+     51,
+     55
+    ],
+    "sat": 0.967
+   },
+   {
+    "id": "spec22",
+    "rgb": [
+     78,
+     75,
+     75
+    ],
+    "sat": 0.047
+   },
+   {
+    "id": "spec23",
+    "rgb": [
+     41,
+     41,
+     44
+    ],
+    "sat": 0.064
+   },
+   {
+    "id": "player-torso",
+    "rgb": [
+     21,
+     51,
+     63
+    ],
+    "sat": 0.669
+   },
+   {
+    "id": "ai-torso",
+    "rgb": [
+     139,
+     77,
+     47
+    ],
+    "sat": 0.66
+   }
+  ],
+  "spectatorMeanSat": 0.551,
+  "spectatorsInFrame": 12
+ },
+ {
+  "target": "flow-1280",
+  "id": "mid-c",
+  "quality": "high",
+  "coach": false,
+  "mode": "playing",
+  "phase": "serveToss",
+  "paused": false,
+  "venue": "hard",
+  "server": "player",
+  "score": {
+   "pg": 0,
+   "ag": 0,
+   "pp": 0,
+   "ap": 0
+  },
+  "player": {
+   "x": 0.38,
+   "y": 1.035
+  },
+  "ai": {
+   "x": -0.56,
+   "y": -0.86
+  },
+  "particleCount": 0,
+  "screenShake": 0,
+  "camera": {
+   "rig": "classic",
+   "position": [
+    0,
+    25.5,
+    37.1
+   ],
+   "target": [
+    0,
+    0,
+    0.7
+   ],
+   "pan": 0,
+   "fov": 15,
+   "baseFov": 15,
+   "acePunch": 0,
+   "cut": {
+    "active": null,
+    "shot": null,
+    "time": 0.06766666666666667,
+    "intro": 1,
+    "changeover": 0,
+    "skipped": 0
+   },
+   "near": 0.1,
+   "far": 180,
+   "aspect": 1.7777777777777777
+  },
+  "audience": {
+   "visible": true,
+   "count": 240,
+   "draws": 2,
+   "meanHeadYawDeg": 5.78113886859277,
+   "standing": 0
+  },
+  "background": "#0d2230",
+  "spectators": {
+   "error": "AuraRuntimeError: Aura3D runtime node \"spectators\" was not found. Suggested fix: add .runtime({ id: \"spectators\" }) to t"
+  },
+  "grandstand": {
+   "visible": false
+  },
+  "particles": {
+   "visible": false
+  },
+  "diag": {
+   "drawCalls": 202,
+   "triangles": 359734,
+   "fps": 0.08,
+   "renderPath": "hdr-msaa"
+  },
+  "hint": "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R · POWER: SHIFT · PAUSE: P",
+  "renderError": {
+   "hidden": true,
+   "text": "Aura Slam 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload. See the browser help in our how-t"
+  },
+  "rect": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "soundSaved": null,
+  "tournamentHidden": true,
+  "athletes": {
+   "player": {
+    "feet": [
+     790,
+     668
+    ],
+    "head": [
+     794,
+     574
+    ],
+    "inside": true
+   },
+   "ai": {
+    "feet": [
+     474,
+     123
+    ],
+    "head": [
+     470,
+     42
+    ],
+    "inside": true
+   }
+  },
+  "mean": 71.41,
+  "p5": 9,
+  "p50": 78,
+  "p95": 108,
+  "darkFrac": 0.0761,
+  "clipFrac": 0,
+  "probes": [
+   {
+    "id": "spec12",
+    "rgb": [
+     84,
+     74,
+     65
+    ],
+    "sat": 0.225
+   },
+   {
+    "id": "spec13",
+    "rgb": [
+     4,
+     61,
+     37
+    ],
+    "sat": 0.929
+   },
+   {
+    "id": "spec14",
+    "rgb": [
+     9,
+     30,
+     58
+    ],
+    "sat": 0.853
+   },
+   {
+    "id": "spec15",
+    "rgb": [
+     1,
+     11,
+     51
+    ],
+    "sat": 0.973
+   },
+   {
+    "id": "spec16",
+    "rgb": [
+     92,
+     88,
+     84
+    ],
+    "sat": 0.079
+   },
+   {
+    "id": "spec17",
+    "rgb": [
+     31,
+     37,
+     45
+    ],
+    "sat": 0.308
+   },
+   {
+    "id": "spec18",
+    "rgb": [
+     20,
+     12,
+     54
+    ],
+    "sat": 0.782
+   },
+   {
+    "id": "spec19",
+    "rgb": [
+     0,
+     51,
+     26
+    ],
+    "sat": 0.997
+   },
+   {
+    "id": "spec20",
+    "rgb": [
+     25,
+     28,
+     38
+    ],
+    "sat": 0.349
+   },
+   {
+    "id": "spec21",
+    "rgb": [
+     2,
+     51,
+     55
+    ],
+    "sat": 0.965
+   },
+   {
+    "id": "spec22",
+    "rgb": [
+     79,
+     76,
+     75
+    ],
+    "sat": 0.046
+   },
+   {
+    "id": "spec23",
+    "rgb": [
+     41,
+     41,
+     44
+    ],
+    "sat": 0.064
+   },
+   {
+    "id": "player-torso",
+    "rgb": [
+     21,
+     51,
+     63
+    ],
+    "sat": 0.666
+   },
+   {
+    "id": "ai-torso",
+    "rgb": [
+     121,
+     65,
+     45
+    ],
+    "sat": 0.631
+   }
+  ],
+  "spectatorMeanSat": 0.547,
+  "spectatorsInFrame": 12
+ },
+ {
+  "target": "flow-1280",
+  "id": "modes",
+  "quality": "high",
+  "coach": false,
+  "mode": "menu",
+  "phase": "menu",
+  "paused": false,
+  "venue": "hard",
+  "server": "player",
+  "score": {
+   "pg": 0,
+   "ag": 0,
+   "pp": 0,
+   "ap": 0
+  },
+  "player": {
+   "x": -0.06179104289310894,
+   "y": 1.0584338598056209
+  },
+  "ai": {
+   "x": -0.2178386130976485,
+   "y": -0.7309295797683433
+  },
+  "particleCount": 4,
+  "screenShake": 0,
+  "camera": {
+   "rig": "classic",
+   "position": [
+    0,
+    25.5,
+    37.1
+   ],
+   "target": [
+    0,
+    0,
+    0.7
+   ],
+   "pan": 0,
+   "fov": 15,
+   "baseFov": 15,
+   "acePunch": 0,
+   "cut": {
+    "active": null,
+    "shot": null,
+    "time": 0.06766666666666667,
+    "intro": 1,
+    "changeover": 0,
+    "skipped": 0
+   },
+   "near": 0.1,
+   "far": 180,
+   "aspect": 1.7777777777777777
+  },
+  "audience": {
+   "visible": true,
+   "count": 240,
+   "draws": 2,
+   "meanHeadYawDeg": -3.18244140469636,
+   "standing": 0
+  },
+  "background": "#0d2230",
+  "spectators": {
+   "error": "AuraRuntimeError: Aura3D runtime node \"spectators\" was not found. Suggested fix: add .runtime({ id: \"spectators\" }) to t"
+  },
+  "grandstand": {
+   "visible": false
+  },
+  "particles": {
+   "visible": true
+  },
+  "diag": {
+   "drawCalls": 198,
+   "triangles": 744734,
+   "fps": 0.08,
+   "renderPath": "hdr-msaa"
+  },
+  "hint": "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R · POWER: SHIFT · PAUSE: P",
+  "renderError": {
+   "hidden": true,
+   "text": "Aura Slam 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload. See the browser help in our how-t"
+  },
+  "rect": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "soundSaved": null,
+  "tournamentHidden": true,
+  "athletes": {
+   "player": {
+    "feet": [
+     616,
+     677
+    ],
+    "head": [
+     615,
+     583
+    ],
+    "inside": true
+   },
+   "ai": {
+    "feet": [
+     574,
+     151
+    ],
+    "head": [
+     573,
+     69
+    ],
+    "inside": true
+   }
+  },
+  "mean": 71.43,
+  "p5": 9,
+  "p50": 78,
+  "p95": 108,
+  "darkFrac": 0.0761,
+  "clipFrac": 0,
+  "probes": [
+   {
+    "id": "spec12",
+    "rgb": [
+     83,
+     74,
+     64
+    ],
+    "sat": 0.229
+   },
+   {
+    "id": "spec13",
+    "rgb": [
+     4,
+     61,
+     37
+    ],
+    "sat": 0.93
+   },
+   {
+    "id": "spec14",
+    "rgb": [
+     8,
+     30,
+     58
+    ],
+    "sat": 0.854
+   },
+   {
+    "id": "spec15",
+    "rgb": [
+     1,
+     11,
+     51
+    ],
+    "sat": 0.971
+   },
+   {
+    "id": "spec16",
+    "rgb": [
+     92,
+     88,
+     84
+    ],
+    "sat": 0.079
+   },
+   {
+    "id": "spec17",
+    "rgb": [
+     31,
+     38,
+     45
+    ],
+    "sat": 0.307
+   },
+   {
+    "id": "spec18",
+    "rgb": [
+     20,
+     12,
+     54
+    ],
+    "sat": 0.779
+   },
+   {
+    "id": "spec19",
+    "rgb": [
+     0,
+     51,
+     26
+    ],
+    "sat": 0.997
+   },
+   {
+    "id": "spec20",
+    "rgb": [
+     25,
+     28,
+     38
+    ],
+    "sat": 0.339
+   },
+   {
+    "id": "spec21",
+    "rgb": [
+     2,
+     51,
+     55
+    ],
+    "sat": 0.968
+   },
+   {
+    "id": "spec22",
+    "rgb": [
+     79,
+     76,
+     75
+    ],
+    "sat": 0.046
+   },
+   {
+    "id": "spec23",
+    "rgb": [
+     41,
+     41,
+     44
+    ],
+    "sat": 0.064
+   },
+   {
+    "id": "player-torso",
+    "rgb": [
+     22,
+     53,
+     65
+    ],
+    "sat": 0.659
+   },
+   {
+    "id": "ai-torso",
+    "rgb": [
+     110,
+     4,
+     9
+    ],
+    "sat": 0.963
+   }
+  ],
+  "spectatorMeanSat": 0.547,
+  "spectatorsInFrame": 12
+ },
+ {
+  "target": "flow-1280",
+  "id": "results-drive",
+  "ended": {
+   "batches": 20,
+   "steps": 12000,
+   "mode": "gameover",
+   "phase": "complete",
+   "winner": "player",
+   "score": {
+    "playerPoints": 0,
+    "aiPoints": 0,
+    "playerGames": 3,
+    "aiGames": 0
+   },
+   "resultHidden": false
+  }
+ },
+ {
+  "target": "flow-1280",
+  "id": "results",
+  "quality": "high",
+  "coach": false,
+  "mode": "gameover",
+  "phase": "complete",
+  "paused": false,
+  "venue": "hard",
+  "server": "ai",
+  "score": {
+   "pg": 3,
+   "ag": 0,
+   "pp": 0,
+   "ap": 0
+  },
+  "player": {
+   "x": -0.38,
+   "y": 1.035
+  },
+  "ai": {
+   "x": 0.036564548122802965,
+   "y": -0.8700733114671406
+  },
+  "particleCount": 0,
+  "screenShake": 0,
+  "camera": {
+   "rig": "classic",
+   "position": [
+    0,
+    25.5,
+    37.1
+   ],
+   "target": [
+    0,
+    0,
+    0.7
+   ],
+   "pan": 0,
+   "fov": 15,
+   "baseFov": 15,
+   "acePunch": 0,
+   "cut": {
+    "active": null,
+    "shot": null,
+    "time": 0,
+    "intro": 2,
+    "changeover": 1,
+    "skipped": 0
+   },
+   "near": 0.1,
+   "far": 180,
+   "aspect": 1.7777777777777777
+  },
+  "audience": {
+   "visible": true,
+   "count": 240,
+   "draws": 2,
+   "meanHeadYawDeg": 3.0161079045453647,
+   "standing": 0.06449301496838222
+  },
+  "background": "#0d2230",
+  "spectators": {
+   "error": "AuraRuntimeError: Aura3D runtime node \"spectators\" was not found. Suggested fix: add .runtime({ id: \"spectators\" }) to t"
+  },
+  "grandstand": {
+   "visible": false
+  },
+  "particles": {
+   "visible": false
+  },
+  "diag": {
+   "drawCalls": 194,
+   "triangles": 343326,
+   "fps": 0.08,
+   "renderPath": "hdr-msaa"
+  },
+  "hint": "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R · POWER: SHIFT · PAUSE: P",
+  "renderError": {
+   "hidden": true,
+   "text": "Aura Slam 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload. See the browser help in our how-t"
+  },
+  "rect": {
+   "left": 0,
+   "top": 0,
+   "width": 1280,
+   "height": 720
+  },
+  "soundSaved": null,
+  "tournamentHidden": true,
+  "athletes": {
+   "player": {
+    "feet": [
+     490,
+     668
+    ],
+    "head": [
+     486,
+     574
+    ],
+    "inside": true
+   },
+   "ai": {
+    "feet": [
+     651,
+     121
+    ],
+    "head": [
+     651,
+     39
+    ],
+    "inside": true
+   }
+  },
+  "mean": 71.47,
+  "p5": 9,
+  "p50": 78,
+  "p95": 108,
+  "darkFrac": 0.0763,
+  "clipFrac": 0,
+  "probes": [
+   {
+    "id": "spec12",
+    "rgb": [
+     94,
+     83,
+     72
+    ],
+    "sat": 0.23
+   },
+   {
+    "id": "spec13",
+    "rgb": [
+     2,
+     69,
+     32
+    ],
+    "sat": 0.972
+   },
+   {
+    "id": "spec14",
+    "rgb": [
+     7,
+     28,
+     65
+    ],
+    "sat": 0.895
+   },
+   {
+    "id": "spec15",
+    "rgb": [
+     0,
+     6,
+     55
+    ],
+    "sat": 0.997
+   },
+   {
+    "id": "spec16",
+    "rgb": [
+     98,
+     91,
+     84
+    ],
+    "sat": 0.136
+   },
+   {
+    "id": "spec17",
+    "rgb": [
+     48,
+     51,
+     56
+    ],
+    "sat": 0.132
+   },
+   {
+    "id": "spec18",
+    "rgb": [
+     34,
+     12,
+     61
+    ],
+    "sat": 0.806
+   },
+   {
+    "id": "spec19",
+    "rgb": [
+     0,
+     48,
+     23
+    ],
+    "sat": 0.997
+   },
+   {
+    "id": "spec20",
+    "rgb": [
+     53,
+     30,
+     29
+    ],
+    "sat": 0.457
+   },
+   {
+    "id": "spec21",
+    "rgb": [
+     2,
+     63,
+     64
+    ],
+    "sat": 0.964
+   },
+   {
+    "id": "spec22",
+    "rgb": [
+     85,
+     79,
+     76
+    ],
+    "sat": 0.105
+   },
+   {
+    "id": "spec23",
+    "rgb": [
+     70,
+     62,
+     57
+    ],
+    "sat": 0.18
+   },
+   {
+    "id": "player-torso",
+    "rgb": [
+     23,
+     53,
+     63
+    ],
+    "sat": 0.635
+   },
+   {
+    "id": "ai-torso",
+    "rgb": [
+     143,
+     80,
+     50
+    ],
+    "sat": 0.653
+   }
+  ],
+  "spectatorMeanSat": 0.573,
+  "spectatorsInFrame": 12
+ }
+]
