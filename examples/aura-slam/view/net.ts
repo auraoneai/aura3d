@@ -28,6 +28,8 @@ export const NET_TILE_MEAN_ALPHA = 0.3363;
 export const NET_COLUMNS = 24;
 /** Net colour (the 4.6.1 net green). */
 export const NET_COLOR = "#1c2a26";
+/** GU47 phase 4: material opacity of the World Tour net (multiplies the tile alpha where it applies). */
+export const NET_OPACITY = 0.5;
 /** Bottom edge and the gap under the tape (the 4.6.1 boxes ran from 0.02 m to the sag height minus 0.03 m). */
 const NET_BOTTOM_Y = 0.02;
 const TAPE_GAP = 0.03;
@@ -66,6 +68,9 @@ export function netMeshMaterial(texture: AuraAssetRef<"texture"> = slamTextureAs
     color: NET_COLOR,
     texture,
     roughness: 0.88,
+    // GU47 phase 4: the p3-r3 frames read the net as an opaque near-black band (pixels about 10/255 on the clay court), so
+    // the tile alpha is not reaching the blend on the capture path; a material opacity keeps the net see-through either way.
+    opacity: NET_OPACITY,
     alphaMode: "blend",
     depthWrite: true,
     doubleSided: true,

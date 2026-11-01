@@ -61,15 +61,21 @@ export function surfaceMaterial(venue: string | null | undefined, part: CourtPar
     case "acrylic":
       // GU47 phase 3 (rubric: no environment reflections): the floodlit New York acrylic gets a glossier clearcoat so the floods
       // and the night sky glint on the court; the day venues keep the panel-verified 0.35 / 0.35.
-      return key === "hard"
-        ? material.pbr({ color, roughness: part === "apron" ? 0.66 : 0.56, clearcoat: 0.6, clearcoatRoughness: 0.16, normal: grain(kind) })
-        : material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
+      // GU47 phase 4 (rubric ibl_reflections 2.5, "hard court fully matte"): every acrylic court takes a sealed tournament
+      // clearcoat (1.0 at 0.06) so the venue sky, the floods and the athletes show in it; the screen-space reflection stage
+      // (lighting.ts postEffects) traces the playing surface, the apron stays a satin step below it.
+      return part === "apron"
+        ? material.pbr({ color, roughness: 0.6, clearcoat: 0.7, clearcoatRoughness: 0.18, normal: grain(kind) })
+        : material.pbr({ color, roughness: key === "hard" ? 0.34 : 0.42, clearcoat: 1, clearcoatRoughness: 0.06, normal: grain(kind) });
     case "turf":
       return material.pbr({ color, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain(kind) });
     case "clay":
       return material.pbr({ color, roughness: 0.95, normal: grain(kind) });
     case "regolith":
-      return material.pbr({ color, roughness: 0.97, normal: grain(kind) });
+      // GU47 phase 4: the lunar court is cobalt acrylic (phase 3), so it takes the same sealed clearcoat; the apron stays dust.
+      return part === "apron"
+        ? material.pbr({ color, roughness: 0.97, normal: grain(kind) })
+        : material.pbr({ color, roughness: 0.4, clearcoat: 1, clearcoatRoughness: 0.06, normal: grain("acrylic") });
   }
 }
 

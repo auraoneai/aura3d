@@ -52,7 +52,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   // TT-M1: World Tour line paint #fbfbf5 and per-surface court materials; `?look=original` keeps the 4.6.1 flat colours.
   const lineMat = material.pbr({ color: original ? "#f5f4e6" : LINE_COLOR, roughness: original ? 0.58 : 0.5 });
   const courtMat = (part: "court" | "alley" | "apron" | "ground", flat: () => ReturnType<typeof material.pbr>) => (original ? flat() : surfaceMaterial(boot, part));
-  const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
+  // GU47 phase 4 (ibl_reflections): World Tour posts, chair frame and masts are powder-coated steel that picks up the venue HDRI.
+  const netPostMat = original ? material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 }) : material.pbr({ color: "#24443b", metalness: 0.9, roughness: 0.24 });
   // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
@@ -223,7 +224,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   if (!original) s.add(buildNetMeshNode());
 
   const chairWood = material.pbr({ color: "#8c613c", roughness: 0.78 });
-  const chairFrame = material.pbr({ color: "#223b35", roughness: 0.65 });
+  const chairFrame = original ? material.pbr({ color: "#223b35", roughness: 0.65 }) : material.pbr({ color: "#2a463f", metalness: 0.85, roughness: 0.28 });
   const canopyMat = material.pbr({ color: "#ece4cf", roughness: 0.82 });
   statics.box("chairFrame", chairFrame, [0.85, 1.85, 0.92], [-6.76, 0.925, 0]);
   statics.box("wood", chairWood, [0.74, 0.12, 0.72], [-6.76, 1.92, 0]);
@@ -261,7 +262,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
   // is a 1.9 x 1.4 x 1.9 lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
-  const mastMat = material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 });
+  const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.pbr({ color: "#5d6a70", metalness: 0.95, roughness: 0.22 });
   for (const side of [-1, 1]) {
     s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
       .position(side * 12.5, FLOODLIGHT_MAST_H * 0.5, -13.2));

@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "beach",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Court blue looks desaturated and greyish against the flat sand surround. The wide sand areas outside the court are plain and empty. Lighting is flat, with only weak shadows.",
+     "Sand surround and court are desaturated and low-contrast, image looks flat and slightly washed out, small faint shadows, player readability weaker",
+     "Flat top-down framing with no horizon or sky. The beige sand surround is somewhat monotone and the court colour is slightly desaturated. Otherwise clean, warm and readable, with a full crowd."
+    ]
+   },
+   {
+    "variant": "clay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The orange clay floods the whole frame with nearly one hue, so the court separates weakly from the surround. The players are small in frame. The background structure is murky. The long light poles look like bare sticks.",
+     "Wide camera makes players small; background stadium structure blurry; warm palette slightly monotone",
+     "The orange clay is very saturated and some areas are close to clipping. The background structure is slightly blurred and dim. The far player is small and partly overlaps the AURA SLAM sign."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Lighting is somewhat flat and the surround has little detail.",
+     "Slightly cool and flat teal surround; crowd is busy but blocky; players fairly small",
+     "Strong vignette darkens the corners and the stand edges. A slight moire-like texture shows on the court. Flat top-down framing."
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Contrast is somewhat low. The warm palette is a little washed, though the full stadium is intact.",
+     "Pale beige environment and pale teal court give very low contrast and a washed-out look; players small; background structure hazy",
+     "The image is somewhat flat and pale, with low contrast between the beige surround, the pale teal court and the sky. The background structure looks washed out. The far player overlaps the sign."
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Minor: lighting is slightly flat.",
+     "Players small in the wide shot; background treeline and stadium blurry; floodlight poles somewhat bare",
+     "The scene is mostly green and a bit monochrome. The background is dark and blurry. The far player is small and overlaps the sign."
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The dark lunar palette lowers contrast in the outer areas, but the players and court are readable.",
+     "Much of the frame is very dark black/grey; the moon sky is plain; players small but readable",
+     "The scene is very dark, with a black sky and heavy shadows, so the right-side stands are partly lost in darkness. The moon disc looks pasted on. The court and players still read clearly."
+    ]
+   }
+  ]
+ }
+]
