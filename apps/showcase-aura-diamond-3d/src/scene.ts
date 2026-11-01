@@ -405,17 +405,19 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
         [-park.fenceCorner * 0.5, 14],
         [park.fenceCorner * 0.5, 14]
       ];
-      // GU47 phase 6 (draw budget): the unlit towers as two instanced pairs, the far pair and the near pair (one draw
-      // each). One group of four has one bounding sphere, so the near pair behind the broadcast camera stopped culling
-      // and the triangle counter rose by about 0.57M; split, each pair culls as the single towers did.
-      for (const [label, pair] of [["far", towers.slice(0, 2)], ["near", towers.slice(2)]] as const) {
-        nodes.push(
-          instances.model(assets.diamondFloodlight, {
-            name: `flood-towers-${label}`, targetHeight: 16, role: "setDressing", scaleMode: "fit",
-            transforms: pair.map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0] as Vec3 }))
-          })
-        );
-      }
+      // GU47 phase 6 (draw budget): the far pair of unlit towers is one instanced draw. The near pair stands beside and
+      // behind the broadcast camera and stays two single models: as one instance group (or one group of four) its
+      // bounding sphere reached into the view, so it stopped culling and the triangle counter rose by 0.35-0.57M.
+      const towerYaw = (tx: number, tz: number): Vec3 => [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0];
+      nodes.push(
+        instances.model(assets.diamondFloodlight, {
+          name: "flood-towers-far", targetHeight: 16, role: "setDressing", scaleMode: "fit",
+          transforms: towers.slice(0, 2).map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: towerYaw(tx, tz) }))
+        }),
+        ...towers.slice(2).map(([tx, tz], i) =>
+          model(assets.diamondFloodlight, { name: `flood-${i + 2}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(...towerYaw(tx, tz))
+        )
+      );
     }
     return nodes;
   }

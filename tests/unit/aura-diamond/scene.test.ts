@@ -140,7 +140,8 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     for (const park of ["sandlot", "canyon", "ivy"] as const) expect(count(park, (n) => spot(n) || rect(n))).toBe(0);
     // Ivy keeps its four light towers as dressing; the day has no lamps on.
     // Phase 6 (draw budget): the four towers are one instanced draw.
-    expect(["far", "near"].map((k) => (flat("ivy").nodes.find((n) => n.name === `flood-towers-${k}`)?.instances as unknown[] | undefined)?.length)).toEqual([2, 2]);
+    expect(flat("ivy").nodes.find((n) => n.name === "flood-towers-far")?.instances).toHaveLength(2);
+    expect(count("ivy", (n) => n.kind === "model" && /^flood-\d$/.test(String(n.name)))).toBe(2);
     const low = { ...DEFAULT_SCENE_CONTEXT, tier: "low" as const };
     expect([count("skyline", spot, low), count("skyline", flare, low)]).toEqual([4, 0]);
     for (const park of PARK_ORDER) {
