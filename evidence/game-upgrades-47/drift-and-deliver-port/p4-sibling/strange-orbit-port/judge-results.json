@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:12:31.523Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.927,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.927,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a teal car, sunset sky, and a speedometer and minimap HUD",
+        "Image B is an alien planet with a huge moon, purple nebula sky, and an astronaut on a sidecar motorbike",
+        "Different scenery, palette, and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space motorbike with astronaut on a alien planet with a moon and purple nebula sky",
+        "Image B: city street with a car, traffic lights, and a minimap and speedometer HUD",
+        "Different settings, vehicles, and palettes (purple/red alien vs. warm yellow urban)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: space setting with an astronaut on a hoverbike, purple nebula sky and a large moon",
+        "Image B: realistic city street with cars, a taxi and buildings under a sepia haze",
+        "Image B has a speedometer, nitro bar, minimap and ticket HUD that Image A lacks"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a sci-fi space scene: astronaut on a hover-bike, giant moon, purple nebula sky, floating track",
+        "Image B is a realistic city street with a green car, traffic lights, and skyscrapers",
+        "Image B has a racing HUD (speedometer, nitro bar, minimap, ticket timer) that Image A lacks"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien space setting with a moon, nebula sky and astronaut on a hover-bike",
+        "Image B is a realistic dusk city street with a teal car, traffic lights and a minimap HUD",
+        "Different art styles: painterly soft textures in A and flat blocky buildings in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with a moon, purple nebula sky and a astronaut sidecar bike",
+        "Image B is a city street with buildings, traffic lights and a green hatchback",
+        "Different HUDs: none in A, a speedometer and minimap in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic night city street with a car, speedometer and minimap HUD",
+        "Image B is a stylized alien planet with a huge moon, purple nebula sky and an astronaut on a motorbike",
+        "Different settings, art styles and lighting, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city taxi game with a speedometer, minimap and ticket HUD",
+        "Image B is an alien-planet scene with a astronaut on a hover bike and a giant moon",
+        "Different settings and palettes: warm orange street vs purple space sky with red terrain"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic city street with a car, traffic lights and a HUD with speedometer and minimap",
+        "Image B is an alien planet with a moon, purple starry sky and an astronaut on a hover motorbike",
+        "Different art styles and palettes: warm sunset urban realism versus a painterly, stylized sci-fi look with no HUD"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night city street with a car, speedometer and minimap HUD",
+        "Image B is a stylized alien planet with a giant moon, purple nebula sky and astronaut on a hoverbike",
+        "Different art style, scenery and vehicle type, and no shared HUD"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a sci-fi space scene with an astronaut on a hover-bike, a giant moon and a floating track, while Image B is a realistic city street with a small car",
+        "The HUDs differ: Image B has a speedometer, nitro bar, minimap and ticket timer, and Image A has none",
+        "Different palettes and settings: a purple nebula sky over a red desert versus a warm sunset over buildings and traffic lights"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien space scene with a moon, purple nebula sky and an astronaut on a hover motorcycle",
+        "Image B is a realistic city street with skyscrapers, traffic lights and a car with a speedometer and minimap HUD",
+        "Different art style and palette: soft dusty red terrain versus sharp, warm golden-hour buildings"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a teal car, speedometer and minimap HUD",
+        "Image B is an alien planet with an astronaut on a hover bike, a moon and a purple nebula sky",
+        "Different environments, palettes and art styles, with no shared vehicle, scenery or HUD"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a space scene with a giant moon, purple nebula sky and an astronaut on a hover bike; Image B is a sunset city street with a car",
+        "Different art styles: painterly soft textures in A, flat-shaded blocky buildings in B",
+        "Different HUD: no HUD in A, speedometer dial and grid minimap in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien desert with a giant moon and an astronaut on a hover-bike",
+        "Image B: realistic night city street with a car, minimap and speedometer",
+        "Different settings, palettes and vehicles, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a mint car, skyscrapers, a speedometer and a minimap, while Image B is an alien planet with an astronaut on a sidecar motorcycle",
+        "Different settings and palettes: orange sunset city versus purple starry sky with a giant moon",
+        "Different vehicle and HUD styles: a realistic hatchback with dial and minimap versus a stylized hover bike with no HUD"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city with a car, speedometer and minimap HUD",
+        "Image B is a stylized alien planet with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "Different art styles, palettes and settings (urban street vs. space-themed track)"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city taxi game with a speedometer, ticket HUD and minimap",
+        "Image B is an alien-planet scene with an astronaut on a sidecar motorcycle",
+        "Different palettes and settings: warm sepia streets versus purple starry sky and red terrain"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime city street with a taxi, ticket HUD, speedometer and minimap, while Image B is an alien night scene with a moon and astronaut on a hover bike",
+        "Different palettes: warm sepia haze in A, purple and magenta nebula sky with a rust-red ground in B",
+        "Different vehicle and rendering styles: a realistic textured car in A, a painterly, soft-shaded sci-fi bike in B with no HUD"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized alien-planet scene with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic-style city street with a green car, traffic lights, a speedometer and a minimap HUD",
+        "Different palettes, scenery and vehicle types, and no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunlit city street with a car, speedometer and minimap HUD",
+        "Image B is an alien night scene with an astronaut on a hover bike and a winding track",
+        "Different palettes and art styles: warm low-poly city vs. purple space with a painterly look"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street with a car, traffic lights, and a HUD with speedometer and minimap",
+        "Image B is an alien planet with a giant moon, a purple nebula sky, and an astronaut on a sidecar bike",
+        "The two frames differ completely in setting, vehicle, palette, and HUD (B shows none)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a mint car, skyscrapers, orange sunset, speedometer and minimap HUD",
+        "Image B is an alien planet with an astronaut on a sidecar bike, a giant moon, and a purple nebula sky",
+        "Different settings, vehicles and art styles, with no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien Mars-like landscape with a giant moon and an astronaut on a hover bike",
+        "Image B: realistic night city street with a small car, a speedometer and a minimap",
+        "Different art styles, palettes and HUDs"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic city street with a green car, traffic lights, a speedometer and a minimap",
+        "Different art styles: painterly low-poly alien terrain vs. flat-shaded urban buildings"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien night sky, giant moon and astronaut on a hover-bike",
+        "Image B: daytime city street with buildings, traffic lights and a car, plus minimap and speedometer HUD",
+        "Different palettes, scenery and vehicles (purple space vs. warm yellow urban)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic city street with a HUD (speedometer, minimap, timer), while Image B is an alien-planet scene with an astronaut on a hover bike and no HUD",
+        "Different palettes: warm golden urban sunset vs. purple space sky with a giant moon and red-orange terrain",
+        "Different art styles and vehicles: textured 3D buildings and a green car vs. painterly low-poly asteroids and a sci-fi sidecar bike"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a space setting with an astronaut on a hover-bike, a purple nebula sky and a moon, while Image B is a city street scene with cars",
+        "Different HUD: B has a speedometer, nitro bar, ticket card and minimap, while A shows none",
+        "Different palettes and lighting: A is dark purple and red-orange, B is hazy yellow-orange daylight"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: space setting with astronaut on sidecar motorcycle, purple nebula sky, giant moon, floating track",
+        "Image B: sunny city street with taxi and car, sepia haze, speedometer, nitro bar, minimap and ticket HUD",
+        "Different scenery, palette and vehicle types"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night city street with a car and a speedometer/minimap HUD",
+        "Image B is a stylized alien planet with an astronaut on a hoverbike and no HUD",
+        "Different palettes, scenery, and rendering style"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a city street at sunset with a car, speedometer dial and grid minimap HUD",
+        "Image B is an alien planet with a giant moon, purple starry sky and an astronaut on a hover-bike",
+        "Different scenery, palette and rendering style (blocky flat buildings versus soft painterly terrain)"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover motorbike, a giant moon and a floating track over a Mars-like surface",
+        "Image B is a realistic city street with a small green car, traffic lights and palm trees",
+        "Image B has a HUD with speedometer, nitro bar, minimap and ticket timer; Image A has none"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien space scene with a moon, purple nebula sky and an astronaut on a hover bike",
+        "Image B is a realistic city street with skyscrapers, traffic lights and a car with a speedometer and minimap HUD",
+        "Different art styles, lighting and vehicles (stylized sci-fi vs. golden-hour urban)"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien space scene with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic night city street with a small car, streetlights and a minimap/speedometer HUD",
+        "The palettes and settings differ: red-orange desert with low-poly rock silhouettes versus blue-grey urban buildings with lit windows"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover bike, a purple nebula sky and a track in the air",
+        "Image B is a city street with cars, buildings and a speedometer, minimap and nitro HUD",
+        "Different settings, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-style city street with a speedometer and minimap HUD, while Image B is an alien space landscape with a moon and no HUD",
+        "Different vehicles and art styles: a green hatchback with blocky buildings versus an astronaut on a white sidecar bike with soft painterly textures",
+        "Different palettes and lighting: warm golden sunset in A versus purple nebula night sky and red terrain in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street at sunset with a teal car, speedometer and minimap HUD",
+        "Image B is an alien planet with a giant moon, purple nebula sky and an astronaut on a sidecar motorcycle",
+        "Different settings, scenery, vehicles and HUD (none in B)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime city street with a HUD (timer, speedometer, minimap), Image B is a night space scene with no HUD",
+        "Different vehicles: textured taxi and hatchback versus a stylized astronaut on a hover bike",
+        "Different palettes and lighting: warm sepia haze versus purple nebula sky with a large moon"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized alien-planet scene with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic-looking city street with a green car, traffic lights and a speedometer/minimap HUD",
+        "Different palette, art style and camera setting: soft painterly Mars-like terrain versus sunset urban canyon"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a car, speedometer and minimap HUD",
+        "Image B is a stylized alien planet with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "No shared setting, palette, assets or HUD style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover bike, purple nebula sky and a red alien plain",
+        "Image B is a realistic city street with a green car, traffic lights, and a speedometer, nitro and minimap HUD",
+        "Different settings, art styles and lighting: soft painterly sci-fi versus sunset urban photoreal"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "pickup-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city taxi driving game with a speedometer, minimap and ticket HUD, set in a warm sepia street scene",
+        "Image B is a space setting with an astronaut on a sidecar motorcycle, a large moon, a purple nebula sky and a Mars-like terrain",
+        "The art, palette and vehicles differ, and there is no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime city street with a teal car and a speedometer/minimap HUD",
+        "Image B is an alien night scene with a giant moon, a purple nebula sky and an astronaut on a motorbike",
+        "The art styles differ: sharp blocky buildings in A, soft blurry terrain with a floating track in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic night city street with a car, speedometer and minimap HUD",
+        "Image B is a stylized alien planet with a giant moon, nebula sky and an astronaut on a sidecar bike",
+        "Different art style, setting and vehicle types, with no shared HUD or palette"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a car and a HUD showing a speedometer and minimap, while Image B is an alien planet with an astronaut on a hover bike and no HUD",
+        "Different palettes and lighting: warm golden sunset in A, purple night sky with a large moon in B",
+        "Different art styles: blocky low-poly buildings in A, painterly soft textures in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 4,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a space scene with a moon, a nebula sky and an astronaut on a hover bike",
+        "Image B is a sunset city street with buildings, a car, a speedometer and a minimap",
+        "The two frames share no scenery, vehicle type or HUD style"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 4,
+      "a": "drive-1280",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover-bike, a large moon and a purple nebula sky",
+        "Image B is a realistic city street with a small green car, traffic lights and skyscrapers",
+        "Image B has a HUD (speedometer, nitro bar, minimap, ticket timer) that Image A lacks"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 4,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a city street at sunset with a car, speedometer dial and minimap HUD",
+        "Image B is an alien space scene with a moon, nebula sky and an astronaut on a hover bike",
+        "Different scenery, palette and vehicle style, with no shared HUD or art assets"
+      ]
+    }
+  ]
+}

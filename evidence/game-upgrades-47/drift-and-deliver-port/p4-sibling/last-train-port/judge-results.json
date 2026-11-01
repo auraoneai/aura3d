@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:14:24.508Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.844,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.844,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a driving game with a HUD (speedometer, nitro bar, minimap, ticket timer); Image B has no HUD and shows a tram scene",
+        "Different palettes: A is a hazy orange-sepia sunset, B is a teal sky with cool, pastel buildings",
+        "Different art styles: A has low-poly modern city blocks and cars, B has painterly European-style buildings, cobblestones and capsule-shaped people"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a tram, low-poly capsule people and painterly textured houses, while Image B has a car in a city grid",
+        "Image B has a HUD with speedometer and minimap, while Image A has none",
+        "Different settings: A is a European-style town with pastel dusk sky, B is a skyscraper canyon with orange sunset glow"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dusk European-style tram street with capsule pedestrians and cobblestones",
+        "Image B: sunny orange-haze city driving game with car, speedometer, nitro bar and minimap HUD",
+        "Different building styles, lighting and vehicle models"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly capsule pedestrians and a painted streetcar on a cobblestone plaza",
+        "Image B: racing HUD with speedometer, nitro bar, minimap and a timer",
+        "Different building style: pastel European facades with red roofs versus tall glass skyscrapers with traffic lights"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a racing HUD with speedometer, nitro bar and minimap; Image B has no HUD",
+        "Different scenes: modern glass skyscraper city with traffic lights vs. old-European town with a red tram and cobblestones",
+        "Different art styles: glossy, saturated modern city vs. flat painterly textures and capsule-shaped people"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly peg figures, painterly textured houses and a tram on rails; Image B: a car on a skyscraper street with a speedometer and minimap HUD",
+        "Different scenery and art style: small-town cobblestone square with rounded trees vs. dense blocky high-rises with traffic lights",
+        "Both have warm sunset lighting, but the materials and HUD differ"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-rise European-style buildings with red roofs, tram on rails, capsule-shaped people",
+        "Image B: high-rise downtown street, third-person car with speedometer and minimap HUD",
+        "Different building styles, textures, and lighting setups"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: sunset tram street with textured cream and red-roofed buildings, peg-figure pedestrians",
+        "Image B: night city with a car, boxy high-rise towers, speedometer and minimap HUD",
+        "Different palette, building style and gameplay (tram vs. car driving)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tram on tracks in a low-rise old-European town with cobblestones, while Image B is a car in a modern skyscraper grid city with asphalt",
+        "Different art styles: A uses painterly hand-painted textures and peg-like figures, B uses flat blocky low-poly buildings",
+        "HUD differs: B has a speedometer and minimap, A has none"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a driving game with a HUD (speedometer, nitro bar, minimap), Image B has no HUD",
+        "Image A has a heavy orange haze and modern low-poly buildings, Image B has a painterly look with European-style houses and a tram",
+        "Image B has simple peg-figure people and a cobblestone plaza, with nothing like them in A"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a modern glass-and-concrete city with palm trees and a driving HUD (speedometer, nitro bar, minimap); Image B is a dusk European-style street with a vintage tram and capsule-shaped people",
+        "Different lighting and palette: warm orange-gold sunset glow in A, dim gray-purple dusk with a cobblestone ground in B",
+        "Different building and vehicle styles: stylized glass towers and a small green car in A, red-roofed townhouses and a red tram on rails in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a modern skyscraper street with a car, speedometer and minimap HUD",
+        "Image B is a European-style town with a streetcar, tracks and cobblestones",
+        "Different lighting and palette: saturated golden sunset against a dim, muted dusk"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: modern skyscraper city with a car, speedometer and minimap HUD",
+        "Image B: old European townhouses with a red tram on cobblestones and capsule-shaped people",
+        "Different art style: flat low-poly in A, painterly textured in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: sunset tram scene with painterly textured houses and simple peg-figure people",
+        "B: dark night city grid with lit windows, street lamps and a car chase camera",
+        "B has a speedometer and minimap HUD, A has none; the lighting and building styles differ"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a modern skyscraper street with a speedometer and minimap HUD, Image B is a European-style village with a tram and no HUD",
+        "Different building styles: flat-shaded glass towers vs. textured pitched-roof townhouses with chimneys",
+        "Different characters and vehicles: a teal hatchback vs. a red tram and capsule-shaped people"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daylight tram scene with a tilt-shift look, pastel buildings and peg-like figures",
+        "Image B is a night city street with a car, glowing windows and a speedometer and minimap HUD",
+        "The two frames differ in lighting, art style and camera setup"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a racing HUD (speedometer, nitro bar, minimap, ticket timer) and Image B has none",
+        "Different scenery: modern city street with cars vs. cobblestone tram station with capsule-shaped people",
+        "Different art style and lighting: low-poly sepia haze vs. painterly textured buildings with a dusk gradient sky"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a street-level car racing game with a speedometer, nitro bar, minimap and timer HUD, while Image B has no HUD",
+        "Image A has high-rise glass towers and traffic lights, while Image B has low-poly pill-shaped people, trees and a red tram on tracks",
+        "Image A uses a clean, saturated orange-sunset look, while Image B has painterly, textured buildings and a blurred depth-of-field look"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a modern night city with skyscrapers, a small car, a speedometer and a minimap",
+        "Image B is a dusk European-style town with a red tram, cobblestones and pill-shaped people",
+        "The two scenes differ in architecture, vehicle type and HUD (Image B shows none)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a painterly, textured tram scene with peg-like capsule characters, Image B has a low-poly driving game with a car HUD",
+        "Different building styles: detailed shuttered facades with red roofs vs. blocky flat-colored buildings",
+        "Image B has speedometer, nitro bar, minimap and ticket timer, none of which appear in Image A"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: modern glass skyscraper city with a green hatchback, speedometer and minimap HUD",
+        "Image B: old European-style townhouses with red roofs, a tram on rails and cobblestones, no HUD",
+        "Different lighting and palette: saturated golden sunset in A, dim muted dusk in B"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-rise European-style buildings with a red tram on tracks and capsule-shaped people",
+        "Image B: tall modern skyscraper street with a teal car, speedometer and minimap HUD",
+        "Different scenery, camera and HUD style, though both have warm sunset lighting"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: painterly textured European buildings, red tram, capsule people",
+        "Image B: low-poly glass skyscrapers, modern car, speedometer and minimap HUD",
+        "Different scene types, building styles and HUD presence"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: sunset tram scene with painterly textured buildings and peg-like pedestrians",
+        "Image B: night city street with a car, speedometer and minimap HUD",
+        "Different building styles and lighting: warm low-poly sunset vs cool dark urban dusk"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: tram, simple capsule people and low-poly painted-texture buildings",
+        "Image B: racing HUD with speedometer, nitro bar, minimap and a modern car",
+        "Different building style: tall glass skyscrapers vs. low cream and red-roof houses"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a painterly tram town with low-poly peg figures and cone trees; Image B is a dense skyscraper street with a car, speedometer and minimap",
+        "Different building styles: textured, hand-painted houses with pitched roofs versus blocky glass towers with flat windows",
+        "Different HUD and camera: A has none and uses an elevated view; B has a gauge and minimap with a chase camera"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: toy-like tram, peg-figure pedestrians and painterly textures",
+        "Image B: car driving HUD with speedometer, nitro bar, minimap and ticket timer",
+        "Different art styles: flat pastel buildings versus low-poly city with a hazy orange sky"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a modern city street with a car, speedometer, minimap and timer HUD",
+        "Image B is a European-style town with a red tram, cobblestones and capsule-shaped people, with no HUD",
+        "Different building styles and art direction, and different lighting (orange haze vs. teal-to-peach dusk gradient)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a 19th-century European town with a vintage tram, red roofs and capsule-shaped pedestrians",
+        "Image B is a modern night city with skyscrapers, a car and a speedometer/minimap HUD",
+        "Different building styles, art direction and lighting mood (dusk gradient vs. dark blue city night)"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: modern high-rise city grid with car, speedometer and minimap HUD",
+        "B: European-style townhouses, cobblestones and a red streetcar, no HUD",
+        "Different art style and scale: A has flat blocky buildings, B has painterly textured facades and capsule pedestrians"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: modern skyscraper street with a car, speedometer and minimap HUD",
+        "Image B: old European-style row houses with a tram on cobblestones and no HUD",
+        "Different palettes and lighting: saturated orange sunset against muted dusk grey"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a modern city with a car, speedometer, nitro bar and minimap HUD, while Image B has a vintage tram town with no HUD",
+        "Image A is a warm orange sunset with palm trees and glass towers, while Image B is a dusk scene with red-roofed old European houses and cobblestones",
+        "Different art styles: stylized cartoon buildings in A, textured period buildings with capsule-bodied people in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a sunset tram-town scene with painterly textures and low-poly peg figures; Image B is a dark night city street with a car",
+        "Image B has a speedometer and minimap HUD, with no HUD in Image A",
+        "The lighting and palette differ: A is warm and hazy with orange tones, B is cool and dark with lit windows"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: modern blocky skyscraper street with a car, speedometer and minimap HUD",
+        "Image B: European-style houses with red roofs, tram on rails, cobblestone ground, no HUD",
+        "Different palettes and lighting: A is saturated orange-gold dusk, B is a muted teal-to-peach sky"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: low-poly capsule people, painterly textured houses, tram on tracks",
+        "Image B: dense skyscraper street with a car, speedometer and minimap HUD",
+        "Different scene types and art styles, only the warm sunset sky is shared"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night modern city, car with speedometer and minimap HUD",
+        "Image B: daytime European-style houses, red tram on tracks, cobblestone ground",
+        "Different palette and lighting, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: modern taxi game with HUD (speedometer, nitro bar, minimap, ticket) in a hazy orange sky; Image B: dusk European street with a vintage tram and no HUD",
+        "Different building styles: low-poly blocky city houses vs. detailed multi-story red-roofed row houses with chimneys",
+        "Different lighting and palette: warm saturated sepia haze vs. cool purple-gray dusk with grey cobblestones"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a driving game with a HUD (speedometer, nitro bar, minimap, ticket timer) and a sepia desert-haze sky; Image B has no HUD and shows a tram scene with a pastel gradient sky",
+        "Image A has smooth low-poly buildings and cars; Image B has a painterly, textured European townscape with cobblestones, tram tracks and peg-like figures",
+        "Different scenery and lighting: orange-brown monochrome grading vs. cool teal-to-peach dusk with a blurred tilt-shift look"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a car racing game with a speedometer, nitro bar and minimap HUD, in a tall-skyscraper city",
+        "Image B is a tram scene with low-poly peg figures and painterly textured houses, no HUD",
+        "The art styles differ: A uses glossy cartoon buildings, B uses a hand-painted look with cobblestones"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tram on tracks in a painterly, textured town with peg-doll pedestrians and low-poly trees",
+        "Image B is a car driving game with a speedometer, nitro bar, minimap and ticket HUD",
+        "Image B has a hazy orange-brown sky and blocky buildings, unlike A's pastel painterly buildings"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: toy-like tram with pastel buildings and capsule-shaped people, tilt-shift look",
+        "Image B: realistic-style city street with traffic lights, palm trees and a car racing HUD (speedometer, nitro, minimap)",
+        "Different art style and rendering: flat painterly textures vs. detailed glossy buildings with warm sunset glow"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a toy-like tram scene with flat, painterly textured buildings and capsule-shaped people, and no HUD",
+        "Image B is a driving game with a speedometer, nitro bar, ticket timer and minimap, with a hazy orange low-poly city",
+        "The lighting, palette and building style differ (cool teal sky and pastel facades vs. sepia haze and brick/blocky buildings)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: bright dusk tram scene with painted, hand-textured buildings and capsule-shaped people",
+        "Image B: dark night city with lit-window skyscrapers, a car, speedometer and minimap HUD",
+        "Different art style, lighting and camera: fixed elevated view versus third-person chase view"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: modern skyscraper city street with a teal car, speedometer and minimap HUD",
+        "Image B: European-style houses with red roofs, a vintage tram and cobblestones, with no HUD",
+        "Different palette and lighting: saturated orange sunset in A, muted dusk with grey vignette in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a street racer with a green car, speedometer, nitro bar, minimap and ticket HUD",
+        "Image B is a tram scene with painterly textured houses, primitive peg figures and cobblestone ground, no HUD",
+        "Different art styles: glossy high-rise city with traffic lights vs. low-poly and painterly village"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a painterly low-rise European town with a tram and capsule-shaped people; Image B is a dense skyscraper city street with a car",
+        "Different art styles: textured, hand-painted look versus flat-shaded blocky buildings with warm sunset glow",
+        "Image B has a speedometer and minimap HUD; Image A has none and a different scene layout"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a car with a speedometer and minimap HUD, Image B has no HUD",
+        "Image A has a saturated orange city canyon, Image B has a painterly pastel old-town square with a tram",
+        "Different asset styles: low-poly skyscrapers and street lamps versus textured houses and peg-like figures"
+      ]
+    }
+  ]
+}

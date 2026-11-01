@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:16:17.324Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.922,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.922,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic-style city driving game with a speedometer, minimap and ticket HUD",
+        "Image B has an inked, outlined illustrative style with a hoverboard character and surreal arch and ring scenery",
+        "The two frames differ in art style and subject matter, despite both having warm sunset palettes"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A uses an outlined, painterly cel-shaded style with low-poly pines and a cobblestone ground",
+        "Image B uses a smooth, realistic-leaning city with a textured car, traffic lights and a minimap and speedometer HUD",
+        "The scenes differ: a surreal arch with rings and a hoverboard character versus a driving game on a street"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized skateboarder in a giant ring tunnel with a muted teal palette and outlined cel look",
+        "Image B is a city driving game with a taxi, a green car, a warm orange haze and a speedometer/minimap HUD",
+        "Completely different scenery, lighting, characters and rendering style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: night mountain slope with a skateboarder, low-poly teal pines and a giant ring in a stylized, outlined art style",
+        "Image B: sunset city street with a car, traffic lights, palm trees and a realistic textured look",
+        "Image B has a speedometer, nitro bar and minimap HUD that Image A does not share"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style city driving game with a HUD (speedometer, minimap, nitro bar)",
+        "Image B has an inked, outlined, painterly look with a hoverboard character and surreal arch and ring scenery",
+        "The two frames differ in rendering style and gameplay: a car racer versus a stylized exploration game"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A uses a painterly, outlined, hand-drawn look with cobblestone ground and low-poly pines",
+        "Image B is a realistic-leaning low-poly city street with a car, a speedometer and a minimap HUD",
+        "Both share a warm orange sunset sky, but the art style, scenery and gameplay differ"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: muted teal, grey outlined mountain scene with a skateboarder inside a giant ring",
+        "Image B: warm orange sunset city with a car, speedometer and minimap HUD",
+        "Different art styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.92,
+      "tells": [
+        "Image A: stylized low-poly snowboarder with a hand-inked outline look and teal pine trees",
+        "Image B: city street with a car, building grid, speedometer and minimap HUD",
+        "Different scenery, characters and rendering style"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A uses ink-outlined, hand-painted low-poly art with a cobblestone texture",
+        "Image B has a realistic textured car and a dense city street with a speedometer and minimap HUD",
+        "Different rendering styles: flat toon outlines vs. smooth shaded buildings with sunset lighting"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-textured driving game with a car, speedometer, minimap and ticket HUD",
+        "Image B uses an outlined, cel-shaded painterly style with a hoverboard character and a cobblestone ground",
+        "Different scenery: a city street versus stylized pine trees, white blocks and giant rings"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a warm orange city street with a car, speedometer, minimap and timer HUD",
+        "Image B is a desaturated green-grey mountain landscape with a skateboarder inside a giant ring and no HUD",
+        "Image B has a flat posterized look with outlines, unlike the glossy realistic shading of Image A"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm golden-hour city street with a car, speedometer and minimap HUD",
+        "Image B is a desaturated teal-grey mountain valley with a skateboarder inside a giant ring",
+        "Image B uses a posterized, outlined painterly style, while Image A uses clean low-poly shading"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with a car, speedometer and minimap HUD",
+        "Image B is a night mountain slope with pine trees, a skateboarding character and giant rings",
+        "Different art styles: A has blocky buildings with warm golden lighting, B has cool blue-purple tones with inked outlines"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized hand-painted cel look with outlines, pastel teal trees and orange sunset",
+        "Image B: realistic-leaning night city with a car, lit windows and a minimap/speedometer HUD",
+        "Different characters, scenery and lighting: a hoverboard rider on cobblestones vs. a car on an asphalt street"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city street with a car, speedometer and minimap HUD",
+        "Image B is a night mountain scene with a snowboarder, pine trees and giant rings",
+        "Different palettes and art styles: warm orange low-poly buildings versus cool blue inked, cel-shaded outlines"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized, outlined, hand-painted look with low-poly pines and a hoverboard character",
+        "Image B is a flat-shaded realistic-style city street with a car, speedometer and minimap HUD",
+        "Different scenery and rendering: cobblestone plaza with giant arch versus skyscraper avenue"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized ink-outlined, painterly look with low-poly pine trees and a hoverboard rider at sunset",
+        "Image B: realistic-leaning night city street with a car, lit windows and street lamps",
+        "Image B has a speedometer and minimap HUD; Image A has none"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a sunlit city street with a car, taxi, and a speedometer, nitro, and minimap HUD",
+        "Image B is a night mountain scene with a character on a hoverboard and a giant ring, with no HUD",
+        "Different art styles: realistic textured vehicles and buildings versus flat, ink-outlined low-poly pines and terrain"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style city racing game with a car, traffic lights and a speedometer HUD",
+        "Image B is an inked, cel-shaded surreal scene with a hoverboard rider and low-poly pine trees",
+        "Different art styles and no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a realistic-lowpoly night city street with a car, speedometer and minimap HUD",
+        "Image B is a stylized, posterized outdoor mountain scene with a skateboarder and loop ring",
+        "Different palettes, lighting and rendering style: dark dusk with warm lit windows vs. muted gray-green daylight with outlines"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night mountain scene with a skateboarder, a giant ring and low-poly pine trees",
+        "Image B is a daytime sepia city street with a car, taxi, minimap, speedometer and nitro bar",
+        "Different palette, lighting, camera and HUD style"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: warm golden-hour city streets with a car, speedometer and minimap HUD",
+        "Image B: desaturated teal-grey mountain valley with a skateboarder inside a giant ring",
+        "Different art styles: low-poly blocky buildings vs. outlined posterized painterly rendering"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A uses a hand-drawn, outlined, painterly style with low-poly trees and a hoverboard rider",
+        "Image B uses a flat-shaded, realistic-proportion city with a car, speedometer and minimap HUD",
+        "Both have orange sunset skies, but the art style and content differ strongly"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night mountain scene with a skateboarder, pine trees and giant rings",
+        "Image B is a daytime city street with a car, skyscrapers and a minimap and speedometer HUD",
+        "Different palettes and art styles: dark blue/teal with ink outlines vs. warm orange sunset with blocky buildings"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized snowboard/hoverboard on a mountain slope with low-poly pine trees and a giant ring",
+        "Image B: realistic-style city street with a car, lit building windows, minimap and speedometer HUD",
+        "Different art style and scenery: flat inked cartoon look versus a lit urban 3D scene"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized night mountain scene with skateboarder, rings and low-poly pines",
+        "Image B: realistic sunset city with a car, traffic lights and a racing HUD (speedometer, minimap, nitro bar)",
+        "Different art style, palette and gameplay"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has outlined, painterly cel-shaded look with low-poly pines and a hoverboard rider",
+        "Image B has realistic-style textured city streets, a car and a speedometer/minimap HUD",
+        "Different scenery and art style: surreal arches and rings vs. dense skyscraper street"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a stylized, hand-drawn look with ink outlines and flat-shaded low-poly pine trees, while Image B has smoother realistic-ish 3D car models",
+        "Image A shows a surreal setting with a skateboarding/hoverboard character and giant rings; Image B shows a realistic city street with cars",
+        "Image B has a driving HUD (speedometer, nitro bar, minimap, ticket timer) and Image A has none"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-style city racer with a car, HUD, speedometer and minimap",
+        "Image B has a stylized inked, outlined look with a hoverboard character and surreal arch and rings",
+        "Different art style, scenery and HUD presence (B has none)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized outlined skateboarder in a mountain and pine valley with a giant ring",
+        "Image B: night city street with a car, lit windows, minimap and speedometer HUD",
+        "Different art styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a warm orange sunset city street with a car and a speedometer/minimap HUD",
+        "Image B is a dark blue night mountain scene with a snowboarder and a giant ring",
+        "Different scenery, palette and art style (flat-shaded buildings vs. inked, outlined pine trees)"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm orange sunset city street with a car, speedometer and minimap HUD",
+        "Image B is a desaturated teal-gray mountain valley with a skateboarder inside a giant ring and no HUD",
+        "Different art styles: blocky low-poly buildings versus outlined, posterized painterly shading"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a warm orange city street with a car and racing HUD (speedometer, minimap, nitro bar)",
+        "Image B is a desaturated teal mountain landscape with a skateboarder in a giant ring and an outlined, posterized look",
+        "No shared palette, scenery, or HUD style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A uses a stylized, painterly, outlined look with a warm orange sunset and low-poly pine trees",
+        "Image B uses realistic-style night city lighting with a car, streetlamps and lit windows",
+        "Image B has a speedometer and minimap HUD, and Image A has none"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic-scale city street with a car, speedometer and minimap HUD; Image B is a stylized outlined fantasy plaza with a hoverboard character and no HUD",
+        "Different rendering styles: A uses smooth shaded textures with warm sun glare, B uses inked outlines, cel shading and a cobblestone pattern",
+        "Both share a warm orange sunset palette with mint-green accents, but the scenery, art direction and camera setup differ"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized, outlined, painterly look with a hoverboard character and low-poly pine trees; Image B is a realistic-ish city with a car",
+        "Different HUDs: no HUD in A versus speedometer and minimap in B",
+        "Shared warm orange sunset palette is the only link"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style night city with a car, speedometer and minimap HUD",
+        "Image B is a stylized, outlined, painterly scene with a hoverboard character and low-poly pine trees",
+        "The palettes and lighting differ: dark blue night with lit windows versus warm orange dusk with muted greens"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a warm sepia city driving game with a taxi, car, speedometer and minimap HUD",
+        "Image B is a cool desaturated mountain scene with a skateboarder inside a giant ring",
+        "Different art styles and palettes: realistic low-poly urban vs. outlined posterized stylized landscape"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-style low-poly city driving game with a speedometer, minimap and ticket HUD",
+        "Image B has an outlined, hand-drawn, cel-shaded look with a character on a hoverboard and a cobblestone ground",
+        "The two frames differ in rendering style, scenery and HUD, with only a similar warm orange sky in common"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style city street racer with a car, traffic lights and a speedometer/minimap HUD",
+        "Image B is a stylized, outlined, cel-shaded scene with a skateboarding character, pine trees and arches, and no HUD",
+        "Different art styles and different scenery (urban buildings vs. fantasy cobblestone plaza)"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a stylized, ink-outlined, cel-shaded look with a hoverboard character on a cobblestone plaza",
+        "Image B uses a realistic low-poly city street with a car, speedometer, nitro bar and minimap HUD",
+        "Different gameplay and visual style, with only a similar warm orange haze in common"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a stylized, hand-drawn look with outlined low-poly trees and a character on a hoverboard",
+        "Image B is a realistic textured city with traffic lights, a car and a racing HUD (speedometer, minimap, nitro bar)",
+        "The two frames share no scenery, character or HUD elements"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a stylized ink-outlined, flat-shaded look with a hoverboard character and giant rings, while Image B is a realistic low-poly city driving scene",
+        "Image B has a driving HUD (speedometer, nitro bar, minimap, ticket timer) with no counterpart in A",
+        "Different art and materials: cobblestone ground and pale green pine trees in A vs. asphalt, buildings and cars with real-looking textures in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized painterly look with outlined low-poly pines and a cobblestone ground, on a hoverboard in warm sunset",
+        "Image B: realistic-leaning night city with lit office windows, street lamps and a car",
+        "Image B has a minimap and speedometer HUD, and the lighting and palette differ completely from A"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm orange sunset city with a car, speedometer and minimap HUD",
+        "Image B is a desaturated teal-grey mountain landscape with a skateboarding character in a giant loop",
+        "Different art styles: blocky low-poly buildings versus outlined, posterized painterly shading"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style city street with a car, speedometer, and minimap HUD",
+        "Image B is an inked, outlined, stylized fantasy scene with a hoverboard rider and no HUD",
+        "Different art styles and scene types: textured buildings and traffic lights versus flat white blocks, low-poly pines, and cobblestone"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a painterly, ink-outlined style with a hoverboard character and low-poly pines, while Image B is a flat-shaded realistic city with a car",
+        "Different scenery and gameplay: stylized plaza with giant rings vs. skyscraper street with traffic lights",
+        "Image B has a speedometer and minimap HUD, and Image A has no comparable HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-lit city street with a car, speedometer and minimap HUD",
+        "Image B has inked outlines, cel shading and a hoverboard character in a stylized fantasy plaza",
+        "Different art styles and scene types; only the warm orange sky and mint green color are shared"
+      ]
+    }
+  ]
+}

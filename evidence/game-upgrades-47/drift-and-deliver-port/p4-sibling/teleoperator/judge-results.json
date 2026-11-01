@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:11:38.895Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--noon--settle-25s",
+      "teleoperator--noon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.818,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 39,
+    "confidentDifferentRate": 0.8125,
+    "same_game": false,
+    "same_game_confidence": 0.818,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat low-poly city with a pale hazy sky, a white pod vehicle and a tram",
+        "Image B: warm sunset lighting, textured buildings, palm trees, a green hatchback and traffic lights",
+        "Different HUD: a circular minimap in A; a speedometer, nitro bar, ticket banner and square grid minimap in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a warm orange sunset, saturated cartoon buildings, and a speedometer/nitro HUD, while Image B is a desaturated grey-teal fog with muted, realistic-style buildings",
+        "Different minimap styles (square grid vs. circular dark map) and no shared HUD elements",
+        "Different car models and road details (traffic lights, palm trees vs. overhead wires, double yellow lines, round green trees)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different minimap styles (rounded-square grid vs circular route map)",
+        "warm sepia dusk lighting vs bright, cool, hazy daylight",
+        "different HUD and vehicles (ticket timer, speedometer and nitro bar vs none; detailed taxi and hatchback vs white pod and tram)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm orange sunset, a square minimap and a dial speedometer, while Image B has a bright overcast sky and a circular route minimap",
+        "Image A's buildings are blocky and flat-shaded with lit windows, while Image B's are detailed red-brick and glass towers with power lines",
+        "The vehicles differ: a cracked teal hatchback in A, and a white pod, orange car and truck in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm orange dusk grade with a ticket/nitro/speedometer HUD, while Image B is bright, cool and hazy with only a circular minimap",
+        "Different minimaps: a square grid map in A and a round dark route map in B",
+        "Different environments: low-rise town with textured vehicles in A, glass skyscrapers with overhead wires and plain white vehicles in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a bright, hazy daylight palette with a white pod vehicle and a red tram, while Image B has a warm orange sunset palette with a mint hatchback",
+        "The HUDs differ: A has a round navigation minimap, B has a square grid minimap and a speedometer dial",
+        "The building styles differ: A has red and orange brick blocks with glass towers, B has dense tall striped towers with lamp posts and traffic lights"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright daylight, pale hazy sky, orange-red brick buildings, white pod vehicle and trolley tram",
+        "Image B: warm orange sunset, dark dense high-rises with lit windows, teal hatchback with a speedometer gauge",
+        "Different HUDs: circular route minimap vs square grid minimap with a dial gauge"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: foggy, desaturated teal palette with realistic-style buildings and a rear-view autonomous pod",
+        "Image B: warm orange sunset, flat low-poly blocky buildings and a mint hatchback",
+        "Different HUDs: circular navigation minimap in A, speedometer dial and square grid minimap in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different HUD: circular route minimap in A, square grid minimap and orange speedometer dial in B",
+        "Different building styles: bright red brick and glass towers in A, boxy dark blocks with lit windows and street lamps in B",
+        "Different lighting: hazy bright daytime in A, dusk with glowing windows in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: warm orange sunset, saturated flat-shaded blocky buildings, square minimap and round speedometer",
+        "Image B: cool gray overcast fog, realistic wet asphalt, overhead wires, detailed building facades",
+        "Different HUD style: circular navigation minimap in B vs square grid minimap and gauge in A"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm golden-hour palette with a square grid minimap and a gauge speedometer, while Image B is bright, pale and overcast with a circular route minimap",
+        "Different building styles: blocky, tinted glass towers with street lamps in A, and red brick and white stone buildings with round trees and overhead wires in B",
+        "Different vehicles and rendering: a rounded teal hatchback in A, and a white pod car with an orange car and a truck in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "HUD differs: square minimap and orange speedometer vs. round minimap on the opposite corner",
+        "Night scene with blocky, uniformly lit towers vs. foggy day scene with detailed brick and stone buildings",
+        "Different player vehicles: rear view of a small hatchback vs. a rounded pod-like van"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a foggy, desaturated teal-grey look with realistic brick buildings, while Image B has a warm orange sunset with stylized low-poly houses",
+        "The HUDs differ: A has a round minimap with a cyan route line, while B has a speedometer, nitro bar, ticket card and a grid minimap",
+        "The vehicles differ: A shows a white pod-like van with orange hatchback traffic, while B shows a mint hatchback and a yellow taxi van"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a warm orange sunset palette with a speedometer, nitro bar and ticket HUD, while Image B has a pale overcast sky and a circular minimap",
+        "Different art styles: A uses dense, detailed textured buildings with traffic lights and palm trees, B uses simple low-poly trees and plain white and red buildings",
+        "Different vehicles and camera: A has a small green hatchback with a close chase view, B has a white pod van and a truck with a wider view and overhead wires"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime city with orange brick buildings, a trolley and a white pod vehicle",
+        "Image B is a dusk street with lit windows, street lamps and a small teal hatchback",
+        "The HUDs differ: a round minimap with a route line in A, and a square grid minimap plus an orange speedometer dial in B"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm golden-hour palette, a teal hatchback, and a square minimap with a speedometer dial; Image B has a bright, washed-out sky, a white pod vehicle, and a circular route minimap",
+        "Image A's buildings are blocky with flat tones, while Image B's have detailed brick-red facades, a streetcar, and overhead wires",
+        "The two frames use different HUD styles and different road markings (a single yellow center stripe vs. double yellow lines with tram tracks)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: foggy, desaturated teal-gray atmosphere; Image B: warm saturated orange sunset",
+        "Different HUD: circular route minimap vs square grid minimap with speedometer dial",
+        "Different building and car styles: realistic textured brick vs flat blocky low-poly towers"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm orange dusk palette and a square grid minimap with a speedometer and nitro bar. Image B is a cold, foggy blue-gray scene with a circular minimap.",
+        "The HUD differs: A has a ticket card, timer and score, while B shows only a round minimap.",
+        "The city style differs: A uses low-poly colorful houses, and B uses realistic tall brick and stone buildings with overhead wires."
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm orange sunset sky with a flat-shaded, blocky city and lamp posts, while Image B has a bright white-grey sky and a more realistic, textured city",
+        "The HUD differs: A has an analog speedometer and a square grid minimap, B has a circular minimap with a route line",
+        "The vehicles differ: A has a dented mint hatchback, B has a white pod vehicle and a red tram with overhead wires"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime scene with orange brick buildings, a tram and a white pod vehicle, while Image B is a dusk scene with dark lit-window towers and a teal hatchback",
+        "Different HUD styles: a circular route minimap in A, and a square grid minimap with an orange speedometer dial in B",
+        "Different building and road styles: A has textured red-orange blocks with overhead wires and yellow double lines, B has boxy buildings with glowing windows and gas lamps"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Different HUD: circular route minimap vs square grid minimap with speedometer dial",
+        "Image A has bright, pale daylight and a hazy white sky; Image B has a warm orange sunset with strong golden lighting",
+        "Different city art: smooth low-poly buildings with round trees vs pixelated textured high-rises with street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: warm orange sunset with saturated, blocky cartoon buildings; Image B: cold grey-teal fog with muted, realistic architecture",
+        "HUD differs: A has a square grid minimap and a round speedometer; B has a circular navigation minimap with a route line",
+        "Different car models and rendering: A has a cracked mint hatchback with glowing lines; B has a smooth white pod vehicle with overhead wires"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has warm orange sunset lighting with a green hatchback, palm trees, traffic lights and a speedometer/nitro HUD",
+        "Image B has pale overcast lighting with a white pod vehicle, a red tram, overhead wires and a circular minimap",
+        "The building styles and HUD layouts differ (square minimap with ticket banner vs. round minimap only)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: muted, foggy teal-grey palette with realistic lighting; Image B: saturated warm sunset palette with stylized cartoon buildings",
+        "Different vehicles and camera: a white autonomous pod seen from a chase cam with a wet road, versus a green hatchback with traffic lights, palm trees and a speedometer",
+        "Different HUD styles: a small circular minimap in A, versus a timer, ticket banner, nitro bar, speedometer and square grid minimap in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different minimap style: square grid vs circular route map",
+        "night boxy buildings with flat lit windows vs detailed brick and glass buildings in daylight",
+        "different overall lighting and palette, with a gauge HUD only in A"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright daytime, pale sky, low-poly white and red buildings, round green trees, circular minimap at bottom-left",
+        "Image B: orange sunset, tall dense blocky skyscrapers, gas lamps and traffic lights, dial speedometer, square minimap at bottom-right",
+        "Different art style and lighting: smooth pastel look versus dark warm dramatic look with a cracked, damaged car"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city with lit windows and a square grid minimap; Image B is foggy daylight with a circular route minimap",
+        "Different car models and HUD: orange speedometer dial in A, none in B",
+        "Different building styles: blocky boxy towers in A, detailed brick and stone buildings with overhead wires and trees in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Different HUD: square grid minimap, speedometer and nitro bar vs. a plain circular minimap",
+        "Warm sepia dusk lighting vs. bright, hazy daylight with a pale sky",
+        "Low-rise town with small shops vs. dense skyscraper avenue with tram wires and a tram"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a cool, bright, hazy sky and a circular minimap, while Image B has a warm orange dusk tint and a square grid minimap",
+        "The buildings and vehicles differ: A has tall glass towers, white boxy autonomous vans and lollipop trees; B has low-rise houses, a detailed taxi and a pastel hatchback",
+        "The HUDs differ: B shows a speedometer, nitro bar, ticket card and timer, none of which appear in A"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright, pale daylight with flat low-poly buildings and lollipop trees; Image B: warm orange sunset with dense detailed towers and palm trees",
+        "Different HUD: a round minimap only in A; B has a timer, ticket card, speedometer, nitro bar and square grid minimap",
+        "Different vehicles and street props: white pod car and orange hatchback in A; mint hatchback and traffic lights with lamp posts in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: foggy, desaturated teal-grey sky with realistic lighting and a circular minimap",
+        "Image B: warm orange sunset with flat, low-poly textured buildings and a square grid minimap",
+        "Different car models and HUD: a speedometer dial in B, none in A"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A has a pale, bright, hazy sky with glass towers and a white pod-like vehicle, while Image B has a warm orange dusk haze with low-poly houses",
+        "The HUDs differ: A has a small circular route minimap, B has a ticket card, speedometer, nitro bar and a square grid minimap",
+        "The cars and buildings differ in style: A uses smooth, simplified vehicles and large brick and stone buildings, B uses textured taxi and hatchback models with small houses"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright overcast daylight, pale hazy sky, orange-red brick buildings, white pod vehicle, tram",
+        "Image B: warm orange sunset, dark silhouetted high-rise canyon, lit windows, gas street lamps, green hatchback",
+        "Different HUDs: circular route minimap in A versus speedometer dial and square grid minimap in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a warm orange sunset palette with a green hatchback, traffic lights and palm trees, while Image B has a pale overcast sky with a white autonomous pod and a red tram",
+        "The HUD in A is a nitro bar, speedometer dial, ticket banner and square grid minimap, while B shows only a small circular route minimap",
+        "The buildings in A are stylized, saturated blue and yellow towers with a golden glow, while B has flat orange brick and glass buildings in cool, washed-out lighting"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, hazy daytime city with white and red buildings and round-canopy trees, while Image B is a warm orange sunset with dense, boxy towers",
+        "The HUDs differ: A has a circular route minimap, B has an analog speedometer dial and a square grid minimap",
+        "The vehicles and rendering differ: A has smooth, simple low-poly cars, B has a cracked, textured teal hatchback with glowing lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pale, washed-out sky with flat-shaded low-poly buildings and lollipop trees",
+        "Image B: warm orange sunset lighting with textured buildings, palm trees and street lamps",
+        "Different HUD: circular minimap only in A, versus timer, ticket, speedometer, nitro bar and grid minimap in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A has a warm orange sunset palette with a speedometer, nitro bar and ticket HUD; B is a cold grey-teal fog with a circular minimap",
+        "Different building and car styles: A uses stylized, glossy, saturated textures; B uses muted, flat-shaded realistic shapes",
+        "Different scenery details: A has palm trees, traffic lights and crosswalks; B has overhead wires, round green trees and a pod-like vehicle"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different lighting and palette: pale daylight with white haze in A, warm orange sunset in B",
+        "Different building and vehicle styles: smooth low-poly red and white buildings with a white van in A, textured tiled-window skyscrapers with street lamps and a dented mint car in B",
+        "Different HUD: circular route minimap in A, speedometer gauge and square grid minimap in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "HUD differs: square grid minimap with orange speedometer vs round navigation minimap",
+        "Night scene with blocky, flat-shaded towers vs foggy daytime scene with detailed brick and stone buildings",
+        "Different lighting and palette: warm lit windows and street lamps vs desaturated gray-teal haze with wet road reflections"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different HUD: round speedometer and square grid minimap vs circular route minimap with no gauge",
+        "Different lighting and palette: warm golden low-sun haze vs bright white-blue daylight with saturated orange-red brick",
+        "Different vehicle and scenery: teal hatchback with streetlamps and traffic lights vs white pod vehicle with trolley tram and overhead wires"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has warm golden sunset light and saturated, blocky buildings, while Image B is foggy, desaturated and blue-grey with wet-road reflections",
+        "Different HUDs: a square grid minimap with a speedometer dial in A, a circular route minimap in B",
+        "Different building and car modeling: low-poly stylized blocks in A, smoother more realistic shapes and overhead wires in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A has a cool, foggy teal palette with a white pod-like vehicle and a circular minimap, while Image B has a warm orange sunset palette",
+        "Image B has a HUD with a speedometer, nitro bar, ticket timer and a square grid minimap, which differs from A's HUD style",
+        "The building styles differ: A has detailed realistic brick and stone facades, B has low-poly pastel houses"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different HUD: square grid minimap with speedometer vs round route minimap",
+        "different building style: plain boxy lit-window towers vs detailed brick and glass buildings with wires and trees",
+        "night vs bright day lighting, with a similar small-car model in both"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "HUD differs: square grid minimap, speedometer and nitro bar vs a round route minimap with no other HUD",
+        "warm sepia dusk lighting vs bright white-hazed daylight",
+        "low-rise town with taxi and hatchback vs skyscraper avenue with tram and white pod vehicle"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a dusk scene with lit windows and street lamps, while Image B is a bright daytime scene with red brick buildings and a streetcar",
+        "Different HUDs: an orange speedometer dial and a square grid minimap in A, a circular route minimap in B",
+        "Different vehicle and building styles: a worn teal hatchback and blocky low-poly towers in A, a smooth white pod car and detailed brick facades with overhead wires in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a warm orange sunset with blocky, flat-shaded buildings, while Image B has a cool grey foggy look with more detailed architecture",
+        "HUDs differ: a square grid minimap and orange dial speedometer in A, a circular navigation minimap in B",
+        "Vehicle styles differ: a teal hatchback with a cracked-texture look in A, a smooth white pod vehicle with overhead wires in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different HUD: round speedometer and square grid minimap in A, circular route minimap in B",
+        "Different lighting and palette: warm orange sunset haze in A, bright overcast daylight with red brick buildings in B",
+        "Different vehicles and street details: teal hatchback and street lamps in A, white pod vehicle, trolley and overhead wires in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "teleoperator--noon--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: warm orange sunset lighting, green hatchback, speedometer, nitro bar and ticket HUD",
+        "Image B: bright, washed-out daylight, white autonomous pod, red tram, circular minimap",
+        "Different HUD styles and building models (textured blue and tan towers vs flat orange brick)"
+      ]
+    }
+  ]
+}
