@@ -25,8 +25,9 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, solidBlockMaterial, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS
+  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
 } from "./game/stage";
+import { BlockInstancePool } from "./game/blockInstances";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
 import { chapterLook, useOriginalLook } from "./game/look";
@@ -113,7 +114,14 @@ const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 const H = new Map<string, AuraRuntimeNodeHandle>();
 const POOLED_IDS = pooledNodeIds();
 const animCache = new Map<string, string>();
+/**
+ * GU47 phase 7 (4.7.6, Task B): on solid-block rows the `v-block-<i>` ids address slots of the per-family instanced
+ * blocks (blockInstances.ts); `node()` hands out the pool's block handle and the frame loop flushes it after syncVisuals.
+ */
+const BLOCK_POOL = SOLID_BLOCKS ? new BlockInstancePool(POOL.blocks, SOLID_BLOCK_MATERIALS, (id) => app.nodes.get(id) as AuraRuntimeNodeHandle | undefined) : null;
+const BLOCK_IDS = new Set(Array.from({ length: POOL.blocks }, (_, i) => blockNodeId(i)));
 function node(id: string): AuraRuntimeNodeHandle | undefined {
+  if (BLOCK_POOL && BLOCK_IDS.has(id)) return BLOCK_POOL.handle(id) as unknown as AuraRuntimeNodeHandle;
   if (!H.has(id)) {
     const h = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
     if (h) H.set(id, h);
@@ -1436,6 +1444,7 @@ try {
   assignPieceVisuals();
   camState = "aim";
   syncVisuals();
+  BLOCK_POOL?.flush();
   syncSling(0);
   updateCamera(0, 0);
   refreshVp();
@@ -1450,6 +1459,8 @@ gameApp.onFrame(({ dt }) => {
   if (!appReady) return;
   frames += 1;
   elapsed += dt;
+  // Level loads and resets while paused re-slot blocks outside syncVisuals: submit them here too (dirty families only).
+  BLOCK_POOL?.flush();
   try {
     // createGameApp already updated the owned input for this frame; a second update() here
     // cleared the pressed edges before they were read, so R/P/M/Q never fired.
@@ -1525,6 +1536,7 @@ gameApp.onFrame(({ dt }) => {
     if (frames % 30 === 0 && pendingLooks.size > 0) flushPendingLooks();
     updateTweens(dt);
     syncVisuals();
+    BLOCK_POOL?.flush();
     syncSling(dt);
     updateCamera(dt, elapsed);
     refreshVp();
@@ -1595,7 +1607,9 @@ w.__SS_DEBUG__ = {
     });
     return out;
   },
-  project(p: [number, number, number]) { refreshVp(); return projectWorld(p); }
+  project(p: [number, number, number]) { refreshVp(); return projectWorld(p); },
+  /** GU47 phase 7: visible blocks per instanced family (solid-block rows; empty on the GLB-block night row). */
+  liveBlocks() { return BLOCK_POOL?.liveCounts() ?? {}; }
 };
 w.__SS_LEVEL__ = (id: number) => { realLevelId = Math.min(Math.max(0, id), LEVELS.length - 1); loadLevel(realLevelId); return evidence(); };
 

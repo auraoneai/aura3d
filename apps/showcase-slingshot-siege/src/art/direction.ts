@@ -65,7 +65,12 @@ export default defineArtDirection({
     { role: "backdrop", assetKey: "propRockA", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "propRockB", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "propConifer", maxTriangles: 60000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "set-dressing", assetKey: "propConifer", maxTriangles: 60000, textureSet: "BC", maxTextureSize: 1024 },
+    // GU47 phase 7 (4.7.6, Task B): the rocks and trees above baked into one GLB per set (../art/setPieces.ts), same
+    // placements and materials; propRockA/B, propPineTree and propConifer stay for the ?look=original stage.
+    { role: "backdrop", assetKey: "sling_rocksA", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "sling_rocksB", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "set-dressing", assetKey: "sling_islandTrees", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "launch", kind: "siege-launch-dust", flipbook: "dust-mote" },
