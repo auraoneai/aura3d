@@ -952,7 +952,7 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   // GU47 phase 3 (rubric: "the batter and catcher look like they float"): denser, longer contact shadows in the new look.
   if (!QA_FLAGS.noContact) sc.add(effects.contactShadows(ctx.variant === "gu47" ? { intensity: 1.0, length: 0.45 } : { intensity: 0.75, length: 0.3 }));
   // GU47 phase 4: the wet track, the sealed Dome infield and the harbour mirror the park (rubric ibl_reflections).
-  if (plan.ssr !== null && ctx.tier !== "low") sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 40, roughness: 0.5 }));
+  if (plan.ssr !== null && ctx.tier !== "low") sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 30, roughness: 0.3 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
   if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
   // DIA-E4: the rain-wet blue hour over Midtown (the wet warning track is its glossy track roughness, DIA-M1).
