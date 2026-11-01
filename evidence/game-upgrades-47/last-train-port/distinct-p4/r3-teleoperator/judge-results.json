@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:46:15.451Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--band-d--settle-60s",
+      "last-train-port--band-e--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.827,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 41,
+    "sameGameYes": 7,
+    "differentRate": 0.8541666666666666,
+    "ci95": [
+      0.7283255295714138,
+      0.9275184258620602
+    ],
+    "confidentDifferent": 34,
+    "confidentDifferentRate": 0.7083333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.827,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: modern city street with a white pod vehicle, a minimap HUD and glowing cyan route lines",
+        "Image B: period European-style buildings with a red tram on cobblestones and capsule-shaped people",
+        "Different art styles: flat low-poly shapes in A, textured and painterly in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar stylized buildings with painted window textures and rounded trees/bushes",
+        "overhead tram wires and poles in both",
+        "differences mostly in time of day and camera (dusk vs bright haze), HUD hidden in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a cloud sea, with a panel-style HUD",
+        "Image B is a white pod car on a city street with a circular minimap and no panel HUD",
+        "Different scenery, palette and rendering: pastel hazy sky versus dark dusk city with orange brick buildings"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a cloud sea, with a warm hazy sky and navy HUD panels",
+        "Image B is a city street with orange and white cars, tall buildings and a circular minimap, in a different art style",
+        "The HUD styles, scenery and vehicle types do not match"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: foggy, desaturated modern city with a minimap HUD and road traffic",
+        "Image B: warm, sunlit toy-like old-town with a red tram on cobblestones and peg-doll people",
+        "Different art style, lighting and palette, with no shared vehicles or UI"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: warm, hazy European-style tram scene with a navy-and-gold HUD panel",
+        "Image B: cold gray fog, American brick city streets and a circular minimap",
+        "Different art styles: painterly, textured A versus flat, smooth-shaded vehicles and lollipop trees in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: starry night, European-style rowhouses with lit windows, streetcar and peg-figure pedestrians",
+        "Image B: dark glossy asphalt, orange skyscraper city, third-person car view with minimap HUD",
+        "Both: low-poly buildings, overhead tram wires, lollipop trees and street lamps, which could mean one shared game"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a foggy modern city street with a minimap HUD and cars, while Image B is a night scene with a vintage tram and peg-like people",
+        "Different lighting and palette: desaturated teal haze in A, dark starry navy sky with lit windows in B",
+        "Different building styles and scenery: tall brick and glass towers in A, gabled European townhouses and cobblestones in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a bright daytime street with a minimap HUD and low-poly cars; Image B is a night tram scene with starry sky and peg-doll pedestrians",
+        "Different building styles: flat-colored red brick and glass towers vs. detailed gabled lit-window townhouses with textured roofs",
+        "Different rendering and palette: clean pastel, overexposed haze vs. dark, moody cobblestone and warm window glow"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night scene with a vintage red streetcar, cobblestones and peg-figure pedestrians",
+        "Image B: daytime modern city with a white autonomous pod, a minimap HUD and flat low-poly cars",
+        "Different art style, lighting and palette: dark, warm-lit window glow vs. bright dusk with orange and glass towers"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "matching smeared, scanned-looking building textures",
+        "identical simple green sphere and cone trees",
+        "overhead wires and street poles in a shared transit-city theme"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night town with a red tram, cobblestones and peg-like figures",
+        "Image B: daytime modern city street with white pod vehicles, a minimap and a cyan route line",
+        "Different building styles and lighting: warm lit windows at dusk versus flat, low-poly orange and glass towers"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime modern city with smooth low-poly cars and a circular minimap HUD",
+        "Image B is a dusk European-style street with a red streetcar, cobblestones and capsule-shaped people",
+        "Different palette, lighting and art style, with no shared HUD or asset types"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: warm, hazy toy-like tram town with cobblestones and peg-figure pedestrians",
+        "Image B: cold foggy realistic city street with cars and a minimap HUD",
+        "Different art style, palette and lighting; only the similar lollipop trees are shared"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: warm sepia sunset, European tram and cobblestones, vignette",
+        "Image B: bright modern city, glass towers, cars, minimap HUD",
+        "Different lighting, palette and scenery styles"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "identical simple lollipop-style trees with smooth green canopies",
+        "buildings with smeared, painterly photo-scanned textures",
+        "overhead wires and rails in a European-style city"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: modern city street with a minimap HUD and a bright hazy sky",
+        "Image B: vintage tram, cobblestones and textured pastel houses in warm tilt-shift lighting",
+        "Different art styles: clean flat-shaded low-poly versus painterly textures with capsule-shaped people"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: warm, stylized tram town with capsule pedestrians and a cobblestone plaza",
+        "Image B: foggy, desaturated modern city with road vehicles and a minimap HUD",
+        "Different art style, lighting palette and camera setup"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a stylized city with low-poly buildings and trams or overhead wires",
+        "Simple primitive-shaped props: pill-shaped people in A, lollipop trees in B",
+        "Similar painterly, smeared building textures and glowy lighting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with a modern pod vehicle and a circular minimap",
+        "Image B is a daytime tram on rails with rounded-rectangle panel HUD and key prompts",
+        "Different scenery, vehicle type, lighting and HUD style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a dark night city with a minimap HUD and a futuristic pod car, Image B is a daytime European-style street with a vintage tram",
+        "Different building styles and palettes: orange/cream skyscrapers with cyan glow vs. white and yellow houses with red roofs",
+        "Different lighting and ground: wet black asphalt with reflections vs. cobblestone with tram tracks"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a dark night city street with a driven pod vehicle and a minimap, B is a daytime tram on an elevated track over clouds",
+        "Different HUD styles: A has a circular minimap only, B has framed navy panels with text",
+        "Different palettes and scenery: A has orange and cream buildings with a black sky, B has a pastel sky, mist and a distant windmill village"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "A: saturated orange and teal neon glow on wet asphalt with a minimap HUD",
+        "B: muted dusk blues and purples, cobblestones, European-style townhouses",
+        "Different vehicles and art styles: white pod car vs. red vintage tram, peg-figure pedestrians"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: foggy modern street with cars and a minimap HUD",
+        "Image B: warm sunset European tram square with cobblestones and capsule-shaped people",
+        "Different building styles, lighting and palette"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a modern city street with a white autonomous pod, orange cars and a minimap HUD",
+        "Image B is a European-style town with a red vintage tram on cobblestones and capsule-shaped pedestrians",
+        "Different building styles and textures, with a distinct vehicle and setting in each"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "overhead tram wires and thin dark lamp poles in both",
+        "smeared, painterly building textures with the same low-poly look",
+        "warm low-sun lighting with hazy gradient sky and rounded green trees/bushes"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: stylized dusk tram scene with peg-doll figures and lit windows; Image B: foggy modern city driving scene with a minimap HUD",
+        "Different building styles: pastel European rowhouses vs. red brick and glass high-rises",
+        "Different lighting and palette: purple twilight vs. gray overcast haze"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: low-rise European-style town with a red tram and peg-like pedestrians",
+        "Image B: dark night city with a wet reflective road, tall towers and a minimap HUD",
+        "Different building styles, lighting and vehicles; only the stylized low-poly look is shared"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: tram game with a navy panel HUD, white borders and a speed readout",
+        "Image B: modern city street with a minimap and no panel HUD",
+        "Different scenery and palette: warm European tram stop versus an orange and glass downtown at dusk"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "A is a foggy, desaturated city street with cars and a minimap; B is a pastel sky-high tram track with a red tram",
+        "Different HUD styles: A has a circular minimap, B has navy rounded panels with text and a lean meter",
+        "Different palettes and lighting: A has gray, overcast fog; B has warm golden sunrise over a cloud sea"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "matching smeared, scan-like building textures",
+        "identical simple lollipop and cone trees",
+        "overhead wires and street lamps in a transit-city setting with warm low-sun lighting"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat-shaded low-poly modern city with cars and a minimap",
+        "Image B: painterly textured old-European tram scene with ornate framed HUD panels",
+        "Different art style, lighting and camera"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: dusk European-style townhouses with a red tram on cobblestones and peg-like pedestrians",
+        "Image B: modern orange and cream skyscrapers on a wet asphalt road, with a cyan glow line and a circular minimap",
+        "Different lighting and palette: soft purple twilight in A, dark sky with strong orange bloom in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: bright, hazy modern city with low-poly cars and a minimap HUD",
+        "Image B: dusk-lit old European tram street with cobblestones and a detailed vintage tram",
+        "Different palette, lighting and art style (flat cartoon vs. textured painterly)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a cloud sea, with a styled HUD of navy panels and keycap hints",
+        "Image B is a white pod vehicle on a dense city street with orange brick buildings and a circular minimap",
+        "The two frames differ in palette, setting, vehicle type and HUD design"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pastel, hazy tram game with a framed navy HUD panel; Image B is a dark, high-contrast night city with only a minimap",
+        "Different subjects: red tram on an elevated rail over clouds vs. a white pod car on a wet city street",
+        "Different lighting and palette: soft sunny gradient sky vs. black sky with orange-lit buildings and cyan glow lines"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: foggy modern city street with a minimap HUD and cars",
+        "Image B: dusk European-style town with a red tram and cobblestones",
+        "Different palettes, building styles and vehicle models"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "overhead tram wires and rails in both city scenes",
+        "similar Victorian-style buildings with chimneys and shuttered windows",
+        "rounded low-poly trees and bushes with soft shading"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: warm, hazy toy-like town with a red tram and peg-figure pedestrians",
+        "Image B: cool foggy city road with realistic cars and a minimap HUD",
+        "Different art style and palette: low-poly stylized vs. more realistic vehicles and buildings"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dusk tram scene with peg-like figures and cobblestones; Image B: daytime road with white autonomous pod and a minimap HUD",
+        "Different building styles: A has detailed lit-window row houses; B has flat orange and cream city blocks",
+        "Different lighting and palette: A is dark purple-blue night; B is warm orange sunset with a cyan lane glow"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: night city with a pod vehicle, circular minimap and teal glow lines",
+        "Image B: daytime European tram on rails with a navy panel HUD and keybind hints",
+        "Different building styles, materials and HUD design"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night city with glowing cyan lines, a minimap HUD and a pod-like car",
+        "Image B is a dusk European-style street with a red vintage tram, cobblestones and capsule people",
+        "Different building styles, lighting and palette, and no shared HUD or vehicle style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: foggy modern city road with cars and a minimap HUD",
+        "Image B: warm sunset old-European street with a tram on rails and cobblestones",
+        "Different art style, lighting and palette, with capsule-people in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a European-style town with a red tram, peg-like capsule people and warm hazy sky; Image B is a dark night city with a wet road, a minimap and a cyan glowing guide line",
+        "Both share low-poly, painterly textured buildings with a similar warm orange and cream palette and rounded stylized props such as the lamps, trees and shrubs",
+        "Image B has a HUD minimap and driving gameplay; Image A has no HUD and shows a tram-yard scene with different lighting"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly European town with a vintage red tram and peg-like pedestrians",
+        "Image B: modern city street with glass towers, white pod vehicle and a circular minimap HUD",
+        "Different palettes and building styles: warm dusk pastel against orange brick with a teal glow line"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: painterly, textured tram scene with a warm sepia grade and navy HUD panels",
+        "Image B: clean low-poly modern city with flat-shaded vehicles, cool daylight and a circular minimap",
+        "Different settings, art styles and HUD designs"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night street with a vintage red tram, starry sky and peg-doll pedestrians",
+        "Image B: daytime city avenue with white pod vehicles, orange cars and a minimap HUD",
+        "Different building styles, lighting and palettes (dim cobblestone vs. flat saturated colors)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a foggy, desaturated modern city with road traffic and a minimap HUD",
+        "Image B is a warm sunset European-style street with a vintage tram on rails and capsule-shaped pedestrians",
+        "The art styles, lighting and vehicle types differ, with no shared HUD"
+      ]
+    }
+  ]
+}
