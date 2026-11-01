@@ -287,5 +287,23 @@
         "darkFrac": 0.5115
       }
     }
+  },
+  "afterPhase6": {
+    "source": "GU47 phase 6 remote runs g02p6-r1-results and g02p6-r1-card on image g02p6-r1-0024 (branch gu47/g02 with origin/main merged, software WebGL2); GL_META probe drawCalls. No draw work in phase 6 (no presentation code change); these retakes fill the results and card rows phase 4 lacked.",
+    "rows": {
+      "1280x720/results": {
+        "drawCalls": 176,
+        "triangles": null,
+        "meanLuma": 58.98,
+        "darkFrac": 0.0207
+      },
+      "1440x900/card.2x": {
+        "drawCalls": 164,
+        "triangles": null,
+        "meanLuma": 69.14,
+        "darkFrac": 0.0045
+      }
+    },
+    "maxDesktopDrawCalls": 176
   }
 }
