@@ -1021,6 +1021,14 @@ export function buildWorld(options: WorldOptions = {}): World {
         const ahead = falling || leaping ? 3 : 12;
         const aim = falling ? -1.4 : 1.6;
         let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
+        // GU47 phase 5 (sibling distinctness): under the colour script the chase sits off the runner's right shoulder, a
+        // three-quarter framing with the road running diagonally away to the left, so the frame stops reading as the
+        // neighbours' dead-centre behind-the-back runner shot. Camera only; `?look=original` keeps the centred chase.
+        if (script && !falling) {
+          const side = 2.6, aimSide = -0.9;
+          eye = [eye[0] + frame.R[0] * side, eye[1] + frame.R[1] * side, eye[2] + frame.R[2] * side];
+          look = [look[0] + frame.R[0] * aimSide, look[1] + frame.R[1] * aimSide, look[2] + frame.R[2] * aimSide];
+        }
         let up: V3 = rig.u;
         if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
         const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0);
