@@ -75,7 +75,7 @@ for (const packageName of packageNames) {
     rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   }
 }
-assertNoBareWorkspaceImports(rootDist);
+assertNoBareWorkspaceImports(rootDist, packageNames.map((name) => join(rootDist, name)).filter((dir) => existsSync(dir)));
 
 // Solver initialisation is selected through the package `imports` map so bundlers that cannot emit top-level
 // await can opt into the lazy variant with the `aura3d-no-tla` condition (docs/agents/lessons-learned.md).
@@ -173,9 +173,10 @@ function walkWorkerSources(dir: string, out: string[] = []): string[] {  if (!ex
  * only through a relative path (or the public `@aura3d/engine` self-reference). A bare `@aura3d/<workspace>` import
  * there cannot resolve for a consumer, who installs only `@aura3d/engine`: fail the build instead of publishing it.
  */
-function assertNoBareWorkspaceImports(distRoot: string): void {
+function assertNoBareWorkspaceImports(distRoot: string, shippedDirs: readonly string[]): void {
   const bad: string[] = [];
-  for (const file of walkFiles(distRoot)) {
+  // Only the per-package folders the root tarball ships (package.json "files"); dist/packages/ is tsc scratch output.
+  for (const file of shippedDirs.flatMap((dir) => walkFiles(dir))) {
     if (!file.endsWith(".js")) continue;
     const source = readFileSync(file, "utf8");
     for (const found of findBareWorkspaceImports(source, packageNameSet)) bad.push(`${file.slice(distRoot.length + 1)}: ${found}`);
