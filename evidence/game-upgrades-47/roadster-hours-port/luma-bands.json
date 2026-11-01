@@ -27,8 +27,8 @@
     },
     "halo": {
       "mean": [
-        55,
-        70
+        61,
+        76
       ],
       "darkFrac": [
         null,
@@ -43,6 +43,27 @@
         }
       },
       "meanNote": "GU47 phase 4 (4.7.2): moved from [32, 48] (written for the phase-1 numbers) to [55, 70] for the panel-verified blue-hour look: blind panel g22p4r4 halo better 3/0/0 (evidence/game-upgrades-47/roadster-hours-port/p4-panel/g22p4r4), frames p4-r4/roadster-hours-port/frames/g22p4-r4-4 (software WebGL2, 63.9 / 65.7). Same width, shifted; road cell 7 stays > 45."
+    }
+  },
+  "rederived": {
+    "halo.mean": {
+      "from": [
+        55,
+        70
+      ],
+      "to": [
+        61,
+        76
+      ],
+      "panel": "g22p7r1",
+      "capture": "g22p7-r1-3",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 66.74,
+        "settle-60s": 70.05
+      },
+      "rule": "two-sided: width kept (15), re-centred on the mean of the 25 s and 60 s readings (68.395)",
+      "evidence": "evidence/game-upgrades-47/roadster-hours-port/p7-r1/roadster-hours-port/frames/g22p7-r1-3, verdicts p7-panel/verdicts.json (halo better 3/0/0)"
     }
   }
 }
