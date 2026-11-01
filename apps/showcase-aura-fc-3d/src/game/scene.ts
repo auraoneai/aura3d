@@ -66,6 +66,10 @@ export function fcEngineGates(search: string = typeof location === "undefined" ?
 }
 
 const HIDDEN = 0.0001;
+/** GU47 phase 9: the team bench repainted storm navy (base-colour map dropped; the wood normal map stays). */
+const TEAM_BENCH_PAINT = { color: "#22344e", colorMode: "replace", replaceTextures: true, roughness: 0.72, metallic: 0 } as const;
+/** GU47 phase 9: the ball crate's grey plastic tinted toward the lime game accent (the scuffs in the map stay). */
+const BALL_CRATE_TINT = { color: "#c8f04a", colorMode: "multiply", roughness: 0.6 } as const;
 
 /** `?dome=off` hides the Glacier dome on any look path (QA A/B). */
 function domeOn(search: string = typeof location === "undefined" ? "" : location.search): boolean {
@@ -855,18 +859,21 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       .runtime(gameRuntime("fc-dome"))
   );
 
-  /* ---- 3D Meshy dugouts, stadium bowl, ball cart & touchline referee ---- */
-  // Dugouts used to sit between the camera and the near touchline, filling
+  /* ---- team benches, stadium bowl, ball crate & touchline referee ---- */
+  // The benches used to sit between the camera and the near touchline, filling
   // the bottom HUD with brown boxes. Park them outside the goal lines so the
   // broadcast view keeps a clean run-up to the pitch.
+  // GU47 phase 9 (D2): the game's own CC0 team bench (Poly Haven painted_wooden_bench, repainted storm navy) and ball
+  // crate (Poly Haven plastic_crate_02, tinted to the lime accent) replace the borrowed diamond dugout and hoops ball
+  // cart, inside the old footprints (presentation only; nothing collides with them).
   nodes.push(
-    model(assets.diamondDugout, { name: "dugout-home", targetHeight: 2.1 })
+    model(assets.fcTeamBench, { name: "dugout-home", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
       .position(-35.5, 0, -8)
       .rotate(0, Math.PI / 2, 0),
-    model(assets.diamondDugout, { name: "dugout-away", targetHeight: 2.1 })
+    model(assets.fcTeamBench, { name: "dugout-away", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
       .position(35.5, 0, -8)
       .rotate(0, -Math.PI / 2, 0),
-    model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.0 })
+    model(assets.fcBallCrate, { name: "fc-ball-cart", targetMaxDimension: 0.9, materialOverrides: [BALL_CRATE_TINT] } as any)
       .position(34.5, 0, -14.5),
     // GU47 phase 4 (WP-36 FC47-A1): the game's own football stand module, four instances in one draw as the upper
     // deck behind the far stand (replaces the borrowed diamond stadium band).

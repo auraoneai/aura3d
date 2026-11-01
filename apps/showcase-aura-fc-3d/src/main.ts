@@ -225,16 +225,18 @@ function boot(): void {
     cues: {
       // FC-16: a referee whistle replaces the buzzer; kick, net and post are football sounds made by
       // tools/aura-fc/synth-sfx.mjs; a stadium crowd bed loops from kickoff (ducked in menus and pause) and swells on goals.
+      // GU47 phase 9 (D2): whistle, save, crowd bed and goal swell are now the game's own synth cues too; volumes are
+      // rescaled so each matches the RMS loudness of the borrowed file it replaces (same mix).
       kick:    { id: "kick", asset: assets.fcKickSfx, volume: 0.55 },
       pass:    { id: "pass", asset: assets.fcKickSfx, volume: 0.3 },
-      goal:    { id: "goal", asset: assets.diamondCrowdSwelSfx, volume: 0.85 },
+      goal:    { id: "goal", asset: assets.fcCrowdSwellSfx, volume: 0.09 },
       net:     { id: "net", asset: assets.fcNetSfx, volume: 0.6 },
-      save:    { id: "save", asset: assets.hoopsBlockSfx, volume: 0.5 },
+      save:    { id: "save", asset: assets.fcSaveSfx, volume: 0.4 },
       post:    { id: "post", asset: assets.fcPostSfx, volume: 0.42 },
-      whistle: { id: "whistle", asset: assets.bankShotFoulWhistleSfx, volume: 0.55 },
-      fulltime:{ id: "fulltime", asset: assets.bankShotFoulWhistleSfx, volume: 0.75 },
-      lose:    { id: "lose", asset: assets.hoopsBlockSfx, volume: 0.4 },
-      crowd:   { id: "crowd", asset: assets.diamondCrowdSfx, volume: 0.32, loop: true }
+      whistle: { id: "whistle", asset: assets.fcWhistleSfx, volume: 0.15 },
+      fulltime:{ id: "fulltime", asset: assets.fcWhistleSfx, volume: 0.2 },
+      lose:    { id: "lose", asset: assets.fcSaveSfx, volume: 0.32 },
+      crowd:   { id: "crowd", asset: assets.fcCrowdBedSfx, volume: 0.025, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any);
@@ -801,7 +803,7 @@ function boot(): void {
           "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
           "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
           "fcGlacierDomeMeshy", "fcHeroTrophyMeshy",
-          "diamondDugout", "hoopsBallCart", "fcStandModuleMeshy"
+          "fcStandModuleMeshy"
         ],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,
