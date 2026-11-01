@@ -62,7 +62,13 @@ export interface ParkLook {
    * HDRI only lights the scene. `?sky=hdri` draws the HDRI instead (QA A/B pair).
    */
   readonly sky?:
-    | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number }
+    | {
+        readonly model: "preetham";
+        readonly turbidity: number;
+        readonly rayleigh: number;
+        /** Sun disc of the drawn sky when it differs from the key (phase 4: Harbor's sunset sky keeps its 9 degree sun). */
+        readonly sun?: { readonly elevationDeg: number; readonly azimuthDeg: number };
+      }
     | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly stars?: number };
   readonly sun: {
     readonly elevationDeg: number;
@@ -143,7 +149,9 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     timeOfDay: "last light, sun 17 degrees above the sea",
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 1 },
-    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4 },
+    // Phase 4 panel (g08p4r2, 1-2 worse): with the drawn sun at the key's 17 degrees the sunset sky went grey and read as
+    // haze. The sky keeps the 9 degree last-light sun; only the shadow key stands higher.
+    sky: { model: "preetham", turbidity: 3.5, rayleigh: 2.4, sun: { elevationDeg: 9, azimuthDeg: 250 } },
     // GU47 phase 4: at 9 degrees the key grazed the clay (cos 81 = 0.16), so the IBL lit the ground and no cast shadow
     // read; 17 degrees and a stronger key over a dimmer IBL give the players long last-light shadows.
     sun: { elevationDeg: 17, azimuthDeg: 225, color: "#ff9a52", intensity: 3.3, colorTemperatureK: 2600 },
@@ -304,7 +312,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
     // GU47 phase 3: round 1's 42 degree key striped the flat infield with shadow acne under the engine's auto bias; an
     // explicit depth and normal bias keeps the players' shadows and drops the stripes.
-    sun: { elevationDeg: 42, azimuthDeg: 235, color: "#fbf3e4", intensity: 3.3, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
+    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.3, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
     rim: { color: "#6f8fb8", intensity: 1.1, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
     exposureEv: 0.7,
@@ -567,7 +575,7 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
   const rowSky = skyMode === "analytic" ? row.sky : undefined;
   let sky: DiamondSkyPlan | null = null;
   if (rowSky?.model === "preetham") {
-    sky = { model: "preetham", turbidity: rowSky.turbidity, rayleigh: rowSky.rayleigh, sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg } };
+    sky = { model: "preetham", turbidity: rowSky.turbidity, rayleigh: rowSky.rayleigh, sun: rowSky.sun ?? { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg } };
   } else if (rowSky?.model === "gradient") {
     sky = {
       model: "gradient",
