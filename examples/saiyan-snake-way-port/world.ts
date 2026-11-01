@@ -418,9 +418,13 @@ export function buildWorld(options: WorldOptions = {}): World {
     builder.add((hidden ? node.position(0, -500, 0) : node).runtime({ id }));
   };
 
-  /* Meshy roadside lanterns and floating islands, recycled along the road */
-  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6 }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
-  for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15 }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+  /*
+   * Meshy roadside lanterns and floating islands, recycled along the road. GU47 phase 6 (draw budget, PRD D7): under the colour
+   * script neither casts the sun shadow. Each copy was one depth draw per cascade (2 at High), 32 draws for the 16 nodes, and
+   * the islands' shadows fell only on the unlit cloud sea; the lanterns stand outside the road top. They still write contact depth.
+   */
+  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
+  for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `island-${i}` }));
   if (script) builder.add(model(MESHY.serpentHead, { name: "serpent-head", targetHeight: SERPENT_HEAD.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-head" }));
 
   /* the runner and the aura shell */
@@ -430,7 +434,8 @@ export function buildWorld(options: WorldOptions = {}): World {
   }
   builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
   builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
-  builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)) }).runtime({ id: "contact-shadow" }));
+  // GU47 phase 6: the blob decal (2 cm thick) is not a sun caster under the colour script (2 depth draws)
+  builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)), ...(script ? { castShadow: false } : {}) }).runtime({ id: "contact-shadow" }));
   // GU47 SSR-12: under the colour script the engine's runtime effects (art/vfx.ts) replace the spark and burst pools
   if (!script) for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
   if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
