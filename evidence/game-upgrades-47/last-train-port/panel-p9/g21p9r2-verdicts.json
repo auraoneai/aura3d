@@ -1,0 +1,92 @@
+[
+ {
+  "slug": "last-train-port",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "band-a",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some white building facades are close to blown out; the canopy edge reads as a hard strip cutting across the buildings; mild vignette and haze at the right; capsule NPCs still look like placeholders",
+     "Building facades are badly overexposed and close to white, with blown highlights. A warm haze washes out the sky. Heavy vignette and blur at the edges. Still has proper rails, contact shadows, a detailed tram and a stronger focal composition."
+    ]
+   },
+   {
+    "variant": "band-b",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy warm yellow wash; building facades and the right-hand sky are overexposed and hazy, so contrast is low in the upper half; capsule NPCs still look like placeholders",
+     "A yellowish glow overexposes the buildings and haze flattens the background. Muddy brownish tones in the shadows. Heavy vignette. The tram, rails and figures are clear, with good shadows."
+    ]
+   },
+   {
+    "variant": "band-c",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dim and muted overall; a stray purple flat shape on the right horizon; a faint glitchy sign label; capsule NPCs still look like placeholders",
+     "Somewhat dim, desaturated dusk overall, and the foreground is slightly muddy. Heavy vignette. Some buildings have flat, repeated facades. Good warm/cool contrast, lit windows, and a readable tram and rails."
+    ]
+   },
+   {
+    "variant": "band-d",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Lit windows look uniformly flat; the foreground is somewhat dark; a blue flat artifact on the right horizon; capsule NPCs still look like placeholders",
+     "Dark night grade lowers contrast in the foreground cobbles. The tram is a bit dark against the street. Vignette. Still has strong mood from the lit windows, stars and readable rails."
+    ]
+   },
+   {
+    "variant": "band-e",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Night scene is dark and fairly low contrast in the lower half, and the left-hand characters are hard to read; window glow is flat; the cobbles get muddy",
+     "Deep night is fairly dark, with low contrast in the lower foreground and darkened building edges. Strong vignette. The tram and the player pawn are still readable, and the atmosphere is good."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze washes out the background and some white facades; the vignette is fairly strong; placeholder boxes and capsule NPCs remain",
+     "Warm haze slightly washes out the sky and the distant buildings. Some facades are overexposed. Vignette and edge blur. It has rails, long cast shadows and a strong leading line along the track."
+    ]
+   }
+  ]
+ }
+]
