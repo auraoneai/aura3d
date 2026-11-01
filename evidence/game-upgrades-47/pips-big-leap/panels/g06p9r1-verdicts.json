@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Shadows on the grass are blocky and aliased. A brown blob floats unattached beside the path. The foreground grass is slightly blurred.",
+     "Floating nut-cluster prop hovers beside the player; the ground shadows are slightly blocky and pixelated; a little softness in the foreground",
+     "Foreground grass is blurry and blocky (low-res shadow/texture smear); a brown nut-pile object hovers beside the path on the right; some trees clip at the edges."
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Shadows on the grass are aliased. A brown blob floats beside the path. Slight blur in the foreground.",
+     "Floating nut-cluster prop hovering mid-air; pixelated shadow banding on the foreground grass",
+     "Foreground grass is blurry and pixelated (low-res shadow smear); a brown nut-pile object floats beside the path; slight blur at the edges."
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A hazy white sky lowers contrast. Platforms float. The foreground ground is a large, very saturated orange-brown area.",
+     "Overcast grey sky is a bit dull; the crate is oversized and flat-shaded; the orange foreground is somewhat monotone",
+     "Sky is somewhat hazy and grey; a white cylinder and windmill blades float oddly; the foreground orange floor is a bit smeared; the crate looks plain."
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze is heavy. Shadows are pixelated. A dark blurry band runs along the bottom edge. Rocks float. Overall pale and low contrast.",
+     "Pale lavender floor is bright and a little washed out; pixelated shadow; floating rocks; dark blurry band at the bottom edge",
+     "Still pale and hazy overall; the shadow is pixelated; a dark blue blurred band at the bottom edge looks like near-plane or DOF artifacting; rocks float in midair."
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The overall brown palette is slightly muddy. The near pillars are simple, low-detail geometry.",
+     "Somewhat dark and monochrome brown; the backdrop walls are flat; the pillars are simple low-poly shapes",
+     "Slightly muddy brown palette with modest contrast; the foreground floor is a bit soft; the pillars are simple untextured blocks."
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The foreground floor is somewhat washed out and blurred. The pillars are simple geometry.",
+     "Dark flat backdrop; the sandy floor is a bit soft and blurry; simple pillar geometry",
+     "Dark brown background is a little flat; the foreground floor is soft and blurry; the pillars are simple untextured geometry."
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The bright reflective floor slightly washes out the player's lower body. Some bloom glare. The props at the frame edges are odd low-poly shapes.",
+     "Glossy floor reflections are a little noisy and bright; odd white shard props at the edges; small floating grass clump",
+     "The reflective floor is slightly blurry and noisy; a few white shards at the edges look odd; the player's legs are a bit lost against the bright floor."
+    ]
+   }
+  ]
+ }
+]

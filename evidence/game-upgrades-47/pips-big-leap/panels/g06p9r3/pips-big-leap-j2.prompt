@@ -1,0 +1,8 @@
+You are an independent art director judging screenshots of a browser 3D game ("pips-big-leap"), rendered in software WebGL2 at 1280x720 after 60 s of play. For each variant below there are two screenshots, A and B, from two different builds of the same game; you are not told which build is which, and the order changes from variant to variant. Open EVERY image with the Read tool and look at it carefully before judging.
+
+- variant "w2": A = /tmp/gu47-judge/pips-big-leap/j2/w2-A.jpg , B = /tmp/gu47-judge/pips-big-leap/j2/w2-B.jpg
+- variant "w3": A = /tmp/gu47-judge/pips-big-leap/j2/w3-A.jpg , B = /tmp/gu47-judge/pips-big-leap/j2/w3-B.jpg
+
+For each variant decide which image is the better-looking game frame overall: lighting and mood, readability of the player/subject and play area, colour and contrast, atmosphere and depth, material detail, composition, polish. Penalise heavily: black or blank frames, frames washed out by haze or fog, a missing or hidden player, broken geometry, the camera inside geometry, floating objects, glitches, muddy low-contrast images. Answer "same" only when neither is clearly better. Be strict and honest.
+
+Your final reply must be ONLY one JSON object, no prose, no code fence: {"variants":[{"variant":"<name exactly as given>","better":"A"|"B"|"same","brokenA":true|false,"brokenB":true|false,"defectsA":"...","defectsB":"..."}]}
