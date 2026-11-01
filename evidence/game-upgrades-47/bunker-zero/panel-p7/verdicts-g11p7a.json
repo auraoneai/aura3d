@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some milky haze lowers contrast in the midground and ceiling; the yellow pickup floats above the gun with no clear grounding; an enemy stands on a translucent blue container; the floor-decal text is slightly washed out",
+     "Light overall haze lowers contrast slightly; floor texture is a bit smeary and blotchy; distant enemies are small; floor decal text sits close to the wall",
+     "Light grey haze over the floor and lower frame lowers contrast; floor texture slightly smeared; enemies look a bit washed out"
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild haze and desaturation; the yellow pickup floats near the gun; an enemy is on a translucent blue container; the ceiling is a bit muddy",
+     "Slight haze and low contrast in the distance; floor texture is blotchy",
+     "Some haze on the floor lowers contrast slightly; floor texture is smeary"
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "No enemies or subjects are visible, so the play area feels empty; the ceiling is dark and murky; the mottled floor texture looks smeared and blurry; overall a somewhat dim green-grey tone",
+     "Floor in the foreground is smeared and blurry; teal floor slab has a hard edge and looks slightly pasted in; no enemies visible; overall a little dim",
+     "Dark teal tint with muted contrast; the floor has blotchy blurred texture; the flat water/floor slab edge looks a little abrupt; no enemies visible"
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze softens contrast; the wooden door panels look flat; a round hatch block partly hidden behind the gun reads oddly; no enemies are visible; the floor reflection texture is smeared",
+     "A black box with a hatch door sits directly in the corridor and looks out of place, partly covered by the gun; yellowish haze lowers contrast; no enemies visible",
+     "Haze lowers contrast; the vault door block in front of the gun looks a little like a floating box; floor texture is smeary"
+    ]
+   },
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cool haze slightly washes out the lower frame; the enemy overlaps and is partly hidden by the weapon viewmodel; the walls look fairly plain",
+     "Bluish haze on the floor lowers contrast; the nearby enemy is partly covered by the gun; the scene is somewhat cold and monochrome",
+     "Cool blue haze slightly washes out the lower frame; the enemy is partly hidden behind the gun"
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The floor texture is smeared and blotchy; the gun overlaps a red barrel; the enemy is perched on a crate; slightly muddy brown tones, but good depth and detail overall",
+     "Floor texture is blotchy and smeary; ceiling is quite dark; mild low contrast in places",
+     "Floor texture is blotchy and stretched; overall a little dim and muddy in places"
+    ]
+   }
+  ]
+ }
+]

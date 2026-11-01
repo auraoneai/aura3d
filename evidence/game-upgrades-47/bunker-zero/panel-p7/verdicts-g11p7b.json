@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight grey haze lifts the blacks a little. The floor stencil text is smeared. The yellow ingot on the gun reads like a floating object. Otherwise the textured concrete, rails and warm light pools give good mood and depth.",
+     "A slight haze and low-contrast milky grade washes out the far end; the floor texture looks smeared; the floor label text reads oddly; the enemies look ghostly and semi-transparent",
+     "Slightly hazy and desaturated with a milky veil over the far range. The floor texture looks smeared or stretched. The yellow pickup floats near the gun muzzle and the blue enemy pedestal is semi-transparent. The 'B-1' floor text is hard to read."
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild haze and lifted blacks. The ceiling light blows out at the top edge. Small enemies are a bit washed. Overall the materials and lighting are rich.",
+     "Mild haze and a desaturated, milky grade; smeary floor texture; enemies look faint and ghostly",
+     "Mild haze and desaturation, and the floor texture looks smeared. Distant enemies are small and low-contrast. The floor text is barely legible."
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal water plane has a hard, flat edge and reads a bit like a cutout. The foreground floor is blurry and smeared. No enemies are visible. The stone walls and moody teal lighting are strong.",
+     "A strong teal grade is somewhat murky; the floor texture is smeared and blotchy; the water slab edge looks like a floating flat plane; no enemies are visible, so the play area feels empty",
+     "Strong teal grade is somewhat murky and dark. The floor in the foreground is smeared and overexposed. The water or teal floor slab has a hard, unnatural edge. No enemies are visible, so the play area is empty."
+    ]
+   },
+   {
+    "variant": "floor3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange/sepia tint with lifted blacks makes it somewhat muddy. The gun is tinted the same colour. There is a bright smeared hotspot on the floor. No enemies are visible. Still more atmospheric and detailed.",
+     "A heavy monochrome orange-brown tint flattens contrast; a hot bloom smear on the floor; the room is empty with no enemies or props; the gun picks up odd orange tinting",
+     "Heavy orange/sepia grade with bloom makes the frame somewhat washed and monochrome. The gun picks up a strong orange tint, and the foreground floor is smeared and overbright. No enemies are visible."
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight haze. The vault door block looks like a flat cube placed in the corridor. The ceiling light blows out at the top. No enemies are visible. Good material detail.",
+     "A hatch block sits oddly mid-room like a free-standing box; the sepia haze is low contrast; the floor texture is smeared; no enemies are visible",
+     "Somewhat hazy, muted yellow-grey grade. The round vault-door block sits awkwardly in the middle of the floor and partly overlaps the gun. The floor texture is smeared and no enemies are visible."
+    ]
+   },
+   {
+    "variant": "floor5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cool blue haze and fog wash out the lower half a little. The enemy is partly hidden behind the gun. Strong mood and readable corridor.",
+     "Floor haze/fog lowers contrast; the gun partly overlaps the enemy; the cool grade is slightly washed out",
+     "Cool blue haze slightly lifts the blacks and mist washes over the lower floor. The enemy is partly hidden behind the gun. Walls are fairly plain."
+    ]
+   },
+   {
+    "variant": "floor6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The floor texture is noisy and smeared, with a liquid look. The enemy on the crate is a little low-contrast. Otherwise a well-composed room with vault doors, pillars and props, and good depth.",
+     "The floor texture is very smeary and blotchy; the overall grade is somewhat flat and grey; the enemy reads slightly ghostly",
+     "The floor texture has an obvious smeared, blotchy pattern. Contrast is slightly muted. The red barrel partly overlaps the gun. Otherwise good composition and depth."
+    ]
+   },
+   {
+    "variant": "killhouse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The ceiling light blows out. The floor reflection is smeared. A small yellow blob is stuck on the right wall. No enemies are visible. Tiled walls and contrast are good.",
+     "No enemies or props are visible, so the killhouse looks empty; mild haze; the floor texture is smeared; a dark diamond decal sits awkwardly on the floor",
+     "Somewhat grey and hazy with a smeared floor texture. A floating yellow decal on the right wall. The dark arrow decal on the floor looks pasted on. No enemies are visible."
+    ]
+   }
+  ]
+ }
+]

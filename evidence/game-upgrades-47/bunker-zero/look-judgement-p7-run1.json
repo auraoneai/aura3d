@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-s1280/screens-1280--1280-03-action.jpg",
+      "sha256": "b2a14fd066be4b4988029a7b465953f688310a29224466f70a3fbae62e4f5305"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "048ca7494740f14598b5f202b8f13af9acebd411be8f6e43b3fdaf1e781aeb78"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "d5ad79433056243dd1cc3f10cd7f7b9ad85fdae304ccce432712cc135a54ece2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-floor4/bunker-zero--floor4--settle-60s.jpg",
+      "sha256": "d77f161c26c998cbae523dafc7063e71f206603228466aa4169d0da8030268c3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a blown-out white floor patch under the far ceiling strip, so the chest and floor detail wash out. Elsewhere the corridors are evenly lit with little falloff or contrast, and a light hits each surface the same way."
+    },
+    {
+      "category": "shadows",
+      "seen": "The treasure chest, wall pipes, wooden doors and the round vault door on its black box cast no visible shadows. Wall-to-floor and wall-to-ceiling junctions show almost no contact darkening or ambient occlusion."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 4's floor shows faint smeared reflections of the ceiling strip. The pool in frame 3 is a flat, uniform teal plane with a hard rectangular edge and no reflection or refraction. The gun metal reads matte with weak specular."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Every level is a long rectangular box corridor with straight pipe rails and yellow floor strips. The only features are a few repeated props (wooden doors, a round hatch), so the floors look generic and interchangeable."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 2 has green haze and dust sparkles, but they sit on top of the scene as a flat milky veil. The fog does not add depth layering, and frame 4 has a similar uniform brown haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The stone wall texture repeats visibly and looks low-resolution up close in frame 2. The frame 1 ceiling has a blotchy, noisy dark texture. The plain walls in frame 4 are flat beige with no wear or roughness variation. The chest in frame 1 renders semi-transparent and glowing yellow."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The round vault door in frame 4 is mounted on a plain black cube that floats in the corridor. The architecture is untrimmed box geometry. The rifle and pistol viewmodels have reasonable detail but faceted low-poly silhouettes."
+    },
+    {
+      "category": "composition",
+      "seen": "Every shot is a centered one-point-perspective corridor with nothing in the middle ground. In frames 3 and 4 the pistol sits small in mid-right screen and blocks the view without framing it."
+    },
+    {
+      "category": "camera",
+      "seen": "The pistol in frames 3 and 4 floats detached from the bottom edge and looks unanchored to any hand. The FOV is acceptable, but the rifle in frame 2 fills most of the right half of the screen."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom is heavy: the frame 2 muzzle and pickup orbs flare into large white blobs, and the frame 1 floor clips to white. Film grain and a milky lifted-black grade flatten contrast in all frames."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
