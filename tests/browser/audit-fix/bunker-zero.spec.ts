@@ -286,6 +286,24 @@ test.describe("bunker zero audit-fix", () => {
     });
   }
 
+  // GU47 phase 6: the machine-gun viewmodel was missing from every HUD frame; the same play as the 1280 screens, then the
+  // canvas alone (no HUD over the weapon) and the engine's view of the viewmodel handles.
+  test("bz-vm-probe @vmprobe", async ({ page }) => {
+    const name = "vm-probe";
+    const loaded = await open(page, server, name, APP, DESKTOP);
+    await page.waitForTimeout(Math.max(0, 20_000 - (Date.now() - loaded)));
+    await qa(page, name, "dismissIntro");
+    await click(page, "#bz-btn-play");
+    await qa(page, name, "autopilot", true);
+    await qa(page, name, "advance", 20);
+    await qa(page, name, "unfreeze");
+    await page.waitForTimeout(15_000);
+    await qa(page, name, "vmProbe");
+    await grab(page, name, "mg-canvas");
+    await grab(page, name, "mg-hud", {}, true);
+    log(`GL_DONE ${name}`);
+  });
+
   test("bz-screens-card @screens390", async ({ page }) => {
     const name = "screens-card";
     const loaded = await open(page, server, name, APP, CARD);
