@@ -247,11 +247,17 @@ export function buildWater(): MeshData {
   return b.data;
 }
 
-/** Flat sheet for the valley waterfall veil (width x height, centred on x, standing on y). */
-export function buildSheet(width: number, height: number, segmentsX = 24, segmentsY = 12): MeshData {
+/**
+ * Sheet for the valley waterfall veil (width x height, centred on x, standing on y). `bend` (m) curves it into a
+ * horseshoe: the side edges come `bend` metres toward +z (GU47 phase 6, evening only; 0 keeps the flat 4.6.2 sheet).
+ */
+export function buildSheet(width: number, height: number, segmentsX = 24, segmentsY = 12, bend = 0): MeshData {
   const b = new MeshBuilder();
   const tone: Rgb = [1, 1, 1];
-  for (let j = 0; j <= segmentsY; j++) for (let i = 0; i <= segmentsX; i++) b.vertex((i / segmentsX - 0.5) * width, (j / segmentsY) * height, 0, i / segmentsX, j / segmentsY, tone);
+  for (let j = 0; j <= segmentsY; j++) for (let i = 0; i <= segmentsX; i++) {
+    const u = (i / segmentsX - 0.5) * 2;
+    b.vertex((u / 2) * width, (j / segmentsY) * height, bend * u * u, i / segmentsX, j / segmentsY, tone);
+  }
   for (let j = 0; j < segmentsY; j++) for (let i = 0; i < segmentsX; i++) {
     const a = j * (segmentsX + 1) + i;
     b.tri(a, a + 1, a + segmentsX + 1);

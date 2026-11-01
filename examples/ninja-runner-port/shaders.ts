@@ -176,9 +176,17 @@ void main() {
   vec2 q = vec2(vUv.x * 52.0, vUv.y * 7.0 + fallsTime * 2.7);
   float n = vnoise(q) + vnoise(q * 2.13) * 0.35 + vnoise(q * 5.1) * 0.13;
   float veins = pow(vnoise(vec2(vUv.x * 140.0, vUv.y * 3.0 + fallsTime * 1.5)), 2.0);
-  float edge = smoothstep(0.0, 0.04, vUv.x) * smoothstep(0.0, 0.04, 1.0 - vUv.x);
+  // GU47 phase 6 (fallsSoft = 1, evening only): ragged side edges, a white lip at the crest and a mist foot instead of
+  // the hard-edged 4.6.2 card; fallsSoft = 0 keeps the 4.6.2 sheet exactly.
+  float rag = (vnoise(vec2(vUv.y * 9.0 + fallsTime * 1.2, 3.0)) - 0.5) * 0.08 * fallsSoft;
+  float ew = mix(0.04, 0.16, fallsSoft);
+  float edge = smoothstep(0.0, ew, vUv.x + rag) * smoothstep(0.0, ew, 1.0 - vUv.x + rag);
+  float foot = mix(1.0, smoothstep(0.0, 0.22, vUv.y), fallsSoft);
+  float lip = fallsSoft * smoothstep(0.93, 0.99, vUv.y);
   vec3 c = mix(vec3(0.24, 0.48, 0.51), vec3(0.90, 0.97, 0.96), clamp(n * 0.64 + veins * 0.4, 0.0, 1.0));
-  outColor = vec4(c, edge * (0.88 + 0.1 * veins));
+  c = mix(c, vec3(0.96, 0.98, 0.97), lip * 0.7 + fallsSoft * (1.0 - foot) * 0.5);
+  float top = mix(1.0, 1.0 - smoothstep(0.985, 1.0, vUv.y) * 0.6, fallsSoft);
+  outColor = vec4(c, edge * top * mix(1.0, 0.35 + 0.65 * foot, fallsSoft) * (0.88 + 0.1 * veins));
 }`;
 
 /** Original Spiralorb ball: banded swirl + rim, additive. */

@@ -65,9 +65,9 @@ export const waterSpec = (): CustomSpec => ({
   side: "double"
 });
 
-export const fallsSpec = (): CustomSpec => ({
+export const fallsSpec = (soft = 0): CustomSpec => ({
   glsl: { vertex: FALLS_VERTEX, fragment: FALLS_FRAGMENT },
-  uniforms: { fallsTime: { type: "f32", value: 0 } },
+  uniforms: { fallsTime: { type: "f32", value: 0 }, fallsSoft: { type: "f32", value: soft } },
   transparent: true,
   depthWrite: false,
   side: "double"

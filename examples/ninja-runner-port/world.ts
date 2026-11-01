@@ -284,6 +284,9 @@ const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location
 
 /** GU47 phase 4: the evening's worn path stones take a soft sheen of the sky (IBL) at grazing angles; 4.6.2 keeps 0.92. */
 const EVENING_PATH_ROUGHNESS = 0.68;
+/** GU47 phase 6: evening valley falls bend (m) and the lake's sky share past the forest (see applyLook). */
+const FALLS_BEND = 9;
+const GATE_LAKE_SKY = 0.4;
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
@@ -395,8 +398,10 @@ export function buildWorld(options: WorldOptions): World {
   // The 4000 m dome neither casts nor receives: as a caster it would stretch every cascade over the whole sky.
   builder.add(primitives.sphere({ name: "sky", size: 4000, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }).runtime({ id: "sky" }));
   const endFrame = groundFrame(COURSE_LENGTH - 90, 0, 0);
-  const sheet = buildSheet(56, 63);
-  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec()), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
+  // GU47 phase 6: the evening falls curve into a horseshoe with soft edges, a crest lip and a mist foot (the judges
+  // named the 4.6.2 card "a flat billboard"); same draw, same triangles.
+  const sheet = buildSheet(56, 63, 24, 12, evening ? FALLS_BEND : 0);
+  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec(evening ? 1 : 0)), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
 
   const crate = material.pbr({ color: "#8a5a35", roughness: 0.86 });
   const strap = material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
@@ -461,9 +466,8 @@ export function buildWorld(options: WorldOptions): World {
     if (options.cones !== false) gateConeLanterns(lanternIndex).forEach((l, i) => builder.add(effects.lightCone({
       name: `gate-cone-${i}`, color: LANTERN_POOL.amberColor, intensity: 0.7, position: [l.position[0], l.position[1] - 0.15, l.position[2]], direction: [0, -1, 0], length: 3.2, coneAngle: 0.42, softness: 0.55
     })));
-    // NR-16: a faint aurora over the gate, shown only on the win screen (+1 draw while visible).
-    const gate = groundFrame(COURSE_LENGTH - 20, 0, 34);
-    builder.add(effects.auroraRibbon({ name: "win-aurora", color: "#51dfff", colorTop: "#2b3550", intensity: 0.5, width: 90, height: 18, position: [gate.x, gate.y, gate.z] }).runtime({ id: "win-aurora" }));
+    // NR-16 win aurora: removed in GU47 phase 6. The beam pass ignores setVisible, so the ribbon showed in every gate
+    // frame as a floating translucent rectangle over the falls (blind panel g20p3r4); -1 draw.
   }
 
   return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex) };
@@ -534,7 +538,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   /** NR-17: the evening hero blends its looping clips (the original look keeps today's clip scrubbing). */
   const blendHero = (options.mode ?? "evening") === "evening";
   const mixerClip = new Array<string>(actors.length).fill("");
-  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false, auroraShown = true;
+  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
@@ -579,7 +583,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     sky.setUniform?.("sunDirection", [...look.toKey]);
     sky.setUniform?.("moonDirection", moonDir);
     const river = node("river");
-    river.setUniform?.("waterSky", 1);
+    // GU47 phase 6: past the forest the valley lake keeps more of its own deep teal (sky share 1 -> 0.4), so it reads as
+    // water instead of the "flat pink ground" the judges named under the gate's peach horizon.
+    river.setUniform?.("waterSky", 1 - (1 - GATE_LAKE_SKY) * smooth(2200, 2300, s));
     river.setUniform?.("waterZenith", [...look.skyZenith]);
     river.setUniform?.("waterHorizon", [...look.skyHorizon]);
     river.setUniform?.("waterKey", [...look.toKey]);
@@ -1013,9 +1019,6 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       // NR-10: the dash kicks the FOV through the controller's fovKick layer (only while dashing; never with reduced motion).
       const kick = cinematic && state.phase === "running" && state.dash > 0;
       if (kick !== kicking) { kicking = kick; cameraController.fovKick.set("dash", kick ? DASH_KICK_DEG : 0, DASH_KICK_HALFLIFE); }
-      // NR-16: the aurora shows on the win screen only.
-      const aurora = state.phase === "won";
-      if (evening && aurora !== auroraShown) { auroraShown = aurora; node("win-aurora").setVisible(aurora); }
     },
     setIntro(k) { introBlend = k === null ? null : Math.max(0, Math.min(1, k)); },
     resetCamera() { chase.reset(); },

@@ -99,8 +99,8 @@ describe("ninja-runner-port district look table (NR-01, NR-02, NR-05, NR-06, NR-
     expect(lookMode("?at=700")).toBe("evening");
     expect(lookMode("")).toBe("evening");
     expect(lookMode("?at=1900")).toBe("evening");
-    // The gate view keeps its 4.6.2 look by default (blind panel g20p3r4: 1 of 3); both switches still work.
-    expect(lookMode("?at=2500")).toBe("original");
+    // GU47 phase 6: the gate view opens the evening again (its phase-3 defects are fixed); ?look=original still works.
+    expect(lookMode("?at=2500")).toBe("evening");
     expect(lookMode("?look=evening&at=2500")).toBe("evening");
     expect(lookMode("?look=original&at=100")).toBe("original");
     expect(lookMode("?look=evening&at=700")).toBe("evening");
