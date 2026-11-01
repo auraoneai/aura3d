@@ -102,7 +102,10 @@ const BZ_BLOB = { y: 0.008, opacity: 0.3, rings: [{ scale: 1 }, { scale: 0.62 },
  *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
 const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
 const BZ_GLINT = { core: 0.5, coreOpacity: 0.22, halo: 0.2, haloOpacity: 0.07 } as const;
-const BZ_SSR = { intensity: 0.85, maxDistance: 16, roughness: 0.5, thickness: 0.35 } as const;
+/** GU47 phase 7 (e6 section 1): S3 reads `roughness` as the frame-wide surface roughness (full strength at 0.35 or less,
+ *  zero at 0.5), not a cutoff; 0.5 made the pass inert (SSR_ROUGHNESS_GATED). 0.28 lets the wet concrete reflect; the
+ *  trace is additive and fresnel-weighted, so intensity and reach come down to keep it a floor sheen, not wall noise. */
+const BZ_SSR = { intensity: 0.55, maxDistance: 10, roughness: 0.28, thickness: 0.3 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
