@@ -500,6 +500,10 @@
         "practical": false
       },
       {
+        "node": "stand-fans",
+        "practical": false
+      },
+      {
         "node": "scoreboard-screen",
         "emissiveIntensity": 0.9,
         "practical": true

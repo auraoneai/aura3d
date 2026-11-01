@@ -172,10 +172,17 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // (a filled disc read as an oversized white target in the foreground) and
   // push the dugout boxes to the side touchlines so they frame instead of
   // blocking the lower third of the broadcast camera.
+  // GU47 phase 4 (distinctness): the chalk rings read to the sibling judge as the Hoops ground-ring player markers; the GU47
+  // look lays real on-deck mats instead, dark synthetic turf in the park's warning-track tone (not a white target).
   const ondeckMat = material.pbr({ color: "#eee6d2", roughness: 1, opacity: 0.5 });
+  const ondeckMat47 = material.pbr({ color: PARK_LOOKS[park.id].turf.track, roughness: 0.9 });
+  const ondeck = (name: string, x: number) =>
+    ctx.variant === "gu47"
+      ? primitives.cylinder({ name, size: [1.6, 0.02, 1.6], params: { radialSegments: 40 }, material: ondeckMat47 } as any).position(x, 0.018, 2.2)
+      : primitives.torus({ name, size: [1.5, 1.5, 0.26], material: ondeckMat }).position(x, 0.028, 2.2).rotate(Math.PI / 2, 0, 0);
   nodes.push(
-    primitives.torus({ name: "ondeck-l", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(-7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
-    primitives.torus({ name: "ondeck-r", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
+    ondeck("ondeck-l", -7.1),
+    ondeck("ondeck-r", 7.1),
     instances.model(assets.diamondDugout, {
       name: "dugouts", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
       materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }],
