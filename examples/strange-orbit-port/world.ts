@@ -60,20 +60,23 @@ export const REDUCED_MOTION_SPIN = 0.25;
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
-/** Licensed catalog rock (diamondRock, 1.1 MB), bundled with the example so the built site serves it. */
+/**
+ * Moon rock (meteors): Poly Haven "Moon Rock 01" (poly-haven:moon_rock_01, CC0-1.0, 18.7k triangles, 1k BC+N+ORM),
+ * packed to one GLB and owned by this game; provenance in assets/provenance/craterline_moon_rock.*.json.
+ */
 const ROCK_ASSET = defineAuraAssets({
-  moonRock: {
+  craterlineMoonRock: {
     type: "model",
     format: "glb",
-    url: new URL("./assets/moon-rock.glb", import.meta.url).href,
-    sha256: "debb9bb132ab6338b9df8b7129315f097f19dc7e5b4b65351b0c09ed5feb67e9",
-    sizeBytes: 1142612,
+    url: new URL("./assets/models/craterline_moon_rock.glb", import.meta.url).href,
+    sha256: "1224634a56d33a61bced90bc98433a9cc5f4943a1d22b505bc2265725bc0e25b",
+    sizeBytes: 1704652,
     metadata: {
-      license: "Aura3D catalog (diamondRock.af699d5e), licensed for use with the engine",
-      provenance: { sourcePath: "public/aura-assets/diamondRock.af699d5e.glb" }
+      license: "CC0-1.0 (Poly Haven, https://polyhaven.com/a/moon_rock_01)",
+      provenance: { sourcePath: "https://polyhaven.com/a/moon_rock_01", sourceId: "poly-haven:moon_rock_01" }
     }
   }
-}).moonRock;
+}).craterlineMoonRock;
 
 function dynamicFrom(m: MeshData, withPigments: boolean) {
   const attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> = {};

@@ -54,7 +54,7 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "boulderB", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "lander", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "observatory", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "moonRock", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 }
+    { role: "prop", assetKey: "craterlineMoonRock", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "land", kind: "craterline-land-dust" },

@@ -1,0 +1,20 @@
+{
+ "assetKey": "craterlineMoonRock",
+ "sourceId": "poly-haven:moon_rock_01",
+ "sourcePage": "https://polyhaven.com/a/moon_rock_01",
+ "author": "Greg Zaal, Rico Cilliers, Jenelle van Heerden, Dario Barresi",
+ "license": "CC0-1.0",
+ "retrievedAt": "2026-11-01T16:29:00Z",
+ "downloaded": {
+  "gltf": { "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/moon_rock_01/moon_rock_01_1k.gltf", "md5": "86c6b4f7792f9600ae33cb3b4d42bb20" },
+  "bin": { "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/moon_rock_01/moon_rock_01.bin", "md5": "5dc30dc1be5e8dd5fff64dd824cad828" },
+  "textures": {
+   "moon_rock_01_diff_1k.jpg": "4cd48b9b451eef5f35c7be91deca6ead",
+   "moon_rock_01_nor_gl_1k.jpg": "5d222c1e40b180e8f376d72aec26703a",
+   "moon_rock_01_arm_1k.jpg": "f04ce87fb751ced28add48ad9eb50d0f"
+  }
+ },
+ "processing": "Packed glTF + bin + three 1k JPEG maps into one GLB with @gltf-transform/core (geometry and maps unchanged).",
+ "output": { "file": "assets/models/craterline_moon_rock.glb", "sha256": "1224634a56d33a61bced90bc98433a9cc5f4943a1d22b505bc2265725bc0e25b", "sizeBytes": 1704652, "triangles": 18668 },
+ "replaces": "moonRock (assets/moon-rock.glb, the aura-diamond-3d catalog file diamondRock.af699d5e)"
+}
