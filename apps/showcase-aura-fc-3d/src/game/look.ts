@@ -266,16 +266,16 @@ const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness:
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
     // phase 4
-    key: NIGHT_KEY, fogScale: 0.7, ssr: { intensity: 0.9, roughness: 0.3, maxDistance: 30 },
+    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.6, roughness: 0.3, maxDistance: 30 },
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.12, saturation: 1.0, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.35, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.5, pools: 0.16, coneIntensity: 0.55, mirror: null,
+    surface: "grass", turfRoughness: 0.58, pools: 0.16, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
     // phase 4
-    key: NIGHT_KEY, fogScale: 0.7, ssr: { intensity: 0.7, roughness: 0.35, maxDistance: 30 },
+    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.5, roughness: 0.35, maxDistance: 30 },
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.3, azimuthDeg: 160 }, flares: true, weather: "drizzle",
@@ -284,7 +284,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   favela: {
     // phase 4
-    key: NIGHT_KEY, fogScale: 0.6, ssr: null,
+    key: NIGHT_KEY, fogScale: 1.0, ssr: null,
     background: "#140d07", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.1, saturation: 1.05, temperature: 0.25, tint: -0.05 },
     rim: { color: "#ffc27a", intensity: 0.7, azimuthDeg: 190 }, flares: true, weather: "dust",
@@ -305,7 +305,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   uyuni: {
     // phase 4
     key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.8, roughness: 0.25, maxDistance: 30 },
-    background: "#d9b8b8", exposureEv: -0.72, floodScale: 1,
+    background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
@@ -315,7 +315,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   glacier: {
     // phase 4
-    key: NIGHT_KEY, fogScale: 0.6, ssr: { intensity: 0.9, roughness: 0.25, maxDistance: 30 },
+    key: NIGHT_KEY, fogScale: 1.0, ssr: { intensity: 0.7, roughness: 0.25, maxDistance: 30 },
     background: "#050b14", exposureEv: 0.08, floodScale: 1.1,
     grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",

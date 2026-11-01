@@ -16,7 +16,7 @@ import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
 } from "./dims";
-import { athleteNodes } from "./rig";
+import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
@@ -972,7 +972,8 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     .addMany(goalNodes(1, hybrid))
     .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates), mode))
     .addMany(ballNodes());
-  for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
+  // phase 4 hybrid: the fitted key casts the players' shadows, so the blob discs fade to a soft contact darkening
+  for (const id of ATHLETE_IDS) s.addMany(hybrid ? athleteNodes(id, HYBRID_BLOB_OPACITY) : athleteNodes(id));
   s.addMany(atmosphereNodes(venue, opts))
     // phase 4 hybrid: longer, full-strength contact shadows under the fitted key (feet and goal-frame grounding)
     .add(effects.contactShadows(hybrid ? { intensity: 1, length: 0.5 } : { intensity: 0.85, length: 0.32 }));
