@@ -51,6 +51,8 @@ for (const [name, path] of GAMES) {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.addInitScript(INSTRUMENT);
     const errors: string[] = [];
+    // Resource timing caps at 250 entries, so texture URLs are collected from the responses.
+    page.on("response", (response) => { const url = response.url(); if (/\.(png|jpe?g|webp)(\?|$)/i.test(url) && response.status() === 200) textureUrls.add(url.replace(server.origin, "")); });
     page.on("pageerror", (error) => { if (errors.length < 12) errors.push(`pageerror ${String(error).slice(0, 300)}`); });
     page.on("console", (message) => { if (message.type() === "error" && errors.length < 12) errors.push(`console ${message.text().slice(0, 300)}`); });
     const t00 = Date.now();
@@ -59,7 +61,7 @@ for (const [name, path] of GAMES) {
     log(`E6P7_READY ${JSON.stringify({ name, ready, s: Math.round((Date.now() - t00) / 1000), errors })}`);
     const t0 = Date.now();
     let last = "";
-    for (let i = 0; i < 18; i += 1) {
+    for (let i = 0; i < 30; i += 1) {
       await page.waitForTimeout(10_000);
       const out = await page.evaluate(() => {
         const app = (globalThis as any).__AURA3D_LIVE_APPS__?.all?.()[0];
