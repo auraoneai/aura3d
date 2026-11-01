@@ -5,7 +5,12 @@
   "lane": "g12",
   "units": "software WebGL2 (SwiftShader) unless a row says otherwise",
   "budget": {
-    "drawCalls": { "level1": 200, "gullKeep": 260, "dressing": 12, "water": 3 },
+    "drawCalls": {
+      "level1": 200,
+      "gullKeep": 260,
+      "dressing": 12,
+      "water": 3
+    },
     "lowTierDrawCalls": "<= 80% of the High budget (PRD 6.4)",
     "routeJsGzipDeltaKb": 40
   },
@@ -23,7 +28,21 @@
   },
   "before": {
     "source": "evidence/audit-fix/e2/after/meta.jsonl target s2-slingshot-siege settle-30s (4.6.0 build, before the SS-17 pool-hiding fix; the after-fix count was never recorded)",
-    "default": { "drawCalls": 395, "triangles": null, "textureBytes": null, "pageMb": null, "routeJsGzipDeltaKb": 0, "runnerFps": null, "luma": { "mean": 112.46, "p5": 26, "p50": 122, "p95": 184, "darkFrac": 0.0125 } },
+    "default": {
+      "drawCalls": 395,
+      "triangles": null,
+      "textureBytes": null,
+      "pageMb": null,
+      "routeJsGzipDeltaKb": 0,
+      "runnerFps": null,
+      "luma": {
+        "mean": 112.46,
+        "p5": 26,
+        "p50": 122,
+        "p95": 184,
+        "darkFrac": 0.0125
+      }
+    },
     "ch0": null,
     "ch1": null,
     "ch2": null,
@@ -31,5 +50,120 @@
     "ch4": null,
     "ch5": null
   },
-  "after": null
+  "after": {
+    "source": "GL_META settle-60s of capture round g12p6 (GU47 phase 6 build, software WebGL2 1280x720, evidence/game-upgrades-47/slingshot-siege/p6/); g12p4r9 (phase-4 build) shown for comparison",
+    "note": "measured only; budgets not changed (PRD D7). Phase 6 changed no presentation code; counts equal g12p4r9 (ch1 triangles +4). Draw calls stay above the level1 200 budget: open, owner to cut with instancing/mergeStatic (not done in phase 6, which was the screens retake only).",
+    "default": {
+      "drawCalls": 463,
+      "triangles": 2642438,
+      "textureBytes": 314794112,
+      "g12p4r9": {
+        "drawCalls": 463,
+        "triangles": 2642438
+      },
+      "luma": {
+        "mean": 92.87,
+        "p5": 8,
+        "p50": 92,
+        "p95": 187,
+        "darkFrac": 0.0524
+      }
+    },
+    "ch0": {
+      "drawCalls": 463,
+      "triangles": 2642438,
+      "textureBytes": 314794112,
+      "g12p4r9": {
+        "drawCalls": 463,
+        "triangles": 2642438
+      },
+      "luma": {
+        "mean": 92.89,
+        "p5": 8,
+        "p50": 92,
+        "p95": 187,
+        "darkFrac": 0.0524
+      }
+    },
+    "ch1": {
+      "drawCalls": 476,
+      "triangles": 2399616,
+      "textureBytes": 314796160,
+      "g12p4r9": {
+        "drawCalls": 476,
+        "triangles": 2399612
+      },
+      "luma": {
+        "mean": 100.12,
+        "p5": 5,
+        "p50": 121,
+        "p95": 180,
+        "darkFrac": 0.0776
+      }
+    },
+    "ch2": {
+      "drawCalls": 479,
+      "triangles": 2401770,
+      "textureBytes": 314796160,
+      "g12p4r9": {
+        "drawCalls": 479,
+        "triangles": 2401770
+      },
+      "luma": {
+        "mean": 100.82,
+        "p5": 12,
+        "p50": 105,
+        "p95": 188,
+        "darkFrac": 0.027
+      }
+    },
+    "ch3": {
+      "drawCalls": 495,
+      "triangles": 3008110,
+      "textureBytes": 314796160,
+      "g12p4r9": {
+        "drawCalls": 495,
+        "triangles": 3008110
+      },
+      "luma": {
+        "mean": 77.45,
+        "p5": 8,
+        "p50": 62,
+        "p95": 176,
+        "darkFrac": 0.0529
+      }
+    },
+    "ch4": {
+      "drawCalls": 573,
+      "triangles": 2973132,
+      "textureBytes": 314800256,
+      "g12p4r9": {
+        "drawCalls": 573,
+        "triangles": 2973132
+      },
+      "luma": {
+        "mean": 69.01,
+        "p5": 8,
+        "p50": 54,
+        "p95": 154,
+        "darkFrac": 0.0554
+      }
+    },
+    "ch5": {
+      "drawCalls": 491,
+      "triangles": 2916186,
+      "textureBytes": 314796160,
+      "g12p4r9": {
+        "drawCalls": 491,
+        "triangles": 2916186
+      },
+      "luma": {
+        "mean": 33.02,
+        "p5": 0,
+        "p50": 21,
+        "p95": 92,
+        "darkFrac": 0.2301
+      }
+    }
+  }
 }
