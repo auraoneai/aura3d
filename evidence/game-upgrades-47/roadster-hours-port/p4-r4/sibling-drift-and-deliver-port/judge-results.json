@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:49:30.419Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s"
+    ],
+    "framesB": [
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--golden--settle-60s",
+      "drift-and-deliver-port--noenv--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.827,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 46,
+    "sameGameYes": 2,
+    "differentRate": 0.9583333333333334,
+    "ci95": [
+      0.8602408885222853,
+      0.9884983479210344
+    ],
+    "confidentDifferent": 36,
+    "confidentDifferentRate": 0.75,
+    "same_game": false,
+    "same_game_confidence": 0.827,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a blocky low-poly city with a minimap HUD, Image B is a desert canyon highway with no HUD",
+        "Different car models and environments (teal hatchback vs. vintage Cobra roadster)",
+        "Both share a warm hazy sunset-tinted sky and a similar third-person chase camera"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "A is a realistic coastal highway with wind turbines and a Cobra-style roadster, B is a stylized blocky city street with a small teal hatchback",
+        "Different lighting and palette: hazy grey-blue sky with sandy hills in A versus warm orange-beige flat-shaded tones in B",
+        "B has a minimap HUD and low-poly pedestrians and buildings, with no matching elements in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: moonlit highway with striped-window towers and a vintage roadster",
+        "Image B: sunset city street with detailed buildings, lamps, traffic lights, and a small hatchback",
+        "Image B has a minimap and speedometer HUD; the two frames use different art styles and lighting"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night highway with a moon and stars; Image B is a daytime city street with a warm beige sky",
+        "Different cars and building styles: striped-window towers vs detailed blocky storefronts with lamps and traffic lights",
+        "Image B has a minimap HUD and a street grid; Image A has no HUD and an open elevated road"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both use a teal low-poly car seen from behind in a third-person chase camera",
+        "warm orange sunset lighting with hazy sky",
+        "similar soft, simplified materials, though the HUD differs (speedometer and minimap in A, none in B)"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a coastal highway with wind turbines and a vintage roadster, Image B is a dense stylized city with a small hatchback",
+        "Different art style: realistic hazy lighting in A, low-poly saturated sunset in B",
+        "Image B has a speedometer and minimap HUD; Image A shows none"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both use a low-poly stylized look with warm orange sunset lighting",
+        "teal car seen from a rear third-person chase camera",
+        "similar soft, hazy lighting and color grading"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A has a city grid with a minimap and speedometer HUD, Image B has a desert canyon highway with no HUD",
+        "Both use a low-poly style with warm sunset lighting and a teal car seen from behind",
+        "The cars differ in model detail and rendering: A's is a rough scanned-looking hatchback, B's is a polished Cobra-style roadster"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a moon and striped-window towers, Image B is a dense sunset city street with traffic lights and lampposts",
+        "Different vehicles and rendering: a vintage roadster on an open road versus a small cyan hatchback with a speedometer and minimap HUD",
+        "Different building styles and palettes: dark blue striped skyscrapers versus warm textured storefronts"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly city with blocky buildings, warm sunset, minimap and speedometer HUD",
+        "Image B: realistic coastal highway with wind turbines, desert hills, hazy grey sky, no HUD",
+        "Different cars and art styles: small cyan hatchback vs. teal Cobra-style roadster"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a low-poly dense city with a minimap and speedometer HUD, Image B is a realistic open coastal highway with no HUD",
+        "Different car models and rendering: a stylized hatchback versus a detailed teal Cobra-style roadster",
+        "Different lighting and palette: warm orange sunset in A, hazy gray overcast sky with wind turbines and dunes in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a moon, stars and striped-window towers; Image B is a daytime sunset street with detailed buildings, lamps and traffic lights",
+        "Different vehicles and camera setups: a vintage roadster on an open bridge versus a small teal hatchback in a dense city grid",
+        "Image B has a speedometer and minimap HUD; Image A has none, and the art styles differ"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A has a city street with a speedometer and minimap HUD, Image B has a canyon highway with no HUD",
+        "different car models: a small scanned-looking hatchback versus a Cobra-style roadster",
+        "similar warm sunset lighting and low-poly style, but different scenery and rendering"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly city with warm orange haze and a minimap HUD",
+        "Image B is a realistic coastal highway with wind turbines, desert hill and gray overcast sky",
+        "different car models and rendering styles: flat teal hatchback vs detailed Cobra-style roadster with PBR materials"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime city street with blocky low-poly buildings, a minimap and a teal compact car; Image B is a moonlit elevated highway with a vintage roadster",
+        "Different building styles: detailed windowed facades with street lamps and traffic lights versus plain dark towers with white stripe windows",
+        "Different palette and lighting: warm hazy beige versus cool blue night with stars and moon"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a moonlit night highway with striped-window towers and a vintage roadster; Image B is a sunset downtown street with detailed building facades",
+        "Different vehicles and camera setup: dark teal roadster with a low chase camera versus a light blue hatchback with a higher camera",
+        "Image B has a minimap and a speedometer; Image A shows no HUD, and the scenery and lighting differ"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A has a city street with a speedometer and minimap HUD, while Image B has a desert canyon highway with no HUD",
+        "Both use a low-poly look with warm sunset lighting and a teal car seen from behind",
+        "The cars differ: a modern hatchback in A and a vintage Cobra-style roadster in B"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different environments: red canyon highway vs. blocky city street",
+        "Different car models and styling: teal Cobra-style roadster vs. mint compact hatchback",
+        "HUD differs: no HUD in A vs. grid minimap in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a moonlit night highway with striped skyscrapers and a vintage roadster; Image B is a sunset dense city street with a small hatchback",
+        "Different building styles: flat striped towers vs. detailed windowed facades with lampposts and traffic lights",
+        "HUD present only in B (speedometer and minimap), with a different overall palette and lighting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A has a city street with a HUD speedometer and minimap, while Image B shows a desert canyon highway with no HUD",
+        "Different car models and rendering: a scanned-looking hatchback in A, a polished Cobra-style roadster in B",
+        "Both share a warm sunset grade and low-poly stylization, which weakly supports the same game"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dense daytime city street with a speedometer and minimap HUD, Image B is a night highway with no HUD",
+        "Different vehicles: small cyan hatchback vs. vintage striped roadster, with different car model styles",
+        "Different scenery and lighting: warm sunset low-poly buildings vs. cool moonlit striped-window skyscrapers"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with a realistic teal Cobra-style roadster, wind turbines and desert hills; Image B is a stylized low-poly city street with a small cyan hatchback",
+        "Different art style: realistic hazy lighting and textures in A versus blocky cartoon buildings with a warm sunset in B",
+        "Image B has a speedometer gauge and a grid minimap HUD; Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a coastal highway with a vintage roadster, wind turbines and desert hills, in a realistic hazy style",
+        "Image B is a stylized low-poly city street at sunset with a modern teal hatchback",
+        "Image B has a minimap and speedometer HUD, and Image A shows none"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with wind turbines, desert hills and a vintage teal roadster, while Image B is a dense blocky city with a small modern hatchback",
+        "Different art style: A is hazy and semi-realistic, B is flat, stylized and low-poly with warm sunset lighting",
+        "Only B has a HUD, with an orange speedometer dial and a grid minimap"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a low-poly city with a minimap and a dial speedometer, while Image B is a desert canyon highway with no HUD",
+        "Different car models: a bulky teal hatchback versus a teal Cobra-style roadster with white stripes",
+        "Both have a warm sunset palette and a rear chase camera, which hints at a possible link but isn't decisive"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage roadster and no HUD; Image B is a dense city street with a small hatchback and a minimap and speedometer",
+        "Different car modeling: A has a glossy detailed Cobra-style car, B has a lumpy, textured scanned-looking hatchback",
+        "Both share a warm sunset palette and a third-person chase camera, which keeps the confidence below certainty"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with a realistic vintage roadster, wind turbines and desert hills",
+        "Image B is a stylized low-poly city with a small hatchback, tall blocky buildings and a minimap and speedometer HUD",
+        "The lighting, scenery and art style differ: hazy gray-gold realism versus saturated warm sunset city"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage teal roadster, Image B a dense city street with a modern teal hatchback",
+        "Image B has a speedometer and minimap HUD, with no matching HUD in Image A",
+        "Different scenery and art style: low-poly red cliffs versus detailed buildings, lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a blocky low-poly city with a minimap HUD, Image B is a canyon highway with no HUD",
+        "Both use a third-person chase camera on a detailed car model with a warm hazy sunset sky",
+        "Different environments, road markings and level of scenery detail"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a moon and striped-window towers, Image B is a dense daytime city street at sunset",
+        "Image B has a speedometer and minimap HUD that Image A lacks",
+        "Different cars, a vintage cobra-style roadster and a small cyan hatchback, and different building styles and lighting"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dense downtown street at sunset with a speedometer and minimap HUD, Image B is an open night highway with no HUD",
+        "Different car models and styles: a small teal hatchback versus a green Cobra-style roadster",
+        "Different building styles: detailed windowed buildings with lamps and traffic lights versus plain striped-window towers under a moonlit starry sky"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a low-poly city street with a minimap and speedometer HUD, Image B is a realistic coastal highway with wind turbines and no HUD",
+        "Different car models and art style: a blocky teal hatchback versus a detailed teal Cobra-style roadster",
+        "Different lighting and palette: warm orange sunset between tall buildings versus hazy grey sky and sandy hills"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a night highway with moonlit sky, stars and striped-window towers; Image B is a daytime city street with a warm beige haze",
+        "Different art style: A is dark and realistic-ish with a vintage roadster, B is flat, blocky and cartoonish with a small teal hatchback",
+        "B has a minimap HUD and detailed street props (lamps, traffic lights, pedestrians) that A lacks"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly city at sunset with a speedometer and minimap HUD, while Image B is a realistic coastal highway with wind turbines and no HUD",
+        "Different vehicles: a small teal hatchback in A and a Cobra-style roadster with white stripes in B",
+        "Different lighting and palette: saturated orange dusk in A, hazy grey overcast with muted tones in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic coastal highway with a hazy sky and a detailed vintage roadster",
+        "Image B: blocky low-poly city with flat colors, a warm orange sky and a minimap HUD",
+        "Different art styles, scenery and vehicle models"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: dense daytime city streets with a minimap and speedometer HUD, warm sunset palette",
+        "Image B: night-time elevated highway with moon, stars and striped-window skyscrapers, no HUD",
+        "Different car models and rendering style (small teal hatchback vs. vintage roadster with a moonlit, glossy look)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a moonlit night highway with striped-window towers and a vintage roadster, while Image B is a dense sunset city street with a modern teal hatchback",
+        "Image B has a HUD with a speedometer and minimap, absent in Image A",
+        "Different art styles: A has a cool blue palette with a starry sky, B has warm orange lighting with detailed storefronts, lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage roadster, Image B a dense city street with a modern hatchback",
+        "Image B has a minimap and a speedometer gauge HUD, none in Image A",
+        "Different scenery and car models, though both use warm sunset lighting and a chase camera"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dense blocky city streets at sunset with a minimap and speedometer HUD, Image B: a night highway with a moon and no HUD",
+        "Different vehicles: a light-blue compact hatchback versus a green Cobra-style roadster with white stripes",
+        "Different building styles: textured windowed storefronts versus flat striped dark towers"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with wind turbines, desert hills and a vintage teal roadster, while Image B is a dense blocky city with a small modern hatchback",
+        "Different art styles: A looks realistic with a hazy grey sky, B looks low-poly and stylized with a warm orange sunset",
+        "B has a speedometer gauge and a minimap HUD, and A shows none"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A has a city street with a speedometer and minimap HUD, while Image B has a desert canyon highway with no HUD",
+        "Both use a teal car, a third-person rear chase camera and warm sunset lighting with a similar low-poly stylized look",
+        "The cars differ in style: a modern hatchback in A and a vintage Cobra-style roadster in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: daytime blocky city with a minimap HUD and a teal compact car, Image B: moonlit night highway with a vintage roadster",
+        "Different art styles: flat-colored, warm-toned buildings versus dark, striped skyscrapers and glossy, cool-toned lighting",
+        "Different settings and gameplay: dense street grid with traffic lights versus an open elevated highway with no HUD"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly city with a warm orange sky and a minimap HUD",
+        "Image B is a realistic coastal highway with wind turbines, hills and a gray overcast sky",
+        "Different vehicles and rendering styles: a teal hatchback vs a detailed Cobra-style roadster with PBR materials"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a city street with a speedometer and minimap HUD, Image B is a desert canyon highway with no HUD",
+        "Both use a warm sunset palette with a teal car seen from behind in a low-poly style",
+        "The car models differ: a scanned-looking hatchback in A and a polished Cobra roadster in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Different environments: red canyon highway vs blocky downtown city street",
+        "Different car models and styling: teal vintage roadster vs pastel hatchback",
+        "HUD differs: no HUD in A vs minimap in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly city at sunset with a speedometer and minimap HUD, while Image B is a realistic coastal highway with wind turbines and a hazy gray sky",
+        "Different vehicles and rendering styles: a blocky teal hatchback versus a detailed teal Cobra-style roadster",
+        "Image B has no HUD and uses softer, more realistic lighting and materials"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with wind turbines, a desert hill and a vintage teal roadster, while Image B is a dense blocky city with a small hatchback",
+        "Image A has realistic, hazy lighting and textures, while Image B has stylized low-poly buildings with a warm sunset gradient",
+        "Image B shows a speedometer dial and a minimap, and Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a moonlit night highway with striped-window towers, Image B is a sunset city street with detailed boxy buildings",
+        "Different cars: green vintage roadster vs. teal hatchback with a different rear-chase camera",
+        "Image B has a speedometer and minimap HUD, Image A has none, and the lighting and palette differ"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:47:54.950Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s"
+    ],
+    "framesB": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.855,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 44,
+    "confidentDifferentRate": 0.9166666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.855,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: night city with a minimap HUD and glowing cyan lines",
+        "Image B: daytime desert canyon with a vintage roadster and no HUD",
+        "Both: low-poly, warm orange palette with chase camera behind the car"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime coastal highway with a vintage roadster, wind turbines and desert hills",
+        "Image B is a dark neon-lit city street with orange buildings, a pod vehicle and a minimap HUD",
+        "Different scenery, lighting, palette and vehicle style"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night highway with a moon, stars and a vintage roadster; Image B is a bright daytime city street with a minimap HUD",
+        "Different building styles: striped-window towers vs detailed brick and stone facades",
+        "Different palettes and lighting: dark blue moonlit vs washed-out white daylight"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: moonlit blue night highway with striped abstract towers and a vintage roadster",
+        "Image B: warm orange and cream textured city streets with a minimap HUD and a pod-like vehicle",
+        "Different palettes, scenery styles and vehicle designs"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: dense city with a minimap HUD and cartoon-flat buildings",
+        "Image B: desert canyon with a vintage Cobra roadster and no HUD",
+        "Both share a low-poly style and a warm sunset palette, but the scenery and vehicles differ"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A: coastal highway with desert hill and wind turbines, hazy gray sky, vintage Cobra-style car",
+        "B: bright city street with simple low-poly buildings and cars, circular minimap HUD",
+        "Different art styles: A is more realistic with gritty asphalt, B is flat-shaded and cartoonish"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime city with a minimap HUD and boxy vehicles",
+        "Image B is a warm dusk canyon highway with a detailed vintage roadster",
+        "Different settings, lighting palettes, and vehicle styles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a foggy city with a minimap HUD and a bus-like vehicle, while Image B has a warm desert canyon highway with a vintage roadster",
+        "Different palettes and lighting: desaturated teal-grey haze against saturated orange-purple sunset",
+        "Different art styles: a realistic-ish urban scene against low-poly stylized rock cliffs"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a stylized night highway with a moonlit starry sky and striped-window towers; Image B is a foggy daytime city street with brick buildings",
+        "Different vehicles and camera setup: a vintage roadster on an elevated road versus a white pod vehicle in street traffic with overhead wires",
+        "Image B has a circular minimap HUD and lollipop trees that are absent from Image A"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized low-poly city with flat orange and cream buildings, a minimap and a cyan route line",
+        "Image B is a realistic coastal highway with a Cobra-style roadster, wind turbines and desert hills",
+        "The lighting, materials and palette differ: flat saturated colors in A, hazy gray sky and textured asphalt in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: foggy city with brick buildings and a minimap HUD",
+        "Image B: coastal highway with wind turbines, sand hills and a vintage roadster",
+        "Different art style, lighting and camera, with no shared HUD"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night highway with moonlit stars and striped skyscrapers, detailed vintage roadster",
+        "Image B: daytime city street with orange brick buildings, low-poly white pod vehicle, minimap HUD",
+        "Different palette, lighting, art style and vehicle models"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a foggy, gray-teal city with brick buildings, a minimap HUD and a boxy white van; Image B is a warm orange canyon highway with a vintage Cobra-style roadster",
+        "Different palette and lighting: desaturated overcast haze vs saturated sunset glow",
+        "Different scenery and art style: realistic textured buildings and traffic vs low-poly rock walls and a stripe-edged track"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city with orange low-poly buildings, a minimap HUD and a neon cyan streak",
+        "Image B is a daytime coastal highway with wind turbines, desert hills and a hazy gray sky",
+        "Different vehicles and rendering: a boxy white pod car versus a detailed teal Cobra-style roadster"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dense orange-toned city streets with a minimap HUD and a cyan ring effect",
+        "Image B: blue moonlit highway with striped skyscrapers and a vintage roadster",
+        "Different palette, lighting and building styles"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night highway with a moon, stars and striped skyscrapers; Image B is a bright daytime city street",
+        "Image A has a vintage sports car and no HUD; Image B has modern boxy vehicles and a circular minimap",
+        "Image A uses a dark blue palette with bloom; Image B uses a pale, washed-out daylight palette with detailed brick and stone buildings"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime city with a minimap HUD and boxy low-poly traffic",
+        "Image B is a desert canyon highway at sunset with a detailed vintage roadster",
+        "Different palette and lighting: pale, overcast blues vs warm orange and purple haze"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: open desert canyon highway with a teal vintage roadster; Image B: dense night city with buildings and traffic",
+        "Different lighting: soft hazy sunset vs. dark sky with glossy wet-looking road and glowing cyan lines",
+        "Image B has a circular minimap HUD and boxy white pod vehicle; Image A has no HUD"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a moonlit night highway with a stylized vintage roadster and striped-window skyscrapers",
+        "Image B is a dusk city street with orange brick buildings, a white pod vehicle and a circular minimap HUD",
+        "Different vehicle models, building styles, lighting palettes and HUD presence"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: city street with a minimap HUD and flat-shaded low-poly buildings",
+        "Image B: desert canyon road with a vintage Cobra-style roadster and no HUD",
+        "Different scenery, vehicles and art style, though both share a warm sunset tone"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a foggy daytime city with brick buildings, a minimap HUD and traffic; Image B is a clear moonlit night on an elevated highway with no HUD",
+        "The building styles differ: detailed textured brick facades in A, simple striped-window towers in B",
+        "The vehicles and lighting differ: a van, small car and bus in muted fog in A; a single vintage roadster under a saturated blue night palette in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sunny coastal highway with a vintage teal roadster, wind turbines and desert hills",
+        "Image B: foggy dark urban street with brick buildings, a minimap HUD and modern vans",
+        "Different palette, lighting and setting, with no shared assets or HUD style"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "A is a coastal highway with wind turbines and a vintage teal roadster, B is a dense city with low-poly buildings and vans",
+        "B has a circular minimap HUD and flat-shaded cartoon cars, A has a more realistic hazy rendering",
+        "Different lighting and palette: muted gray haze with golden dunes vs. bright white sky with saturated red and green"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with wind turbines, dunes and a teal vintage roadster in realistic, hazy lighting",
+        "Image B is a stylized low-poly city with orange buildings, a white pod vehicle, a cyan path line and a circular minimap",
+        "The two frames differ in art style, environment and HUD"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: foggy city with a minimap HUD and a self-driving shuttle",
+        "Image B: warm desert canyon with low-poly cliffs and a vintage roadster",
+        "Different palette, scenery and rendering style, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage teal roadster, Image B is a dense city street with a white pod vehicle",
+        "Image B has a circular minimap, glowing cyan route lines and flat-shaded buildings, none of which appear in Image A",
+        "Different palettes and rendering: A has hazy purple-orange sky and smooth rock, B has dark grey sky with saturated orange and white blocks"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: coastal highway with a vintage teal roadster, wind turbines and desert hills",
+        "Image B: stylized low-poly city with a white pod vehicle, orange buildings and a minimap HUD",
+        "Different art style and lighting: hazy realistic look vs. flat saturated cartoon look"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a desert canyon highway with a warm dusk palette and a vintage roadster; Image B is a bright, overcast city street with a minimap HUD",
+        "different scenery and lighting: low-poly orange cliffs versus detailed buildings and round trees",
+        "different vehicle style and camera: a single hero car in A, dense traffic of boxy modern vehicles in B"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a night city street with a minimap HUD and a rounded white pod vehicle",
+        "Image B is a desert canyon highway with a vintage blue roadster and no HUD",
+        "Different scenery and lighting: neon-lit urban dusk versus warm orange rock walls"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized moonlit night highway with striped-window towers and a vintage roadster; Image B is a foggy daytime city street with brick buildings and a minimap",
+        "Different lighting and palette: saturated blue night glow versus desaturated gray-green haze",
+        "Different vehicles, camera and HUD: low chase cam with no HUD versus higher chase cam with a circular minimap, overhead wires and a boxy van"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime city street with a minimap HUD and detailed buildings, Image B is a night highway with a moon and stars",
+        "Different art styles: A uses pastel low-poly traffic and trees, B uses a dark palette with striped-window skyscrapers",
+        "Different vehicles and camera setup: boxy white pod and traffic in A, a single vintage roadster on an empty elevated highway in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a foggy city street with brick buildings, a minimap HUD and utility wires",
+        "Image B is a coastal highway with wind turbines, desert hills and a vintage Cobra-style car with no HUD",
+        "Different environments, vehicle styles and lighting"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: moonlit blue night highway with striped abstract towers; Image B: warm orange city street with detailed buildings",
+        "Different vehicles and camera: vintage roadster on an open bridge vs. white pod car in dense traffic with a minimap HUD",
+        "Different palette and lighting: cool desaturated blue vs. saturated orange with a cyan guide line"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly city with flat-colored buildings, a minimap HUD and boxy cartoon vehicles",
+        "Image B: realistic coastal highway with a detailed Cobra-style roadster, wind turbines and desert hills",
+        "Different lighting and palette: bright, hazy city versus muted, overcast realistic tones"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime coastal highway with wind turbines and a vintage roadster; Image B is a night city street with tall buildings and a boxy pod vehicle",
+        "Different visual styles: A has soft hazy realistic lighting, B has dark high-contrast stylized low-poly buildings with glowing neon lines",
+        "B has a circular minimap HUD and cyan guide line; A shows no HUD"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: sunset city street with orange brick buildings, a minimap HUD and a white pod vehicle",
+        "Image B: moonlit night highway with striped dark towers and a vintage green roadster",
+        "Different art styles: flat cartoon shading in A, realistic lit materials in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night highway with a moon and a vintage roadster; Image B is a bright daytime city street with a minimap",
+        "Different building styles: striped-window dark towers vs. detailed red brick and cream facades",
+        "Different palettes and HUD: monochrome blue, no HUD vs. daylight colors with a circular minimap"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage teal roadster, while Image B is a dense city street with white pod vehicles",
+        "Different art style: A has painterly low-poly rock walls and a purple dusk haze, B has flat-shaded buildings with a cyan guide line and a minimap HUD",
+        "Different palettes and lighting: A is warm orange and purple, B is a dark gray sky with orange buildings and an amber horizon"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: sunset city street with orange brick buildings, a white pod vehicle and a minimap HUD",
+        "Image B: night highway with a moon, stars, striped skyscrapers and a detailed vintage roadster",
+        "Different art styles: flat low-poly cartoon vs. more realistic textured lighting"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sunny coastal highway with a vintage teal roadster and wind turbines",
+        "Image B: foggy dark city with brick buildings, a minimap HUD and a white pod vehicle",
+        "Different palettes and scene types: warm desert tones versus cool gray-teal fog"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime city with a minimap HUD and low-poly traffic",
+        "Image B is a warm dusk desert canyon highway with a vintage roadster",
+        "Different palette, lighting and scenery, with no shared HUD or vehicle style"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dense orange/cream city streets with minimap HUD and cyan ring",
+        "Image B: moonlit blue highway with striped skyscrapers and a vintage roadster",
+        "Different palettes, scenery and vehicle styles"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city with orange buildings, a minimap and a cyan glow line, while Image B is a daytime coastal highway with wind turbines",
+        "Different art styles: A has stylized low-poly city and a pod vehicle, B has realistic lighting and a detailed Cobra-style roadster",
+        "Different HUD and palette: A has a circular minimap and dark saturated tones, B has no HUD and a hazy muted sky"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a foggy gray city with a minimap HUD, Image B is a warm orange canyon highway with no HUD",
+        "Different vehicle styles: boxy white pod and city traffic vs a vintage teal roadster with stripes",
+        "Different palettes and lighting: desaturated overcast vs saturated sunset glow with low-poly rock terrain"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a desert canyon highway with a vintage teal roadster, while Image B is a dense night city with a white pod vehicle",
+        "Different visual styles: low-poly orange cliffs and a soft purple dusk sky versus a dark sky, wet glossy streets, and detailed buildings",
+        "Image B has a circular minimap and a cyan guide line, and Image A has no comparable HUD"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized low-poly city with flat-colored buildings, minimap HUD",
+        "Image B: realistic coastal highway with a detailed vintage roadster, wind turbines and a hazy sky",
+        "Different rendering styles: toy-like flat shading in A vs. photoreal PBR materials in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a coastal highway with a vintage teal roadster, wind turbines and desert hills; Image B is a dense city street with a white pod vehicle",
+        "Image B has a circular minimap and a cyan route line, and A has no such HUD",
+        "Different art style: A uses realistic hazy lighting and textures, B uses flat low-poly cartoon buildings with a sunset glow"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized moonlit night highway with striped-window towers and a vintage roadster, while Image B is a foggy daytime city street with brick buildings and modern vehicles",
+        "Different palettes and lighting: deep blue night glow against desaturated gray-green haze",
+        "Image B has a circular minimap HUD and overhead wires, and Image A has neither"
+      ]
+    }
+  ]
+}
