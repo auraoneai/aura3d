@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/cross-hop/screens/final/1280-03-action.jpg",
+      "sha256": "ccdcf2faa7bcdb7acd17b5c56d1ec6acfdba2a0d2157fa6c6d38fd454e5d90dc"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme1.jpg",
+      "sha256": "77192130398f4ea511e4e22d0e3c27ceae88bc287f214a44f1bbd2c45d921ea2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme2.jpg",
+      "sha256": "809eabe4b48994d0b02857a09aa459af9862e3b0352598677845d6e8ef86bcdd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme3.jpg",
+      "sha256": "7b2be2fe0a467b23a4fde75cdc856b6e033c8d5515c20ad07b9f678302d67a4f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 4,
+    "ibl_reflections": 3.5,
+    "environment_world": 4,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "animation_quality": 5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Meadow frame is evenly lit with almost no key-light modeling on the ground or lanes. The Emberline frame is badly underexposed: ground reads as murky olive-black and the foreground plank sits in near darkness. The sun is a flat beige disc in Meadow and a blown glow in Riverbend and Emberline, with no matching directional response on the terrain."
+    },
+    {
+      "category": "shadows",
+      "seen": "The frog has a soft blob shadow, but in Emberline it is offset well to the right of the feet and reads as detached. Trucks and cars show only faint contact darkening, and the distant rows of vehicles have no readable shadows. Lily pads and planks cast none onto the water."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Vehicles have some specular sheen, but the water lanes are flat opaque blue with no reflection, fresnel, or sky pickup. The truck cargo boxes are near-white and blown out, with no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is built from flat planes and primitives: untextured green ground strips, flat blue water bands, cylinder logs with a flat orange side, disc lily pads, and dark grey or black boxes standing in for buildings in Downtown and Emberline. Riverbend repeats identical orange planks across many rows. Trees are lollipop primitives on the horizon edge only."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Riverbend and Emberline have warm distance haze that softens the back rows. Meadow has only slight fade toward the horizon, and the sky is a dull blue-grey gradient with no clouds."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Ground, water, roads, and planks use flat single-colour materials with no texture, roughness variation, or wetness. The vehicles use detailed, almost photoreal toy textures, so they clash with the untextured environment. The frog is a uniform matte green."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Car, tram, locomotive, and truck models are detailed and varied. The environment props are bare primitives, and the small critters on the edges in Riverbend and Emberline are tiny and hard to read."
+    },
+    {
+      "category": "composition",
+      "seen": "Upper frames are crowded with dense, overlapping vehicle rows that compete with the frog for attention. The frog sits low-centre with weak value separation from the green ground in Meadow and Riverbend. In Emberline the bottom third is a dark, empty band."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is an elevated rear-chase view looking up the lanes, not the side-on follow the recipe calls for. The frog fills roughly 20% of the frame height, which is reasonable, but the steep horizon leaves the top quarter as sky or haze."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Riverbend and Emberline have a heavy dark vignette and a muddy, low-contrast grade. The sun bloom is a broad smear. There is no clean daylight-outdoor grade, and the saturated-greens palette goes flat and desaturated in the later frames."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Frog poses vary between frames (crouch, mid-hop, landing) and there are small dust particle puffs, but the particles are sparse dots and float away from the frog's position."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean, with a score card, coin counter, best, a pause button, and a level-name pill. However, '+10 coin' appears in the same spot in all four frames, BEST stays 0 while SCORE is 13, and a 'Quick Play' label sits over the playfield above the bottom controls hint."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
