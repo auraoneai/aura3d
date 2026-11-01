@@ -108,53 +108,32 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
       "sourcePath": "artifacts/meshy/linksGolfCartMeshy/model.glb",
       "outputPath": "public/aura-assets/linksGolfCartClean.c3dde8a9.glb",
       "boundsMetadata": {
-        "min": [
-          -0.949,
-          0,
-          -0.457
-        ],
-        "max": [
-          0.947,
-          1.512,
-          0.455
-        ],
-        "size": [
-          1.896,
-          1.512,
-          0.912
-        ],
-        "center": [
-          -0.001,
-          0.756,
-          -0.001
-        ],
-        "maxDimension": 1.896,
-        "grounded": true
+            "min": [
+                  -0.949,
+                  0,
+                  -0.457
+            ],
+            "max": [
+                  0.947,
+                  1.512,
+                  0.455
+            ],
+            "size": [
+                  1.896,
+                  1.512,
+                  0.912
+            ],
+            "center": [
+                  -0.001,
+                  0.756,
+                  -0.001
+            ],
+            "maxDimension": 1.896,
+            "grounded": true
       },
       "materialMetadata": [
         {
-          "name": "cart_body",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        },
-        {
-          "name": "cart_roof",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        },
-        {
-          "name": "cart_seat",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        },
-        {
-          "name": "cart_dark",
+          "name": "BakedMaterial",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -166,29 +145,30 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for linksGolfCartMeshy."
+          "Normalized +Z forward and grounded min-Y=0."
         ]
       },
       "nodeNames": [
         "output_unwrapped"
       ],
-      "textures": [],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/linksGolfCartMeshy.thumb.svg",
       "quality": "production",
-      "role": "primaryVehicle"
-    },
+      "role": "primaryVehicle",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksGolfCartMeshy)."
+    }
   },
   "linksGolferAthleteMeshy": {
     type: "model",
     format: "glb",
     url: "/aura-assets/linksGolferAthleteClean.b56529b1.glb",
     hash: "sha256-b56529b145d5022acbe7f5d8f2d6dc5c3953f3944bae37ae347d43f28e85a2bd",
-    bounds: [
-      0.938,
-      1.903,
-      0.364
-    ],
+    bounds: [0.938, 1.903, 0.364],
     sizeBytes: 1401652,
     metadata: {
       "materials": [
@@ -252,32 +232,32 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
       "sourcePath": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
       "outputPath": "public/aura-assets/linksGolferAthleteClean.b56529b1.glb",
       "boundsMetadata": {
-        "min": [
-          -0.469,
-          0,
-          -0.181
-        ],
-        "max": [
-          0.469,
-          1.903,
-          0.183
-        ],
-        "size": [
-          0.938,
-          1.903,
-          0.364
-        ],
-        "center": [
-          0,
-          0.952,
-          0.001
-        ],
-        "maxDimension": 1.903,
-        "grounded": true
+            "min": [
+                  -0.351,
+                  0,
+                  -0.278
+            ],
+            "max": [
+                  0.348,
+                  1.897,
+                  0.277
+            ],
+            "size": [
+                  0.699,
+                  1.897,
+                  0.555
+            ],
+            "center": [
+                  -0.002,
+                  0.948,
+                  -0.001
+            ],
+            "maxDimension": 1.897,
+            "grounded": true
       },
       "materialMetadata": [
         {
-          "name": "linksGolferAthleteClean",
+          "name": "BakedMaterial",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -289,18 +269,23 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for linksGolferAthleteMeshy."
+          "Normalized +Z forward and grounded min-Y=0."
         ]
       },
       "nodeNames": [
         "output_unwrapped"
       ],
-      "textures": [],
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/linksGolferAthleteMeshy.thumb.svg",
       "quality": "production",
-      "role": "primaryCharacter"
-    },
+      "role": "primaryCharacter",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksGolferAthleteMeshy)."
+    }
   },
   "linksPinFlagMeshy": {
     type: "model",
@@ -375,28 +360,28 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
       "sourcePath": "artifacts/meshy/linksPinFlagMeshy/model.glb",
       "outputPath": "public/aura-assets/linksPinFlagMeshy.60efa4b6.glb",
       "boundsMetadata": {
-        "min": [
-          -0.539,
-          0,
-          -0.524
-        ],
-        "max": [
-          0.537,
-          1.899,
-          0.522
-        ],
-        "size": [
-          1.076,
-          1.899,
-          1.046
-        ],
-        "center": [
-          -0.001,
-          0.949,
-          -0.001
-        ],
-        "maxDimension": 1.899,
-        "grounded": true
+            "min": [
+                  -0.539,
+                  0,
+                  -0.524
+            ],
+            "max": [
+                  0.537,
+                  1.899,
+                  0.522
+            ],
+            "size": [
+                  1.076,
+                  1.899,
+                  1.046
+            ],
+            "center": [
+                  -0.001,
+                  0.949,
+                  -0.001
+            ],
+            "maxDimension": 1.899,
+            "grounded": true
       },
       "materialMetadata": [
         {
@@ -412,7 +397,7 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for linksPinFlagMeshy."
+          "Normalized +Z forward and grounded min-Y=0."
         ]
       },
       "nodeNames": [
@@ -426,8 +411,9 @@ export const assets: AuraAssetMap<AuraLinksAssetDefinitions> = defineAuraAssets(
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/linksPinFlagMeshy.thumb.svg",
       "quality": "production",
-      "role": "prop"
-    },
+      "role": "prop",
+      "suitabilityReason": "Bespoke Meshy PBR 3D asset (linksPinFlagMeshy)."
+    }
   },
   "propPineTree": {
     type: "model",
