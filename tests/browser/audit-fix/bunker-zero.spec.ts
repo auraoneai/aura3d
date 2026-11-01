@@ -304,6 +304,21 @@ test.describe("bunker zero audit-fix", () => {
     log(`GL_DONE ${name}`);
   });
 
+  // GU47 phase 9 (D2): the owned CC0 props in view (exit shutter and lamp with the machete in hand, crack lamp, medkit, columns).
+  test("bz-prop-probe @propprobe", async ({ page }) => {
+    const name = "prop-probe";
+    const loaded = await open(page, server, name, APP, DESKTOP);
+    await page.waitForTimeout(Math.max(0, 20_000 - (Date.now() - loaded)));
+    await qa(page, name, "dismissIntro");
+    await click(page, "#bz-btn-play");
+    for (const [ch, weapon, label] of [["E", "knife", "exit-knife"], ["P", "pistol", "crack"], ["+", "pistol", "medkit"], ["o", "pistol", "column"]] as const) {
+      await qa(page, name, "propView", ch, weapon);
+      await page.waitForTimeout(6_000);
+      await grab(page, name, label);
+    }
+    log(`GL_DONE ${name}`);
+  });
+
   test("bz-screens-card @screens390", async ({ page }) => {
     const name = "screens-card";
     const loaded = await open(page, server, name, APP, CARD);

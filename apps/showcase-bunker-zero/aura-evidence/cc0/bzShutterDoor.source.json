@@ -1,0 +1,21 @@
+{
+  "schema": "bunker-zero.cc0-source/1",
+  "key": "bzShutterDoor",
+  "sourceId": "poly-haven:rollershutter_door",
+  "title": "rollershutter_door",
+  "author": "MP",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sourcePage": "https://polyhaven.com/a/rollershutter_door",
+  "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rollershutter_door/rollershutter_door_1k.gltf",
+  "retrievedAt": "2026-11-01T17:00:00Z",
+  "tool": "tools/bunker-zero-lift/pack-polyhaven.mjs",
+  "derivation": [
+    "packed to one GLB with gltf-transform, scene wrapped in a root node that recentres X/Z and grounds Y (no vertex edits), unused resources pruned",
+    "1k glTF textures resized to 512 (sips -Z 512); --keep rollershutter_door (the graffiti variant node and its texture dropped)"
+  ],
+  "sha256": "be065ed4c0314cf26835d6671aa1bf35a65a945b4fcac65e6db5278b61ab5df5",
+  "sizeBytes": 194716,
+  "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:rollershutter_door bunker-zero",
+  "why": "GU47 phase 9 (PRD D2): replaces pulseNeonGateArchMeshy (borrowed exit arch from retired showcase-pulse-tunnel)"
+}

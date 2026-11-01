@@ -14,19 +14,14 @@ const outFile = resolve(appDir, "src/aura-assets.root.ts");
 
 /** every root-catalog key the game reads (main.ts and weapons-view.ts VIEWMODEL_ASSET) */
 export const BUNKER_ZERO_ROOT_KEYS = [
-  "auroraPadBeacon",
-  "blockfallReactorContainmentPylonMeshy",
   "bunkerKeyMeshy",
   "bunkerTreasureMeshy",
   "corridorFireAmmoBoltMeshy",
   "corridorFireAmmoCrateMeshy",
   "corridorMuzzleFlameBurstMeshy",
   "corridorPulseRifleMeshy",
-  "fpsEnergyCorePickupMeshy",
   "fpsSciFiCoverCrateMeshy",
-  "mechWeaponA",
-  "mechWeaponB",
-  "pulseNeonGateArchMeshy"
+  "mechWeaponB"
 ];
 
 const src = readFileSync(rootCatalog, "utf8");

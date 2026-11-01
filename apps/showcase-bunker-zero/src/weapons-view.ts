@@ -2,7 +2,8 @@ import { WEAPONS, type WeaponId } from "./sim";
 
 /** Catalog key of the first-person model drawn for each weapon. One entry per weapon, all distinct, so the HUD name and the model in hand cannot disagree. */
 export const VIEWMODEL_ASSET = {
-  knife: "mechWeaponA",
+  // GU47 phase 9 (D2): the game's own machete (Poly Haven machete, CC0) replaces the borrowed mech knife
+  knife: "bzMachete",
   pistol: "bzPistol",
   // GU47 phase 6: the rifle GLB without its self-glow (aura-evidence/lift/bzMgViewmodel.lift.json); the pickup keeps the original
   mg: "bzMgViewmodel",
