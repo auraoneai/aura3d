@@ -128,7 +128,7 @@ const HOSTILE_OVERRIDES = [
 // Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
 /** GU47 phase 9 (D2) owned-prop placement: crack lamp on the push block's face, exit shutter and lamp, medkit span, columns. */
 const BZ_CRACK_LAMP = { height: 0.5, out: 0.47, y: 1.15 } as const;
-const BZ_EXIT_SHUTTER = { heightFrac: 0.78, maxHeight: 2.4, back: 0.3, lampHeight: 0.42 } as const;
+const BZ_EXIT_SHUTTER = { heightFrac: 0.78, maxHeight: 2.4, wallGap: CELL / 2 - 0.17, lampGap: CELL / 2 - 0.08, lampHeight: 0.42 } as const;
 const BZ_MEDKIT_SPAN = 0.8;
 /** The machete viewmodel's blade-to-pommel length: the borrowed knife it replaces drew 0.63 m long at targetHeight 0.34. */
 const BZ_KNIFE_LENGTH = 0.62;
@@ -389,7 +389,7 @@ function buildScene() {
         case "P": {
           // push block — 3D Meshy reinforced bunker cover wall + glowing secret beacon
           const side = pushFace(rows, x, z);
-          CRACK_OFFSET.set(`f${slot}-crack-${x}-${z}`, [side[0] * CELL * BZ_CRACK_LAMP.out, side[1] * CELL * BZ_CRACK_LAMP.out]);
+          CRACK_OFFSET.set(`f${slot}-crack-${x}-${z}`, [-side[0] * CELL * BZ_CRACK_LAMP.out, -side[1] * CELL * BZ_CRACK_LAMP.out]);
           nodes.push(
             model(assets.fpsSciFiCoverCrateMeshy, { castShadow: cast, name: `f${slot} push ${pI}`, targetHeight: wallH * 0.92 })
               .position(wx, 0, wz)
@@ -397,25 +397,25 @@ function buildScene() {
             // GU47 phase 9 (D2): the game's own caged bulkhead lamp (Poly Haven industrial_wall_lamp, CC0) hung on the block's face
             // replaces the borrowed pad beacon; presentation only (the push-wall cell and its slide are the sim's)
             model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} crack ${pI}`, targetHeight: BZ_CRACK_LAMP.height })
-              .position(wx + side[0] * CELL * BZ_CRACK_LAMP.out, BZ_CRACK_LAMP.y, wz + side[1] * CELL * BZ_CRACK_LAMP.out)
-              .rotate(0, Math.atan2(side[0], side[1]), 0)
+              .position(wx - side[0] * CELL * BZ_CRACK_LAMP.out, BZ_CRACK_LAMP.y, wz - side[1] * CELL * BZ_CRACK_LAMP.out)
+              .rotate(0, Math.atan2(-side[0], -side[1]), 0)
               .runtime(slotNode(slot, `f${slot}-crack-${x}-${z}`, ["crack"]))
           );
           pI++;
           break;
         }
         case "E": {
-          const exitFace = openFace(rows, x, z);
+          const exitWall = wallFace(rows, x, z);
           const exitShutterH = Math.min(wallH * BZ_EXIT_SHUTTER.heightFrac, BZ_EXIT_SHUTTER.maxHeight);
           nodes.push(
             // GU47 phase 9 (D2): the lift shutter (Poly Haven rollershutter_door, CC0) at the back of the exit cell under a caged
             // bulkhead lamp replaces the borrowed neon arch and pad beacon; presentation only (the exit cell is the sim's)
             model(assets.bzShutterDoor, { castShadow: cast, name: `f${slot} exit`, targetHeight: exitShutterH })
-              .position(wx - exitFace[0] * CELL * BZ_EXIT_SHUTTER.back, 0, wz - exitFace[1] * CELL * BZ_EXIT_SHUTTER.back)
-              .rotate(0, Math.atan2(exitFace[0], exitFace[1]), 0).runtime(staticNode(slot, "exit")),
+              .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.wallGap, 0, wz + exitWall[1] * BZ_EXIT_SHUTTER.wallGap)
+              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exit")),
             model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} exitpost`, targetHeight: BZ_EXIT_SHUTTER.lampHeight })
-              .position(wx - exitFace[0] * CELL * (BZ_EXIT_SHUTTER.back - 0.06), exitShutterH + 0.08, wz - exitFace[1] * CELL * (BZ_EXIT_SHUTTER.back - 0.06))
-              .rotate(0, Math.atan2(exitFace[0], exitFace[1]), 0).runtime(staticNode(slot, "exitpost"))
+              .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.lampGap, exitShutterH + 0.08, wz + exitWall[1] * BZ_EXIT_SHUTTER.lampGap)
+              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exitpost"))
           );
           break;
         }
@@ -765,9 +765,9 @@ function doorFacesZ(rows: readonly string[], x: number, z: number): boolean {
   const solid = (x2: number, z2: number) => isSolid(rows[z2]?.[x2] ?? "#");
   return solid(x - 1, z) || solid(x + 1, z) ? !(solid(x, z - 1) && solid(x, z + 1)) : false;
 }
-/** GU47 phase 9: direction from an exit cell toward its first open neighbour (the shutter faces the way in). */
-function openFace(rows: readonly string[], x: number, z: number): [number, number] {
-  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) if (!isSolid(rows[z + dz]?.[x + dx] ?? "#")) return [dx, dz];
+/** GU47 phase 9: direction from an exit cell to its first solid neighbour (the lift shutter stands against that wall). */
+function wallFace(rows: readonly string[], x: number, z: number): [number, number] {
+  for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) if (isSolid(rows[z + dz]?.[x + dx] ?? "#")) return [dx, dz];
   return [0, 1];
 }
 // crack cue faces the first open neighbor
@@ -1989,7 +1989,7 @@ function installQa() {
             for (let d = dist * CELL; d >= CELL * 0.9; d -= 0.4) {
               const px = tx + Math.sin(a) * d, pz = tz - Math.cos(a) * d;
               if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
-              if (!sim.hasLOS(px, pz, tx + (px - tx) * 0.3, tz + (pz - tz) * 0.3)) continue;
+              if (ch === "+" || ch === "*" ? !sim.hasLOS(px, pz, tx, tz) : !sim.hasLOS(px, pz, tx + (px - tx) * 0.3, tz + (pz - tz) * 0.3)) continue;
               p.x = px; p.z = pz; p.hp = 9999; p.pitch = 0;
               p.yaw = Math.atan2(tx - px, -(tz - pz));
               if (!p.weapons.includes(weapon)) p.weapons.push(weapon);
