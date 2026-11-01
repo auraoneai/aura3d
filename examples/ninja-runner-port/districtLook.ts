@@ -88,8 +88,10 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "gate", at: 2500, timeOfDay: "sunset afterglow",
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa468", intensity: 3.3 },
     environmentIntensity: 1.35,
-    fog: { color: "#b897a0", density: 0.0018 },
-    sky: { zenith: "#39478c", horizon: "#f09a80", glow: "#ff8c5a", cloud: "#f6b8a4", stars: 0.12, moon: 0 },
+    // GU47 phase 6: a gold afterglow instead of the magenta-pink one (judges g20p6g2: "pink sky clashes with the
+    // orange rocks, garish").
+    fog: { color: "#cdb3a0", density: 0.0018 },
+    sky: { zenith: "#3d5aa8", horizon: "#f6c08a", glow: "#ffb066", cloud: "#fde0bc", stars: 0.12, moon: 0 },
     lanterns: 1, ink: 1
   }
 ];

@@ -29,15 +29,15 @@ describe("GU47 phase 6 gate view", () => {
   it("keeps the falls cliff off the run", () => {
     const end = groundFrame(COURSE_LENGTH - 90, 0, 0);
     const rocks = fallsCliff(end);
-    expect(rocks).toHaveLength(3);
+    expect(rocks).toHaveLength(2);
     for (const r of rocks) {
-      // half the footprint diagonal of a cliffA slab at this scale
-      const reach = (Math.hypot(1.028 * r.scale[0], 1.239 * r.scale[2])) / 2;
+      // half the footprint diagonal of a cliffB rock at this scale
+      const reach = (Math.hypot(1.778 * r.scale[0], 1.896 * r.scale[2])) / 2;
       for (let d = 2300; d <= COURSE_LENGTH; d += 2) {
         const f = groundFrame(d, 0, 0);
         expect(Math.hypot(f.x - r.position[0], f.z - r.position[2])).toBeGreaterThan(reach + 5);
       }
-      expect(r.position[1] + (1.902 * r.scale[1]) / 2).toBeCloseTo(end.y + 23.5, 5);
+      expect(r.position[1] + (1.393 * r.scale[1]) / 2).toBeCloseTo(end.y + 22, 5);
     }
   });
 });

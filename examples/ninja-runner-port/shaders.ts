@@ -159,8 +159,8 @@ void main() {
   // GU47 phase 6 (waterLake, valley only): a deep teal lake with the peach sky caught only at grazing angles and
   // low-sun ripple glints, so it reads as water instead of a flat sky-coloured plane; 0 keeps the river as before.
   float rip = 0.5 + 0.5 * sin(vWorld.z * 0.37 + vWorld.x * 0.11 + a * 1.6 + waterTime * 0.8);
-  vec3 lake = mix(vec3(0.018, 0.085, 0.10), waterHorizon * 0.62, fres * fres) * (0.82 + 0.3 * rip);
-  lake += waterHorizon * pow(rip, 14.0) * 0.18 * (1.0 - fres);
+  vec3 lake = mix(vec3(0.02, 0.09, 0.105), waterHorizon * 0.3, fres * 0.35) * (0.92 + 0.12 * rip);
+  lake += waterHorizon * pow(rip, 18.0) * 0.08;
   col = mix(col, lake, waterLake);
   col += caustic * 0.025 + spec * 0.4;
   outColor = vec4(col, 0.94);
