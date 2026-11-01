@@ -101,7 +101,7 @@ const BZ_BLOB = { y: 0.008, opacity: 0.3, rings: [{ scale: 1 }, { scale: 0.62 },
 /** GU47 phase 4: decal tints. Round g11p4-r1 drew the scorches as white shapes (alpha from the map, white from the tint),
  *  so the tint carries the soot / paint tone: a multiply over the map where its RGB is sampled, the tone where it is not. */
 const BZ_DECAL_TINT = { scorch: "#2a231c", crack: "#221e19", bullet: "#1a1714", hazard: "#d8b234" } as const;
-const BZ_GLINT = { core: 0.9, coreOpacity: 0.45, halo: 0.35, haloOpacity: 0.16 } as const;
+const BZ_GLINT = { core: 0.5, coreOpacity: 0.22, halo: 0.2, haloOpacity: 0.07 } as const;
 const BZ_SSR = { intensity: 0.85, maxDistance: 16, roughness: 0.5, thickness: 0.35 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
