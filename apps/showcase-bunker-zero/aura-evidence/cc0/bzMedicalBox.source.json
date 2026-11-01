@@ -17,5 +17,5 @@
   "sha256": "2ab52c7478b67893b6f9c04924a876f7ac131f10238019b13783118bb0439b4a",
   "sizeBytes": 339728,
   "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:medical_box bunker-zero",
-  "why": "GU47 phase 9 (PRD D2): replaces fpsEnergyCorePickupMeshy (borrowed medkit pickup, prop-exclusivity with pips-big-leap)"
+  "why": "GU47 phase 9 (PRD D2): replaces the medkit pickup shared with another live game (key named in docs/prds/game-upgrades-47/lanes/g11.md, phase 9)"
 }

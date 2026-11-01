@@ -17,5 +17,5 @@
   "sha256": "c4f57213766a8c188450b1c41c8b80cec40fa9e92c85c1ee25415161ff8190a7",
   "sizeBytes": 504496,
   "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:industrial_wall_lamp bunker-zero",
-  "why": "GU47 phase 9 (PRD D2): replaces auroraPadBeacon (borrowed from showcase-aurora-lander): push-wall crack beacon and exit lamp"
+  "why": "GU47 phase 9 (PRD D2): replaces the pad beacon borrowed from another game: push-wall crack lamp and exit lamp (lane report phase 9)"
 }

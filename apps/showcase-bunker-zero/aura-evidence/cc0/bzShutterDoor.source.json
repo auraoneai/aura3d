@@ -17,5 +17,5 @@
   "sha256": "be065ed4c0314cf26835d6671aa1bf35a65a945b4fcac65e6db5278b61ab5df5",
   "sizeBytes": 194716,
   "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:rollershutter_door bunker-zero",
-  "why": "GU47 phase 9 (PRD D2): replaces pulseNeonGateArchMeshy (borrowed exit arch from retired showcase-pulse-tunnel)"
+  "why": "GU47 phase 9 (PRD D2): replaces the exit arch borrowed from a retired app (lane report phase 9)"
 }

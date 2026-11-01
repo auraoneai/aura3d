@@ -18,5 +18,5 @@
   "sha256": "c43859856d933e6109ba29a0c96f144bc2cb4e53f96c22ab807acc6101fa4cea",
   "sizeBytes": 2423644,
   "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:machete bunker-zero",
-  "why": "GU47 phase 9 (PRD D2): replaces mechWeaponA (borrowed knife viewmodel from retired showcase-mech-hangar)"
+  "why": "GU47 phase 9 (PRD D2): replaces the knife viewmodel borrowed from a retired app (lane report phase 9)"
 }
