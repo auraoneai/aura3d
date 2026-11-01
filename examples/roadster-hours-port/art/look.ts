@@ -157,10 +157,9 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     ambient: { sky: "#86a8dc", skyGain: 0.8, ground: "#c47c4e", groundGain: 0.6 },
     fog: { color: "#b9cfe2", near: 220, far: 2600, density: 0.0003 },
     surfaces: {
-      // phase 5 r2 (sibling tell vs heatsink-port: "dark navy road surface"): a dusty red-tan desert road, half the sky mirror
-      asphalt: [0.2, 0.13, 0.095], roadGloss: 0.35,
+      asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.25,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.6,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
