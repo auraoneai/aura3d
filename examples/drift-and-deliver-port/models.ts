@@ -56,8 +56,9 @@ export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder
  * ibl_reflections 3.5). Presentation only: the overrides change the materials, not the meshes or the collision boxes.
  */
 // round 2 (judge g18p4r1): clearcoat 1 at 0.05 sparkled the Meshy normal detail on the rear glass into "cracked glass"
-// streaks; a softer coat keeps the sun highlight and the sky sheen without the noise
-export const COURIER_PAINT = { roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.22, envMapIntensity: 1.4 } as const;
+// streaks; round 4 (g18p4-r5 frames): even a 0.6 / 0.22 coat streaked the rear glass under the lifted key, so the coat is
+// off and only the paint's roughness and environment gain stay
+export const COURIER_PAINT = { roughness: 0.5, clearcoat: 0, envMapIntensity: 1.3 } as const;
 export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.08, envMapIntensity: 1.3 } as const;
 
 /** Uniform scale that brings a car GLB to its target length. */
