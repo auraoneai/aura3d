@@ -1,0 +1,727 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:32:47.928Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ],
+    "framesB": [
+      "cloud-runner-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.767,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 36,
+    "sameGameYes": 12,
+    "differentRate": 0.75,
+    "ci95": [
+      0.6121535625207293,
+      0.8507951119028996
+    ],
+    "confidentDifferent": 20,
+    "confidentDifferentRate": 0.4166666666666667,
+    "same_game": false,
+    "same_game_confidence": 0.767,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "different characters (red-clad fighter vs small child in green)",
+        "A is a surreal sunset sky world with bloom, B is a flat-lit natural forest path",
+        "different scenery styles (torii gates, floating islands, dragon vs low-poly trees, cracked boulders, log)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small character on a straight path",
+        "similar stylized character models and soft lighting",
+        "endless-runner track layout with obstacle (log) and themed scenery"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime low-poly forest path with a small child character",
+        "Image B: purple night sky, cloud sea, torii gates and a dragon",
+        "Different character styles, palettes and lighting"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: bright daylight, low-poly green trees and cracked boulders with a child character",
+        "Image B: saturated red sunset, torii gate, floating islands and a dragon over cloud sea",
+        "Different art style, palette and character design, though both use a third-person runner camera"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-character third-person camera on a central path",
+        "similar painted, soft-textured character models",
+        "themed worlds (sunset temple vs. forest) could be levels of one runner"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: natural daylight, green meadow, dirt road, low-poly trees",
+        "Image B: pink-purple sunset sky, cloud sea, floating islands, torii gates, dragon",
+        "Different characters and art direction: child in green vs. red-clad warrior on a tiled bridge"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime low-poly path with a small child character, Image B is a night scene with a realistic warrior on a tiled bridge",
+        "Different palettes: warm green and orange versus deep blue and moonlit",
+        "Different scenery and art style: trees, boulders and cliff versus torii gates, floating islands and a dragon over clouds"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: night scene with torii gates, floating islands, dragon and cloud sea",
+        "Image B: daytime low-poly forest with a dirt road and cracked boulders",
+        "Both are third-person runner views with the character centered, but the palette, scenery and character models differ"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-character runner camera down a straight path",
+        "similar painterly character models and soft shading",
+        "very different palettes and themes, possibly separate levels"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small humanoid character on a straight path",
+        "similar stylized smooth-shaded character models and soft post-processing",
+        "different palette and biome, which could be separate levels"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: cool blue sky, green grass, low-poly trees and cracked boulders on a dirt road",
+        "Image B: warm orange sunset, cloud sea, torii gates, floating islands and a dragon",
+        "Different characters and art style: small child in green vs. topknot warrior in red on a tiled bridge"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: night purple palette with torii gates, floating islands and a dragon",
+        "Image B: daytime green/dirt path with low-poly trees and cracked boulders",
+        "Different characters and different camera framing and lighting style"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different character models (adult red-clad fighter vs. small chibi kid in green)",
+        "very different lighting and palette (hazy pink bloom vs. flat natural daylight)",
+        "different scenery and art style (floating islands, torii and dragon vs. low-poly forest, boulders and dirt road)"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "third-person runner camera behind a small character on a straight path",
+        "similar stylized low-poly characters with painterly textures",
+        "both are endless-runner layouts with a path leading to the horizon"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: daytime blue sky, green meadow, dirt path, low-poly trees",
+        "Image B: pink dusk sky, cloud sea, stone bridge with torii gates and a dragon",
+        "Different characters and camera style: small child vs. red-clad warrior"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a grassy dirt-road level with low-poly trees, a rolling log, and a child character; Image B is a purple-orange sky level with a stone bridge over clouds, torii gates, and a dragon",
+        "Different characters: small child in green outfit vs. muscular adult in red ninja outfit",
+        "Different palettes and art styles: muted natural greens and browns vs. saturated purple and gold with a glowing sun"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a night scene with a blue palette, torii gates, floating islands, a dragon and a cloud sea",
+        "Image B is a daytime scene with a dirt path, low-poly trees, cracked boulders and a green-clad child",
+        "Both are third-person runner views behind a character on a straight path, but the themes, lighting and character styles differ"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: daytime low-poly trees, dirt path and grass with a small cartoon boy",
+        "Image B: night scene with moonlit cloud sea, torii gates and a realistic red-clad warrior",
+        "Different art style, palette and character models"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both use a behind-the-character runner camera on a central path",
+        "both characters have similar painterly textures with pale rim highlights",
+        "different themes and lighting could be separate levels of one game"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Third-person endless-runner camera behind a small character on a straight path",
+        "Similar stylized low-poly characters and painterly textures",
+        "Comparable soft lighting and path-with-obstacle layout despite different biomes"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different character models: adult in red outfit vs. curly-haired child in green",
+        "pink dreamlike sky, clouds and torii gates vs. realistic blue-sky forest with cracked boulders",
+        "both are behind-the-character runner views on a path, which weakly suggests one game with different levels"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: daytime low-poly forest with a child character and a dirt path",
+        "Image B: saturated red sunset with torii gates, floating islands and a dragon",
+        "Different character styles, lighting and palette"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: purple night palette with cloud sea, torii gates, floating islands and a dragon",
+        "Image B: daytime blue sky with green meadow, dirt path, low-poly trees and cracked boulders",
+        "Different characters (red-clad ninja vs. small child in green) and different environment themes"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: night palette with torii gates, floating islands and a dragon",
+        "Image B: daytime low-poly forest with a dirt path and cracked boulders",
+        "Both are third-person runner views with a similar chase camera behind the character"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: green meadow with a dirt path, low-poly trees and cracked boulders",
+        "Image B: purple and orange sunset sky with a cloud sea, torii gates and a dragon",
+        "Different characters (small child in green vs. red-clad warrior) and different art styles"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: daytime low-poly trees, dirt road and cracked boulders",
+        "Image B: night scene with a moonlit stone bridge, torii gates and a dragon",
+        "Different characters and art styles: a small cartoon child vs. a realistic red-clad fighter"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime green meadow with a dirt path and low-poly trees",
+        "Image B: pink sunset sky, cloud sea, torii gates and floating islands",
+        "Different characters and art styles: a child in green versus a red-clad warrior"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a green meadow with a dirt road and a small child character, while Image B is a stone bridge over clouds with a samurai-style character",
+        "Different palettes: blue sky and green/brown in A, warm orange-sepia haze in B",
+        "Different scenery and props: low-poly trees and cracked boulders in A, torii gates, floating islands and a dragon in B"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime low-poly forest with dirt road, green grass and cracked boulders",
+        "Image B: purple night sky, cloud sea, torii gates and floating islands",
+        "Different characters and art styles: small child in green vs. muscular ninja in red"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "pink bloom-heavy sky with floating islands and torii gates versus a natural blue-sky forest",
+        "different character styles, a muscular warrior versus a small curly-haired child",
+        "different camera height and distance behind the character"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime low-poly nature runner with a small child character, Image B is a night scene with a torii-gate bridge and dragon",
+        "Different character models and proportions (small child in green vs. realistic adult in red)",
+        "Different palette and lighting (warm green/orange daylight vs. cool blue moonlit glow)"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same behind-the-character runner camera on a straight path",
+        "similar faceted tree foliage and cracked rock textures",
+        "different biomes and characters could be separate levels"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small character on a straight path",
+        "similar stylized character models and soft shading",
+        "different palettes (red sunset vs. green daytime) could be separate levels, so the match is uncertain"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "different characters: red ninja vs. small kid in green",
+        "sunset sky-bridge with floating islands vs. grassy dirt road with boulders",
+        "different art style: glowing stylized palette vs. low-poly natural scenery"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: daytime low-poly forest path with a child character",
+        "Image B: night scene with a blue stone bridge, torii gates, floating islands and a dragon",
+        "Different character style and color palette"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "different characters (adult in red vs. child in green)",
+        "pink cloud-sea sky vs. blue sky with green forest and dirt path",
+        "different scenery and materials (torii gates, dragon vs. low-poly trees, cracked boulders, log)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: night sea of clouds, torii gates, floating islands, dragon",
+        "Image B: daytime green meadow, dirt road, cracked boulders, low-poly trees",
+        "Both are third-person runner views behind a character on a path, but the palettes, scenery and character models differ"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both are third-person endless-runner views behind a small character on a straight path",
+        "Similar stylized, slightly painterly character models and soft lighting",
+        "Very different palettes and scenery (night temple bridge vs. daytime forest trail), which points to different levels or a different game"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different characters: red-clad fighter vs small green-clad child",
+        "pink bloom-heavy sky with floating islands vs natural blue-sky forest with dirt road",
+        "different art treatment: tiled stone bridge and dragon vs faceted low-poly trees and cracked boulders"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: daytime blue sky with low-poly trees, cracked boulders and a dirt road",
+        "Image B: orange sunset over a cloud sea with torii gates, floating islands and a dragon",
+        "Different characters and palettes: small child in green vs. samurai in red, with different camera framing"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both are third-person endless-runner views with the character seen from behind on a straight path",
+        "Similar stylized character models with painterly textures and soft lighting",
+        "Different biomes (cloud-sea shrine bridge vs. green forest road) could be separate levels of one game"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime low-poly forest with a dirt road and a rolling log",
+        "Image B: purple night sky with a cloud sea, torii gates and a dragon",
+        "Different player characters (a child in green vs. a ninja in red) and different art style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime low-poly forest with a green and tan palette and a child character",
+        "Image B: red sunset sky, cloud sea, torii gates, floating islands and a dragon",
+        "Different character styles and lighting: flat natural light vs. heavy glow and bloom"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different characters: adult red ninja vs. small child in green",
+        "different art style and lighting: glowing purple/gold sky bridge vs. flat daylight low-poly countryside",
+        "different environment and props: torii gates, floating islands and dragon vs. dirt road, cracked boulders and log"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: low-poly green countryside with a dirt path, cracked boulders and a child character",
+        "Image B: pink sky, cloud sea, torii gates, floating islands and a dragon with a samurai-style character",
+        "Different palettes, scenery and character art styles"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-character runner camera and path-ahead composition",
+        "similar stylized character models and soft shading",
+        "themes differ (pink sky world vs forest) but could be separate levels"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "different characters: adult in red outfit vs child in green",
+        "different settings: floating sky bridge with torii gates and dragon vs grassy dirt trail with boulders",
+        "different palette and lighting: purple-gold sunset vs muted blue-grey daylight"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.78,
+      "tells": [
+        "Image A: green meadow, low-poly trees and cracked boulders on a dirt road, with a small child character",
+        "Image B: warm sunset cloud sea, red torii gates, floating islands and a dragon, with a samurai-style character",
+        "Different palettes, scenery themes and character designs, though both are third-person runner views with a character centered on a path"
+      ]
+    }
+  ]
+}

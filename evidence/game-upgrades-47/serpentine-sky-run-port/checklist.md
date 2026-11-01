@@ -33,3 +33,12 @@ Status per row: see `docs/prds/game-upgrades-47/lanes/g17.md`. Pixel, judge and 
 - SSR-02/SSR-05: default and stages 1-2 mean 142-144 (in the 140-170 band). Stage 3 (134.8) and stage 8 (136.3) are below the band, which was not widened. Clip 0 on every view.
 - SSR-20: rubric minimum 4 (ibl_reflections), no category >= 7. Sibling distinctness fails vs ninja-runner-port (0.731) and cloud-runner-port (same_game true at 0.584). Open for 4.7.2. Modeling and material are blocked on WP-36.
 - game-checks: 0 errors, 4 warnings (luma-band only).
+
+## Phase 4 (4.7.2) update
+
+- SSR-03: the gates' sun shadows are traced on the road (pillar diagonals, lintel bands). The shadow map reports the whole custom road as shadowed under the low stage suns in software WebGL2: root cause found, engine-side follow-up. A tight contact core sits under the feet.
+- SSR-10/SSR-17: `serpSerpentHead` (WP-36) is admitted and drawn as the serpent landmark beside the road. The other 10 WP-36 rows are blocked because the Meshy keys refuse API calls.
+- SSR-11: pilgrim gates every 54 m as flag-draw instances (0 new draws).
+- SSR-16: ui_hud 7-7.5 (`look-judgement.json`, `look-judgement-p4b.json`). Final screens retaken (`g17p4-r7-shots`).
+- SSR-20: blind panel `g17p4r7` 3/0/0 better on all nine views. Rubric minimum still 4 (ibl_reflections), so goal 1 is open. Distinctness passes vs cross-hop, pips-big-leap and splat-rush-port, and fails vs ninja-runner-port (true @ 0.583) and cloud-runner-port (false @ 0.767).
+- game-checks: 0 errors, 10 warnings (luma-band only; default and stages 1-3 and 8 at 127-138 vs the 140 floor; band not widened).

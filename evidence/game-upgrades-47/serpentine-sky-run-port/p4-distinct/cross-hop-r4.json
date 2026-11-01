@@ -1,0 +1,730 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:23:30.509Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ],
+    "framesB": [
+      "cross-hop--original--settle-60s",
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s",
+      "cross-hop--theme3--settle-60s",
+      "cross-hop--theme4--settle-60s",
+      "cross-hop--theme5--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.887,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 43,
+    "sameGameYes": 4,
+    "differentRate": 0.9148936170212766,
+    "ci95": [
+      0.8006819480497736,
+      0.9664064205302869
+    ],
+    "confidentDifferent": 38,
+    "confidentDifferentRate": 0.8085106382978723,
+    "same_game": false,
+    "same_game_confidence": 0.887,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: frog crossing lanes of toy-like cars and trucks in a pastel daytime scene",
+        "Image B: ninja on a purple bridge above clouds at night, with a dragon and torii gates",
+        "Different palette, setting and character, with no shared art style or scenery"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink cloud sea, torii gates, floating islands and a dragon",
+        "Image B: frog crossing roads with cars and trains under an orange dusk sky",
+        "Different characters, scenery, palette and camera framing"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a purple night scene with a ninja on a floating bridge and a dragon, while Image B is a bright green daytime frog-crossing scene with toy vehicles",
+        "Different settings, color palettes and lighting: cloud sea with torii gates versus flat grass lanes with roads",
+        "Different characters and camera setups: third-person runner behind a ninja versus a high-angle view of a frog in traffic"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Frogger-style road crossing with trams, trucks and a frog; Image B is a ninja running on a bridge with torii gates and a dragon",
+        "Different scenery and art style: flat teal ground and magenta blocky buildings versus a purple cloud sea with floating islands",
+        "Different camera and lighting: high, tilted view with a hazy moon versus a low third-person chase camera with a soft purple glow"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pink dreamy sky with floating islands, torii gates and a dragon",
+        "Image B: flat green lanes with toy-like cars, trains and a frog",
+        "Different palette, lighting and scenery, with no shared assets or art style"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trucks, Image B is a runner on a bridge with a dragon",
+        "Different scenery: flat green lanes versus cloud sea, floating islands and torii gates",
+        "Different characters and art style, although both have a warm hazy sunset sky"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing lanes of toy cars and trains at sunset",
+        "Image B: ninja on a stone bridge above clouds with torii gates and a dragon",
+        "Different palettes (warm orange-brown vs cool blue) and different scenery and character styles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "yellow centerline marker in both frames",
+        "third-person camera behind the character",
+        "similar soft glowing sun/moon bloom"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: green frog crossing lanes of toy cars and trains, a road-crossing game",
+        "Image B: ninja on a brick bridge with torii gates, floating islands and a dragon over clouds",
+        "Different characters, scenery and camera framing; only the warm sunset tone is shared"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "flat-shaded toy-like road scene vs. detailed sculpted dragon and character",
+        "completely different settings and character types (frog vs. ninja)",
+        "shared purple sky with bloom sun and yellow center line, weakly suggesting a link"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "toy-like cars and frog on green lanes vs. stylized ninja on a sky bridge with dragon",
+        "different palettes: warm orange sunset and green vs. pink/magenta cloud-sea",
+        "different art styles and scenery, with only the sun glow and yellow center line in common"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night scene with a moonlit cloud sea, torii gates and a dragon, while Image B is a daytime scene with a green field",
+        "Image A uses a realistic, moody blue palette, while Image B uses bright, cartoony toy vehicles",
+        "Different characters and camera setups: a samurai-like runner in A, a frog crossing roads and rails in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, flat-lit Frogger-style scene with toy cars on green lanes",
+        "Image B is a warm orange cloud-sea scene with a torii bridge, floating islands and a dragon",
+        "Different characters and palettes: green frog versus a humanoid in teal, with a hazy golden glow only in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing roads with toy cars, trains and logs on flat green lanes",
+        "Image B: ninja on a sky bridge with torii gates, floating islands and a dragon",
+        "Different palettes and lighting: pale blue sky vs. purple-orange sunset over clouds"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: cartoon frog and toy cars on flat green lanes, blue sky",
+        "Image B: ninja on a stone bridge above golden clouds with torii gates and a dragon",
+        "Different palettes and camera: cool daylight vs warm orange sunset haze"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a stylized fantasy runner with a ninja character, torii gates, floating islands and a dragon over a cloud sea",
+        "Image B is a frogger-style crossing game with a frog, toy cars and trains on lanes",
+        "Both have a low sun and warm orange sky, but the scenery, characters and camera framing differ completely"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: serene floating islands, torii gates, dragon and a humanoid in a fantasy cloud-sea world",
+        "Image B: flat-shaded road with trams, trucks and a green frog in a Frogger-style layout",
+        "Both have a glowing moon and a starry sky, but the art style and gameplay differ completely"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing toy-car roads in a bright green, sunset-lit scene",
+        "Image B: ninja on a stone bridge over clouds at night, with a dragon and floating islands",
+        "Different palettes (warm green and orange vs. cold blue) and different art styles"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pink-purple cloud-sea fantasy with torii gates and a dragon, while Image B has a flat green, blue-sky toy-like traffic scene",
+        "Different characters and scenery: a blue-clad warrior on a stone bridge versus a frog crossing roads and rivers",
+        "Different palette and art style: soft hazy pastel glow versus bright saturated flat colors"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink dusk sky, cloud sea, torii gates and floating islands with a human character",
+        "Image B: flat green lanes, toy cars and a frog under a plain blue sky",
+        "Different palettes, scenery and character styles, with no shared assets"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: toy cars and a frog on flat green lanes (Frogger-style)",
+        "Image B: ninja on a stone bridge with torii gates, floating islands and a dragon above a cloud sea",
+        "Different scenery, characters and camera, although both have a warm sunset glow"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night scene with a ninja on a floating bridge, torii gates and a dragon above a cloud sea",
+        "Image B: bright pastel frogger-style road with toy-like cars and a green frog",
+        "Different palettes, lighting and character types"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: toy cars and a frog on a green road-crossing map",
+        "Image B: ninja on a torii bridge above red clouds with a dragon",
+        "Different scenery, characters and art style"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing lanes of cars and trains at sunset, Image B is a ninja on a floating bridge among clouds",
+        "Different palettes: orange/olive dusk versus purple/violet night",
+        "Different characters, camera and scenery: top-down road hazards versus torii gates, floating islands and a dragon"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy-Road-style frogger with a frog, trams and trucks on flat lanes",
+        "Image B is a runner on a tiled bridge with torii gates, floating islands and a dragon over clouds",
+        "Different palettes and scenery: magenta/teal city at night vs. blue misty fantasy realm"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink-purple sky, cloud sea, floating islands, torii gates, humanoid warrior and dragon",
+        "Image B: green lanes, toy-like vehicles, trains and a frog in a road-crossing layout",
+        "Different palettes, scenery and camera setups (third-person behind-view runner vs. high-angle lane-crossing view)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: stylized ninja on a torii-gate bridge above clouds, saturated purple-gold sky",
+        "Image B: frog on a dim, muted road and rail crossing with toy-like cars and trains",
+        "Different art direction, palette and camera framing"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: night-time fantasy scene with a ninja on a torii-gate bridge, dragon and floating islands over clouds",
+        "Image B: bright daylight Frogger-style road crossing with toy cars and a frog",
+        "Different palette, lighting and camera style: dark blue and glowing vs flat saturated green and primary colors"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "matching golden guide line ahead of the character in both frames",
+        "third-person camera behind the character with similar soft engine lighting",
+        "very different scenery and palette (night ninja bridge vs. daytime frog road) pulls toward different games"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime Frogger-style road with toy cars, a frog and a flat green ground",
+        "Image B: purple twilight sky, cloud sea, torii gates, floating islands, a dragon and a ninja runner",
+        "Different palette, art style, lighting and character type"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Japanese-themed sunset runner with a ninja character, torii gates, floating islands and a dragon",
+        "Image B is a frogger-style road crossing with toy-like vehicles and a frog under a pale blue sky",
+        "Different palettes, camera setups and world themes"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: warm orange sunset, floating islands, torii gate path, humanoid warrior",
+        "Image B: night purple sky, frogger-style road with trams and trucks, green frog",
+        "Different scenery, palette, character and camera framing"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: warm orange sunset sky, cloud sea, torii gates and floating islands with a ninja character",
+        "Image B: cool blue sky, pastel Frogger-style road lanes with toy-like vehicles and a frog",
+        "Different art direction, palette and gameplay setting"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night scene with a human warrior, torii gates, floating islands and a dragon",
+        "Image B: sunset road and rail crossing with toy-like cars, trains and a frog",
+        "Different palettes, themes and character models"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: ninja on a torii-gate bridge above clouds with floating islands and a dragon",
+        "Image B: green frog crossing lanes of cars and trains, which is a different genre and setting",
+        "Different characters, scenery and palette: saturated red-orange fantasy sky versus a muted brown sunset with toy-like vehicles"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--theme2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: toy cars and a frog on green road lanes",
+        "Image B: ninja on a sky bridge with torii gates, floating islands and a dragon",
+        "Different settings, palettes and scenery"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel frog road-crossing scene with toy-like cars and trucks",
+        "Image B: red sunset with a torii-gate bridge, floating islands and a dragon",
+        "Different characters, palettes and lighting"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: purple dusk sky, cloud sea, floating islands and torii gate in a stylized fantasy setting",
+        "Image B: bright green fields, toy-like cars and trains, grey overcast sky in a Frogger-style scene",
+        "Different characters, palettes and lighting: glowing violet night runner vs flat daylight crossing game"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cross-hop--theme3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different protagonists, a frog in A and a samurai-like warrior in B",
+        "dark muted sunset road scene versus pastel pink sky-bridge scene",
+        "similar bloom sun and yellow center line are the only shared cues"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm, hazy fantasy scene with torii gates, floating islands and a dragon, and Image B is a bright cartoon Frogger-style scene with toy cars",
+        "Different palettes: sepia and orange glow versus saturated green and blue with a pale sky",
+        "Different characters and camera: a humanoid runner on a bridge versus a frog on lanes of traffic"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: red-orange sunset, torii gates, floating islands and a dragon over a cloud sea",
+        "Image B: bright green Frogger-style lanes with toy cars and a pale blue sky",
+        "Different characters (ninja vs frog), camera angle and palette"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: Frogger-style toy cars, flat green lanes, blue-gray sky",
+        "Image B: red sunset, torii gates, floating islands, dragon over cloud sea",
+        "Different characters, palettes and lighting (frog vs. ninja runner)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "cross-hop--theme0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.65,
+      "tells": [
+        "Toy-car Frogger scene with flat green lanes versus a painterly pink cloud-sea sky bridge",
+        "Very different art styles and palettes: saturated primary colors versus a pink/purple gradient",
+        "Both use a third-person behind-the-character camera with a yellow center line, which is a weak point in favor of the same game"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "cross-hop--theme1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "identical thin yellow center line at screen center in both",
+        "third-person character seen from behind with a similar soft sun disc",
+        "very different palettes, which could be separate themed levels"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "cross-hop--theme4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night-time road-crossing scene with a frog, trams, trucks and trains",
+        "Image B: red sunset sky, cloud sea, torii gates, floating islands, ninja runner and dragon",
+        "Different palette, setting and character style"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "cross-hop--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: night-time Japanese torii bridge, floating islands, dragon, cloud sea",
+        "Image B: bright daylight toy cars, trains and frog on a flat green road-crossing course",
+        "Different palette, camera and character style (third-person ninja vs frog crossing-game view)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "cross-hop--theme5--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "thin golden guide line leading forward in both frames",
+        "third-person camera behind a lone character in both",
+        "very different art style and lighting, which argues against"
+      ]
+    }
+  ]
+}

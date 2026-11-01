@@ -13,7 +13,7 @@ time (recorded per asset in `provenance/<name>.rights.json`; Meshy task ids in `
 
 | File | Role | Size | Triangles (verts) | Prompt (gist) |
 | --- | --- | --- | --- | --- |
-| `runner.glb` | Rigged hero, outfit atlas recoloured to teal and silver (see provenance/runner.recolor.json) (replaces the catalog `runner-rig.glb`) | 4.6 MB | 20,472 verts, 24 joints | young martial-arts hero, spiky dark hair, orange outfit, blue sash and wristbands |
+| `runner.glb` | Rigged hero, outfit atlas recoloured to teal and silver, then (GU47 phase 4) to red lacquer and pearl (see provenance/runner.recolor.json) (replaces the catalog `runner-rig.glb`) | 4.6 MB | 20,472 verts, 24 joints | young martial-arts hero, spiky dark hair, orange outfit, blue sash and wristbands |
 | `gate.glb` | Check-in arch (`arch` entities) | 1.4 MB | 23,408 verts | horned stone gateway arch, carved ring emblem |
 | `barrier.glb` | Barrier hazard | 1.2 MB | 22,740 verts | low stone barrier with glowing jade crystal posts |
 | `ogre.glb` | Oni hazard | 1.3 MB | 21,457 verts | stylised horned ogre guardian with a club |
@@ -21,6 +21,7 @@ time (recorded per asset in `provenance/<name>.rights.json`; Meshy task ids in `
 | `feast.glb` | Feast pickup | 2.1 MB | 41,301 verts | platter of dumplings and fruit with a golden orb |
 | `lantern.glb` | Roadside lanterns | 1.2 MB | 16,478 verts | stone lantern post with a glowing amber lantern |
 | `island.glb` | Floating-island decor | 2.2 MB | 46,955 verts | small floating rock island with trees |
+| `serpentHead.glb` | Colossal serpent landmark beside the road (GU47 WP-36 `serpSerpentHead`, generated 2026-10-30, admitted with `aura3d assets import-meshy` 2026-10-31; provenance/serpentHead.*) | 1.6 MB | 21,986 verts | colossal serpent dragon head with pearl and jade scales, gold whiskers and glowing eyes, emerging from clouds |
 
 The runner's clips are Meshy rig clips merged into one GLB (`Run_Loop` basic running, `Idle_Loop` action 0, `Jump_Loop` 466 Regular_Jump,
 `Slide_Loop` 516 slide_light, `Flight_Loop` 501 Leap_of_Faith, `Dive_Loop` 506 Dive_Down_and_Land, `Hit_React` 178 Hit_Reaction).

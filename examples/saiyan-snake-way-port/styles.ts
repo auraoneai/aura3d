@@ -24,9 +24,9 @@ export interface RunnerStyle {
 
 export const RUNNER_STYLES: readonly RunnerStyle[] = [
   {
-    id: "tide", name: "TIDE", tagline: "Teal suit, cyan surge. Calm and quick.",
+    id: "tide", name: "TIDE", tagline: "Red lacquer robe, cyan surge. Calm and quick.",
     gi: 0x1f8a86, giDark: 0x14595a, skin: 0xf0c08a, hair: 0x1d1620, belt: 0xc9cfdb, boot: 0x1c2a3a, sash: 0x1a7471,
-    auraCore: 0xe6ffff, auraLit: 0x9be8f0, aura: 0x2bb8d8, tint: [0.9, 0.95, 0.95], wash: [0.05, 0.2, 0.22]
+    auraCore: 0xe6ffff, auraLit: 0x9be8f0, aura: 0x2bb8d8, tint: [1, 0.97, 0.95], wash: [0.12, 0.03, 0.02]
   },
   {
     id: "violet", name: "VIOLET", tagline: "Indigo suit, violet surge. Cool and sharp.",
