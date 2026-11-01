@@ -761,7 +761,9 @@ function buildMarkerPoolNodes(): any[] {
   return [
     // GU47 phase 4: the key casts real shadows now, so the foot disc is a faint occlusion pad (0.24 read as a decal, rubric).
     pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.5, 0.008, 0.5], material: material.pbr({ color: "#000000", opacity: 0.1, roughness: 1 }) }),
-    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.82, 0.82, 0.34], material: ringMat(home) }),
+    // GU47 phase 4 (distinctness vs aura-diamond-3d, whose players stand on round rings): on the new look the home marker
+    // is a hexagon (six-segment torus); away stays square, so the colour-free shape cue holds.
+    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.84, 0.84, 0.34], params: { tubularSegments: 6 }, material: ringMat(home) }),
     pool("torus", "marker-rings-away", AWAY_IDS.length, { size: [0.86, 0.86, 0.34], params: { tubularSegments: 4 }, material: ringMat(away) }),
     pool("cylinder", "marker-auras", MARKER_ATHLETES, { size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }),
     pool("cylinder", "marker-cones", CONE_COUNT, { size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }),
