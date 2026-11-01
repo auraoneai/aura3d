@@ -1,0 +1,731 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:42:30.780Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village--settle-60s"
+    ],
+    "framesB": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.734,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 26,
+    "sameGameYes": 22,
+    "differentRate": 0.5416666666666666,
+    "ci95": [
+      0.4029083309494732,
+      0.6742497814544648
+    ],
+    "confidentDifferent": 15,
+    "confidentDifferentRate": 0.3125,
+    "same_game": false,
+    "same_game_confidence": 0.734,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pastel pink sky, cloud sea and floating islands; Image B: medieval rooftop town with rocky mountains",
+        "Different characters: teal-clad topknot fighter vs orange glowing runner",
+        "Different palettes and lighting: soft hazy pink vs warm dusk with saturated reds and blues"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a character on a narrow blue rooftop-like path",
+        "shared blue tiled path material with stylized Unreal-like lighting",
+        "similar low-poly stylized world with distant dark hills and a winding blue track"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a running character on a narrow path",
+        "blue curved ribbon-like rails and track in both frames",
+        "similar soft engine lighting, fog and sky gradients despite different level themes"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-character camera on a central brick path",
+        "lantern posts and stone-tile path in both",
+        "different time of day and scenery, but a consistent ninja-runner theme"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pine forest on grass with a log path, purple dusk sky",
+        "Image B: brick bridge above a sand-colored cloud sea with floating islands and an orange haze",
+        "Different player characters: a translucent yellow figure in a bubble vs. a detailed blue-clad warrior"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: stylized golden desert sky with floating islands and a glowing sun, Image B: realistic overcast sky with a medieval village",
+        "Different characters: teal-clad fighter with a sword vs. orange-hooded dark-clothed figure",
+        "Different path materials and palettes: pale tiled bridge with green edges vs. brown cobblestone road on green grass"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A has a saturated red-orange sky with floating islands and a cloud sea, while Image B has a muted purple dusk sky with a medieval rooftop town",
+        "Both are third-person runner views from behind the character, which points to the same genre or engine",
+        "The characters differ: a teal ninja-like figure in A and an orange glowing figure in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: blue night sky, cloud sea, floating islands, tiled bridge",
+        "Image B: pink dusk sky, green meadow, pine trees, log path",
+        "Different characters: detailed humanoid in A, translucent yellow figure in a bubble in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same third-person camera behind a small character on a central brick path",
+        "similar stylized character models and soft engine lighting",
+        "East Asian motifs in both (lanterns in A, red gate in B)"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-character runner camera down a long path to the horizon",
+        "similar stylized painterly character and prop rendering",
+        "different biome and palette could be separate levels of one game"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same third-person behind-the-back runner camera on a central path",
+        "lantern posts along the path in both",
+        "very different palette and environment, which could just be separate levels"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.52,
+      "tells": [
+        "same third-person behind-the-back camera on a central path",
+        "similar stylized Unreal-style rendering and character modeling",
+        "different time of day and character outfit, which weakens the match"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a green village with a realistic cobblestone path and red autumn trees, Image B is a hazy orange sky with floating islands",
+        "Different character models: a red-hooded figure in A and a teal-clad topknot figure in B",
+        "Different lighting and palette: overcast blue-grey sky in A, a warm sunset glow in B"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Different environment art: painterly low-poly green mountains and wooden bridge versus a smooth glowing stone path over a cloud sea with floating islands",
+        "Different character rendering and design: orange-robed figure with a bubble versus a blue-clad topknot warrior",
+        "Different lighting and palette: purple dusk sky with saturated greens versus a monochrome blue moonlit night"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both third-person runners on a long narrow path seen from behind",
+        "similar dark blue curving ribbon structures in the distance",
+        "same realistic engine lighting and stylized materials despite different level themes"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same third-person behind-the-runner camera on a narrow path",
+        "similar purple-pink sky gradients",
+        "comparable soft stylized rendering and shadows"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: medieval rooftop town with low-poly mountains and a purple dusk sky",
+        "Image B: floating islands over a sand-colored cloud sea with a hazy sun and a cobbled path",
+        "Different player characters (orange cloaked runner vs teal-clad character) and different palettes"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both are third-person runner views along a narrow path toward the horizon",
+        "Similar stylized, painterly character models and Unreal-style lighting",
+        "Purple-toned skies with stylized scenery in both"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: purple night sky with a cloud sea and floating islands, versus Image B: daytime green village with a cobblestone road",
+        "Different characters: a blue-clad runner on a tiled bridge versus orange-sashed ninjas with blue ghost clones",
+        "Different palette and lighting: monochrome violet glow versus saturated daylight with red stylized trees"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same behind-the-back third-person runner camera on a narrow elevated path",
+        "blue-teal curved path edges in A resemble the blue roof ridges and curved blue strips in B",
+        "similar painterly purple-pink sky gradient and soft lighting"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a stylized character on a narrow path",
+        "similar purple-pink sky palette and painterly stylized look",
+        "similar character model style and lantern/pole props along the path"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a night scene with a blue palette, floating islands and a cloud sea, while Image B is a daytime medieval village with green grass",
+        "Different characters: a blue-clad topknot fighter in A and an orange-hooded ninja in B",
+        "Both use a third-person camera behind a character on a tiled path, which is the only link"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: hazy desert-cloud sky with floating islands and a stylized brick path",
+        "Image B: purple sunset sky with low-poly pine forest and grass terrain",
+        "Different player characters: detailed anime-style figure vs. translucent yellow figure in a bubble"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: village with stylized red trees, green grass and a blue sky",
+        "Image B: hazy orange sky above a cloud sea with floating islands",
+        "Different characters and path styles: ninja runners on a stone cobble road versus a teal-clad character on a smooth tiled bridge"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly pine forest on green grass with a dusk purple sky and a yellow translucent runner on a log",
+        "Image B: night scene with floating islands, a cloud sea, and a tiled bridge with lanterns",
+        "Different characters and art style: translucent yellow figure in a bubble vs. detailed painted humanoid in blue clothes"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: village with cobblestone path, red and pink blobby trees, and multiple ninja runners",
+        "Image B: surreal sky track above golden clouds with floating islands and a purple-orange gradient sky",
+        "Different character models and art style: stylized low-poly ninjas versus a detailed blue-clad runner"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a pastel pink sky with floating islands and a cloud sea, Image B is a green village with a daytime blue sky",
+        "Different characters: a blue-clad topknot warrior vs. an orange-scarfed ninja with ghostly blue followers",
+        "Different path and scenery: a smooth tiled sky bridge vs. a cobblestone road with textured lollipop trees and timber houses"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person runner views along a narrow path (wooden bridge vs. tiled road)",
+        "stylized painterly characters with a similar render quality",
+        "different palettes and scenery (green fantasy valley vs. orange cloud sea with floating islands)"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: green hills, wooden bridge, and village scenery under a muted purple-grey sky",
+        "Image B: floating islands over a golden cloud sea with a glowing sun and a pastel tiled path",
+        "Different character styles and different palettes and lighting"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pine forest on a grassy field with a translucent yellow runner in a bubble",
+        "Image B: red-orange cloud sea with floating islands and a brick sky bridge",
+        "Different character styles and palettes: yellow ghost-like figure versus detailed teal-clad human"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a ninja-style character on a path",
+        "similar stylized cartoon character models and lantern props",
+        "both show a path leading into the distance with a runner theme"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner on a narrow path (log vs. brick bridge) with the character seen from behind",
+        "matching pink-purple sunset sky",
+        "similar stylized, painterly rendering and soft lighting"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Third-person camera behind a stylized ninja-like character on a brick path",
+        "Similar painterly stylized brick/cobble road textures and Unreal-like lighting",
+        "Red-orange motifs: red torii-style gate and red trees echo the red palette in A"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same third-person behind-the-runner camera on a narrow winding path",
+        "similar purple-pink dusk sky gradient",
+        "stylized low-poly look with level-themed scenery and a possible power-up bubble on the character"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: surreal orange sky with floating islands and a tiled bridge over a sand-like cloud sea",
+        "Image B: medieval village with green grass, cobblestone road and stylized red trees",
+        "Different characters: a teal-clad runner in A, an orange-and-black ninja with blue ghost runners in B"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "different character models and art detail (orange glowing figure vs detailed teal-clad hero)",
+        "different world themes and palettes (medieval rooftops vs floating islands over a sand sea)",
+        "both are third-person behind-the-runner views with similar rendering, so a shared game is still possible"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.5,
+      "tells": [
+        "both show a third-person runner on a narrow path or bridge",
+        "similar purple-pink sky tones and stylized character rendering",
+        "very different scenery: floating islands above clouds versus green hills and a wooden bridge"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "ninja-runner-port--forest--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: purple night sky, cloud sea, floating islands, brick path with a ninja character",
+        "Image B: daytime pink-sky pine forest on green grass, a log path, and a translucent yellow character in a bubble",
+        "Different art styles, palettes and character designs"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a grounded village with green grass and stone houses; Image B is a floating-island sky world with a purple-orange sunset",
+        "different characters: hooded orange-scarfed ninja vs. blue-clad topknot fighter",
+        "both show third-person characters on a brick path, which weakly suggests shared engine or assets"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a third-person character on a long path stretching ahead",
+        "Similar stylized, painterly character models and rendering",
+        "Palette, scenery and lighting differ strongly: daytime green hills vs. night blue cloud sea"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: hazy tan sky with sea of clouds and floating islands, versus Image B: purple cloudy sky with green hills",
+        "Different path styles: tiled stone road with green edges versus wooden plank bridge with railings",
+        "Different character designs and lighting: teal-clad hero in warm monochrome haze versus orange-robed fighter in saturated daylight"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different character models (teal topknot fighter vs orange-hooded ninja)",
+        "pastel pink cloud-sea world vs realistic green medieval village",
+        "different ground materials and lighting style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner on a cobblestone/brick path",
+        "lanterns along the path edge",
+        "ninja-style stylized characters with similar rendering"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "ninja-runner-port--rooftops--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person runner seen from behind on a narrow path leading to the horizon",
+        "blue-edged ribbon track in A resembles the blue curving roof path in B",
+        "similar purple-to-warm sunset sky and soft lighting"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "ninja-runner-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person ninja-style character from behind on a brick path",
+        "similar stylized Unreal-like rendering and brick path texture",
+        "lanterns/lamp posts along the path in both"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a hazy orange sky with floating islands and a tiled path over a sand-cloud sea",
+        "Image B is a lowpoly green landscape with a wooden bridge, purple cloudy sky and village",
+        "Both are third-person behind-the-character runner views with a similar character render style"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "ninja-runner-port--village--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "different art style: saturated low-poly village vs pastel cloud-sea sky",
+        "different characters: black-clad ninja with ghost runners vs teal topknot fighter",
+        "different path and lighting: brown cobblestone in daylight vs pink tiled bridge with a hazy sun"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "ninja-runner-port--river--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Night palette with cloud sea and floating islands versus daytime green meadows and pink sky",
+        "Different character styles: blue-clad ninja versus orange-robed monk casting an energy shield",
+        "Blue tiled glossy path versus wooden plank bridge with railings"
+      ]
+    }
+  ]
+}
