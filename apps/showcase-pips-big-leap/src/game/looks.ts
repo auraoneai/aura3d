@@ -369,7 +369,7 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
       intensity: look.key.intensity,
       // Phase 3: a little depth and normal bias; the default left diagonal acne bands on the big near slabs.
       // Phase 4: more of both; the lower side key striped the felt lawn with acne bands (p4-r1 frames).
-      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.003, normalBias: 0.35 }
+      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.004, normalBias: 0.6 }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },
