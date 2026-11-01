@@ -22,8 +22,12 @@ describe("GU47 phase 6 gate view", () => {
   });
 
   it("softens the falls only on request", () => {
-    expect(fallsSpec().uniforms?.fallsSoft?.value).toBe(0);
-    expect(fallsSpec(1).uniforms?.fallsSoft?.value).toBe(1);
+    const soft = (spec: ReturnType<typeof fallsSpec>): unknown => {
+      const u = spec.uniforms?.fallsSoft;
+      return typeof u === "object" && u !== null ? u.value : undefined;
+    };
+    expect(soft(fallsSpec())).toBe(0);
+    expect(soft(fallsSpec(1))).toBe(1);
   });
 
   it("keeps the falls cliff off the run", () => {
