@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/saiyan-snake-way-port/screens/final/mid-action-1280.jpg",
+      "sha256": "b216ad0311adc06c54b7daac046082bd47296cd172f77564645f29a81058c106"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p3-r4/serpentine-sky-run-port/frames/g17p3-r4-d18/serpentine-sky-run-port--default--settle-60s.jpg",
+      "sha256": "7c67a29160992edb3d4777a34b7907bfc369789304e7c8569cf3ddf4496fd691"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p3-r4/serpentine-sky-run-port/frames/g17p3-r4-d18/serpentine-sky-run-port--stage8--settle-60s.jpg",
+      "sha256": "2581e56cc3848c9269664980b3cd60456cc5212f468595c8cbc9c342eb3bda01"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p3-r2/serpentine-sky-run-port/frames/g17p3-r2-s678/serpentine-sky-run-port--stage7--settle-60s.jpg",
+      "sha256": "4d613721f9be68729c54d9dd112957dd074dab692b5b3f22b81f1f03df50de8a"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 6,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Four distinct time-of-day setups: orange dusk, pink, purple-gold sunset, and blue moonlit night. The sun or moon sits low and directly ahead, so the character is mostly backlit with flat front fill and no rim separation. The road reads evenly lit with little directional modelling. The recipe's 3/4-front 48°/35° key is not used."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is one long, soft character shadow stretching toward the camera, plus a darker smear down the road centre in frame 1. There are no contact shadows at the feet. Floating islands, lamps and flag poles cast nothing on the cloud sea or the road."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Every surface is matte. The road, tube rail and character show no sky-tinted specular or environment reflection, even under the strong sunset sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The scene is a cloud-sea plane with a single ribbon road, small floating islands with bonsai trees, lamp posts, red poles with prayer flags, and a looping pipe-like rail on the right. It is evocative, but the same islands and lamps sit in identical positions across frames 2–4, and the space is sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Horizon haze and a sun glow halo blend the road into the distance. White puff particles trail along the road in frame 1, and stars appear in frame 4. The cloud sea is a noise-shaded plane with no volumetric depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The road is flat-shaded tiles with drawn grout lines and a painted yellow centre stripe. The rim reads as smooth plastic tubing. The clouds look like a tiled noise texture. The character's cloth and skin have little texture or roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The character model is a reasonable stylised humanoid with a topknot, wraps and a sickle. The floating islands are low-poly rocks with lumpy tree blobs. The right-hand rail is a primitive tube with visible segment seams. The lamps and poles are simple."
+    },
+    {
+      "category": "composition",
+      "seen": "The image is strongly centred, with a single-point perspective down the road to the sun. The character sits dead centre and partly blocks the vanishing point. In frame 1 the large title text and banner compete with the focal area. The subject fills about 10–14% of the frame, below the 18–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a chase cam directly behind and above the runner, not the side-on follow the platformer recipe expects. The wide field of view exaggerates the road edges in the near foreground."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun and moon is applied. Frame 1 has a heavy orange colour wash that crushes contrast and desaturates the greens. Frames 2–4 are cleaner but slightly washed out in the pink grade. There is no visible anti-aliasing issue."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The character pose is identical in frames 2, 3 and 4 (same stride, same arm and sickle position), which suggests a frozen or idle-locked pose. Frame 1 shows a mid-run pose with some lean, so motion quality cannot be confirmed."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has tidy dark-purple panels: runner spark/strain bars, a distance progress bar, a days-left and run-active panel, run score, a surge counter and a sound toggle. They are legible, but the centred title and subtitle overlay the play view. Frames 2–4 show no HUD beyond a tiny unreadable banner in the distance."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

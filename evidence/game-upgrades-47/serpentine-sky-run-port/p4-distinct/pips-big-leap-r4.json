@@ -1,0 +1,733 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:33:50.083Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ],
+    "framesB": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.881,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 47,
+    "sameGameYes": 1,
+    "differentRate": 0.9791666666666666,
+    "ci95": [
+      0.8910053086246883,
+      0.9963129840206002
+    ],
+    "confidentDifferent": 46,
+    "confidentDifferentRate": 0.9583333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.881,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-cap cartoon character, blocky Minecraft-style figure and metallic ring portals on a deep blue starfield",
+        "Image B: realistic ninja runner on a purple brick bridge with torii gates, cloud sea and a dragon",
+        "Different palettes, art styles and camera setups"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink sky, cloud sea, torii gates and floating islands",
+        "Image B: brown industrial interior with an acorn-capped character and a blocky voxel NPC",
+        "Different characters, palettes and settings"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple night sky, cloud sea, torii gates, ninja character and dragon",
+        "Image B: pale blue daytime sky with floating grey platforms, acorn character and blocky voxel avatar",
+        "Different palettes, themes and character styles"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: brown and orange indoor palette with an acorn character and scaffold towers",
+        "Image B: purple twilight sky, cloud sea, torii gates and a ninja runner",
+        "Different characters, settings and lighting moods"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: pink/purple sunset sky over a cloud sea with torii gates and a dragon",
+        "Image B: overcast grey-blue sky, brown farmland, windmill, acorn character and blocky red-shirt figure",
+        "Different palettes, scenery and characters"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: cool pale blue sky with grey-lavender platforms, acorn character and blocky voxel figure",
+        "Image B: warm orange sunset, cloud sea, red torii gates and dragon, a different art direction",
+        "Different characters, scenery and lighting palettes with no shared assets"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: warm brown indoor setting with an acorn-capped character and a blocky pixel character",
+        "Image B: cool blue night sky over clouds, with a samurai-style character, torii gates and a dragon",
+        "Different palettes, art styles and settings"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an enclosed brown interior with an acorn character and mechanical towers, while Image B is an open pink sky with clouds, torii gates and a dragon",
+        "Different protagonists and art themes: orange acorn creature versus blue-clad ninja",
+        "Opposite palettes and settings: dark brown/amber versus pastel pink/purple"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: acorn character, blocky Minecraft-style NPC and a dark industrial temple interior",
+        "Image B: samurai-style character on a torii-lined bridge above clouds with floating islands and a dragon",
+        "Different settings, character styles and scenery, with only a shared warm brown-orange tint"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn character in a dark brown indoor setting with rusty scaffold towers",
+        "Image B: samurai-style character on a bridge among golden clouds, torii gates and a dragon",
+        "Different palettes, lighting and art style: muted brown versus purple-orange sunset"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn character, blocky Minecraft-style NPC and pale blue sky",
+        "Image B: pink sunset sky with cloud sea, torii gates and a dragon",
+        "Different art themes and palettes despite both showing floating sky platforms"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night scene with a samurai-style character, torii gates and a dragon",
+        "Image B: daytime overcast sky with an acorn character, windmill and brown platforms",
+        "Different palettes and art styles (deep blue glow vs. warm brown, cartoon look)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly green forest with acorn and blocky characters, bright blue sky",
+        "Image B: golden sunset cloud sea with torii gates, dragon, and a realistic-style ninja character",
+        "Different art styles, palettes, and lighting"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly green pine forest with acorn character and blocky voxel NPC under a pale blue sky",
+        "Image B: purple-orange sunset sky, golden cloud sea, torii gates and a dragon on a stone bridge",
+        "Different art style, palette and lighting: flat daylight vs. glowing stylized dusk"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly green pines, acorn character and blocky Minecraft-style figure on a bright blue-sky course",
+        "Image B: warm orange sunset, cloud sea, torii gates and a dragon with a realistic samurai character",
+        "Different art styles, color palettes and lighting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: outdoor sunset sky with cloud sea, torii gates and floating islands",
+        "Image B: enclosed brown industrial hall with an acorn character and a blocky voxel NPC",
+        "Different characters, settings and art styles, with no shared HUD or props"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blue moonlit night, cloud sea, torii gates and dragon",
+        "Image B: warm brown indoor palette with an acorn character and scaffold towers",
+        "Different characters, themes and color palettes"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: bright pastel daytime sky with a pale lavender platform and an acorn character",
+        "Image B: dark blue night scene with a torii-gate bridge, dragon and a cloud sea",
+        "Different character styles: a cartoon acorn and a blocky figure versus a realistic ninja"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink dusk sky with a sea of clouds and a torii-gate bridge",
+        "Image B: low-poly green pine forest under a pale blue sky, with an acorn character and a blocky voxel character",
+        "Different art style, palette and character design"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink dusk sky, cloud sea, torii gates and dragon",
+        "Image B: low-poly green pine forest with acorn character and blocky NPC",
+        "Different palettes, art styles and settings"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: pale blue sky with grey-lavender platforms and an acorn character",
+        "Image B: orange sunset over a cloud sea, with torii gates and a dragon",
+        "Different character styles and art direction (cartoon acorn and blocky figure vs. realistic samurai-style hero)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic ninja character on a stone bridge above clouds, with torii gates and a dragon",
+        "Image B: cartoon acorn character, blocky Minecraft-style figure and starry navy sky with floating platforms",
+        "Different art styles, scenery and palettes: A is hazy blue-gray and moody, B is saturated navy and purple with metallic rings"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pale blue sky, lavender platforms and an acorn character with a blocky voxel NPC",
+        "Image B: saturated red-orange sunset, torii gates, dragon and a samurai-style character",
+        "Different palettes, scenery and character art styles"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: brown/orange indoor ruin with an acorn character and a blocky Minecraft-style figure",
+        "Image B: purple dusk sky, cloud sea, torii gates, floating islands and a dragon",
+        "Different palettes, settings and character styles"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: warm brown/orange indoor palette with an acorn-headed character and scaffold towers",
+        "Image B: cool blue night sky, cloud sea, torii gates and a ninja runner on a bridge",
+        "Different characters, settings and art direction"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a pink dusk sky, torii gates and a dragon, while Image B has a pale blue daytime sky",
+        "Different player characters: a ninja-like warrior in A, an acorn creature with a blocky Minecraft-style NPC in B",
+        "Different level design: a tiled bridge over clouds in A, floating grey slabs with rocks and props in B"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright purple-gold sky, cloud sea, torii gates, floating islands, ninja character",
+        "Image B: dark brown industrial interior with an acorn-capped character and a blocky Minecraft-style figure",
+        "Different art style, palette, and setting"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night palette with a cloud sea, torii gates and floating islands",
+        "Image B: bright daylight with low-poly pine trees and an acorn character",
+        "Different character styles and settings: ninja and dragon versus acorn and blocky figure"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: night scene with a cloud sea, torii gates and a realistic dragon",
+        "Image B: bright low-poly daytime forest with an acorn character and a blocky voxel figure",
+        "Different character styles, palettes and lighting, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime low-poly forest with acorn character and blocky avatar",
+        "Image B: purple night sky, cloud sea, torii gates and dragon",
+        "Different characters, palettes and art direction"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar pale lavender platform surfaces with a tile grid and metallic rim",
+        "matching strong bloom and glossy lighting",
+        "different sky and characters, which may be separate levels or skins"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: night scene with a samurai-style character, torii gates and a dragon",
+        "Image B: bright daytime sky with an acorn character and a blocky voxel NPC",
+        "Different art direction, palette and level theme"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: floating islands, torii gates and a dragon over a golden cloud sea with a human ninja character",
+        "Image B: dark brown interior with scaffold towers, stone arch and an acorn-headed character",
+        "Different settings, characters and lighting; only the warm orange palette and third-person camera are shared"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a warm orange sunset sky, a cloud sea, torii gates and a dragon, while Image B has a dark blue starry night with floating platforms",
+        "The characters differ: a realistic ninja-like runner in A, a stylized acorn-cap character and a blocky Minecraft-style figure in B",
+        "The environments and palettes differ: a stone brick bridge in A, glossy metallic and purple platforms with crystal rings in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night sky, cloud sea, torii gates, and a dragon, all in cool blue",
+        "Image B: warm brown interior with an acorn-capped character and a blocky pink-shirted figure",
+        "Different characters, settings, and color palettes"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: open red sunset sky with a cloud sea, torii gates and a dragon",
+        "Image B: enclosed brown interior with metal cage towers and an acorn-cap character",
+        "Different characters and art styles (a realistic ninja versus a cartoon acorn and a blocky voxel figure)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a pale blue sky and an acorn character with a blocky voxel NPC, while Image B has a purple and orange sunset with a samurai character",
+        "Image B's torii gates, dragon and lanterns form an Eastern theme that Image A lacks",
+        "The platform materials, lighting and palette differ, with muted lavender-grey in A and warm saturated tones in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night-blue, whimsical scene with an acorn character, a Minecraft-style figure and metallic rings; Image B is a red sunset scene with a Japanese torii bridge and a dragon",
+        "Different characters and art styles: a cartoon acorn character in A, a realistic ninja in B",
+        "Different palettes and environments: blue starry sky with floating platforms in A, orange cloud sea with a red sky in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: purple night sky, cloud sea, torii gates and dragon",
+        "Image B: overcast grey sky, brown terrain, windmill, acorn character",
+        "Different characters and art direction (stylized ninja vs. acorn and blocky figure)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark brown industrial interior with an acorn character and a blocky Minecraft-style figure",
+        "Image B: pastel pink sky, cloud sea, floating islands, torii gates and a dragon",
+        "Different character styles, palettes and lighting, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: warm sepia sunset sky, cloud sea, torii gates, dragon, floating islands",
+        "Image B: bright blue sky, low-poly green pines, acorn character, blocky human, drones",
+        "Different character styles and palettes; no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: red sunset sky, cloud sea, torii gates, dragon",
+        "Image B: low-poly green pine forest, blue daytime sky, acorn character and blocky character",
+        "Different palettes, art styles and character designs"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly green pine forest with acorn character, daytime blue sky",
+        "Image B: red sunset, cloud sea, torii gates, ninja and dragon",
+        "Different palette, art style and character design"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime low-poly pine forest with an acorn character and a blocky character",
+        "Image B: pink dusk sky, cloud sea, torii gates and a dragon",
+        "Different character styles, palettes and lighting"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has an acorn character, a blocky red-shirted figure and a windmill on a grey overcast sky",
+        "Image B has a samurai on a torii-lined bridge over golden clouds with a purple sunset and a dragon",
+        "The palettes, character styles and lighting differ completely"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-capped character in an enclosed brown interior with scaffold towers",
+        "Image B: ninja on a torii-lined bridge above a red sunset cloud sea with floating islands and a dragon",
+        "Different settings, color palettes and character styles"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night-time blue palette with cloud sea, torii gates and a dragon",
+        "Image B: bright daylight low-poly pine forest with an acorn character and a blocky character",
+        "Different art styles, lighting and character designs"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a realistic night scene with a samurai figure, torii gates, a dragon and a cloud sea",
+        "Image B shows a cartoon acorn character, a blocky Minecraft-style figure and metallic rings on glossy platforms",
+        "Both share a starry deep-blue night sky, but the scenery, characters and art style differ"
+      ]
+    }
+  ]
+}
