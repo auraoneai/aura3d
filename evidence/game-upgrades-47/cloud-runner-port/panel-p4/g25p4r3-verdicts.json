@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cloud-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The large, plain brown log in the foreground takes up the lower third of the frame and has visible seam lines. Its shading is smooth with little surface detail. The odd dark funnel-shaped cloud at the top looks a bit out of place, though it adds drama. The cliff is slightly hazy. Small pink triangle particles are scattered over the grass.",
+     "A large dark storm-cloud shape in the sky looks like a heavy, out-of-place blob and slightly distracts from the composition. The log is still fairly plain with untextured shading. The player's hair is a bit dark and noisy. Otherwise the dirt path is well textured, colours are warm and saturated, and the trees, rocks and boulders read with good material detail and contrast.",
+     "Large untextured log in the foreground blocks the lower third of the frame. The odd dark funnel-shaped cloud overhead looks like a sky artifact. The horizon fog is a little flat."
+    ]
+   }
+  ]
+ }
+]

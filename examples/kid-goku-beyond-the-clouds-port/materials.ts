@@ -106,7 +106,10 @@ export const puffSpec = (): CustomSpec => ({
   depthWrite: false
 });
 
-export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; /** Hemisphere fill multiplier (default 1). */ fill?: number; transparent?: boolean }
+export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; /** Hemisphere fill multiplier (default 1). */ fill?: number; /** Storm row: IBL diffuse / sheen scale (default 1). */ ibl?: number; transparent?: boolean }
+/** Storm row (GU47 phase 4): sun-shadow floor of the scenery program and its IBL diffuse / Fresnel-sheen weights. */
+export const SCENERY_SHADOW_FLOOR = 0.2;
+export const SCENERY_IBL = { diffuse: 0.3, spec: 0.16, roughness: 0.9 } as const;
 const unit = (d: Rgb): number[] => { const l = Math.hypot(d[0], d[1], d[2]) || 1; return [d[0] / l, d[1] / l, d[2] / l]; };
 /**
  * Lit scenery driven by a per-vertex `tone` attribute (the geometry must supply it). On rows with `scenery.receiveShadow`
@@ -122,7 +125,12 @@ export const scenerySpec = (o: SceneryOptions = {}, row: CumulusLookRow = ACTIVE
     hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density },
     mapMix: { type: "f32", value: o.map ? o.mapMix ?? 0.75 : 0 }, mapScale: { type: "f32", value: o.mapScale ?? 1 },
     opacity: { type: "f32", value: o.opacity ?? 1 },
-    surfaceMap: { type: "texture2d" as const, ...(o.map ? { value: o.map as never } : {}) }
+    surfaceMap: { type: "texture2d" as const, ...(o.map ? { value: o.map as never } : {}) },
+    ...(row.scenery.receiveShadow ? {
+      shadowFloor: { type: "f32" as const, value: SCENERY_SHADOW_FLOOR },
+      iblDiffuse: { type: "f32" as const, value: SCENERY_IBL.diffuse * (o.ibl ?? 1) }, iblSpec: { type: "f32" as const, value: SCENERY_IBL.spec * (o.ibl ?? 1) },
+      iblRoughness: { type: "f32" as const, value: SCENERY_IBL.roughness }
+    } : {})
   },
   side: "double",
   ...(row.scenery.receiveShadow ? { receiveShadow: true } : {}),

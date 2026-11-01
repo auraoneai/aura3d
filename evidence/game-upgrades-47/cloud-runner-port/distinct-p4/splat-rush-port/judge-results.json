@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:27:33.353Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-play-1420",
+      "title-settle-60s"
+    ],
+    "framesB": [
+      "splat-rush-port--default--settle-60s",
+      "splat-rush-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.939,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.939,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, flat-shaded cartoon sky with floating islands and a red ball",
+        "Image B shows a canyon run with a humanoid character, textured rocks and a detailed HUD",
+        "Different art styles and lighting: clean saturated blue gradient vs. warm, realistic-leaning terrain"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a humanoid character, a HUD with hearts and a progress bar, and a realistic blue sky with a river path",
+        "Image B has a red glossy ball, a pink sunset sky, and floating islands with hot air balloons",
+        "Different rendering styles: A uses lush green low-poly trees with soft lighting, B uses flat pastel clouds and pillars"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-lit runner with a human character, HUD, hearts and a dirt path",
+        "Image B is a flat-shaded cartoon sky with floating islands, a red ball and no HUD",
+        "Different palettes and rendering: warm earthy tones with detailed textures versus saturated blue with simple low-poly clouds"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a humanoid character, a canyon run with a HUD (hearts, timer, objective text); Image B has a red glossy ball with no HUD",
+        "Different palettes and lighting: A is a realistic daylight scene with textured rocks, B is a flat pastel pink sunset over clouds",
+        "Different art styles: A uses painterly textured low-poly trees and cracked boulders, B uses smooth flat-shaded floating islands and balloons"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B: grounded dirt path with low-poly trees, cracked boulders and a child character",
+        "Different palette and lighting: saturated flat blue vs. muted overcast with a storm cloud"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a child character on a dirt road with realistic low-poly trees and cracked boulders",
+        "Image B has a glossy red ball over a pink-purple cloud sea with floating islands and hot air balloons",
+        "The two frames differ in palette, materials and art style: muted naturalistic against saturated pastel cartoon"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright, flat-shaded sky scene with a red ball and floating islands, and no HUD",
+        "Image B has a realistic, hazy, textured landscape with a human character and a river",
+        "Image B has a distinct HUD with hearts, a progress bar and a Checkpoint label, none of which appear in A"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized pastel pink sky with floating islands and a red ball",
+        "Image B: realistic textured terrain with a humanoid runner and a HUD with hearts and score",
+        "Different palettes and art styles: flat toon shading versus detailed natural lighting"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a realistic-lit canyon scene with a humanoid runner, HUD hearts and a progress bar",
+        "Image B has flat-shaded cartoon floating islands and clouds with a red ball and no HUD",
+        "Different palette and rendering: A is warm and textured with detailed sky, B is saturated and flat with a plain blue gradient sky"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, cartoon sky scene with floating islands, hot air balloons and a red ball, with no HUD",
+        "Image B is a grounded canyon run with a human character, realistic textured rocks and a detailed HUD",
+        "Different art styles: flat smooth clouds and shading versus painterly, textured, atmospheric lighting"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a humanoid character on a river with green low-poly trees, a heart and progress HUD and a daytime sky",
+        "Image B has a red glossy ball over a pink cloud floor with a sunset gradient, floating islands and hot air balloons",
+        "The two frames differ in lighting, palette, camera and gameplay objects, and Image B has no HUD"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink sunset sky with a cloud floor and a red ball",
+        "Image B: realistic canyon with a human character, rock textures and a detailed HUD",
+        "Different art styles and lighting (flat stylized vs. textured semi-realistic)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized pastel pink sunset with a red ball over a cloud floor, while Image B is a realistic-textured daytime landscape with a humanoid character",
+        "Different art style and lighting: flat, soft shading in A against detailed PBR-like textures and natural sky in B",
+        "Different HUD: B has hearts, a progress bar, a score, and prompt text, while A has none"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: grounded dirt path, low-poly trees, cracked boulders and a stormy overcast sky",
+        "Different art style and palette: flat saturated pastel vs. painterly muted textures with a human character"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a humanoid character on a river path with a HUD of hearts, checkpoint and progress bar, while Image B has a red ball with no HUD",
+        "Different lighting and palette: A is muted, hazy and realistic-toned; B is flat, saturated cartoon blue sky",
+        "Different scenery: A has a forested river valley with low-poly trees; B has floating islands, hot air balloons and puffy clouds"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: grounded dirt-road level with a human character, low-poly trees and cracked boulders",
+        "Image B: pastel sunset sky with a cloud floor, floating islands and a red glossy ball",
+        "Different palette, scenery and player object"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a humanoid runner, a canyon and a HUD with hearts and a progress bar, while Image B has a red ball and no HUD",
+        "Different palettes and rendering: A is realistic-textured with a green and orange palette, B is flat pastel pink and purple with cel-shaded clouds",
+        "Different settings: A is a rocky cliff path with trees, B is floating sky islands with balloons over a cloud floor"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: grounded dirt-road landscape with a human character, cracked boulders and a storm cloud",
+        "Different art styles: clean, flat-shaded clouds vs. painterly, textured low-poly trees and rock"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball, no HUD",
+        "Image B: realistic canyon scene with a humanoid runner and detailed HUD (hearts, progress bar, timer)",
+        "Different art styles and materials: flat toon clouds vs. textured rock and foliage"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky with a red ball on a cloud floor",
+        "Image B: realistic daytime sky with a green low-poly forest and a river",
+        "Image B has a HUD with hearts, progress bar and a humanoid character, while A has only a rolling ball"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: third-person humanoid character on a river path with a game HUD (hearts, checkpoint, progress bar)",
+        "Image B: red ball over floating islands and hot air balloons in a flat saturated blue sky, with no HUD",
+        "Different art styles: A has a muted, realistic-lit landscape with water, B has bright, flat cartoon shading"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic textured terrain, a human character, and a HUD with hearts and a progress bar",
+        "Image B: flat-shaded cartoon sky with floating islands and a plain red ball, no HUD",
+        "Different lighting and palette: warm, hazy, detailed scene versus a bright, uniform blue sky"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: grounded dirt road with a human character, low-poly trees and a tornado cloud",
+        "Image B: pink sunset sky, floating islands and a red ball on a cloud floor",
+        "Different palettes, scenery and protagonists with no shared assets"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized pastel pink sunset with a red ball over a cloud floor and floating islands",
+        "Image B is a more realistic scene with a human character, a dirt path, pine trees and rock cliffs",
+        "Image B has a distinct HUD (hearts, progress bar, score, prompt text) with a different art style and lighting"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 3,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a humanoid runner on a dirt path with a detailed, painterly realistic-stylized look, HUD with hearts and progress bar",
+        "Image B has a red ball in a flat-shaded, saturated cartoon sky with floating islands, balloons and no HUD",
+        "Different lighting and art direction: hazy, textured, warm scene versus clean, flat, bright blue scene"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 3,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a green low-poly landscape with a river and a human character, while Image B is a pink sunset cloud sea with a red ball",
+        "Image A has a HUD with hearts, checkpoint and progress bar, and Image B shows no HUD",
+        "The lighting and palette differ: soft realistic daylight and clouds against a flat, stylized pastel sunset"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 3,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat, bright cartoon sky with floating islands and a red ball",
+        "Image B: realistic lighting, textured water, and a humanoid character with a detailed HUD",
+        "Different palette and rendering: saturated flat blue vs. muted, atmospheric overcast"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink sunset sky with a flat cloud floor and a red ball",
+        "Image B: realistic canyon with a humanoid runner and detailed rock textures",
+        "Image B has a full HUD (hearts, progress bar, prompts) and a different art style"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, flat-shaded cartoon sky with floating islands, a red ball and no HUD",
+        "Image B is a painterly canyon run with a humanoid character and a detailed HUD (hearts, progress bar, prompts)",
+        "The palettes and rendering differ: saturated blue sky versus warm earthy tones with textured rocks"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: earthy, realistic-leaning terrain with a dirt path, cracked boulders and a character",
+        "Image B: flat, saturated cartoon sky with floating islands, balloons and a red ball",
+        "Different art style, palette and gameplay setting"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: grounded dirt path with a human character and a tornado cloud; Image B: red ball over a pink cloud sea at sunset",
+        "Different scenery and palette: green and orange realistic-stylized terrain vs. pastel pink/purple floating islands",
+        "Different art styles: textured low-poly trees and cracked boulders vs. smooth flat-shaded cartoon clouds and pillars"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized pastel pink sunset with a red ball and floating islands",
+        "Image B is a realistic-textured daytime landscape with a humanoid runner and a HUD",
+        "Different art style, palette and gameplay/camera"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 4,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a grounded forest path with a humanoid character; Image B is a pink sunset sky world with a red ball",
+        "different palettes: natural greens and browns with a stormy sky versus pastel pink and purple with floating islands",
+        "different art styles: textured low-poly trees and cracked boulders versus smooth flat-shaded clouds, towers and balloons"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 4,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pastel pink sunset sky with stylized floating islands and a red ball",
+        "Image B: realistic textured terrain, trees, and a humanoid runner with a HUD",
+        "Different art styles and lighting: flat cartoon palette vs. photoreal-leaning PBR look"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 4,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky with a red ball on a cloud floor and floating islands",
+        "Image B: realistic canyon run with a humanoid runner and a detailed HUD with hearts and a progress bar",
+        "Different art styles and palettes: flat stylized pastels vs. textured, naturalistic greens and browns"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 4,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a canyon run with a humanoid character, cracked boulders and a detailed game HUD",
+        "Image B has a red ball over floating sky islands, flat bright blue gradient sky and no HUD",
+        "Different art styles: painterly, warm lighting in A, clean saturated cartoon shading in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a humanoid character on a river with a HUD (hearts, checkpoint, progress bar), Image B has a red ball in the sky with no HUD",
+        "Different lighting and palette: muted, hazy realistic-stylized sky in A vs flat saturated cartoon blue in B",
+        "Different scenery and art style: low-poly trees and water in A vs floating islands, hot air balloons and puffy clouds in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky, floating islands and a red ball on a cloud floor",
+        "Image B: realistic blue sky, green forest, river and a humanoid runner with a HUD",
+        "Different art style and lighting: flat stylized dusk vs. detailed daylight with textured water"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and a red ball",
+        "Image B: grounded dirt-path landscape with a humanoid character, cracked boulders and a stormy sky",
+        "Different art styles: clean flat-shaded vs. painterly textured low-poly"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic textured terrain with a human character, HUD and text overlays",
+        "Image B: flat-shaded cartoon floating islands and clouds on a plain blue gradient sky, red ball, no HUD",
+        "Different lighting and palette: warm, hazy, detailed in A versus bright, saturated and simple in B"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 5,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds, hot air balloons and a red ball",
+        "Image B: grounded dirt path with stormy sky, low-poly trees, cracked boulders and a child character",
+        "Different palettes and art styles: saturated flat blue versus muted, painterly realistic"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 5,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a realistic-textured canyon, sky and a humanoid runner with a HUD, hearts and progress bar",
+        "Image B has a flat-shaded cartoon sky with floating islands, balloons and a plain red ball, with no HUD",
+        "Different art styles and lighting: A is warm and painterly with detailed textures, B is saturated blue and smooth"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 5,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat, bright cartoon sky with floating islands and a red ball",
+        "Image B: realistic lighting, overcast sky, textured water and a humanoid runner",
+        "Image B has a detailed HUD (hearts, progress bar, ability bar) that Image A lacks"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 5,
+      "a": "title-settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic-stylized grassy dirt road with a human character and a tornado cloud",
+        "Image B: pastel pink sunset sky with floating islands, balloons and a red ball",
+        "Different palettes, art styles and player objects (boy vs glossy sphere)"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 5,
+      "a": "default-play-0060",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic-textured runner with a human character, HUD hearts and a log obstacle",
+        "Image B is a stylized pastel sky world with a red ball, floating islands and hot air balloons",
+        "Different palettes, lighting and art styles, with no shared HUD or character"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky, floating islands and a red ball on a cloud floor",
+        "Image B: realistic canyon cliffs, green low-poly trees, and a humanoid runner on a dirt path",
+        "Image B has a detailed HUD (hearts, progress bar, prompts), and the art style and lighting differ from Image A"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "default-play-0520",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, flat-shaded cartoon sky with floating islands, a red ball and no HUD",
+        "Image B is a textured, realistic-leaning canyon run with a humanoid character and a detailed HUD",
+        "Different palettes, lighting and art style: saturated blue sky versus earthy cliffs and a dirt path"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "default-play-1420",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a humanoid character, a river path, green low-poly trees and a HUD with hearts and a progress bar",
+        "Image B has a red glossy ball on a pink cloud floor with floating islands and hot air balloons",
+        "Different palettes and rendering: realistic blue daytime sky vs. stylized pink sunset, with no shared HUD"
+      ]
+    }
+  ]
+}

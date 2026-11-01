@@ -168,7 +168,7 @@ export class Ui {
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);
     const loading = el("div", "scr on"); loading.appendChild(el("div", "loading", "Loading…")); this.q.loading = loading;
     const menu = el("div", "scr");
-    menu.innerHTML = `<div class="title"><h1><span>Sky ridge run</span>Cumulus Dash</h1><p>Seven sky pearls. One long run home along the ridge.</p></div>
+    menu.innerHTML = `<div class="title"><h1><span>${opts.storm ? "After the squall" : "Sky ridge run"}</span>Cumulus Dash</h1><p>${opts.storm ? "Seven sky pearls. One sandstone ridge home under the rainbow." : "Seven sky pearls. One long run home along the ridge."}</p></div>
       <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="motion">Motion: full</button><button class="ghost" data-a="difficulty">Normal</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
       <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd><kbd>W</kbd>jump</span><span><kbd>E</kbd><kbd>K</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span><span><kbd>M</kbd>sound</span></div>
       <div class="credit">Built with Aura3D</div><div class="bars t" data-q="mt"></div><div class="bars b" data-q="mb"></div>`;
