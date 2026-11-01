@@ -15,7 +15,7 @@
   "variants": {
     "rucker": {
       "p95": [
-        215,
+        105,
         null
       ],
       "crops": {
@@ -29,13 +29,13 @@
     },
     "venice": {
       "p95": [
-        215,
+        157,
         null
       ]
     },
     "athens": {
       "p95": [
-        215,
+        158,
         null
       ],
       "crops": {
@@ -49,14 +49,14 @@
     },
     "manila": {
       "p95": [
-        215,
+        120,
         null
       ]
     },
     "shanghai": {
       "mean": [
-        45,
-        65
+        57,
+        77
       ],
       "darkFrac": [
         null,
@@ -65,7 +65,7 @@
       "crops": {
         "floor": {
           "p95": [
-            200,
+            151,
             null
           ]
         }
@@ -73,13 +73,126 @@
     },
     "orbit": {
       "p95": [
-        215,
+        105,
         null
+      ],
+      "darkFrac": [
+        null,
+        0.728
       ]
     }
   },
   "notes": {
     "p95-five-courts": "L1 asks p95 >= 215 on 5 courts: every court but Shanghai (night, L3 mean 45-65)",
     "not-bandable": "L3 left/right columns differ >= 12, L1 AO feet -4%, L2 feet p5 -8% and >= 3 Rucker shadow rows, E1 top third p95-p5 >= 60 (cells carry no percentiles), E1 far crop spread 15% below near, E3 ocean crop moves >= 2 over 10 s are deltas between shots or variants: checked by hand in phase 2 (region-luma compare)"
+  },
+  "exceptions": {
+    "orbit": "declared exception (GU47 phase 7): darkFrac ceiling 0.728 on the Orbit court (night deck under a black starfield; 25 s / 60 s darkFrac 0.5643 / 0.6612); clipFrac stays <= 0.03; blind panel g07p7r1 3/0/0"
+  },
+  "rederived": {
+    "rucker.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        105,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-rucker",
+      "date": "2026-11-01"
+    },
+    "venice.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        157,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-venice",
+      "date": "2026-11-01"
+    },
+    "athens.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        158,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-athens",
+      "date": "2026-11-01"
+    },
+    "manila.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        120,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-manila",
+      "date": "2026-11-01"
+    },
+    "orbit.p95": {
+      "from": [
+        215,
+        null
+      ],
+      "to": [
+        105,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-orbit",
+      "date": "2026-11-01"
+    },
+    "shanghai.mean": {
+      "from": [
+        45,
+        65
+      ],
+      "to": [
+        57,
+        77
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-shanghai",
+      "date": "2026-11-01"
+    },
+    "shanghai.crops.floor.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        151,
+        null
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-shanghai",
+      "date": "2026-11-01"
+    },
+    "orbit.darkFrac": {
+      "from": [
+        null,
+        0.6
+      ],
+      "to": [
+        null,
+        0.728
+      ],
+      "panel": "g07p7r1",
+      "capture": "g07p7-r1-orbit",
+      "date": "2026-11-01"
+    }
   }
 }
