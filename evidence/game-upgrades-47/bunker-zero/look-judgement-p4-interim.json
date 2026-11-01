@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r3/bunker-zero/frames/g11p4-r3-s1280/screens-1280--1280-02-early.jpg",
+      "sha256": "8230ea9827deea9e2a1fa3cea366eaedd0657fdd67a57479f87bfb70d4a304a2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r3/bunker-zero/frames/g11p4-r3-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "246fc15d38ee258bc7787dc80d20d7db5a0a7a7bcf5b6ed2901f7eb9facc3a2d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r2/bunker-zero/frames/g11p4-r2-floor3/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "ba87de1848807cc2e47d58e5b0dd02850c0b2271d66dcd0fc64abcae3bf5caef"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r3/bunker-zero/frames/g11p4-r3-floor4/bunker-zero--floor4--settle-60s.jpg",
+      "sha256": "1d8ea5d62642f6011352162dd06e1c53a7a34afb587d54ee5f4758165a0d9af5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 4,
+    "environment_world": 4,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Ceiling fixtures are emissive strips with soft glow pools on the ceiling, but walls and floors get near-uniform ambient fill. Frames 3 and 4 show almost no falloff away from the lights, and frame 3 is washed in a single orange tint."
+    },
+    {
+      "category": "shadows",
+      "seen": "Only the red barrel in frame 1 casts a visible soft shadow. Wall-floor and wall-ceiling junctions have no contact darkening or AO, crates and vault-door blocks sit on the floor without grounding, and the floating pickups cast nothing."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The floors have a faint blotchy specular sheen, and frame 2's wet floor shows a bright highlight streak. The flooded-cellar water is a flat dark teal plane with no reflection or refraction of the corridor."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Levels are long, empty rectangular corridors built from flat wall slabs with a repeated pipe trim and yellow floor stripes. Set dressing is limited to an isolated barrel, a crate, wooden boxes used as wall blocks, and round vault doors on plain cubes. None of it reads as a lived-in Cold-War bunker."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frames 2 and 4 have mild distance haze that softens the corridor ends, and frame 2 has a few sparkle particles. There are no visible light shafts, dust, steam, or water mist in the flooded level."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The concrete floor texture is a low-frequency noisy blotch pattern that smears at grazing angles. The stone wall texture in frame 2 is visibly stretched and tiled on the pillar faces. Plain walls are near-flat color. The barrel and crate carry decent worn-paint textures that clash with the surrounding surfaces."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The barrel, ammo crate, and pistol are reasonable props. Architecture is pure box geometry, vault doors are circles inset on cubes, and pickups are tiny floating cubes or glowing white orbs."
+    },
+    {
+      "category": "composition",
+      "seen": "Every frame is a centered one-point corridor perspective with large blank wall and ceiling areas. Frame 1 has a wide empty floor with props pushed to the edges, and frame 2's large dark pillar fills the left third."
+    },
+    {
+      "category": "camera",
+      "seen": "FOV is reasonable. The pistol viewmodel in frames 3 and 4 floats small and low in the lower-right middle with an odd tilt, as if detached from the camera. Frames 1 and 2 show no viewmodel at all despite a machine gun being equipped."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom shows on ceiling lights and the glowing orbs, and tone mapping is present. Frame 3 has a heavy orange grade that flattens contrast, and frame 2's orbs bloom into overexposed white blobs."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The bottom stat bar, objective panel, and kill feed in frames 1 and 2 are clean and legible with a consistent style. The persistent controls strip and browser-style top nav clutter the frame. Frames 3 and 4 show no HUD. The floor stencil text (B-3, B-4) is mirrored and hard to read."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,3 +1,9 @@
+# Bunker Zero: final screenshots (retaken on the GU47 phase-4 build)
+
+**Retaken 2026-11-01** by lane G11 on `gu47/g11` (phase 4, 4.7.2 target) on the remote runner, software WebGL2 (SwiftShader), with `tests/browser/audit-fix/bunker-zero.spec.ts` (runs `g11p4-r5b-s1280` and `g11p4-r5b-s390`). Same file names and sizes; `card-1x.jpg` is `card-2x.jpg` halved. The index posters were rebuilt from `card-2x.jpg`. Not real-GPU evidence.
+
+The text below describes earlier sets and is kept for its history.
+
 # Bunker Zero: final screenshots (retaken on 4.5.0 after the 2026-10-29 audit fixes)
 
 **Retaken 2026-10-29** by lane G11 from branch `audit-fix/g11` (4.5.0 engine plus the audit fixes) on the remote runner, software WebGL2 (SwiftShader), with `tests/browser/audit-fix/bunker-zero.spec.ts` (remote runs `g11-final2-1280` and `g11-final2-390`). Same file names and sizes as before. The 390 shots run in a touch context (`hasTouch`, `isMobile`), so the touch layer shows. The title shots show the onboarding card a first visit gets. 02 to 04 are steady-state shots after the game's autoplay ran for 6, 20 and 40 s of simulated time (the 04 shots are on floor 2 at 1280 and floor 1 at 390). The results panel, which the earlier set never reached, is in `../../audit-2026-10-29/after-states/states-desktop__results.jpg`. This is not real-GPU evidence.

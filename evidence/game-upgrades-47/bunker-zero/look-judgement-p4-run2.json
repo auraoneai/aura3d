@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-s1280/screens-1280--1280-03-action.jpg",
+      "sha256": "4c25bf75b18ab15c60eb958e28a876f341d2e5fa77d3c07e033d25dbaa150c6e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "812e9072a87b0ab21b373b9319cb6bab1e8491fb887bcec9319c06ab43f6e003"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "9e41e3a28e70a7c26f5c7fd6101851bf222314eecd8af458127720dbff5c5dac"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-floor3/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "14007b54ac4686150e9970f15124f2c616214c0b64b92b7fb68b99a8acb2ab6f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4,
+    "material_quality": 5,
+    "modeling_assets": 4,
+    "composition": 5.5,
+    "camera": 4.5,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1's floor around the chest is blown out to near-white while the walls stay mid-grey. Frame 4 reads as one flat amber wash with little falloff from the ceiling strips."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are almost no cast shadows. The chest in frame 1 and the floating pistol in frames 3 and 4 put nothing on the floor, and wall-floor joints have no contact darkening or AO."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 2's wet floor shows vertical light streaks. The teal water plane in frames 2 and 3 is a flat, unreflective slab, and the metal pipes show no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Corridors are straight boxy extrusions with a repeated pipe rail and yellow kick strips on every floor. Dressing is sparse: a round vault door at the end and one floor decal."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frames 3 and 4 have a mild darkening haze toward the ceiling, and frame 2 has sparkle sprites. There is no visible fog depth, dust, or light shafts in a bunker that would suit them."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The stone-wall albedo in frames 2 and 3 is decent but flat, with no visible normal or parallax depth. Frame 1's ceiling texture is noisy, the floors are smooth untextured grey, and the treasure chest looks washed out and semi-translucent."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Level geometry is blockout-grade boxes and cylinders. The pistol has reasonable detail but no hands. The chest and the glowing ellipse pickup in frame 2 are low-fidelity."
+    },
+    {
+      "category": "composition",
+      "seen": "Long one-point-perspective corridors give clear leading lines toward the vault door. Large empty floor areas fill the lower half of frames 3 and 4."
+    },
+    {
+      "category": "camera",
+      "seen": "The pistol viewmodel floats mid-right, detached from the bottom edge of the frame, with no arms. It reads as an object in space rather than a held weapon."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom clips the floor in frame 1 and the orb in frame 2. The tonemapping has a crushed, low-contrast tinted grade, and frame 4 shows a lens-blob artifact on the floor."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The bottom stat bar is clean and legible. A browser-style nav bar and a controls hint strip cover the scene, and the kill feed repeats the same entries."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
