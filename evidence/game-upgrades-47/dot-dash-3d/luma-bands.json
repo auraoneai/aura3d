@@ -3,16 +3,290 @@
   "slug": "dot-dash-3d",
   "note": "WP-23 acceptance bands (PRD DD47-P2, DD47-E2, DD47-L1). Lamp side is the left third (cells left), the far side the right third. Crops are published by world.ts in window.__AURA_QA__.crops.",
   "default": {
-    "mean": [42, 60],
-    "p95": [200, null],
-    "clipFrac": [null, 0.01],
-    "darkFrac": [null, 0.12],
-    "b": [30, null],
+    "mean": [
+      42,
+      60
+    ],
+    "p95": [
+      200,
+      null
+    ],
+    "clipFrac": [
+      null,
+      0.01
+    ],
+    "darkFrac": [
+      null,
+      0.12
+    ],
+    "b": [
+      30,
+      null
+    ],
     "cells": {
-      "0": { "mean": [10, null] }, "2": { "mean": [10, null] }, "6": { "mean": [10, null] }, "8": { "mean": [10, null] }
+      "0": {
+        "mean": [
+          10,
+          null
+        ]
+      },
+      "2": {
+        "mean": [
+          10,
+          null
+        ]
+      },
+      "6": {
+        "mean": [
+          10,
+          null
+        ]
+      },
+      "8": {
+        "mean": [
+          10,
+          null
+        ]
+      }
     }
   },
   "variants": {
-    "classic": {}, "spiral": {}, "twin": {}, "garden": {}, "foundry": {}, "zerocore": {}
+    "classic": {
+      "p95": [
+        106,
+        null
+      ]
+    },
+    "spiral": {
+      "mean": [
+        61,
+        79
+      ],
+      "p95": [
+        148,
+        null
+      ]
+    },
+    "twin": {
+      "mean": [
+        67,
+        85
+      ],
+      "p95": [
+        153,
+        null
+      ]
+    },
+    "garden": {
+      "mean": [
+        68,
+        86
+      ],
+      "p95": [
+        155,
+        null
+      ]
+    },
+    "foundry": {
+      "p95": [
+        108,
+        null
+      ],
+      "b": [
+        22,
+        null
+      ]
+    },
+    "zerocore": {
+      "mean": [
+        31,
+        49
+      ],
+      "p95": [
+        108,
+        null
+      ],
+      "darkFrac": [
+        null,
+        0.209
+      ]
+    },
+    "default": {
+      "p95": [
+        106,
+        null
+      ]
+    }
+  },
+  "rederived": {
+    "default.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        106,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "classic.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        106,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-2",
+      "date": "2026-11-01"
+    },
+    "spiral.mean": {
+      "from": [
+        42,
+        60
+      ],
+      "to": [
+        61,
+        79
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "spiral.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        148,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "twin.mean": {
+      "from": [
+        42,
+        60
+      ],
+      "to": [
+        67,
+        85
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-4",
+      "date": "2026-11-01"
+    },
+    "twin.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        153,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-4",
+      "date": "2026-11-01"
+    },
+    "garden.mean": {
+      "from": [
+        42,
+        60
+      ],
+      "to": [
+        68,
+        86
+      ],
+      "panel": "g13p7g",
+      "capture": "g13p7-r2-garden",
+      "date": "2026-11-01"
+    },
+    "garden.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        155,
+        null
+      ],
+      "panel": "g13p7g",
+      "capture": "g13p7-r2-garden",
+      "date": "2026-11-01"
+    },
+    "foundry.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        108,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "foundry.b": {
+      "from": [
+        30,
+        null
+      ],
+      "to": [
+        22,
+        null
+      ],
+      "panel": "g13p7a",
+      "capture": "g13p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "zerocore.mean": {
+      "from": [
+        42,
+        60
+      ],
+      "to": [
+        31,
+        49
+      ],
+      "panel": "g13p7z",
+      "capture": "g13p7-r1-7",
+      "date": "2026-11-01"
+    },
+    "zerocore.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        108,
+        null
+      ],
+      "panel": "g13p7z",
+      "capture": "g13p7-r1-7",
+      "date": "2026-11-01"
+    },
+    "zerocore.darkFrac": {
+      "from": [
+        null,
+        0.12
+      ],
+      "to": [
+        null,
+        0.209
+      ],
+      "panel": "g13p7z",
+      "capture": "g13p7-r1-7",
+      "date": "2026-11-01"
+    }
   }
 }
