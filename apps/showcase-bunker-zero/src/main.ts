@@ -834,6 +834,15 @@ function setEnemyClip(id: string, node: NodeHandle, clip: string, speed: number)
   node.setAnimation({ clip, loop: true, speed });
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
+/**
+ * GU47 phase 6: a viewmodel not in hand is parked far outside every floor instead of hidden. The machine gun, hidden
+ * from boot until its pickup, never drew in any HUD frame although its handle was visible and in front of the camera
+ * (vmprobe g11p6-r1 and r2, with and without a material override); the pistol, shown at boot, always drew.
+ */
+function parkViewmodel(node: NodeHandle) {
+  node.setPosition(-500, -60, -500);
+  node.setVisible(true);
+}
 const muzzleFlash = req("muzzle-flash");
 const ventLight = req("vent-light");
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
@@ -1027,7 +1036,7 @@ function hideAllRuntime() {
     for (const id of SLOT_IDS[s]!) opt(id)?.setVisible(false);
     if (s === slot) for (const id of SLOT_STATIC_IDS[s]!) opt(id)?.setVisible(true);
   }
-  for (const v of Object.values(vmNodes)) v.setVisible(false);
+  for (const v of Object.values(vmNodes)) parkViewmodel(v);
   muzzleFlash.setVisible(false);
 }
 function bindFloor() {
@@ -1333,7 +1342,7 @@ function syncScenePose(inp: SimInput) {
       node.setPosition(vmx, vmy, vmz);
       node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2 + VIEWMODEL_YAW_OFFSET[id], id === "knife" ? 0.5 : 0);
       node.setVisible(true);
-    } else node.setVisible(false);
+    } else parkViewmodel(node);
   }
 
   // ---- muzzle flash; the room light of every shot is the bz-muzzle preset's transient light (BZ-03, fireVfx)
