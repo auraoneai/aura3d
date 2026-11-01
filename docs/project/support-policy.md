@@ -1,8 +1,8 @@
 # Support Policy
 
-Version: 4.7.3
+Version: 4.7.5
 
-Current release: Aura3D 4.7.3.
+Current release: Aura3D 4.7.5.
 
 ## Supported Surface
 
