@@ -112,7 +112,7 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
   it("phase 6 draw budget: instances Ivy's and Harbor's repeated dressing and keeps flat slabs out of the shadow pass", () => {
     const ivy = flat("ivy").nodes;
     expect(ivy.find((n) => n.name === "ivy-vines")?.instances).toHaveLength(7);
-    expect(ivy.find((n) => n.name === "ivy-trophies")?.instances).toHaveLength(2);
+    expect(ivy.filter((n) => n.name === "ivy-trophy" || n.name === "ivy-statue")).toHaveLength(2);
     expect(ivy.some((n) => /^ivy-vine-\d$/.test(String(n.name)))).toBe(false);
     const harbor = flat("sandlot").nodes;
     expect(harbor.find((n) => n.name === "harbor-rocks")?.instances).toHaveLength(2);
@@ -140,7 +140,7 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     for (const park of ["sandlot", "canyon", "ivy"] as const) expect(count(park, (n) => spot(n) || rect(n))).toBe(0);
     // Ivy keeps its four light towers as dressing; the day has no lamps on.
     // Phase 6 (draw budget): the four towers are one instanced draw.
-    expect(flat("ivy").nodes.find((n) => n.name === "flood-towers")?.instances).toHaveLength(4);
+    expect(["far", "near"].map((k) => (flat("ivy").nodes.find((n) => n.name === `flood-towers-${k}`)?.instances as unknown[] | undefined)?.length)).toEqual([2, 2]);
     const low = { ...DEFAULT_SCENE_CONTEXT, tier: "low" as const };
     expect([count("skyline", spot, low), count("skyline", flare, low)]).toEqual([4, 0]);
     for (const park of PARK_ORDER) {

@@ -405,13 +405,17 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
         [-park.fenceCorner * 0.5, 14],
         [park.fenceCorner * 0.5, 14]
       ];
-      // GU47 phase 6 (draw budget): the four unlit towers as one instanced draw.
-      nodes.push(
-        instances.model(assets.diamondFloodlight, {
-          name: "flood-towers", targetHeight: 16, role: "setDressing", scaleMode: "fit",
-          transforms: towers.map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0] as Vec3 }))
-        })
-      );
+      // GU47 phase 6 (draw budget): the unlit towers as two instanced pairs, the far pair and the near pair (one draw
+      // each). One group of four has one bounding sphere, so the near pair behind the broadcast camera stopped culling
+      // and the triangle counter rose by about 0.57M; split, each pair culls as the single towers did.
+      for (const [label, pair] of [["far", towers.slice(0, 2)], ["near", towers.slice(2)]] as const) {
+        nodes.push(
+          instances.model(assets.diamondFloodlight, {
+            name: `flood-towers-${label}`, targetHeight: 16, role: "setDressing", scaleMode: "fit",
+            transforms: pair.map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0] as Vec3 }))
+          })
+        );
+      }
     }
     return nodes;
   }
@@ -548,15 +552,9 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
         model(assets.diamondStadium, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
         ...(gu47
           ? [
-              // GU47 phase 6 (draw budget): trophy and statue as one instanced draw (the statue's 4.2 m fit is the 2.4 m
-              // fit scaled by 4.2/2.4), and the seven vine panels as another (-7 draws before the shadow pass).
-              instances.model(assets.diamondTrophy, {
-                name: "ivy-trophies", targetHeight: 2.4, role: "setDressing", scaleMode: "fit",
-                transforms: [
-                  { position: [-9.5, 0, 8.4] as Vec3, rotation: [0, 0.9, 0] as Vec3 },
-                  { position: [14, 0, 10] as Vec3, rotation: [0, -2.4, 0] as Vec3, scale: [4.2 / 2.4, 4.2 / 2.4, 4.2 / 2.4] as Vec3 }
-                ]
-              }),
+              // GU47 phase 6 (draw budget): the seven vine panels as one instanced draw (-6 draws before the shadow pass).
+              // The trophy and statue stay separate: they stand on either side of home and cull on their own.
+              ...ivyOriginalDressing(park).slice(0, 2),
               instances.model(assets.diamondIvyWall, {
                 name: "ivy-vines", targetHeight: park.wallH + 1.2, role: "setDressing", scaleMode: "fit",
                 transforms: Array.from({ length: 7 }, (_, i) => {
