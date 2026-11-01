@@ -30,8 +30,8 @@ const definitions = {
 export const setPieces: AuraAssetMap<typeof definitions> = defineAuraAssets(definitions as never) as AuraAssetMap<typeof definitions>;
 
 /**
- * Where the islet sits: on the seabed sea (its disc ends at z -28) behind the arch, about 7.6 m across. The GLB is
- * centred on its origin with its sand plinth in the lowest fifth, so y = -0.45 + 0.3 x height x scale puts the plinth
- * just under the sea. Round g12p4r7 placed it at z -32, past the sea disc, where it floated against the horizon.
+ * Where the islet sits: on the seabed sea (its disc ends at z -28) behind the arch, about 7.6 m across, sunk so its
+ * wooden diorama plinth and beach are under the sea and only the chalk stack and pennant rise out of it. Rounds
+ * g12p4r7 (z -32, past the sea disc) and g12p4r8 (y 1.36) showed the plinth floating above the water.
  */
-export const SEA_STACK_PLACEMENT = { position: [3, 1.36, -22] as [number, number, number], rotationY: -0.6, scale: 4 } as const;
+export const SEA_STACK_PLACEMENT = { position: [3, -1.2, -22] as [number, number, number], rotationY: -0.6, scale: 4 } as const;
