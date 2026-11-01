@@ -106,6 +106,8 @@ export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SP
  */
 export const GATE_EVERY = 3;
 export const GATE_HALF_SPAN = 5.6;
+/** Lacquer pillar width (m); the road shader's post trace uses half of it (shaders.ts ROAD_FRAGMENT). */
+export const GATE_POST_WIDTH = 0.8;
 const GATE_PIECES = 6;
 const GATE_BOARD_CLEAR = 30;
 export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
@@ -343,7 +345,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     // GU47 phase 4 (rubric: ibl_reflections): under the colour script the runner and props reflect a sunset sky probe
     // (background off; the custom sky stays the visible sky) instead of the neutral room; `?look=original` keeps the room.
     .add(script && !envOverride()
-      ? environments.preset("sunset", { name: "dusk sky probe", intensity: first.environmentIntensity, background: false })
+      ? environments.preset("sunset", { name: "dusk sky probe", intensity: first.environmentIntensity, specularIntensity: 1.8, background: false })
       : environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
     // GU47 SSR-03 / SSR-19: two cascades over 140 m with PCSS under the colour script on High; the second cascade drops on
     // the Medium / Low tiers (an explicit cascade count is never capped by the tier, so it is chosen here).
@@ -870,8 +872,8 @@ export function buildWorld(options: WorldOptions = {}): World {
               writeMatrix(flagBuf.data, fi * 16, [gb[0] * sx, gb[1] * sx, gb[2] * sx, gb[3] * sy, gb[4] * sy, gb[5] * sy, gb[6] * sz, gb[7] * sz, gb[8] * sz], at, 1);
               flagBuf.rgba.set([...tint, 1], fi * 4); fi++;
             };
-            box(onRoad(gf, -GATE_HALF_SPAN, 4.5), 0.55, 9.6, 0.55, GATE_POST_TINT);
-            box(onRoad(gf, GATE_HALF_SPAN, 4.5), 0.55, 9.6, 0.55, GATE_POST_TINT);
+            box(onRoad(gf, -GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
+            box(onRoad(gf, GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
             box(onRoad(gf, 0, 7.9), GATE_HALF_SPAN * 2 + 0.2, 0.35, 0.45, GATE_TIE_TINT);
             box(onRoad(gf, 0, 9.45), GATE_HALF_SPAN * 2 + 3, 0.6, 0.85, GATE_LINTEL_TINT);
             box(onRoad(gf, 0, 9.9), GATE_HALF_SPAN * 2 + 3.6, 0.22, 1.25, GATE_RIDGE_TINT);

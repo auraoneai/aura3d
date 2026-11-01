@@ -383,7 +383,7 @@ void main() {
   gToonShadow = a3dSunShadowAuto(vWorld, N);
   float gateShade = 0.0;
   // GU47 phase 4 (rubric: shadows): the pilgrim gates' sun shadows on the plates and flanks, traced analytically from the
-  // gates' boxes (posts 9.6 m, tie 7.72-8.07 m, lintel 9.15-9.75 m, ridge 9.79-10.01 m) along the ground direction away from
+  // gates' boxes (0.8 m posts 9.6 m tall, tie 7.72-8.07 m, lintel 9.15-9.75 m, ridge 9.79-10.01 m) along the ground direction away from
   // the sun. Penumbra widens with distance from the caster, like the PCSS key.
   if (gateSun.z > 0.005 && gateSun.x < -0.15 && lookMode > 0.5 && top + (1.0 - depth) > 0.2) {
     float te = gateSun.z;
@@ -397,7 +397,7 @@ void main() {
       if (h > 10.2) break;
       float pen = 0.12 + u * 0.012;
       float xr = vCross.x - u * gateSun.y;        // this fragment traced back under the gate plane
-      float post = (1.0 - smoothstep(0.28, 0.28 + pen, abs(xr - gatePost))) + (1.0 - smoothstep(0.28, 0.28 + pen, abs(xr + gatePost)));
+      float post = (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr - gatePost))) + (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr + gatePost)));
       post *= 1.0 - smoothstep(9.3, 9.6, h);
       float hb = pen * te;
       float tie = (smoothstep(7.72 - hb, 7.72, h) - smoothstep(8.07, 8.07 + hb, h)) * (1.0 - smoothstep(gatePost + 0.1, gatePost + 0.1 + pen, abs(xr)));
@@ -426,7 +426,7 @@ void main() {
   // reflections included. The shadow-map term stays in the toon band only: in the g17p4-r3 software WebGL2 frames it
   // reported the whole road as shadowed under the low stage suns (no contrast to add), so the base keeps the phase-3 look.
   vec3 shadeTint = mix(lookHemiSky * 0.55, vec3(0.30, 0.26, 0.46), 0.5);
-  col = mix(col, col * shadeTint, gateShade * 0.6 * lookMode);
+  col = mix(col, col * shadeTint, gateShade * 0.7 * lookMode);
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;
