@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r8/strange-orbit-port/frames/g15p4-r8-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "1eb1251eae38879b7d1ce651044bc5cc9a71266126998810401e930b8e0919a6"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/boost-1280.jpg",
+      "sha256": "20a211b7efbf4d836bfa7485537f75b36ed4b88f9b7a8de3f54e94453827ec23"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/mid-action-1280.jpg",
+      "sha256": "e039cf519159e3d2a832730b3340c8067562bb20a84f27978e3114dd3efffd87"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/start-1280.jpg",
+      "sha256": "e10e1efae11741e8bf67b842f30b6cb520be267c3890ec29e3af89b629e1ef6f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "There is no readable low sun key. The white and teal bike and the astronaut are lit almost evenly from every side and look washed out, with no rim or warm side light. Only the faceted rocks show directional shading. The scene reads as a teal space night, not golden hour."
+    },
+    {
+      "category": "shadows",
+      "seen": "Neither the bike nor the rider casts a shadow on the track in any frame. A purple glow streak under the bike stands in for grounding. Pillars and rocks cast no visible shadows onto the cliff band or the track ribbon."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The bike body shows no environment reflection of the planet, the nebula or the orange ground. Frame 1 has a faint sheen on the salmon ground plane, but it is blurry and does not resolve the planet or the cliffs."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The concept is strong: a huge banded planet, a ribbon track on stilts with white marker dots, a harp-like arch, and a teal void. In execution, the cliff band is a flat dark brown strip, the rocks are scattered low-poly blobs, and the pillars are plain cones. The world feels sparse and assembled from primitives."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The nebula skybox and star specks add some mood. There is little visible depth fog in the 30–180 m range: distant rocks and track keep the same contrast as near ones, and the cliff band has no aerial perspective."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The bike and suit read as flat matte white with no specular breakup. The track surface has blotchy teal and orange noise that looks like stretched procedural texture. Rocks and pillars use flat albedo with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The bike and astronaut silhouettes are readable and charming. The rocks are faceted icosphere-style chunks, the pillars are simple tapered cylinders, and the cliff edge is a jagged extruded silhouette with no depth."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 4 centers the planet behind the track under letterbox bars and works well. Frame 3 is cluttered by randomly tilted pillars crossing the subject area, and the bike sits against a low-contrast teal background."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera keeps the bike at about 15–20% of the frame in frames 2 and 3, which fits the recipe. In zero G (frame 3) the horizon and the subject lose orientation cues, and the framing does not lead the eye down the track."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image is low contrast with lifted blacks, and the bike highlights clip toward flat white. There is no cinematic grade, and the warm and cool split is muddy. Letterboxing appears only in the countdown frame."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are consistent dark rounded cards with clear type: position, lap, race time, standings, stardust bar and speedometer. The centered instruction text has no backing plate and sits directly over busy scene detail."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r4/strange-orbit-port/frames/g15p4-r4-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "cd6194fd2105c4083ed1fd317d9540f01f252f9b0832438980da4e94ad01942e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r4/hud/boost-1280.jpg",
+      "sha256": "8f7b992643e8a416fc94ac541a25a0c66573523dc206d3508e1dc7a895bb5570"
+    },
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r4/hud/mid-action-1280.jpg",
+      "sha256": "8cc1a8ab31663d0cedad351bf59e160d2dffc6ccf54146a45d5d5bb2ed3a0a90"
+    },
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r4/hud/start-1280.jpg",
+      "sha256": "ba85f87eb7f61ef6627562df36ecff65e08eb2f1596badca09f3ddb304bf7695"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The white and teal bike and astronaut read almost uniformly bright in every frame, with no clear key-light side or form shading. The large pale moon/sun sits on the horizon but casts no visible warm directional light across the track or rocks. The scene is a purple nebula night, not the golden-hour low-sun look the recipe expects."
+    },
+    {
+      "category": "shadows",
+      "seen": "No cast shadows are visible from the bike, poles, rocks or track supports. Frame 1 shows only a faint purple smudge under the bike, so the vehicle looks pasted onto the terracotta surface."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 1 has a soft, low-detail moon reflection on the left of the track surface. The bike body looks matte and shows no environment reflections or specular highlights from the nebula sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has a consistent theme: a nebula skybox, a ribbon track with white marker lights, a harp-like arch and floating low-poly rocks. It is sparse, though. Orange poles repeat with little variation, and the maroon mountains are a flat silhouette band without depth layering."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant mountains and the far track stay as crisp and saturated as the near geometry, so there is no visible 30–180 m distance fog or haze. The only atmosphere comes from the painted nebula sky and scattered star particles."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The track has a mottled terracotta texture that looks smeared and low-resolution up close (frames 1 and 2). Rocks are flat-shaded and untextured. The bike's white panels are blown out, so the material shows no detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The sidecar bike and astronaut have reasonable mid-poly shapes with wheels and a visible suit. The rocks are basic faceted polyhedra and the poles are plain tapered cylinders."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 1 balances the moon on the left against the bike on the right. Frame 3 centers the bike in empty starfield with rocks scattered at random. In frame 4 the countdown '3' overlaps the moon, the one focal element."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase framing in frame 2 puts the subject at about 15–20% of the frame, which matches the recipe. In frame 3 the camera has drifted off the track into open space with no track reference, which weakens the sense of speed and direction."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 1 shows a vignette and soft overall blur, and frame 4 adds letterbox bars. The bright bike looks clipped rather than tone-mapped, there is no film grain or warm cinematic grade, and no motion blur at 137–199 km/h."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels share one clean dark style and stay readable: position, lap, race time, leaderboard and speedometer. The centered instruction text floats over the scene with no backing, and in frame 4 the top panels sit on top of the letterbox bars."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/strange-orbit-port/p4-r8/strange-orbit-port/frames/g15p4-r8-1/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "1eb1251eae38879b7d1ce651044bc5cc9a71266126998810401e930b8e0919a6"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/boost-1280.jpg",
+      "sha256": "20a211b7efbf4d836bfa7485537f75b36ed4b88f9b7a8de3f54e94453827ec23"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/mid-action-1280.jpg",
+      "sha256": "e039cf519159e3d2a832730b3340c8067562bb20a84f27978e3114dd3efffd87"
+    },
+    {
+      "path": "evidence/strange-orbit-port/screens/final/start-1280.jpg",
+      "sha256": "e10e1efae11741e8bf67b842f30b6cb520be267c3890ec29e3af89b629e1ef6f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "No directional key light reads on the bike or the world. The orange gas giant sits behind the scene as a warm disc but does not rim-light or warm the rider. The bike and astronaut look evenly lit and milky from every angle in frames 1-3."
+    },
+    {
+      "category": "shadows",
+      "seen": "The bike casts no contact shadow on the track, only a purple smear that reads as a boost glow. The pillars, cones and floating rocks cast no shadows onto the track or each other."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The bike fairing shows no environment reflection or specular highlight from the nebula or the planet. The foreground surface in frame 1 has soft smeared reflective streaks, but they don't match the surrounding objects."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The ribbon track with bead lights, the gas giant and the nebula form a coherent stylized concept. However, the mountains are flat dark silhouette cards, the cones and pillars repeat, and the floating rocks are scattered without much variety."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The nebula sky and drifting star specks add some atmosphere. There is no distance fog or aerial perspective: near and far mountain ridges share the same dark brown value, so depth flattens. No 30-180 m haze band is visible."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The paint, metal parts and spacesuit on the bike share one pale teal-white response with little roughness or metalness separation. The rocks are flat-shaded with no surface texture. The track surface is a blurry orange-blue smear with no asphalt grain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The bike and astronaut have reasonable detail (wheels, exhausts, helmet, waving pose). The environment is built mostly from primitive tapered cones, low-poly rocks and extruded ridge outlines."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 4 centers the planet behind the track symmetrically and reads well. Frame 1 places the bike at lower right with the planet on the left. In frame 3, two lines of centered instruction text cover the upper middle of the frame and compete with the scene."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera keeps the bike centered at roughly 15-20% of frame height, within the recipe. FOV reads near 60 degrees. In frame 2 the bike is dead center and blocks the track ahead, so the corner reads poorly."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image has a lifted, low-contrast grade that washes out the hero vehicle. Blacks on the bike never reach dark values. There is no visible bloom on the bead lights, no vignette and no film grain. The letterbox bars in frame 4 are the only cinematic touch."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are consistent dark rounded cards with readable type and a clear speed readout and leaderboard. There are many panels in every corner, plus large centered tutorial strings ('ZERO G · steer · hold Space to rise...') over the play area. The countdown '3' overlaps the planet."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

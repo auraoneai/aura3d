@@ -312,7 +312,12 @@ export function buildWorld(options: WorldOptions): World {
     position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
-    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#c8683f"), 0, look === "original" ? 0.045 : 0.034)
+    // GU47 phase 4: primitives are unit-sized (object-space y in +-0.5), so the old 0.034 band frequency painted one flat
+    // pale disc that the sibling judge read as "a large pale moon" (the Heatsink Run tell). Gouache bands at 12 per unit
+    // in peach and terracotta read as a gas giant (PRD 6.1 row G15).
+    material: look === "original"
+      ? solidMaterial(hexLinear("#f9ece3"), hexLinear("#c98a68"), 0, 0.045)
+      : solidMaterial(hexLinear("#f4d6b8"), hexLinear("#a9502c"), 0, 12)
   }).runtime({ id: "planet" }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
