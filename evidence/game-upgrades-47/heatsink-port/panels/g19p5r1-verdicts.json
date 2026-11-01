@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Drone sits off-centre to the right and slightly cut off; floating purple diamonds look unanchored; the right side is a little hazy and washed out where the arch meets the cliffs.",
+     "Drone is pushed off-centre to the right and slightly crowded by the overhanging rock arch. Mild haze softens the mid-distance mountains. Diamond markers float in the air, though this looks intentional. Otherwise the lighting is vivid, the ringed planet and aurora give strong depth, the gridded floor has clear detail and the colour contrast is good.",
+     "Drone sits off-centre to the right and partly overlaps the track edge. The floor grid is flat and slightly faceted, with low-detail scribble decals. The overhanging rock slab on the right looks heavy and unclear. The floating purple crystals could read as floating objects, but they look intentional. Overall the frame is vivid, with strong colour, a planet backdrop and good depth."
+    ]
+   }
+  ]
+ }
+]

@@ -150,7 +150,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(props.rocks), { name: "rocks", material: material.custom(terrainSpec(snowLine)) }).runtime({ id: fogTracked("rocks", "rocks") }));
   b.add(geometry.custom(dynamicFrom(buildShoulders(track, high ? 6 : 10)), { name: "plains", material: material.custom(terrainSpec(1e6, [1.15, 1.2, 1.2])) }).runtime({ id: fogTracked("plains", "plains") }));
   const rails = buildRails(track);
-  b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08)) }).runtime({ id: fogTracked("rails", "rails") }));
+  /* GU47 phase 5 (sibling distinctness): twilight rails are dark magenta ion barriers, not pale highway guard pipes */
+  const railSpec = look.wake.enabled ? solidSpec(hexLinear("#3a1838"), hexLinear("#ff4fc8"), 0.55) : solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08);
+  b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(railSpec) }).runtime({ id: fogTracked("rails", "rails") }));
   b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#2a5a62"), hexLinear("#60f4ff"), 1.7)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
   const arches = buildArches(track);
   b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));

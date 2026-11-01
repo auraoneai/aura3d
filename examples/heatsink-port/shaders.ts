@@ -240,7 +240,9 @@ void main() {
   vec3 band = mix(bandLow, bandHigh, smoothstep(0.0, 0.2, h));
   // GU47 phase 3: the teal-to-violet turn was smoothstep(-0.02, 0.18, h); the teal-fogged cliffs then stood as pale ghosts on
   // violet (round g19p3-r1). The sky now stays teal behind the canyon walls and turns violet above them
-  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
+  // GU47 phase 5: the upper sky was violet (0.09, 0.07, 0.26) and read as a sibling's purple nebula; it is now a deep
+  // teal-to-navy polar night, so the aurora carries the violet
+  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.03, 0.11, 0.15), vec3(0.01, 0.025, 0.07), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
   // GU47 phase 3: the lavender lift was vec3(0.10, 0.08, 0.22) over |h| < 0.5 and washed the planet into the sky; it now
   // hugs the horizon (|h| < 0.22) so the violet upper sky stays deep and the planet and aurora read against it
   twSky += band * bandW * 0.95 + vec3(0.04, 0.06, 0.10) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
@@ -270,7 +272,11 @@ void main() {
   vec2 sunP = normalize(vec2(dot(sd, pr), dot(sd, pu)) + vec2(1e-4, 0.0));
   float crescent = mix(1.0, 0.25 + 1.4 * smoothstep(-0.2, 0.7, dot(pp, sunP)), twilight);
   float ringShadow = mix(1.0, 1.0 - 0.7 * step(q.y, 0.0) * (1.0 - smoothstep(0.7, 1.05, abs(q.x))), twilight);
-  vec3 planet = mix(vec3(0.12, 0.08, 0.22), vec3(0.50, 0.34, 0.52), fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent * (1.0 + 0.45 * twilight) + vec3(0.55, 0.50, 0.62) * ring * 0.55 * ringShadow * (1.0 + 0.35 * twilight);
+  // GU47 phase 5: twilight gives the planet a magenta-rose disk and an amber ring (was lavender on violet)
+  vec3 pLo = mix(vec3(0.12, 0.08, 0.22), vec3(0.14, 0.04, 0.10), twilight);
+  vec3 pHi = mix(vec3(0.50, 0.34, 0.52), vec3(0.62, 0.24, 0.38), twilight);
+  vec3 ringC = mix(vec3(0.55, 0.50, 0.62), vec3(0.78, 0.52, 0.28), twilight);
+  vec3 planet = mix(pLo, pHi, fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent * (1.0 + 0.45 * twilight) + ringC * ring * 0.55 * ringShadow * (1.0 + 0.35 * twilight);
   float moonMask = 1.0 - smoothstep(0.022, 0.026, acos(clamp(dot(d, normalize(moonDir)), -1.0, 1.0)));
   float sun = pow(max(dot(d, normalize(sunDir)), 0.0), 160.0);
   vec2 g = floor(d.xz * 700.0 + d.y * 300.0);
