@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:35:57.401Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-25s",
+      "strange-orbit-port--neutral-env--settle-60s"
+    ],
+    "framesB": [
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--golden--settle-60s",
+      "drift-and-deliver-port--noenv--settle-60s",
+      "drift-and-deliver-port--original--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.939,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.939,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien planet setting with a giant ringed planet, starry sky and an astronaut on a hover-bike",
+        "Image B: realistic daytime city street with a small hatchback, traffic lights and a minimap/speedometer HUD",
+        "Different art style and world: sci-fi desert and elevated track versus an urban grid with blocky buildings"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime blocky city street with a teal compact car and a minimap",
+        "Image B is a dark alien planet with an astronaut on a sidecar bike and a floating track",
+        "Different art style, palette and camera, with no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: daytime blocky city street with a small hatchback and a minimap HUD",
+        "Image B: alien planet at night with a ringed gas giant, a floating track, and an astronaut on a hover bike",
+        "Different palettes and art styles: flat low-poly pastel vs. dark, painterly, atmospheric"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a low-poly daytime city street with a cyan car and a minimap HUD",
+        "Image B is an alien planet at night with a giant ringed planet, an astronaut on a sidecar bike, and a floating track",
+        "Different palette, scenery and vehicle styles, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: space setting with a giant planet, astronaut on a sidecar motorcycle and a floating track",
+        "Image B: blocky low-poly city street with a teal car and a minimap HUD",
+        "Different scenery, lighting and palette: dark teal and rust haze versus bright beige daylight"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street with a teal hatchback, a speedometer dial and a minimap",
+        "Image B is an alien planet with an astronaut on a sidecar bike and no HUD",
+        "The two frames use different scenery, vehicles and lighting"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly city street with a teal hatchback, a speedometer and a minimap",
+        "Image B is an alien planet with a giant moon, an astronaut on a sidecar bike and a floating track",
+        "Different palettes, scenery and vehicles, and Image B shows no HUD"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a low-poly city street with a teal hatchback, minimap and speedometer HUD",
+        "Image B is an alien planet with a giant moon, a floating track and an astronaut on a sidecar bike",
+        "Different art styles, scenery, vehicles and lighting"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic city street with a hatchback car, speedometer and minimap HUD",
+        "Image B is an alien planet with an astronaut on a sidecar bike and a floating track",
+        "Different scenery, vehicles, art style and HUD presence"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a hover-bike, Image B is a city street with a small car",
+        "different environments: giant planet, bridge track and rocky silhouettes versus city buildings and streetlamps",
+        "HUD differs: none in A, a speedometer dial and minimap in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a space setting with a giant planet and an astronaut on a sidecar motorcycle, Image B is a city street with a small hatchback",
+        "Different environments and art style: low-poly asteroid track with floating beads vs. blocky buildings with street lamps and traffic lights",
+        "HUD differs: none in A, orange speedometer dial and grid minimap in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a hover bike and a giant ringed planet in the sky",
+        "Image B is a low-poly city street with a hatchback, traffic lights, and a minimap and speedometer HUD",
+        "Different vehicle types, scenery, and palettes (teal/rust space vs. warm sunset city)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien planet with astronaut on hover-bike and elevated track",
+        "Image B: blocky city street with a realistic car, speedometer and minimap HUD",
+        "Different palettes and scenery: teal/rust space vs. warm sunset urban"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime city street with blocky buildings and a minimap HUD",
+        "Image B is an alien planet at night with a giant moon and an astronaut on a sidecar bike",
+        "Different vehicles, scenery, palette and art style"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien planet with astronaut on a hover bike over a floating track",
+        "Image B: realistic city street with a small hatchback car, speedometer and minimap HUD",
+        "Different settings, vehicles, and art styles"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: daytime city street with blocky buildings, a small hatchback and a minimap HUD",
+        "Image B: alien planet with a giant moon, dark teal sky and an astronaut on a hover bike",
+        "Different art styles and palettes: flat, bright low-poly versus moody, glowing, painterly"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a low-poly city street with a teal hatchback, minimap and speedometer HUD",
+        "Image B is a space planet scene with an astronaut on a sidecar bike and a ringed-planet sky",
+        "Different art styles and settings, with no shared scenery, vehicle or HUD elements"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a space scene with an astronaut on a hover-bike and a giant planet",
+        "Image B is a blocky city street with a teal car and a minimap HUD",
+        "Different settings, palettes and art styles"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with a giant moon and an astronaut on a hover bike; Image B is a city street with a hatchback",
+        "Different HUD: Image B has a speedometer dial and minimap, Image A has none",
+        "Different art and lighting: A is a dark teal and rust night scene, B is a low-poly blocky city at warm sunset"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien planet with giant moon and an astronaut on a hover-bike",
+        "Image B: blocky low-poly city street with a teal car and a minimap HUD",
+        "Different settings, vehicles and art styles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with a teal hatchback and a minimap HUD",
+        "Image B is an alien night scene with a giant planet and an astronaut on a hover bike",
+        "Different scenery, lighting and palette, and different vehicle types"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a hover-bike and a giant ringed planet in the sky",
+        "Image B is a blocky city street with a small cyan car, traffic lights, and a minimap and speedometer HUD",
+        "The two frames differ in setting, vehicle type, art style and lighting"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime low-poly city street with a realistic hatchback and minimap HUD",
+        "Image B is an alien planet with an astronaut on a hover sidecar bike and a floating track",
+        "Different palettes, lighting and art styles (flat bright city vs dark teal/orange space scene)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street with a blocky low-poly car, a speedometer and a minimap",
+        "Image B is an alien planet with a giant ringed planet, an astronaut on a sidecar bike and a floating track",
+        "The setting, vehicles and HUD style differ completely"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a low-poly city street with a teal hatchback, minimap and speedometer HUD",
+        "Image B is an alien planet with a giant moon, an astronaut on a sidecar bike and a floating track",
+        "Different scenery, vehicles, lighting and art style"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime city street with low-poly buildings, traffic lights and a minimap HUD",
+        "Image B is an alien planet with a giant moon, a night sky and an astronaut on a sidecar bike",
+        "Different vehicles, scenery and lighting, with no shared art style or HUD"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime blocky city street with a teal hatchback and a minimap HUD",
+        "Image B is a dark alien planet with an astronaut on a hover bike and a floating track",
+        "Different palettes, scenery, and vehicle styles with no shared assets"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city street with a small teal car, minimap and speedometer HUD",
+        "Image B is an alien planet with an astronaut on a hover bike and a floating track",
+        "Different scenery, vehicles, palette and camera style, and no shared HUD"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a sidecar motorcycle, ringed planet and starry sky",
+        "Image B is a blocky city street with a teal car, traffic lights and a minimap HUD",
+        "Different settings and art styles: moody dark space scene vs bright low-poly daytime city"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime low-poly city street with a minimap HUD, Image B is an alien planet at night with a giant moon",
+        "different vehicles: teal compact car vs. astronaut on a sidecar hover bike",
+        "different art style and lighting: flat blocky buildings vs. painterly, hazy space landscape"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien planet, astronaut on a hover bike, floating track with bead lights",
+        "Image B: realistic city street at sunset with a small hatchback car",
+        "Image B has a speedometer and minimap HUD; Image A has none, and the art style and setting differ"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a sidecar motorcycle and a giant ringed planet in the sky",
+        "Image B is a city street with a realistic hatchback car, blocky buildings, and a minimap and speedometer HUD",
+        "Different scenery, vehicle style and lighting: foggy teal and orange space vs. warm sunset urban"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a sidecar motorbike, Image B is a city street with a hatchback car",
+        "Different scenery and palette: hazy teal and rust space vistas versus a sunset city of buildings",
+        "Image B has a speedometer and grid minimap HUD, and Image A shows none"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime city street with blocky buildings and a minimap HUD",
+        "Image B is an alien planet with a giant moon, starry sky and an astronaut on a sidecar bike",
+        "Different vehicles, scenery and lighting palettes"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien planet with a space bike and astronaut rider, Image B is a city street with a small car",
+        "different environments: floating track and giant planet vs. skyscraper grid with street lamps",
+        "Image B has a speedometer and minimap HUD that Image A lacks"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street with a teal car, minimap and speedometer HUD",
+        "Image B is an alien planet with a giant moon and an astronaut on a sidecar motorcycle",
+        "Different scenery, palette and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with a hover sidecar bike and astronaut, Image B is a city street with a small car",
+        "Different HUD: Image B has a speedometer and minimap, Image A shows none",
+        "Different scenery and style: A has a hazy cosmic sky and orange terrain, B has blocky buildings with a warm sunset"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: alien planet, astronaut on a hover-bike, dark starry sky",
+        "Image B: daytime city street with blocky buildings and a realistic teal car",
+        "Different HUD: minimap in B, none in A"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien-planet setting with a hover-bike astronaut and a ringed planet; Image B is a city street with a small hatchback",
+        "Different environments: floating track over dark rock vs. buildings, streetlamps and traffic lights",
+        "Different HUD: Image B has a speedometer dial and minimap, Image A has none"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with a giant moon, a floating track and an astronaut on a hover bike",
+        "Image B is a realistic city street with a small car, a speedometer and a minimap HUD",
+        "Different scenery, palette and vehicle styles, with no shared assets"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--sunset--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a small teal car and a HUD with speedometer and minimap",
+        "Image B is an alien planet with an astronaut on a hover bike, a ringed planet and a winding elevated track",
+        "Different scenery, vehicles and camera setup; no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime city street with blocky buildings, a teal car and a minimap",
+        "Image B is an alien planet with a giant moon, a space sidecar motorcycle with an astronaut, and no minimap",
+        "Different art style, palette and setting: warm flat-shaded city versus dark teal and rust space scenery"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a blocky city street with a teal hatchback, minimap and speedometer HUD",
+        "Image B is an alien planet with a ringed moon, a floating track and an astronaut on a hover bike",
+        "Different palette, scenery and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city street with a small teal car, traffic lights and a minimap HUD",
+        "Image B is an alien planet with an astronaut on a sidecar bike, a giant moon and a floating track",
+        "Different art style, palette and camera: low-poly daylight city vs. painterly space scene with no HUD"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with a giant ringed moon, a floating track and an astronaut on a sidecar bike, while Image B is a blocky daytime city street with a small hatchback",
+        "Different HUDs: B has a speedometer dial and a grid minimap, A shows none",
+        "Different art style and lighting: A has foggy, hazy, muted teal and orange tones, B has crisp low-poly buildings under a warm sunset"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-60s",
+      "b": "drift-and-deliver-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien planet with a giant moon, starry sky and an astronaut on a hover bike",
+        "Image B: realistic city street with a hatchback, a speedometer and a minimap HUD",
+        "Different scenery, palette and vehicle styles"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "drift-and-deliver-port--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city street with a teal hatchback, a speedometer dial and a minimap HUD",
+        "Image B is an alien planet with an astronaut on a sidecar motorcycle and a giant ringed planet",
+        "Different settings, vehicles and rendering styles, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "drift-and-deliver-port--noenv--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien planet with an astronaut on a hover-bike and a giant ringed planet in the sky",
+        "Image B is a blocky daytime city street with a teal car, traffic lights and a minimap",
+        "Different art styles, palettes and vehicles: dark teal and rust space scene vs. pale beige and yellow city"
+      ]
+    }
+  ]
+}

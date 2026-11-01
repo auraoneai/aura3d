@@ -1,0 +1,735 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:49:44.615Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-25s"
+    ],
+    "framesB": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch0-original--settle-60s",
+      "silt-and-signal-port--ch1--settle-60s",
+      "silt-and-signal-port--ch1-original--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch2-original--settle-60s",
+      "silt-and-signal-port--ch3--settle-60s",
+      "silt-and-signal-port--ch3-original--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--ch4-original--settle-60s",
+      "silt-and-signal-port--ch5--settle-60s",
+      "silt-and-signal-port--ch5-original--settle-60s",
+      "silt-and-signal-port--ch6--settle-60s",
+      "silt-and-signal-port--ch6-original--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.854,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 42,
+    "confidentDifferentRate": 0.875,
+    "same_game": false,
+    "same_game_confidence": 0.854,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a cel-shaded, ink-outlined cartoon style with a runner on a hoverboard",
+        "Image B is a soft, realistic-lit space scene with an astronaut on a motorbike and a starry sky",
+        "Different palettes and vehicles: teal and green daytime scene versus dark orange and teal night scene"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: soft, hazy space scene with an astronaut on a sidecar bike",
+        "Image B: flat cartoon look with ink outlines, green pines and a hoverboard rider",
+        "Different palettes, rendering styles and vehicles"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat cel-shaded look with ink outlines and low-poly pine trees",
+        "Image B: soft, hazy realistic-style render with a giant moon and a space-themed palette",
+        "Different vehicles: a hoverboard rider in A and a sidecar motorbike with an astronaut in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic painterly space scene with a giant moon, fog and an astronaut on a sidecar motorbike",
+        "Image B: cel-shaded cartoon with black outlines, low-poly pine trees and a hoverboard rider",
+        "Different palettes and rendering: dark brown/teal night vs. bright pastel daytime sky"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: soft, hazy space-planet scene with an astronaut on a sidecar bike",
+        "Image B: black-outlined comic/cel-shaded style with pine forest and a hoverboard rider",
+        "Different palettes, rendering, and vehicles"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a flat, inked cartoon outline style with low-poly green pines and a hoverboard rider",
+        "Image B is a soft, hazy, painterly space scene with an astronaut on a sidecar bike and a large moon",
+        "Different palettes and track styles: blue water ribbon with a daytime sky vs. a dotted-light track over a dark alien starry sky"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses flat cel-shaded cartoon outlines with a running character on foot",
+        "Image B uses soft realistic shading with an astronaut on a sidecar motorcycle",
+        "Different settings: green pine town with a gravel ground vs. a Mars-like night landscape with a moon and elevated track"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A uses flat cel-shaded, ink-outlined style with a hoverboard rider; Image B uses soft painterly 3D with an astronaut on a sidecar bike",
+        "Different environments: cobblestone plaza with pine trees and rings vs. starry night, giant moon and rust-red desert with a track on stilts",
+        "Different palettes and lighting: orange dusk with mint-green accents vs. teal night sky with salmon-brown ground and heavy blur/fog"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: flat cel-shaded ink-outlined look with a cobblestone ground and a skateboarder",
+        "Image B: soft, hazy space scene with a large moon, starry sky and an astronaut on a sidecar bike",
+        "Different art style, palette and vehicle type"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark alien night scene with a huge moon and an astronaut on a sidecar bike",
+        "Image B: daytime green hills and pine trees in an inked, cel-shaded cartoon style",
+        "Different vehicles and rendering: smooth soft-lit 3D in A, outlined hand-drawn look in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a cel-shaded, inked cartoon style with pine trees and a hoverboard runner",
+        "Image B uses a soft, realistic-lit alien space scene with a moon, starry sky, and an astronaut on a sidecar bike",
+        "Different vehicles, palettes, and rendering style"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night space scene with astronaut on a sidecar bike, soft fogged look",
+        "Image B: daytime green hills and pine trees with ink-outlined, hand-drawn cel shading",
+        "Different vehicles and rendering style (hoverboard rider vs. sidecar bike)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic soft-shaded sci-fi scene with an astronaut on a sidecar bike, a giant moon and a starry sky",
+        "Image B: flat cel-shaded look with black outlines, low-poly pine trees and a hoverboard rider on a water track",
+        "Different palettes and render styles: hazy muted orange and teal against saturated olive green and cyan"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic, hazy Mars-like scene with an astronaut on a sidecar motorbike, while Image B is a flat, cel-shaded, outlined style",
+        "Different palettes: orange, teal and brown in A against purple, mint and green pines in B",
+        "Different vehicles and scenery: a bike and a floating track in A, a hoverboard rider and giant ring tunnels in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different vehicles and riders: astronaut on sidecar bike vs. person on hoverboard",
+        "A is a hazy red-rock alien world with a huge moon; B is a dark blue forest with low-poly pines",
+        "B has a giant ring gate and inked comic-style textures; A has a soft, fogged look with a lit bridge track"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: cel-shaded, outlined cartoon style with green hills and pine trees",
+        "Image B: soft, hazy sci-fi alien planet with an astronaut on a sidecar bike",
+        "Different vehicles, palettes and lighting (daytime vs. dusky starry sky)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: astronaut on a sidecar motorbike, space night sky with a giant moon",
+        "Image B: inked cel-shaded look with a cobblestone texture, pine trees and a hoverboard rider",
+        "Different rendering style, vehicles and settings; the shared teal and orange palette is the only overlap"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: astronaut on a hover-bike on a Mars-like surface with a large moon and night sky",
+        "Image B: character on a skateboard inside a giant ring with a pine-forest valley and a posterized, outlined look",
+        "Different vehicles, scenery and rendering style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A has a flat, inked comic-book look with a hoverboard rider; B has soft, smooth 3D shading with an astronaut on a sidecar bike",
+        "A shows a green pine forest at night with a black ring gate and cyan pillar; B shows a red alien terrain with a giant moon and an elevated bead-lit track",
+        "The lighting and palette differ: A is dark teal and green with hard outlines, B is hazy orange and teal with fog"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat cartoon style with thick black outlines and a daytime sky",
+        "Image B uses soft realistic shading, a night sky with a large moon, and an astronaut on a hover motorbike",
+        "The two frames differ in vehicle (character on a hoverboard vs. motorbike) and in overall palette and rendering"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "A: astronaut on a hover-sidecar bike over a Mars-like orange plain with a giant moon",
+        "B: character on a hoverboard in a night pine-forest with a large ring gate and light pillar",
+        "Both use low-poly shapes, painterly textures and teal accents, so a shared style is possible"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: character on a hoverboard in a pine-forest mountain setting with outlined, flat-shaded toon look",
+        "Image B: astronaut on a sidecar motorbike in a space setting with a giant moon, starry sky and elevated beaded track",
+        "Different rendering style: A has dark outlines and posterized shading, B has soft, hazy, painterly lighting"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat cel-shaded cartoon style with black outlines, and Image B uses soft realistic shading with no outlines",
+        "Image A has a runner on a hoverboard on a teal road under a daytime pastel sky, while Image B has an astronaut on a sidecar motorbike on an alien planet at night",
+        "The two frames differ completely in palette and scenery: green pines and brown dirt against a dark red-brown rocky landscape with a giant moon"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: soft, hazy sci-fi alien scene with an astronaut on a sidecar bike",
+        "Image B: flat cel-shaded outlines, green valley with pine trees, character on a hoverboard",
+        "Different rendering styles, palettes and vehicles"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic-shaded astronaut on a hover bike under a night sky with a large moon",
+        "Image B: cel-shaded outlined cartoon style with a character on foot, green pines and a daytime sky",
+        "Different palettes and rendering: A is muted teal and rust with soft fog, B is flat bright colors with black outlines"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: astronaut on a sidecar motorbike in a night space scene with a moon and starry sky",
+        "Image B: ink-outlined, hand-drawn look with a skateboarder on a cobblestone plaza and low-poly pine trees",
+        "Different rendering styles and palettes: soft hazy teal and rust against saturated orange sunset with thick outlines"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human rider on a hoverboard in a pine-tree mountain scene with outlined, cel-shaded look",
+        "Image B: astronaut on a sidecar bike in a starry alien setting with a large moon and an elevated track",
+        "Different rendering styles: flat outlined shapes versus soft, hazy shading and fog"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: astronaut on a hover motorbike over a desert with a giant moon",
+        "B: ink-outlined cel-shaded look with a hoverboard rider and pine forest",
+        "Different palettes and styles: soft, hazy orange and teal vs. high-contrast green and navy"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: soft painterly Mars-like scene with astronaut on sidecar bike and a giant moon",
+        "Image B: inked cel-shaded comic outlines with pine forest and a rider on a hoverboard",
+        "Different vehicles, palettes and rendering styles"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic soft-shaded astronaut on a sidecar bike under a starry sky with a large moon",
+        "Image B: cartoon cel-shaded style with thick black outlines, a hoverboard rider, and green low-poly pines",
+        "Different palettes and environments: dark, foggy red-brown alien terrain vs. bright pastel daytime with a cyan track"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses flat, ink-outlined cel-shaded art, Image B uses soft painterly 3D shading",
+        "Image A has a daytime green valley with a hoverboard rider, Image B has a night alien planet with an astronaut on a sidecar bike",
+        "Different palette and lighting: bright teal and green against dark brown with a hazy moon"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: soft, hazy realistic render with an astronaut on a sidecar bike",
+        "Image B: flat cel-shaded look with dark outlines and a hoverboard rider",
+        "Different palettes: rust-orange and teal in A, purple and green in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: low-poly pine trees, hoverboard rider, and a night-blue mountain palette",
+        "Image B: astronaut on a sidecar bike, orange alien terrain, and a large pale moon",
+        "Different rendering styles: flat, inked outlines in A versus soft, hazy, painterly shading in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat cel-shaded look with heavy black outlines and a hand-drawn texture, on a character riding a hoverboard",
+        "Image B: soft, hazy, realistic-style lighting with no outlines, showing an astronaut on a sidecar motorbike under a giant moon",
+        "Different settings: green low-poly pine hills versus a night-time alien desert with a bridge track"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: flat, posterized green landscape with a skateboarder and a giant ring",
+        "Image B: red-brown alien terrain, a large moon and an astronaut on a sidecar bike",
+        "Different vehicles, palettes and rendering styles (outlined cel look vs soft hazy 3D)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: astronaut on a sidecar hoverbike on a Mars-like planet with a giant moon",
+        "Image B: ink-outlined, hand-drawn style with a skateboarder, low-poly pine trees and cobblestone ground",
+        "Different rendering styles: soft, hazy 3D in A versus flat cel-shaded outlines in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a cel-shaded, ink-outlined cartoon style with a hoverboard rider, and Image B is a soft, smooth-shaded space scene with an astronaut on a motorbike",
+        "Image A uses a green and olive pine landscape under a dusk sky, and Image B uses a starry sky, a giant moon and orange-brown alien terrain",
+        "The camera and effects differ: A has a flat graphic look with bold outlines, and B has a hazy, blurred, atmospheric look"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "A has inked outlines and a hand-drawn look, while B is smooth, soft-lit 3D with no outlines",
+        "Different vehicles: a hoverboard rider in A and an astronaut on a sidecar bike in B",
+        "Different settings: low-poly pines and a cobblestone plaza in A, a starry planet with a moon in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: astronaut on sidecar motorbike, space scene with giant moon and starry sky",
+        "B: skateboarder inside a giant dark ring, pine forest and daylit hills",
+        "Different rendering styles: A is soft and hazy, B has hard posterized edges and outlines"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien night scene with giant moon, astronaut on a hover-bike, soft painterly look",
+        "Image B: daytime green meadow with an ink-outlined cel-shaded cartoon style and a rider on a hoverboard",
+        "Different art direction, palette, and vehicle and character designs"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: human rider on a hoverboard in a pine-forest setting with an orange sky",
+        "Image B: astronaut on a sidecar bike in a space scene with a large moon and starry sky",
+        "Different art styles: outlined, flat cel-shaded look in A and soft, hazy, painterly look in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat cel-shaded, ink-outlined cartoon look with a pedestrian character",
+        "Image B uses a soft, hazy, realistic-lit space scene with an astronaut on a sidecar motorcycle",
+        "The palettes and scenery differ: green pines and brown cobble ground versus a moon, starry sky and a red desert"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image B has cel-shaded outlines and posterized shading, while Image A is soft, fogged and painterly",
+        "different vehicles and riders: astronaut on a sidecar bike versus a character on a hoverboard",
+        "different worlds: barren red terrain with a giant moon versus a purple sky with pine trees and ring gates"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: flat cel-shaded look with thick outlines, green pine forest and a character on a hoverboard",
+        "Image B: soft, hazy realistic rendering, a red desert with a giant moon and an astronaut on a sidecar bike",
+        "Different palettes and vehicles: dark blue and green night versus warm orange and teal"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: astronaut on a sidecar bike, alien planet with a giant moon and floating track",
+        "Image B: cel-shaded, outlined look with a hoverboard rider and pine-tree forest",
+        "Different rendering styles: soft, hazy realistic shading vs. flat posterized comic shading"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses flat cel-shaded, ink-outlined art with low-poly pine trees and a character on a hoverboard",
+        "Image B uses soft, realistic lighting with an astronaut on a sci-fi motorbike, a giant moon and a Mars-like desert",
+        "The palettes and scenery differ: dark green night hills versus rust-orange and teal"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space-themed astronaut on a sidecar bike, night sky with a giant moon and a dark red rocky landscape",
+        "Image B: ink-outlined, hand-drawn cartoon rendering of green hills and pine trees in daylight",
+        "Different vehicles and art styles: smooth glossy 3D in A, flat comic-style shading in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a cel-shaded, ink-outlined cartoon style with green hills and pine trees, while Image B is a soft, hazy, painterly render",
+        "Image A has a character on a hoverboard and a giant black ring, while Image B has an astronaut on a sidecar motorbike",
+        "The settings and palettes differ: a blue-sky, green daytime valley versus a rust-orange, teal-night alien planet with a large moon"
+      ]
+    }
+  ]
+}

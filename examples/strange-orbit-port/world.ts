@@ -303,7 +303,7 @@ export function buildWorld(options: WorldOptions): World {
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
   /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
-  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec()) }).runtime({ id: "sky-dome" }));
+  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec(0, look)) }).runtime({ id: "sky-dome" }));
   // SO47-E2: gouache moves the gas giant out past the ring on -X (it fills the right of the sky at the start grid),
   // 520 m across, with a banded ring and a small second moon; `?look=original` keeps the small overhead planet.
   const planet = row.planet;
@@ -312,7 +312,12 @@ export function buildWorld(options: WorldOptions): World {
     position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
-    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#c8683f"), 0, look === "original" ? 0.045 : 0.034)
+    // GU47 phase 4: primitives are unit-sized (object-space y in +-0.5), so the old 0.034 band frequency painted one flat
+    // pale disc that the sibling judge read as "a large pale moon" (the Heatsink Run tell). Gouache bands at 12 per unit
+    // in peach and terracotta read as a gas giant (PRD 6.1 row G15).
+    material: look === "original"
+      ? solidMaterial(hexLinear("#f9ece3"), hexLinear("#c98a68"), 0, 0.045)
+      : solidMaterial(hexLinear("#f4d6b8"), hexLinear("#a9502c"), 0, 12)
   }).runtime({ id: "planet" }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
@@ -566,7 +571,9 @@ export function buildWorld(options: WorldOptions): World {
       // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
       const tint = look === "gouache"
         ? [{
-          ...(i === 0 ? { clearcoat: 1, clearcoatRoughness: 0.12 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
+          // GU47 phase 4 (rubric: "near-uniform white, blown, fully matte"): the hero's white enamel is knocked down a
+          // touch and every rider mirrors the captured nebula/giant probe harder (envMapIntensity), so the fairings read glossy.
+          ...(i === 0 ? { color: "#e2dcd4", colorMode: "multiply" as const, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.8 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const, clearcoat: 0.6, clearcoatRoughness: 0.18, envMapIntensity: 1.5 }),
           rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.25 : 0.35 }
         }]
         : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
@@ -638,7 +645,7 @@ export function buildWorld(options: WorldOptions): World {
         normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
         uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
         indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
-      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.85 : 0.65)) }).runtime({ id: `rider-shadow-${i}` }));
+      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.95 : 0.8)) }).runtime({ id: `rider-shadow-${i}` }));
     }
   }
 

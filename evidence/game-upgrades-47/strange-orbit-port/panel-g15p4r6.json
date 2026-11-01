@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze washes out the left third of the frame and the ground there; overall slightly low contrast and muddy brown palette; the player bike looks a bit washed out or translucent; ground reflections are smeary.",
+     "A milky haze washes out the left third of the frame, and the moon disc reads as an overexposed flat beige circle. Overall contrast is somewhat muted and slightly muddy, and the player's white and teal colours are a bit washed out. Water reflections in the lower left are faint and smeary. Even so, it has much stronger depth: layered mountain silhouettes, a supported track with pylons, rocks, a nebula sky and a better-staged composition.",
+     "Grey fog/haze washes out the left third; the foreground orange ground is flat and somewhat muddy; the teal water band behind the player looks odd; the overall tone is a bit desaturated. The player still reads clearly, and the scene has depth from the mountains, the lit track with pylons, and the moon."
+    ]
+   }
+  ]
+ }
+]

@@ -47,3 +47,19 @@ Software WebGL2, remote runner, capture `g15p3-r8` (details in the lane report, 
 | blind panel vs 4.6.2 | default and neutral-env better 3/0/0 |
 | SO47-H1 no overlap at 390 and 1280 | fixed (gauge and chip top left on narrow screens), visible in boost-390 |
 | SO47-E2 planet and ring | ring dropped for distinctness; planet only |
+
+## Phase 4 (4.7.2) acceptance status
+
+Software WebGL2, remote runner, capture `g15p4-r8` (+ `g15p4-r9` mobile screens); details in the lane report, Phase 4.
+
+| PRD 7.2 item | status |
+|---|---|
+| game-checks 0 errors / 0 warnings | 0 errors, 1 warning (`borrowed-asset` diamondRock; WP-36 `moonRock-craterline` blocked: Meshy keys refuse API calls) |
+| game unit tests | every `tests/unit/strange-orbit-port` file passes, one at a time |
+| typecheck at or below baseline | NEW_ERRORS 0 |
+| steady-state capture inside the bands (bands unchanged) | default 73.1 / 67.2, neutral-env 74.3 / 67.1, original 75.3 / 73.3 (r2, unchanged look); rider crop 105-117 |
+| final screens 1280x720 and 390x844 | retaken (`g15p4-r8`, mobile `g15p4-r9`), card rebuilt |
+| panel rubric round, every category >= 7 | NOT met: two prism runs, min 2.5 (shadows) both times |
+| sibling distinctness vs every genre neighbour (same_game false at >= 0.8) | 6 of 8 pass; heatsink-port 0.671 and last-train-port 0.770 read different (same_game false) but under 0.8 |
+| blind panel vs 4.6.2 | default and neutral-env better 3/0/0 (`g15p4r8`) |
+| WP-36 Meshy rows (17) | blocked: Meshy keys refuse API calls; `craterBikeRider` arrived 2026-10-30 but rejected (geometry hash changed, photoreal suit) |

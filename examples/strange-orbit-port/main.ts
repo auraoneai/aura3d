@@ -627,7 +627,7 @@ async function boot(): Promise<void> {
     pixelRatio: 1,
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
-    output: { toneMapping: "aces", exposure: lookExposure(config.look), dither: false },
+    output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false },
     scene: world.scene
   });
   await app.ready();
