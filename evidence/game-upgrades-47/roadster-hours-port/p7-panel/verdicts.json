@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night lighting is somewhat flat and slightly washed out with blue-grey haze. The building windows are coarse horizontal stripes, and the road surface is bright and noisy for a night scene.",
+     "Road surface is a bit flat and over-bright under the moonlight, and the building facades are simple stripe textures. Otherwise the car is clearly lit and readable, and the night skyline has good depth.",
+     "The road surface is a bit washed out and hazy under the moonlight; the building windows are uniform horizontal stripes and look procedural; the scene is slightly low in contrast overall. The car is clearly readable, though, and the moonlit mood works."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The canyon walls have low-detail, smeared textures. The road is slightly hazy toward the horizon, and the car sits off-centre near the bottom right.",
+     "The road has a slightly bluish, washed sheen, and the shadow band on the right wall is a bit blocky. Otherwise it is bright and vivid, with warm sunlit canyon walls, a well-lit, detailed car and good depth.",
+     "The road gets a little hazy and bright toward the middle distance; the canyon walls are large flat-textured slabs; a faint blurry smudge shows at the bottom of the frame."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is hazy and grey and the horizon is slightly washed out. The car's shadow is soft and slightly blocky, and the car sits off-centre near the bottom right.",
+     "Mild haze greys out the sky and horizon, so the upper half is a little washed out. The car, shadows, wind turbines, dunes and water still read well, with nice warm light.",
+     "The sky is somewhat grey and hazy, and the distance is slightly washed out; the car shadow is a little soft. Otherwise it has good depth, with wind turbines, trees, sunlit dunes, water and readable shadows."
+    ]
+   }
+  ]
+ }
+]
