@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "last-train-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "band-a",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The white building facades are slightly blown out by the warm key light. Heavy vignette and edge blur. The yellow storefront on the left is a little overexposed. Otherwise it reads well: warm low sun, cast shadows, rails present, a clear red tram as the subject, and good depth.",
+     "Building facades blown out to near-white with a yellow wash; heavy vignette and tilt-shift blur soften the edges; capsule NPCs look placeholder-like. Otherwise the tram reads clearly, rails are continuous, and cast shadows add depth.",
+     "The white building facades are overexposed by bloom, and the vignette with edge blur is heavy. Background buildings look flat, like a billboard. Otherwise the warm directional light, cast shadows and proper rails make the scene read well, with the tram clearly the subject."
+    ]
+   },
+   {
+    "variant": "band-b",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong warm haze and bloom wash out the background buildings and the right-hand sky. Contrast on the facades is low and there is a heavy vignette. Still better than A: the tram and track are solid and well grounded, and the mood is warm.",
+     "Dusky grade gives a muddy yellow-grey cast; facades are washed into the sky; heavy vignette and blur; low contrast in the upper half. Rails are intact and the tram is clearly readable.",
+     "A strong yellow haze washes out the buildings and sky, and the vignette with edge blur is heavy, so contrast is lower than ideal. It still has rails, grounded shadows and a readable tram, with a warm evening mood."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze washes out the right-hand buildings and the sky somewhat. Heavy vignette and blur at the edges. Some props are simple capsules and boxes. Otherwise it is good: cast shadows, rails going into the distance, a well-lit tram, and real depth.",
+     "Blown highlights on the right-hand white facades and the platform; hazy, low-saturation sky; vignette darkens the corners; capsule NPCs. Continuous rails, warm light and shadows give better depth and mood.",
+     "Building facades are partly washed out by bloom and the sky is hazy. The vignette is heavy and the right edge of the platform is overexposed. Otherwise the warm light, long shadows, proper rails and a tram that reads clearly give good depth."
+    ]
+   }
+  ]
+ }
+]

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-last-train-port/art/direction.ts",
-  "sourceSha256": "e72ad193fe217f0ea2ce01fc1f7dee4e378e1db68cdb1a0d17e0ff9c8a3bc148",
+  "sourceSha256": "46a50630eb41cdaf91f2087342ad6920bfcb78b3f860e13e36a522fdaf46bdfc",
   "id": "showcase-last-train-port",
   "genre": "racing",
   "signatureEffect": "Earned sky lanterns: every clean arrival releases paper lanterns that stay aloft, so the dusk sky fills with the lights the driver earned.",
@@ -794,7 +794,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "tram",
+        "assetKey": "tramEnamel",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1440,6 +1440,14 @@
       {
         "role": "vehicle",
         "assetKey": "tram",
+        "maxTriangles": 80000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "tramEnamel",
         "maxTriangles": 80000,
         "minTriangles": 4000,
         "textureSet": "BC+N+ORM",

@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/gameplay-early.1280x720.jpg",
+      "sha256": "c64a410b66c7fd770021c38f30c9d30044efb7ebec6dae4954806a2587faa7f9"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/key-depart.1280x720.jpg",
+      "sha256": "39b17b9ecee8313f6d281eff94a5a57a047757010693408fa5a598ab861456ee"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/mid-leg.1280x720.jpg",
+      "sha256": "0bebc87142de751c897c339733670f905e5856adfe5f1476608148ed19603820"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/band-b-settle-60s.jpg",
+      "sha256": "47f77148d8c5e2fedc26263d2623934660a3424c11af01bfa62cda8fd90cba24"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 2 has a warm low sun behind the arch and long raking shadows, which matches golden hour. In frames 1 and 4 the building facades are evenly overlit pale yellow-white with little directional falloff, so the scene reads as flat midday."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 2 shows long building shadows across the cobbles. The capsule pedestrians in frames 1 and 4 cast no visible contact shadow and look like they float. The tram has only a faint dark band under the chassis."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The tram's red paint is glossy but shows blotchy, baked-looking highlights rather than coherent sky or environment reflections. The tram windows show no reflection of the surroundings."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The townhouses are box facades with stretched window textures and flat red roof planes. The far town in frame 3 is a flat cutout above a cloud sea. The arch, clock tower, elevated looping track, and cobble plaza give the world identity."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 3 has a sun glow and haze over the cloud sea, and frame 2 has distance haze toward the arch. The haze is milky and lifts the whole frame instead of building depth gradually over 30 to 180 m."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The tram's surface looks like a noisy scanned or generated texture with smeared detail. The building walls are uniform matte with painted-on windows. The cobble ground repeats visibly, and the track sleepers are plain brown blocks."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Fidelity is mixed within the same shot. Detailed figures and a scanned-looking tram and clock tower sit next to untextured capsule-and-sphere placeholder people (blue, teal, orange, pink) and simple sphere bushes."
+    },
+    {
+      "category": "composition",
+      "seen": "In chase frames 2 and 3 the tram sits centered at about 10 to 12% of the frame, slightly under the 15 to 25% target. Five HUD panels occupy the corners and the bottom strip and crowd the playfield. The side shots in frames 1 and 4 are flat, frontal arrangements."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits behind and above the tram at a moderate FOV that reads close to 60. The side station shots use a high, static angle. A catenary wire cuts straight through the top of frames 2 and 3."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A vignette and a warm grade are present, and the bottom edges are slightly blurred in frames 1 and 4. The grade washes highlights toward cream and lacks charcoal depth in the shadows, so the result is hazy instead of cinematic film contrast."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The navy panels with cream borders are consistent and readable, and the lean meter is clear. The HUD is dense: an objective box, a stats box, a passenger list, and a full-width control bar together cover a large share of the screen."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}

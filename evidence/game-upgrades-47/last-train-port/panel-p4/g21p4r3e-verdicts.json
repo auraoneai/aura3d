@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "last-train-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "band-e",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Fairly dark overall, and the right foreground is muddy. The pill-shaped NPCs are still placeholders. The canopy shows as a thin bar floating across the facade, and the building facades are repetitive. Otherwise the night mood is strong: lit windows, a starry sky, clear rails and a well-framed, readable tram.",
+     "Night mood is cohesive and the tram reads well, but the buildings are lit flat and look washed grey against the dark sky. A long brown canopy beam cuts across the facades and looks like it is floating. The foreground is slightly dark and muddy. The capsule figures look like placeholder art.",
+     "Fairly dark night scene where the foreground cobbles read a bit muddy. The window lighting on the buildings looks uniform and repetitive. Placeholder capsule people remain, and the stretched canopy bar floats oddly in front of the buildings. Even so, the tram sits properly on visible rails, the composition is clear, and the mood and depth are strong."
+    ]
+   }
+  ]
+ }
+]

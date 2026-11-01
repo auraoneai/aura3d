@@ -39,3 +39,16 @@
 | sibling judge vs teleoperator | pass: 0.831 (was 0.795) |
 | screens-fresh | done: card and desktop retaken on 642d72e64; mobile open for 4.7.2 |
 | game-checks | 0 errors; warnings 4 -> 2 (borrowed-asset x2, WP-36) |
+
+## Phase 4 (4.7.2)
+
+| Item | Status |
+|---|---|
+| cast shadows draw (software WebGL2) | done: band look uses the engine's 4.3.0 shadow fit (the 4.2.0 fit spread every cascade over the route-spanning casters; diag g21p4-d1); A/B key rakes the facades |
+| rubric >= 7 per category (PRD 1.2 goal 1) | not met: shadows 4.5 -> 5, ibl_reflections 4 -> 4.5-5, ui_hud 6-7; modeling/material 4-4.5 held down by primitive stand-ins whose WP-36 rows are blocked (see lane report) |
+| distinctness vs 8 genre neighbours (goal 2) | met: same_game false at 0.827-0.944 on r3 frames (`distinct-p4/`) |
+| blind panel vs 4.6.2, every changed view | done: default, A-E all better 3-0 (g21p4r3a, g21p4r3cd, g21p4r3e; `panel-p4/`) |
+| luma bands (luma-after.json, r3) | done: default 100.7, A 101.0, B 88.8, C 67.5, D 56.6, E 38.6; none widened |
+| WP-36 | 1 of 36 swapped in (lamplightTramEnamel); 35 blocked: Meshy keys refuse API calls |
+| screens | done: desktop, 390x844 and card retaken on the r3 build; previews rebuilt |
+| gates | typecheck NEW_ERRORS 0; 20 vitest files pass; eslint clean; game-checks 0 errors, 2 warnings (borrowed-asset, WP-36 blocked) |

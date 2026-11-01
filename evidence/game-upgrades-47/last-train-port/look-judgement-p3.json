@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/gameplay-early.1280x720.jpg",
+      "sha256": "3ceaecca26dd6111668a7386167e5077e1b3aa781b99c0cef48c0586f2e13a98"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/key-depart.1280x720.jpg",
+      "sha256": "5e22b8a0f943c699270b900bf3abde64d9e0995182345961944da583b0e317cf"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/mid-leg.1280x720.jpg",
+      "sha256": "c25bd23b3704ff0407cb6379cf60835f9396088aac9001e3d75b7346fa5a5d00"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/last-train-port/frames/g21p3-r2-4/last-train-port--band-e--settle-60s.jpg",
+      "sha256": "7193c32fd29a63d427d8cce252a40fcf3e0128db0bd6aaeb190e6c52c81d10f0"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "There is a warm golden-hour sky gradient, but the scene lighting stays flat and frontal. Building facades are evenly lit with no low-sun rim or directional falloff. The night frame is dim and murky. Lit windows are its only motivated light, and the tram has no headlight."
+    },
+    {
+      "category": "shadows",
+      "seen": "The tram has only a soft dark smudge under it. Buildings, lamp posts and pawn-like passenger figures cast no readable shadows on the cobbles. There is no sun-angle shadow to sell a 12° key."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The tram's red lacquer and brass trolley pole show almost no environment reflection. The cobbles and rails are matte, and the rails lack the sky glint expected at golden hour."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The colorful townhouse blocks, clock tower, arch and roller-coaster-like elevated track over a cloud sea are charming. Distant buildings are repetitive flat-textured boxes, though, and the plaza feels empty and sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The cloud-sea frame has nice haze toward the horizon. The town frames have almost no depth fog: background buildings are as crisp as foreground ones. The night frame has a star field but no glow or volumetrics."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The tram texture looks photoscanned and detailed but noisy, with baked lighting at odds with the scene. The cobble tiling is visibly repetitive. The passenger capsules are untextured flat-shaded primitives."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "A detailed scanned tram and clock tower sit next to placeholder capsule people with sphere heads, low-poly box buildings and simple bushes. The fidelity is inconsistent."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Stills only. The tram and passengers appear static, with no visible motion blur, wheel motion or pantograph cues at 22–27 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild warm grading and some bloom on the cloud horizon. There is no filmic contrast, vignette or depth of field, and the night frame looks underexposed and gray rather than cinematic."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits high behind the tram and keeps the track readable. Its field of view is close to 60. There is no speed sensation and no subtle camera roll for the lean mechanic."
+    },
+    {
+      "category": "composition",
+      "seen": "The tram fills roughly 15–20% of the chase frames and is centered on the vanishing point, which is good. The station shot is cluttered by the HUD and stray capsule figures."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The navy panels with cream borders are cohesive and legible. The lean gauge, passenger list and key hints are clear. Five panels at once crowd the edges and compete with the scene."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

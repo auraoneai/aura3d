@@ -1,0 +1,740 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:50:07.937Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--band-d--settle-60s",
+      "last-train-port--band-e--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "silt-and-signal-port--ch0--settle-60s",
+      "silt-and-signal-port--ch0-original--settle-60s",
+      "silt-and-signal-port--ch1--settle-60s",
+      "silt-and-signal-port--ch1-original--settle-60s",
+      "silt-and-signal-port--ch2--settle-60s",
+      "silt-and-signal-port--ch2-original--settle-60s",
+      "silt-and-signal-port--ch3--settle-60s",
+      "silt-and-signal-port--ch3-original--settle-60s",
+      "silt-and-signal-port--ch4--settle-60s",
+      "silt-and-signal-port--ch4-original--settle-60s",
+      "silt-and-signal-port--ch5--settle-60s",
+      "silt-and-signal-port--ch5-original--settle-60s",
+      "silt-and-signal-port--ch6--settle-60s",
+      "silt-and-signal-port--ch6-original--settle-60s",
+      "silt-and-signal-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.908,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 45,
+    "sameGameYes": 3,
+    "differentRate": 0.9375,
+    "ci95": [
+      0.8316430233725778,
+      0.9785171568687727
+    ],
+    "confidentDifferent": 43,
+    "confidentDifferentRate": 0.8958333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.908,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: desaturated teal-grey palette with posterized, outlined surfaces and a skateboarder in a giant ring",
+        "Image B: warm sunlit town with a red tram, cobblestones and textured houses",
+        "Different art styles, lighting and scenery with no shared assets"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: warm, hazy daytime town with a tram, a photoscan-like building texture and a vignette",
+        "Image B: night-time, flat cel-shaded scene with black outlines, low-poly pines and neon rings",
+        "Different character styles: a flat billboard figure on a hoverboard in B and peg-shaped people in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic dusk lighting with a tram and lit windows",
+        "Image B: flat cel-shaded cartoon with thick black outlines",
+        "Different palettes and camera styles: dark, moody town versus bright toon forest with a cyan beam"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic textured tram street with a warm vignette",
+        "Image B is a flat cel-shaded cartoon with thick black outlines",
+        "Different characters, scenery and HUD: capsule pedestrians vs. an outlined explorer with a cyan beam"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-looking night town with a tram and a cobblestone street, rendered with painterly textures",
+        "Image B is a cel-shaded, ink-outlined landscape with low-poly pines and a water track",
+        "Different art styles and lighting, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses flat cel-shaded, black-outlined cartoon style",
+        "Image B uses realistic textured night lighting with a tram and cobblestones",
+        "Different scenery: stylized pine trees and a cyan river versus a European street and buildings"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses a flat cartoon style with thick black outlines and hand-drawn textures",
+        "Image B uses realistic lit textures with a dusk-lit European street and tram",
+        "Different scenery and palette: cyan river and green pines versus cobblestones and brick buildings"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-looking night street with a tram, cobblestones and lit windows, rendered in dim painterly lighting",
+        "Image B uses a cel-shaded cartoon style with thick black outlines, flat teal river and stylized pine trees",
+        "The two images have different art direction, palette and scene content (a European town versus a hoverboard on a river through a ring gate)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a tram and textured buildings, Image B is a stylized purple alien landscape",
+        "Image B has flat cel-shaded rendering with dark outlines, Image A has soft realistic lighting and no outlines",
+        "The characters differ: peg-like figures and small humans in A, a hoverboard rider with a painted look in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: tram game with a navy HUD panel and a European town in a painterly, textured style",
+        "Image B: ink-outlined cel-shaded look with a hoverboard rider and a water channel in a rolling green landscape",
+        "Different subject, art style and HUD (A has a detailed HUD, B shows none)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A uses a flat cel-shaded, hand-inked outline style with low-poly pine trees",
+        "Image B uses soft, realistic-looking lighting with a textured red tram model and a hazy gradient sky",
+        "Image B has a detailed tram-game HUD with panels, while Image A has none and shows a hoverboard character"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark blue night mountains, low-poly teal pines, and a hoverboard rider",
+        "Image B: warm daylight European town with a red tram and textured photoscan-style buildings",
+        "Different palettes, lighting, and scenery with no shared assets"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is stylized with ink outlines, flat low-poly pines and a sepia sunset palette",
+        "Image B is more realistic with textured buildings, a tram and dusk lighting",
+        "Different character and world styles: a hoverboard rider versus capsule pedestrians in a street scene"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a cel-shaded, outlined cartoon look with low-poly teal pines and a giant black ring",
+        "Image B has photo-textured European buildings, a red tram and warm hazy lighting with no outlines",
+        "Different scenery and palette: green hills under a blue sky vs a cobbled tram street in yellow haze"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses an inked, flat cel-shaded cartoon look with outlines",
+        "Image B has realistic textured night lighting with a streetcar and cobblestones",
+        "Different palette and setting: daytime green hills vs dark urban night"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dusk European town with a red tram and realistic textures",
+        "Image B: outlined cel-shaded cartoon look with a bright daytime meadow",
+        "Different scenery, lighting and character styles"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "silt-and-signal-port--ch5-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: flat cel-shaded, ink-outlined style with a night forest and glowing cyan pillar",
+        "Image B: painterly textured European town with a red tram and rail tracks",
+        "Image B has a navy rounded-panel HUD, while Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a tram game with textured European buildings and a HUD panel",
+        "Image B is a cel-shaded hoverboard scene with thick black outlines and flat colors",
+        "Different art styles, palettes and no shared HUD or character design"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses flat, cel-shaded, outlined stylization with a purple alien palette",
+        "Image B shows a realistic-textured dusk European street with a tram and cobblestones",
+        "Different character and scenery styles: hoverboard rider and low-poly pines vs. peg-like pedestrians and townhouses"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "A is textured and photo-like with tilt-shift blur, B is flat cel-shaded with ink outlines",
+        "different scenery: A has a tram and detailed European facades, B has low-poly pines, white blocks and giant rings",
+        "shared warm sunset sky and cobblestone ground weakly suggest a common source"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch4-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: cel-shaded cartoon outlines, daytime green hills and low-poly pine trees",
+        "Image B: realistic night city with lit windows, tram and cobblestones",
+        "Completely different palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses flat cel-shaded cartoon style with thick outlines and low-poly pine trees",
+        "Image B uses realistic textured lighting with a European street, cobblestones and a tram",
+        "Different palettes and scenery: green hills with glowing cyan rings versus a lit night town"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic-style European town with a red tram and cobblestones, and Image B is a stylized snowboarding scene with outlined shapes",
+        "Image B has a posterized teal/orange palette with dark outlines and no counterpart in Image A",
+        "The two frames have different characters and settings: peg-like townspeople vs. a rider on a board in a mountain landscape"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized outdoor snowboard scene with orange sky, teal low-poly pines and flat outlined shapes",
+        "Image B: night city street with lit windows, red tram and cobblestones in a more realistic lit style",
+        "Different palette, setting, characters and rendering style"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic textured town with a tram at dusk",
+        "Image B: ink-outlined, flat-shaded comic style with hoverboard character",
+        "Different palettes and lighting: warm sunset vs. bright green and teal daylight"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "silt-and-signal-port--ch2-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: cel-shaded night scene with outlined low-poly pines and neon rings",
+        "Image B: warm dusk town with textured buildings, tram and cobblestones",
+        "Different art styles, lighting and palettes"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a painterly town scene with a tram, cobblestones and tilt-shift blur",
+        "Image B is a cel-shaded, ink-outlined landscape with a water track and low-poly pine trees",
+        "The two frames use different rendering styles, palettes and settings"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses flat cel-shaded, ink-outlined art with low-poly pine trees and a stylized river",
+        "Image B uses photo-textured buildings, soft lighting and shadows, and a red tram on a cobblestone square",
+        "Different palettes and environments: muted olive hills with cyan glow vs warm yellow European town"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A uses a flat, inked cel-shaded cartoon look with outlined trees and hills",
+        "Image B is a soft, hazy, realistically lit tram scene with a different art style",
+        "Image B has a dense custom HUD with panels and key hints, and Image A has none"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses flat, inked, low-poly cartoon rendering with a sunset palette",
+        "Image B uses realistic textured buildings, a tram and a night sky with dim lighting",
+        "Different character styles: a hand-drawn skateboarder versus peg-like figures and detailed people"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch6-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A uses flat cel-shaded cartoon style with thick black outlines",
+        "Image B uses textured photoreal-ish buildings with soft realistic lighting and vignette",
+        "Different scenery: hoverboard rider in pine forest vs tram in cobbled European town"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat cel-shaded look with black outlines and low-poly pine trees",
+        "Image B: textured, realistically lit town with a tram and cobblestones",
+        "Different palettes and subjects: stylized hills and a river track vs. a warm-toned European street"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a soft, realistic-lit tram scene with a blurred pastel sky and a styled HUD",
+        "Image B uses a flat cel-shaded, thick-outline cartoon look with a brown cobble ground and no HUD",
+        "Different subjects: a red tram on an elevated track versus a character walking toward a giant dark arch"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "silt-and-signal-port--ch0-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a cel-shaded, inked-outline cartoon style, while Image B is realistic textured 3D with soft lighting",
+        "Different scenery: low-poly green pines and giant dark loops vs. European townhouses, a tram and cobblestones",
+        "Different palettes and moods: flat saturated teal and brown vs. muted dusk tones with a pink-orange glow"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch3-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat cel-shaded, ink-outlined look with low-poly pine trees and a hoverboard character",
+        "Image B: textured, photo-like materials with a tram, cobblestones and a warm tilt-shift look",
+        "Different settings and lighting: green valley with a river versus a European town street at sunset"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A uses a flat cel-shaded, ink-outlined cartoon style with a pastel dusk sky",
+        "Image B uses realistic textured materials with dark night lighting and a starry sky",
+        "Different subjects: a hoverboard character with a cyan track and rings versus a red tram, European buildings and peg figures"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "cobblestone ground in both frames",
+        "warm orange sunset sky gradient",
+        "simple pale building blocks and capsule-like figures despite different post-processing"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "cobblestone ground texture in both",
+        "warm orange sunset sky gradient",
+        "painterly, hand-smeared textures on buildings and objects"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: desaturated teal/green posterized look with a giant dark ring and a skateboarder",
+        "Image B: warm yellow-orange town with a red tram, cobblestones and peg-like people",
+        "Different palette, lighting, and art style (stylized low-poly forest vs. textured European street)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic-textured night street with a tram and lit windows, while Image B is an ink-outlined, flat cel-shaded style",
+        "Different palettes: dusk blue and purple with warm window glow versus orange-brown sky with mint green trees",
+        "Different characters and scenery: peg-like figures and a red tram versus a hoverboard rider, giant rings and white block buildings"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night mountain scene with low-poly pine trees and a hoverboard rider",
+        "Image B: daytime European town with a red tram and cobblestones",
+        "Different palettes, lighting and art styles (dark blue night vs warm sunlit textured buildings)"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city scene with a tram and textured buildings",
+        "Image B has a flat-shaded, ink-outlined cartoon look with posterized textures",
+        "Image B has a daytime hills-and-pines landscape with a glowing cyan pillar and ring gates"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image B has a painterly, inked-outline look; Image A is soft-lit with photo-textured buildings",
+        "Different subjects: a red tram and peg-figure pedestrians versus a skateboarder and white blocky buildings",
+        "Shared cobblestone ground and low-poly green trees are generic and weaken the case for a match"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "silt-and-signal-port--ch1-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic-textured night town with a tram, lit windows and cobblestones",
+        "Image B has flat cel-shaded, ink-outlined, posterized rendering with low-poly trees",
+        "Different scenery, characters and mood: peg-like figures versus a hoverboarding character on a water channel"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "silt-and-signal-port--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses flat, cel-shaded, ink-outlined stylization with low-poly pine trees and a skateboarder",
+        "Image B uses textured, painterly realistic buildings and a red tram with a navy panel HUD",
+        "Different palettes and subject matter: orange dusk with teal and white versus warm daylight street with a tram"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "silt-and-signal-port--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soft, hazy, photoreal-ish tram scene with a custom HUD, Image B is a flat cel-shaded, ink-outlined style",
+        "Different subjects: red tram on an elevated track vs. a character on a hoverboard on a water channel",
+        "Different palettes and environments: pastel sunset sea of clouds vs. olive hills, green pine trees and a dusky sky"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "silt-and-signal-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "cobblestone ground in both",
+        "white blocky buildings with small windows",
+        "warm sunset palette with mixed-style assets"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "silt-and-signal-port--ch6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A uses a flat, inked cartoon style with thick outlines on a cyan river road and a hoverboard runner",
+        "Image B shows a realistic-textured red tram on elevated rails with soft, hazy lighting and a detailed panel HUD",
+        "The scenery and palette differ: green pines and brown dirt in A, a pastel town and cloud sea in B"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,728 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:43:56.090Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--band-d--settle-60s",
+      "last-train-port--band-e--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.928,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.928,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a pastel cloud sea, with a styled HUD of rounded navy panels",
+        "Image B is a futuristic racer on a dusk highway with dark city towers and no HUD",
+        "Different genre, palette and rendering: soft hazy pastels vs. saturated purple-orange with motion blur"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a period tram street with cobblestones and peg-like pedestrians, Image B is a futuristic night highway racer",
+        "Different building styles: detailed gabled townhouses with chimneys vs. blocky window-grid skyscrapers",
+        "Different vehicles and lighting: red vintage tram with dusk glow vs. neon-lit race car with motion blur"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night-time highway racer with a neon purple sunset sky and a sports car",
+        "Image B: daytime European tram town with photo-textured buildings and a red streetcar",
+        "Different scene types, palettes and camera setups (chase cam on a highway vs. elevated view of a plaza)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pastel daytime tram scene with a heavy HUD of panels, while Image B is a dark night highway with no HUD",
+        "Different vehicles and settings: red tram on an elevated rail versus a futuristic race car in a city",
+        "Different rendering styles: soft hazy gradients and a cloud sea versus high-contrast dark city blocks with lit windows"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a night-city highway racer with a futuristic car and a minimal HUD",
+        "Image B is a tram on an elevated track with a pastel daylight sky and a detailed panel HUD",
+        "Different scenery, palette and vehicle types"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night tram street scene with peg-like figures, cobblestones and a vintage red tram",
+        "Image B is a sunset highway racer with a futuristic car and blocky tower buildings",
+        "Different art style, lighting and gameplay genre"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: daytime European town with tram, cobblestones and red-roofed houses",
+        "Image B: night highway with futuristic race car and window-grid skyscrapers",
+        "Different art style, lighting and palette"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night-time neon highway racer with a futuristic car and dusk skyscrapers",
+        "Image B is a daytime European tram street with cobblestones, rails and pastel houses",
+        "Different art style and scenery: blocky towers with motion blur versus textured plaster buildings and capsule pedestrians"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a European-style town with a tram and peg-doll pedestrians; Image B is a futuristic highway racer",
+        "Different building styles: textured pitched-roof houses vs. dark tower blocks with window grids and ring markers",
+        "Different gameplay and camera: static scenic view vs. chase camera with motion blur and a hovering race car"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a European-style street with a red tram, cobblestones and peg-like figures, while Image B is a futuristic highway racer with a hovering car",
+        "Different building styles: A has detailed pitched-roof townhouses, B has blocky striped glass towers with emissive window grids",
+        "Different lighting and palette: A has muted, dim blue-grey night light, B has saturated orange sunset glow with neon cyan thrusters"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a period streetcar town with cobblestones and peg-figure pedestrians, Image B is a futuristic highway racer",
+        "Different art styles: detailed painterly buildings vs. blocky stylized skyscrapers",
+        "Different gameplay and camera: static scene with tram vs. chase camera with motion blur and traffic"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tram on tracks in a European town with a navy HUD panel; Image B is a racing car on a highway with no HUD",
+        "Different art styles: painterly textured Mango Tide scene vs flat-shaded blocky neon city",
+        "Different lighting and palette: warm hazy daylight vs purple-orange dusk with motion blur"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a high-speed highway racer with a stylized sunset sky and boxy skyscrapers",
+        "Image B is a night-time European tram street with cobblestones and peg-like pedestrians",
+        "Different art direction, lighting and camera: low chase cam with motion blur versus a high, static, realistic view"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a futuristic highway racer with a sunset skyline and motion blur, Image B is a European-style street with a tram",
+        "Different scenery and art style: stylized dark towers versus textured white houses with red roofs and cobblestones",
+        "Different camera and gameplay: chase view of a sports car versus an elevated view of a tram with peg-figure pedestrians"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a futuristic highway racer with a sunset skyline and motion blur",
+        "Image B is a cobblestone tram street with period buildings and pill-shaped people",
+        "Unrelated art styles, settings and gameplay: car-racing HUD-free view vs. town scene"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime European town with a red tram, cobblestones and pill-shaped pedestrians",
+        "Image B is a night highway racer with a futuristic car, starry sky and a signage gantry",
+        "Different art style and palette: warm pastel and hazy in A, dark navy and neon in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European old-town street with a red tram and capsule-shaped pedestrians",
+        "Image B is a futuristic highway racer with a hover car, motion blur and exit sign",
+        "Different scenery, vehicles and camera style despite both having a warm sunset palette"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night-time neon highway racer with a futuristic car and purple/orange dusk palette",
+        "Image B is a daylight tram town with cobblestones, tilt-shift blur and red-roofed houses",
+        "Different scenery, vehicles, lighting and art style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime-dusk European town with a red tram and capsule-shaped pedestrians",
+        "Image B: night futuristic highway racer with neon thrusters and a skyscraper skyline",
+        "Different art style, palette and camera: warm painterly tones vs dark blue and orange glow"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a neon, stylized highway racer with a futuristic car and motion blur",
+        "Image B is a European-style town with a vintage tram, cobblestones and capsule-shaped pedestrians",
+        "Different art styles, scenery and camera setups"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a futuristic highway racer with a sunset skyline and a speed-blur effect",
+        "Image B is a tram game with a European town, tram tracks and panel-style HUD",
+        "Different art styles: flat blocky buildings against textured painterly buildings and characters"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night-time futuristic highway racer with a dark blue and orange palette; Image B is a bright daytime tram town",
+        "Image A has procedural window-grid skyscrapers and a sports car; Image B has photoscanned-style houses, a red tram and peg-doll figures",
+        "The lighting and camera differ: Image A is a low chase camera with motion blur; Image B is an elevated, tilt-shift view with soft hazy light"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic highway racer with a sunset skyline and motion blur, Image B is a European tram town with cobblestones and a red streetcar",
+        "Different scenery and art style: boxy window-grid skyscrapers vs textured pastel houses and peg-doll figures",
+        "Different camera and lighting: low chase cam with a purple/orange dusk vs elevated view with a hazy green-yellow sky"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night futuristic highway racer with a neon hovercar and blocky lit skyscrapers",
+        "Image B is a daytime tram game with textured European buildings, cobblestones and cartoon pedestrians",
+        "Different HUD styles: A has none beyond a road sign, B has navy rounded panels with key prompts"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European town with a red tram and peg-like pedestrians, while Image B is a futuristic highway racer with a blue car",
+        "Different art styles: painterly, textured buildings in A against blocky tower blocks with neon dusk and motion blur in B",
+        "Different gameplay and HUD: tram-station sightseeing scene against an in-car racing view with an exit gantry sign"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic night highway racer with a neon hovercar and blocky window-grid skyscrapers",
+        "Image B is a European-style tram street with cobblestones, pitched red roofs and peg-doll pedestrians",
+        "Different art style, camera and mood: stylized synthwave versus textured, soft-lit period town"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night-time racing game on a highway with a sports car and dark skyscrapers",
+        "Image B is a daytime tram scene with pastel European buildings and cobblestones",
+        "Different setting, art style and characters: capsule-shaped pedestrians in B, no comparable elements in A"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a red tram on an elevated rail track over a cloud sea, with a pastel storybook look and a detailed HUD",
+        "Image B is a futuristic racing car on a city highway at sunset, with dark blocky skyscrapers and motion blur",
+        "The two frames differ in vehicle, setting, palette and HUD, with no shared visual elements"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a pastel tram on an elevated track with a HUD of navy panels and cream borders, Image B is a dark neon highway racer with no such HUD",
+        "Different palettes and settings: soft hazy sky and fog sea versus a purple-orange dusk city with boxy skyscrapers",
+        "Different vehicles and gameplay: a red tram carrying passengers versus a blue open-wheel racecar in traffic"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night-time neon racing highway with a futuristic car; Image B is a daytime town with a red tram and cobblestones",
+        "Different art styles: A has flat, blocky towers with lit windows, B has textured photo-like buildings with simple peg-figure people",
+        "Different camera and lighting: A uses a low chase cam with a dark palette, B uses an elevated view with warm, hazy daylight"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime European town with a red tram and pastel buildings, Image B is a night highway racer with a futuristic car",
+        "Different art styles: textured cobblestone and capsule pedestrians vs. flat-lit window-grid skyscrapers and neon thrusters",
+        "Different camera and gameplay: static elevated street view vs. third-person behind-the-car racing view"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic highway racer with a sci-fi car and skyscrapers, Image B is a period European street with a tram",
+        "Different scenery and art style: blocky tower blocks with ring markers vs. pitched-roof townhouses and cobblestones",
+        "Different gameplay and camera: chase camera with motion blur vs. static elevated view with capsule pedestrians"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night-time futuristic highway racer with a neon hovercar and flat-shaded skyscrapers",
+        "Image B is a daytime European tram scene with textured, painterly buildings and a framed HUD panel",
+        "The two frames differ completely in setting, palette, vehicle type and HUD style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a futuristic highway racer with a sunset skyline and motion blur",
+        "Image B is a cobblestone town with a red tram, pill-shaped pedestrians and a dusk sky",
+        "Different scenery, vehicles and camera setups with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: daytime-dusk European town with a red tram and capsule-shaped pedestrians",
+        "Image B: night highway with a futuristic racecar and neon thrusters",
+        "Different building styles: textured pitched-roof houses vs. blocky lit-window skyscrapers"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a futuristic racer on a highway with blocky skyscrapers and motion blur",
+        "Image B is a tram in a European-style town with textured, painterly buildings and a tram-specific HUD",
+        "Different art styles, palettes and HUD design (no HUD vs. navy rounded panels)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sunset highway racer with a futuristic car and blocky towers",
+        "Image B: night-time European street with a vintage tram and peg-like pedestrians",
+        "Different camera, lighting and art style: speed-blur chase view versus a static, low-light town scene"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European street with a red tram, tracks and cobblestones; Image B is a futuristic racer on a highway",
+        "Different art styles: textured, painterly buildings and capsule people versus blocky skyscrapers with motion blur",
+        "Different camera and HUD: A has a high, static angle, B has a chase camera with a road sign and ring markers"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "last-train-port--band-e--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: night street scene with a vintage tram and peg-figure pedestrians, detailed textured buildings",
+        "Image B: sunset highway racer with a futuristic car and blocky windowed skyscrapers",
+        "Different lighting, palette and camera style (night, cool and dim vs. warm sunset with motion blur)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a slow, detailed tram street with peg-like figures and cobblestones; Image B is a high-speed highway racer with a motion-blurred road",
+        "Different art styles: A has textured, painterly buildings, B has flat blocky skyscrapers with grid windows",
+        "Different lighting and HUD: A has a dusk starry sky with warm window glow, B has a saturated orange-purple sunset with gantry signs"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic highway racer with a sci-fi car and dark skyscrapers",
+        "Image B is a historic European town with a red tram, cobblestones and capsule-shaped pedestrians",
+        "Different scenery, vehicles, and art style, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daylight European street with a tram, painted-texture houses and capsule pedestrians",
+        "Image B is a dusk neon highway with a racing car, motion blur and dark block skyscrapers",
+        "The two frames have different art styles, lighting and gameplay genres"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: daytime European street with a red tram and cobblestones",
+        "Image B: night highway with a futuristic racing car and neon glow",
+        "Different art styles: painterly textured buildings vs. flat-shaded emissive skyscrapers"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "last-train-port--band-d--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic night highway racer with a neon-lit car and block towers; Image B is a period street with a red tram and cobblestones",
+        "Different building styles: flat grid-window skyscrapers vs. pitched-roof townhouses with chimneys",
+        "Different gameplay and camera: rear chase view of a vehicle vs. elevated view of a street with pedestrian figures"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tram on tracks in a European town with a navy-panel HUD, Image B is a racing car on a highway",
+        "Different settings and palettes: warm daylight pastel vs dusk purple-orange cityscape",
+        "Different gameplay and HUD: passenger/fare stats vs a road-sign racing view with no panel HUD"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime European tram town with photoscanned-style houses and peg figures; Image B is a dusk highway racer",
+        "Different subjects and palettes: pastel yellow haze versus purple-orange neon sunset with motion blur",
+        "Image B has a racing-game camera and road signage (EXIT 4B HARBOUR), absent from Image A"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night city highway with a futuristic racing car and no HUD panels",
+        "Image B is a daytime tram on an elevated track over clouds, with rounded navy HUD panels",
+        "Different palettes and scenery: dark navy and orange against pastel, hazy teal and cream"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic highway racer at sunset with a hover-style car and dark purple towers",
+        "Image B is a European tram town with cobblestones, a red tram and peg-figure pedestrians",
+        "Different scenery, palette and camera: A uses a chase cam with motion blur, B uses a high-angle view with tilt-shift blur"
+      ]
+    }
+  ]
+}
