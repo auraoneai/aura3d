@@ -15,6 +15,20 @@ type AuraGeneratedAssetDefinitions = {
   readonly "ironcrownSeraph": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownSovereign": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownVolt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownAirbaseAmmoCrates": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownAirbaseDrum": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownAirbaseFuelTank": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownColosseumBust": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownDockBarrel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownDockCrate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownDockVendorCart": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownKingStatue": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownMonasteryLion": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownRooftopAircon": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownRooftopPowerBox": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownSearchlight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownStreetLamp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownThrone": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -5370,6 +5384,1958 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sha256": "sha256-d97a012a4c99affb565a7c84cba5e0215cbb71a4cf96d1a22745609b0034e897",
         "checkedAt": "2026-10-17T09:38:56.741Z"
       }
+    },
+  },
+  "ironcrownAirbaseAmmoCrates": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownAirbaseAmmoCrates.e53786b8.glb",
+    hash: "sha256-e53786b8501529adb75e1071b8d3ccc2a90d0c16472f2e59c0fb9b5a718707e1",
+    bounds: [
+      1.815,
+      0.301,
+      0.979
+    ],
+    sizeBytes: 2490988,
+    metadata: {
+      "materials": [
+        "military_crate_m_01"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 11,
+        "meshCount": 5,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 11 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownAirbaseAmmoCrates.e53786b8.glb",
+        "sourcePage": "https://polyhaven.com/a/old_military_crate",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/old_military_crate/old_military_crate_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Jack Mava",
+        "sourceFamily": "poly-haven",
+        "attribution": "Jack Mava / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:old_military_crate; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownAirbaseAmmoCrates.e53786b8.glb",
+      "outputPath": "public/aura-assets/ironcrownAirbaseAmmoCrates.e53786b8.glb",
+      "license": "CC0-1.0",
+      "author": "Jack Mava",
+      "boundsMetadata": {
+        "min": [
+          -0.908,
+          0,
+          -0.491
+        ],
+        "max": [
+          0.908,
+          0.301,
+          0.488
+        ],
+        "size": [
+          1.815,
+          0.301,
+          0.979
+        ],
+        "center": [
+          0,
+          0.15,
+          -0.002
+        ],
+        "maxDimension": 1.815,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "military_crate_m_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "old_military_crate_lid_a",
+        "old_military_crate_loop_a",
+        "old_military_crate_latch_a",
+        "old_military_crate_cloth_a",
+        "old_military_crate_a",
+        "old_military_crate_lid_b",
+        "old_military_crate_loop_b",
+        "old_military_crate_latch_b",
+        "old_military_crate_cloth_b",
+        "old_military_crate_b",
+        "root"
+      ],
+      "textures": [
+        "old_military_crate_nor_gl",
+        "old_military_crate_diff",
+        "old_military_crate_metal-old_military_crate_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownAirbaseAmmoCrates.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownAirbaseDrum": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownAirbaseDrum.77c5ff71.glb",
+    hash: "sha256-77c5ff71afb44947c16b6490497a76ae074be7f2d3b57636054f73fa9292e958",
+    bounds: [
+      0.563,
+      0.88,
+      0.563
+    ],
+    sizeBytes: 692116,
+    metadata: {
+      "materials": [
+        "Barrel_01"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownAirbaseDrum.77c5ff71.glb",
+        "sourcePage": "https://polyhaven.com/a/Barrel_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/Barrel_01/Barrel_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Jorge Camacho",
+        "sourceFamily": "poly-haven",
+        "attribution": "Jorge Camacho / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:Barrel_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownAirbaseDrum.77c5ff71.glb",
+      "outputPath": "public/aura-assets/ironcrownAirbaseDrum.77c5ff71.glb",
+      "license": "CC0-1.0",
+      "author": "Jorge Camacho",
+      "boundsMetadata": {
+        "min": [
+          -0.282,
+          0,
+          -0.282
+        ],
+        "max": [
+          0.282,
+          0.88,
+          0.282
+        ],
+        "size": [
+          0.563,
+          0.88,
+          0.563
+        ],
+        "center": [
+          0,
+          0.44,
+          0
+        ],
+        "maxDimension": 0.88,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Barrel_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Barrel_01",
+        "root"
+      ],
+      "textures": [
+        "Barrel_01_explosive_nor_gl",
+        "Barrel_01_explosive_diff",
+        "Barrel_01_explosive_metallic-Barrel_01_explosive_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownAirbaseDrum.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownAirbaseFuelTank": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownAirbaseFuelTank.0077f0d5.glb",
+    hash: "sha256-0077f0d5b8739ce58dc72b1ca860e2411499b962ed07aeca4ad799d47be67e8d",
+    bounds: [
+      0.41,
+      0.642,
+      0.409
+    ],
+    sizeBytes: 2779540,
+    metadata: {
+      "materials": [
+        "small_lpg_tank"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownAirbaseFuelTank.0077f0d5.glb",
+        "sourcePage": "https://polyhaven.com/a/small_lpg_tank",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/small_lpg_tank/small_lpg_tank_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Ulan Cabanilla",
+        "sourceFamily": "poly-haven",
+        "attribution": "Ulan Cabanilla / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:small_lpg_tank; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownAirbaseFuelTank.0077f0d5.glb",
+      "outputPath": "public/aura-assets/ironcrownAirbaseFuelTank.0077f0d5.glb",
+      "license": "CC0-1.0",
+      "author": "Ulan Cabanilla",
+      "boundsMetadata": {
+        "min": [
+          -0.205,
+          0,
+          -0.205
+        ],
+        "max": [
+          0.205,
+          0.642,
+          0.205
+        ],
+        "size": [
+          0.41,
+          0.642,
+          0.409
+        ],
+        "center": [
+          0,
+          0.321,
+          0
+        ],
+        "maxDimension": 0.642,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "small_lpg_tank",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "small_lpg_tank",
+        "root"
+      ],
+      "textures": [
+        "small_lpg_tank_nor_gl",
+        "small_lpg_tank_diff",
+        "small_lpg_tank_metal-small_lpg_tank_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownAirbaseFuelTank.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownColosseumBust": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownColosseumBust.fdd51a04.glb",
+    hash: "sha256-fdd51a04f89cbfe5ec49d80224802ae8f236dd061eeca689d866cdff84120a7a",
+    bounds: [
+      0.272,
+      0.515,
+      0.3
+    ],
+    sizeBytes: 897404,
+    metadata: {
+      "materials": [
+        "marble_bust_01"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownColosseumBust.fdd51a04.glb",
+        "sourcePage": "https://polyhaven.com/a/marble_bust_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/marble_bust_01/marble_bust_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Rico Cilliers",
+        "sourceFamily": "poly-haven",
+        "attribution": "Rico Cilliers / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:marble_bust_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownColosseumBust.fdd51a04.glb",
+      "outputPath": "public/aura-assets/ironcrownColosseumBust.fdd51a04.glb",
+      "license": "CC0-1.0",
+      "author": "Rico Cilliers",
+      "boundsMetadata": {
+        "min": [
+          -0.136,
+          0,
+          -0.15
+        ],
+        "max": [
+          0.136,
+          0.515,
+          0.15
+        ],
+        "size": [
+          0.272,
+          0.515,
+          0.3
+        ],
+        "center": [
+          0,
+          0.257,
+          0
+        ],
+        "maxDimension": 0.515,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "marble_bust_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "marble_bust_01",
+        "root"
+      ],
+      "textures": [
+        "marble_bust_01_nor_gl",
+        "marble_bust_01_diff",
+        "marble_bust_01_arm"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownColosseumBust.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownDockBarrel": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownDockBarrel.207728bc.glb",
+    hash: "sha256-207728bcc0202a0a5c6251b46e1dc56214ba05d08901be191675dd9a39866791",
+    bounds: [
+      0.742,
+      0.871,
+      0.756
+    ],
+    sizeBytes: 922036,
+    metadata: {
+      "materials": [
+        "wine_barrel_01"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 4,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 5 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownDockBarrel.207728bc.glb",
+        "sourcePage": "https://polyhaven.com/a/wine_barrel_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wine_barrel_01/wine_barrel_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "James Ray Cock",
+        "sourceFamily": "poly-haven",
+        "attribution": "James Ray Cock / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:wine_barrel_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownDockBarrel.207728bc.glb",
+      "outputPath": "public/aura-assets/ironcrownDockBarrel.207728bc.glb",
+      "license": "CC0-1.0",
+      "author": "James Ray Cock",
+      "boundsMetadata": {
+        "min": [
+          -0.371,
+          0,
+          -0.378
+        ],
+        "max": [
+          0.371,
+          0.871,
+          0.378
+        ],
+        "size": [
+          0.742,
+          0.871,
+          0.756
+        ],
+        "center": [
+          0,
+          0.436,
+          0
+        ],
+        "maxDimension": 0.871,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "wine_barrel_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "wine_barrel_01_Lid",
+        "wine_barrel_01_bung",
+        "wine_barrel_01",
+        "wine_barrel_01_base",
+        "root"
+      ],
+      "textures": [
+        "wine_barrel_01_nor_gl",
+        "wine_barrel_01_diff",
+        "wine_barrel_01_metal-wine_barrel_01_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownDockBarrel.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownDockCrate": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownDockCrate.ff5a2622.glb",
+    hash: "sha256-ff5a26225c7cf3360f8660b7fc64d50b990fea9a3b54614c648923a29b015bb7",
+    bounds: [
+      0.825,
+      0.35,
+      0.409
+    ],
+    sizeBytes: 2274752,
+    metadata: {
+      "materials": [
+        "wooden_crate_01"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 4,
+        "meshCount": 3,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 4 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownDockCrate.ff5a2622.glb",
+        "sourcePage": "https://polyhaven.com/a/wooden_crate_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_crate_01/wooden_crate_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "James Ray Cock",
+        "sourceFamily": "poly-haven",
+        "attribution": "James Ray Cock / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:wooden_crate_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownDockCrate.ff5a2622.glb",
+      "outputPath": "public/aura-assets/ironcrownDockCrate.ff5a2622.glb",
+      "license": "CC0-1.0",
+      "author": "James Ray Cock",
+      "boundsMetadata": {
+        "min": [
+          -0.413,
+          0,
+          -0.204
+        ],
+        "max": [
+          0.413,
+          0.35,
+          0.204
+        ],
+        "size": [
+          0.825,
+          0.35,
+          0.409
+        ],
+        "center": [
+          0,
+          0.175,
+          0
+        ],
+        "maxDimension": 0.825,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "wooden_crate_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "wooden_crate_01_lid",
+        "wooden_crate_01",
+        "wooden_crate_01_latch",
+        "root"
+      ],
+      "textures": [
+        "wooden_crate_01_nor_gl",
+        "wooden_crate_01_diff",
+        "wooden_crate_01_metal-wooden_crate_01_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownDockCrate.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownDockVendorCart": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownDockVendorCart.5e1f2fc7.glb",
+    hash: "sha256-5e1f2fc724aa3c9b3d5655c25fe6149cda696401b569feda25440e6af0647c79",
+    bounds: [
+      2.168,
+      1.718,
+      1.073
+    ],
+    sizeBytes: 1833088,
+    metadata: {
+      "materials": [
+        "CoffeeCart_01_cart",
+        "CoffeeCart_01_props",
+        "CoffeeCart_01_mugs"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 4,
+        "meshCount": 3,
+        "materialCount": 3,
+        "textureCount": 6,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 4 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownDockVendorCart.5e1f2fc7.glb",
+        "sourcePage": "https://polyhaven.com/a/CoffeeCart_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/CoffeeCart_01/CoffeeCart_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Joe Seabuhr",
+        "sourceFamily": "poly-haven",
+        "attribution": "Joe Seabuhr / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:CoffeeCart_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownDockVendorCart.5e1f2fc7.glb",
+      "outputPath": "public/aura-assets/ironcrownDockVendorCart.5e1f2fc7.glb",
+      "license": "CC0-1.0",
+      "author": "Joe Seabuhr",
+      "boundsMetadata": {
+        "min": [
+          -1.084,
+          0,
+          -0.537
+        ],
+        "max": [
+          1.084,
+          1.718,
+          0.537
+        ],
+        "size": [
+          2.168,
+          1.718,
+          1.073
+        ],
+        "center": [
+          0,
+          0.859,
+          0
+        ],
+        "maxDimension": 2.168,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "CoffeeCart_01_cart",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "CoffeeCart_01_props",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "CoffeeCart_01_mugs",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "CoffeeCart_01_cart",
+        "CoffeeCart_01_props",
+        "CoffeeCart_01_mugs",
+        "root"
+      ],
+      "textures": [
+        "CoffeeCart_01_cart_nor_gl",
+        "CoffeeCart_01_cart_diff",
+        "CoffeeCart_01_cart_metallic-CoffeeCart_01_cart_roughness",
+        "CoffeeCart_01_props_nor_gl",
+        "CoffeeCart_01_props_diff",
+        "CoffeeCart_01_props_metallic-CoffeeCart_01_props_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownDockVendorCart.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownKingStatue": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownKingStatue.f4badc3d.glb",
+    hash: "sha256-f4badc3de1e241740ee0a6c153d1f1e5229032c15b33618a850905e59e780193",
+    bounds: [
+      1.477,
+      1.74,
+      1.564
+    ],
+    sizeBytes: 3977668,
+    metadata: {
+      "materials": [
+        "gothic_statue"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownKingStatue.f4badc3d.glb",
+        "sourcePage": "https://polyhaven.com/a/gothic_statue",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/gothic_statue/gothic_statue_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Benny Weimer",
+        "sourceFamily": "poly-haven",
+        "attribution": "Benny Weimer / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:gothic_statue; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownKingStatue.f4badc3d.glb",
+      "outputPath": "public/aura-assets/ironcrownKingStatue.f4badc3d.glb",
+      "license": "CC0-1.0",
+      "author": "Benny Weimer",
+      "boundsMetadata": {
+        "min": [
+          -0.739,
+          0,
+          -0.782
+        ],
+        "max": [
+          0.739,
+          1.74,
+          0.782
+        ],
+        "size": [
+          1.477,
+          1.74,
+          1.564
+        ],
+        "center": [
+          0,
+          0.87,
+          0
+        ],
+        "maxDimension": 1.74,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "gothic_statue",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "gothic_statue",
+        "root"
+      ],
+      "textures": [
+        "gothic_statue_nor_gl",
+        "gothic_statue_diff",
+        "gothic_statue_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownKingStatue.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownMonasteryLion": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownMonasteryLion.6a805396.glb",
+    hash: "sha256-6a8053968fc31193bac5d04a7ea2a46a613739f07507fa6c5ce40ae21c54fe29",
+    bounds: [
+      0.321,
+      0.436,
+      0.207
+    ],
+    sizeBytes: 3199528,
+    metadata: {
+      "materials": [
+        "lion_head"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownMonasteryLion.6a805396.glb",
+        "sourcePage": "https://polyhaven.com/a/lion_head",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/lion_head/lion_head_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Tina",
+        "sourceFamily": "poly-haven",
+        "attribution": "Tina / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:lion_head; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownMonasteryLion.6a805396.glb",
+      "outputPath": "public/aura-assets/ironcrownMonasteryLion.6a805396.glb",
+      "license": "CC0-1.0",
+      "author": "Tina",
+      "boundsMetadata": {
+        "min": [
+          -0.16,
+          0,
+          -0.103
+        ],
+        "max": [
+          0.16,
+          0.436,
+          0.103
+        ],
+        "size": [
+          0.321,
+          0.436,
+          0.207
+        ],
+        "center": [
+          0,
+          0.218,
+          0
+        ],
+        "maxDimension": 0.436,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "lion_head",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "lion_head",
+        "root"
+      ],
+      "textures": [
+        "lion_head_nor_gl",
+        "lion_head_diff",
+        "lion_head_metal-lion_head_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownMonasteryLion.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownRooftopAircon": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownRooftopAircon.298c7fe9.glb",
+    hash: "sha256-298c7fe9c8182d46a7a1bea1b80611ad66885305e8401fc9adeee0a7bebf4be7",
+    bounds: [
+      0.8,
+      0.928,
+      0.374
+    ],
+    sizeBytes: 4052820,
+    metadata: {
+      "materials": [
+        "exterior_aircon_unit_rusted_01",
+        "exterior_aircon_unit_rusted_02"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 2,
+        "textureCount": 6,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownRooftopAircon.298c7fe9.glb",
+        "sourcePage": "https://polyhaven.com/a/exterior_aircon_unit",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/exterior_aircon_unit/exterior_aircon_unit_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Monsta3D",
+        "sourceFamily": "poly-haven",
+        "attribution": "Monsta3D / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:exterior_aircon_unit; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownRooftopAircon.298c7fe9.glb",
+      "outputPath": "public/aura-assets/ironcrownRooftopAircon.298c7fe9.glb",
+      "license": "CC0-1.0",
+      "author": "Monsta3D",
+      "boundsMetadata": {
+        "min": [
+          -0.4,
+          0,
+          -0.187
+        ],
+        "max": [
+          0.4,
+          0.928,
+          0.187
+        ],
+        "size": [
+          0.8,
+          0.928,
+          0.374
+        ],
+        "center": [
+          0,
+          0.464,
+          0
+        ],
+        "maxDimension": 0.928,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "exterior_aircon_unit_rusted_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "exterior_aircon_unit_rusted_02",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "exterior_aircon_unit_rusted",
+        "root"
+      ],
+      "textures": [
+        "exterior_aircon_unit_rusted_01_nor_gl",
+        "exterior_aircon_unit_rusted_01_diff",
+        "exterior_aircon_unit_rusted_01_metal-exterior_aircon_unit_rusted_01_rough",
+        "exterior_aircon_unit_rusted_02_nor_gl",
+        "exterior_aircon_unit_rusted_02_diff-exterior_aircon_unit_rusted_02_opacity",
+        "exterior_aircon_unit_rusted_02_metal-exterior_aircon_unit_rusted_02_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownRooftopAircon.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownRooftopPowerBox": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownRooftopPowerBox.a8b0e922.glb",
+    hash: "sha256-a8b0e922b1697eb956d8d272f119c639661b521c80a6f6755486f188882cc22d",
+    bounds: [
+      0.92,
+      1.12,
+      0.432
+    ],
+    sizeBytes: 2028304,
+    metadata: {
+      "materials": [
+        "utility_box_02"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownRooftopPowerBox.a8b0e922.glb",
+        "sourcePage": "https://polyhaven.com/a/utility_box_02",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/utility_box_02/utility_box_02_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "James Ray Cock",
+        "sourceFamily": "poly-haven",
+        "attribution": "James Ray Cock / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:utility_box_02; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownRooftopPowerBox.a8b0e922.glb",
+      "outputPath": "public/aura-assets/ironcrownRooftopPowerBox.a8b0e922.glb",
+      "license": "CC0-1.0",
+      "author": "James Ray Cock",
+      "boundsMetadata": {
+        "min": [
+          -0.46,
+          0,
+          -0.216
+        ],
+        "max": [
+          0.46,
+          1.12,
+          0.216
+        ],
+        "size": [
+          0.92,
+          1.12,
+          0.432
+        ],
+        "center": [
+          0,
+          0.56,
+          0
+        ],
+        "maxDimension": 1.12,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "utility_box_02",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "utility_box_02",
+        "root"
+      ],
+      "textures": [
+        "utility_box_02_nor_gl",
+        "utility_box_02_diff",
+        "utility_box_02_metal-utility_box_02_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownRooftopPowerBox.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownSearchlight": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownSearchlight.ea4b109a.glb",
+    hash: "sha256-ea4b109ab2cd153335ec9d524b8ece35dc8c2c1bcaa25ac254b1080dc9473d67",
+    bounds: [
+      0.165,
+      0.185,
+      0.253
+    ],
+    sizeBytes: 2232432,
+    metadata: {
+      "materials": [
+        "portable_searchlight",
+        "portable_searchlight_glass"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 2,
+        "textureCount": 4,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownSearchlight.ea4b109a.glb",
+        "sourcePage": "https://polyhaven.com/a/portable_searchlight",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/portable_searchlight/portable_searchlight_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Elijah Cragg",
+        "sourceFamily": "poly-haven",
+        "attribution": "Elijah Cragg / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:portable_searchlight; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownSearchlight.ea4b109a.glb",
+      "outputPath": "public/aura-assets/ironcrownSearchlight.ea4b109a.glb",
+      "license": "CC0-1.0",
+      "author": "Elijah Cragg",
+      "boundsMetadata": {
+        "min": [
+          -0.083,
+          0,
+          -0.127
+        ],
+        "max": [
+          0.083,
+          0.185,
+          0.127
+        ],
+        "size": [
+          0.165,
+          0.185,
+          0.253
+        ],
+        "center": [
+          0,
+          0.093,
+          0
+        ],
+        "maxDimension": 0.253,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "portable_searchlight",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "portable_searchlight_glass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "portable_searchlight",
+        "root"
+      ],
+      "textures": [
+        "portable_searchlight_nor_gl",
+        "portable_searchlight_diff",
+        "portable_searchlight_metal-portable_searchlight_rough",
+        "portable_searchlight_diff-portable_searchlight_alpha"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownSearchlight.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownStreetLamp": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownStreetLamp.2a726309.glb",
+    hash: "sha256-2a7263097ecc45c96db15972fe41b30645e343d110bbc6175476db8cae1c8ee7",
+    bounds: [
+      0.704,
+      3.871,
+      0.386
+    ],
+    sizeBytes: 2471248,
+    metadata: {
+      "materials": [
+        "street_lamp_01",
+        "street_lamp_01_glass",
+        "street_lamp_01_bulb"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 3,
+        "textureCount": 4,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownStreetLamp.2a726309.glb",
+        "sourcePage": "https://polyhaven.com/a/street_lamp_01",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/street_lamp_01/street_lamp_01_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Josh Dean",
+        "sourceFamily": "poly-haven",
+        "attribution": "Josh Dean / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:street_lamp_01; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownStreetLamp.2a726309.glb",
+      "outputPath": "public/aura-assets/ironcrownStreetLamp.2a726309.glb",
+      "license": "CC0-1.0",
+      "author": "Josh Dean",
+      "boundsMetadata": {
+        "min": [
+          -0.352,
+          0,
+          -0.193
+        ],
+        "max": [
+          0.352,
+          3.871,
+          0.193
+        ],
+        "size": [
+          0.704,
+          3.871,
+          0.386
+        ],
+        "center": [
+          0,
+          1.935,
+          0
+        ],
+        "maxDimension": 3.871,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "street_lamp_01",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "street_lamp_01_glass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "street_lamp_01_bulb",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "street_lamp_01",
+        "root"
+      ],
+      "textures": [
+        "street_lamp_01_nor_gl",
+        "street_lamp_01_diff",
+        "street_lamp_01_metal-street_lamp_01_rough",
+        "street_lamp_01_diff-street_lamp_01_opacity"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownStreetLamp.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
+    },
+  },
+  "ironcrownThrone": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownThrone.6ad7cf26.glb",
+    hash: "sha256-6ad7cf260cda8ea0719be417bf1ed94cfecec32497622a73f679d037ebab2387",
+    bounds: [
+      0.581,
+      1.034,
+      0.604
+    ],
+    sizeBytes: 2357820,
+    metadata: {
+      "materials": [
+        "gallinera_chair"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 2,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "root"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 2 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownThrone.6ad7cf26.glb",
+        "sourcePage": "https://polyhaven.com/a/gallinera_chair",
+        "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/gallinera_chair/gallinera_chair_1k.gltf",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Ulan Cabanilla",
+        "sourceFamily": "poly-haven",
+        "attribution": "Ulan Cabanilla / Poly Haven (CC0)",
+        "retrievedAt": "2026-11-01T16:33:00Z",
+        "evidence": [
+          "source-id poly-haven:gallinera_chair; Poly Haven 1k glTF packed to GLB with gltf-transform, scene root recentred and grounded (no vertex edits)",
+          "source-id poly-haven:gallinera_chair; 1k glTF packed to GLB, root recentred and grounded (no geometry edit)"
+        ],
+        "checkedAt": "2026-11-01T16:33:00Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownThrone.6ad7cf26.glb",
+      "outputPath": "public/aura-assets/ironcrownThrone.6ad7cf26.glb",
+      "license": "CC0-1.0",
+      "author": "Ulan Cabanilla",
+      "boundsMetadata": {
+        "min": [
+          -0.29,
+          0,
+          -0.302
+        ],
+        "max": [
+          0.29,
+          1.034,
+          0.302
+        ],
+        "size": [
+          0.581,
+          1.034,
+          0.604
+        ],
+        "center": [
+          0,
+          0.517,
+          0
+        ],
+        "maxDimension": 1.034,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "gallinera_chair",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "gallinera_chair",
+        "root"
+      ],
+      "textures": [
+        "gallinera_chair_nor_gl",
+        "gallinera_chair_diff",
+        "gallinera_chair_rough"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownThrone.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "suitabilityReason": "Iron Crown stage dressing (GU47 phase 9 owned CC0 prop)"
     },
   },
 } as const);

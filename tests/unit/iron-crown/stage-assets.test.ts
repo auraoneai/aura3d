@@ -22,7 +22,8 @@ describe("iron crown loads a per-app stage manifest, not the shared catalog (RH-
 
   it("every stage prop used in stages.ts is defined in the app manifest", () => {
     const used = [...new Set([...stages.matchAll(/stageAssets\.(\w+)/g)].map((m) => m[1]!))];
-    expect(used.length).toBeGreaterThan(20);
+    // Phase 9 (4.7.8): 14 borrowed keys moved to Iron Crown-owned CC0 assets (src/aura-assets.ts); 13 shared entries remain.
+    expect(used.length).toBeGreaterThan(10);
     for (const id of used) expect((stageAssets as Record<string, unknown>)[id], id).toBeDefined();
     expect(Object.keys(stageAssets).sort()).toEqual([...used].sort());
   });
