@@ -3,91 +3,91 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/iron-crown/p3-r3/iron-crown/frames/g05p3-r3-4/ic-card--card-2x.jpg",
-      "sha256": "e6dc188fce5c6743d01dd14f03dbb85df6590b7a761ab141538abc99267e7545"
+      "path": "evidence/game-upgrades-47/iron-crown/p4-r2/iron-crown/frames/g05p4-r2-5/ic-screens-1280--03-action.jpg",
+      "sha256": "38265d9074fb7c18fbd9bfd42bcf8eb967ec724acf5e3ddae8099c22a57c09d6"
     },
     {
-      "path": "evidence/iron-crown/screens/final/1280-04-mid.jpg",
-      "sha256": "3770fd15497a17ee7e4bd0ce471f57c8e75c0387818ba823d793185f40a4809a"
+      "path": "evidence/game-upgrades-47/iron-crown/p4-final/iron-crown/frames/p4/iron-crown--colosseum-ruins--settle-60s.jpg",
+      "sha256": "d40fdb330c3fc232615b6d737e64496153fefc00c239ec7cf6950efca1668871"
     },
     {
-      "path": "evidence/game-upgrades-47/iron-crown/p3-r2/iron-crown/frames/g05p3-r2-1/iron-crown--colosseum-ruins--settle-60s.jpg",
-      "sha256": "730c06e858b508d97187d48320bde9d25e7064c0a9bcdebae22d62b2b4c6eb12"
+      "path": "evidence/game-upgrades-47/iron-crown/p4-final/iron-crown/frames/p4/iron-crown--crown-arena--settle-60s.jpg",
+      "sha256": "de523747d75c8524acb7e438a236df8bd325d7aca3c78c4b3004c6a45026fb9a"
     },
     {
-      "path": "evidence/game-upgrades-47/iron-crown/p3-r3/iron-crown/frames/g05p3-r3-2/iron-crown--himalayan-monastery--settle-60s.jpg",
-      "sha256": "5b5669dc0b786a5cbf8c8e39b6008f3be2c513d12562f3d8e0103b6465fc9a3d"
+      "path": "evidence/game-upgrades-47/iron-crown/p4-final/iron-crown/frames/p4/iron-crown--himalayan-monastery--settle-60s.jpg",
+      "sha256": "9b8abfcb285394f133d761a84ddac85a9b45e1f27cfad98e0bcb2e17fc20cceb"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5,
+    "lighting": 4.5,
     "shadows": 3.5,
-    "ibl_reflections": 4.5,
-    "environment_world": 6,
-    "atmospheric_effects": 3.5,
-    "material_quality": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 3,
+    "material_quality": 5.5,
     "modeling_assets": 5,
     "composition": 5,
-    "camera": 5.5,
+    "camera": 4.5,
     "postprocessing": 4.5,
     "animation_quality": 4.5,
-    "ui_hud": 7
+    "ui_hud": 6
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Crown Arena frames are washed in a flat orange-brown wash with no clear top-down key spot. Frames 3-4 use flat overcast daylight with no rim light separating the fighters from the background."
+      "seen": "No top spotlight or rim light separates the fighters. In frame 3, Mara Volt's dark brown outfit merges into the dark background. Frames 2 and 4 are lit by flat overcast fill, with no key direction and grey midtones."
     },
     {
       "category": "shadows",
-      "seen": "Fighters have almost no contact shadows. The feet float on the floor rings, and the jumping Mara Volt in frame 1 casts no visible ground shadow."
+      "seen": "The fighters cast almost no shadows. The pale footprint discs under their feet stand in for contact shadows. The statues, braziers and throne show no grounded shadows on the floor in any frame."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The glossy dark floor in frame 1 shows faint gold ring reflections. Otherwise surfaces in frames 3-4 read flat and unlit by the environment."
+      "seen": "The Crown Arena floor in frames 1 and 3 has glossy reflections of the gold lines and props, and the gold trim reads as metallic. The daytime venues in frames 2 and 4 show matte floors with no environment reflection."
     },
     {
       "category": "environment_world",
-      "seen": "Venues are varied: a throne with crown, dragon statues, a castle gate, and a festival shrine. They read as kitbashed props on a flat stage with no crowd and no ropes. The background shrine in frame 4 is semi-transparent and ghosted."
+      "seen": "The venues are prop-rich: a throne with crown, dragon statues, braziers, a castle, and a shrine with prayer flags. The styles clash, with a hand-painted cartoon castle next to semi-realistic statues. The crowd is flat black blob silhouettes with white square lights. The sky in frames 2 and 4 is a blank grey gradient."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Small white floating particles appear in frames 2 and 4. There is no haze cone, no volumetric spot, and no depth fog for arena atmosphere."
+      "seen": "There is no haze or volumetric spotlight cone. The only atmosphere is a few ember specks at the top of frames 1 and 3 and floating white orbs in frame 4. Depth falloff is not visible."
     },
     {
       "category": "material_quality",
-      "seen": "The gi and leather outfit look like baked photogrammetry-style textures with no specular response. The floor is a flat vector-like decal."
+      "seen": "The throne leather, gold crown and emissive green dragon trims hold up. The fighters' cloth and skin look plasticky with uniform roughness. The floors are flat colour, and the castle textures are stylised in a different language from everything else."
     },
     {
       "category": "modeling_assets",
-      "seen": "Character meshes are lumpy, with low-res faces and stiff hands. Props are decent but stylistically mismatched: toon wooden houses next to realistic dragons."
+      "seen": "The fighter faces are crude, and Mara Volt's silhouette is low detail. The trees and palms are low-poly cards. In frame 4 the shrine shows a ghosted, overlapping pink translucent duplicate that looks like a sorting or transition artefact."
     },
     {
       "category": "composition",
-      "seen": "In frame 1 the throne dominates the center and the opponent is cropped at the top while airborne. In frames 3-4 the fighters sit at the far edges with a large empty center gap and are small in the frame."
+      "seen": "In frames 2 to 4 the fighters sit at the far left and right edges, leaving a large empty centre dominated by the floor emblem. The pair does not form a readable focal unit. In frame 1, Kenji fills the left foreground while Mara is cut off at the top edge."
     },
     {
       "category": "camera",
-      "seen": "The side-on follow view is correct. Framing jumps between a tight low shot (frame 1) and a wide pulled-back shot (frames 3-4), and the jump in frame 1 exits the frame top."
+      "seen": "The side-on framing is consistent in frames 2 to 4 but pulled wide. In frame 1, Mara is airborne and cropped by the top of the frame behind the HUD. Kenji is very close, so the camera does not keep both fighters in frame."
     },
     {
       "category": "postprocessing",
-      "seen": "No visible bloom on gold or spot highlights and no vignette or grading for arena mood. The warm frames look muddy rather than graded."
+      "seen": "Frames 2 and 4 have a heavy vignette and a grey low-contrast wash. Bloom on the gold is mild and inconsistent. There is no arena-fight grade, such as crushed blacks with warm highlights, on the daytime venues."
     },
     {
       "category": "animation_quality",
-      "seen": "Poses are stiff and generic. The jumping pose in frame 1 has limbs splayed awkwardly, and frames 3-4 show identical idle stances."
+      "seen": "The fighters hold near-identical stiff guard poses across frames, with flat hands and little weight shift. Mara's jump pose in frame 1 is mostly off-screen and does not read."
     },
     {
       "category": "ui_hud",
-      "seen": "Clean fighting HUD with health bars, super meters, round pips, and a centered clock, plus a readable control strip. HUD styling is consistent with the gold theme."
+      "seen": "The HUD in frame 1 is clean, with named health bars, a super meter, a round clock and a control strip. The browser-style top navigation tabs (Quick Bout, Combo Lab, and so on) sit over the game and break immersion. The HUD appears in only one frame."
     }
   ],
   "nextChange": {
-    "category": "shadows",
-    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
-    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
   },
   "judge": "prism"
 }

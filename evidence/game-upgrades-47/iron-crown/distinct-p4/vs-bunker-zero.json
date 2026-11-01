@@ -1,0 +1,732 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:33:12.803Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "ic-screens-1280--03-action",
+      "iron-crown--bangkok-dock--settle-60s",
+      "iron-crown--colosseum-ruins--settle-60s",
+      "iron-crown--crown-arena--settle-60s",
+      "iron-crown--desert-airbase--settle-60s",
+      "iron-crown--himalayan-monastery--settle-60s"
+    ],
+    "framesB": [
+      "bunker-zero--default--settle-60s",
+      "bunker-zero--floor1--settle-60s",
+      "bunker-zero--floor2--settle-60s",
+      "bunker-zero--floor3--settle-60s",
+      "bunker-zero--floor4--settle-60s",
+      "bunker-zero--floor5--settle-60s",
+      "bunker-zero--floor6--settle-60s",
+      "bunker-zero--killhouse--settle-60s",
+      "screens-1280--1280-04-mid"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.924,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 44,
+    "sameGameYes": 4,
+    "differentRate": 0.9166666666666666,
+    "ci95": [
+      0.8044643483893369,
+      0.9671167756500444
+    ],
+    "confidentDifferent": 43,
+    "confidentDifferentRate": 0.8958333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.924,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--floor4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a fighting-game arena with a gold and red throne room and two fighters, while Image B is a first-person parking garage with a pistol",
+        "Image A has ornate, saturated lighting and Image B has flat, dim, beige fluorescent lighting",
+        "Some cyan-teal accents appear in both (dragon statues, pistol trim), but this is weak evidence of a shared game"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a 2D-style fighting game with a HUD, health bars, and a warm red and gold arena",
+        "Image B is a first-person shooter with a pistol in a dark teal stone corridor",
+        "Completely different genre, camera, palette and lighting"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--floor3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a 2D-style fighting game with a health bar HUD and ornate gold and red arena",
+        "Image B is a first-person shooter in a plain brown corridor with a pistol",
+        "Different genres, camera and art style, with no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person fighting game arena with ramen shops, a shrine, and two fighters",
+        "Image B is a first-person shooter in a plain brown corridor with a pistol viewmodel",
+        "Different art style and scenery: stylized colorful props vs. flat beige concrete walls with yellow trim"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a first-person shooter in a dim concrete firing-range hall with a pistol viewmodel",
+        "Image B is a third-person fighting-game arena with a colorful pagoda, bunting, and pine trees",
+        "Different palettes and lighting: muted brown indoor lighting vs bright blue and gold outdoor scene"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor6--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "identical red hazard barrels with the same markings",
+        "same dark metal military crate model",
+        "shared yellow/orange line markings and a similar asset style"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--floor6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a third-person fighting game arena with a temple, bunting and pine trees",
+        "Image B is a first-person shooter in a dark concrete interior with a pistol and barrels",
+        "Different palette, lighting and genre: bright blue and gold vs dim brown and gray"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--floor4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person fighting game with a red and gold throne-room arena and health bars",
+        "Image B is a first-person view in a dim concrete parking-garage corridor with a pistol",
+        "The two frames share no palette, camera style or HUD design"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a gold and red fighting-game arena with two fighters and a throne",
+        "Image B is a dark teal first-person corridor with a stone wall texture and a pistol",
+        "Different palette, genre, camera and lighting"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "A is an outdoor carrier-deck scene with a fighter jet and posed characters, B is an indoor first-person corridor with a pistol",
+        "Both use yellow and orange floor markings and similar muted, dark-brown tones",
+        "Different camera style and subject matter, with no shared characters or props"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a first-person shooter in a concrete firing range with a pistol",
+        "Image B is a third-person fighting game with a versus HUD, health bars and a throne arena",
+        "Palettes and lighting differ: muted beige concrete versus saturated red and gold"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright, colorful fighting-game arena with two characters and a pagoda",
+        "Image B is a dark first-person corridor with stone walls and a held pistol",
+        "Different palettes and camera: side-on fighting view versus first-person shooter view"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--killhouse--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a first-person shooter in a dim concrete corridor with a pistol",
+        "Image B is a third-person fighting game with a colorful ramen-street arena and two fighters",
+        "Completely different palettes, camera views, and art styles"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a first-person shooter in teal-green flooded stone cellars; Image B is a third-person fighting game in a warm red and gold arena",
+        "Different HUDs: FPS stats bar and notification log versus fighter health bars with a round clock",
+        "Different top menu tabs: Quick Play/Kill House/F1-F6 versus Quick Bout/Combo Lab/Crown Ladder; only the shared 'Built with Aura3D' engine label matches"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "identical red hazard barrels and dark military crate props",
+        "same scanned/photogrammetry-style character models and prop materials",
+        "yellow floor stripe markings and similar warm, muted lighting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, colorful third-person fighting arena with stylized characters",
+        "Image B is a dark teal first-person corridor with a pistol viewmodel",
+        "Different lighting, palette and camera style"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--floor1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a first-person shooter in a dim concrete corridor with a pistol",
+        "Image B is a third-person fighting game on a colorful outdoor temple arena with two fighters",
+        "Different palettes and art styles: muted brown-gray versus saturated blue, gold and pastel"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a third-person fighting-game stage on a carrier deck with a jet and character models, while Image B is a first-person shooter in a stone cellar",
+        "Different palettes: warm orange and yellow deck markings under a blue sky versus a monochrome teal-green interior",
+        "Different HUD style: Image A shows none, Image B has an FPS health/ammo bar and a 'Built with Aura3D' demo menu"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person fighting game with a temple arena and colorful flags",
+        "Image B is a first-person shooter with a stone-walled dungeon and an FPS HUD",
+        "Unrelated palettes, scenery and camera style"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--killhouse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a colorful third-person fighting arena with a temple, lanterns and flags, while Image B is a dark first-person concrete corridor with a pistol",
+        "Different palettes and lighting: bright pastel and gold against gritty gray with harsh fluorescent glare",
+        "Different genre, camera and art style: stylized fighting-game characters against a realistic weapon and a backrooms-style environment"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dim indoor first-person corridor with a pistol, Image B is a bright outdoor carrier-deck scene with a jet and fighters",
+        "Different palettes: murky yellow-brown versus blue sky with orange and teal",
+        "Different camera and genre: first-person shooter versus a fixed-view fighting game setup"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an outdoor aircraft-carrier deck with a fighter jet and posed fighters, in a warm orange and yellow palette",
+        "Image B is a dark indoor corridor in first-person view with a pistol and a cool blue-gray palette",
+        "Different genre and camera: third-person fighting-game stage versus first-person shooter, with no shared assets"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--floor3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a third-person fighting arena with colorful temple scenery and two fighters; Image B is a first-person pistol view in a brown concrete corridor",
+        "Different palettes: saturated blue, gold and pastel in A against monochrome brown and orange in B",
+        "Different art and lighting: stylized characters with outdoor pine trees in A, flat interior walls with strip lights in B"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a first-person sci-fi shooter in a dark concrete corridor with a pistol",
+        "Image B is a third-person fighting game arena with a colorful ramen street and martial artists",
+        "Different art style and palette: muted blue-gray realism versus saturated stylized cartoon"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark first-person shooter in a concrete warehouse with a sci-fi pistol",
+        "Image B is a colorful stylized fighting game arena with ramen shops and a pagoda",
+        "Completely different palettes, camera, and art style"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a cold blue-grey sci-fi corridor in first person with a pistol",
+        "Image B is a warm red and gold fantasy fighting arena with a throne and dragon statues",
+        "Different genres, palettes and character styles (armored soldier vs. martial artists)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a first-person shooter with a teal stone-cellar palette and a HUD bar",
+        "Image B is a fighting-game arena with a red and gold throne and two fighters",
+        "Different genre, camera and lighting; the engine-branded HUD in A is absent in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "iron-crown--himalayan-monastery--settle-60s",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a first-person sci-fi shooter in a dark concrete corridor with a pistol viewmodel",
+        "Image B is a third-person fighting game arena with a pagoda, lanterns and prayer flags",
+        "Different palettes and art styles: muted blue-gray industrial vs colorful stylized fantasy"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark teal first-person shooter corridor with a HUD, Image B is a bright third-person fighting-game arena",
+        "Different palettes and lighting: murky green cellar vs warm wooden houses under an overcast sky",
+        "Different art styles: realistic stone texture vs stylized hand-painted castle and fighters"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--floor1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a fighting-game arena with a throne, dragon statues and gold-on-red palette",
+        "Image B is a first-person shooter in a plain concrete parking-garage corridor with a pistol viewmodel",
+        "Different genre, camera, lighting and art style"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a first-person shooter in a bare concrete range with a pistol viewmodel",
+        "Image B is a stylized third-person fighting game arena with ramen shops and a pagoda",
+        "Different art style and palette: muted realistic beige vs saturated cartoon colors"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "yellow floor and wall-base stripe motif in both",
+        "similar scanned-asset materials and soft bloom lighting",
+        "very different palette and scene type (carrier deck vs. dark corridor)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--floor6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a gold and red fighting-game arena with a throne and dragon statues, Image B is a gray concrete first-person shooter corridor",
+        "Different genres and camera: fixed side-on versus-fighter view against first-person view with a held pistol",
+        "Different palette and materials: glossy reflective gold floor against matte, blurry concrete textures"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a first-person pistol view in a dim backrooms-style corridor, Image B is a third-person fighting-game arena",
+        "Different palettes and lighting: murky yellow-brown fluorescent vs bright stylized sky and daylight",
+        "Different assets and art style: plain concrete walls and a sci-fi gun vs cartoon wooden houses, a stone castle and fighter characters"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--killhouse--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "tells": [
+        "Image A is a first-person shooter in a gray concrete corridor with a pistol",
+        "Image B is a third-person fighting game with a red and gold arena and fighter health bars",
+        "Completely different HUD, palette and camera style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized fantasy fighting arena with a castle and wooden houses; Image B is a dark first-person shooter interior",
+        "Different palettes and lighting: bright overcast sky and warm orange accents versus a dim brown-gray corridor with fluorescent strips",
+        "Different genres and camera: side-view fighters versus a first-person pistol, crates and barrels"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a third-person fighting game arena with a throne and gold-on-red palette",
+        "Image B is a first-person shooter in a concrete corridor with a pistol",
+        "Different genres, camera, and lighting (saturated red/gold vs. muted beige)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "iron-crown--crown-arena--settle-60s",
+      "b": "bunker-zero--killhouse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a fighting-game arena with a warm red and gold palette, a throne and dragon statues",
+        "Image B is a first-person shooter in a gray concrete corridor with fluorescent lighting and yellow floor stripes",
+        "The two frames share no scenery, lighting style, camera or HUD style"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "screens-1280--1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a first-person shooter in a flooded stone cellar with a dark HUD bar",
+        "Image B is a third-person fighting game arena with ramen shops and a pagoda",
+        "Different genres, palettes and art styles: muted teal stone versus saturated stylized characters"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized fighting-game arena with a castle, wooden towers and two fighters",
+        "Image B is a first-person shooter in a concrete corridor with a pistol and barrels",
+        "Different genre, camera, palette and lighting"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a first-person shooter in a dim concrete corridor with a held pistol",
+        "Image B is a colorful third-person fighting game arena with ramen shops and a shrine",
+        "Unrelated art styles, camera views and HUD content"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "ic-screens-1280--03-action",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm red and gold fighting game arena with a versus HUD",
+        "Image B is a cold blue-grey first-person shooter corridor with a pistol",
+        "Different genres, camera, palette and HUD style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a first-person shooter in a dim, brown, corridor interior with a held pistol",
+        "Image B is a third-person fighting game with two fighters in an outdoor arena with a castle and wooden houses",
+        "The two frames have different palettes, lighting and camera styles"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a first-person shooter in a dark teal concrete corridor with a held pistol",
+        "Image B is a third-person fighting game on a colorful ramen-street arena with two fighters",
+        "Different palettes, camera and art style: desaturated realistic stone textures vs. stylized saturated cartoon models"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "iron-crown--desert-airbase--settle-60s",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "identical red barrels and dark metal crates in both frames",
+        "same photoscanned-looking human figures",
+        "yellow floor stripe markings and similar muted, warm-tinted lighting"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--floor5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark sci-fi first-person corridor with a pistol, Image B is a bright fantasy fighting-game arena",
+        "Different palettes: desaturated blue-gray versus warm wood, stone and orange",
+        "Different camera and genre: first-person shooter versus side-view 2-character fighter"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "iron-crown--colosseum-ruins--settle-60s",
+      "b": "bunker-zero--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized outdoor fighting arena with a castle and wooden houses; Image B is a realistic indoor concrete shooting range",
+        "Different camera and genre: side-on fighter view vs first-person pistol view",
+        "Different art style and lighting: bright painted textures vs dim, realistic warm ceiling lights"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "iron-crown--bangkok-dock--settle-60s",
+      "b": "bunker-zero--floor1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a first-person shooter in a plain concrete corridor with a pistol viewmodel",
+        "Image B is a stylized third-person fighting arena with ramen shops and a pagoda",
+        "Different art style and palette: muted realistic beige vs saturated cartoon colors"
+      ]
+    }
+  ]
+}
