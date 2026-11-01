@@ -1,4 +1,11 @@
-# Ion Circuit: final screenshots (GU47 phase-3 retake, 2026-10-31)
+# Ion Circuit: final screenshots (GU47 phase-4 retake, 2026-10-31)
+
+- **Build:** branch `gu47/g19` at 9d8083778 (Aura3D 4.7.1 plus the phase-4 twilight default: panel-verified better than 4.6.2 in g19p4r6 and g19p4r7, 3/0/0 each). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`, remote run `g19p4-r7-scr` (picassostagingacr), decoded with `tools/shots/decode-shotsb.mjs`.
+- **Runner:** headless Chromium on SwiftShader: software WebGL2, not a GPU. `quality=low` as before.
+- **Card:** `card@2x.jpg` is the strike state at 1440x900 (`strike-card2x`), `card.jpg` is it downscaled to 720x450; previews rebuilt with `node tools/site/build-card-images.mjs`.
+- **Changes visible here:** slim one-row HUD at 640x360; WP-36 `ionSentryDrone` sentry targets; contact shadow under the drone; no white road paint on the causeway; the wake fades near the lens.
+
+## Previous set (GU47 phase-3 retake, 2026-10-31)
 
 - **Build:** branch `gu47/g19` at b967a20f2 (Aura3D 4.7.0 plus the phase-3 twilight default: panel-verified better than 4.6.2 in rounds g19p3r1..r3, 3/0/0 each). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`, remote run `g19p3-scr-2` (picassostagingacr), decoded with `tools/shots/decode-shotsb.mjs`.
 - **Runner:** headless Chromium on SwiftShader: software WebGL2, not a GPU. `quality=low` as before (no GTAO, motion blur, CA, grain or lens flare; one shadow cascade).

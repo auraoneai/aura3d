@@ -1,0 +1,721 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T02:18:51.478Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink-port--default--settle-60s"
+    ],
+    "framesB": [
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-60s",
+      "strange-orbit-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": true,
+  "same_game_confidence": 0.659,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 20,
+    "sameGameYes": 28,
+    "differentRate": 0.4166666666666667,
+    "ci95": [
+      0.28849459734577015,
+      0.5571891778463536
+    ],
+    "confidentDifferent": 5,
+    "confidentDifferentRate": 0.10416666666666667,
+    "same_game": true,
+    "same_game_confidence": 0.659,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show a racing game set on alien worlds with a large planet in the sky",
+        "Similar stylized, soft-shaded sci-fi look with nebula/aurora skies",
+        "Vehicles (space motorbike, drone) in teal/orange color schemes with a gate on the track"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a neon grid road with a ringed planet and teal rock spires",
+        "Image B: astronaut on a white hover-bike over flat orange terrain with a dark low-poly ridge",
+        "Different vehicles, palettes and track styles, though both are space-themed with aurora-like skies"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show alien-planet racing tracks under a huge moon or planet and a purple nebula sky",
+        "Similar stylized low-poly terrain with soft, hazy lighting",
+        "Checkpoint gate frames and a sci-fi vehicle as the player character in both"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a soft, low-poly astronaut on a sidecar bike over a flat red-orange plain with a moon-like disc",
+        "Image B is a rendered drone racing on a purple grid track with a ringed planet and teal rock spires",
+        "Both are alien space-racing scenes with purple nebula skies, which suggests a shared theme but the art style and vehicles differ"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a purple grid track with a ringed planet and teal rock spires",
+        "Image B: astronaut on a white hover-bike over a flat red terrain with a tan moon",
+        "Different vehicles, ground materials and palettes, though both have a purple nebula sky"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "racing gate frames on a track in both images",
+        "large ringed planet and nebula sky in both",
+        "same soft stylized rendering with vehicle racers"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Both show a stylized alien-planet racing setting with a large planet in the sky",
+        "Matching purple and teal nebula-style skies with a soft painterly look",
+        "Racing track structures and gate frames appear in both, with sci-fi vehicles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a purple grid track with glowing line decals and teal rocky spires",
+        "Image B: astronaut on a white sidecar bike over a flat red-orange plain with dark low-poly silhouettes",
+        "Different vehicles, ground materials and palettes, although both have a nebula sky and a large planet or moon"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show an alien-planet racing setting with a giant planet or moon and a purple nebula sky",
+        "Both have stylized low-poly rock formations with smooth, painterly shading",
+        "Both have a vehicle racing along a track with gate-like structures, but the palettes differ (teal/purple vs. red/orange)"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "shared space-racing theme with large planets and aurora-like nebula sky",
+        "similar soft-shaded, stylized materials on vehicles",
+        "checkpoint gate frames on a track in both frames"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly flat-shaded terrain with an astronaut on a sidecar motorbike on a red-orange plain",
+        "Image B: detailed textured rock formations with a drone on a purple tiled track with white line decals",
+        "Different rendering styles, vehicles and track designs despite the shared purple space-sky theme"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show racing tracks on alien worlds with a large planet or moon in the sky",
+        "Shared stylized, painterly low-poly look with purple nebula-like skies",
+        "Different vehicles (drone and space motorbike) and different palettes, which lowers confidence"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a purple tiled track with glowing white line patterns and a ringed planet",
+        "Image B: astronaut on a sidecar motorbike over a flat red-orange surface with a winding dotted track",
+        "Different art styles and palettes: detailed teal/purple rock formations vs. dark low-poly silhouettes and a tan moon"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show sci-fi racing tracks under large planets and nebula skies",
+        "Matching soft, painterly stylized rendering and color grading",
+        "Both have a gate or arch structure on the track and a vehicle on a raised course"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show alien planets with a large moon or planet in a purple nebula sky",
+        "Both have a stylized racing track with gate frames and light markers",
+        "Both use a similar hovering sci-fi vehicle style and soft painterly lighting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both show alien planets with a huge moon or planet in a purple nebula sky",
+        "stylized racing tracks with gates and a space-themed vehicle",
+        "similar soft, painterly low-poly look with aurora-like sky color"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "racing gate frame on a track in both images",
+        "large ringed planet and purple-teal nebula sky",
+        "same stylized sci-fi vehicle rendering and soft lighting"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly dark mountains, flat red-orange ground, astronaut on a sidecar motorbike",
+        "Image B: textured teal-grey rock formations, purple grid track, orange-and-black drone",
+        "Different rendering style and lighting: soft blurry low-poly look vs. sharper detailed shading"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a purple grid road with teal rock spires and a ringed planet",
+        "Image B: astronaut on a hover bike over a flat red-orange plain with dark low-poly hills and a beige moon",
+        "Different vehicles, terrain, palettes and lighting, with only a loosely similar space-sky theme"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: low-poly dark red terrain with an astronaut on a sidecar motorcycle",
+        "Image B: a drone on a purple grid track with a ringed planet and textured teal rock formations",
+        "Both are alien space-racing scenes with large planets and purple skies, but the character, track style and rendering differ"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "racing gate frame visible on a track in both",
+        "large ringed planet and nebula/aurora sky",
+        "similar stylized sci-fi vehicles and track layout"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both are alien-planet racing scenes with a large moon or planet and a purple nebula sky",
+        "Both show elevated track segments with gate-like arches and a stylized low-poly look",
+        "Vehicles differ (drone vs. astronaut motorbike) and palettes differ (teal/purple vs. red/orange), which may be separate levels"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "both are alien-planet racing scenes with a large planet in the sky and a nebula backdrop",
+        "similar smooth, painterly stylized rendering and soft atmospheric haze",
+        "a gate or checkpoint structure on the track and a floating race course, with sci-fi vehicles (hover bike and drone)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone on a grid track under a ringed planet, teal and purple palette",
+        "Image B: astronaut on a hover bike over a flat orange plain with a winding elevated track",
+        "Different vehicles, terrain styles and lighting, though both use a space-themed sky with a large planet"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 8,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show sci-fi racing tracks on alien worlds with a large planet or moon in the sky",
+        "Purple-teal nebula sky with a similar stylized, painterly look",
+        "Racing gates and track markers, with a vehicle in a third-person view"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 8,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show sci-fi alien-planet racing with a large planet in the sky",
+        "Matching nebula-style purple and teal skies with a stylized, painterly look",
+        "Race-track structures and gate frames in the distance, with a vehicle as the central subject"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 8,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: drone on a purple grid road with glowing white squiggle lines and teal rock spires",
+        "Image B: astronaut on a white sidecar bike over flat red-orange terrain with a dark low-poly skyline and a beaded track",
+        "Different vehicles, ground materials and palettes, though both share a purple nebula sky with a large planet"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 9,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "racing track with gate arch in both frames",
+        "same sci-fi alien-planet aesthetic with large planet and nebula sky",
+        "similar stylized vehicle models and track-edge markers"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 9,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A shows an astronaut on a sidecar motorbike over a flat orange plain with a low-poly, flat-shaded track",
+        "Image B shows a drone on a purple grid road with detailed, textured rock formations and a ringed planet",
+        "Rendering style differs: A is soft, blurry and low-poly, B is sharper with realistic textures"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 9,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show alien-planet racing tracks under a large moon or planet in a purple nebula sky",
+        "Similar stylized low-poly terrain and soft-glow lighting",
+        "Both have a vehicle with a distinct sci-fi design (drone, space motorbike) on a track"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 10,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "both show racing tracks with gate frames in an alien space setting",
+        "large planet and aurora-like nebula sky with similar purple and teal palette",
+        "stylized vehicles (drone, sidecar bike) with matching orange and teal accents"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 10,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: low-poly dark silhouettes, flat red-orange ground, astronaut on a sidecar motorbike",
+        "Image B: detailed textured rock, a grid-tiled road with glowing lines, a quadcopter drone",
+        "Both share a purple space sky with a large planet, but the rendering style and vehicles differ"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 10,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show alien planets with a huge moon or planet in a purple nebula sky",
+        "Both have racing tracks with checkpoint gates and stylized low-poly vehicles",
+        "The sky and glow rendering style is similar, though palette and terrain differ"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 11,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Both show a stylized alien planet with a large moon or planet in a purple nebula sky",
+        "Both show raised racing tracks with gates and a floating vehicle (drone in A, space bike in B)",
+        "Both use the same soft low-poly look with painterly textures and glowing accents"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 11,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: drone on a neon grid road with a ringed planet and teal mountains",
+        "Image B: astronaut on a hover-bike over flat red terrain with a dark low-poly skyline and a beige moon",
+        "Different vehicles, palettes and scenery, though both use a purple nebula sky"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 11,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show a racing game on alien planets with a large planet and a nebula or aurora sky",
+        "Both show elevated race tracks with gate and checkpoint structures",
+        "Both use a similar stylized, soft-shaded look with teal and orange accents on the vehicles"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 12,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both are alien-planet racing scenes with a large moon or planet and a purple nebula sky",
+        "Similar low-poly stylized terrain with race gates and a winding track",
+        "Both show a sci-fi vehicle (drone, space motorbike) in third-person view"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 12,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "racing gate frame on a track in both images",
+        "large ringed or banded planet in an alien sky",
+        "similar stylized sci-fi vehicles, purple-teal nebula palette"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 12,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a low-poly, blurry astronaut on a hover-bike over a flat red ground, while Image B is a drone on a purple grid track with a more detailed, realistic render",
+        "Different scenery: dark maroon silhouette hills with a wavy dotted track in A, versus teal-grey layered mountains and a ringed planet in B",
+        "Different palettes and vehicles: warm orange and purple with a pale moon in A, cool teal and violet with an orange-black quadcopter in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 13,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A shows a low-poly astronaut on a sidecar motorbike over a flat red ground, while Image B shows a drone racing on a purple grid track",
+        "The art style differs: A is simple and flat-shaded with dark silhouette mountains, B has detailed textured rock formations and a ringed planet",
+        "The lighting and palette differ: A is warm orange and maroon with a beige moon, B is cool teal and lavender with aurora-like sky"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 13,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: drone racer on a purple neon grid track with a ringed planet and teal rock spires",
+        "Image B: astronaut on a white sidecar motorbike over a flat rust-red plain with a low-poly dark ridge and a winding dotted track",
+        "Different vehicles, terrain materials and color palettes, though both use a space-themed sky with a large moon or planet"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 13,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "space racing theme with large ringed planet and nebula sky",
+        "similar soft stylized rendering and teal/orange/purple palette",
+        "race track with gate arch and checkpoint markers in both"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 14,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "both frames show a sci-fi racing setting with large planets and nebula skies",
+        "a vehicle (astronaut bike, drone) is racing on a track or ramp in each frame, with gate-like structures and floating markers",
+        "both have a similar soft, painterly low-poly look with teal and orange accents"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 14,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A has a drone on a neon grid road with teal-gray mountains and a ringed planet, while Image B has an astronaut on a hover-bike on a red-orange plain",
+        "Different palettes and terrain: cool teal/purple against warm red/brown with dark silhouette hills",
+        "Different track styles: a flat glowing grid road against an elevated winding dotted ribbon track"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 14,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show alien planets with a large moon or planet in a purple nebula sky",
+        "Racing tracks with gates and guard rails in a stylized sci-fi look",
+        "Both feature vehicles that hover or race, a drone in A and a space bike in B"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 15,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "racing gates over a track in a space setting with large planets",
+        "same purple-teal nebula sky and star palette",
+        "similar stylized vehicles with orange and teal accents"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 15,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A: low-poly dark mountains, flat orange ground, astronaut on a motorcycle",
+        "Image B: detailed textured rock, grid track, quadcopter drone",
+        "Different rendering styles and vehicles, though both are alien-planet racing scenes"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 15,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: drone on a neon grid road with a ringed planet and teal rock spires",
+        "Image B: astronaut on a hover bike over flat orange terrain with a dark low-poly skyline",
+        "Different vehicles, palettes and ground materials, with only a shared purple nebula sky"
+      ]
+    }
+  ]
+}
