@@ -4,7 +4,7 @@
  */
 import type { material } from "@aura3d/engine";
 import {
-  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
+  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_FRAGMENT_GOUACHE, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
   RIDER_SHADOW_FRAGMENT, RIDER_SHADOW_VERTEX, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
 } from "./shaders";
 import type { OrbitLook } from "./art/look";
@@ -70,8 +70,8 @@ export const veilSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
-export const skySpec = (nebulaShift = 0): CustomSpec => ({
-  glsl: { vertex: NEBULA_VERTEX, fragment: NEBULA_FRAGMENT },
+export const skySpec = (nebulaShift = 0, look: OrbitLook = "original"): CustomSpec => ({
+  glsl: { vertex: NEBULA_VERTEX, fragment: look === "gouache" ? NEBULA_FRAGMENT_GOUACHE : NEBULA_FRAGMENT },
   uniforms: { nebulaShift: { type: "f32", value: nebulaShift } },
   side: "double",
   depthWrite: false
@@ -112,6 +112,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "points-normal", spec: pointsSpec(false) },
   { name: "veil", spec: veilSpec() },
   { name: "sky", spec: skySpec() },
+  { name: "sky-gouache", spec: skySpec(0, "gouache") },
   { name: "atmosphere", spec: atmosphereSpec([1, 0.7, 0.55]) },
   { name: "rider-shadow", spec: riderShadowSpec() }
 ];

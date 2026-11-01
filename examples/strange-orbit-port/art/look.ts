@@ -71,7 +71,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
   gouache: {
     id: "gouache",
     timeOfDay: "permanent planet-rise, low white sun",
-    sky: "nebula dome (violet-teal) + banded peach gas giant + small moon, captured into the environment probe",
+    sky: "ink-teal dome with jade and terracotta dust + banded peach gas giant + small moon, captured into the environment probe",
     key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
@@ -79,11 +79,11 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // dropped the software-WebGL2 frame mean from 62.6 to 38.4 in g15p3-r2; 0.9 at +0.9 EV read 53.9 in g15p3-r5,
     // 0.95 at +1.15 EV read 59.3 in g15p3-r7), so the
     // low key models the riders and its shadow side reads.
-    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.95 },
+    hemisphere: { sky: "#cfd6cc", ground: "#2a3a48", intensity: 0.95 },
     environment: { kind: "capture", intensity: 1.0 },
     // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.0017 hazes
     // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
-    fog: { color: "#3b3460", density: 0.0021, maxOpacity: 0.78, heightMist: 1 },
+    fog: { color: "#2a4650", density: 0.0021, maxOpacity: 0.78, heightMist: 1 },
     post: {
       // GU47 phase 3 (rubric post 4.5: "milky veil"): less bloom, more contrast.
       bloom: { intensity: 0.22, threshold: 0.8, radius: 0.5 },
@@ -145,10 +145,10 @@ export interface SectorRow {
 
 /** SO47-L3: key tint and haze per painted sector (warm, violet, jade, opal). */
 export const SECTORS: Readonly<Record<SectorId, SectorRow>> = {
-  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.5, fogColor: "#4a3654", fogDensity: 0.0017, nebulaShift: 0 },
-  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 3.2, fogColor: "#3a3170", fogDensity: 0.002, nebulaShift: 0.08 },
+  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.5, fogColor: "#3a3f4c", fogDensity: 0.0017, nebulaShift: 0 },
+  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 3.2, fogColor: "#2f3e5a", fogDensity: 0.002, nebulaShift: 0.08 },
   jade: { id: "jade", keyColor: "#e2fff3", keyIntensity: 3.3, fogColor: "#22525c", fogDensity: 0.0018, nebulaShift: -0.12 },
-  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 3.4, fogColor: "#4d4466", fogDensity: 0.0016, nebulaShift: 0.18 }
+  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 3.4, fogColor: "#3d4a56", fogDensity: 0.0016, nebulaShift: 0.18 }
 };
 
 /** Seconds the key and haze take to move to a new sector (SO47-L3). */

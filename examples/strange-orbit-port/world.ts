@@ -303,7 +303,7 @@ export function buildWorld(options: WorldOptions): World {
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
   /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
-  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec()) }).runtime({ id: "sky-dome" }));
+  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec(0, look)) }).runtime({ id: "sky-dome" }));
   // SO47-E2: gouache moves the gas giant out past the ring on -X (it fills the right of the sky at the start grid),
   // 520 m across, with a banded ring and a small second moon; `?look=original` keeps the small overhead planet.
   const planet = row.planet;
