@@ -1,7 +1,7 @@
 // GU47 WP-16 (G06) PBL-PF1: the diorama draws decor, hazard dressing and pedestals as instanced models, one draw
 // class per asset / fit / shadow flags, and every instance stands where today's model node stood at today's size.
 import { describe, expect, it } from "vitest";
-import { ANIMATED_DECOR_KINDS, SKINNED_DECOR_KINDS, buildWorld, decorInstance, hazardInstance, propGroupKey } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { ANIMATED_DECOR_KINDS, buildWorld, decorInstance, hazardInstance, propGroupKey } from "../../../apps/showcase-pips-big-leap/src/game/world";
 import { WORLD_IDS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
 
@@ -34,12 +34,6 @@ describe("pips-big-leap instanced props (PBL-PF1)", () => {
         const node = original.find((n) => n.name === `${d.id}:${d.kind}`);
         const prop = decorInstance(d);
         expect(node, `${id} ${d.id}`).toBeDefined();
-        if (SKINNED_DECOR_KINDS.has(d.kind)) {
-          // GU47 phase 9: the skinned bee is not instanced; the diorama draws the same model node.
-          expect(prop, `${id} ${d.id}`).toBeNull();
-          expect(sceneOf(id).find((n) => n.name === `${d.id}:${d.kind}`)?.asset?.id, `${id} ${d.id}`).toBe(node!.asset?.id);
-          continue;
-        }
         expect(prop, `${id} ${d.id}`).not.toBeNull();
         expect(prop!.asset.id, `${id} ${d.id}`).toBe(node!.asset?.id);
         expect(prop!.size, `${id} ${d.id}`).toBeCloseTo(prop!.measure === "height" ? node!.targetHeight! : node!.targetMaxDimension!, 9);
@@ -62,7 +56,7 @@ describe("pips-big-leap instanced props (PBL-PF1)", () => {
       const spec = worldSpec(id);
       const nodes = sceneOf(id);
       const props = propNodes(nodes);
-      const staticDecor = spec.decor.filter((d) => !ANIMATED_DECOR_KINDS.has(d.kind) && !SKINNED_DECOR_KINDS.has(d.kind));
+      const staticDecor = spec.decor.filter((d) => !ANIMATED_DECOR_KINDS.has(d.kind));
       const expected = staticDecor.length + spec.hazards.length + spec.springs.length + spec.checkpoints.length;
       const instanced = props.reduce((sum, n) => sum + (n.instances?.length ?? 0), 0);
       expect(instanced, id).toBe(expected);

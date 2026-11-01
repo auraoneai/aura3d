@@ -12,15 +12,43 @@ const rootCatalog = resolve(appDir, "../../src/aura-assets.ts");
 const outFile = resolve(appDir, "src/aura-assets.shared.ts");
 
 export const SHARED_KEYS = [
+  "auraClashCornerBrazierPylonMeshy",
+  "blockfallReactorContainmentPylonMeshy",
+  "fpsEnergyCorePickupMeshy",
+  "galleryShiftPedestal",
+  "gullsiegeBarrelMeshy",
+  "gullsiegeCrateMeshy",
+  "gullsiegeWatchtowerMeshy",
+  "gullsiegeWindmillMeshy",
+  "heatsinkArch",
+  "heatsinkBoostPad",
+  "heatsinkDroneNighthawk",
   "helperChar",
+  "neonStreetLampProp",
   "propBoulder",
   "propConifer",
-  "propRockB"
+  "propRockB",
+  "reactorFusionTurbineMeshy",
+  "showcaseCartoonPlatformWorld",
+  "showcaseKenneyVerdantPlatformerWorld",
+  "showcasePlatformerBasicPack",
+  "showcasePlatformerWorldLevel",
+  "showcaseReadablePlatformLevel",
+  "showcaseSideScrollerPlatformLevel",
+  "showcaseSidekickRunner",
+  "skylineCrystalShardMeshy"
 ];
 
-// Keys copied without their large metadata blocks (url, hash, bounds only). None since
-// GU47 phase 9: the unmounted backdrop kits are gone (certify.ts anchors on an owned asset).
-export const HASH_ONLY_KEYS = new Set([]);
+// The world backdrops are never mounted (world.ts); certify.ts reads only their
+// hash, so they are copied without their large metadata blocks.
+export const HASH_ONLY_KEYS = new Set([
+  "showcaseCartoonPlatformWorld",
+  "showcaseKenneyVerdantPlatformerWorld",
+  "showcasePlatformerBasicPack",
+  "showcasePlatformerWorldLevel",
+  "showcaseReadablePlatformLevel",
+  "showcaseSideScrollerPlatformLevel"
+]);
 const HASH_ONLY_FIELDS = new Set(["type", "format", "url", "hash", "bounds", "sizeBytes"]);
 
 const src = readFileSync(rootCatalog, "utf8");
