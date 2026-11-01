@@ -748,7 +748,7 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     // the pickup rule and its column are unchanged (presentation only).
     // Views without the phase-4 dressing keep the 4.6.2 cylinder coin (panel g14p4r2: theme0 1/1/1, not better).
     p4Dress && !diorama
-      ? instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetMaxDimension: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin"))
+      ? instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin"))
       : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), ...(diorama ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
