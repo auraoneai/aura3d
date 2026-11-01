@@ -6,11 +6,12 @@
  */
 import { material } from "@aura3d/engine";
 import { MESHY_ASSETS, MESHY_BINS, MESHY_MODELS, type MeshyBaked } from "./meshy.baked";
+import { MESHY_LOD_BINS, MESHY_LODS } from "./meshy.lod.baked";
 
 export type MeshyKey = string;
 export interface MeshyGeometry { readonly positions: Float32Array; readonly normals: Float32Array; readonly uvs: Float32Array; readonly indices: Uint32Array }
 
-function decode(model: MeshyBaked, buffer: ArrayBuffer): MeshyGeometry {
+function decode(model: Pick<MeshyBaked, "vertices" | "triangles" | "ext" | "uint32">, buffer: ArrayBuffer): MeshyGeometry {
   const n = model.vertices;
   let offset = 0;
   const p = new Int16Array(buffer, offset, n * 3); offset += n * 6;
@@ -28,6 +29,7 @@ function decode(model: MeshyBaked, buffer: ArrayBuffer): MeshyGeometry {
 }
 
 const cache = new Map<string, MeshyGeometry>();
+const lodCache = new Map<string, MeshyGeometry>();
 /** Fetches every baked model's binary geometry; models that fail to load stay absent so the port falls back to its baked CC0 cars and procedural scenery. */
 export async function loadMeshy(): Promise<{ loaded: string[]; failed: string[] }> {
   const loaded: string[] = [], failed: string[] = [];
@@ -42,12 +44,31 @@ export async function loadMeshy(): Promise<{ loaded: string[]; failed: string[] 
       console.warn(`roadster-hours-port: Meshy model "${key}" failed to load (${String(error)}); using the procedural fallback`);
     }
   }));
+  // GU47 phase 6 (WP-32 triangle budget): far LODs (tools/bake-lod.mjs); a missing LOD only means the full model draws far too.
+  await Promise.all(Object.keys(MESHY_LODS).map(async (key) => {
+    try {
+      const res = await fetch(MESHY_LOD_BINS[key]!);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      lodCache.set(key, decode(MESHY_LODS[key]!, await res.arrayBuffer()));
+    } catch (error) {
+      console.warn(`roadster-hours-port: Meshy LOD "${key}" failed to load (${String(error)}); the full model draws at every distance`);
+    }
+  }));
   return { loaded, failed };
 }
 /** Test hook: registers a geometry decoded elsewhere (unit tests read the bins from disk). */
 export function registerMeshyForTest(key: MeshyKey, buffer: ArrayBuffer): void {
   const model = MESHY_MODELS[key];
   if (model) cache.set(key, decode(model, buffer));
+}
+/** Test hook: registers a far LOD decoded elsewhere. */
+export function registerMeshyLodForTest(key: MeshyKey, buffer: ArrayBuffer): void {
+  const model = MESHY_LODS[key];
+  if (model) lodCache.set(key, decode(model, buffer));
+}
+/** The far LOD of a baked model (same unit frame and texture), when one was baked and loaded. */
+export function meshyLodGeometry(key: MeshyKey): MeshyGeometry | undefined {
+  return cache.has(key) ? lodCache.get(key) : undefined;
 }
 export function hasMeshy(key: MeshyKey): boolean {
   return cache.has(key);
@@ -61,7 +82,17 @@ export const meshyTriangles = (key: MeshyKey): number => MESHY_MODELS[key]?.tria
 
 type TextureKey = keyof typeof MESHY_ASSETS;
 /** Textured PBR material for one baked model (`tint` multiplies the texture per mesh; per-instance colours also multiply). */
-export function meshyMaterial(key: MeshyKey, options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; clearcoat?: number; clearcoatRoughness?: number } = {}) {
+type MeshyMaterialOptions = { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; clearcoat?: number; clearcoatRoughness?: number };
+/**
+ * The far-LOD material: the model's scalars over a flat colour, the area-weighted mean of its texture under the LOD's
+ * triangles (`tools/bake-lod.mjs`). Untextured on purpose: textured materials upgrade one per presented frame, and on the
+ * software-WebGL2 runner a textured far copy per kind stayed white past 60 s.
+ */
+export function meshyLodMaterial(key: MeshyKey, options: MeshyMaterialOptions = {}) {
+  const color = MESHY_LODS[key]?.color ?? "#808080";
+  return material.pbr({ color, roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
+}
+export function meshyMaterial(key: MeshyKey, options: MeshyMaterialOptions = {}) {
   const texture = MESHY_ASSETS[key as TextureKey];
   return material.pbr({ color: "#ffffff", roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, texture, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.clearcoat ? { clearcoat: options.clearcoat, clearcoatRoughness: options.clearcoatRoughness ?? 0.1 } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
 }
