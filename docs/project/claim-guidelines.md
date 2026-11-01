@@ -1,8 +1,8 @@
 # Aura3D Claim Guidelines
 
-Version: 4.7.3
+Version: 4.7.5
 
-Current release: Aura3D 4.7.3.
+Current release: Aura3D 4.7.5.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 

@@ -1,8 +1,56 @@
 # Changelog
 
-Version: 4.7.3
+Version: 4.7.5
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.5 (2026-11-01)
+
+4.7.5 replaces 4.7.4, whose `@aura3d/engine` tarball kept one unresolvable import (see Fixes); 4.7.4 is deprecated. Contents are otherwise the same: GameUpgrades47 phase 6 (`docs/prds/game-upgrades-47/lanes/<lane>.md`, "Phase 6 (4.7.4)" sections). The last views that still opened their 4.6.2 look now open a new look that won a blind three-judge panel against the 4.6.2 frame. Draw budgets are back inside their limits in four games, stale screens are retaken, and three engine handoffs are closed. Gameplay, determinism and the reference replays are unchanged. All numbers are software WebGL2 on the remote runner.
+
+### Engine
+
+- **Shader preprocessor honours in-source `#define` (rendering).** A `#define` written inside a shader chunk was ignored by the library's preprocessor, so the `#ifdef` blocks it guarded never compiled in (The Bellkeeper's Walk).
+- **Texture upload diagnostic is accurate (engine).** The per-texture status no longer sticks at `pending` for textures that finished; `texPending` in diagnostics now counts the real queue (Aura FC 3D).
+- **Screen-space reflections: the `roughness` option documented as it behaves (post).**
+  - `screenSpaceReflections({ roughness })` is the frame-wide surface roughness, with no per-pixel roughness yet. Reflections are at full strength at 0.35 or less and fade to zero at 0.5.
+  - The old doc called it a cutoff, so games that passed 0.5 got no reflections at all.
+  - `diagnostics()` now warns `SSR_ROUGHNESS_GATED` when the authored value turns reflections off.
+  - No frame changes.
+
+### Games
+
+- **Every view now opens a new look:**
+  - **Cross Hop:** Meadow (where Quick Play and World Tour start) and Critter Core now open the vivid look.
+  - **Shadowstep Gauntlet:** the gate view opens the evening look. The "floating rectangle over the falls" was the win aurora drawing in every frame, because the beam pass ignored `setVisible`; it is removed. The flat pink ground is now a deep-teal lake.
+  - **Duneglide:** chapters 1 and 6 now open the inked look.
+- **Draw budgets (not raised to pass):**
+  - **Aura Diamond 3D:** every park is under 450 draws, through instanced ivy walls, rocks and flood towers.
+  - **Bunker Zero:** floor 6 is back under 120 draws: one instanced contact-blob draw per floor, one wall shade instead of three, and no viewmodel shadows.
+  - **Serpentine Sky Run:** back inside its budget. A per-draw breakdown spec (`tests/browser/g17-drawlist.spec.ts`) found the extra draws.
+  - **Saltwind Highway:** inside 170 draws and 900k triangles, using untextured far LODs.
+- **Bunker Zero:** the machine-gun viewmodel now shows with the HUD up. Floor 5's re-aimed key light won the blind panel 3/0/0.
+- **Aura Slam 3D:** the hot-red serve aim ring from 4.7.1 is confirmed on a capture. The serve frame beat 4.6.2 3/0/0.
+- **Retaken final screens, cards or posters:** Pip's Big Leap, Apex Overdrive, Slingshot Siege, Duneglide, Aura Diamond 3D, Serpentine Sky Run, Bunker Zero.
+- **Gridlock Courier and Shadowstep Gauntlet:** the two acceptance captures cancelled in 4.7.1 are recaptured.
+
+### Fixes
+
+- **The engine tarball resolves every internal import again (release tooling).** In 4.7.4, `tools/finalize-dist` matched the string `"scalar-atlas import"` as an import and skipped the real `import("@aura3d/rendering/extension-scalar-atlas")` after it. `@aura3d/engine` therefore shipped a specifier consumers cannot resolve, and `vite build` of the hello-world template failed. The specifier pattern no longer spans whitespace or parentheses, and the build now fails on any bare workspace import left in the root dist (`tools/finalize-dist/specifiers.ts`, `tests/unit/tools/finalize-dist-specifiers.test.ts`).
+
+### Tools
+
+- **Port-page sync** rewrites an example page's `../../apps/<app>/public/` development paths to the app root. A port page no longer links a font twice through a path that 404s in production. `node tools/showcase-port-pages/sync.mjs --check` is clean.
+
+### Known limits
+
+- **Rubric:** no game scores 7 or more in all 12 categories (model judge, software WebGL2).
+  - Aura Slam 3D, Bunker Zero and Aura Diamond 3D author SSR `roughness: 0.5`, which turns their reflections off, and Aura Hoops 3D's 0.45 leaves them at 26%. Retuning those games needs blind panels and is planned next.
+  - The image-decode stall that leaves some textures pending on the software runner is still open.
+- **Slingshot Siege** is above its draw budget (463-573 draws); it needs instancing.
+- **WP-36 Meshy batch** is still blocked: every key answers paid API calls with HTTP 402.
+- **Real-GPU runs** are owner-only (PRD D5).
+- **Pre-existing failures:** 16 engine and rendering test files fail identically on 4.7.3 and 4.7.4 (37 and 10 tests). They are not caused by this release.
 
 ## 4.7.3 (2026-10-31)
 

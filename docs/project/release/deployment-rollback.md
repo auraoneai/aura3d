@@ -1,6 +1,6 @@
 # Aura3D Deployment Rollback Plan
 
-Version: 4.7.3
+Version: 4.7.5
 
 Aura3D has two public deployment tracks:
 
