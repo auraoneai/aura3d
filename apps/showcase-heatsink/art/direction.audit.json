@@ -30,7 +30,7 @@
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 0.35
+        "intensity": 0.55
       },
       {
         "type": "spot",
