@@ -298,7 +298,10 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   builder.add(hdri
     ? environments.hdri({ name: `silt ibl ${look.hdri}`, texture: hdri as unknown as Parameters<typeof environments.hdri>[0]["texture"], intensity: look.environmentIntensity, rotation: (look.environmentRotationDeg * Math.PI) / 180, background: false })
     : environments.neutral({ intensity: look.environmentIntensity }));
-  const pcss = look.pcss && !options.low;
+  // phase 4: PCSS only with `?siltpcss=1`. On the remote software WebGL2 runner the PCSS chapters (ch0, ch3, default)
+  // showed no cast shadow at light size 2.5 or 0.6 (p4-r2, p4-r3), while the PCF storm chapter drew every tree's, so
+  // the low-sun chapters use the tier PCF filter (DG-L5 PCSS waits on a real-GPU check)
+  const pcss = look.pcss && !options.low && PCSS_OPT_IN;
   builder.add(lights.directional({
     name: "silt key",
     position: [dir[0] * 240, dir[1] * 240, dir[2] * 240],
@@ -413,10 +416,11 @@ const columnTransforms = (list: readonly Column[]) =>
 export const GATE_SHUT = { rimColor: "#ff6a3d", haloColor: "#ffb08a", bodyColor: "#1a0603" } as const;
 /** GU47: the open beacon in the inked look, the one jade signal accent. */
 export const SIGNAL_JADE = { rimColor: SILT_PALETTE.jade, haloColor: SILT_PALETTE.jadeWhite, bodyColor: "#06231b" } as const;
+const PCSS_OPT_IN = typeof location !== "undefined" && new URLSearchParams(location.search).get("siltpcss") === "1";
 /** GU47 phase 4: PCSS light size (metres) for the low-sun chapters' long shadows (DG-L5). */
 export const PCSS_LIGHT_SIZE = 0.6;
 /** GU47 phase 4: the rider's ground shadow shape (metres; opacity of the flat ink shape). */
-export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.32, maxSlide: 0.6 } as const;
+export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.55, maxSlide: 0.6 } as const;
 /**
  * GU47 phase 4 (inked look): the beacon drawn at the objective's real 24 m capture radius (48 m across instead of 66 m),
  * its column at 45% width, and the waiting stone rings scaled by the same 48/66. Presentation only: the sim's radius
