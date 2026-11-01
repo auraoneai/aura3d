@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "where-the-wind-wanders-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bell",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy pinkish haze washes out the far shore, the lighthouse and the lake; foreground foliage is dark and muddy; the player is a dark low-contrast silhouette; the top-left leaf mass and the top-right signboard are crushed to near-black.",
+     "Pink dusk haze washes out the far shore and treeline into a milky, low-contrast band. The player is a dark, murky silhouette. Dark floating leaf mass in the top-left corner and a cut-off windmill blade in the top-right.",
+     "Night scene is dark and muddy in the foreground meadow. The player has an odd gold rim glow, the falling particles render as square blocks, and a foreground leaf mass cuts in at top-left."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The large leaf cluster at top-left crowds the frame; foliage is busy, with some dithered stipple around the player; the windmill is cut off at the right edge.",
+     "The player's cloak and hood look pale or bleached and lack detail. The windmill is cropped at the top-right edge. Otherwise colour, water reflections and depth are good.",
+     "Grading is a little washed and yellowish, and the foreground grass has low contrast. The player is somewhat small but readable."
+    ]
+   },
+   {
+    "variant": "epilogue",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Stars render as chunky square sprites; foreground grass and bushes fall to murky low contrast; the player's gold rim light looks slightly artificial; the top-left leaves and top-right sign are near-black blobs.",
+     "Identical to B: flat, over-bright yellow-green lighting, flat water, weak contrast.",
+     "Warm tint mutes the sky slightly. The windmill is cropped at the right edge and the kite string is a thin hard line."
+    ]
+   },
+   {
+    "variant": "found0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Busy foliage with dither stipple near the player; the top-left leaf cluster crowds the frame; the windmill is cropped at the right edge.",
+     "The player character looks pale or bleached. The windmill is cropped at the top-right.",
+     "The kite string line is a little harsh and the windmill is cropped at the right. The player's pale cloak blends slightly into the grass."
+    ]
+   },
+   {
+    "variant": "found2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly hazy grey sky; busy foliage and dither stipple around the player; the windmill is cropped at the right.",
+     "The sky is slightly grey and overcast. The player looks pale. The windmill is cropped at the top-right.",
+     "Looks identical to A and has the same washed grading."
+    ]
+   },
+   {
+    "variant": "found3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild dusky haze softens the far shore; busy foliage and dither stipple near the player; the windmill is cropped at the right.",
+     "Slightly hazy warm sky. The player looks pale or bleached. The windmill is cropped at the top-right.",
+     "The kite string line is harsh and the windmill is cropped at the right edge. Otherwise clear and colourful."
+    ]
+   }
+  ]
+ }
+]

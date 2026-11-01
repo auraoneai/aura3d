@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/where-the-wind-wanders-port/art/direction.ts",
-  "sourceSha256": "a2db469ee75f66ff6523bbd27dde928035f9ee464a2a590740521176723e5934",
+  "sourceSha256": "a25a3350d23b3c16b639dc56560f8f730f9eb9dee18b52901b6b014009899bbb",
   "id": "where-the-wind-wanders-port",
   "genre": "platformer",
   "signatureEffect": "Visible wind over a gouache valley: cloud shadows and gust waves roll downwind across sage grass while one continuous day moves from afternoon to lilac dusk.",
@@ -117,8 +117,8 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "wisp",
-        "triangles": 21304,
+        "assetKey": "kite",
+        "triangles": 11096,
         "textures": 3,
         "unlit": false,
         "overridesTextures": false
@@ -277,6 +277,13 @@
         "role": "prop",
         "assetKey": "wisp",
         "maxTriangles": 22000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "kite",
+        "maxTriangles": 12000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       }

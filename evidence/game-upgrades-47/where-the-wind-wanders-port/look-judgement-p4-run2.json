@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r4/screens/key-walk.1280x720.jpg",
+      "sha256": "bda8fe90166fcba9ec2e7244d98e848e810a5127f3ab1d104cd946ca5c30ef25"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r4/screens/mid-walk.1280x720.jpg",
+      "sha256": "6926042e47d84e8754dd1c6efb437ca13585b162ef17001d610b5589aa26066d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r4/where-the-wind-wanders-port/frames/g23p4-r4-4/where-the-wind-wanders-port--found3--settle-60s.jpg",
+      "sha256": "54468a5e16bcc817c193e2a3c3cd2d56b2c5990e944b030cd1f955ed0eef39de"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r4/where-the-wind-wanders-port/frames/g23p4-r4-5/where-the-wind-wanders-port--bell--settle-60s.jpg",
+      "sha256": "bb869f6c8a866f97e0e7e2d7d965506f55c3cada116baa76586b55dcb485b759"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 7,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 6.5,
+    "composition": 6,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-2 have bright, even daylight with saturated greens, but the light is flat and frontal. There is no readable 3/4 sun direction on the cottage or windmill walls, and the character's cloak reads as one flat olive tone."
+    },
+    {
+      "category": "shadows",
+      "seen": "The character casts no visible shadow on the path. Trees, the cottage and the windmill show no ground shadows, so objects float on the meadow, and the grass has no self-shadowing to give it depth."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake is a pale blue plane with stylized ripple stripes. Only frame 4 shows a faint shore reflection. Materials show no environment reflection or sky-tinted specular."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The meadow is dense and colorful, with a red-tiled cottage, a windmill, a lake and a lighthouse. The far shore is a flat backdrop band of repeated billboard-like trees with a hard horizontal seam at the waterline, and the pink-dot bush clumps repeat heavily."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Daylight frames have almost no aerial perspective: distant trees are as saturated as the foreground. Frame 4 adds heavy pink fog and floating particles that wash out the far shore, well beyond the intended 0.0025 density."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Foliage alpha cards render with dithered, screen-door stipple patterns. These show as white dotted speckle in the grass and a checkered halo around the character's legs in all frames. Wood and plaster are plain diffuse with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The cottage, with its vine overhang and window box, and the windmill are nicely detailed. The low-poly faceted deciduous trees clash with the high-density grass, and the foreground tree leaf in the top-left corner is a crude untextured polygon."
+    },
+    {
+      "category": "composition",
+      "seen": "The cottage anchors frames 1, 3 and 4 well. The character sits low-center and is half-buried in grass, so it reads poorly. Large cropped leaf and trunk intrusions at the top-left and right edges in frames 1, 3 and 4 clutter the frame, and the windmill is cut off at the right edge in frame 1."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high third-person chase view behind the character, not the side-on follow the recipe expects. Near geometry clips into the view (leaf at top-left, windmill sail at top-right in frames 3-4), and grass occludes the subject's lower body."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frames 1-2 are clean but show no visible bloom or tonemapping character. Frames 3-4 shift to a desaturated, muddy grade with lifted blacks, and frame 4 looks overly dark and hazy for a daylight-outdoor post target."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Running poses in frames 1-2 look crouched and stiff. In frames 3-4 the character stands in a near-rest pose with arms angled out. The kite string is a hard, straight white line with no sag."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean rounded cream pills: a '0 / 3 discovered' counter, a controls hint, and Journal and Sound buttons. All are readable and unobtrusive. The HUD is absent in frames 3-4, and there is no gold coin accent anywhere."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

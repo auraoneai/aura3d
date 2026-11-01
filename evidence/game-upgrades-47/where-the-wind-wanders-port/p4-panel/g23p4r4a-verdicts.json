@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "where-the-wind-wanders-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bell",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 1,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Identical to A; same mild yellow wash on the foreground grass and the same cropped canopy at the top-left.",
+     "Night scene with strong mood and a glowing lake. The foreground flowers and grass are dark and somewhat muddy. The falling snow/star particles are large square blocks that look like glitches. A dark foliage blob covers the top-left corner and a sign corner clips into the top-right edge. The player shows only as a dim gold-lit silhouette.",
+     "This is just the default daytime scene with no bell-state change. Lighting is flat and bright, and the foreground grass is a bit yellow-washed."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Foreground grass is flat and yellow-washed, with weaker colour separation and depth. The water is flat with no reflections. The player is readable, and the pink companion adds interest.",
+     "Overall pastel wash with soft contrast and flat, low-saturation water. Haze reduces depth. The player reads well and the pink companion adds charm.",
+     "The pale cloak makes the player lower in contrast against the grass. A windmill is cut off at the right edge. The kite string is a thin, aliased white line."
+    ]
+   },
+   {
+    "variant": "epilogue",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dusk scene: the far bank and lake are washed out by heavy pink haze, giving low contrast. The player is dark and low-contrast against the grass. The windmill and a dark canopy are cropped at the top corners.",
+     "Pink dusk with heavy grey haze that washes out the far shore and trees. The foreground is dark and low in contrast. The player is a murky dark silhouette that blends into the green. A dark foliage blob covers the top-left corner and an object clips into the top-right edge.",
+     "Night particles render as blocky square pixels and look like a glitch. The foreground is dark and muddy with flowers crushed toward black. The player has an odd glowing gold outline. The canopy at top-left is a black blob."
+    ]
+   },
+   {
+    "variant": "found0",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is pale and dithered, and a windmill sail clips into the top-right corner. Otherwise the colour and depth are richer.",
+     "Almost identical to its default frame, so no visible change for this state. The player is pale and greyish. A windmill is cropped at the top-right edge.",
+     "This is the default scene, unchanged. Grass is flat and yellowish, and the water has no reflections."
+    ]
+   },
+   {
+    "variant": "found2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is pale and dithered, and the windmill is cropped at the top-right. The sky is slightly greyer than the default, but contrast and saturation are better.",
+     "Sky slightly warmer and hazier, otherwise almost identical to its default frame. The player is pale and greyish. A windmill is cropped at the top-right edge.",
+     "The sky is slightly hazy and desaturated. The player is pale. The windmill is cropped at the right edge."
+    ]
+   },
+   {
+    "variant": "found3",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is pale and dithered, a windmill sail clips into the top-right corner, and the sky has a slight warm haze. The foliage is richer and the water shows reflections.",
+     "Plain default frame with a pastel wash, low contrast and flat water.",
+     "The player is pale against the grass. The windmill is cropped at the right edge. The kite line is aliased. The warm sky is slightly hazy."
+    ]
+   }
+  ]
+ }
+]
