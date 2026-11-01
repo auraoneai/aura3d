@@ -107,8 +107,15 @@ export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): v
   const shadows = look.backdropLights === "from-toon";
   for (const p of PIECES) {
     const island = p.kind !== "balloon";
-    builder.add(model(MODELS[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
+    builder.add(model(MODELS[pieceModel(look, p)], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
   }
+}
+
+/** GU47 WP-36 CR-A1: in the carnival look two of the tree islands (one per side) are the paint-pot island; same slot, size and motion. */
+export const PAINT_POT_PIECES: readonly number[] = [3, 6];
+export function pieceModel(look: SplatLook, piece: Piece): keyof typeof MODELS {
+  if (look.id === "carnival" && PAINT_POT_PIECES.includes(PIECES.indexOf(piece))) return "paintPotIsland";
+  return piece.kind;
 }
 
 /** CR-AN2: balloon sway and island rocking, pure functions of time (radians, within ±amplitude). */

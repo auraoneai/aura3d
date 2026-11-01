@@ -62,6 +62,11 @@ export interface ToonLightRow {
   readonly skyReflect: number;
   /** GU47 phase 3: painted contact darkening on props near the deck (gates, rails, ball, bunting): world height of the fade, strength. */
   readonly contact: { readonly height: number; readonly strength: number };
+  /** GU47 phase 4: enamel environment reflection (painted dome, Schlick fresnel) per surface family. */
+  readonly env: { readonly rails: number; readonly ball: number; readonly gates: number };
+  /** GU47 phase 4: lacquered-deck planar reflection of the nearest gates and the ball (strength 0..1), the dome at grazing
+   *  angles (strength), softened with height above the deck (fade height m). `null`: off. */
+  readonly mirror: null | { readonly gates: number; readonly sky: number; readonly fadeHeight: number };
 }
 
 export interface SplatLook {
@@ -162,7 +167,9 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       gloss: { ball: 0.55, fresh: 0.7, drySeconds: 2, shininess: 48 },
       canvas: { weave: 0.05, streak: 0.06 },
       skyReflect: 1.1,
-      contact: { height: 0.8, strength: 0.5 }
+      contact: { height: 0.8, strength: 0.5 },
+      env: { rails: 2.4, ball: 0.35, gates: 0.9 },
+      mirror: { gates: 0.68, sky: 0.6, fadeHeight: 2.4 }
     },
     sky: {
       /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
@@ -213,7 +220,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
     spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
-    gateShadow: { length: 1.8, alpha: 0.5 },
+    gateShadow: { length: 1.5, alpha: 0.78 },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };
