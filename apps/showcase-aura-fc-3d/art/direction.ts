@@ -66,9 +66,10 @@ export default defineArtDirection({
     { role: "prop", assetKey: "fcHeroTrophyMeshy", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
     // WP-36 (phase 4): the game's own stand module, four instances in one draw; Meshy UV seams stop the simplifier at 45.6k
     { role: "backdrop", assetKey: "fcStandModuleMeshy", maxTriangles: 46000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // borrowed until WP-36 delivers the football dugout and ball cart (pitchDugout; no cart row): see the lane report
-    { role: "set-dressing", assetKey: "diamondDugout", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+    // GU47 phase 9 (D2): the game's own CC0 team bench and ball crate (Poly Haven painted_wooden_bench, plastic_crate_02;
+    // 512 px maps); WP-36's Meshy dugout (pitchDugout) is blocked on Meshy credits
+    { role: "set-dressing", assetKey: "fcTeamBench", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "fcBallCrate", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "kick", kind: "fc-turf-divot" },
@@ -90,7 +91,7 @@ export default defineArtDirection({
   ],
   signatureEffect: "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
   standIns: [
-    { feature: "box stands, capsule crowd, borrowed dugout / stadium / ball cart", file: "src/game/scene.ts", request: "R-14-07", removeWhen: "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted" },
+    { feature: "box stands and capsule crowd", file: "src/game/scene.ts", request: "R-14-07", removeWhen: "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted" },
     { feature: "colour-only athlete kit materials and a base-colour-only match ball", file: "src/game/rig.ts", request: "R-14-07", removeWhen: "WP-36 textured kits (BC+N, number sheet) and a BC+N ball admitted" },
     { feature: "instanced light pools for the three unshadowed towers", file: "src/game/scene.ts", request: "R-14-13", removeWhen: "a per-tier multi-caster budget allows four shadowed floods" }
   ],

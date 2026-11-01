@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "b5ecffa012c469c253b66182296953348a3f51dd826610e12360c83a40540ee6",
+  "sourceSha256": "c586c64fa5ea07af1bc9aa2c104323a2a6b62f1cc94152538430734d5788d9dd",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -116,21 +116,21 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondDugout",
+        "assetKey": "fcTeamBench",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondDugout",
+        "assetKey": "fcTeamBench",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "hoopsBallCart",
+        "assetKey": "fcBallCrate",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1020,14 +1020,14 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "diamondDugout",
+        "assetKey": "fcTeamBench",
         "maxTriangles": 16000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",
-        "assetKey": "hoopsBallCart",
+        "assetKey": "fcBallCrate",
         "maxTriangles": 14000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -1101,7 +1101,7 @@
     "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
     "standIns": [
       {
-        "feature": "box stands, capsule crowd, borrowed dugout / stadium / ball cart",
+        "feature": "box stands and capsule crowd",
         "file": "src/game/scene.ts",
         "request": "R-14-07",
         "removeWhen": "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted"

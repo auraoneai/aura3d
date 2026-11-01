@@ -55,7 +55,7 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.diamondDugout",
+      "typedRef": "assets.fcTeamBench",
       "quality": "candidate",
       "role": "setDressing"
     },
@@ -65,12 +65,12 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.hoopsBallCart",
+      "typedRef": "assets.fcBallCrate",
       "quality": "candidate",
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Match ball, 8 outfield soccer strikers (fcSoccerStrikerMeshy), 2 goalkeepers (fcGoalkeeperMeshy), both 3D goal frames & nets (fcSoccerGoalNetMeshy), touchline referee, floodlight pylons, scoreboard gantry, championship trophy, glacier dome, sideline dugouts, stadium arch, and ball cart are 3D Meshy GLBs.",
+  "assetHonesty": "Match ball, 8 outfield soccer strikers (fcSoccerStrikerMeshy), 2 goalkeepers (fcGoalkeeperMeshy), both 3D goal frames & nets (fcSoccerGoalNetMeshy), touchline referee, floodlight pylons, scoreboard gantry, championship trophy, glacier dome and stadium stand module are 3D Meshy GLBs; the sideline team benches and ball crate are CC0 Poly Haven GLBs.",
   "qualityGate": {
     "status": "reviewed",
     "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=120, mode=quick/play; screenshots show live 5v5 3D gameplay with 3D Meshy soccer strikers, goalkeepers, goal nets, scorebug, radar, and AI/user play."
