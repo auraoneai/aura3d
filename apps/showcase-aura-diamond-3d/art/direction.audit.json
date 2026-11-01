@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "d2415dd5fcdbba75d1bddab662dcedf1b98ca070475578c1d643661c9701e82c",
+  "sourceSha256": "d9cd0b63a9cff0c0390b4a05ea71496fd41b000b11805c7d20b2c3f8d43edd3f",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -62,13 +62,6 @@
       },
       {
         "assetKey": "diamondStadium",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "showcaseStadiumSeats",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -792,13 +785,6 @@
         "maxTriangles": 1000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "showcaseStadiumSeats",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
       },
       {
         "role": "set-dressing",

@@ -64,7 +64,6 @@ export default defineArtDirection({
     { role: "world", assetKey: "diamondFloodlight", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // GU47 WP-36: the Meshy seated stand fan, 625 triangles after the sloppy simplify (scripts/optimize-fan.mjs), 256 px maps.
     { role: "set-dressing", assetKey: "ballpark_fanA", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "showcaseStadiumSeats", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "diamondHarborPier", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondTower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondCanyonArch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },

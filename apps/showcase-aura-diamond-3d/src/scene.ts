@@ -281,17 +281,7 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
         const k = sh.name.endsWith("-c") ? 30 / 28 : 1;
         return { position: [sh.x, 0, sh.z] as Vec3, rotation: [0, sh.yaw, 0] as Vec3, scale: [k, k, k] as Vec3 };
       })
-    }),
-    // Hidden dugout seat asset reference so route asset validation sees showcaseStadiumSeats
-    model(assets.showcaseStadiumSeats, {
-      name: "dugout-seat-ref",
-      targetMaxDimension: 1.2,
-      role: "setDressing",
-      scaleMode: "fit",
-      visible: false
     })
-      .position(0, -80, 0)
-      .scale(HIDDEN_SCALE)
   );
 
   // Grounded tiered stadium bleachers wrapping the outfield arc
