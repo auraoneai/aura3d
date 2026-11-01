@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "beach",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Muted, dusty pinkish-tan palette with somewhat low overall contrast. The court reads well, the crowd is dense and colourful, and the players are clear.",
+     "The sand lighting is fairly flat and slightly washed out, so the court is desaturated and the lines have weak contrast. The opponent's reflection ghosts into the court, and there is a large empty sand area in the foreground. Even so, the crowd, signage and theme give it much more life.",
+     "Beach theme reads only as a flat pinkish-tan floor; overall a bit desaturated and low-contrast; the shadow under the player is faint and the near-court lighting is uneven"
+    ]
+   },
+   {
+    "variant": "clay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background tower prop looks ghostly and semi-transparent at the top, and the orange is quite saturated. Otherwise the warm lighting, long shadows, full crowd and readable players are strong.",
+     "The background stadium is blurry and low-detail. The opponent overlaps the 'AURA SLAM' sign, and faint score text ghosts onto the court. The camera is far out, so the players are small.",
+     "The whole frame is near-monochrome orange, so the court and surround merge somewhat; the background tower is blurry and looks pasted on; the distant player is small at this camera distance; the crowd stands are dense but repetitive"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A slightly harsh vignette and green floor glow at the sides, and a faint shadow ghost under the far player. Otherwise there is good contrast, a full crowd and a clearly readable court.",
+     "The corners have a slightly greenish murk, the opponent casts a faint reflection or ghost, and the bright spotlight hotspots at the edges are a little blotchy.",
+     "Bright spotlight hotspots wash out the stands at the lower left and right; the teal surround is slightly muddy; minor patterned texture shimmer on the court"
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The frame is somewhat washed out, with a low-contrast pale palette and a teal court with weak separation. The background tower is semi-transparent and ghostly. Still, it is clearly a themed scene with a full crowd and readable players.",
+     "Overall beige haze makes it washed out and low in contrast. The pale teal court blends into the sand, the distant stadium is a faded, blurry backdrop, and the players are small.",
+     "Pale, low-contrast palette; the sky and sand look somewhat washed out; the background tower is hazy and looks pasted on; the players are small; the teal court is slightly muted against the beige"
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background tower is slightly ghostly, and the far player overlaps the 'AURA SLAM' banner. Otherwise the green palette is cohesive, the shadows are good and the crowd is full.",
+     "The background is blurry, the opponent overlaps the sign, and faint score text ghosts onto the court. The players are small, but the overall look is good.",
+     "The grass surround is fairly dark and uniform; the background tower and treeline are blurry; the players are smallish at this camera distance"
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large areas of the frame are very dark, the right stand is partly lost in shadow, and the scoreboard text reflection on the court is a bit noisy. Still, it has strong mood and contrast, a clearly themed moon backdrop, and readable astronaut players.",
+     "Very dark surroundings. The right-hand stands are partly lost in shadow, and the score text and players reflect or ghost on the court. The planet in the sky looks a bit like a flat sprite.",
+     "Large pure-black areas at the top and edges; the right stands are partly in deep shadow; the scoreboard text reflects in the court; the far stands look slightly misaligned against the dark surround"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "0282933b19bfea4a0056973db2038e4e3ef1378a59e83c79e44bd446996c5cd0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-6/top-tennis--moon--settle-60s.jpg",
+      "sha256": "b90a1a08635237fc1fd4d74d631f345e23157eecf503605d7eeae09cb6e487d5"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-3/top-tennis--clay--settle-60s.jpg",
+      "sha256": "cde7fd64b733a4b25d23d3f02eaab5fda8895e2e0b41f0f28aedbcdf30492233"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-4/top-tennis--desert--settle-60s.jpg",
+      "sha256": "5189e9978cfae09f0c43ef9d57bab79cdf6ccaafa0c91e87d0cf1028fca38de3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Lighting is inconsistent across venues. The Moon frame has one hard key over a black void with no fill, so the stands fall into near-black. The Dubai frame is flat and washed out with almost no key/fill contrast. Only the Paris frame has a deliberate warm low key. None of the frames reads as a 55°/45° arena flood rig."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player and net shadows are crisp and directional in the Moon and Paris frames, and the net shadow lands correctly on the clay. In the blue-court frame, shadows are faint, and the stands cast soft, smeared blocks onto the floor."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The 'THE MOON 0-0 0-0' and 'WORLD TOUR' signage is mirrored onto the court surface as a ghostly planar reflection, even on the matte clay in Paris. Nothing else shows environment reflection or specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "There are three venues: the Moon, Paris with a lattice-tower prop, and Dubai. Each is a large empty single-color floor plane around the court, with blurred cardboard-like background structures and bare light poles. The arena feels unfinished outside the stands."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is no indoor haze or light shafts. Dubai has only a global low-contrast wash. The Moon background is a black void with a flat sphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are flat colors. The blue court has a faint diagonal stripe texture in the first frame. Clay, grass-green surround, and sand floors look like uniform plastic with no roughness variation, wear, or line paint texture."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players and crowd are chunky low-poly figures, and the crowd is cloned in identical rows. The umpire chair and bench are plain boxes. The net is a thin line with no mesh detail."
+    },
+    {
+      "category": "composition",
+      "seen": "In the first frame the court fills about 65% of the frame, above the 25–40% target. In the other frames the court sits at about 35%, but the lower third is empty floor. The far player's head occludes the 'AURA SLAM' banner, leaving it reading 'AURA SL M'."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera uses an elevated perspective broadcast angle with a centered, symmetric court. The first frame is close to top-down, so the angle varies between shots, and the projection is perspective rather than orthographic."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The first frame has a vignette and a soft bloom hotspot at the right edge. Background props get a depth-of-field blur. Dubai is grey and low-contrast. There is no consistent arena grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is no screen-space HUD. The score appears only as small in-world text on the back wall. The target service box is a flat unlit pale-yellow overlay with a pink ring, and it clashes with the scene lighting."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}
