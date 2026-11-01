@@ -55,6 +55,8 @@ const ROOFS = ["#c86b47", "#a74938", "#527c70", "#564638", "#8b4f3d"] as const;
 const SHUTTERS = ["#527c70", "#a74938", "#3a5351"] as const;
 const LEAVES = ["#6f9a4e", "#5f8a45", "#78a24f", "#4c6339"] as const;
 const PINES = ["#2f5a30", "#3b6b36", "#24492a", "#2d5238"] as const;
+/** Evening maple crowns (persimmon to amber, PRD 6.1 G20 palette), one per LEAVES tone. */
+const MAPLE = ["#d4553a", "#c0442f", "#e07a3a", "#a8452e"] as const;
 const BLOSSOM = ["#f0a9bf", "#e895ae", "#f4c3d0"] as const;
 const STONE = ["#9a9484", "#8c8a7c", "#aaa893", "#7d9188"] as const;
 const WOOD = ["#8a6a45", "#7a5c3b", "#9a7a50"] as const;
@@ -130,7 +132,12 @@ function clearCameraPath(models: ModelSink): void {
   }
 }
 
-export function buildScenery(models?: ModelSink): SceneryLayer[] {
+/** Scenery options. `paintedTrees` (GU47 phase 4, evening look): the village and riverside broadleaf trees are drawn as the
+ *  game's own painted trunk-and-crown instances (blossom and maple tones) instead of the shared generated oak model, the top
+ *  sibling tell against Cloud Runner ("identical faceted low-poly tree foliage and twisted trunks", judge g20p4 vs final471). */
+export interface SceneryOptions { readonly paintedTrees?: boolean }
+
+export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
   const put = (id: string, x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number, color: string): void => {
     layers.get(id)!.placements.push({ matrix: trs(x, y, z, yaw, sx, sy, sz), color });
@@ -257,7 +264,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
   };
 
   const tree = (x: number, y: number, z: number, h: number, crown: string, r: () => number): void => {
-    if (models) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk); return; }
+    if (models && !options.paintedTrees) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk); return; }
     put("trunks", x, y - 0.2, z, 0, 0.22 + h * 0.03, h * 0.62, 0.22 + h * 0.03, "#5a4332");
     const cr = h * 0.34;
     put("crowns", x, y + h * 0.66, z, 0, cr, cr * 0.85, cr, crown);
@@ -304,7 +311,10 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       if (trees() < 0.25) continue;
       const lat = side * (pathWidth(d) / 2 + 2.3 + trees() * 1.4);
       const c = at(d, lat);
-      tree(c.x, c.y, c.z, 7.5 + trees() * 4, trees() < 0.3 ? pick(trees, BLOSSOM) : pick(trees, LEAVES), trees);
+      // Same random-draw order as before (height, then tone), so placements do not move.
+      const h = 7.5 + trees() * 4;
+      const tone = trees() < 0.3 ? pick(trees, BLOSSOM) : pick(trees, LEAVES);
+      tree(c.x, c.y, c.z, h, options.paintedTrees && tone !== undefined && (LEAVES as readonly string[]).includes(tone) ? MAPLE[LEAVES.indexOf(tone as typeof LEAVES[number])]! : tone, trees);
     }
   }
   const stalls = seededRandom(31);

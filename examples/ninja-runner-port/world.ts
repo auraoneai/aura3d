@@ -354,7 +354,7 @@ export function buildWorld(options: WorldOptions): World {
 
   const modelSink: ModelSink = {};
   const lanternSpots: Vec3[] = [];
-  for (const layer of buildScenery(modelSink)) {
+  for (const layer of buildScenery(modelSink, { paintedTrees: evening })) {
     if (layer.id === "lanterns") for (const p of layer.placements) lanternSpots.push([p.matrix[12]!, p.matrix[13]!, p.matrix[14]!]);
     const spec = LAYERS.find((l) => l.id === layer.id)!;
     // NR-11: in the evening the lantern layer splits into its three glow groups (day / dusk / night, +2 draws).
