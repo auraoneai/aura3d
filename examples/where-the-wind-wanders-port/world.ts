@@ -426,7 +426,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     // GU47 phase 4: the painted tree and cottage shadows the terrain bakes also darken the meadow cards standing in them
     // (the grass hides the ground), so the cast shadows read on the High GU47 look; no rand() draw, so placement is unchanged
     if (shadows && phase4) {
-      const occ = 0.45 + 0.55 * blobOcclusion(sc.blobs, x, z);
+      const occ = blobOcclusion(sc.blobs, x, z);
       if (occ < 1) color = [color[0] * occ, color[1] * occ, color[2] * (occ * 0.5 + 0.5 * Math.sqrt(occ))];
     }
     pushCard(f, x, y, z, w, h, yaw, color, sway, phase, kind);

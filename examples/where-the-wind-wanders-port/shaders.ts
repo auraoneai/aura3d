@@ -71,6 +71,11 @@ float heroShadow(vec3 w) {
   float contact = exp(-dot(f, f) / 0.45) * 0.6;
   return 1.0 - heroShadowAmt * clamp(max(body * 0.45, contact), 0.0, 1.0);
 }
+/** A soft ambient contact pool under the traveller's feet (darkens the sky fill too, so the figure sits on the ground). */
+float heroContact(vec3 w) {
+  vec2 f = w.xz - playerPos.xz;
+  return heroShadowAmt * 0.5 * exp(-dot(f, f) / 0.8) * step(w.y, playerPos.y + 0.9);
+}
 #endif
 float sunVisibility(vec3 world, vec3 n) {
   float clouds = 1.0 - cloudShadowAmt * cloudCover(world.xz, windTime);
@@ -272,6 +277,9 @@ void main() {
   // a passing gust bends the blades over and shows their paler undersides: a light sheen that travels downwind
   col = mix(col, col * vec3(1.18, 1.16, 1.02) + vec3(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
   vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
+#ifdef WIND_HERO_SHADOW
+  lit *= 1.0 - heroContact(vWorld);
+#endif
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -327,6 +335,9 @@ void main() {
   vec3 n = normalize(vNormal + vec3((vnoise(p * 2.4 + vec2(e, 0.0)) - h0), 0.0, (vnoise(p * 2.4 + vec2(0.0, e)) - h0)) * 0.9);
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view, vWorld);
+#ifdef WIND_HERO_SHADOW
+  lit *= 1.0 - heroContact(vWorld);
+#endif
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
