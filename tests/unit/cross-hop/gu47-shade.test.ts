@@ -50,3 +50,18 @@ describe("cross-hop phase-4 dressing per view", () => {
     expect(p4DressFor("original", null)).toBe(false);
   });
 });
+
+describe("cross-hop coin per view", () => {
+  it("draws the Meshy coin only where the phase-4 dressing won the panel", async () => {
+    const core = await import("../../../apps/showcase-cross-hop/src/game/core");
+    type N = { name?: string; kind?: string; children?: N[] };
+    const all = (ns: N[]): N[] => ns.flatMap((n) => [n, ...all(n.children ?? [])]);
+    const coin = (dress: boolean) => {
+      core.setLookMode("original"); core.setP4Dress(dress);
+      return all((core.buildScene() as { nodes: N[] }).nodes).find((n) => n.name === "m-coins") as Record<string, unknown> | undefined;
+    };
+    expect(JSON.stringify(coin(true))).toContain("xhopCoin");
+    expect(JSON.stringify(coin(false))).not.toContain("xhopCoin");
+    core.setP4Dress(true);
+  });
+});
