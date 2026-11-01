@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2s/screens/1280x720/01-title.jpg",
+      "sha256": "9b225ccfaa673ae216ccaa8424701ec1c9ef4cb92b1297d1b59333ff61ef0af8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2s/screens/1280x720/03-action-02-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "ab8d6f22c8285a162ca2778fa66c3c8e25ca3f5e57eb4870e069c800a064d735"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2/aura-fc-3d/frames/g09p4-r2-2/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "9ea020daf04b0e71783eb73d660e3635e761564582b6706a17f9825512c24222"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2/aura-fc-3d/frames/g09p4-r2-3/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "bf9f634a3f63f218c21143db11e458c9bad8e66b9b90c87ec069dbafd1a3b857"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "animation_quality": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional key throws consistent long shadows toward the lower right in every stadium. The Munich night pitch is evenly lit with no flood pooling. The warm sand arena reads as flat ambient with almost no falloff."
+    },
+    {
+      "category": "shadows",
+      "seen": "Each player has a dark contact blob plus a long cast shadow. The cast shadows are soft and directionally correct, but the blob discs look like flat decals, and on the grass the shadows break up into the noisy turf texture."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The grass in frames 1 and 2 mirrors players and light streaks like a wet surface, so the turf reads as water. The ice/blue floor in frame 4 shows plausible player reflections, but its large bloom hotspot in the lower right is unmotivated."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Crowds are sparse rows of floating capsule billboards on flat dark tiers with large gaps. The stadium shell, ad boards and floodlight tower are blocky. The goal net in frame 2 is a solid white box with no mesh detail."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts or depth fog is visible in any frame. The stands are as crisp as the pitch, so the scene has no aerial depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The turf texture is high-frequency streaky noise with specular glitter that crawls across the pitch, especially toward the goal in frame 2. The sand floor in frame 3 is a nearly untextured flat fill. Line paint is clean and correctly white."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly stylized players have readable kits and skin tones but very simple heads and hands. Crowd members are identical capsules, and the ball is the most detailed asset."
+    },
+    {
+      "category": "composition",
+      "seen": "The kickoff framing centers the ball and center circle well, with teams split left and right. Players occupy a small fraction of the frame, and roughly a quarter of the screen is empty, sparse stands."
+    },
+    {
+      "category": "camera",
+      "seen": "The high broadcast perspective at about 60–70° has a narrow FOV, matching the recipe intent. The attacking-third angle in frame 2 is dynamic but crops a player at the left edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A vignette and mild bloom are present. Frame 4 has a blown-out bloom blob on the floor, while frame 1 has a dark top band and an inconsistent grade between stadiums. No arena-fight style contrast or color punch is visible."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The kickoff frames show identical stiff idle poses for every player. Frame 2 shows decent running and passing poses, and the pass trail line gives the motion readability."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The compact scoreboard pill, possession bar, clean kickoff prompt and controls strip are readable and on-brand with the lime accent. The top nav bar of stadium tabs overlaps the game view and clutters the broadcast frame."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

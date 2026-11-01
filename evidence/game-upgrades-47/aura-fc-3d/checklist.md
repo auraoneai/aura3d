@@ -67,3 +67,18 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | screens-fresh | done: final screens and card retaken on the phase-3 build (`g09p3-r9`), posters rebuilt |
 | borrowed-asset (18), FC47-A1/A2/AN1/W1, M2 numbers | blocked (WP-36 Meshy assets) |
 | FC47-PF1 <= 360 draws | not met on Munich 391, Kyoto 390, Lagos 409, Glacier 393 (Favela 360, Uyuni 297); crowd impostors wait on WP-36 fans |
+
+## Phase 4 (4.7.2), software WebGL2
+
+| Item | Status |
+|---|---|
+| Every changed view beats 4.6.2 in the blind panel | done: all six venues 3-0 in `g09p4r2` and the final `g09p4r4` (`panel/`) |
+| Rubric every category >= 7 (PRD 1.2 goal 1) | not met: final judgements `look-judgement-p4r4-j1/j2.json`; shadows 5 -> 6/6.5, ibl_reflections 3.5 -> 5/5, ui_hud 7/6.5; minimum atmospheric_effects 4/3.5 |
+| Cast shadows read on the broadcast frame | done: hybrid key moved off the camera side (azimuth 20 -> 125), cascades fitted to the bowl, blob discs 0.14 |
+| Reflections | done: SSR on Munich, Kyoto, Glacier, Uyuni; aluminium posts |
+| Distinctness vs top-tennis, aura-hoops-3d, aura-diamond-3d, aura-links-3d (PRD 1.2 goal 2) | done: 0.811 / 0.802 / 0.827 / 0.907, same_game=false (`distinct/p4r4/`) |
+| WP-36 `pitchStandModule` | done: admitted as `fcStandModuleMeshy`, replaces the borrowed `diamondStadium` |
+| WP-36 other 28 rows (FC47-A1 dugout etc., A2, AN1, W1) | blocked: Meshy keys refuse API calls |
+| game-checks | 0 errors, 29 warnings (was 30): 17 borrowed-asset, 12 luma-band (texPending engine handoff; Favela darkFrac, Uyuni mean; bands not widened) |
+| Final screens, card, index posters | done: `g09p4-r4-4` |
+| FC47-PF1 <= 360 draws | not met on Munich 389, Kyoto 388, Glacier 391 (Lagos 409 -> 349) |
