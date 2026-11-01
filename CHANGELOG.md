@@ -1,8 +1,64 @@
 # Changelog
 
-Version: 4.7.1
+Version: 4.7.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.2 (2026-10-31)
+
+GameUpgrades47 phase 4 (`docs/prds/game-upgrades-47/GameUpgrades47-PRD.md`; lane reports in `docs/prds/game-upgrades-47/lanes/`, "Phase 4 (4.7.2)" sections). Every game was retuned for shadows, reflections, lighting and identity against its genre neighbours. A changed view ships only where a blind three-judge panel still preferred it to the 4.6.2 frame of the same view; every other view opens exactly as in 4.7.1. Gameplay, rules, determinism and the reference replays are unchanged. All visual numbers are software WebGL2 on the remote runner.
+
+### Games
+
+- **Distinctness (model judge, `aura3d evidence judge --mode sibling`, 48 trials, needs `same_game: false` at confidence 0.8 or more):**
+  - **Passes against every genre neighbour:** Chroma Roll, Lamplight Line, Duneglide, Aura Slam 3D, Iron Crown, The Bellkeeper's Walk, Grid Dispatch, Gridlock Courier, Aura FC 3D, Aura Links 3D, Bunker Zero, Slingshot Siege.
+  - **Some pairs still fail:**
+
+    | Game | Failing neighbours | Why the judges match them |
+    |---|---|---|
+    | Ion Circuit | Thermal Drift, Saltwind Highway, Craterline GP | |
+    | Saltwind Highway | Apex Overdrive, Ion Circuit | |
+    | Serpentine Sky Run | Shadowstep Gauntlet, Cumulus Dash | |
+    | Shadowstep Gauntlet | Cumulus Dash | |
+    | Aura Hoops 3D | Aura Diamond 3D, Aura FC 3D | shared athlete models |
+    | Aura Diamond 3D | its sports neighbours | shared athlete models |
+    | Cross Hop | Pip's Big Leap | glossy figurine heroes |
+    | Pip's Big Leap | Cumulus Dash (0.794) | |
+- **Shadows and reflections:**
+  - Contact shadows, tighter shadowed keys and glossier floors, vehicles and walls where the panel kept them (Thermal Drift, Duneglide, Slingshot Siege and others).
+  - Shadow probes (`tests/browser/gu47/*-shadow-probe.spec.ts`) record which casters sample on software WebGL2.
+  - The luma capture now also logs the shadow and quality diagnostics.
+- **WP-36 Meshy assets already generated are swapped in** (presentation only, geometry inside the existing bounds):
+
+  | Game | Asset swapped in |
+  |---|---|
+  | Apex Overdrive | cobalt hero retexture |
+  | Grid Dispatch | pearl player pod |
+  | Iron Crown | forge brazier |
+  | Aura Hoops 3D | Rucker floodlight |
+  | Aura Diamond 3D | seated fan |
+  | Aura FC 3D | stand module (replaces the borrowed stadium) |
+  | Aura Links 3D | marram grass |
+  | Bunker Zero | blast doors |
+  | Slingshot Siege | sea-stack islet |
+  | Glint Courier | courier pod |
+  | Cross Hop | coin |
+  | Chroma Roll | paint-pot island |
+  | Serpentine Sky Run | serpent head |
+  | Ion Circuit | sentry drone |
+  | Shadowstep Gauntlet | dusk house |
+  | Lamplight Line | enamel tram |
+  | The Bellkeeper's Walk | paper kite (replaces the wisp) |
+
+  - Gridlock Courier's teal retexture was reverted: it painted blotches on the rear hatch.
+  - Craterline GP's rider failed its geometry check and is not used.
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game scores 7 or more in all 12 categories (model judge, software WebGL2). The HUD reaches 7 in several games. Reflections and shadows stay lowest, from 2.5 to 4.5. Lanes found that glossy floors and screen-space reflections barely show in the software-rendered captures; a real-GPU judgement (owner-run, PRD D5) is needed to tell a capture limit from a look limit.
+- **WP-36 Meshy batch blocked.** 641 of 669 remaining rows are blocked: every Meshy key that reports a balance answers paid API calls with HTTP 402, so no new asset could be generated. Materials and models stay the main rubric gap.
+- **Draw budgets.** Aura Diamond 3D Harbor (456) and Ivy (469) are over the 450 budget. Bunker Zero floor 6 draws 164 against 120.
+- **Game-check warnings** stay at warn level (0 errors, 296 warnings: mostly `luma-band` rows written for older looks, none widened, and `borrowed-asset` rows waiting on WP-36).
 
 ## 4.7.1 (2026-10-31)
 
