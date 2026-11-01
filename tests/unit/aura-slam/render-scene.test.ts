@@ -91,7 +91,7 @@ describe("aura-slam view: stadium assets", () => {
   it("each definition points at a committed file whose sha256 and size match", () => {
     for (const [key, a] of Object.entries(stadiumAssets)) {
       // GU47 phase 9: route-owned models live under apps/showcase-top-tennis/public (provenance.sourcePath).
-      const bytes = readFileSync((a as unknown as { metadata: { provenance: { sourcePath: string } } }).metadata.provenance.sourcePath);
+      const bytes = readFileSync((a as { metadata: { provenance: { sourcePath: string } } }).metadata.provenance.sourcePath);
       expect(a.hash, key).toBe(`sha256-${createHash("sha256").update(bytes).digest("hex")}`);
       expect((a as { sizeBytes?: number }).sizeBytes, key).toBe(bytes.length);
     }
