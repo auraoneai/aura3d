@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large untextured white pillars and arch dominate the frame and partly frame/obscure the view; the sky is flat grey with hard cloud edges; the grass is flat; the lighting is somewhat bland.",
+     "Sky is a flat grey-blue with odd banding at the cloud edge. Large plain white pillars in the foreground are untextured, and the background looks a bit pale. Otherwise the player reads clearly, the river guides the eye and the depth is good.",
+     "The sky has a hard-edged cutout halo where the cloud and horizon meet. The arch pillars are flat grey and fill a lot of the frame. The overall look is a little flat and desaturated."
+    ]
+   },
+   {
+    "variant": "ch6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Water/ground on the right is somewhat blown out; pillars show chromatic fringing; posterized banding in the sky; the large pillars crowd the frame.",
+     "Bright parts of the water and the right-hand terrain blow out a little. Pillars show chromatic fringing, and the posterized banding on the terrain is somewhat harsh. Still, the warm sunset mood is strong, the player is clear and centred, and the depth reads well.",
+     "Glare from the bright sunset washes out the right side and the water. The pillars and cliffs have odd purple and white edge fringing. The player's sprite looks dark against the bright track."
+    ]
+   }
+  ]
+ }
+]

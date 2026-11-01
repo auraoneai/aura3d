@@ -123,7 +123,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     // phase 6: a clear blue noon over a green meadow (the orchard grass set) with light haze, not the beige-grey wash
     sky: { top: "#3f86cc", horizon: "#cfe2ea", discSize: 0.028, glow: 0.5, cirrus: 0.45, dust: 0.12, storm: 0, stars: 0 },
     fog: { color: "#c4d6dc", density: 0.0002, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.2 },
-    grade: { exposure: 0.95, contrast: 1.18, saturation: 1.16, temperature: 0.02 },
+    grade: { exposure: 0.99, contrast: 1.18, saturation: 1.16, temperature: 0.02 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "pollen", color: "#f2e8a8" },
     ground: "orchard", ridge: "#6f8a9a", rain: false, godRays: false, lensFlare: false
@@ -187,7 +187,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     // phase 6: a gold dawn under a blue zenith with thin haze, so trees and ground keep their colour (no pink wash)
     sky: { top: "#5d78b8", horizon: "#f4b47e", discSize: 0.034, glow: 0.45, cirrus: 0.7, dust: 0.15, storm: 0, stars: 0 },
     fog: { color: "#c8a48e", density: 0.00024, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.18 },
-    grade: { exposure: 1.0, contrast: 1.2, saturation: 1.1, temperature: 0.03 },
+    grade: { exposure: 0.94, contrast: 1.2, saturation: 1.1, temperature: 0.03 },
     bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
     ground: "sand", rain: false, godRays: false, lensFlare: true

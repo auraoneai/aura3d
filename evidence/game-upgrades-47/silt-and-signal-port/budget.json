@@ -102,7 +102,7 @@
     "source": "capture GL_META (renderer info, all passes incl. shadow cascades), software WebGL2 1280x720, settle-60s rows",
     "change": "ch1 and ch6 open in the reworked inked look instead of the 4.6.2 look (presentation only)",
     "beforeFrames": "p3-r2 ch1-original / ch6-original (the shipped default for those chapters until 4.7.4)",
-    "afterFrames": "p6-r1 ch1 / ch6",
+    "afterFrames": "p6-r2 ch1 / ch6 (final code; p6-r1 gave the same counts)",
     "ch1": {
       "before": {
         "drawCalls": 91,
