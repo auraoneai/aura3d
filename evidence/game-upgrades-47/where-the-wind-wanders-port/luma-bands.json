@@ -5,7 +5,11 @@
   "default": { "mean": [120, 145], "clipFrac": [null, 0.02], "darkFrac": [null, 0.05], "crops": { "meadow": { "p5": [18, null] } } },
   "variants": {
     "where-the-wind-wanders-port--found3": { "note": "golden hour: warm, lower sun", "crops": { "meadow": { "rb": [1.15, null] } } },
-    "where-the-wind-wanders-port--epilogue": { "note": "moonlit voyage", "mean": [40, 95], "darkFrac": [null, 0.4], "clipFrac": [null, 0.02] }
+    "where-the-wind-wanders-port--epilogue": { "note": "moonlit voyage", "mean": [40, 95], "darkFrac": [null, 0.4], "clipFrac": [null, 0.02] },
+    "where-the-wind-wanders-port--bell": { "note": "lilac dusk at the bell (the 4.7.1 look, kept after phase 4); mean re-derived by the GU47 phase-7 rule: width 25 kept, re-centred on the 25 s / 60 s mean 95.585", "mean": [83, 108] }
   },
-  "exceptions": { "epilogue": "night key: the daylight default mean does not apply" }
+  "exceptions": { "epilogue": "night key: the daylight default mean does not apply" },
+  "rederived": {
+    "where-the-wind-wanders-port--bell.mean": { "from": [120, 145], "to": [83, 108], "panel": "p3", "capture": "g23p7-r1-bell", "date": "2026-11-01" }
+  }
 }
