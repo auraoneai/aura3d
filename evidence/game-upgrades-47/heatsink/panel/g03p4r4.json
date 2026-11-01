@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A strong sun bloom washes over the player craft's right side and makes it harder to read. There are faint reddish/green smudge artifacts at bottom-left and centre of the road. The hazy grey sky lowers contrast a little.",
+     "The player craft sits very close to the camera and is pushed to the right edge, which is awkward framing. The sun glare and warm haze wash out the area around the player. Faint ghosted red reflection artifacts appear at the bottom of the road. The arch and towers are monochrome brown silhouettes with little definition. Still much richer: lit city windows, wet road reflections, strong mood and depth.",
+     "Player craft sits off-centre on the right and crowds the frame. Strong sun glare washes out the lower right corner. A grey haze lowers contrast in the sky. There are faint red reflection smears on the road in the foreground."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background buildings and arch are flat, unshaded orange-brown silhouettes with little depth. The foreground road is a bit dark and muddy. The player craft is lit well and reads clearly.",
+     "The arch and tower structures are a flat, uniform orange-brown with no shading detail. The player is large and offset right, close to the camera. The road foreground is plain and dark. Overall it is atmospheric, with a cloudy dusk sky, warm palette and good silhouettes.",
+     "The orange-brown silhouettes of the buildings and arch look flat, with little shading. The foreground road is very dark and muddy. The player is pushed to the right edge. Overall it reads well, with a moody sky and depth."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The distant backdrop on the right is a blurry low-res image that doesn't match the stylised geometry. There is minor noise/reflection artifacting at the bottom of the road. Otherwise it has a strong blue-dusk mood, good contrast and a clearly readable player craft.",
+     "A blurry, photo-like green/tree smear in the background on the right is inconsistent with the stylised scene. There is ghosted reflection noise at the bottom of the road. The player is large and offset right, near the edge. Otherwise it has strong blue-dusk mood, lit towers, glossy road reflections, good contrast and depth.",
+     "The player is off-centre on the right and partly cropped by the frame. A blurry, low-resolution backdrop shows through on the right horizon. Reflection smears appear on the road. Otherwise it has rich dusk colour, wet-road reflections and good depth."
+    ]
+   }
+  ]
+ }
+]

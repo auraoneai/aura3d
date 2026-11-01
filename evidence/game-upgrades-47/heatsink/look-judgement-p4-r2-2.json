@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 5.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 6.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits right of the vanishing point with a bloom disc, and the right-side buildings and barriers pick up orange rim light. The fill on the left half is flat and gray-brown, so the golden-hour key reads only near the sun."
+    },
+    {
+      "category": "shadows",
+      "seen": "The tower facades and the road have no clear cast shadows from the low sun. The vehicle and the barrel on the left show only faint contact darkening, so both look like they float above the asphalt."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The asphalt shows a wet sheen with a bright streak under the sun and soft reflections of the lane lines. The vehicle body and barriers show almost no environment reflection, and the sheen is uniform across the road instead of following puddles or roughness variation."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A megacity canyon of box towers with tiled emissive window textures, a gate arch over the road, and barriers with orange and yellow strips. The window pattern repeats visibly, and the HUD labels the track 'Industrial Tunnel', which does not match the open city shown."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light distance haze washes out the far towers, and there is a sun glow on the right. Fog density barely changes between near and far buildings, so depth layering in the 30–180 m band is weak. There is no visible dust or light shafts despite the low sun."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The towers use flat dark albedo with emissive squares. The barriers are plain colored boxes. The vehicle has orange paint and white wheel discs with little roughness or metal variation. The asphalt is the most convincing surface in the frame."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The buildings are untextured boxes with simple setbacks. The rival or player vehicle is a small low-poly cluster with exposed disc wheels. The barrel prop on the left is a plain cylinder. Silhouettes lack bevels and secondary detail."
+    },
+    {
+      "category": "composition",
+      "seen": "A strong central vanishing point and the gate frame the road, but the vehicle sits right of center at roughly 10–12% of the frame and blends into the sun glare. HUD panels occupy all four corners plus a top bar, which crowds the image."
+    },
+    {
+      "category": "camera",
+      "seen": "The low chase or cockpit view has a centered crosshair, a level horizon, and an FOV near 65–70°. It reads as slightly wide for the recipe. No speed cues such as FOV kick or motion blur are visible at 573 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Film grain, a mild vignette, and sun bloom are present and match the warm grade. The grain is heavy enough to mush the window detail, and there is no visible lens dirt, chromatic aberration, or tonemapped highlight rolloff beyond the sun."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The race HUD is consistently styled, with position, lap and time, hull, radar, speed with core heat, and item panels in orange and cyan on charcoal. A dev-style selector bar along the top (drone, track, mode buttons) and a key-binding strip at the bottom clutter the screen and break immersion."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}

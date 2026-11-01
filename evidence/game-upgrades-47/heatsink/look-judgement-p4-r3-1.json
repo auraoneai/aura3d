@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 5.5,
+    "ibl_reflections": 6,
+    "environment_world": 6,
+    "atmospheric_effects": 7,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 7,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits at frame right behind the vehicle, producing a strong bloom flare and warm rim light on the guardrails and asphalt. The left side of the canyon falls to cool, flat shade with little bounce."
+    },
+    {
+      "category": "shadows",
+      "seen": "The road sits mostly in broad building shade. The vehicle has no clear contact or cast shadow on the asphalt, so it reads as floating. The guardrails show no visible shadow definition."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet-looking asphalt carries a soft sun sheen and streaky specular on the right. The vehicle and building surfaces show almost no environment reflection, and the windows show no sky reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city canyon is built from tall extruded box towers with one repeated lit-window texture and a gate arch spanning the road. The silhouette is readable, but the skyline is monotonous and has no street-level props beyond the guardrails and a single barrel."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far towers toward a pale sky, and warm volumetric-like glow surrounds the sun. This matches the 30–180 m fog intent reasonably well. Floating particles are faint."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The guardrails are flat unlit-looking yellow, orange and teal strips. The buildings use a single tiled window material. The vehicle has some orange and grey paint variation but little roughness or metal differentiation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The vehicle is a chunky low-poly form with oversized grey disc thrusters. The barrel on the left is a simple cylinder. The towers are plain boxes with no ledges, rooftops, or bevels."
+    },
+    {
+      "category": "composition",
+      "seen": "The vehicle sits right of center at roughly 12–15% of the frame, near the low end of the target. Its silhouette is lost against the sun bloom. A centered crosshair and dense HUD panels crowd all four corners and the top edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase view with a road vanishing point near center, plausibly around 60° FOV. The vehicle is offset right rather than framed as the clear chase subject, and the camera shows no speed cue at 573 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The frame has film grain, a vignette, sun bloom and a warm grade, which together give a cinematic-film feel. The bloom over-blows the area around the vehicle."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The race HUD for position, lap, time, hull, radar, speed and gauges is styled consistently and legible. However, a debug-style top bar with drone, track and mode selector buttons, plus a long control-hint strip, sits over gameplay and clutters the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}

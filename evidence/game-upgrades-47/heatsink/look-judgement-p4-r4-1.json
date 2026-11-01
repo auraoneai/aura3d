@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 5.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 6.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits behind the right-hand buildings and spills a golden glare onto the right side of the road, which matches the golden-hour recipe. The rest of the scene is flat dim fill, and the building faces show almost no sun-versus-shade separation."
+    },
+    {
+      "category": "shadows",
+      "seen": "The road sits in broad ambient shade with no readable cast shadows from the buildings or overpass. The drone has no visible contact shadow, so it looks like it floats without grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The asphalt carries a wet-looking specular streak toward the sun on the right. The drone's metal panels and the cylinder on the left show little environment reflection and read as diffuse."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city canyon is built from untextured dark box towers covered in repeating emissive window patterns. A bridge or gate frames the vanishing point. The scale feels right, but the repetition and plain block forms read as placeholder geometry."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Warm haze fades the distant towers and softens the sun bloom, giving reasonable depth. The fog is a uniform tint, and there are no light shafts or particulate through the canyon gaps."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Road, barriers and buildings share a similar matte, low-detail response. The yellow and orange barrier strips are flat emissive-looking color with no wear or roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player drone is a small kit of low-poly boxes and discs with two large round thrusters, and its silhouette is hard to read. The canister on the left and the rail barriers are primitive shapes."
+    },
+    {
+      "category": "composition",
+      "seen": "The drone sits right of center and fills roughly 8–10% of the frame, below the 15–25% target. The centered crosshair and vanishing point pull the eye away from the vehicle, and the HUD panels cover the corners heavily."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the drone with a field of view that looks near 60°. Because the subject is offset and small, the shot reads more like a track view than a vehicle-focused chase."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Film grain, sun bloom and a warm grade are present and give a cinematic-film feel. The grain is heavy enough to look noisy over the dark buildings, and there is no visible motion blur or lens character beyond the bloom."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The race HUD is clean and readable, with position, lap, time, hull, radar, item and a speed/heat panel in a consistent orange and cyan style. The top bar of drone, track and mode selectors plus the controls strip at the bottom look like debug or menu UI left on during play, which crowds the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}

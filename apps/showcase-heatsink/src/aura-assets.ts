@@ -4,6 +4,145 @@
 import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetRef } from "@aura3d/engine";
 
 const definitions = {
+  // GU47 WP-36 (thermalArchIron): Meshy retexture of heatsinkArch (same mesh proportions), admitted with
+  // `aura3d assets import-meshy --prefix heatsink --name thermalArchIron` (rights row in aura-evidence/meshy).
+  "heatsink_thermalArchIron": {
+    type: "model",
+    format: "glb",
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): Vite fingerprints and ships it.
+    url: new URL("../models/heatsink_thermalArchIron.7d727eff.glb", import.meta.url).href,
+    hash: "sha256-7d727eff8025a6e9e549187ad06a7b13420fc2103da26f39d26606a881c8a083",
+    bounds: [
+      2,
+      1.913,
+      0.375
+    ],
+    sizeBytes: 425876,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-30 through the AuraOne Meshy account via Kiro Prism retextured from an original text style prompt on the game's existing mesh (public/aura-assets/heatsinkArch.9a90ebd4.glb) (GU47 WP-36, heatsink/thermalArchIron). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-30T08:59:38.033Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalArchIron.rights.c18b34e24299.json",
+          "aura-evidence/meshy/heatsink_thermalArchIron.metadata.0d5d5d44e14c.json",
+          "wp36:artifacts/gu47-meshy/heatsink/thermalArchIron/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-10-30T08:59:38.033Z"
+      },
+      "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
+      "outputPath": "apps/showcase-heatsink/models/heatsink_thermalArchIron.7d727eff.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -1,
+          -0.956,
+          -0.187
+        ],
+        "max": [
+          1,
+          0.956,
+          0.188
+        ],
+        "size": [
+          2,
+          1.913,
+          0.375
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/heatsink_thermalArchIron.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/heatsink_thermalArchIron.meshy-candidate.20f2ed36.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-20f2ed36e70932f8d0b16cb1484f298d48e8eabe072f89ccf84f70199437b567",
+        "checkedAt": "2026-10-31T22:04:19.188Z"
+      }
+    },
+  },
   "heatsinkArch": {
     type: "model",
     format: "glb",

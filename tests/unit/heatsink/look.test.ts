@@ -16,16 +16,17 @@ describe("heatsink look table", () => {
   });
 
   it("carries the HS-01 key rows, the cyan counter-rim and the VESPER-only up-fill", () => {
-    expect(CIRCUIT_LOOKS.grand.key).toEqual({ color: "#ffb070", elevationDeg: 28, azimuthDeg: 120, intensity: 1.6 });
+    expect(CIRCUIT_LOOKS.grand.key).toEqual({ color: "#ffb070", elevationDeg: 20, azimuthDeg: 150, intensity: 2 });
     expect(CIRCUIT_LOOKS.dustfall.key).toEqual({ color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.2 });
     expect(CIRCUIT_LOOKS.vesper.key).toEqual({ color: "#b9a4ff", elevationDeg: 18, azimuthDeg: 300, intensity: 1 });
-    for (const id of CIRCUIT_ORDER) expect(CIRCUIT_LOOKS[id].rim).toEqual({ color: PALETTE.coolantCyan, intensity: 0.35 });
+    // GU47 phase 4: the MEGACITY rim is stronger (0.55) so the drone fronts facing the camera keep a cyan edge.
+    for (const id of CIRCUIT_ORDER) expect(CIRCUIT_LOOKS[id].rim).toEqual({ color: PALETTE.coolantCyan, intensity: id === "grand" ? 0.55 : 0.35 });
     expect(CIRCUIT_ORDER.filter((id) => CIRCUIT_LOOKS[id].upFill)).toEqual(["vesper"]);
   });
 
   it("carries the HS-03 environment intensities and the HS-05 fog rows; volumetric fog on DUSTFALL only", () => {
-    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.8, 1.1, 0.7]);
-    expect(CIRCUIT_LOOKS.grand.fog).toEqual({ color: "#4a3a30", density: 0.016 });
+    expect(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].environmentIntensity)).toEqual([0.7, 1.1, 0.7]);
+    expect(CIRCUIT_LOOKS.grand.fog).toEqual({ color: "#4a3a30", density: 0.02 });
     expect(CIRCUIT_LOOKS.dustfall.fog).toEqual({ color: "#8a5a2e", density: 0.02 });
     expect(CIRCUIT_LOOKS.vesper.fog).toEqual({ color: "#4a4670", density: 0.014 });
     expect(CIRCUIT_ORDER.filter((id) => CIRCUIT_LOOKS[id].volumetricFog)).toEqual(["dustfall"]);

@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p3-r9/screens/1280-04-mid.jpg",
+      "sha256": "43fa4146774b9f6047e1c1e69a27a1bd49df081deafbaa5f5aab860e12766015"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat overcast-dusk ambient with a warm orange grade. No low directional sun key is readable. The gantry and buildings get near-uniform fill, so the craft does not separate from the scene by light."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is only a faint dark blob under the craft and no crisp cast shadows from the overhead gantry or barriers. The pillars and walls lack contact shadowing, which makes the geometry look like it is floating."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet asphalt shows a noisy specular sheen and some streaked reflections of the warm lights. The craft's paint has almost no environment reflection, and the lane markings do not reflect."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Boxy skyscrapers carry repeated emissive window textures, behind a large industrial gantry and lit barriers. It reads as a megacity, but the buildings are simple extruded blocks with tiling patterns."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze and blooming glow orbs on the left and right walls are present. The fog is a uniform gray and does not layer with depth or scatter the light warmly."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The craft uses mostly flat orange albedo with emissive engine discs. The barriers have simple yellow and black stripes. The road normal noise looks like grain rather than aggregate."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The craft is a small low-poly assembly of boxes and cylinders. The angled wall slabs and the gantry are primitive shapes with sharp untreated edges and little secondary detail."
+    },
+    {
+      "category": "composition",
+      "seen": "The craft sits left of center at roughly 8–10% of the frame, below the recipe's 15–25%. The strong central gantry leads the eye to the vanishing point, but the HUD crowds every corner."
+    },
+    {
+      "category": "camera",
+      "seen": "A chase camera with an FOV of about 60°. The framing is sensible, but the camera sits a little far back, which shrinks the subject. A still frame gives no sense of speed through FOV or motion blur."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Vignette, film grain, a warm grade and soft bloom on the lights fit the cinematic-film target. The grain is heavy enough to read as noise on the road, and there is no motion blur at 762 km/h."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and well typeset with a consistent orange and cyan palette. The top selection bar (drone, track and mode tabs) and the control-hint strip sit over gameplay and clutter the view."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

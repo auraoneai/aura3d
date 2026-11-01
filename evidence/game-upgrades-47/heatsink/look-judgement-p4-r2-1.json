@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 5,
+    "environment_world": 6,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun sits behind the right edge of the tunnel and produces a strong orange bloom and a backlit glow on the road. The golden-hour intent comes through, but the building faces are almost uniformly dark brown with little key-to-fill separation, so the scene reads as murky rather than sculpted."
+    },
+    {
+      "category": "shadows",
+      "seen": "No cast shadow is visible under the vehicle or the guardrail props. The large overhead structure darkens the road only as a broad gradient, with no defined shadow edges or contact occlusion where the rails meet the asphalt."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The road shows a single bright specular streak toward the sun, which suggests wetness, but nothing in it reflects the buildings or the rails. The vehicle's metal panels pick up no environment reflection, and its white wheel discs are flat and blown out."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city is built from box towers with repeated emissive window textures and stepped silhouettes. It reads as a city at a distance, but the repetition is obvious and the facades have no surface detail. The guardrails are simple striped yellow and orange slabs."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A distance haze lightens the far towers and the end of the tunnel, giving reasonable depth layering, and the sun glow fits the warm palette. The haze is uniform, though, with no visible light shafts or density variation around the sun source."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has a coarse noisy texture and the painted lane dashes are flat yellow with no wear. The vehicle mixes rusty orange and grey panels with little roughness variation, and the cylindrical prop on the left looks like plain untextured geometry."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The racer on the right is a low-detail kitbash of cylinders and boxes. Its silhouette is hard to read and the wheel discs are plain white circles. The buildings and the overhead gantry are blocky primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "The subject vehicle sits low and to the right at roughly 8–10% of the frame, below the 15–25% target, and it competes with the sun flare beside it. The road's vanishing point and the tunnel center the eye on an empty crosshair instead of on the car. HUD panels occupy all four corners plus a top bar."
+    },
+    {
+      "category": "camera",
+      "seen": "The view is a road-level chase perspective at a moderate FOV, close to the 60° target. The followed vehicle is off-axis rather than framed by the chase rig, and there is no visible speed cue such as motion blur or FOV kick, even though the HUD reads 573 km/h."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun, a mild vignette, and visible film grain support the cinematic-film target. The grain is heavy enough to look like noise across the dark buildings, and there is no color grade separating charcoal shadows from orange highlights. Contrast is flat in the midtones."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The race HUD (position, lap, time, hull, radar, speed/heat/shield gauges, item slot) is cleanly styled with consistent orange and cyan accents. However, a debug-style top bar of drone, track, and mode buttons plus a controls hint strip clutter the frame, and the overall density pushes into the play area."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

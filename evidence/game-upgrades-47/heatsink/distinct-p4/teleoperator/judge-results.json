@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:10:20.512Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.94,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.94,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic city streets with taxis and a pod car; Image B: blocky sci-fi hover drones on an elevated highway",
+        "Different HUD: circular street minimap vs. looped track outline",
+        "Different palette and sky: dark night with orange buildings vs. cloudy dusk with brown silhouetted towers"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hovercraft racers and a voxel-style sci-fi skyline with a stone arch",
+        "Image B: realistic cars and a detailed city street with orange brick buildings and a circular minimap",
+        "Different HUD styles: a loop track outline in A, a round street-map minimap in B"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dark sci-fi city at sunset with hovering voxel-style racers",
+        "Image B: bright daylight realistic city with ordinary cars and a circular minimap",
+        "Different vehicle types, lighting, palette and HUD style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: blocky voxel hover vehicles and sunset-lit dark skyscrapers with a loop track minimap",
+        "B: smooth realistic city cars, orange and cream buildings, trees, and a circular street-map minimap",
+        "different art style, scenery and HUD design"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime city with traffic and a round minimap, Image B is a sci-fi dusk highway with hovering drone racers",
+        "Different vehicle styles: rounded white van with orange cars vs blocky multi-rotor racers",
+        "Different HUD and palette: circular street map and orange/white/teal vs outlined loop track map and dark brown silhouettes with cloudy sky"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dusk sci-fi city with hovercraft and neon glow; Image B is a bright daytime realistic street with ordinary road vehicles",
+        "Different HUD: a closed-loop track outline at top right in A, a circular street minimap at bottom left in B",
+        "Different art style: dark blocky voxel-like models in A, clean pastel low-poly city buildings and cars in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime city with realistic cars and a circular minimap",
+        "Image B: dark dusk sci-fi highway with hovering drone racers and an outline track map",
+        "Different palette, lighting and vehicle styles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic foggy city with brick buildings, civilian cars and a circular minimap",
+        "Image B: stylized sci-fi highway with hovering drone-like racers and orange silhouette skyline",
+        "Different HUD styles and lighting: muted gray fog versus dusky orange glow with a loop track outline"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: voxel-style hovering racers in a dusk sci-fi city with a lens-flare sun",
+        "Image B: realistic road cars and trucks in foggy daytime streets with brick buildings",
+        "Different HUDs: a loop-track minimap in A, a circular street-map minimap in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime city street with ordinary cars and orange brick buildings, Image B is a futuristic hovercraft track with dark neon towers",
+        "Different art styles: smooth low-poly realistic in A, blocky voxel-like models in B",
+        "Different HUD: circular street minimap in A, looped track outline in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic foggy city with ordinary cars and a round street minimap",
+        "Image B: stylized voxel-style hovercraft on a neon night highway with a loop-track minimap",
+        "Different palettes, vehicle types and art styles"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hover racers on a futuristic night-city track with a loop minimap",
+        "Image B: realistic daytime street with a white van and orange cars, and a circular street-map HUD",
+        "Different art styles and vehicle types: blocky sci-fi craft vs. smooth low-poly road vehicles"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic foggy city with road traffic, Image B is a stylized sci-fi hover-racer course",
+        "Different palettes: grey-teal haze with brick buildings vs. dark orange silhouettes with a dusk sky",
+        "Different HUD and vehicles: circular street minimap and everyday cars vs. loop-track outline and low-poly hover drones"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic city streets with orange brick buildings, taxis and a street-grid minimap",
+        "Image B: voxel-style sci-fi hover racers, dark skyscraper towers and a loop-track minimap",
+        "Different art styles, palettes and vehicle types"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic city street with orange buildings, cars, trees and a circular street minimap",
+        "Image B: blocky voxel hover vehicles, dark skyscrapers with lit windows, and a loop-shaped track minimap",
+        "Different art styles and lighting: night streets with cyan glow versus sunset glare with a grey sky"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dusk sci-fi city with hovering voxel-style racers and a glowing sun; Image B is a bright daytime city with ordinary road cars",
+        "Image A has a dark, wet, glowing palette; Image B has a pale, clean, low-contrast look",
+        "Image A shows a minimap loop track in the top right; Image B shows a circular street minimap in the bottom left"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright daytime city with regular cars and a circular minimap",
+        "Image B is a dark orange dusk sci-fi city with hovering drone racers and a loop track-outline minimap",
+        "Different vehicle types, lighting and palette"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: blocky low-poly hover-drones on an elevated highway with a silhouetted orange skyline",
+        "Image B: realistic city street with detailed buildings, wet road reflections and ordinary cars",
+        "Different HUD: a loop-shaped track outline in A, a circular street-grid minimap in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hovering racers on a futuristic night-city track with a loop minimap",
+        "Image B: smooth low-poly everyday road vehicles in a daytime city with a circular street minimap",
+        "Different vehicle types, building styles and HUD designs"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic daytime city street with orange and white buildings and a circular minimap, while Image B is a dark futuristic city with hovering drone racers",
+        "Different vehicles: a boxy white van with ordinary traffic versus rotor-based sci-fi racers",
+        "Different HUD and lighting: a round map in the corner versus a looped track outline in the top right, and a sunset glow versus an orange silhouetted skyline under dark clouds"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic foggy city with ordinary cars, a van and a street minimap",
+        "Image B: blocky sci-fi hover vehicles under a low sunset with glowing windows",
+        "Different HUD styles: circular street map vs. looped track outline"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: blocky low-poly futuristic hover racers on a neon dusk highway with a track-outline minimap",
+        "Image B: realistic cars and trucks on a foggy daytime city street, with a circular street-map minimap",
+        "Clearly different art styles, lighting and palettes"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dusk sci-fi city with hovering craft, neon lighting and a looping track minimap",
+        "Image B is a bright daytime realistic city with ordinary cars and a circular street-map HUD",
+        "Different palettes, vehicle types and art styles (blocky stylized vs. clean realistic)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: futuristic hovercraft racers on a neon night-city highway with a loop-track minimap",
+        "Image B: realistic daytime city street with orange brick buildings and ordinary road vehicles",
+        "Different art style and HUD: blocky glowing sci-fi look vs. flat-shaded urban look with a circular street map"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic foggy city with ordinary road vehicles and a circular minimap",
+        "Image B: stylized sci-fi hovering racers with orange silhouette skyline at dusk",
+        "Different HUD style: round street map vs. outline track loop"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: hovering drone racers on a dark sci-fi elevated highway",
+        "Image B: realistic daytime city street with a white pod car and traffic",
+        "Different HUDs: loop track outline versus circular street minimap"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hovercraft racers and dark neon skyscrapers on a track",
+        "Image B: realistic urban street with ordinary cars and buildings",
+        "Different HUDs: closed-loop track outline versus circular street minimap"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dark sci-fi hover-vehicle racing on a dusk city highway with orange silhouettes",
+        "Image B: bright daylight realistic city streets with ordinary cars and a circular minimap",
+        "Different HUD styles and lighting palettes (orange and blue vs. white and pastel)"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic night city streets with taxis, cars and street-level buildings",
+        "Image B: blocky low-poly hover drones racing on an elevated highway at dusk",
+        "Different HUD: circular street minimap vs. looped track outline"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: voxel-style hovering racers in a sunset cityscape with a track-loop minimap",
+        "Image B: realistic road vehicles in foggy brick-building streets with a circular street-map minimap",
+        "Different art style, lighting and HUD"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright daytime city with realistic low-poly cars and a circular minimap",
+        "Image B: dusk sci-fi city with hovering voxel-style vehicles, strong sun glare and a loop-shaped track minimap",
+        "Different lighting, palette and vehicle designs"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic foggy city with ordinary road vehicles; Image B is a stylized sci-fi city with hovering craft",
+        "Different palettes: desaturated gray-teal in A, neon purple, blue and orange in B",
+        "Different HUD: circular street minimap in A, loop track outline in B"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: voxel-style hover vehicles on a futuristic elevated highway at sunset; B: smooth realistic cars on a street grid",
+        "A: dark skyscrapers with lit windows and a lone loop-track minimap; B: orange and cream detailed buildings with a circular street minimap",
+        "Different art styles and HUDs: blocky low-poly sci-fi vs. realistic urban driving"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a bright daytime city with ordinary road traffic, Image B is a dark neon sci-fi city with hovering craft",
+        "Different vehicle styles: realistic white van and cars versus blocky futuristic racers",
+        "Different HUD: circular street minimap versus a looped track outline"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: futuristic hovercraft racers and dark skyscraper towers on a track with a loop minimap",
+        "Image B: realistic textured city with orange and cream buildings, ordinary cars and a circular street-map minimap",
+        "Different art styles: blocky low-poly sci-fi versus photoreal-textured urban street"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pastel low-poly daytime city with orange brick buildings, white pod car and a round street-map minimap",
+        "Image B: dark futuristic city with lit window grids, hovering blocky racers and a loop-shaped track minimap",
+        "Different rendering styles: flat, clean shading in A versus bloom, sun glare and wet asphalt texture in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dark sci-fi city at sunset with hovering voxel-style racers",
+        "Image B: bright daytime realistic city with ordinary road cars and a circular minimap",
+        "Different vehicle types, lighting and HUD (loop track map vs. round street map)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: futuristic hovering drones on an elevated highway in a dark orange cityscape",
+        "Image B: daytime city street with ground cars, realistic buildings and a circular minimap",
+        "Different vehicle types, scenery, lighting and HUD style (loop track map vs round city minimap)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: low-poly daytime city with orange buildings, white pod car and traffic",
+        "Image B: dark futuristic skyline with hovering voxel-style racers and a strong sun bloom on wet asphalt",
+        "Different HUDs: circular street minimap vs. outline track-loop map"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: blocky low-poly sci-fi hover racers on a neon night highway with a loop track minimap",
+        "Image B: realistic foggy daytime city with brick buildings and ordinary road vehicles",
+        "Different HUD style: small loop outline vs. circular street map"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime city with realistic cars and a circular minimap",
+        "Image B: dark dusk sci-fi highway with hovering drone racers and a loop-outline track map",
+        "Different palettes, lighting and vehicle styles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic city streets with orange buildings, trees and a rounded white car",
+        "Image B: blocky voxel hover vehicles and a dark skyscraper canyon with a sun flare",
+        "Different minimap styles: street grid circle vs. looped track outline"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: realistic city street with orange brick buildings and a circular street-map minimap",
+        "B: voxel-style hovercraft racers on a track with dark skyscraper silhouettes and a loop-shaped track minimap",
+        "Different palettes and vehicle styles: A has a dark night scene with cars, B has a blue dusk scene with sci-fi craft"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic foggy city with ordinary cars and a circular minimap",
+        "Image B: stylized sci-fi hovering racers on an orange-lit highway at dusk",
+        "Different HUD style: round street map vs. looped track outline"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A shows blocky low-poly hover drones on an elevated highway with a loop track minimap",
+        "Image B shows realistic textured city buildings and ordinary road cars with a circular street minimap",
+        "Different vehicle types, scenery style and HUD design"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a bright daytime city with ordinary cars and a circular minimap",
+        "Image B is a dark neon sci-fi city with hovering racer craft and a loop-track minimap",
+        "Different art style and lighting: clean low-poly realism versus gritty, glowing, voxel-like vehicles"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a futuristic hovercraft racer on a neon-lit sci-fi highway with a loop track minimap",
+        "Image B is a realistic city street with a white pod car, orange brick buildings and a circular street-map HUD",
+        "Different palettes, vehicle designs and scenery styles"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: voxel-style hovering sci-fi racers at sunset with a loop-track minimap",
+        "Image B: realistic foggy city streets with road cars, a truck and a circular street-map minimap",
+        "Different art styles, vehicle types and lighting"
+      ]
+    }
+  ]
+}
