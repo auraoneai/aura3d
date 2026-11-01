@@ -50,11 +50,6 @@
       "role": "court"
     },
     {
-      "typedRef": "assets.showcaseStadiumSeats",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
       "typedRef": "assets.hoopsScoreboard",
       "quality": "candidate",
       "role": "setDressing"

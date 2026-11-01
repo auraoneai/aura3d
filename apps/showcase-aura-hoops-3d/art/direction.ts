@@ -66,8 +66,6 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsPalm", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsCanopy", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    // Borrowed from the showcase library until the WP-36 bleacher and spectator kit lands (H47-A1; lane report assets).
-    { role: "set-dressing", assetKey: "showcaseStadiumSeats", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsSkyline", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsEarth", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },

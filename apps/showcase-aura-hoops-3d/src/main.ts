@@ -786,20 +786,9 @@ function buildAthlete(id: string, team: TeamId): any[] {
 }
 
 function buildCrowd(v: VenueSpec): any[] {
-  // GU47 phase 3: courts with grounded bleachers (courtRigs.ts) drop the borrowed seat GLB on the new look.
-  if (!LOOK_ORIGINAL && COURT_RIGS[v.id].bleachers) return courtBleacherNodes(COURT_RIGS[v.id]);
-  const nodes: any[] = [
-    // Real 3D stadium seating grandstands surrounding the outer court perimeter
-    model(assets.showcaseStadiumSeats, { name: "bleacher-north", targetMaxDimension: 12, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(0, 1.2, -18.5),
-    model(assets.showcaseStadiumSeats, { name: "bleacher-west", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(-19.5, 1.1, 4.0)
-      .rotate(0, Math.PI / 2, 0),
-    model(assets.showcaseStadiumSeats, { name: "bleacher-east", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(19.5, 1.1, 4.0)
-      .rotate(0, -Math.PI / 2, 0)
-  ];
-  return nodes;
+  // GU47 phase 3: grounded bleachers (courtRigs.ts) replaced the borrowed seat GLB on the new look. Phase 9 (D2): the
+  // `?look=original` switch draws the same game-owned bleachers, so no court draws the showcase library's seat GLB.
+  return courtBleacherNodes(COURT_RIGS[v.id]);
 }
 
 function buildVenueDressing(v: VenueSpec): any[] {
@@ -3562,7 +3551,7 @@ function publishEvidence(force = false): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight"
+      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight"
     ]
   };
   publishBeacon(evidence);
