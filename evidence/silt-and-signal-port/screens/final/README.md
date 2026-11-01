@@ -22,3 +22,9 @@
 1. **Low:** the touch Pause label is wider than its 48 px button in `key-boost.390x844` (fixed in `4551fcb07`, after these frames).
 2. **Low:** the rider is small on a flat white disc with two cyan ovals in every frame.
 3. **Low:** on mobile the chapter buttons truncate long names ("2. The Broken Wat...").
+
+## GU47 phase 6 (4.7.4) retake
+
+`title.1280x720`, `title.390x844` (lean `g24-t` tests, runs `g24p6-r3-tdesk` and `g24p6-r3-tphone`) and `results.1280x720`
+(run `g24p6-r2-results`, the ch6 dawn behind the card) were retaken on the 4.7.4 build. Remote runner, software WebGL2.
+Copies are in `evidence/game-upgrades-47/silt-and-signal-port/p6-r2/screens` and `p6-r3/screens`.
