@@ -9,12 +9,15 @@ import { defineAuraAssets } from "@aura3d/engine";
  * checked against the root manifest by tests/unit/teleoperator/assets.test.ts.
  */
 export const assets = defineAuraAssets({
+  // GU47 phase 4 (WP-36 dispatchPodPearl, GD-11/GD-12): the player pod is the Meshy retexture of this game's own robotaxi
+  // mesh (same 29.5k-triangle geometry, centred, longest side 2), route-local under apps/showcase-teleoperator/public
+  // (`aura3d assets import-meshy --into ... --prefix teleoperator`; rights and meta in public/aura-assets/meshy/provenance).
   gridCruiser: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
-    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
-    bounds: [0.8921, 1.4132, 1.9017]
+    url: "/aura-assets/meshy/models/teleoperator_dispatchPodPearl.glb",
+    hash: "sha256-99d368966e04d8160574d10eee242202d3c6134713e0fa7b573c665bff300ad9",
+    bounds: [0.9382, 1.4863, 2]
   },
   gridRivalCruiser: {
     type: "model",
@@ -133,9 +136,12 @@ export const assets = defineAuraAssets({
 
 export type GridAssetKey = keyof typeof assets;
 
-/** Root `aura.assets.json` id of every entry above (the production build copies files by these ids). */
-export const CATALOG_IDS: Readonly<Record<GridAssetKey, string>> = {
-  gridCruiser: "gridCruiser",
+/**
+ * Root `aura.assets.json` id of every entry above (the production build copies files by these ids). `null`: a route-local
+ * file under apps/showcase-teleoperator/public (the deploy flattens the app's public tree onto the origin root).
+ */
+export const CATALOG_IDS: Readonly<Record<GridAssetKey, string | null>> = {
+  gridCruiser: null,
   gridRivalCruiser: "gridRivalCruiser",
   gridCoupe: "gridCoupe",
   gridTruck: "gridTruck",

@@ -113,44 +113,54 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "golden",
     label: "Marine dusk",
     timeOfDay: "dusk, sun 9 deg above the bay",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 145 },
+    // GU47 phase 4: the shadows-on/off probe (g04p4-probe1, software WebGL2) moved the noon frame by 1.2 luma only: the HDRI
+    // and hemisphere fill (unshadowed, and the HDRI carries the sun) drowned the key. Fill cut so the key's shadows read;
+    // the PRD key values stay, exposure carries the level.
+    // GU47 phase 4 round 2: r1 (IBL 0.5, hemisphere 0.28) still showed no street shadow and fell to mean 52: the key is a small
+    // share of the light. IBL 0.2 / hemisphere 0.15 and exposure 2.6 make the 9 deg key the light that shapes the street.
+    hdri: { id: "belfast_sunset_puresky", intensity: 0.2, rotationDeg: 145 },
     sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.85 },
     // GU47 phase 3 round 2: azimuth 160 -> 145 puts the low sun right of the avenue so the west facades catch the warm key
     // (r1 rubric: the dusk read came only from the haze tint, not from warm light on surfaces).
     sun: { elevationDeg: 9, azimuthDeg: 145, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
-    key: { color: "#ffb070", intensity: 2.2 },
-    hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.42 },
+    // GU47 phase 4 round 3: key 2.2 -> 5.5. Fitting r0-r2 (IBL 0.8/0.5/0.2) puts the PRD 2.2 key at ~15% of the street's
+    // light, so no fill cut makes its shadows read (r2 mean 47); the key now carries ~75% (PRD GD-01 colour and angle kept).
+    key: { color: "#ffb070", intensity: 5.5 },
+    // Round 4 (r3 judge: lighting 6.5, shadows 6; "near-black shadows, crushed blacks, detached headlight hotspot, cyan
+    // planes through the facades"): hemisphere 0.15 -> 0.22, exposure 2.8 -> 3.2, grade lift 0.02, dusk headlights 0.4,
+    // scan pulse 0.7 on this sky.
+    hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.22 },
     // GU47 phase 3: the orange murk started metres from the camera (rubric atmosphere 5): later start, less sun inscatter and weaker god rays.
     fog: { color: MARINE_FOG, density: 0.0025, heightDensity: 0.002, heightFalloff: 0, heightReference: 28, start: 14, maxOpacity: 0.82, sunInscatter: 0.15 },
     marine: { base: 30, top: 48, color: "#4d6672", opacity: 0.88, reach: 240 },
     // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
     // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
     // GU47 phase 3 round 3: r2 still mean 67 / p95 144 at exposure 1.3: 1.3 -> 1.55.
-    output: { toneMapping: "agx", fallback: "aces", exposure: 1.55 },
+    output: { toneMapping: "agx", fallback: "aces", exposure: 3.2 },
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
-    grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02 },
+    grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02, lift: 0.02 },
     vignette: 0.26,
     godRays: { density: 0.08, color: "#ffb878", intensity: 0.14 },
     grain: 0.04,
-    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 1, asphalt: { color: "#1f242c", roughness: 0.78 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
-    scanStrength: 1
+    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 0.4, asphalt: { color: "#1f242c", roughness: 0.36 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
+    scanStrength: 0.7
   },
   noon: {
     id: "noon",
     label: "Sunny noon",
     timeOfDay: "noon, sun 62 deg over the west side, marine layer burnt off to a high haze",
-    hdri: { id: "outdoor-midday", intensity: 1.0, rotationDeg: 215 },
+    hdri: { id: "outdoor-midday", intensity: 0.25, rotationDeg: 215 }, // GU47 phase 4: fill cut (see Marine dusk); r1 0.55 still flat (mean 72)
     sky: { model: "preetham", turbidity: 3, rayleigh: 1.2, mieCoefficient: 0.005, mieDirectionalG: 0.8, groundColor: "#3a4654" },
     // GU47 phase 3: azimuth 200 -> 215 (sun from the west side, not down the avenue) so the west blocks throw shadow bands
     // across the street and the pod's shadow reads beside it (rubric shadows 3); elevation stays the PRD 62 deg.
     sun: { elevationDeg: 62, azimuthDeg: 215, color: "#fff4e2", intensity: 1, discSize: 0.03 },
-    key: { color: "#fff4e2", intensity: 3.0 },
-    hemisphere: { sky: "#9cc8ec", ground: "#3a3f46", intensity: 0.45 },
+    key: { color: "#fff4e2", intensity: 7.5 }, // GU47 phase 4 round 3: 3.0 -> 7.5 (the PRD key was ~16% of the light; see Marine dusk)
+    hemisphere: { sky: "#9cc8ec", ground: "#3a3f46", intensity: 0.22 }, // round 4: shadow lift
     fog: { color: "#a9c3d6", density: 0.001, heightDensity: 0.0008, heightFalloff: 0, heightReference: 70, start: 30, maxOpacity: 0.45, sunInscatter: 0.1 },
     marine: { base: 70, top: 110, color: "#c4d3dc", opacity: 0.3, reach: 320 },
     // GU47 phase 3: recap2 noon mean 84 (band 95-120): exposure 1.0 -> 1.12, IBL 0.85 -> 1.0.
     // GU47 phase 3 round 3: r2 noon mean 92 at 1.12 -> 1.2.
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.2 },
+    output: { toneMapping: "aces", fallback: "aces", exposure: 2.3 }, // round 4: r3 mean 73 (band 95-120)
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
     bloom: { intensity: 0.18, threshold: 0.95, radius: 0.35 },
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.02, tint: 0 },
@@ -246,7 +256,8 @@ export function hazeAt(look: SkyLook, distance: number): number {
 
 /** GD-01: one shadowed key on every sky, 2048 map, 3 cascades, PCSS. */
 /** GU47 phase 3 round 3: softness 1 -> 0.6 (crisper building shadow edges on the street). */
-export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 120, softness: 0.6 } as const;
+/** GU47 phase 4: maxDistance 120 -> 90 and split lambda 0.85 put more texels near the car (the pod's shadow drew in blocky texels). */
+export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 90, splitLambda: 0.85, softness: 0.3 } as const;
 
 /** Next sky in the `T` key cycle. */
 export const nextSky = (sky: SkyId): SkyId => SKY_ORDER[(SKY_ORDER.indexOf(sky) + 1) % SKY_ORDER.length]!;

@@ -42,11 +42,12 @@ describe("grid dispatch look table", () => {
     for (const sky of SKY_ORDER) expect(SKY_LOOKS[sky].id).toBe(sky);
   });
 
-  it("keeps the PRD key values (dusk 9 deg #ffb070 2.2; noon 62 deg 3.0; fog 0.8; night moon 0.25)", () => {
+  it("keeps the PRD key angles and colours (dusk 9 deg #ffb070; noon 62 deg; fog 0.8; night moon 0.25); GU47 phase 4 key dominates the fill", () => {
     expect(SKY_LOOKS.golden.sun.elevationDeg).toBe(9);
-    expect(SKY_LOOKS.golden.key).toEqual({ color: "#ffb070", intensity: 2.2 });
+    expect(SKY_LOOKS.golden.key.color).toBe("#ffb070");
     expect(SKY_LOOKS.noon.sun.elevationDeg).toBe(62);
-    expect(SKY_LOOKS.noon.key.intensity).toBe(3.0);
+    // Phase 4: the PRD 2.2 / 3.0 keys were ~15% of the street light under the HDRI fill, so their shadows never read.
+    for (const sky of ["golden", "noon"] as const) expect(SKY_LOOKS[sky].key.intensity).toBeGreaterThan(SKY_LOOKS[sky].hdri.intensity * 10);
     expect(SKY_LOOKS.fog.key.intensity).toBe(0.8);
     expect(SKY_LOOKS.night.key.intensity).toBe(0.25);
     expect(SKY_LOOKS.night.hemisphere.ground).toBe("#3a2a1c");
@@ -281,10 +282,12 @@ describe("grid dispatch GD-07 wet Sodium night", () => {
 });
 
 describe("grid dispatch GD-07 wet reflections", () => {
-  it("only Sodium night gets the SSR stage, and the wet asphalt is under its roughness fade", () => {
-    expect(wetReflectionNodes(SKY_LOOKS.night)).toHaveLength(1);
-    for (const sky of ["golden", "noon", "fog"] as const) expect(wetReflectionNodes(SKY_LOOKS[sky])).toHaveLength(0);
-    expect(SKY_LOOKS.night.street.asphalt.roughness).toBeLessThan(WET_SSR.roughness);
+  it("Sodium night (wet) and Marine dusk (damp, GU47 phase 4) get the SSR stage under its roughness fade; noon and fog stay dry", () => {
+    for (const sky of ["night", "golden"] as const) {
+      expect(wetReflectionNodes(SKY_LOOKS[sky])).toHaveLength(1);
+      expect(SKY_LOOKS[sky].street.asphalt.roughness).toBeLessThan(WET_SSR.roughness);
+    }
+    for (const sky of ["noon", "fog"] as const) expect(wetReflectionNodes(SKY_LOOKS[sky])).toHaveLength(0);
     const app = createAuraApp(undefined, { scene: buildGridDispatchScene("night"), autoStart: false });
     app.dispose?.();
   });
