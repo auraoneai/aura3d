@@ -126,6 +126,15 @@ const HOSTILE_OVERRIDES = [
 ];
 
 // Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
+/** GU47 phase 9 (D2) owned-prop placement: crack lamp on the push block's face, exit shutter and lamp, medkit span, columns. */
+const BZ_CRACK_LAMP = { height: 0.5, out: 0.47, y: 1.15 } as const;
+const BZ_EXIT_SHUTTER = { heightFrac: 0.78, maxHeight: 2.4, wallGap: CELL / 2 - 0.17, lampGap: CELL / 2 - 0.08, lampHeight: 0.42 } as const;
+const BZ_MEDKIT_SPAN = 0.8;
+/** The machete viewmodel's blade-to-pommel length: the borrowed knife it replaces drew 0.63 m long at targetHeight 0.34. */
+const BZ_KNIFE_LENGTH = 0.62;
+const BZ_COLUMN = { side: 1.2 } as const;
+/** Crack-lamp offset from its push block (the lamp rides the block's face while it slides). */
+const CRACK_OFFSET = new Map<string, [number, number]>();
 const pickupGlow = (color: string, emissive: string, emissiveIntensity: number, extra: { metallic?: number; roughness?: number } = {}) => [
   { color, colorMode: "multiply" as const, emissive, emissiveIntensity, ...extra }
 ];
@@ -356,6 +365,8 @@ function buildScene() {
     }
     // ---- per-cell runtime 3D Meshy entities & props -----------------------
     let dI = 0, pI = 0, eI = 0, kI = 0;
+    const columnInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const columnStrip: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
       const ch = rows[z][x];
       const wx = cellX(slot, x), wz = cellCenter(z);
@@ -378,25 +389,36 @@ function buildScene() {
         case "P": {
           // push block — 3D Meshy reinforced bunker cover wall + glowing secret beacon
           const side = pushFace(rows, x, z);
+          CRACK_OFFSET.set(`f${slot}-crack-${x}-${z}`, [-side[0] * CELL * BZ_CRACK_LAMP.out, -side[1] * CELL * BZ_CRACK_LAMP.out]);
           nodes.push(
             model(assets.fpsSciFiCoverCrateMeshy, { castShadow: cast, name: `f${slot} push ${pI}`, targetHeight: wallH * 0.92 })
               .position(wx, 0, wz)
               .runtime(slotNode(slot, `f${slot}-pw-${x}-${z}`, ["pushwall"])),
-            model(assets.auroraPadBeacon, { castShadow: cast, name: `f${slot} crack ${pI}`, targetHeight: 0.85 })
-              .position(wx + side[0] * CELL * 0.44, 0.2, wz + side[1] * CELL * 0.44)
+            // GU47 phase 9 (D2): the game's own caged bulkhead lamp (Poly Haven industrial_wall_lamp, CC0) hung on the block's face
+            // replaces the borrowed pad beacon; presentation only (the push-wall cell and its slide are the sim's)
+            model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} crack ${pI}`, targetHeight: BZ_CRACK_LAMP.height })
+              .position(wx - side[0] * CELL * BZ_CRACK_LAMP.out, BZ_CRACK_LAMP.y, wz - side[1] * CELL * BZ_CRACK_LAMP.out)
+              .rotate(0, Math.atan2(-side[0], -side[1]), 0)
               .runtime(slotNode(slot, `f${slot}-crack-${x}-${z}`, ["crack"]))
           );
           pI++;
           break;
         }
-        case "E":
+        case "E": {
+          const exitWall = wallFace(rows, x, z);
+          const exitShutterH = Math.min(wallH * BZ_EXIT_SHUTTER.heightFrac, BZ_EXIT_SHUTTER.maxHeight);
           nodes.push(
-            model(assets.pulseNeonGateArchMeshy, { castShadow: cast, name: `f${slot} exit`, targetHeight: wallH * 0.98 })
-              .position(wx, 0, wz).runtime(staticNode(slot, "exit")),
-            model(assets.auroraPadBeacon, { castShadow: cast, name: `f${slot} exitpost`, targetHeight: 1.5 })
-              .position(wx, 0.05, wz).runtime(staticNode(slot, "exitpost"))
+            // GU47 phase 9 (D2): the lift shutter (Poly Haven rollershutter_door, CC0) at the back of the exit cell under a caged
+            // bulkhead lamp replaces the borrowed neon arch and pad beacon; presentation only (the exit cell is the sim's)
+            model(assets.bzShutterDoor, { castShadow: cast, name: `f${slot} exit`, targetHeight: exitShutterH })
+              .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.wallGap, 0, wz + exitWall[1] * BZ_EXIT_SHUTTER.wallGap)
+              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exit")),
+            model(assets.bzBulkheadLamp, { castShadow: false, name: `f${slot} exitpost`, targetHeight: BZ_EXIT_SHUTTER.lampHeight })
+              .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.lampGap, exitShutterH + 0.08, wz + exitWall[1] * BZ_EXIT_SHUTTER.lampGap)
+              .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exitpost"))
           );
           break;
+        }
         case "K":
           nodes.push(
             model(assets.bunkerKeyMeshy, { castShadow: cast, name: `f${slot} key`, materialOverrides: pickupGlow("#fff0b8", "#ff9d2a", 0.45, { metallic: 0.7, roughness: 0.35 }) })
@@ -417,7 +439,7 @@ function buildScene() {
           break;
         case "+": case "*":
           nodes.push(
-            model(assets.fpsEnergyCorePickupMeshy, { castShadow: cast, name: `f${slot} medkit ${x}-${z}`, targetHeight: 0.82, materialOverrides: pickupGlow("#c8bfb0", "#b8402e", 0.12, { roughness: 0.5 }) })
+            model(assets.bzMedicalBox, { castShadow: cast, name: `f${slot} medkit ${x}-${z}`, targetMaxDimension: BZ_MEDKIT_SPAN, materialOverrides: pickupGlow("#e4ddd0", "#b8402e", 0.12, { roughness: 0.5 }) })
               .position(wx, 0.45, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
@@ -467,10 +489,15 @@ function buildScene() {
           addBlob(slot, `f${slot}-prop-${x}-${z}`, wx, wz, 0.78);
           break;
         case "o":
-          nodes.push(
-            model(assets.blockfallReactorContainmentPylonMeshy, { castShadow: cast, name: `f${slot} column ${x}-${z}`, targetHeight: wallH })
-              .position(wx, 0, wz).runtime(staticNode(slot, `col-${x}-${z}`))
-          );
+          // GU47 phase 9 (D2): board-formed concrete columns in the floor's own wall material, one instanced draw per floor
+          // (after the loop), replace the borrowed reactor pylon; footprint inside the pylon's, collision is the sim's column cell
+          columnInst.push({ position: [wx, wallH / 2, wz], scale: [BZ_COLUMN.side, wallH, BZ_COLUMN.side] });
+          for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+            columnStrip.push({
+              position: [wx + dx * (BZ_COLUMN.side / 2 + 0.012), 0.14, wz + dz * (BZ_COLUMN.side / 2 + 0.012)],
+              scale: dx !== 0 ? [0.045, 0.07, BZ_COLUMN.side + 0.05] : [BZ_COLUMN.side + 0.05, 0.07, 0.045]
+            });
+          }
           break;
         case "g":
           nodes.push(
@@ -532,6 +559,12 @@ function buildScene() {
         addBlob(slot, `f${slot}-summon-${i}`, slot * FLOOR_SPAN, 0, 0.5, false);
       }
     }
+    if (columnInst.length) {
+      nodes.push(
+        primitives.box({ name: `f${slot} columns`, castShadow: true, material: wallMat, instances: columnInst }).runtime(staticNode(slot, "columns")),
+        primitives.box({ name: `f${slot} column strips`, castShadow: false, material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }), instances: columnStrip }).runtime(staticNode(slot, "column-strips"))
+      );
+    }
     // GU47 phase 6: every contact blob of the floor in one instanced draw (one draw per prop and hostile made F6 +11)
     if (BLOB_INST[slot]!.length) {
       nodes.push(primitives.cylinder({
@@ -543,7 +576,7 @@ function buildScene() {
 
   // ---- player rig: 3D Meshy viewmodels + muzzle flash + pooled FX ---------
   nodes.push(
-    model(assets[VIEWMODEL_ASSET.knife], { castShadow: false, name: "vm knife", targetHeight: 0.34 })
+    model(assets[VIEWMODEL_ASSET.knife], { castShadow: false, name: "vm knife", targetMaxDimension: BZ_KNIFE_LENGTH })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
     model(assets[VIEWMODEL_ASSET.pistol], { castShadow: false, name: "vm pistol" })
@@ -731,6 +764,11 @@ function castsShadowAt(def: FloorDef, x: number, z: number): boolean {
 function doorFacesZ(rows: readonly string[], x: number, z: number): boolean {
   const solid = (x2: number, z2: number) => isSolid(rows[z2]?.[x2] ?? "#");
   return solid(x - 1, z) || solid(x + 1, z) ? !(solid(x, z - 1) && solid(x, z + 1)) : false;
+}
+/** GU47 phase 9: direction from an exit cell to its first solid neighbour (the lift shutter stands against that wall). */
+function wallFace(rows: readonly string[], x: number, z: number): [number, number] {
+  for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) if (isSolid(rows[z + dz]?.[x + dx] ?? "#")) return [dx, dz];
+  return [0, 1];
 }
 // crack cue faces the first open neighbor
 function pushFace(rows: readonly string[], x: number, z: number): [number, number] {
@@ -1465,7 +1503,8 @@ function syncScenePose(inp: SimInput) {
     const px = cellX(slot, pw.cx) + pw.dx * pw.progress * CELL;
     const pz = cellCenter(pw.cz) + pw.dz * pw.progress * CELL;
     node.setPosition(px, 0, pz);
-    crack.setPosition(px, 0.2, pz);
+    const [cox, coz] = CRACK_OFFSET.get(`f${slot}-crack-${pw.cx}-${pw.cz}`) ?? [0, 0];
+    crack.setPosition(px + cox, BZ_CRACK_LAMP.y, pz + coz);
     if (pw.state === "open") crack.setVisible(false);
   }
 
@@ -1934,6 +1973,56 @@ function installQa() {
     },
     autopilot(on: boolean) { autoPilot = on; return on; },
     dismissIntro() { dismissIntro(); return true; },
+    /** GU47 phase 9 probe: stand two cells from the first cell holding `ch` (any floor), face it, hold `weapon`, freeze. */
+    propView(ch: string, weapon: WeaponId = "pistol", dist = 2.2) {
+      const all = [...FLOORS.map((f, i) => [f, i] as const)];
+      for (const [f, i] of all) {
+        const rows = f.rows;
+        for (let z = 0; z < rows.length; z++) for (let x = 0; x < rows[z]!.length; x++) {
+          if (rows[z]![x] !== ch) continue;
+          startFloor(i, "descent", { newRun: true });
+          const p = sim.state.player;
+          for (const e of sim.state.enemies) { e.state = "dead"; e.deathT = 99; }
+          const tx = cellCenter(x), tz = cellCenter(z);
+          // the crack lamp and the exit shutter face one way: stand on that side, looking back at them
+          const facing = ch === "P" ? pushFace(rows, x, z).map((v) => -v) : ch === "E" ? wallFace(rows, x, z).map((v) => -v) : null;
+          if (facing && (facing[0] || facing[1])) {
+            // straight out from the face first, then along the corridor (a face one cell from the opposite wall)
+            const aim = [tx + facing[0] * CELL * 0.3, tz + facing[1] * CELL * 0.3] as const;
+            const spots: [number, number][] = [];
+            for (let d = dist * CELL; d >= CELL * 0.6; d -= 0.3) spots.push([tx + facing[0] * d, tz + facing[1] * d]);
+            for (const k of [1.6, -1.6, 2.2, -2.2]) spots.push([aim[0] + facing[1] * k * CELL + facing[0] * 0.4, aim[1] + facing[0] * k * CELL + facing[1] * 0.4]);
+            for (const [px, pz] of spots) {
+              if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
+              if (!sim.hasLOS(px, pz, aim[0], aim[1])) continue;
+              p.x = px; p.z = pz; p.hp = 9999; p.pitch = 0;
+              p.yaw = Math.atan2(tx - px, -(tz - pz));
+              if (!p.weapons.includes(weapon)) p.weapons.push(weapon);
+              p.weapon = weapon;
+              qaFrozen = true;
+              syncScenePose(noInput);
+              return { ok: true, floor: i, cell: [x, z], at: [+px.toFixed(2), +pz.toFixed(2)], facing };
+            }
+          }
+          for (let k = 0; k < 16; k++) {
+            const a = (k * Math.PI) / 8;
+            for (let d = dist * CELL; d >= CELL * 0.9; d -= 0.4) {
+              const px = tx + Math.sin(a) * d, pz = tz - Math.cos(a) * d;
+              if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
+              if (ch === "+" || ch === "*" ? !sim.hasLOS(px, pz, tx, tz) : !sim.hasLOS(px, pz, tx + (px - tx) * 0.3, tz + (pz - tz) * 0.3)) continue;
+              p.x = px; p.z = pz; p.hp = 9999; p.pitch = 0;
+              p.yaw = Math.atan2(tx - px, -(tz - pz));
+              if (!p.weapons.includes(weapon)) p.weapons.push(weapon);
+              p.weapon = weapon;
+              qaFrozen = true;
+              syncScenePose(noInput);
+              return { ok: true, floor: i, cell: [x, z], distance: +d.toFixed(2) };
+            }
+          }
+        }
+      }
+      return { ok: false };
+    },
     /** GU47 phase 6 triage: the viewmodel handles (and the weapon pickups that share their GLBs) as the engine sees them. */
     vmProbe() {
       const p = sim.state.player;

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-bunker-zero/src/art/direction.ts",
-  "sourceSha256": "9a83183e238a74fcce27b53148f50491031d8fa8b064e6bd38ac774b2850d707",
+  "sourceSha256": "996beebef1048c95b4ac69259091e4c85bdf5e9173d30f69c39f2d06719f0d46",
   "id": "showcase-bunker-zero",
   "genre": "arena-shooter",
   "signatureEffect": "Gunfire lights the room: every shot, ricochet and blast throws a warm transient light across board-formed concrete between the pools of the floor's own lamps.",
@@ -64,20 +64,6 @@
     },
     "models": [
       {
-        "assetKey": "auroraPadBeacon",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "blockfallReactorContainmentPylonMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "bunkerKeyMeshy",
         "triangles": 0,
         "textures": 0,
@@ -113,6 +99,13 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "bzBulkheadLamp",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "bzCrateMeshy",
         "triangles": 0,
         "textures": 0,
@@ -141,6 +134,20 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "bzMachete",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzMedicalBox",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "bzMgViewmodel",
         "triangles": 0,
         "textures": 0,
@@ -149,6 +156,13 @@
       },
       {
         "assetKey": "bzPistol",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzShutterDoor",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -190,13 +204,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "fpsEnergyCorePickupMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "fpsSciFiCoverCrateMeshy",
         "triangles": 0,
         "textures": 0,
@@ -204,21 +211,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "mechWeaponA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "mechWeaponB",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "pulseNeonGateArchMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -367,7 +360,7 @@
       },
       {
         "role": "prop",
-        "assetKey": "mechWeaponA",
+        "assetKey": "bzMachete",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -409,7 +402,7 @@
       },
       {
         "role": "prop",
-        "assetKey": "fpsEnergyCorePickupMeshy",
+        "assetKey": "bzMedicalBox",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -444,7 +437,7 @@
       },
       {
         "role": "prop",
-        "assetKey": "auroraPadBeacon",
+        "assetKey": "bzBulkheadLamp",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -465,7 +458,7 @@
       },
       {
         "role": "world",
-        "assetKey": "pulseNeonGateArchMeshy",
+        "assetKey": "bzShutterDoor",
         "maxTriangles": 40000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -480,13 +473,6 @@
       {
         "role": "world",
         "assetKey": "fpsSciFiCoverCrateMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "world",
-        "assetKey": "blockfallReactorContainmentPylonMeshy",
         "maxTriangles": 40000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
