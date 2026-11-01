@@ -1,0 +1,83 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "cinderRim",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat brown ground plane with repetitive tiled cobble texture; scattered cone props look sparse; tee line and red block read as placeholder geometry",
+     "The far ground's cobble texture tiles in an obvious repeating pattern, and the ember particles are a bit noisy. Otherwise the reddish palette, scattered horizon props and textured tee give it more mood and depth.",
+     "The terrain is flat and very large, with only small cone-shaped props scattered on it. The cobble texture repeats visibly. The tee mat looks like a raised slab and its edge seam shows."
+    ]
+   },
+   {
+    "variant": "mapleHollow",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass tiling is slightly visible; trees are simple blob shapes; a floating sphere sits near the left trees",
+     "The grass texture repeats slightly and the horizon is a bit plain. Otherwise the autumn trees are vivid and the grass is detailed, with good contrast and shadows.",
+     "The grass is overly saturated and the textures tile visibly. The trees are simple stacked spheres. The ground cover is sparse cone-shaped props."
+    ]
+   },
+   {
+    "variant": "mareCourse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Black sky with no stars is bland; repetitive crater tiling; shadows are heavy but they ground the characters",
+     "The upper half of the frame is a pure black sky with no stars, and the golfer is quite dark. Shadows are strong but long.",
+     "The sky is pure black, but the regolith texture and long crisp shadows give the scene depth. The texture repeats somewhat."
+    ]
+   },
+   {
+    "variant": "neonBay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Night scene with no actual neon accents; teal grass is somewhat flat; aliased edge on the tee box",
+     "Slightly noisy particles and minor jagged edges at the tee border. Otherwise the blue night sky has stars, the ground is textured, the trees are well lit, and the golfer casts a shadow.",
+     "The night sky is flat blue and the teal grass is a bit uniform, but the frame reads clearly and has shadows. The trees are simple."
+    ]
+   },
+   {
+    "variant": "stAuroras",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Tee line is short and floats in the distance; some grass tiling; slightly dark fairway",
+     "The horizontal shadow band across the tee looks slightly odd. Otherwise the clouds, textured grass, foliage props and shadows give it good contrast and polish.",
+     "Shadow banding on the tee looks a little odd, and the grass texture repeats. Otherwise contrast, depth and detail are good."
+    ]
+   }
+  ]
+ }
+]
