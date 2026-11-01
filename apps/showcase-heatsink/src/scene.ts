@@ -405,7 +405,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
   for (const id of DRONE_ORDER) {
     const spec = DRONE_SPECS[id];
     s.add(
-      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim, materialOverrides: [droneLivery(spec.color)] })
+      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim, materialOverrides: [id === "orion" ? playerFoundryLivery(spec.color) : droneLivery(spec.color)] })
         .position(0, 1.45, id === "orion" ? -0.4 : -24)
         .runtime(game.runtimeNode(spec.nodeId, id === "orion" ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
     );
@@ -438,6 +438,20 @@ export function liftTowardsWhite(hex: string, amount: number): string {
  * molten amber at its silhouette edges, as if the hull were still hot from the foundry.
  */
 export const DRONE_HEAT_RIM = { color: "#ff6a1a", power: 2.6, intensity: 1.4 } as const;
+
+/**
+ * GU47 phase 4 (PRD 6.1 identity; distinctness vs heatsink-port, whose tell was "glossy orange quadcopter in both"): the
+ * player's ORION is cast foundry iron, its orange burnt down towards soot (same hue), polished metal under the lacquer,
+ * with a hotter molten rim at the silhouette.
+ */
+export const PLAYER_IRON = { towardsSoot: 0.55, metallic: 0.7, roughness: 0.28, rimIntensity: 2 } as const;
+export function playerFoundryLivery(color: string): AuraModelMaterialOverride {
+  const n = Number.parseInt(color.replace("#", ""), 16);
+  const soot = Number.parseInt("14110f", 16);
+  const ch = (shift: number) => Math.round(((n >> shift) & 255) * (1 - PLAYER_IRON.towardsSoot) + ((soot >> shift) & 255) * PLAYER_IRON.towardsSoot);
+  const iron = `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+  return { color: iron, colorMode: "multiply", clearcoat: 0.85, clearcoatRoughness: 0.08, metallic: PLAYER_IRON.metallic, roughness: PLAYER_IRON.roughness, envMapIntensity: 1.8, rim: { ...DRONE_HEAT_RIM, intensity: PLAYER_IRON.rimIntensity } };
+}
 
 /** HS-10 interim livery: DRONE_SPECS colour (lifted 30% towards white) multiplied over the authored maps, lacquered. */
 export function droneLivery(color: string): AuraModelMaterialOverride {

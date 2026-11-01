@@ -9,7 +9,8 @@ const definitions = {
   "heatsink_thermalArchIron": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): Vite fingerprints and ships it.
+    url: new URL("../models/heatsink_thermalArchIron.7d727eff.glb", import.meta.url).href,
     hash: "sha256-7d727eff8025a6e9e549187ad06a7b13420fc2103da26f39d26606a881c8a083",
     bounds: [
       2,
@@ -76,12 +77,12 @@ const definitions = {
         "evidence": [
           "aura-evidence/meshy/heatsink_thermalArchIron.rights.c18b34e24299.json",
           "aura-evidence/meshy/heatsink_thermalArchIron.metadata.0d5d5d44e14c.json",
-          "public/aura-assets/heatsink_thermalArchIron.meshy-candidate.20f2ed36.png"
+          "wp36:artifacts/gu47-meshy/heatsink/thermalArchIron/opt/thumbnail.png"
         ],
         "checkedAt": "2026-10-30T08:59:38.033Z"
       },
       "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
-      "outputPath": "public/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
+      "outputPath": "apps/showcase-heatsink/models/heatsink_thermalArchIron.7d727eff.glb",
       "license": "Meshy generated asset (paid API, plan terms at generation time)",
       "boundsMetadata": {
         "min": [

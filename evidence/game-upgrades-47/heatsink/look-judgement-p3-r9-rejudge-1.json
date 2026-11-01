@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p3-r9/screens/1280-04-mid.jpg",
+      "sha256": "43fa4146774b9f6047e1c1e69a27a1bd49df081deafbaa5f5aab860e12766015"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 6,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sky is flat grey and overcast with no visible low sun. Warmth comes only from orange rim strips along the barriers and a faint amber wash on the road edges. The overhead gantry is lit evenly, with no directional key, so the golden-hour 12° sun the recipe asks for is missing."
+    },
+    {
+      "category": "shadows",
+      "seen": "Only a soft dark blob sits under the drone. The gantry and barriers cast no readable shadows onto the road, so the objects look like they float on the asphalt instead of resting in a lit scene."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet road has a grainy specular sheen picking up a little of the barrier glow. It does not reflect the gantry, the lane lines or the city lights in any coherent way. The drone's orange body shows little environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Skyscrapers use repeated lit-window textures, the gantry frames the road, and the barriers carry yellow and orange striping. The city reads as Megacity, but the left-foreground debris slabs are large untextured grey wedges, and the towers repeat noticeably."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far towers. Two blown-out white glow blobs on the left and right edges look like bloom on unseen lights rather than fog volumes. Depth fog through the tunnel is weak, so the 30–180 m falloff does not read."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The road is a noisy dark texture with a strong grain pattern. The barriers and gantry are flat-shaded solid colors. The drone's engine discs are bright uniform white circles with no metal or emissive detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone is a low-poly orange assembly of boxes with twin round thrusters. The rival craft ahead and the debris pieces are blocky primitives, the gantry is built from simple beams, and the left foreground has an angular untextured slab."
+    },
+    {
+      "category": "composition",
+      "seen": "The drone fills about 8–10% of the frame, below the 15–25% target, and sits left of center against a busy gantry. HUD panels cover all four corners and the top strip, which crowds the play area. Strong lane-line convergence helps lead the eye down the road."
+    },
+    {
+      "category": "camera",
+      "seen": "The low chase camera sits slightly high behind the craft at roughly 60–70° FOV. The perspective is believable. The craft looks a bit too far from the camera for a strong chase read."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy film grain and a vignette push toward a cinematic look. The grain is strong enough to make the road look noisy, the bloom blobs are uncontrolled, and there is no clear warm grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are clean: position, lap, time, hull bar, radar, speed and core-temperature gauges, all in a consistent orange/cyan type style. The top dev-style selector bar (drone/track/mode buttons) and the controls legend add clutter that a shipped racing HUD would not have."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/heatsink/p4-r2/screens/1280-04-mid.jpg",
+      "sha256": "1b290547779e5a03739507e98b3f80183dff9244ec6cc1cd9249c48adf1a3367"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 5.5,
+    "ibl_reflections": 6.5,
+    "environment_world": 6,
+    "atmospheric_effects": 7,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 7,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun on the right rims the drone and the guardrails. It throws a bright bloom streak across the road, which reads as golden hour. The left side and the building faces fall to dull grey-brown with little fill."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is no clear contact shadow under the player drone or the barrel object, so both appear to float. The building masses are shaded flatly, without legible cast shadows across the road from the low sun."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet asphalt shows a sun glint and soft streaks from the guardrails, but there is no structured reflection of the skyline. The drone's metal parts show little environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The skyline is built from extruded boxes with repeated lit-window textures and a large blocky gate arch. It has scale but little detail, signage, or props beyond the rails."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Building surfaces are flat, with tiled window decals. Rails are flat-colored yellow and red strips. The asphalt has wetness but no visible aggregate or wear detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone is a cluster of simple primitives: cylinders for the wheel-like pods and boxy body parts. The roadside barrel object is crude, and the buildings are untextured-looking boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The player drone sits right of center at about 10% of the frame, below the 15–25% target. It competes with the sun bloom beside it, and the central vanishing point is occupied only by the crosshair."
+    },
+    {
+      "category": "camera",
+      "seen": "The low chase camera with a centered vanishing road gives a good sense of speed, and the FOV looks near 60. The subject is offset and small for a chase framing."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the sun, warm grading, vignette, and grain give a cinematic-film feel. The highlight bloom washes out the right third slightly."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are clean and stylish: position, lap, radar, and a speed/heat block. However, a full top bar of drone, track, and mode selector buttons plus a controls legend clutter the frame and read as a dev menu during a race."
+    }
+  ],
+  "nextChange": {
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
+  },
+  "judge": "prism"
+}
