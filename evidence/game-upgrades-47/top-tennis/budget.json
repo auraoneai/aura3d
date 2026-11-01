@@ -48,5 +48,19 @@
     "TT-V1": "+1 decal batch, +1 runtime particle batch; -8 court-mark cylinders (hidden in 4.6.1, so 0 to -8)",
     "TT-V2": "-8 trail spheres while the ball flies, +1 ribbon",
     "TT-M1": "-8 stripe boxes on grass once turf stripes are a texture (pending)"
+  },
+  "phase6ServeAimRing": {
+    "change": "serve-aim-ring torus band width via params.tube (same single node, same material)",
+    "before": {
+      "source": "p4-r4/top-tennis/luma-g01p4-r4-1.json default settle-25s GL_META",
+      "drawCalls": 200,
+      "triangles": 355638
+    },
+    "after": {
+      "source": "p6/top-tennis/luma-g01p6-1.json default settle-25s GL_META",
+      "drawCalls": 200,
+      "triangles": 355638
+    },
+    "note": "No draw or triangle change (one torus either way); the 200 draws at 1280 high predate this change."
   }
 }
