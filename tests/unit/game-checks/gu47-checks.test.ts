@@ -65,6 +65,9 @@ describe("GU47 game-checks registration", () => {
       expect(typeof GAME_CHECKS[id]).toBe("function");
       expect(["warn", "error"]).toContain(GU47_SEVERITY_BY_CHECK[id as keyof typeof GU47_SEVERITY_BY_CHECK]);
     }
+    // 4.7.6: every live game passes these, so they gate as errors; the WP-36 and band checks still warn.
+    expect(GU47_SEVERITY_BY_CHECK["art-direction"]).toBe("error");
+    expect(GU47_SEVERITY_BY_CHECK["look-identity"]).toBe("error");
   });
 });
 
@@ -73,7 +76,7 @@ describe("art-direction check", () => {
     const { root } = fixture({});
     const missing = run(root, ["art-direction"]);
     expect(missing).toHaveLength(1);
-    expect(missing[0]).toMatchObject({ check: "art-direction", severity: "warn", file: "apps/showcase-alpha/art/direction.ts" });
+    expect(missing[0]).toMatchObject({ check: "art-direction", severity: GU47_SEVERITY_BY_CHECK["art-direction"], file: "apps/showcase-alpha/art/direction.ts" });
     expect(missing[0]!.message).toContain("no art/direction.ts");
     withDirection(root, "showcase-alpha", direction());
     expect(run(root, ["art-direction"])).toEqual([]);
@@ -111,7 +114,7 @@ describe("look-identity check", () => {
       expect.stringContaining("palette.primary is shared with beta-hoops (#112233 #445566 #778899)")
     ]);
     expect(both.filter((f) => f.game === "beta-hoops")).toHaveLength(3);
-    expect(both.every((f) => f.severity === "warn")).toBe(true);
+    expect(both.every((f) => f.severity === GU47_SEVERITY_BY_CHECK["look-identity"])).toBe(true);
   });
 
   it("passes distinct looks, ignores IBL-only HDRIs and matches catalogue ids when no file is on disk", () => {
@@ -152,7 +155,7 @@ describe("borrowed-asset and prop-exclusivity checks", () => {
     ].join("\n"));
     const found = run(root, ["borrowed-asset"]);
     expect(found).toHaveLength(1);
-    expect(found[0]).toMatchObject({ check: "borrowed-asset", severity: "warn", file: "apps/showcase-alpha/src/main.ts", line: 1 });
+    expect(found[0]).toMatchObject({ check: "borrowed-asset", severity: GU47_SEVERITY_BY_CHECK["borrowed-asset"], file: "apps/showcase-alpha/src/main.ts", line: 1 });
     expect(found[0]!.message).toContain('"hoopsLamp" belongs to aura-hoops-3d (prefix hoops)');
   });
 

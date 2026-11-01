@@ -761,8 +761,9 @@ export const GU47_CHECK_SEVERITY = "warn";
  * an outside dependency (borrowed-asset and prop-exclusivity wait on the WP-36 Meshy batch) does not hold the others back.
  */
 export const GU47_SEVERITY_BY_CHECK = Object.freeze({
-  "art-direction": GU47_CHECK_SEVERITY,
-  "look-identity": GU47_CHECK_SEVERITY,
+  // 4.7.6: every live game passes these two, so a regression now fails the gate.
+  "art-direction": "error",
+  "look-identity": "error",
   "borrowed-asset": GU47_CHECK_SEVERITY,
   "prop-exclusivity": GU47_CHECK_SEVERITY,
   "luma-band": GU47_CHECK_SEVERITY
