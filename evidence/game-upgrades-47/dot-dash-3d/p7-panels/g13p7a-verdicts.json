@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "dot-dash-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "classic",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Small pale player is a little hard to pick out against the bright pellet grid. The dark chip walls blend together somewhat. The top backdrop wall is dim and empty.",
+     "The upper-left desk area and the backdrop are dark and a bit muddy; the dark wall blocks against the green board lose some contrast; the warm light spill in the lower-left corner is slightly blown out; the player is fairly small and only moderately easy to pick out",
+     "The maze of dense dark blocks looks busy, and the white glowing player near the bottom centre is small and hard to pick out. The board text and edges are soft. Otherwise the PCB board, warm key light and backdrop give it good mood and depth."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Small player is somewhat hard to see in the busy grid. Low-key lighting leaves the dark wall blocks low in contrast.",
+     "The background is dark and slightly muddy; the dark wall blocks on the green board have only moderate contrast; there is a small blown-out light spill in the lower-left corner; the player is small",
+     "The maze walls are dense, and the player is small and somewhat lost among the pellets. The left side of the board is a little dim."
+    ]
+   },
+   {
+    "variant": "foundry",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The strong red board slightly overwhelms the frame. A bloom flare at the bottom-left corner. The player glow is small.",
+     "The red board saturates the frame a little and the warm glow near the lower-left corner is blown out; the pellets blend somewhat into the orange traces; the background is dark",
+     "The red board fills most of the frame and is close to monochrome, so the dark walls and cream pellets get busy. The player glow is small, and the corners are slightly hazy."
+    ]
+   },
+   {
+    "variant": "garden",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The bright white board leaves the frame washed out and low in contrast. The pale-green pellets are nearly invisible against it, the translucent player is barely visible, and the board text is faint.",
+     "The white board is bright and somewhat washed out; the pellets and the player have weak contrast against the pale board and are hard to read; the board label text is faint; there is a slight haze in the lower-left area",
+     "The near-white board is somewhat washed out. The pale green pellets have very low contrast on it, and the player at the bottom centre is faint and translucent. Text on the board is barely readable."
+    ]
+   },
+   {
+    "variant": "spiral",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat, simple lighting and a bare dark surround. The scattered tilted blocks look like floating debris.",
+     "The pale board is fairly bright and slightly washed out in the lower-left corner; the cyan player has low contrast against the white board; the pink pellets are small",
+     "The pale lavender board is a little washed out. The pink pellets are low-contrast, the player is faint and translucent near the bottom, and the dense black walls are visually heavy."
+    ]
+   },
+   {
+    "variant": "twin",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The bright white board is somewhat washed out, the light-blue pellets have low contrast against it, the translucent player is faint, and the board text is faint.",
+     "The pale board is somewhat washed out; the light-blue pellets and the player are faint against the white surface; there is a slight bright haze in the lower-left corner",
+     "The white board is slightly washed out. The pale cyan pellets have low contrast, and the player is faint and hard to find near the bottom centre. The walls are heavy and busy."
+    ]
+   }
+  ]
+ }
+]
