@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "45246dd860c5dd6116bde5956381fd4125770101bb7d20aef9095766d3ef716a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/title.1280x720.jpg",
+      "sha256": "d78fdfa2bfe31ddb7fc49a3a80988795c0ace1853cc8b79383db38e0f9966989"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r5/roadster-hours-port/frames/g22p4-r5-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "aac602e185e085d46779fda8fd2739166f13811d64031e016852ff8f32c4d3b8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "7adb5fce8de3e0131d2459dee6a7c894f8674dc9f65ca6b367938fbf4f9da6a2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 4.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The coastal frames sit under a grey, overcast-looking sky with flat, even fill and no low warm sun. Only the canyon frame reaches a golden-hour mood. In the night frame the street lamps throw no light pools, and the road is lit evenly from nowhere."
+    },
+    {
+      "category": "shadows",
+      "seen": "The car's contact shadow is faint and soft in frames 1, 3 and 4. In the menu frame the shadow under the car shows visible blocky, checkered shadow-map aliasing to the right of the car. Tree shadows on the sand hill are present but crisp-edged and disconnected from any strong sun direction."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The teal car body shows some soft environment reflection, but the road, guardrails and night buildings show no reflections. The night road has a generic sheen with no lamp or skyline reflections. The sea is a striped flat surface with no sky reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The worlds are varied: a coast with turbines and red-roof houses, a red canyon, and a night skyway. The surfaces are mostly untextured gradients, though. The canyon walls are smooth banded slopes, the sand hill is a flat yellow plane, and the city towers are boxes with repeated stripe window textures."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze is present in every frame, but on the coast it washes out the whole midground into grey-white instead of grading fog from roughly 30 to 180 m. Tire smoke behind the car in frame 1 is a soft grey blob. The night frame has a moon glow and stars but no lamp volumetrics."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has a noisy granular texture that reads well up close. The car paint has a clearcoat sheen. The rear lamps are flat white ovals with no amber or red emissive. Guardrails, hills and rocks use plain flat-shaded materials."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The roadster model is decent, with roll hoops, a cockpit and racing stripes. The trees, rocks, traffic vehicles and towers are low-poly. The relay gate sign text renders as garbled, pixelated glyphs in frames 1 and 3."
+    },
+    {
+      "category": "composition",
+      "seen": "The car takes up only about 3 to 6% of the frame, well below the 15 to 25% target. The road vanishing point is strong and centered. In frame 1 the 'CLEAN LANDING' callout sits directly on top of the gate sign."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is low and behind the car with an FOV of about 60 to 65 degrees, which matches the recipe. The car is pushed small and far from the lens, so speed and subject presence suffer."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the bright sky and road. The coastal frames are low-contrast and grey-lifted with no film grade. The canyon frame has a warm purple-orange grade closer to cinematic film. No visible vignette, grain or motion blur conveys 217 km/h."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and readable: timer, relay count, progress bar, score with combo, and a speed dial with thrust and heat bars. The center callout collides with the world sign. The menu panel and buttons are tidy but plain beige."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

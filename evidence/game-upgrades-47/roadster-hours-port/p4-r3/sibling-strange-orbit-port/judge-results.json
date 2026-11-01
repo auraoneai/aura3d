@@ -1,0 +1,722 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:23:03.736Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s"
+    ],
+    "framesB": [
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.914,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 32,
+    "sameGameYes": 16,
+    "differentRate": 0.6666666666666666,
+    "ci95": [
+      0.5253984633247204,
+      0.783233986291032
+    ],
+    "confidentDifferent": 32,
+    "confidentDifferentRate": 0.6666666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.914,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "matching low-poly rust-orange terrain with soft painterly textures",
+        "same hazy, warm color grading and soft lighting",
+        "stylized racing vehicles with a gate/checkpoint motif and similar camera style"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night city highway with a vintage roadster; Image B is a stylized alien planet with a sidecar motorbike and astronaut",
+        "Different palettes and lighting: cool blue moonlit city versus warm orange ground with a purple nebula sky",
+        "Different scenery and world design: striped skyscrapers and guardrails versus dark low-poly mountains and a winding elevated track"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sci-fi astronaut on a hover-bike, purple nebula sky, giant moon, Mars-like terrain",
+        "Image B: realistic coastal highway with a teal Cobra-style roadster, wind turbines and overcast daylight",
+        "Different art direction: low-poly fantasy palette vs. realistic PBR lighting and road markings"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "matching low-poly orange boulders",
+        "teal and white vehicles with similar soft hazy post-processing",
+        "red-orange terrain palette with checkpoint gates"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly sci-fi space setting with a purple nebula sky, giant moon and an astronaut on a hover bike",
+        "Image B is a realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different palette and rendering: saturated dusk colors vs. muted hazy realistic lighting"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a hover motorbike over a Mars-like red alien landscape with a giant moon",
+        "Image B: realistic night city highway with a Cobra-style car and striped skyscrapers",
+        "Different palettes, scenery and vehicle styles (purple and orange sci-fi vs. blue-toned urban)"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "matching low-poly rust-orange rock and terrain palette",
+        "same soft, hazy post-processing and stylized vehicle modeling",
+        "racing theme with a start/relay gate and track markers in both frames"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sidecar hoverbike on a Mars-like red plain with purple nebula sky and floating track",
+        "Image B: vintage Cobra-style roadster on a night city highway with striped skyscrapers and snow",
+        "Different palettes, settings and vehicle styles"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blue night city highway with a vintage roadster",
+        "Image B: alien red planet with an astronaut on a sidecar motorbike",
+        "Different palettes and scenery: cool blue striped skyscrapers versus warm orange and purple low-poly terrain"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "matching orange faceted low-poly rocks",
+        "similar hazy, soft post-processing and warm red-orange palette",
+        "racing theme with a track and checkpoint-style gates in both"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly alien setting with a purple nebula sky, giant moon and an astronaut on a hover-bike",
+        "Image B: realistic coastal highway with wind turbines, a hazy grey sky and a vintage teal roadster",
+        "Different vehicles, art styles and lighting: saturated fantasy palette vs. muted realistic rendering"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly alien night scene with a giant moon, purple nebula sky and an astronaut on a hover bike",
+        "Image B: realistic daytime coastal highway with a vintage roadster, wind turbines and hazy grey sky",
+        "Different art direction, palette and lighting: saturated, glowing space look versus muted, photoreal asphalt and dunes"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sci-fi sidecar bike, purple nebula sky, red-orange alien terrain",
+        "Image B: vintage roadster on a night city highway with striped-window skyscrapers",
+        "Different palettes, settings and vehicle styles"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "matching low-poly red-orange rock terrain and warm palette",
+        "same soft, hazy stylized lighting and vehicle rendering",
+        "racing theme with checkpoint gates and a road track"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "shared low-poly orange-red rock and terrain style",
+        "similar soft, hazy lighting and color grading",
+        "stylized rounded vehicles with a third-person chase camera"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized sci-fi scene with an astronaut on a hover bike, a purple nebula sky and a giant moon",
+        "Image B is a realistic daytime coastal highway with a vintage teal roadster and wind turbines",
+        "The two frames differ completely in palette, lighting, vehicles and art style"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic daytime coastal highway with a vintage roadster and wind turbines",
+        "Image B: stylized alien night scene with a giant moon, purple nebula sky and an astronaut on a hover bike",
+        "Different palettes, lighting and art styles: hazy photoreal vs. low-poly saturated"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night highway with a vintage roadster and striped skyscrapers",
+        "Image B is a stylized alien landscape with an astronaut on a sidecar bike and a purple nebula sky",
+        "Different palettes and art styles: cool blue night vs warm orange-red with purple"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "matching faceted orange low-poly boulders",
+        "both are racing games with teal and white stylized vehicles",
+        "similar warm red-orange palette with soft, hazy post-processing"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night city highway with a vintage roadster and striped skyscrapers",
+        "Image B: alien planet with an astronaut on a sidecar bike, purple nebula sky and a winding elevated track",
+        "Different palettes (cool blue vs. warm orange and purple) and different art styles and vehicles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 3,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "shared low-poly orange-red rock and boulder style with soft, hazy lighting",
+        "stylized vehicles with a similar smooth, pastel-toned material look",
+        "both are third-person rear-chase racing views with a warm red-orange palette"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized alien night scene with a purple nebula sky, giant moon and an astronaut on a hover bike",
+        "Image B: realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different art style and lighting: low-poly fantasy palette vs. naturalistic hazy daylight"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly alien night scene with a purple nebula sky and an astronaut on a hover bike",
+        "Image B: realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different palettes, lighting and rendering style (flat stylized vs. photoreal PBR)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night highway with a vintage roadster and striped skyscrapers, Image B is a stylized alien landscape with an astronaut on a motorbike",
+        "Different palettes: cool blue night versus warm orange and purple sky with a giant moon",
+        "Different scenery and art style: blocky city and guardrails versus low-poly rocks and a winding dotted track"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized alien night scene with a giant moon, purple nebula sky and an astronaut on a hover bike",
+        "Image B is a realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different art style and lighting: low-poly saturated palette vs. hazy realistic PBR look"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hover-bike, purple nebula sky and orange Mars-like terrain",
+        "Image B: night city highway, striped Cobra-style car and blocky lit skyscrapers",
+        "Different palettes, scenery and vehicle styles with no shared assets"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "matching faceted orange low-poly rocks in both scenes",
+        "same soft, hazy, warm-graded rendering with vignette",
+        "stylized vehicle racing setup with a rear chase camera and a track-based course"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 4,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "shared low-poly orange/red rock formations",
+        "similar warm red-orange palette with soft hazy lighting",
+        "stylized vehicles with a racing theme (a track in A, a gate banner in B)"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic daytime coastal highway with a vintage roadster",
+        "Image B is a stylized space scene with a purple nebula sky, a giant moon and an astronaut sidecar bike",
+        "Different palettes, lighting and vehicle designs"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city highway with a vintage roadster and blocky striped skyscrapers",
+        "Image B is an alien red planet with an astronaut on a sidecar motorbike, a giant moon and a floating track",
+        "Different palettes, scenery and art styles: cool blue realistic lighting versus warm orange and purple stylized look"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 5,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly alien night scene with a purple nebula sky, giant moon and an astronaut on a hover bike",
+        "Image B is a realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different lighting, palette and rendering style: saturated fantasy glow versus hazy natural daylight"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 5,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic daytime coastal highway with a vintage roadster",
+        "Image B is a stylized space scene with a purple nebula sky, a huge moon, and an astronaut on a sidecar motorbike",
+        "The lighting, palette, and art style differ completely"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 5,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city highway with a vintage roadster and blocky striped skyscrapers",
+        "Image B is an alien red desert with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "Different palettes and art styles: cool blue realistic lighting versus warm, soft, stylized orange and purple"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 5,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a hover-bike, red-orange alien terrain, purple nebula sky, giant moon",
+        "Image B: Cobra-style roadster on a night city highway with blocky striped skyscrapers",
+        "Different scenery, palette and vehicle style, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 5,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "shared low-poly orange/red rock terrain with similar boulder clusters",
+        "matching warm red-orange palette and soft hazy lighting",
+        "stylized vehicles with the same rear-chase camera and a track/relay gate"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "faceted low-poly orange rocks in both",
+        "same soft, hazy post-processing and warm red-orange palette",
+        "racing setup with gate arches and vehicle seen from behind in both"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 6,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sci-fi hoverbike over a red alien planet with a giant moon and purple nebula sky",
+        "Image B: realistic night city highway with a Cobra-style roadster, tall striped skyscrapers and a blue palette",
+        "Different settings, vehicles and art styles: stylized low-poly space scene vs. a more realistic urban night scene"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 6,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night city highway with a vintage roadster and striped skyscrapers",
+        "Image B: alien planet with an astronaut on a sidecar bike and a purple nebula sky",
+        "Different palettes, scenery and vehicles"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 6,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sci-fi space setting with an astronaut on a hover bike, purple nebula sky and a giant moon",
+        "Image B: realistic daytime coastal highway with a vintage teal roadster, wind turbines and an overcast sky",
+        "Different vehicles, palettes and rendering styles: low-poly stylized versus realistic PBR"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 6,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "matching low-poly orange boulders and rock shapes",
+        "shared warm orange-purple palette with soft hazy grading",
+        "racing setup with checkpoint gates and a rear-chase camera"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 6,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "matching low-poly orange-red rock formations and boulders",
+        "similar warm red-orange palette with soft hazy gradient lighting",
+        "stylized vehicles with the same smooth, soft-shaded look and a racing theme"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 6,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic coastal highway with a vintage roadster and wind turbines in hazy daylight",
+        "Image B is a stylized alien night scene with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "Different art styles, palettes and lighting (muted realistic vs saturated low-poly)"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 7,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic daytime coastal highway with a vintage roadster",
+        "Image B: stylized alien night scene with an astronaut on a sidecar motorcycle",
+        "Different palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 7,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night city highway with a vintage sports car and a realistic moon",
+        "Image B: alien red planet with a purple nebula sky and an astronaut on a sidecar bike",
+        "Different palettes, scenery and vehicles; no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 7,
+      "a": "roadster-hours-port--sunbreak--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sci-fi astronaut on a hover bike under a purple nebula sky with a giant moon",
+        "Image B: realistic daytime coastal highway with wind turbines and a vintage teal roadster",
+        "Different lighting, palette and art style (low-poly cosmic vs. photoreal-ish overcast)"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 7,
+      "a": "roadster-hours-port--halo--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night city highway with a vintage roadster; Image B is a stylized alien landscape with an astronaut on a motorbike",
+        "Different palettes: cool blue night versus warm orange and purple",
+        "Different scenery and track style: striped skyscrapers and guardrails versus floating ribbon track with rocks and a giant moon"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 7,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "shared warm orange-red terrain with low-poly rock clusters",
+        "similar soft stylized rendering with hazy gradient lighting",
+        "third-person rear camera behind a stylized vehicle, no HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 7,
+      "a": "roadster-hours-port--redline--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "shared low-poly orange/rust rock formations and red-orange terrain",
+        "matching soft, hazy lighting and painterly texture style",
+        "stylized vehicles with a racing/track theme (Image B shows a relay gate)"
+      ]
+    }
+  ]
+}

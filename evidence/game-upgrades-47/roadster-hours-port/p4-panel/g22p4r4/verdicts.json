@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight bluish haze lowers contrast at the horizon; building window textures look like flat stripes; the overall scene is a bit flat and grey-blue",
+     "The road is a bit flat and hazy toward the horizon. The building windows are blocky stripes. The night mood is cool but low in saturation.",
+     "The road surface is a bit flat and washed out under the moonlight, and the building windows read as stripes. Otherwise the car is clear and well lit, the moon and skyline give depth, and the composition is good."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild purple-grey haze on the road and sky makes the image a bit muted; low-poly rock props are simple",
+     "The image has a slight purple haze, and the road is a little washed out. The walls are fairly flat and lack texture.",
+     "There is mild haze on the road and sky, and the frame is slightly low-contrast. The warm canyon mood, readable car and good depth outweigh this."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey haze washes out the sky and distance somewhat; the car's contact shadow is dithered and pixelated; the cone on the left guardrail looks oddly placed",
+     "The sky and the water on the left are grey and hazy. The road is a little washed out. The car's shadow is pixelated. The cone on the left looks odd.",
+     "The sky is somewhat hazy and grey, and the distance is a little washed out. Otherwise the warm hillside contrasts well, the trees, wind turbines and road texture add detail, and the car is well lit with a shadow."
+    ]
+   }
+  ]
+ }
+]

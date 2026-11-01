@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "45246dd860c5dd6116bde5956381fd4125770101bb7d20aef9095766d3ef716a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/title.1280x720.jpg",
+      "sha256": "d78fdfa2bfe31ddb7fc49a3a80988795c0ace1853cc8b79383db38e0f9966989"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "4fc26cf5dcbe7c3a5db297a43871ffaf7c146d6afecd794bba1dfb8b81fda81b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "7adb5fce8de3e0131d2459dee6a7c894f8674dc9f65ca6b367938fbf4f9da6a2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4.5,
+    "ibl_reflections": 5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The Sunbreak Coast frames are lit by a flat, grey-blue overcast haze with no readable low sun direction. Asphalt and car get almost no warm key and no rim light, so the golden-hour recipe is missed."
+    },
+    {
+      "category": "lighting",
+      "seen": "Redline Canyon has the warmest light, but the canyon walls are evenly lit orange planes with no bounce or form shading. On Halo Skyway at night, the streetlights cast no light pools and the car's tail lamps do not glow."
+    },
+    {
+      "category": "shadows",
+      "seen": "Trees on the sand hill cast reasonable sun shadows. The car's shadow is faint and lacks contact darkening in gameplay. On the title screen, the shadow under the car shows a stair-stepped, dithered edge from a low-resolution shadow map."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The teal car paint has soft specular highlights, and the night road has a broad sheen. The sea is a flat striped surface that does not reflect the sky, and neither the guardrails nor the car reflect their surroundings in a visible way."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Each track has a distinct theme: a coast with wind turbines, a terracotta village and traffic, a red canyon, and a night skyway. The surfaces are sparse. The canyon walls are huge untextured banded slopes, and the city towers are boxes with barcode-like white window stripes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far road and hills, roughly within the 30–180 m fog range. On the coast the fog is too dense and grey, so it washes out the whole frame. The drift smoke behind the car is a soft grey blob. Night has stars and a moon halo but no fog glow around the lights."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt uses a noisy grain texture that repeats. The sand hills and canyon walls are matte flat color with no surface breakup. The car paint, white stripes and chrome roll hoops read convincingly."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The roadster is the best asset, with roll hoops, cockpit detail and round tail lamps. The trees, rock clusters, gantries and towers are low-poly primitives with little secondary detail."
+    },
+    {
+      "category": "composition",
+      "seen": "Road lines lead strongly to the vanishing point, and the canyon walls frame the car well. In the coast gameplay frame the car takes up only about 12–14% of the frame and blends into the grey road. The 'CLEAN LANDING' text sits directly over the 'HARBOUR RELAY' gantry sign, which makes that area cluttered."
+    },
+    {
+      "category": "camera",
+      "seen": "A chase camera at roughly 60° FOV is used throughout. The car is centered on the coast and shifted right in the canyon and skyway frames, which gives some dynamism but is inconsistent between tracks."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a light vignette and per-track grading, purple-warm in the canyon and blue at night. The coast frame has crushed contrast and a milky grey lift, there is little bloom except a soft halo on the moon, and nothing reads as a cinematic film grade."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

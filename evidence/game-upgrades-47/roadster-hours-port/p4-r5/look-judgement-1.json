@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "45246dd860c5dd6116bde5956381fd4125770101bb7d20aef9095766d3ef716a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r2/screens/title.1280x720.jpg",
+      "sha256": "d78fdfa2bfe31ddb7fc49a3a80988795c0ace1853cc8b79383db38e0f9966989"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r5/roadster-hours-port/frames/g22p4-r5-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "aac602e185e085d46779fda8fd2739166f13811d64031e016852ff8f32c4d3b8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p4-r4/roadster-hours-port/frames/g22p4-r4-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "7adb5fce8de3e0131d2459dee6a7c894f8674dc9f65ca6b367938fbf4f9da6a2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The coastal frame reads as grey overcast with a cool blue-grey cast and no clear low sun direction, which misses the golden-hour key. The canyon frame has a warm orange/purple dusk that fits the recipe. The night frame is flat blue ambient, and the street lamps do not light the road."
+    },
+    {
+      "category": "shadows",
+      "seen": "Trees cast readable shadows on the sand hill. The car's contact shadow is faint in gameplay frames. In the menu frame, the shadow under the car's right side shows blocky, stair-stepped shadow-map aliasing."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The teal car paint has some broad specular highlights but little environment reflection. The sea is a flat striped surface with no sun or sky glint. The night road shows no reflections from the lamps or the moon."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Three distinct biomes appear: a sea cliff with wind turbines and red-roof houses, a red canyon, and a night skyway. Each is sparse. The hills are smooth, untextured slopes, and the city is plain boxes with horizontal window stripes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance fog appears in all frames, and tire smoke trails behind the car in frame 1. In frame 1 the haze washes the whole image toward grey instead of only fading the distance. The night sky has stars and a soft moon glow."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has a noisy grain texture. The terrain and canyon walls are near-flat colour with soft banding. The building windows are uniform emissive stripes. The car's taillights render as pale white ovals instead of red."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The roadster is a recognizable Cobra-style model with roll hoops, stripes and a cockpit interior. The trees, rocks and houses are low-poly generated props. The traffic vehicles and city towers are simple blocky shapes."
+    },
+    {
+      "category": "composition",
+      "seen": "The horizon sits near the vertical centre with a strong central vanishing point, which works well in the canyon. The car is small and sits low; in frames 3 and 4 it is offset right, leaving large empty road areas."
+    },
+    {
+      "category": "camera",
+      "seen": "This is a low chase camera with a field of view around 60–70°. The car fills roughly 8–12% of the frame, below the 15–25% target."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom on the moon, street lamps or window emissives, and contrast in the coastal frame is low and milky. The canyon frame has a mild warm grade. No film-style tone curve, grain or vignette is evident."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD has consistent typography: timer, relay count, segmented progress bar, score/combo, a radial speedometer, and thrust/heat bars. The 'CLEAN LANDING' callout sits on top of the 'HARBOUR RELAY' gate sign and makes both hard to read. The beige Pause/Sound buttons are large and clash with the in-race overlay. The menu is clean and readable."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
