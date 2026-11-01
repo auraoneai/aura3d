@@ -52,9 +52,9 @@ export default defineArtDirection({
   },
   framing: { rig: "topDown", subjectHeightFraction: [0.025, 0.08], fovDeg: [45, 52], mobile: "both" },
   assets: [
-    // Planned WP-36 generations (Meshy credits are exhausted until 2026-11-01): today's courier, sentries and
-    // dressing stay procedural until these keys are admitted (lane report, "Asset needs").
-    { role: "hero", assetKey: "dotDashCourierPod", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    // WP-36 generations. Phase 4 (4.7.2): the courier pod is admitted as `dotdashCourierPod` (the WP-36 key,
+    // simplified to 10.5k triangles); the sentries and dressing stay procedural (Meshy keys refuse API calls).
+    { role: "hero", assetKey: "dotdashCourierPod", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "enemy", assetKey: "dotDashSentryHunter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "enemy", assetKey: "dotDashSentryAmbusher", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "enemy", assetKey: "dotDashSentryDrifter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },

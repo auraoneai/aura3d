@@ -1,0 +1,741 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T02:19:44.204Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "dot-dash-3d--classic--settle-25s",
+      "dot-dash-3d--classic--settle-60s",
+      "dot-dash-3d--default--settle-25s",
+      "dot-dash-3d--default--settle-60s",
+      "dot-dash-3d--foundry--settle-25s",
+      "dot-dash-3d--foundry--settle-60s",
+      "dot-dash-3d--garden--settle-25s",
+      "dot-dash-3d--garden--settle-60s",
+      "dot-dash-3d--spiral--settle-25s",
+      "dot-dash-3d--spiral--settle-60s",
+      "dot-dash-3d--twin--settle-25s",
+      "dot-dash-3d--twin--settle-60s"
+    ],
+    "framesB": [
+      "where-the-wind-wanders-port--bell--settle-25s",
+      "where-the-wind-wanders-port--bell--settle-60s",
+      "where-the-wind-wanders-port--default--settle-25s",
+      "where-the-wind-wanders-port--default--settle-60s",
+      "where-the-wind-wanders-port--epilogue--settle-25s",
+      "where-the-wind-wanders-port--epilogue--settle-60s",
+      "where-the-wind-wanders-port--found0--settle-25s",
+      "where-the-wind-wanders-port--found0--settle-60s",
+      "where-the-wind-wanders-port--found2--settle-25s",
+      "where-the-wind-wanders-port--found2--settle-60s",
+      "where-the-wind-wanders-port--found3--settle-25s",
+      "where-the-wind-wanders-port--found3--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.964,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.964,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: bright, painterly outdoor meadow with a cottage and a hooded character",
+        "Image B: dark circuit-board maze with dim, moody lighting and a 'GLINT COURIER' label",
+        "Completely different art style, palette and camera setup"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, painterly outdoor meadow with a cottage and a hooded character",
+        "Image B is a dark circuit-board maze with gem pieces, lit like a tabletop and labeled 'Glint Courier'",
+        "The two frames share no palette, scenery, materials or HUD style"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces on a tabletop",
+        "Image B is a natural night meadow with a cottage, lake and hooded character",
+        "Different scenery, palette and camera style, with no shared assets"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a circuit-board maze with dark moody lighting and a Pac-Man style layout",
+        "Image B is a bright, painterly outdoor meadow with a cottage, lake and a hooded character",
+        "Completely different palettes, art styles, camera setups and scenery"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral meadow with a cottage, lake and a hooded character",
+        "Image B is a dark circuit-board maze with 'GLINT COURIER REV 4.7' text and gem pieces",
+        "Entirely different palettes, lighting, and camera styles"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a circuit-board maze with a top-down tabletop view and a 'Glint Courier' label",
+        "Image B is a naturalistic night meadow with a cottage, lake and flowers",
+        "The two frames share no scenery, palette, characters or HUD style"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a circuit-board maze with dark blocks and gem pickups",
+        "Image B is a stylized outdoor meadow with a cottage, lake and a hooded character",
+        "Completely different palette, setting and camera style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pastoral cottage and flower meadow with a hooded character and a purple cat spirit",
+        "Image B is a circuit-board maze on a desk with the 'GLINT COURIER REV 4.7' board text",
+        "Different art direction: painterly organic foliage in A versus dark, hard-edged tech props with spotlights in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, stylized outdoor cottage meadow with grass and flowers",
+        "Image B is a dark circuit-board maze table with a Pac-Man-style layout and low-key lighting",
+        "Completely different palettes, scenery, camera and art style"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with faceted gems and a top-down tabletop camera",
+        "Image B is a bright, stylized outdoor meadow with a cottage, lake and a hooded character",
+        "Completely different palettes, lighting and art style (dark emissive tech vs. soft pastel nature)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "tells": [
+        "Image A: bright pastoral meadow with cottage, lake and a hooded character",
+        "Image B: dark circuit-board maze with gem pieces and 'GLINT COURIER' text",
+        "Completely different palette, lighting, and art style"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces and a 'GLINT COURIER' label",
+        "Image B is a night meadow with a cottage, lake and hooded figure",
+        "Different art styles and subject matter, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pieces and a moody indoor tabletop setting",
+        "Image B is a bright outdoor pastoral meadow with a cottage, lake, and a hooded character",
+        "Completely different art style, palette, and camera: top-down board vs. third-person nature scene"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, stylized outdoor pastoral scene with a cottage, lake and flowers",
+        "Image B is a dark tabletop circuit-board maze with black blocks and glowing gems",
+        "Completely different palette, lighting, camera and subject matter"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: dark circuit-board maze with a top-down arcade look and a 'Glint Courier' label",
+        "Image B: bright stylized pastoral meadow with a cottage, lake and a hooded character",
+        "Completely different palettes, lighting, camera and subject matter"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with a top-down tabletop camera",
+        "Image B is a bright outdoor meadow with a cottage and a lake in a third-person view",
+        "The two frames share no palette, scenery, or HUD style"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pastoral flower meadow with a cottage and lake",
+        "Image B is a circuit-board maze with 'GLINT COURIER' text and gems",
+        "Entirely different palettes, subject matter and camera style"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pickups and tech HUD text",
+        "Image B is a bright pastoral meadow with a cottage, lake, flowers and a hooded character",
+        "Completely different palettes, lighting and camera style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with a maze-game HUD",
+        "Image B is a bright outdoor cartoon meadow with a cottage and lake",
+        "Completely different palettes, lighting and subject matter"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral cottage and meadow scene with a hooded character",
+        "Image B is a dark circuit-board maze viewed from above with gem pieces",
+        "Entirely different palette, lighting, and art style (stylized nature vs. tabletop tech)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a circuit-board maze with dark lighting and a Pac-Man-like layout",
+        "Image B is a bright outdoor meadow with a cottage, lake and hooded character",
+        "Palettes, scenery and art style are completely different"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: dark circuit-board maze with glowing pellets and a red palette",
+        "Image B: bright pastoral meadow with cottage, lake and a hooded character",
+        "Completely different lighting, art style and camera setup"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pieces and a 'GLINT COURIER' label",
+        "Image B is a bright pastoral meadow with a cottage, lake and a cloaked character",
+        "Completely different palette, lighting and camera style"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a circuit-board maze with gems and a dark desk setting",
+        "Image B is a pastoral flower meadow with a cottage, lake and hooded character",
+        "Completely different palettes and art styles (red/black tabletop vs. painterly green/pastel outdoors)"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "where-the-wind-wanders-port--found3--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with a 'Glint Courier' label and gem pieces",
+        "Image B is a bright pastoral scene with a lake, cottage, flowers and a hooded character",
+        "Different palette, lighting, camera angle and art style"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral cottage scene with grass, flowers and a hooded character",
+        "Image B is a dark circuit-board maze with gem pieces and a 'GLINT COURIER' label",
+        "Completely different palettes, scenery and camera framing"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a nighttime outdoor garden scene with a cottage, lake, and hooded character",
+        "Image B is a circuit-board maze with a Pac-Man-like layout and the label 'GLINT COURIER'",
+        "The two frames share no scenery, palette, or HUD style"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a circuit-board maze with dark blocks and gem pieces, seen from above",
+        "Image B is a bright, stylized outdoor meadow with a cottage, lake, and a hooded character",
+        "Palette, lighting, and camera differ: dim, desaturated tabletop versus saturated daylight third-person"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a top-down circuit-board maze with chip blocks and a 'GLINT COURIER' label",
+        "Image B is a third-person pastoral scene with a cottage, lake, flowers and a hooded character",
+        "Completely different palettes, red and dark vs. green and pastel, and unrelated art styles"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, painterly outdoor meadow with a cottage and a lake",
+        "Image B is a dark tabletop circuit-board maze with faceted gems and dim spotlight lighting",
+        "Completely different art style, palette, camera and subject matter"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces, Image B is a pastoral flower meadow with a cottage and lake",
+        "Completely different scenes, palettes and lighting: dark studio tabletop versus pink dusk sky",
+        "Different art styles: sparse geometric low-poly gems versus dense painterly foliage and a hooded character"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a circuit-board maze with dark low-light lighting and a Pac-Man-style layout",
+        "Image B is a bright pastoral meadow with a cottage, lake and a hooded character with a pink spirit",
+        "The palettes, camera views and art styles do not match"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: top-down circuit-board maze with gems and a 'GLINT COURIER' label",
+        "Image B: outdoor pastoral flower meadow with a cottage, lake and a hooded character",
+        "No shared palette, scenery or HUD style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night outdoor flower meadow with a cottage and a hooded character, and Image B is a top-down circuit-board maze on a desk",
+        "Different art styles: painterly foliage and a starry sky versus clean low-poly gems and black blocks",
+        "Different camera and HUD: third-person ground view versus an overhead tabletop view with a 'GLINT COURIER' board label"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pickups and a dim, moody palette",
+        "Image B is a bright, saturated outdoor meadow with a cottage, lake and a hooded character",
+        "Different art styles and camera: top-down tabletop view vs. third-person landscape"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral low-poly meadow with a cottage and a lake, Image B is a dark circuit-board maze",
+        "Image A uses a hand-painted soft palette with a character in a cloak, Image B uses metallic chips and glowing gems",
+        "The camera and lighting differ: Image A has an open daylight scene, Image B has a spotlit tabletop view"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, painterly outdoor meadow with a cottage and a character",
+        "Image B is a dark circuit-board maze with faceted gems and moody spotlighting",
+        "Completely different art style, palette, and camera setup"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night outdoor meadow with a cottage, lake and flowers",
+        "Image B is a top-down circuit-board maze with chip blocks and gem pieces",
+        "Entirely different setting, palette and camera style, with no shared scenery or characters"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "where-the-wind-wanders-port--bell--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a circuit-board maze with a top-down tabletop view and 'GLINT COURIER' text",
+        "Image B is a pastoral flower meadow with a cottage, lake and hooded character",
+        "Completely different palettes, scenery and art styles"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pieces and a text HUD on the board",
+        "Image B is a bright pastoral meadow with a cottage, lake and a hooded character",
+        "Palette and art style differ: dim, moody lighting versus saturated, painterly daylight"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "where-the-wind-wanders-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright outdoor cottage meadow with grass and flowers, Image B is a dark circuit-board maze on a desk",
+        "Different art styles: painterly stylized nature vs. low-poly geometric gems and blocks",
+        "Different lighting and palette: sunny pastel greens vs. dim moody amber and green"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral meadow with a cottage and a hooded character",
+        "Image B is a dark circuit-board maze with chip blocks and gem pieces",
+        "Different palettes, lighting and camera: soft daylight third-person vs. dim top-down tabletop"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-60s",
+      "b": "where-the-wind-wanders-port--found3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral outdoor scene with a cottage, meadow flowers and a lake",
+        "Image B is a dark circuit-board maze on a tabletop with a top-down camera and a 'Glint Courier' label",
+        "The art styles and lighting differ, with soft stylized foliage in A and low-poly gems on dark blocks in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "where-the-wind-wanders-port--epilogue--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an outdoor night meadow with a cottage, lake and hooded figure in a painterly low-poly style",
+        "Image B is a top-down circuit-board maze with black chip blocks and faceted gems, labeled 'Glint Courier'",
+        "Completely different palettes, scenery and camera: lush green-blue nature versus a gray-white tabletop board"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark red circuit-board maze with glowing gems",
+        "Image B is a bright pastoral meadow with a cottage and lake",
+        "Different palettes, lighting and camera: tabletop overview vs. third-person landscape"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright pastoral meadow with a cottage, lake and a hooded character",
+        "Image B is a dark circuit-board maze with gems and a 'GLINT COURIER' label",
+        "Completely different palettes, camera setups and art styles"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "where-the-wind-wanders-port--found2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, painterly outdoor meadow with a cottage and a hooded character",
+        "Image B is a dark, top-down circuit-board maze with glossy gem pieces and dim spotlighting",
+        "Different art style, palette and camera, with no shared HUD or materials"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "where-the-wind-wanders-port--found0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, painterly, low-poly outdoor meadow with a cottage and a character",
+        "Image B is a dark, top-down circuit-board maze with glowing gems and a tabletop setting",
+        "Different palettes, camera views and materials: soft saturated nature vs. moody PCB hardware"
+      ]
+    }
+  ]
+}

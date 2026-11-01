@@ -3,85 +3,85 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/screens/1280-04-mid.jpg",
-      "sha256": "bb1a20943fbcb7cda7b460e8604e52b317c98dd3e9f9dc18fd3e2163d1efcce6"
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p4-r4/screens/1280-04-mid.jpg",
+      "sha256": "c025e06c77bd45af9da98044217f2e3cd81411d8caf8522fd6020e00aee2a6f0"
     },
     {
-      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/screens/card-04-mid.jpg",
-      "sha256": "98265a46a8d09925a9d6662226ca079997b8bd85bc963574dcb7a410ed207481"
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p4-r4/screens/1280-03-action.jpg",
+      "sha256": "3f3f8b31f69fb96c003b525e01857fa20d1ac14479599c3c3ebd0a30b95924ae"
     },
     {
-      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/dot-dash-3d/frames/g13p3-r3-2/dot-dash-3d--zerocore--settle-60s.jpg",
-      "sha256": "394be41e686dca9a370a7c67c81f415d6ba6776133877400f1a70214d5665c43"
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p4-r4/judge-shots/dot-dash-3d--foundry--settle-60s.jpg",
+      "sha256": "aa135fc864302103f8588e57f04d5b0c0e3e8eb4d846a28b1b6f1c86c879c6b5"
     },
     {
-      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/dot-dash-3d/frames/g13p3-r3-2/dot-dash-3d--foundry--settle-60s.jpg",
-      "sha256": "6e3ee5eda48071e585d93008b7b622d4402318802e7df44ea9bb4bc0f7b5140c"
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p4-r4/judge-shots/dot-dash-3d--garden--settle-60s.jpg",
+      "sha256": "8614b0e1de757efeee2c02712799f5841b7e84c2675a08274cfe07f5484c25ca"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 6.5,
-    "shadows": 5.5,
+    "shadows": 6.5,
     "ibl_reflections": 5,
-    "environment_world": 6.5,
+    "environment_world": 6,
     "atmospheric_effects": 4,
-    "material_quality": 6,
+    "material_quality": 6.5,
     "modeling_assets": 6,
-    "composition": 6.5,
+    "composition": 6,
     "camera": 6.5,
-    "postprocessing": 5.5,
+    "postprocessing": 6,
     "animation_quality": 5,
-    "ui_hud": 7
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "A warm key light pools in the bottom-left and top-right corners of the PCB. The maze center is evenly lit, so the play field reads flat and lacks a clear flood-light hierarchy. Small orange point lights at the maze corners add some local warmth."
+      "seen": "A single warm key from the lower-left corner leaves a bright hotspot and lens flare at the bottom-left of the board while the upper-right board corner falls into murk. On the white board in frame 4, the hotspot blows out the solder mask and flattens the maze contrast. Small orange lamp posts at the maze corners add local warm pools but do not shape the chips."
     },
     {
       "category": "shadows",
-      "seen": "The wall blocks cast soft, short contact shadows, but these are faint. The gem pedestals and side components show some shadowing. The maze interior has almost no readable shadow depth between blocks and traces."
+      "seen": "Chips and gem pedestals cast soft, short contact shadows offset toward the upper right, which grounds them. Shadows on the off-board black pillars are dark and smeared. The shadow direction reads clearly, but there is no crisp shadow from the player courier or the enemy cones."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The faceted gems and the board show little environment reflection. The black wall blocks have a mild sheen but no visible reflections. The red and black board variants look matte and plasticky, with no clear-coat response."
+      "seen": "Faceted gems show flat per-face shading with almost no environment reflection or sparkle. Chip tops have only a faint specular rim. The board surface has no glossy solder-mask sheen picking up the room."
     },
     {
       "category": "environment_world",
-      "seen": "The PCB sits on a blue cutting mat in front of a pegboard wall, which gives a coherent workbench diorama. The off-board area is sparse, and the pegboard is cut off at the top of the frame."
+      "seen": "The board sits on a blue grid cutting mat with a pegboard wall and a wooden shelf behind it. The setting is coherent as a workbench but sparse and dim, and most of it is cropped away by the board filling the frame."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is no visible haze, dust, or volumetric light in any frame. The only atmosphere is a slight warm glow near the corners. The indoor haze the recipe expects is missing."
+      "seen": "No indoor haze or volumetric light is visible. The only atmospheric cues are a slight glow halo around the corner lamps and a soft light bloom in the bottom-left corner."
     },
     {
       "category": "material_quality",
-      "seen": "The green, black and red PCB surfaces carry copper traces and solder pads that sell the theme. The wall blocks are uniform dark boxes with mild bevels. The gems are flat-shaded low-poly with little refraction or sparkle."
+      "seen": "The PCB reads well: green or red solder mask, copper traces, gold pads, silkscreen text ('GLINT COURIER REV 4.7'), and drilled vias. The chips are a uniform matte dark plastic with little variation. The white board variant in frame 4 looks chalky and loses trace legibility."
     },
     {
       "category": "modeling_assets",
-      "seen": "The maze walls are repeated simple cubes. The gems are low-poly icosahedra. The player and sentries are small primitive shapes (a cone, a cube, a sphere) and are hard to tell apart at this scale."
+      "seen": "IC chips have modeled pins and the board has mounting holes, which is a nice level of detail. The gems are plain low-poly icosahedra, the off-board pillars are bare boxes, and the player and enemies are tiny, simple shapes that barely read at this scale."
     },
     {
       "category": "composition",
-      "seen": "The board fills roughly 70% of the frame, well above the 25–40% target. The player and enemies are tiny relative to the maze, so the gameplay subject gets lost among the decorative gems."
+      "seen": "The board fills roughly 75 to 80% of the frame, well over the 25 to 40% target. The bottom edge of the board is cropped and the top is crowded by the HUD. The player and enemies are tiny and lack focal emphasis, and decorative gems at the board edges compete for attention."
     },
     {
       "category": "camera",
-      "seen": "A high three-quarter perspective tilt gives good maze readability, but there is noticeable keystone distortion. The far rows are compressed, which hurts readability in the top lanes."
+      "seen": "The camera is a steep, fixed, high-angle perspective with visible keystone convergence toward the top. It is not an orthographic broadcast view. The angle reads the maze adequately but compresses the far rows."
     },
     {
       "category": "postprocessing",
-      "seen": "There is mild bloom on the lit traces and the player glow, and a slight vignette. The frames have no clear tone-mapping punch. The red board variant looks slightly blown out, and the black variant is muddy."
+      "seen": "Effects present are a warm grade, a vignette, bloom on the player trail and lamps, and a lens flare at the bottom-left. Frames 3 and 4 show visible noise and banding. The bloom on the white board washes out the lower half."
     },
     {
       "category": "animation_quality",
-      "seen": "Stills only. The glowing trail lines behind the player suggest a motion path. A spawning ring effect is visible near the top-left."
+      "seen": "Between frames 1 and 2 the player's glowing trail line moves and the score changes from 50 to 60. Otherwise the frames show nothing animated: no visible squash, particles on pickup, or enemy motion cues."
     },
     {
       "category": "ui_hud",
-      "seen": "The HUD is clean, with outlined panels for score, hi-score, lives, shards, cache and the dash meter. Toast messages at the bottom are legible. The top nav bar is dense and debug-like, and it competes with the game HUD."
+      "seen": "The HUD panels for score, high score, lives, shards, cache and dash are clean and readable. A top developer-style tab bar (Sentry Lab, Board Map, Courier Studio, Relay, Coil, Dash ON, Overhead) clutters the view. The 'Relay Grid GO!' banner overlaps the board, and frames 3 and 4 show no HUD at all."
     }
   ],
   "nextChange": {

@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/screens/1280-04-mid.jpg",
+      "sha256": "bb1a20943fbcb7cda7b460e8604e52b317c98dd3e9f9dc18fd3e2163d1efcce6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/screens/card-04-mid.jpg",
+      "sha256": "98265a46a8d09925a9d6662226ca079997b8bd85bc963574dcb7a410ed207481"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/dot-dash-3d/frames/g13p3-r3-2/dot-dash-3d--zerocore--settle-60s.jpg",
+      "sha256": "394be41e686dca9a370a7c67c81f415d6ba6776133877400f1a70214d5665c43"
+    },
+    {
+      "path": "evidence/game-upgrades-47/dot-dash-3d/p3-r3/dot-dash-3d/frames/g13p3-r3-2/dot-dash-3d--foundry--settle-60s.jpg",
+      "sha256": "6e3ee5eda48071e585d93008b7b622d4402318802e7df44ea9bb4bc0f7b5140c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5.5,
+    "ibl_reflections": 5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 4,
+    "material_quality": 6,
+    "modeling_assets": 6,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm key light pools in the bottom-left and top-right corners of the PCB. The maze center is evenly lit, so the play field reads flat and lacks a clear flood-light hierarchy. Small orange point lights at the maze corners add some local warmth."
+    },
+    {
+      "category": "shadows",
+      "seen": "The wall blocks cast soft, short contact shadows, but these are faint. The gem pedestals and side components show some shadowing. The maze interior has almost no readable shadow depth between blocks and traces."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The faceted gems and the board show little environment reflection. The black wall blocks have a mild sheen but no visible reflections. The red and black board variants look matte and plasticky, with no clear-coat response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The PCB sits on a blue cutting mat in front of a pegboard wall, which gives a coherent workbench diorama. The off-board area is sparse, and the pegboard is cut off at the top of the frame."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is no visible haze, dust, or volumetric light in any frame. The only atmosphere is a slight warm glow near the corners. The indoor haze the recipe expects is missing."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The green, black and red PCB surfaces carry copper traces and solder pads that sell the theme. The wall blocks are uniform dark boxes with mild bevels. The gems are flat-shaded low-poly with little refraction or sparkle."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The maze walls are repeated simple cubes. The gems are low-poly icosahedra. The player and sentries are small primitive shapes (a cone, a cube, a sphere) and are hard to tell apart at this scale."
+    },
+    {
+      "category": "composition",
+      "seen": "The board fills roughly 70% of the frame, well above the 25–40% target. The player and enemies are tiny relative to the maze, so the gameplay subject gets lost among the decorative gems."
+    },
+    {
+      "category": "camera",
+      "seen": "A high three-quarter perspective tilt gives good maze readability, but there is noticeable keystone distortion. The far rows are compressed, which hurts readability in the top lanes."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the lit traces and the player glow, and a slight vignette. The frames have no clear tone-mapping punch. The red board variant looks slightly blown out, and the black variant is muddy."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Stills only. The glowing trail lines behind the player suggest a motion path. A spawning ring effect is visible near the top-left."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean, with outlined panels for score, hi-score, lives, shards, cache and the dash meter. Toast messages at the bottom are legible. The top nav bar is dense and debug-like, and it competes with the game HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

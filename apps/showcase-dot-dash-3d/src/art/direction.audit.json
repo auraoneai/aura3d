@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-dot-dash-3d/src/art/direction.ts",
-  "sourceSha256": "1f7bc182231c4b90cac3987b1e3f182974df1ea7017497773d338aa55feee405",
+  "sourceSha256": "e0dd1758398ea8477b34a8f7aa9584135f5c5023aa1153ebfb1b217a0c50a75a",
   "id": "dot-dash-3d",
   "genre": "maze-arcade",
   "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
@@ -24,7 +24,7 @@
       {
         "type": "spot",
         "shadow": true,
-        "intensity": 4300
+        "intensity": 4700
       },
       {
         "type": "directional",
@@ -62,7 +62,22 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "dotdashCourierPod",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "dotdashCourierPod",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "walnut bench",
@@ -152,7 +167,7 @@
       },
       {
         "node": "gems",
-        "emissiveIntensity": 0.4,
+        "emissiveIntensity": 0.18,
         "practical": true
       },
       {
@@ -190,6 +205,31 @@
       {
         "node": "mat grid",
         "practical": false
+      },
+      {
+        "node": "lamp shaft 0",
+        "emissiveIntensity": 1,
+        "practical": true
+      },
+      {
+        "node": "lamp shaft 1",
+        "emissiveIntensity": 1,
+        "practical": true
+      },
+      {
+        "node": "lamp shaft 2",
+        "emissiveIntensity": 1,
+        "practical": true
+      },
+      {
+        "node": "lamp shaft 3",
+        "emissiveIntensity": 1,
+        "practical": true
+      },
+      {
+        "node": "lamp shaft 4",
+        "emissiveIntensity": 1,
+        "practical": true
       },
       {
         "node": "wall shelf",
@@ -274,7 +314,7 @@
     "assets": [
       {
         "role": "hero",
-        "assetKey": "dotDashCourierPod",
+        "assetKey": "dotdashCourierPod",
         "maxTriangles": 12000,
         "minTriangles": 2000,
         "textureSet": "BC+N+ORM+E",

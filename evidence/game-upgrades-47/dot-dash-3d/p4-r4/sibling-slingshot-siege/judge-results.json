@@ -1,0 +1,743 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T02:19:52.404Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "dot-dash-3d--classic--settle-25s",
+      "dot-dash-3d--classic--settle-60s",
+      "dot-dash-3d--default--settle-25s",
+      "dot-dash-3d--default--settle-60s",
+      "dot-dash-3d--foundry--settle-25s",
+      "dot-dash-3d--foundry--settle-60s",
+      "dot-dash-3d--garden--settle-25s",
+      "dot-dash-3d--garden--settle-60s",
+      "dot-dash-3d--spiral--settle-25s",
+      "dot-dash-3d--spiral--settle-60s",
+      "dot-dash-3d--twin--settle-25s",
+      "dot-dash-3d--twin--settle-60s"
+    ],
+    "framesB": [
+      "slingshot-siege--ch0--settle-25s",
+      "slingshot-siege--ch0--settle-60s",
+      "slingshot-siege--ch1--settle-25s",
+      "slingshot-siege--ch1--settle-60s",
+      "slingshot-siege--ch2--settle-25s",
+      "slingshot-siege--ch2--settle-60s",
+      "slingshot-siege--ch3--settle-25s",
+      "slingshot-siege--ch3--settle-60s",
+      "slingshot-siege--ch4--settle-25s",
+      "slingshot-siege--ch4--settle-60s",
+      "slingshot-siege--ch5--settle-25s",
+      "slingshot-siege--ch5--settle-60s",
+      "slingshot-siege--default--settle-25s",
+      "slingshot-siege--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.94,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.94,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "slingshot-siege--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark circuit-board maze with gem pieces, Image B is a bright green island with rocks and a windmill",
+        "Different art styles: A is a sci-fi tabletop, B is a cartoon fantasy diorama with textured rocks",
+        "Different HUD and text: 'GLINT COURIER REV 4.7' vs 'DRIFTWOOD COVE' sign"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-60s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an outdoor night mini-golf course with a starry sky, rocks and a windmill, while Image B is a tabletop circuit-board maze",
+        "Different palettes: A is deep blue and green, B is red and orange with a blue grid mat",
+        "Different scene content: A has a 'Moon Roost' sign and props, B has a 'GLINT COURIER REV 4.7' board with gem pieces"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "slingshot-siege--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark red circuit-board maze with glowing gems",
+        "Image B is a bright green island with photoreal rocks and a windmill",
+        "Different palette, lighting, camera and HUD style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "slingshot-siege--ch5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces and a Pac-Man-like layout",
+        "Image B is a night moon-surface mini-golf course with a windmill, rocks and a starry sky",
+        "Different scene types, lighting and HUD/text styles"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gems and a printed 'GLINT COURIER' label",
+        "Image B is an outdoor miniature golf course at night with a starry sky, a windmill and a 'MOON ROOST' sign",
+        "The palettes and scenery differ: dark green PCB tones against a navy sky and flat green turf"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor cartoon island with rocks, windmill and a grey sky; Image B is an indoor circuit-board maze on a desk",
+        "Different art direction: textured, stylized rocks and wood against a dark, moody spotlit tabletop with a cyan grid mat",
+        "Different HUD and text style: a wooden 'Driftwood Cove' sign against etched PCB labels such as 'GLINT COURIER REV 4.7'"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-60s",
+      "b": "slingshot-siege--ch4--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gem pickups and a dark workshop table setting",
+        "Image B is an outdoor island scene with a sunset sky, rock cliffs and a windmill",
+        "Different art styles and palettes: cool metallic neon in A, warm orange sky with textured rock and flat green terrain in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "slingshot-siege--ch4--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: outdoor island with a sunset sky, rocks and a windmill, labeled 'GULL KEEP'",
+        "Image B: top-down circuit-board maze on a desk, labeled 'GLINT COURIER REV 4.7'",
+        "Different scenery, palette and art style, so the two scenes do not match"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with dark blocks and glowing gems, while Image B is a grassy island with rocks and a windmill",
+        "Different art styles: A is dim, stylized and technical, B is bright, cartoonish and natural",
+        "Different HUD and text styles: 'GLINT COURIER REV 4.7' silkscreen vs 'QUARRY RISE' wooden sign"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "slingshot-siege--ch0--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces on a dark grid table",
+        "Image B is a bright green island with rocks, crates and a windmill",
+        "Different palettes, scenery and camera framing, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is an outdoor golf-style island with windmill, rocks and warm dusk sky",
+        "Image B is an indoor circuit-board maze on a desk with cool blue grid mat and dark blocks",
+        "Different art styles and HUD: wooden sign text vs. printed board labels"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a top-down circuit-board maze with gems, Image B is a night-time mini-golf style course with a windmill and rocks",
+        "Different palettes and subject matter: pale board with dark blocks versus deep blue sky and green terrain",
+        "Different HUD and text styles: 'GLINT COURIER REV 4.7' printed on the board versus the 'MOON ROOST' wooden sign"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "slingshot-siege--ch5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a circuit-board maze with gems and a grid desk, Image B is a night mini-golf-style island with a windmill and rocks",
+        "Different art styles: clean glossy low-poly electronics vs. textured fantasy props and flat green terrain",
+        "Different settings and lighting: warm indoor desk lighting vs. starry moonlit outdoor sky"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gem pickups, titled 'Glint Courier'",
+        "Image B is a night-time mini-golf style course with a windmill and a 'Moon Roost' sign",
+        "Different scenery, palette and camera framing, with no shared assets"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch0--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an outdoor island scene with a green meadow, textured rocks and cartoon props",
+        "Image B is a dark circuit-board maze on a desk with low-poly gem pieces",
+        "Different palette, lighting and setting, with no shared art style or HUD"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright outdoor island with rocks, a windmill and birds; Image B is a dark circuit-board maze on a desk",
+        "Different art styles: stylized cartoon terrain versus low-poly gems and black blocks on a PCB",
+        "Different lighting and camera: overcast daylight in A, a dim spotlight from above in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "slingshot-siege--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor cartoon island with rocks, a windmill and a sign reading 'Driftwood Cove'",
+        "Image B is an indoor circuit-board maze with gem pieces and a 'Glint Courier' label",
+        "The palettes and lighting differ: bright overcast green and grey versus a dark, spot-lit board on a desk"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "slingshot-siege--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark, red circuit-board maze with glowing gems and a grid desk",
+        "Image B is a bright, green outdoor island with rocks, a windmill and wooden props",
+        "Different art style, lighting and HUD text ('GLINT COURIER REV 4.7' vs 'GREENHOUSE PERCH')"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-60s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces and a grid-mat table",
+        "Image B is a night-sky mini-golf style course with a windmill, stone arch and a 'Moon Roost' sign",
+        "Different scenery, palette and art style, with no shared HUD or materials"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "slingshot-siege--ch3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a circuit-board maze with dark chips and gem pieces under dim spotlighting",
+        "Image B is a sunny miniature golf island with rocks, windmill and a wooden sign in a warm outdoor sky",
+        "Different art direction, scenery and palette, with no shared assets or HUD style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "slingshot-siege--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: outdoor island with orange sunset sky, rocks and a windmill",
+        "Image B: top-down circuit-board maze with gem pieces, indoor dim lighting",
+        "Different themes and art styles: 'GULL KEEP' signage versus 'GLINT COURIER REV 4.7' board text"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "slingshot-siege--ch2--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright, saturated outdoor island with photoscanned rocks, a windmill and a slingshot",
+        "Image B: dark circuit-board maze with low-key spotlighting and glowing gem pieces",
+        "Different art direction, palette and HUD (signpost text vs. etched board labels)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright outdoor cartoon island with rocks, windmill and a grass-green ground",
+        "Image B: dark circuit-board maze with chips and glossy gem pieces on a desk",
+        "Different art direction, palette and lighting: daylight pastoral vs. moody tabletop with a blueprint grid"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-60s",
+      "b": "slingshot-siege--ch0--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an outdoor cartoon island with a gray sky, rocks and a windmill; Image B is an indoor circuit-board maze on a desk",
+        "Different themes and palettes: bright green and brown fantasy in A, dark blue and white with colored gems in B",
+        "Different HUD and text: wooden 'Driftwood Cove' sign in A, printed 'GLINT COURIER REV 4.7' board label in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "slingshot-siege--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "A: bright daylight cartoon island with grass, rocks and windmill",
+        "B: dark circuit-board maze with dim, moody lighting and a 'GLINT COURIER' label",
+        "Different art style, palette and scene type"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with black chip blocks and gem pieces under dark, moody lighting",
+        "Image B is a stylized outdoor island with photoscanned rocks, a windmill and a slingshot under a bright gray sky",
+        "The two frames differ completely in theme, palette, and camera style (top-down board vs. low scenic view)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor orange-sunset island with green grass, rocks, a windmill and gulls, in a cartoony style",
+        "Image B is a top-down circuit-board maze on a desk with dark indoor lighting and glossy gem pieces",
+        "The two frames differ in palette, scenery, camera angle and HUD/text style, with no shared assets or art direction"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "slingshot-siege--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor golf-style island with rocks, a windmill and a sunset sky; Image B is a circuit-board maze on a desk",
+        "Different themes and art direction: stylized cartoon scenery versus dark, techy, gem-like pieces",
+        "Different lighting and palette: warm orange haze with green terrain versus dim spotlight with blue grid mat"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-60s",
+      "b": "slingshot-siege--ch1--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a red circuit-board maze with dark chip blocks and glowing gems under dim lighting",
+        "Image B is a bright green diorama island with rocks, windmill and a pale grey sky",
+        "Different HUD and text styles: PCB silkscreen text vs a wooden 'QUARRY RISE' sign"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor golf-style island with rocks, windmill and warm sunset sky",
+        "Image B is a circuit-board maze with dark blocks and glossy gems on a blueprint-grid table",
+        "Different palette, materials and theme: saturated green and brown vs cool blue-gray with dark chips"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "slingshot-siege--ch2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark circuit-board maze with glowing gems and a PCB-style HUD",
+        "Image B is a bright cartoon island with rocks, a windmill and a grey sky",
+        "The two frames differ in palette, lighting, setting and camera"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "slingshot-siege--ch4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a circuit-board maze with gems and a dark tabletop, labelled 'Glint Courier'",
+        "Image B is an outdoor island with rocks, a windmill and gulls, labelled 'Gull Keep'",
+        "The two frames differ in setting, palette and art style"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-60s",
+      "b": "slingshot-siege--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark circuit-board maze with a labeled PCB theme, gems and a desk backdrop",
+        "Image B is a bright green island with photoscanned rocks, a windmill and wooden crates under a gray sky",
+        "Different art direction, palette, camera and text style ('GLINT COURIER REV 4.7' vs 'DRIFTWOOD COVE')"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "slingshot-siege--ch0--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an outdoor island scene with a cartoon windmill, rocks and a 'Driftwood Cove' sign; Image B is a circuit-board maze on a desk",
+        "Different palettes: bright green and grey sky versus dark blue-grey with glowing gems",
+        "Different camera and subject: ground-level diorama view versus top-down maze board titled 'Glint Courier'"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "slingshot-siege--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright daylit stylized island with rocks, windmill and a wooden sign",
+        "Image B: dark circuit-board maze with neon gems and moody lighting",
+        "Different themes, palettes and HUD text styles"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night-sky mini-golf course with a windmill, rocks and a 'Moon Roost' sign",
+        "Image B is a circuit-board maze on a desk with gem pieces and a 'Glint Courier' label",
+        "The two scenes share no environment, palette or object style"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with gem pieces and a 'Glint Courier' board label",
+        "Image B is a night-sky mini-golf style green with a windmill, stone arch and 'Moon Roost' sign",
+        "The two frames differ in scene type, palette and props, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "slingshot-siege--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized outdoor mini-golf island with rocks, a windmill and a sunset sky",
+        "Image B is a top-down circuit-board maze with glowing gems and dark blocks",
+        "Different palettes, scenery and camera: warm green and brown versus cool blue and gray"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "dot-dash-3d--foundry--settle-25s",
+      "b": "slingshot-siege--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sunset island with rocks, a windmill and seagulls, with a 'GULL KEEP' sign",
+        "Image B is a dark circuit-board maze labelled 'GLINT COURIER REV 4.7' with gem pieces",
+        "Different scenery, palette and camera: bright outdoor green and orange versus a dim red board on a blue grid mat"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-60s",
+      "b": "slingshot-siege--ch5--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night mini-golf course with a starry sky, rocks, a windmill and crates",
+        "Image B is a circuit-board maze with gems on a desk and a 'GLINT COURIER' label",
+        "Different art direction, scenery and HUD text"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: outdoor sunset island with rocks, windmill, and a 'GULL KEEP' sign",
+        "Image B: top-down circuit-board maze with 'GLINT COURIER' text and gem pieces",
+        "Different palettes and themes: warm orange and green vs. cool blue-grey and dark"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "dot-dash-3d--classic--settle-25s",
+      "b": "slingshot-siege--ch1--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright, saturated cartoon island with a daylight sky and a wooden 'Quarry Rise' sign",
+        "Image B: dark circuit-board maze with dim lighting and a 'Glint Courier' label",
+        "Different art style: A uses rocks and stylized props, B uses low-poly gems and PCB chips"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-25s",
+      "b": "slingshot-siege--ch1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a bright outdoor island with rocks, a windmill and a stylized green meadow",
+        "Image B is a dark circuit-board maze on a desk with glowing gems",
+        "Different setting, palette and lighting: daylight pastel versus dim tabletop"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night mini-golf course with a windmill, stone arch and a 'Moon Roost' sign",
+        "Image B is a circuit-board maze with gem pieces and a 'Glint Courier' label",
+        "The two frames share no setting, palette, scenery or HUD style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "dot-dash-3d--spiral--settle-25s",
+      "b": "slingshot-siege--ch3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: outdoor golf-style island with rocks, windmill and a warm sunset sky",
+        "Image B: top-down circuit-board maze with dark blocks and gem pieces, lit like a tabletop",
+        "Different art style, palette and camera: bright cartoon outdoor scene versus a dim, cool-toned tabletop"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "dot-dash-3d--default--settle-25s",
+      "b": "slingshot-siege--ch0--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze on a dark desk with gems and moody lighting",
+        "Image B is a bright green island with rocks, windmill and a sky-gray backdrop",
+        "Different titles and themes: 'Glint Courier REV 4.7' versus 'Driftwood Cove'"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "dot-dash-3d--garden--settle-25s",
+      "b": "slingshot-siege--ch1--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a circuit-board maze with glowing gems and a dark tabletop",
+        "Image B is an outdoor grassy island with rocks, windmill and slingshot in a cartoon style",
+        "Different palettes, settings and camera: top-down board versus low-angle landscape"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "dot-dash-3d--twin--settle-60s",
+      "b": "slingshot-siege--ch2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright outdoor diorama with a green island, rocks, a windmill and a slingshot",
+        "Image B is a dark circuit-board maze on a desk with grid mat and neon gems",
+        "Different palettes, themes and camera setups (low angle scenery vs top-down board)"
+      ]
+    }
+  ]
+}
