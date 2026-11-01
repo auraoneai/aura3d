@@ -1384,6 +1384,10 @@ export interface AuraRendererDiagnosticReport {
       readonly slots: readonly string[];
       readonly pixelBacked: boolean;
       readonly warnings: readonly string[];
+      /** GU47 e6: last step the textured upgrade reached (`start`, `fetch <url>`, `decoded`, `done`, `failed`). */
+      readonly stage?: string;
+      /** GU47 e6: ms since the upgrade started, present only while `status` is `pending`. */
+      readonly pendingMs?: number;
     }[];
   };
   readonly environment: {
@@ -1715,6 +1719,10 @@ export interface AuraRendererRuntimeObservation {
     readonly slots: readonly string[];
     readonly pixelBacked: boolean;
     readonly warnings: readonly string[];
+    /** GU47 e6: last step the textured upgrade reached (`start`, `fetch <url>`, `decoded`, `done`, `failed`). */
+    readonly stage?: string;
+    /** GU47 e6: ms since the upgrade started, present only while `status` is `pending`. */
+    readonly pendingMs?: number;
   }[];
 }
 

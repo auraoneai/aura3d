@@ -58,7 +58,10 @@ export type AuraDepthOfFieldOptions = Omit<AuraEffectNode, "kind" | "effect"> & 
 export type AuraVolumetricFogOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly godRayDensity?: number };
 /**
  * GU47 E-C (EC-6): `effects.screenSpaceReflections` options. `maxDistance` (world units, default 18), `roughness`
- * (reflections fade out above it; S3 cutoff 0.5) and `thickness` (hit thickness, default 0.25) reach the v2 S3 stage.
+ * and `thickness` (hit thickness, default 0.25) reach the v2 S3 stage. `roughness` (default 0) is the surface roughness
+ * the trace assumes for every pixel (the forward pass writes no per-pixel roughness yet), not a cutoff: reflections are
+ * full strength at 0.35 or less, fade between 0.35 and 0.5, and are zero everywhere at 0.5 or more
+ * (`renderer.diagnostics` warns `SSR_ROUGHNESS_GATED`).
  */
 export type AuraScreenSpaceReflectionsOptions = Omit<AuraEffectNode, "kind" | "effect"> & {
   readonly maxDistance?: number;

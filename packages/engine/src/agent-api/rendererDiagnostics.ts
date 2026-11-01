@@ -100,6 +100,16 @@ export function createRendererDiagnosticReport(
       : "text3D sdf backend is recorded but unmounted: the production bridge samples the SDF atlas at mount, so textPixelBacked stays false until render");
   }
   if (taaWithheld) warnings.push("TEMPORAL_INPUTS_UNAVAILABLE: taa has no native submission");
+  // GU47 e6 (g01 handoff): the S3 trace has no per-pixel roughness, so the node's `roughness` is the surface roughness
+  // assumed for every pixel, not a cutoff. 0.5 or more gates every pixel to zero (the stage runs and adds nothing);
+  // 0.35..0.5 scales every reflection down. Aura Slam, Bunker Zero and Aura Diamond authored 0.5 as a "cutoff".
+  const ssrGate = ssrNode ? ssrRoughnessGate((ssrNode as { readonly roughness?: unknown }).roughness) : 1;
+  if (ssrNode && ssrGate < 1) {
+    const roughness = (ssrNode as { readonly roughness?: number }).roughness;
+    warnings.push(ssrGate <= 0
+      ? `SSR_ROUGHNESS_GATED: screenSpaceReflections roughness ${roughness} is at or above the ${SSR_GATE_END} cutoff, so the reflection is zero on every pixel; \`roughness\` is the frame-wide surface roughness (no per-pixel roughness yet), not a cutoff: use ${SSR_GATE_START} or less for full-strength reflections`
+      : `SSR_ROUGHNESS_GATED: screenSpaceReflections roughness ${roughness} scales every reflection to ${ssrGate.toFixed(2)} (the gate fades from ${SSR_GATE_START} to ${SSR_GATE_END}); \`roughness\` is the frame-wide surface roughness, not a cutoff`);
+  }
   if (colorGradeNode && (colorGradeNode.exposure ?? 1) !== 1) warnings.push("color-grade exposure is recorded but has no native grade target yet; contrast/saturation execute");
   if (colorGradeNode && (colorGradeNode.shadows !== undefined || colorGradeNode.highlights !== undefined)) warnings.push("color-grade shadows/highlights are recorded but have no native grade target yet; contrast/saturation execute");
   if (colorGradeNode?.lut !== undefined) warnings.push("color-grade lut is recorded but LUT samplers are not bound yet; the lut is ignored");
@@ -288,6 +298,20 @@ function requestedRendererPostProcessPasses(
   if (extra.taaWithheld) passes.push("taa");
   passes.push("output");
   return passes;
+}
+
+/** S3 roughness gate bounds, mirrored from `SSR_TRACE_GLSL` (`1 - smoothstep(0.35, 0.5, u_roughness)`). */
+export const SSR_GATE_START = 0.35;
+export const SSR_GATE_END = 0.5;
+
+/**
+ * GU47 e6: the S3 trace's roughness gate for an authored `screenSpaceReflections` `roughness` (clamped to [0, 1] and
+ * defaulting to 0 like `resolveSsrOptions`). 1 = full reflections, 0 = the trace contributes nothing anywhere.
+ */
+export function ssrRoughnessGate(roughness: unknown): number {
+  const r = typeof roughness === "number" && Number.isFinite(roughness) ? Math.min(1, Math.max(0, roughness)) : 0;
+  const t = Math.min(1, Math.max(0, (r - SSR_GATE_START) / (SSR_GATE_END - SSR_GATE_START)));
+  return 1 - t * t * (3 - 2 * t);
 }
 
 export function resolveRendererSceneCategory(snapshot: AuraSceneSnapshot, names: readonly string[]): AuraSceneCategory {
