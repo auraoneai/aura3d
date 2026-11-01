@@ -437,7 +437,7 @@ function pixels(): { width: number; height: number; litFraction: number; mean: n
   return { width: canvas.width, height: canvas.height, litFraction: lit / (px.length / 4), mean: sum / (px.length / 4) };
 }
 
-/** Model nodes (the windmill and watchtower landmarks) and how many have decoded into the scene yet. */
+/** Model nodes (the two landmark towers) and how many have decoded into the scene yet. */
 function assetStatus(): { total: number; loaded: number } {
   if (!app) return { total: 0, loaded: 0 };
   const ids = app.nodes.ids().filter((id) => /^(landmark|house|clock-tower|lighthouse|crates|lamp-post|folk|tram-body)-?/.test(id));

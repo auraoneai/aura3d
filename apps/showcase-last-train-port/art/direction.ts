@@ -64,8 +64,9 @@ export default defineArtDirection({
     world("clockTower"), world("lighthouse"),
     { role: "prop", assetKey: "crates", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "lamp", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "windmill", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "tower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
+    // GU47 phase 9 (D2): CC0 Kenney Pirate Kit towers this game owns (a 512 px colormap, base colour only)
+    { role: "backdrop", assetKey: "lamplightKeep", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 },
+    { role: "backdrop", assetKey: "lamplightTower", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "clean-arrival", kind: "sky-lanterns" },

@@ -2,14 +2,14 @@
 
 None of these comes from the original game. Three kinds of file ship with this port:
 
-1. Licensed Aura3D catalog assets (windmill, watchtower) and a CC0 sky HDRI.
+1. Two CC0 Kenney Pirate Kit towers (the landmarks, retinted for this game) and a CC0 sky HDRI.
 2. Meshy-generated models (below): original text prompts only (never image-to-3D, never the original's names or art), generated through Kiro Prism on the AuraOne Meshy account on 2026-10-23, optimised with meshopt and 256 to 1024 px textures (the tram was cut from 2048 px and the passengers and townhouses decimated in the 2026-10-29 audit fix D-09), admitted with `aura3d assets import-meshy` in an isolated project and validated (`failures: []`). Rights basis is the account's Meshy plan terms at generation time (`assets/provenance/*.rights.json`); not CC0, no exclusivity claimed. Prompts are summarised here; full task metadata is in `assets/provenance/*.meta.json`.
 3. Everything else (islands, ground, track, bushes, stalls, folk, weather) is generated in code.
 
 | File | Source | License |
 | --- | --- | --- |
-| windmill.glb | Aura3D catalog `gullsiegeWindmillMeshy` (`public/aura-assets/gullsiegeWindmillMeshy.f4ebca18.glb`, Meshy-generated, admitted to the catalog) | licensed for use with the engine |
-| tower.glb | Aura3D catalog `gullsiegeWatchtowerMeshy` (`public/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb`, Meshy-generated, admitted to the catalog) | licensed for use with the engine |
+| lamplight-keep.glb | Kenney Pirate Kit `tower-complete-small` (catalog id `kenney:pirate-kit:tower-complete-small`, https://kenney.nl/assets/pirate-kit via the Aura3D CC0 mirror `kenney/pirate-kit/tower-complete-small.glb`, retrieved 2026-11-01). GU47 phase 9: the kit colormap embedded, its blue-grey stone retinted to cream stucco (#ecdcc0 at the stone's luminance) and blue roof to terracotta (#c4643f), single-sided, pivot centred. 650 triangles, 512 px base colour. | CC0-1.0 |
+| lamplight-tower.glb | Kenney Pirate Kit `tower-complete-large` (catalog id `kenney:pirate-kit:tower-complete-large`, mirror `kenney/pirate-kit/tower-complete-large.glb`, retrieved 2026-11-01), same retint and pivot. 604 triangles, 512 px base colour. | CC0-1.0 |
 | sky.hdr | Poly Haven `kloppenheim_06_puresky` (1k), `public/hdri/kloppenheim_06_puresky_1k.hdr` | CC0-1.0 |
 | meshy/tram.glb | Meshy text-to-3d (preview 01a169cc-e116-74ef-aebc-c2e008f7e650, refine 01a169ce-653a-74a8-9726-6e275c65ff8d): "open-sided vintage seaside tram car, early 1900s European style, cream and deep red livery, rounded arched roof with teal trim and brass rails and headlamps, wooden slat benches visible through the open sides, long and narrow" | Meshy account plan terms at generation time |
 | meshy/tram-enamel.glb | GU47 WP-36 row `lamplightTramEnamel` (LT-11): Meshy retexture of meshy/tram.glb (task 01a18c0d-2132-746a-8858-14d692c19fd1, 2026-10-30, 2k PBR with metallic and roughness maps): "tram in cherry red enamel with a cream band, brass fittings, teak panels and glowing warm headlamps and bulbs"; admitted with `aura3d assets import-meshy --profile vehicle` in an isolated project (`failures: []`; candidate quality: the vehicle wheel-separation blocker does not apply to a visual-only body). Band look only. | Meshy account plan terms at generation time (`provenance/tram-enamel.rights.json`) |
