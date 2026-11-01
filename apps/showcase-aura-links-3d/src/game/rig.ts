@@ -101,7 +101,9 @@ export interface GolferRig {
  * 4.6.2 materials. Presentation only.
  */
 export const CART_REFINED_OVERRIDES = [
-  { color: "#d9d6cc", colorMode: "multiply" as const, roughness: 0.32, clearcoat: 0.85, clearcoatRoughness: 0.08, envMapIntensity: 1.35 }
+  // GU47 phase 4 round 2: the multiplied cream still read as "flat matte white" (judge, run g10p4-r2); a deep racing-green
+  // lacquer shows the sky in its clear coat
+  { color: "#1f4a3a", colorMode: "replace" as const, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.6 }
 ];
 
 export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
