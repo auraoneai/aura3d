@@ -1,0 +1,730 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T22:35:46.959Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-fc-3d--favela--settle-60s",
+      "aura-fc-3d--glacier--settle-60s",
+      "aura-fc-3d--kyoto--settle-60s",
+      "aura-fc-3d--lagos--settle-60s",
+      "aura-fc-3d--munich--settle-60s",
+      "aura-fc-3d--uyuni--settle-60s"
+    ],
+    "framesB": [
+      "aura-links-3d--cinderRim--settle-60s",
+      "aura-links-3d--cloudTerrace--settle-60s",
+      "aura-links-3d--mapleHollow--settle-60s",
+      "aura-links-3d--mareCourse--settle-60s",
+      "aura-links-3d--neonBay--settle-60s",
+      "aura-links-3d--stAuroras--settle-60s",
+      "recap4-neonBay--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.917,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.917,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: gray lunar-style terrain under a black sky with a golfer",
+        "Image B: green soccer pitch with a stadium crowd and floodlit look",
+        "Different character styles: realistic blue-capped golfer vs. small stylized soccer players"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a golf scene with a dark navy night sky and green stylized trees",
+        "Image B is a soccer pitch with a brown sandy field and top-down camera",
+        "Different character models and palettes: golfer with cap vs. small red and white kit players"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with low-poly trees on a green course at night; Image B is an indoor soccer court with a crowd",
+        "The character styles differ: A has a semi-realistic golfer, B has small stylized flat-shaded soccer players",
+        "The lighting and palette differ: A is a dark navy sky with green ground, B is a glossy blue reflective floor with a light flare and vignette"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene on gray lunar-like terrain under a black sky",
+        "Image B is a soccer pitch with a warm sandy-brown floor and stylized small players",
+        "The camera and character styles differ: A is a low third-person view of a detailed model, B is an elevated top-down view of flat-shaded figures"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a bright, low-poly soccer pitch with a flat grey floor and red stadium wall",
+        "B is a dark lunar-style scene with a black sky, textured moon ground and a golfer-like character",
+        "The two use different lighting, palette and character styles, and A's top-down camera differs from B's low-angle view"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer match in warm orange/tan tones, Image B is a golf scene at night in teal and navy",
+        "Different character styles: small low-poly soccer players vs. a more detailed golfer model",
+        "Different environments and camera setups: stadium crowd and pitch vs. stylized trees and a tee box"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene on a barren brown plain under an overcast sky, while Image B is a soccer match on a green pitch inside a stadium",
+        "The characters look different: A has a larger, more detailed golfer in a cap; B has tiny, simple players in kits",
+        "Different lighting and palette: A is warm with floating orange embers, B is dark and cool with crowd stands"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a golf scene with stylized trees at night under a dark blue sky",
+        "Image B is an indoor futsal court in a bright, desaturated palette with a top-down camera",
+        "Different sports, lighting and character styles (golfer with cap vs. team-uniformed soccer players)"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A: stylized low-poly soccer pitch with warm orange stadium and crowd",
+        "B: dark lunar-like terrain with black sky and realistic textured characters",
+        "Completely different palette, lighting and art style"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright daytime golf course with autumn trees and a blue sky",
+        "Image B is a dark, brown, dusty indoor soccer pitch seen from a high camera",
+        "The sports, character models, palettes and lighting are all different"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a golf scene with pine trees, a bright green course and a blue sky",
+        "Image B is a soccer match with a warm orange stadium, a sandy pitch and crowd stands",
+        "The palettes and lighting differ (cool daylight vs. warm sunset), as do the character styles and camera angles"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a soccer match on a textured grass pitch with a crowd stand",
+        "Image B is a golf scene with stylized round trees and a glowing aim line",
+        "Different character models and art styles: small flat figures versus larger, more realistic golfers"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene on a brown, barren field under a cloudy sky with floating orange embers",
+        "Image B is a futsal/soccer indoor arena with a blue reflective court and a stadium crowd",
+        "Different character models, camera angles and lighting (warm dusk vs cool night)"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a soccer match with an orange stadium, while Image B is a golf course with trees and a cloudy sky",
+        "Different camera and view: A is a high-angle overhead view, B is a low third-person view",
+        "Different palette and rendering: A has warm sepia tones and soft shadows, B has cool green grass and realistic textures"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a soccer match in a stadium with a textured grass pitch and crowd stands",
+        "Image B is a golfer on a tee box with stylized round trees and a flat navy night sky",
+        "Different art styles: small flat low-poly soccer players versus a larger, smoother golf character"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with small red and white players; Image B is a golf scene with a golfer",
+        "Different camera and sky: A is an elevated top-down view against a dark void, B is a low view under a cloudy sky",
+        "Different ground: A has a sandy, dirt-textured pitch with white lines, B has a brown cobbled terrain with scattered cone trees and floating orange particles"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night soccer stadium with a dark crowd and textured, reflective grass",
+        "Image B is a bright daytime golf course with a blue sky and stylized rounded autumn trees",
+        "The characters differ: small low-poly soccer players versus a more realistic golfer figure"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with a top-down camera; Image B is a golf course with a third-person camera",
+        "Different environments: grey indoor court with red walls vs. green outdoor grass, trees and sky",
+        "Different character models and sports equipment (soccer players and ball vs. golfer with club)"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Night golf scene with dark navy sky and trees vs. daytime pale indoor futsal court",
+        "Different sports and character styles (golfer in cap vs. team players with ground discs)",
+        "Different palettes and camera: low third-person teal green vs. high overhead gray/white"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "A is a realistic lunar-style golf scene with a black sky and textured gray ground, while B is a stylized futsal court",
+        "Different character styles: A has realistic blue-uniform figures, B has low-poly flat-shaded players in red and white",
+        "Different camera and lighting: A uses a low third-person view at night, B uses a high overhead view with a glossy blue floor, a crowd and a bright glare"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer match with a stylized flat-shaded look, Image B is a golf scene",
+        "A has a warm orange stadium and top-down camera; B has a cloudy realistic sky and a low third-person view",
+        "B has textured brown terrain and floating ember particles, with a different character style"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a golf scene with a barren brown terrain and cloudy sky, while Image B is a night football stadium with a pink barrier",
+        "Different character styles: realistic low-poly golfer vs small stylized flat-shaded footballers",
+        "Different camera and lighting: low third-person view with orange embers vs high-angle floodlit pitch with a crowd"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer match in a night stadium with a dark, reflective pitch",
+        "Image B is a golf game in daylight with pine trees and a cloudy sky",
+        "Different character models, camera style and lighting/palette"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night soccer stadium with dark, moody lighting and a crowd of dots",
+        "Image B is a bright daytime golf course with stylized autumn trees and a blue sky",
+        "Different characters, camera and art style: small figurines vs. larger realistic golfers"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a golf scene with stylized rounded trees and a flat teal course under a deep blue night sky",
+        "Image B is a soccer stadium with a textured grass pitch, crowd stands and a magenta barrier",
+        "Different character models and rendering style (smooth 3D golfers vs small figurine-like players)"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an indoor soccer/futsal court with pale flat floor and red wall, Image B is an outdoor golf course with pine trees and sky",
+        "Different sports, with different scenery, lighting and palette",
+        "Different character models and camera: top-down overview vs. close third-person view"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night indoor soccer/futsal scene with a stadium crowd, Image B is a daytime outdoor golf course",
+        "Different gameplay and camera: high-angle overhead view versus low third-person view",
+        "Different lighting and palette: dark blue spotlit court versus bright overcast sky with green grass and stylized trees"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night golf scene with a navy sky, low-poly trees and a glowing white aim line",
+        "Image B is a soccer pitch with a stadium crowd, painted pitch lines and a textured grass field",
+        "The characters, environments and camera setups differ: a close third-person golfer versus a high-angle view of small soccer players"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime golf scene with autumn trees and a grass field; Image B is a night indoor futsal court with a crowd",
+        "Different camera setups: low third-person view vs high overhead stadium view",
+        "Different palettes and lighting: warm green/orange daylight vs dark blue floodlit court with glare"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with sandy brown ground; Image B is a golf course with green turf",
+        "Different sky and lighting: A has a dark void with warm light, B has a deep blue night sky",
+        "Different character styles: A has small flat figures in kits, B has a more detailed golfer model and stylized round trees"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime golf scene with pine trees and a bright sky",
+        "Image B is a night soccer stadium with a dark crowd and floodlit pitch",
+        "Different character styles and camera views: third-person golfer vs. high-angle pitch view"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch seen from a high camera in flat, bright lighting",
+        "Image B is a golf scene with a cloudy sky, brown textured terrain, and orange particles",
+        "Character models and rendering styles differ, with simple low-poly soccer players against a more detailed golfer"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Night golf scene with dark navy sky and teal ground versus warm sunlit orange soccer stadium",
+        "Different subjects: golfer with club and round trees versus soccer players, ball and crowd stands",
+        "Different camera and lighting: low third-person night view versus high overhead daylight view"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "A is a stylized soccer pitch with a crowd and pink boards; B is a lunar-like golf scene",
+        "A has flat, low-poly figurines; B has more realistic humanoid models with caps and a club",
+        "A has a lit stadium environment; B has a pure black sky and gray moon-dust terrain"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer/futsal match with a stadium crowd, Image B is a golf scene with trees",
+        "Different art styles: flat stylized low-poly players vs more realistic golfer model with rounded trees",
+        "Different environments and camera: top-down court with reflective blue floor vs open green field at night"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a night indoor soccer/futsal court with a stylized flat look and a crowd in the stands",
+        "Image B is a daytime outdoor golf course with pine trees and a cloudy sky",
+        "The character models and lighting differ: A has small flat-shaded players, B has larger, more realistic golfers"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with bright green grass and stylized autumn trees; Image B is a soccer scene on a tan court",
+        "Different lighting and palette: cool blue sky in A, warm orange sunset tones in B",
+        "Different cameras: low third-person view in A, high overhead angle in B with a stadium crowd"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime golf course with stylized rounded trees and a overcast sky; Image B is a night soccer stadium with pink boards and a crowd",
+        "Different sports, camera views and palettes: third-person low angle vs high-angle overhead",
+        "Different grass textures and character styles: golfers with realistic proportions vs small figurine-like soccer players"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a soccer pitch with a dark, dusty, brown palette; Image B is a bright green golf course with pine trees and sky",
+        "Character styles differ: flat, small soccer figures versus a larger, more detailed golfer model with a cap",
+        "Camera and lighting differ: high-angle night-like view versus a low, daylight third-person view"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-links-3d--mapleHollow--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with stylized trees and green grass; Image B is an indoor futsal court with a gray floor",
+        "Different palettes: saturated autumn colors versus muted gray and pink",
+        "Different cameras and characters: low third-person golfer versus high overhead view of soccer players"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night soccer pitch with stadium stands, Image B is a daytime golf course",
+        "Different character styles: small stylized footballers vs. golfers in caps with a different model style",
+        "Different lighting and palette: dark, moody floodlit scene vs. soft overcast sky with stylized trees"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-links-3d--stAuroras--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a golf game with a bright daytime sky and green grass, Image B is a soccer game on a dark sandy court",
+        "Different lighting and palette: soft overcast sky with trees versus a dark night indoor arena with warm brown tones",
+        "Different camera and characters: third-person low view of a golfer versus a high overhead view of small soccer players"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer/futsal match on a blue court with a stadium crowd",
+        "Image B is a golf scene on a green course with stylized trees and a dark navy sky",
+        "Different character models and rendering: flat low-poly figures vs. more detailed golfer with a club"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-links-3d--cloudTerrace--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a golf scene with pine trees and a bright green course; Image B is a soccer scene on a sandy court with a stadium crowd",
+        "Different palettes: cool blue sky and green in A against warm orange-brown tones in B",
+        "Different camera and lighting: ground-level view with soft daylight in A, elevated broadcast view with long shadows in B"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--mareCourse--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a soccer pitch with stylized low-poly players and a stadium crowd",
+        "Image B is a golf or moon-like scene with realistic characters on a black sky and gray lunar terrain",
+        "Different art styles, lighting and palettes: green and colorful versus monochrome gray-blue"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "recap4-neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a soccer/futsal match with a stadium crowd and a blue court; Image B is a golf scene with trees and a dark green field",
+        "Different character styles: flat stylized low-poly players vs. more realistic-proportioned golfers",
+        "Different lighting and palette: reflective blue court with a glare vs. dark navy sky with teal-green striped ground"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-links-3d--neonBay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer match with a stadium crowd and a textured grass pitch",
+        "Image B is a golfer on a smooth green with low-poly stylized trees and a deep blue sky",
+        "Different art styles and camera setups: A has small figurines in a high-angle view, B has larger, more detailed characters in a low view"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-links-3d--cinderRim--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with a barren brown landscape and an overcast sky; Image B is a soccer match on a green pitch in a stadium",
+        "The humanoid figures look similar in style, but the environments, lighting and palette differ strongly",
+        "Image A has orange floating particles and a dusk glow; Image B has dark stadium stands with a reflective grass texture"
+      ]
+    }
+  ]
+}

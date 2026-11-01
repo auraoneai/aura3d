@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a18c0a-997e-7103-9690-bfdbd94aebc1",
+    "operation": "text-to-3d-refine",
+    "promptHash": "sha256-53a6c6db57269e283ee38e83cb0a215b8ff29c2c9bc89e8e1b5d1b38e859eb8d",
+    "createdAt": "2026-10-30T09:01:09.975Z",
+    "finishedAt": "2026-10-30T09:03:38.441Z",
+    "consumedCredits": 10
+  },
+  "wp36": {
+    "planKey": "pitchStandModule",
+    "usedBy": [
+      "FC47-A1"
+    ],
+    "importedAs": "fcStandModuleMeshy",
+    "postProcess": "gltf-transform dedup+weld+meshopt simplify (ratio 0.1, error 0.02)+prune, textures resized to 1024; 90037 -> 58579 vertices, 45572 triangles",
+    "sha256": "b34d0da4051e4273db0ec44d748ec07026b6c243056e7c5d824c0c66d8c51220"
+  }
+}

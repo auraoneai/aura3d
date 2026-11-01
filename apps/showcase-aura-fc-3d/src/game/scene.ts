@@ -16,7 +16,7 @@ import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
 } from "./dims";
-import { athleteNodes } from "./rig";
+import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
@@ -143,14 +143,26 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
 export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const ol = ORIGINAL_LOOKS[venue];
   const hl = HYBRID_LAYERS[venue];
+  const k = hl.key;
   return {
-    fogDensityScale: ol.fog,
+    fogDensityScale: hl.fogScale ?? ol.fog,
     exposureEv: hl.exposureEv,
     ...(hl.background !== undefined ? { background: hl.background } : {}),
     grade: { ...hl.grade, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venue] } : {}) },
-    ...(hl.rim ? { rim: { ...hl.rim } } : {})
+    ...(hl.rim ? { rim: { ...hl.rim } } : {}),
+    ...(hl.environmentIntensity !== undefined ? { environmentIntensity: hl.environmentIntensity } : {}),
+    // phase 4: a shadowed key that reads, its cascades fitted to the bowl so every player and goal frame is covered
+    ...(k ? {
+      ...(k.elevationDeg !== undefined || k.azimuthDeg !== undefined
+        ? { sun: { ...(k.elevationDeg !== undefined ? { elevationDeg: k.elevationDeg } : {}), ...(k.azimuthDeg !== undefined ? { azimuthDeg: k.azimuthDeg } : {}) } }
+        : {}),
+      key: { intensity: k.intensity, shadow: { mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02, fit: { center: [0, 0, 0], extent: HYBRID_SHADOW_EXTENT } } }
+    } : {})
   };
 }
+
+/** Phase 4: half-size (m) of the hybrid key's fitted shadow box: the pitch, the goals and the first stand rows. */
+export const HYBRID_SHADOW_EXTENT = 34;
 
 export function venueLookNode(venue: VenueId, gates: FcEngineGates = fcEngineGates()): any {
   const vl = VENUE_LOOKS[venue];
@@ -636,10 +648,13 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   return nodes;
 }
 
-function goalNodes(sx: -1 | 1): any[] {
+function goalNodes(sx: -1 | 1, hybrid = false): any[] {
   const gx = sx * PITCH_HX;
   // Painted posts and the net catch the floods; a faint self-glow only (<= 0.1, the art-direction emissive-fill limit).
-  const postMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
+  // Phase 4 hybrid: powder-coated aluminium (metalness 0.6, roughness 0.14) so the posts carry the IBL and flood specular.
+  const postMat = hybrid
+    ? material.pbr({ color: "#f4f6f8", emissive: "#ffffff", emissiveIntensity: 0.04, roughness: 0.14, metalness: 0.6 })
+    : material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
   const netMat = material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.08, roughness: 0.85, opacity: 0.42 });
   const backX = gx + sx * GOAL_DEPTH;
   const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
@@ -720,6 +735,18 @@ export function standTransforms(v: VenueSpec): { position: [number, number, numb
     }
   }
   return out;
+}
+
+/** WP-36 stand module (GLB 1.903 x 0.832 x 0.543 m, centred, seats facing +Z): scale and the four far-deck slots. */
+export const STAND_MODULE_SCALE = 10.5;
+export function standModuleTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
+  const s = STAND_MODULE_SCALE;
+  const topTier = Math.max(0, v.standCount - 1);
+  // behind the venue's top far tier (no bowl: behind the hoardings), base just under that tier's top
+  const z = v.standCount > 0 ? -(PITCH_HZ + 4.6 + topTier * 2.2 + 1 + 0.272 * s) : -(PITCH_HZ + 6 + 0.272 * s);
+  const baseY = v.standCount > 0 ? 0.9 + topTier * 1.3 - 1.2 : -0.5;
+  const w = 1.9 * s;
+  return [-1.5, -0.5, 0.5, 1.5].map((i) => ({ position: [i * w, baseY + 0.42 * s, z], scale: [s, s, s] }));
 }
 
 function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode?: FcLookMode): any[] {
@@ -841,12 +868,10 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       .rotate(0, -Math.PI / 2, 0),
     model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.0 })
       .position(34.5, 0, -14.5),
-    // No soccer-specific stand exists in the Aura FC registry; the shared
-    // diamond stadium now sits low and far behind the authored bleacher bowl
-    // so its roof is a distant band instead of a lid on the frame.
-    model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 8.5 })
-      .position(0, -2.6, -(PITCH_HZ + 40))
-      .scale([1.3, 1, 1.1]),
+    // GU47 phase 4 (WP-36 FC47-A1): the game's own football stand module, four instances in one draw as the upper
+    // deck behind the far stand (replaces the borrowed diamond stadium band).
+    (instances as any).model(assets.fcStandModuleMeshy, { name: "fc-stadium-bowl", transforms: standModuleTransforms(v) })
+      .runtime(gameRuntime("fc-stadium-bowl")),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: REFEREE_TARGET_HEIGHT,
@@ -943,13 +968,18 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
         ? looks.preset(ol.look, hybridLookOverrides(venue, fcEngineGates(undefined, opts.engineGates)))
         : venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
     .addMany(pitchNodes(v, mode))
-    .addMany(goalNodes(-1))
-    .addMany(goalNodes(1))
+    .addMany(goalNodes(-1, hybrid))
+    .addMany(goalNodes(1, hybrid))
     .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates), mode))
     .addMany(ballNodes());
-  for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
+  // phase 4 hybrid: the fitted key casts the players' shadows, so the blob discs fade to a soft contact darkening
+  for (const id of ATHLETE_IDS) s.addMany(hybrid ? athleteNodes(id, HYBRID_BLOB_OPACITY) : athleteNodes(id));
   s.addMany(atmosphereNodes(venue, opts))
-    .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }));
+    // phase 4 hybrid: longer, full-strength contact shadows under the fitted key (feet and goal-frame grounding)
+    .add(effects.contactShadows(hybrid ? { intensity: 1, length: 0.5 } : { intensity: 0.85, length: 0.32 }));
+  // phase 4 hybrid: the wet / glazed / ice pitch reflects the floods, hoardings and stands at grazing angles (S3, High+)
+  const ssr = hybrid ? hl.ssr : null;
+  if (ssr) s.add(effects.screenSpaceReflections({ name: "fc-pitch-ssr", intensity: ssr.intensity, roughness: ssr.roughness, maxDistance: ssr.maxDistance } as any));
   // PRD 6.3: no motion blur under reduced motion
   if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s

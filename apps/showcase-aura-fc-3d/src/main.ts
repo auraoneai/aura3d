@@ -801,7 +801,7 @@ function boot(): void {
           "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
           "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
           "fcGlacierDomeMeshy", "fcHeroTrophyMeshy",
-          "diamondDugout", "diamondStadium", "hoopsBallCart"
+          "diamondDugout", "hoopsBallCart", "fcStandModuleMeshy"
         ],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,

@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r4/screens/1280x720/01-title.jpg",
+      "sha256": "c4f1fe96ad6dc02d7c7462b60ace49cc2d160c8aa3f297682e43b9534df36ed0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r4/screens/1280x720/03-action-02-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "e84342109392ee83978ef1b044907ccb714a6f123b6fbff3a27f1d7512482e27"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r4/aura-fc-3d/frames/g09p4-r4-2/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "ac9551e987d03f8fd4b7dceb5b139b6c8556fec86271e4cd3358d53dc9d4094d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r4/aura-fc-3d/frames/g09p4-r4b-1/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "c7571d8c818219ded23f88424a3dc122927006ee7b96d42382d6fbf637097aeb"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "animation_quality": 5.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The night pitch in frames 1 and 2 is lit unevenly, with dark blotches across the grass and no clear floodlight pools. The sand court in frame 3 is lit by one flat warm key that gives the players little form."
+    },
+    {
+      "category": "shadows",
+      "seen": "Each player casts a long soft directional shadow and also has a round blob shadow at the feet. In frame 3 the blob reads as a separate dark disc rather than contact shading."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "In frame 4 the blue floor shows faint mirrored player reflections and a large white specular hotspot at the lower right. In frame 2 the grass has noisy specular sparkle that reads as wet plastic instead of turf."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The crowd is rows of identical capsule billboards with stray white spheres. The same arrangement repeats in frames 1, 3 and 4. The stands are flat dark or orange boxes, and the only structural detail is one light truss in frame 2."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts or depth falloff is visible. Frame 4 has only a slight blue wash toward the stands."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass texture is smeared and swirled with high-frequency noise and streaks, so it reads as distorted rather than mown turf. The sand court in frame 3 is an untextured flat beige. The line paint is clean but has no surface variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The players are simple stylized low-poly figures with readable kits, and the goal and net in frame 2 are serviceable. The capsule crowd and box stands are placeholder-level."
+    },
+    {
+      "category": "composition",
+      "seen": "The kickoff frames are centered on the circle with both teams spread evenly, but the top 30% of the frame is the repeating crowd strip. Frame 2 has a better diagonal toward the goal."
+    },
+    {
+      "category": "camera",
+      "seen": "A high perspective broadcast angle is used instead of the orthographic 70° recipe. It reads well, but the near pitch edge fills a lot of the frame with empty grass."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 4 has a heavy vignette and a blown bloom hotspot that looks like an artifact. The grass shimmer in frames 1 and 2 suggests temporal or denoise smearing. No color grade ties the venues together."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Frame 2 shows plausible mid-stride running poses. The kickoff frames show stiff, identical idle stances with arms at the sides."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

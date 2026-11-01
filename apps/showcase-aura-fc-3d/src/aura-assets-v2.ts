@@ -195,12 +195,15 @@ export const assets = defineAuraAssets({
     hash: "sha256-bfacebd60d24235f7ef06c8c21ec71f9e490a12efbfb64c991a45f55105d9ed3",
     bounds: [1.903, 1.579, 1.176]
   },
-  diamondStadium: {
+  // GU47 WP-36 (FC47-A1): the football stand module (plan key pitchStandModule, Meshy text-to-3d refine, task
+  // 01a18c0a-997e-7103-9690-bfdbd94aebc1), welded and simplified to 45.6k triangles with 1024 px maps. Rights and
+  // metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcStandModuleMeshy.{rights,metadata}.json.
+  fcStandModuleMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/diamondStadium.2aa65131.glb",
-    hash: "sha256-2aa65131072a1c4ae4d32d123994aa94e8650317975325782d9c9207513b155b",
-    bounds: [1.903, 0.562, 1.653]
+    url: "/aura-assets/fcStandModuleMeshy.b34d0da4.glb",
+    hash: "sha256-b34d0da4051e4273db0ec44d748ec07026b6c243056e7c5d824c0c66d8c51220",
+    bounds: [1.903, 0.832, 0.543]
   },
   hoopsBallCart: {
     type: "model",
