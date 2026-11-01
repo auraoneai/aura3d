@@ -747,7 +747,7 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     // GU47 phase 4 (WP-36 CH47-09): the game's own Meshy toy coin (key xhopCoin), upright, its face in the XY plane;
     // the pickup rule and its column are unchanged (presentation only).
     // Views without the phase-4 dressing keep the 4.6.2 cylinder coin (panel g14p4r2: theme0 1/1/1, not better).
-    p4Dress
+    p4Dress && !diorama
       ? instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetMaxDimension: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin"))
       : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
@@ -1466,7 +1466,7 @@ export function syncVisuals(alpha = 1): void {
     if (l.hasCoin && !st.coinTaken.has(r)) {
       const coinBase = surfaceTopY(l) + COIN_LIFT;
       // The fitted coin model stands on its lowest point: drop it by its radius so its centre stays at coinBase.
-      if (p4Dress) inst("coin", l.coinCol * COL_W, coinBase - COIN_DIAMETER / 2 + Math.sin(tr * 3 + r) * 0.035, laneZ(r), 1, 1, 1, "#ffffff", tr * 1.6);
+      if (p4Dress && lookMode !== "diorama") inst("coin", l.coinCol * COL_W, coinBase - COIN_DIAMETER / 2 + Math.sin(tr * 3 + r) * 0.035, laneZ(r), 1, 1, 1, "#ffffff", tr * 1.6);
       else inst("coin", l.coinCol * COL_W, coinBase + Math.sin(tr * 3 + r) * 0.035, laneZ(r), COIN_DIAMETER, COIN_THICK, COIN_DIAMETER, COLORS.coin, tr * 1.6, Math.PI / 2);
       shade(l.coinCol * COL_W, surfaceTopY(l), laneZ(r), 0.32, 0.22, coinBase + COIN_DIAMETER / 2 - surfaceTopY(l));
     }
