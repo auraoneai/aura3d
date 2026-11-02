@@ -57,8 +57,8 @@ describe("GU47 E-F item 2: flipbook({ texture })", () => {
   it("a built-in sprite name uses that sequence and its grid", () => {
     const lowered = lowerEffectNode(effects.flipbook({ name: "torch", sprite: "flame-loop" }).toJSON() as EffectNodeLike);
     if (lowered.type !== "emitter") throw new Error("expected an emitter");
-    expect(lowered.sprite).toMatchObject({ kind: "builtin", name: "flame-loop", columns: 4, rows: 1, frames: 4 });
-    expect(lowered.emitter.flipbook).toMatchObject({ frames: 4, columns: 4, rows: 1 });
+    expect(lowered.sprite).toMatchObject({ kind: "builtin", name: "flame-loop", columns: 4, rows: 2, frames: 8 });
+    expect(lowered.emitter.flipbook).toMatchObject({ frames: 8, columns: 4, rows: 2 });
     expect(lowered.batch.atlasKey).toBe("vfx:flame-loop");
   });
 

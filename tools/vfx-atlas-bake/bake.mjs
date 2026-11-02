@@ -5,11 +5,16 @@
 //
 // Emits `aura-vfx-<size>.png` + `aura-vfx-<size/2>.png` pages, `manifest.json`
 // (AuraVfxAtlasManifest v1) and LICENSE.md. KTX2 twins are emitted only when
-// `toktx` is on PATH (logged skip otherwise). Output is byte-stable for a
-// fixed (seed, size): no timestamps, fixed zlib level, seeded PRNG.
+// `toktx` is on PATH (logged skip otherwise). Output is deterministic for a
+// fixed seed, size, tool versions, and (for --sprites-only) input manifest:
+// no timestamps, fixed zlib level, seeded PRNG.
+// `--sprites-only` needs the existing manifest and LICENSE in --out; it emits
+// just the PNG pages and updated manifest, leaving the decals and licence alone.
+// `--runtime-layout <FlipbookAtlas.ts>` also writes the matching runtime table;
+// stage that file and both pages together rather than mixing atlas generations.
 
 import { deflateSync } from "node:zlib";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -22,6 +27,14 @@ const opt = (name, dflt) => {
 const SEED = Number(opt("--seed", "7"));
 const SIZE = Number(opt("--size", "2048"));
 const OUT = opt("--out", "packages/engine/assets/vfx");
+const SPRITES_ONLY = argv.includes("--sprites-only");
+const RUNTIME_LAYOUT = opt("--runtime-layout", null);
+if (argv.includes("--runtime-layout") && (!RUNTIME_LAYOUT || RUNTIME_LAYOUT.startsWith("--"))) {
+  throw new Error("--runtime-layout requires a path to FlipbookAtlas.ts");
+}
+if (RUNTIME_LAYOUT && SIZE !== 2048) {
+  throw new Error("--runtime-layout requires the 2048/1024 page pair");
+}
 
 // ---------- rng ----------
 function mulberry32(seed) {
@@ -199,16 +212,45 @@ function pageIdFor(size) {
   return `aura-vfx-${size >= 1024 ? `${size / 1024}k` : `${size}`}`;
 }
 
-function bakePage(size, pageId) {
-  const cell = size / 8; // 8×8 grid of cells
-  const gutter = 4;
+const GUTTER = 4;
+const GRID_SIDE = 7;
+
+function bakePage(size, pageId, cell) {
+  const gutter = GUTTER;
   const pitch = cell + gutter;
+  if (!Number.isInteger(cell) || cell <= 0) {
+    throw new Error(`invalid page size ${size}: the cell size must be a positive integer`);
+  }
+  // A gutter is outside each sequence, while its frames are contiguous.
+  // With 256px cells and a 4px gutter, only seven cell pitches fit the 2k
+  // page (likewise for the 1k twin). Reserve every occupied row, not just
+  // the top row: a shelf advancing by one pitch overwrites two-row sprites.
+  const side = Math.min(GRID_SIDE, Math.floor((size - gutter) / pitch));
+  const occupied = Array.from({ length: side }, () => Array(side).fill(false));
   const rgba = Buffer.alloc(size * size * 4);
   const sequences = {};
-  let cx = gutter, cy = gutter;
-  let cellsUsed = 0;
   for (const [name, cols, rows, frames = cols * rows, fps, loop] of LAYOUT) {
-    if (cx + cols * pitch > size) { cx = gutter; cy += pitch; }
+    let origin = null;
+    // Deterministic first fit, top-to-bottom and left-to-right. This fills
+    // the gaps left by taller sequences without increasing either page size.
+    for (let y = 0; y <= side - rows && !origin; y += 1) {
+      for (let x = 0; x <= side - cols; x += 1) {
+        let available = true;
+        for (let dy = 0; dy < rows && available; dy += 1) {
+          for (let dx = 0; dx < cols; dx += 1) {
+            if (occupied[y + dy][x + dx]) { available = false; break; }
+          }
+        }
+        if (available) { origin = [x, y]; break; }
+      }
+    }
+    if (!origin) throw new Error(`layout overflow: ${name} (${cols}x${rows}) on ${size}px page`);
+    const [gridX, gridY] = origin;
+    for (let dy = 0; dy < rows; dy += 1) {
+      for (let dx = 0; dx < cols; dx += 1) occupied[gridY + dy][gridX + dx] = true;
+    }
+    const cx = gutter + gridX * pitch;
+    const cy = gutter + gridY * pitch;
     const rect = [cx, cy, cols * cell, rows * cell];
     const seed = [...name].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, SEED);
     for (let gy = 0; gy < rows; gy++) {
@@ -229,9 +271,6 @@ function bakePage(size, pageId) {
       }
     }
     sequences[name] = { page: pageId, rect, columns: cols, rows, frames, ...(fps ? { fps } : {}), ...(loop ? { loop } : {}) };
-    cx += cols * pitch;
-    cellsUsed += cols * rows;
-    if (cellsUsed > 64) throw new Error("layout overflow");
   }
   return { rgba, sequences };
 }
@@ -300,20 +339,85 @@ function maybeKtx2(pngPath) {
   return out;
 }
 
+const RUNTIME_LAYOUT_BEGIN = "// BEGIN VFX_SPRITE_LAYOUT";
+const RUNTIME_LAYOUT_END = "// END VFX_SPRITE_LAYOUT";
+
+function readRuntimeLayoutTemplate(path) {
+  const source = readFileSync(path, "utf8");
+  const start = source.indexOf(RUNTIME_LAYOUT_BEGIN);
+  const end = source.indexOf(RUNTIME_LAYOUT_END);
+  if (start < 0 || end < start ||
+      source.indexOf(RUNTIME_LAYOUT_BEGIN, start + RUNTIME_LAYOUT_BEGIN.length) !== -1 ||
+      source.indexOf(RUNTIME_LAYOUT_END, end + RUNTIME_LAYOUT_END.length) !== -1) {
+    throw new Error(`${path}: expected one ordered pair of VFX_SPRITE_LAYOUT markers`);
+  }
+  return { before: source.slice(0, start), after: source.slice(end + RUNTIME_LAYOUT_END.length) };
+}
+
+// One compact line per sequence (the style FlipbookAtlas.ts is written in); keys are bare identifiers when valid.
+function layoutEntry(name, { rect, columns, rows, frames, fps, loop }) {
+  const key = /^[A-Za-z_$][\w$]*$/.test(name) ? name : JSON.stringify(name);
+  const parts = [`rect: [${rect.join(", ")}]`, `columns: ${columns}`, `rows: ${rows}`, `frames: ${frames}`];
+  if (fps) parts.push(`fps: ${fps}`);
+  if (loop) parts.push("loop: true");
+  return `  ${key}: { ${parts.join(", ")} }`;
+}
+
+function writeRuntimeLayout(path, template, sequences) {
+  const entries = Object.entries(sequences).map(([name, sequence]) => layoutEntry(name, sequence));
+  const block = `${RUNTIME_LAYOUT_BEGIN}\n` +
+    `export const VFX_SPRITE_LAYOUT: Readonly<Record<AuraVfxBuiltinSequence, VfxSpriteLayout>> = {\n${entries.join(",\n")}\n};\n` +
+    RUNTIME_LAYOUT_END;
+  writeFileSync(path, template.before + block + template.after);
+}
+
 function bake(outDir, size) {
+  if (!Number.isInteger(size) || size <= 0 || size % 2 !== 0) {
+    throw new Error(`invalid page size ${size}: expected a positive even integer`);
+  }
+  // Both pages must use the same seven-cell placement and the same 4px
+  // gutter. The shipped pair retains its 256px / 128px cells. Very small
+  // custom bakes need proportionally smaller cells to fit all seven pitches
+  // on the twin (e.g. 26px / 13px at --size 256), without clipping frames.
+  const twinCellLimit = Math.floor((size / 2 - GUTTER) / GRID_SIDE) - GUTTER;
+  const largeCell = Math.min(size / 8, twinCellLimit * 2);
+  if (!Number.isInteger(largeCell / 2) || largeCell < 2) {
+    throw new Error(`invalid page size ${size}: cannot fit integral twin cells and 4px gutters`);
+  }
+  if (largeCell < size / 8) {
+    console.log(`[vfx-atlas-bake] compact cells for small page pair: ${largeCell}px / ${largeCell / 2}px`);
+  }
+  const runtimeTemplate = RUNTIME_LAYOUT ? readRuntimeLayoutTemplate(RUNTIME_LAYOUT) : null;
+  let previous;
+  if (SPRITES_ONLY) {
+    previous = JSON.parse(readFileSync(join(outDir, "manifest.json"), "utf8"));
+    const license = readFileSync(join(outDir, "LICENSE.md"), "utf8");
+    if (previous.version !== 1 || !previous.decals || !Array.isArray(previous.pages) ||
+        ![size, size / 2].every((s) => previous.pages.some((page) => page.id === pageIdFor(s) && page.size === s))) {
+      throw new Error("--sprites-only requires the existing v1 manifest, matching page sizes and decal entries");
+    }
+    if (license !== `CC0 — generated in-repo by tools/vfx-atlas-bake/bake.mjs (seed ${SEED}).\n`) {
+      throw new Error("--sprites-only requires the existing LICENSE.md for the same seed");
+    }
+  }
   mkdirSync(outDir, { recursive: true });
   const pages = [];
   // Sequences are recorded once, in pixel rects of the LARGE page; the loader
-  // scales rects when a lower tier pages the half-size twin.
+  // uses the twin's cell pitch when a lower tier pages the half-size twin.
   const largeId = pageIdFor(size);
-  const large = bakePage(size, largeId);
+  const large = bakePage(size, largeId, largeCell);
   const sequences = large.sequences;
-  for (const [s, baked] of [[size, large], [size / 2, bakePage(size / 2, pageIdFor(size / 2))]]) {
+  for (const [s, baked] of [[size, large], [size / 2, bakePage(size / 2, pageIdFor(size / 2), largeCell / 2)]]) {
     const pageId = pageIdFor(s);
     const pngPath = join(outDir, `${pageId}.png`);
     emitPng(pngPath, s, s, baked.rgba);
-    const ktx2 = maybeKtx2(pngPath);
+    const ktx2 = SPRITES_ONLY ? null : maybeKtx2(pngPath);
     pages.push({ id: pageId, uri: `${pageId}.${ktx2 ? "ktx2" : "png"}`, size: s, premultiplied: true, colorSpace: "srgb" });
+  }
+  if (SPRITES_ONLY) {
+    writeFileSync(join(outDir, "manifest.json"), JSON.stringify({ ...previous, pages, sequences }, null, 2) + "\n");
+    if (runtimeTemplate) writeRuntimeLayout(RUNTIME_LAYOUT, runtimeTemplate, sequences);
+    return;
   }
   // P6-T2 — decal page + tangent-normal + roughness twins (albedo channel
   // premultiplied like the vfx pages; normal/roughness are opaque gray/RGB).
@@ -333,7 +437,11 @@ function bake(outDir, size) {
   const manifest = { version: 1, pages, sequences, decals: { entries: decalEntries, ...decalPages } };
   writeFileSync(join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
   writeFileSync(join(outDir, "LICENSE.md"), "CC0 — generated in-repo by tools/vfx-atlas-bake/bake.mjs (seed " + SEED + ").\n");
+  if (runtimeTemplate) writeRuntimeLayout(RUNTIME_LAYOUT, runtimeTemplate, sequences);
 }
 
 bake(OUT, SIZE);
+if (SIZE === 2048 && !RUNTIME_LAYOUT) {
+  console.warn("[vfx-atlas-bake] packed pages need a matching runtime table; supply --runtime-layout before installing them");
+}
 console.log(`[vfx-atlas-bake] wrote ${OUT} (seed=${SEED}, size=${SIZE})`);

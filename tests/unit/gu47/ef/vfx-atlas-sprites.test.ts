@@ -74,7 +74,7 @@ describe("GU47 E-F item 1: atlas sprite lowering", () => {
     expect(plain.batch.atlasKey).toBe("soft-dot");
     expect(plain.emitter.key).toBe("eff.alpha.soft-dot.true.false.0");
     expect(softDot).toEqual(plain);
-    expect(smoke.sprite).toEqual({ kind: "builtin", name: "smoke-a", columns: 2, rows: 1, frames: 2, fps: 6, loop: true });
+    expect(smoke.sprite).toEqual({ kind: "builtin", name: "smoke-a", columns: 2, rows: 2, frames: 4, fps: 12, loop: true });
     expect(smoke.batch.atlasKey).toBe("vfx:smoke-a");
     expect(smoke.batch.frameBlend).toBe(true);
     expect(smoke.emitter.key).toContain(".vfx:smoke-a.");
@@ -99,27 +99,16 @@ describe("GU47 E-F item 1: atlas sprite lowering", () => {
 });
 
 describe("GU47 E-F item 1: built-in layout against the baked atlas", () => {
-  const adjusted = new Set(["smoke-a", "fireball", "flame-loop"]);
-
-  it("mirrors manifest.json; the three overlapping two-row sequences use their clean top row", () => {
+  it("mirrors manifest.json for every built-in sequence, full rows included", () => {
     for (const name of AURA_VFX_BUILTIN_SEQUENCES) {
       const baked = manifest.sequences[name];
       const layout = VFX_SPRITE_LAYOUT[name];
       expect(baked, name).toBeDefined();
-      if (!adjusted.has(name)) {
-        expect(layout, name).toEqual({ rect: baked.rect, columns: baked.columns, rows: baked.rows, frames: baked.frames, ...(baked.fps ? { fps: baked.fps } : {}), ...(baked.loop ? { loop: true } : {}) });
-        continue;
-      }
-      // Top row of the baked rect: same origin and width, one cell row, same cycle time when looping.
-      expect(layout.rect).toEqual([baked.rect[0], baked.rect[1], baked.rect[2], baked.rect[3] / baked.rows]);
-      expect(layout.rows).toBe(1);
-      expect(layout.columns).toBe(baked.columns);
-      expect(layout.frames).toBe(baked.columns);
-      if (baked.loop) expect(layout.frames / layout.fps!).toBeCloseTo(baked.frames / baked.fps!, 6);
+      expect(layout, name).toEqual({ rect: baked.rect, columns: baked.columns, rows: baked.rows, frames: baked.frames, ...(baked.fps ? { fps: baked.fps } : {}), ...(baked.loop ? { loop: true } : {}) });
     }
   });
 
-  it("the baked manifest overlaps exactly where the bake advanced one row per two-row sequence; the runtime layout does not", () => {
+  it("neither the baked manifest nor the runtime layout has overlapping sequence rects, and every rect fits its page and cell grid", () => {
     const names = Object.keys(manifest.sequences);
     const bakedPairs: string[] = [];
     for (let i = 0; i < names.length; i++) {
@@ -127,8 +116,8 @@ describe("GU47 E-F item 1: built-in layout against the baked atlas", () => {
         if (overlaps(manifest.sequences[names[i]].rect, manifest.sequences[names[j]].rect)) bakedPairs.push([names[i], names[j]].sort().join("|"));
       }
     }
-    // If the atlas is re-baked without overlaps this list empties: restore the manifest rows in VFX_SPRITE_LAYOUT then.
-    expect(bakedPairs.sort()).toEqual(["debris-chips|flame-loop", "electric|flame-loop", "fireball|flame-loop", "fireball|smoke-a"].sort());
+    // The bake advances one full cell row per layout row (deterministic first-fit pack), so no two sequences share a cell.
+    expect(bakedPairs).toEqual([]);
     const layoutNames = Object.keys(VFX_SPRITE_LAYOUT) as (keyof typeof VFX_SPRITE_LAYOUT)[];
     for (let i = 0; i < layoutNames.length; i++) {
       const a = VFX_SPRITE_LAYOUT[layoutNames[i]];
@@ -144,8 +133,8 @@ describe("GU47 E-F item 1: built-in layout against the baked atlas", () => {
 
   it("the 1k twin uses a 132 px cell pitch (128 px cells, same 4 px gutter)", () => {
     expect(vfxSpriteRect(VFX_SPRITE_LAYOUT["dust-mote"], 1024)).toEqual([4 + 6 * 132, 4, 128, 128]);
-    expect(vfxSpriteRect(VFX_SPRITE_LAYOUT.splash, 1024)).toEqual([4 + 5 * 132, 4 + 3 * 132, 256, 256]);
-    expect(vfxSpriteRect(VFX_SPRITE_LAYOUT.splash, 2048)).toEqual([1304, 784, 512, 512]);
+    expect(vfxSpriteRect(VFX_SPRITE_LAYOUT.splash, 1024)).toEqual([4 + 4 * 132, 4 + 3 * 132, 256, 256]);
+    expect(vfxSpriteRect(VFX_SPRITE_LAYOUT.splash, 2048)).toEqual([1044, 784, 512, 512]);
     expect(vfxSpritePageSize("low")).toBe(1024);
     expect(vfxSpritePageSize("medium")).toBe(1024);
     expect(vfxSpritePageSize("high")).toBe(2048);
@@ -232,7 +221,7 @@ describe("GU47 E-F item 1: ProductionEffectSystem samples the sprite once loaded
     step(0.2);
     system.feed(recordingHook());
     await system.spritesSettled();
-    expect(calls).toEqual([{ url: "/vfx/page-1024.png", rect: [4 + 5 * 132, 4 + 3 * 132, 256, 256] }]);
+    expect(calls).toEqual([{ url: "/vfx/page-1024.png", rect: [4 + 4 * 132, 4 + 3 * 132, 256, 256] }]);
     system.dispose();
   });
 
@@ -251,7 +240,7 @@ describe("GU47 E-F item 1: ProductionEffectSystem samples the sprite once loaded
     for (let i = 0; i < written.live; i++) {
       const frame = written.data[i * 16 + 13];
       expect(frame).toBeGreaterThanOrEqual(0);
-      expect(frame).toBeLessThan(2);
+      expect(frame).toBeLessThan(4);
       frames.add(Math.round(frame * 100));
       if (written.data[i * 16 + 12] !== 0) rotated++;
     }
