@@ -536,7 +536,23 @@ function buildClubhouseNodes(
         .position(...at(side * 5.02, 2.05, 0)).rotate(0, yaw, 0)
     );
   }
-  for (const [sx, sz, ss] of [[-4.2, 7.4, 1.0], [4.2, 7.4, 1.0], [-6.2, 6.4, 0.8], [6.2, 6.4, 0.8]] as const) {
+  const shrubSpots = [[-4.2, 7.4, 1.0], [4.2, 7.4, 1.0], [-6.2, 6.4, 0.8], [6.2, 6.4, 0.8]] as const;
+  if (turfOn && course.dressing.theme === "dunes") {
+    // GU47 wave 1 (golfGorse, LINKS-07): on the dunes the four primitive porch shrubs are the Links-owned Meshy gorse
+    // (one instanced draw instead of four spheres), fitted to 0.9 m high so each stays inside the old 1.4 x 0.9 m sphere
+    nodes.push(
+      instances.model(assets.links_gorse, {
+        name: "clubhouse-gorse",
+        transforms: shrubSpots.map(([sx, sz, ss], i) => ({
+          position: at(sx, 0, sz),
+          rotation: [0, yaw + i * 1.7, 0] as [number, number, number],
+          scale: [ss, ss, ss] as [number, number, number]
+        })),
+        targetHeight: 0.9,
+        castShadow: true
+      })
+    );
+  } else for (const [sx, sz, ss] of shrubSpots) {
     nodes.push(
       primitives.sphere({ name: `clubhouse-shrub-${sx}`, size: [1.4 * ss, 0.9 * ss, 1.4 * ss], material: shrubMat })
         .position(...at(sx, 0.5 * ss, sz)).rotate(0, yaw, 0)
@@ -874,6 +890,27 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
                 return { position: [t.position[0], t.position[1] - 0.05, t.position[2]] as [number, number, number], rotation: [0, t.rotation[1], 0] as [number, number, number], scale: [s, s, s] as [number, number, number] };
               }),
               targetHeight: 1.1,
+              castShadow: true
+            })
+          );
+        }
+        // GU47 wave 1 (golfGorse, LINKS-07): low gorse clumps (Links-owned Meshy model, one draw) on tuft spots the
+        // marram does not take (i % 8 === 4), nearest the tee first, at most 16 (8 on Low), 0.9-1.2 m high
+        const gorseSpots = plan.transforms
+          .filter((_, i) => i % 8 === 4)
+          .map((t) => ({ t, d: Math.hypot(t.position[0] - tee[0], t.position[2] - tee[1]) }))
+          .filter((s) => s.d > 8)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, presentationTier === "low" ? 8 : 16);
+        if (gorseSpots.length > 0) {
+          nodes.push(
+            instances.model(assets.links_gorse, {
+              name: "dune-gorse",
+              transforms: gorseSpots.map(({ t }, i) => {
+                const s = 0.9 + ((i * 53) % 7) * 0.05;
+                return { position: [t.position[0], t.position[1] - 0.04, t.position[2]] as [number, number, number], rotation: [0, t.rotation[1] + 0.9, 0] as [number, number, number], scale: [s, s, s] as [number, number, number] };
+              }),
+              targetHeight: 1,
               castShadow: true
             })
           );
