@@ -16,7 +16,7 @@ page's importmap, so the module is one 513,393-byte file of game code with minif
 | `road.ts` | The snake's path (the original's `XA`/`ZA`/`At` frame integration) and the ribbon mesh. |
 | `world.ts`, `materials.ts`, `shaders.ts` | Rendering on the public `@aura3d/engine` surface only: road ribbon, ray-marched cloud deck and starry sky dome, aura shell, rigged runner, multi-part props, post stack, chase camera. |
 | `hero.ts` | The procedural runner: a primitive figure posed from run, jump, slide, flight and dive states. It is the fallback when the rigged model cannot load, and its pose also anchors the aura, sparks and bursts. Pure maths, unit tested. |
-| `assets/runner.glb`, `models.ts` | The rigged runner and the Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), driven through `cloneSkinned` / `TypedGLBActor`. |
+| `assets/runner{,-script}.glb`, `models.ts` | The rigged runner variants and Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), declared as hashed same-origin refs and driven through `cloneSkinned` / `TypedGLBActor`. |
 | `styles.ts` | Three runner looks for the select card (colours only; the run is identical). |
 | `sfx.ts` | Synthesised one-shot sound effects (Web Audio, no asset files, no continuous bed). |
 | `main.ts`, `index.html` | Boot, fixed-step loop, HUD, title with runner select, countdown, pause, results, best score and distance, mute button, capture hooks (`window.__AURA_SERPENTINE_SKY_RUN__`, first error in `window.__AURA_SERPENTINE_SKY_RUN_ERROR__`). |
@@ -112,7 +112,7 @@ Generated through Kiro Prism from original text prompts (never from images of th
 `assets/ATTRIBUTION.md`, `assets/provenance/*.rights.json|meta.json`). Loaded in `models.ts` with a same-origin pathname + sha256, the only form the
 production bridge accepts.
 
-- **Runner** (`runner.glb`, 4.6 MB, 20k vertices): text-to-3D A-pose, remeshed to 12k triangles (5 credits), rigged (5), plus six animation actions
+- **Runner** (`runner-script.glb`, 4.1 MB; exact original `runner.glb`, 4.7 MB; 20k vertices): text-to-3D A-pose, remeshed to 12k triangles (5 credits), rigged (5), plus six animation actions
   (3 each). The rig returns a skeleton of 24 joints with a basic run clip; the other clips are separate GLBs, merged into one file by a small
   gltf-transform script (same joint names, 66 channels each). Clip mapping in `world.ts`: run, idle, jump (`Regular_Jump`), slide (`slide_light`),
   flight (`Leap_of_Faith`; the library has no flying clip, the world's pitch does the rest), dive and hit. It still goes through `cloneSkinned` and

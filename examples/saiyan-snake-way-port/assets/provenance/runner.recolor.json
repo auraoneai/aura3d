@@ -1,5 +1,5 @@
 {
-  "asset": "runner.glb",
+  "asset": "runner-script.glb",
   "steps": [
     {
       "tool": "tools/runner-recolor/recolor.mjs",
@@ -14,7 +14,18 @@
       "change": "GU47 phase 4 (distinctness vs the genre neighbours' teal/blue runners): teal outfit pixels to red lacquer, silver trim to warm pearl; skin and hair untouched; geometry, rig and clips untouched",
       "sha256": "f6e59b7c15d3e7ef0bdd971fe4983a7acae6ecd47dcd06d2dfe3439cf00deb19",
       "credits": 0
+    },
+    {
+      "tool": "OptiPNG 0.7.8 -o7, Azure ACR task ch7ck",
+      "date": "2026-11-02",
+      "change": "Lossless normal PNG IDAT recompression; every decoded RGBA sample, IHDR and all other PNG chunks preserved. All other BIN chunk payload bytes and glTF geometry, rig and clips are unchanged; buffer lengths and offsets are adjusted.",
+      "sourceSha256": "f6e59b7c15d3e7ef0bdd971fe4983a7acae6ecd47dcd06d2dfe3439cf00deb19",
+      "sourceNormalPngSha256": "d1bde5c9ee18b3c0449e04f380ea088d00bf99dbf07c626b476d56f83f1c9361",
+      "normalPngSha256": "217f52999b125d5050ef9e11810c2071752b48ce81482084a285b1e2f4af91f6",
+      "decodedRgbaSha256": "45190ec07f4cdd00d6ee89bf1750acf77518c7a6559bbabbd1a4b5aad60d73ca",
+      "sha256": "7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b",
+      "credits": 0
     }
   ],
-  "sha256": "f6e59b7c15d3e7ef0bdd971fe4983a7acae6ecd47dcd06d2dfe3439cf00deb19"
+  "sha256": "7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b"
 }

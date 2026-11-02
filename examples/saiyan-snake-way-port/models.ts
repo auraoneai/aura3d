@@ -1,6 +1,7 @@
 // Meshy-generated props (text prompts only; see PORTING-NOTES.md "Meshy art pass" for prompts, task ids and rights basis).
 // Same-origin pathname + sha256: the production bridge refuses http(s) model URLs and would draw nothing.
 import { defineModelAssets } from "@aura3d/engine";
+import type { LookMode } from "./art/colorScript";
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
 const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/${file}`, import.meta.url).pathname, sha256 });
@@ -16,6 +17,22 @@ export const MESHY = defineModelAssets({
   /** GU47 WP-36 `serpSerpentHead` (admitted 2026-10-31, provenance/serpentHead.*): the colossal serpent landmark (SSR-10/17). */
   serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34")
 }, { license: LICENSE, queryParam: null }).refs;
+
+/** Both versions retain the same rig and clips; only the original uses the 4.6.2 teal atlas. */
+export const RUNNER_MODELS = defineModelAssets({
+  original: {
+    url: new URL("./assets/runner.glb", import.meta.url).pathname,
+    sha256: "sha256-5e8a08af3b60c2a36aed4b0d3197c2d1846cf7cfc26a1322d366232cc035b9f4"
+  },
+  script: {
+    url: new URL("./assets/runner-script.glb", import.meta.url).pathname,
+    sha256: "sha256-7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b"
+  }
+}, { license: LICENSE, queryParam: null }).refs;
+
+export function runnerModelForLook(mode: LookMode) {
+  return RUNNER_MODELS[mode];
+}
 
 export type MeshyKey = keyof typeof MESHY;
 

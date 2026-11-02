@@ -14,8 +14,8 @@ import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFra
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
 import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
-import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
-import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
+import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY, runnerModelForLook } from "./models";
+import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookMode, type LookParams, type ResolvedLook } from "./art/colorScript";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
 import { createAmbientFx } from "./art/ambientFx";
@@ -181,8 +181,7 @@ function frameBasis(frame: RoadFrame, yawOffset = 0): M3 {
 /** Local ZYX Euler (R = Rz·Ry·Rx) as a matrix. */
 const eulerMatrix = (e: LV3): M3 => mul(rz(e[2]), mul(ry(e[1]), rx(e[0])));
 
-/** Catalog humanoid (CC0, see assets/ATTRIBUTION.md): faces +Z; the clips this port plays are listed in `CLIP` (Run_Loop, Jump_Loop, Flight_Loop, Dive_Loop, Slide_Loop, Idle_Loop, Hit_React). */
-const RIG_URL = new URL("./assets/runner.glb", import.meta.url).href;
+/** Meshy humanoid (see assets/ATTRIBUTION.md): faces +Z; clips are listed in `CLIP`. */
 const RIG_SCALE = 1.8;
 const CLIP = { run: "Run_Loop", air: "Jump_Loop", fly: "Flight_Loop", dive: "Dive_Loop", slide: "Slide_Loop", idle: "Idle_Loop", hit: "Hit_React" } as const;
 
@@ -194,9 +193,9 @@ export interface RunnerActor {
 }
 
 /** Loads the rigged runner; resolves to null when the model cannot load so the procedural figure stays. */
-export async function loadRunner(canvas: HTMLCanvasElement): Promise<RunnerActor | null> {
+export async function loadRunner(canvas: HTMLCanvasElement, mode: LookMode = "script"): Promise<RunnerActor | null> {
   try {
-    const batch = await cloneSkinned({ url: RIG_URL, type: "model" as const, format: "glb" }, 1, { width: canvas.width, height: canvas.height, idPrefix: "runner" });
+    const batch = await cloneSkinned(runnerModelForLook(mode), 1, { width: canvas.width, height: canvas.height, idPrefix: "runner" });
     const actor = batch.actors[0] as TypedGLBActor;
     const clips = actor.evidence.clips;
     if (!clips.includes(CLIP.run)) return null;

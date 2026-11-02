@@ -23,7 +23,7 @@ import { createRunInput } from "./input";
 import { createRenderGuard } from "./renderGuard";
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
-import { RUNNER_STYLES, hexCss } from "./styles";
+import { hexCss, runnerIndexForLook, runnerStylesForLook } from "./styles";
 import { buildWorld, loadRunner, type WorldRuntime } from "./world";
 import { STAGE_LOOK, lookParams } from "./art/colorScript";
 import { serpentCrops } from "./art/crops";
@@ -34,6 +34,7 @@ export const QA_HOOK_NAME = "serpentine-sky-run";
 const params = new URLSearchParams(location.search);
 const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1" };
 const look = lookParams(location.search);
+const runnerStyles = runnerStylesForLook(look.mode);
 // GU47 SSR-16: the indigo lacquer HUD theme follows the colour script; `?look=original` keeps the old HUD
 if (look.mode === "script") document.documentElement.classList.add("serpent-hud");
 
@@ -91,25 +92,22 @@ const RUNNER_KEY = "serpentine-sky-run.runner";
  * VIOLET (indigo suit, gold belt) rather than TIDE's teal, which the sibling-distinctness judge read as other runners' green
  * outfits. A stored choice always wins; `?look=original` keeps TIDE. Looks only: the run is identical for every runner.
  */
-const DEFAULT_RUNNER = look.mode === "script" ? Math.max(0, RUNNER_STYLES.findIndex((s) => s.id === "violet")) : 0;
 function loadRunnerIndex(): number {
   try {
-    const stored = localStorage.getItem(RUNNER_KEY);
-    if (stored === null || stored === "" || !Number.isFinite(Number(stored))) return DEFAULT_RUNNER;
-    return Math.max(0, Math.min(RUNNER_STYLES.length - 1, Math.trunc(Number(stored))));
-  } catch { return DEFAULT_RUNNER; }
+    return runnerIndexForLook(look.mode, localStorage.getItem(RUNNER_KEY));
+  } catch { return runnerIndexForLook(look.mode, null); }
 }
 function selectRunner(index: number, persist = true): void {
-  runnerIndex = (index + RUNNER_STYLES.length) % RUNNER_STYLES.length;
+  runnerIndex = (index + runnerStyles.length) % runnerStyles.length;
   if (persist) { try { localStorage.setItem(RUNNER_KEY, String(runnerIndex)); } catch { /* storage unavailable */ } }
-  const style = RUNNER_STYLES[runnerIndex]!;
+  const style = runnerStyles[runnerIndex]!;
   runtime?.setRunnerStyle(style);
   $("badge").style.background = `radial-gradient(circle at 35% 30%, ${hexCss(style.skin)}, ${hexCss(style.gi)} 70%)`;
   document.querySelectorAll<HTMLElement>("#runners .runner").forEach((el, i) => el.classList.toggle("selected", i === runnerIndex));
 }
 function buildRunnerCards(): void {
   const host = $("runners");
-  RUNNER_STYLES.forEach((style, i) => {
+  runnerStyles.forEach((style, i) => {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "runner ghost";
@@ -471,7 +469,7 @@ function sizeCanvas(): void {
 
 async function boot(): Promise<void> {
   sizeCanvas();
-  const runner = await loadRunner(canvas);
+  const runner = await loadRunner(canvas, look.mode);
   const world = buildWorld({ canvas, runner, look });
   app = createAuraApp(canvas, {
     autoStart: false,
