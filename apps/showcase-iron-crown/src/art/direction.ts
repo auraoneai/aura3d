@@ -78,6 +78,8 @@ export default defineArtDirection({
     { role: "prop", assetKey: "ironcrownDockCrate", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownDockBarrel", maxTriangles: 11000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownColosseumBust", maxTriangles: 18000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "ironcrownForgeAnvil", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "ironcrownWeaponRack", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // Still borrowed: no CC0 catalog asset fits these without degrading the venue (lane report, Phase 9).
     // Phase 9b: the Airstrip and Monastery keep their 4.7.7 props (the CC0 swaps lost a blind panel against 4.7.7).
     { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
@@ -94,7 +96,6 @@ export default defineArtDirection({
     { ...MESHY_PROP_E, assetKey: "patrolJetAircraftMeshy" },
     { role: "set-dressing", assetKey: "propBoulder", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 50000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "propRockA", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "showcaseModernBuildingOne", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "showcaseModernOfficeBuilding", maxTriangles: 230000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
     { role: "world", assetKey: "showcaseTeaHouse", maxTriangles: 120000, textureSet: "BC", maxTextureSize: 1024 }
