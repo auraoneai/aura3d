@@ -6,7 +6,7 @@
 import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, text3D, world, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
-import { turfTextures } from "./turfTextures";
+import { ivyBrickTexture, turfTextures } from "./turfTextures";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
 import { probes } from "@aura3d/engine/lanes";
@@ -86,7 +86,10 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const dirt = gu47
     ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex && (turf.normalScale?.clay ?? 0.5) > 0 ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
-  const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
+  const ivyBrick = gu47 && park.id === "ivy" ? ivyBrickTexture() : null;
+  const wallMat = ivyBrick
+    ? material.pbr({ color: "#ffffff", roughness: 0.9, texture: ivyBrick as any })
+    : material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
   const wallTopMat = !gu47
     ? material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 })
@@ -317,6 +320,9 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
         targetHeight: FAN_MODEL.height,
         scaleMode: "fit",
         role: "setDressing",
+        // DIA-W2: distant seated fans are already grounded by the benches.
+        // Keep their main-pass silhouettes, not hundreds of per-cascade shadows.
+        castShadow: false,
         // Phase 4 round 3: the textured cream kit read as a grey mass behind the back-lit benches at stand distance; a flat
         // material under the section colours keeps the seated silhouettes and brings the crowd colour back.
         material: material.pbr({ color: "#ffffff", roughness: 0.8 }),

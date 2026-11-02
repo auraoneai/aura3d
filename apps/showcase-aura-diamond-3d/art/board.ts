@@ -120,13 +120,15 @@ export interface BoardColors {
   readonly accent: string;
   /** Font stack (licensed faces only). */
   readonly font: string;
+  /** Optional park-specific scoreboard face. */
+  readonly background?: string;
 }
 
 /** Paint one board frame: the linescore, or the HOME RUN card over it while `hrLevel > 0`. */
 export function paintBoard(ctx: BoardPainter, model: BoardModel, colors: BoardColors, hrLevel: number): void {
   const { width: W, height: H } = BOARD_CANVAS;
   ctx.globalAlpha = 1;
-  ctx.fillStyle = "#0a1410";
+  ctx.fillStyle = colors.background ?? "#0a1410";
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = colors.accent;
   ctx.fillRect(0, 0, W, 30);

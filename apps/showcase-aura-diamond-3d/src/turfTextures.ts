@@ -17,6 +17,7 @@ export interface TurfTextures {
 }
 
 let cached: TurfTextures | null | undefined;
+let cachedIvyBrick: unknown | null | undefined;
 
 function canvasTexture(block: TexelBlock, colorSpace: "srgb" | "linear", repeat: number): unknown {
   const canvas = document.createElement("canvas");
@@ -50,4 +51,39 @@ export function turfTextures(): TurfTextures | null {
     cached = null;
   }
   return cached;
+}
+
+/**
+ * DIA-M2: a small, repeating running-bond brick texture for Ivy's existing
+ * wall batch. It is shared across park rebuilds and needs no extra geometry.
+ */
+export function ivyBrickTexture(): unknown | null {
+  if (cachedIvyBrick !== undefined) return cachedIvyBrick;
+  if (typeof document === "undefined") return (cachedIvyBrick = null);
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return (cachedIvyBrick = null);
+    ctx.fillStyle = "#8d8275";
+    ctx.fillRect(0, 0, 128, 128);
+    const bricks = ["#854a39", "#955746", "#794334", "#a1604c"];
+    for (let row = 0; row < 8; row++) {
+      for (let column = -1; column < 5; column++) {
+        const x = column * 32 + (row % 2) * 16;
+        ctx.fillStyle = bricks[((column + 4) * 3 + row * 5) % bricks.length]!;
+        ctx.fillRect(x + 1, row * 16 + 1, 30, 14);
+      }
+    }
+    const handle = texture.canvas({ canvas, colorSpace: "srgb", flipY: false });
+    handle.wrapS = "repeat";
+    handle.wrapT = "repeat";
+    handle.repeat = [12, 4];
+    handle.anisotropy = 4;
+    cachedIvyBrick = handle;
+  } catch {
+    cachedIvyBrick = null;
+  }
+  return cachedIvyBrick;
 }
