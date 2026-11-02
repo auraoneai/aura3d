@@ -16,6 +16,21 @@ export const ORBIT_VFX = {
 
 export type OrbitVfxKind = (typeof ORBIT_VFX)[keyof typeof ORBIT_VFX];
 
+/** SO47-V2: the existing E-F atlas sequences replace the old point exhaust. */
+export const EXHAUST_SMOKE = "craterline-exhaust-smoke";
+export const EXHAUST_FLAME = "craterline-exhaust-flame";
+
+const EXHAUST_PRESETS: readonly AuraVfxEffectSpec[] = [
+  {
+    name: EXHAUST_SMOKE,
+    layers: [{ type: "emitter", count: 3, sprite: "smoke-a", blend: "alpha", color: "#bda79b", speed: 0.8, life: 0.55, size: 0.38, spread: 0.4, direction: [0, 1, 0], gravity: 0.15, drag: 1 }]
+  },
+  {
+    name: EXHAUST_FLAME,
+    layers: [{ type: "emitter", count: 3, sprite: "flame-loop", blend: "additive", color: "#ffc879", speed: 1.2, life: 0.24, size: 0.3, spread: 0.35, direction: [0, 1, 0], gravity: 0, drag: 1 }]
+  }
+];
+
 /** Palette tints of the pack (sRGB hex). */
 export const ORBIT_VFX_COLORS: Readonly<Record<OrbitVfxKind, string>> = {
   "craterline-land-dust": "#d98464",
@@ -60,6 +75,7 @@ export const ORBIT_VFX_PRESETS: readonly AuraVfxEffectSpec[] = [
 /** Registers the pack on the app's effects surface (idempotent: a re-register replaces the spec). */
 export function registerOrbitVfx(effects: Pick<AuraAppEffects, "registerPreset">): void {
   for (const spec of ORBIT_VFX_PRESETS) effects.registerPreset(spec.name, spec);
+  for (const spec of EXHAUST_PRESETS) effects.registerPreset(spec.name, spec);
 }
 
 /** Race event type -> preset and burst count scale (reduced motion halves emission, PRD §6.3). */

@@ -34,7 +34,7 @@ import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
-import { ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
+import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 
 export { lehmer };
 
@@ -550,16 +550,20 @@ export function buildWorld(options: WorldOptions): World {
   }), { name: "stardust", material: pointsMaterial(true) }).runtime({ id: "stardust" }));
 
   /* ---- exhaust ---- */
-  const EXHAUST = 160;
-  builder.add(geometry.custom(geometry.dynamic({
-    positions: f32(Array.from({ length: EXHAUST * 3 }, () => 0)),
-    topology: "points",
-    attributes: {
-      size: { itemSize: 1, data: f32(Array.from({ length: EXHAUST }, () => 0)) },
-      tint: { itemSize: 3, data: f32(Array.from({ length: EXHAUST }, () => [...hexLinear("#ffe1a1")]).flat()) },
-      fade: { itemSize: 1, data: f32(Array.from({ length: EXHAUST }, () => 0)) }
-    }
-  }), { name: "exhaust", material: pointsMaterial(true) }).runtime({ id: "exhaust" }));
+  // Original keeps its point exhaust; gouache replaces that draw with one
+  // atlas batch (smoke while cruising, flame while boosting).
+  const EXHAUST = look === "original" ? 160 : 0;
+  if (EXHAUST > 0) {
+    builder.add(geometry.custom(geometry.dynamic({
+      positions: f32(Array.from({ length: EXHAUST * 3 }, () => 0)),
+      topology: "points",
+      attributes: {
+        size: { itemSize: 1, data: f32(Array.from({ length: EXHAUST }, () => 0)) },
+        tint: { itemSize: 3, data: f32(Array.from({ length: EXHAUST }, () => [...hexLinear("#ffe1a1")]).flat()) },
+        fade: { itemSize: 1, data: f32(Array.from({ length: EXHAUST }, () => 0)) }
+      }
+    }), { name: "exhaust", material: pointsMaterial(true) }).runtime({ id: "exhaust" }));
+  }
 
   /* ---- riders ---- */
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle));
@@ -705,6 +709,10 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const exhaustVel = new Float32Array(input.exhaust * 3);
   let exhaustHead = 0;
   let exhaustBudget = 0;
+  let exhaustClock = 0;
+  let exhaustSeed = 0;
+  let exhaustKind = "";
+  let exhaustEffects: { readonly alive: boolean; stop(options?: { immediate?: boolean }): void }[] = [];
   const rng = lehmer(4242);
   let dustLap = -1;
   const dustSize = new Float32Array(input.dustItems.length);
@@ -733,6 +741,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   let beaconStep = 0;
   let lastPost = "";
   let lastShift = Number.NaN;
+  let leanScuffCooldown = 0;
   if (input.look === "gouache") registerOrbitVfx(app.effects ?? { registerPreset: () => undefined });
   // SO47-V2: amber player ribbon (jade while the gravity grip is on) and livery-coloured rival trails (High), widening
   // with speed so they show on boost. One ribbon per rider; the engine batches them.
@@ -1114,6 +1123,20 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       skyDome?.setUniform?.("nebulaShift", sector.nebulaShift);
       lastShift = sector.nebulaShift;
     }
+    // SO47-V3: use the same merged decal path as landing scuffs. Rate-limit
+    // continuous hard turns and never mark the road while airborne.
+    leanScuffCooldown = Math.max(0, leanScuffCooldown - Math.max(0, dt));
+    if (input.look === "gouache" && input.high && app.effects?.runtime === "on" &&
+        state.phase === "racing" && !state.air && !state.flight && !state.loop &&
+        state.speed > 4 && Math.abs(state.lean) >= 0.18 && leanScuffCooldown === 0) {
+      const ground = playerPose.position;
+      const up = routeFrame(state.s, state.route).up;
+      app.effects.decal(
+        { position: [ground.x + up.x * 0.02, ground.y + up.y * 0.02, ground.z + up.z * 0.02], normal: [up.x, up.y, up.z] },
+        { kind: "scuff", size: 1.4, lifetime: 6, color: "#3a2626", opacity: 0.55 }
+      );
+      leanScuffCooldown = 0.65;
+    }
     const wantTrail: keyof typeof trailColor = state.gravityTime > 0 || state.flight?.mode === "sling" ? "jade" : "amber";
     if (playerTrail && wantTrail !== playerTrailColor) {
       playerTrail.stop({ immediate: false });
@@ -1123,8 +1146,25 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     applyPost(postDirector.update(dt, { boosting: Boolean(state.boosting), zeroG: Boolean(state.flight), phase: state.phase }));
     publishCrops(aspect);
 
-    /* exhaust */
-    if (!state.flight && !state.air && !menu && state.phase === "racing" && state.speed > 4) {
+    /* SO47-V2: at most one atlas sequence is live at a time, keeping the
+     * replacement within the old point exhaust's single-draw allowance. */
+    if (input.look === "gouache") {
+      const active = !state.flight && !state.air && !menu && state.phase === "racing" && state.speed > 4 && app.effects?.runtime === "on";
+      const kind = active ? (state.boosting ? EXHAUST_FLAME : EXHAUST_SMOKE) : "";
+      exhaustEffects = exhaustEffects.filter((effect) => effect.alive);
+      if (kind !== exhaustKind) {
+        for (const effect of exhaustEffects) effect.stop({ immediate: true });
+        exhaustEffects = [];
+        exhaustKind = kind;
+        exhaustClock = 0;
+      }
+      exhaustClock -= Math.max(0, dt);
+      if (kind && exhaustClock <= 0 && app.effects) {
+        const p = playerPose.position.clone().addScaledVector(playerPose.forward, -0.75).addScaledVector(playerPose.up, 0.25);
+        exhaustEffects.push(app.effects.burst(kind, [p.x, p.y, p.z], { seed: (0x5b0a0000 + exhaustSeed++) >>> 0, camera: false }));
+        exhaustClock = input.reducedMotion ? 0.26 : 0.13;
+      }
+    } else if (!state.flight && !state.air && !menu && state.phase === "racing" && state.speed > 4) {
       exhaustBudget += Math.min(0.1, dt) * (state.boosting ? 600 : 110 + state.speed * 3);
       let spawned = 0;
       const pf = poseAt(state.s, state.lane, state.route, 0, state.heading || 0, 0);
@@ -1148,10 +1188,12 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       exhaustSize[k] = alive ? 7 * (1 - exhaustAge[k]! * 0.5) : 0;
       exhaustFade[k] = alive ? (1 - exhaustAge[k]!) * 0.7 : 0;
     }
-    const ex = node("exhaust");
-    ex.updateAttribute?.("position", { array: exhaustPos, offset: 0 });
-    ex.updateAttribute?.("size", { array: exhaustSize, offset: 0 });
-    ex.updateAttribute?.("fade", { array: exhaustFade, offset: 0 });
+    if (input.exhaust > 0) {
+      const ex = node("exhaust");
+      ex.updateAttribute?.("position", { array: exhaustPos, offset: 0 });
+      ex.updateAttribute?.("size", { array: exhaustSize, offset: 0 });
+      ex.updateAttribute?.("fade", { array: exhaustFade, offset: 0 });
+    }
   }
 
   return {
