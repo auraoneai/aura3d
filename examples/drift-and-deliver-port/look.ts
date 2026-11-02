@@ -450,7 +450,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
       const key = TRAFFIC_MODEL[kind];
       const id = `traffic-${kind}`;
-      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] })), shift));
+      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] })), shift, shift));
       modelTraffic.push({ id, cars, scale: carScale(key) });
     }
   }
