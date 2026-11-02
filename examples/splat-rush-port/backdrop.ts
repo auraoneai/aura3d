@@ -113,8 +113,12 @@ export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): v
 
 /** GU47 WP-36 CR-A1: in the carnival look two of the tree islands (one per side) are the paint-pot island; same slot, size and motion. */
 export const PAINT_POT_PIECES: readonly number[] = [3, 6];
+/** GU47 wave 1 CR-A1: in the carnival look the right-hand tree island in slot 9 is the palette island (same slot, size
+ *  10, motion and shadow flags; the GLB's 1.65 x 1.90 x 1.67 bounds match the tree island's 1.59 x 1.89 x 1.58). */
+export const PALETTE_PIECES: readonly number[] = [9];
 export function pieceModel(look: SplatLook, piece: Piece): keyof typeof MODELS {
   if (look.id === "carnival" && PAINT_POT_PIECES.includes(PIECES.indexOf(piece))) return "paintPotIsland";
+  if (look.id === "carnival" && PALETTE_PIECES.includes(PIECES.indexOf(piece))) return "paletteIsland";
   return piece.kind;
 }
 
