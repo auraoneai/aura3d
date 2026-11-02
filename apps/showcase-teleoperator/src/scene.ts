@@ -37,7 +37,7 @@ export const ROAD_STRIPS: ReadonlyArray<{ readonly id: string; readonly x: numbe
 // Street-front building models (facade on +Z in the file). Left blocks are yawed +90 degrees and right blocks -90 degrees so
 // the facade faces the road; "depth" runs along the file's z axis (away from the road) and "frontage" along its x axis.
 export const BUILDING_SPECS = [
-  { key: "gridBldgVictorian", x: 0.912, y: 1.737, z: 1.918 },
+  { key: "gridBldgVictorian", x: 0.951, y: 1.812, z: 2 },
   { key: "gridBldgGlassTower", x: 0.844, y: 1.902, z: 0.87 },
   { key: "gridBldgMidrise", x: 1.85, y: 1.893, z: 1.641 },
   { key: "gridBldgArtDeco", x: 0.952, y: 1.902, z: 0.951 }
