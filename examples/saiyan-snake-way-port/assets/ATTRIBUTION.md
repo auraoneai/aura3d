@@ -23,6 +23,7 @@ time (recorded per asset in `provenance/<name>.rights.json`; Meshy task ids in `
 | `lantern.glb` | Roadside lanterns | 1.2 MB | 16,478 verts | stone lantern post with a glowing amber lantern |
 | `island.glb` | Floating-island decor | 2.2 MB | 46,955 verts | small floating rock island with trees |
 | `serpentHead.glb` | Colossal serpent landmark beside the road (GU47 WP-36 `serpSerpentHead`, generated 2026-10-30, admitted with `aura3d assets import-meshy` 2026-10-31; provenance/serpentHead.*) | 1.6 MB | 21,986 verts | colossal serpent dragon head with pearl and jade scales, gold whiskers and glowing eyes, emerging from clouds |
+| `../../../apps/showcase-serpentine-sky-run-port/public/aura-assets/serpentine_sky_run_port_serpPavilion.glb` | Red lacquer pavilion on a floating rock, background landmark left of the road (GU47 WP-36 `serpPavilion`, generated 2026-11-01, admitted with `aura3d assets import-meshy` 2026-11-02; typed key serpentine_sky_run_port_serpPavilion; provenance/serpPavilion.*) | 5.2 MB | 113,872 triangles (95,797 verts), 1024 px BC+N+MR | red lacquer pavilion with gold trim and curved roof on a rock base |
 
 The runner's clips are Meshy rig clips merged into one GLB (`Run_Loop` basic running, `Idle_Loop` action 0, `Jump_Loop` 466 Regular_Jump,
 `Slide_Loop` 516 slide_light, `Flight_Loop` 501 Leap_of_Faith, `Dive_Loop` 506 Dive_Down_and_Land, `Hit_React` 178 Hit_Reaction).
