@@ -1538,6 +1538,12 @@ gameApp.onFrame(({ dt }) => {
     syncVisuals();
     BLOCK_POOL?.flush();
     syncSling(dt);
+    // SS47-AN1: move the existing pennant about its mast without another draw
+    // or touching the simulation. The cloth asset/clip is still a separate need.
+    if (!ORIGINAL_LOOK && !REDUCED) {
+      const yaw = 0.16 * Math.sin(elapsed * 1.7) + 0.04 * Math.sin(elapsed * 3.1);
+      node(PROP_IDS.flag)?.setPosition(7.2 + 0.54 * Math.cos(yaw), 5.15, -0.6 - 0.54 * Math.sin(yaw)).setRotation(0, yaw, 0);
+    }
     updateCamera(dt, elapsed);
     refreshVp();
     if (frames % 2 === 0) updateMiniatureFocus();
