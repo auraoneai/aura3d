@@ -7,7 +7,7 @@ import { RenderDeviceError, type RenderDevice, type RenderTarget } from "../Rend
 import type { RenderItem } from "../contracts/renderItem";
 import type { QrFlags } from "../contracts/core";
 import { captureFrameContributor, frameContributors, isEmptyStockContributor, matchesFrameContributor, stockFrameFeedOwner, type FrameContributor } from "../contracts/frameGraph";
-import { registeredPostPasses, type PostPipelineOptions } from "../contracts/post";
+import { registeredPostPasses, type PostPassDescriptor, type PostPipelineOptions } from "../contracts/post";
 import { SCREEN_FEEL_CONTRIBUTOR } from "../post/ScreenFeelPass";
 import { POST_ONLY_TIER_CONTRIBUTOR } from "../post/PostQualityTiers";
 import { resolveBloomWeight } from "../postprocess/NativeBloomPyramid";
@@ -270,6 +270,39 @@ export function createSelectiveBloomTarget(
   }
 }
 
+/**
+ * Switch the signal attachment's draw buffer on the selective target's draw framebuffer. The target is reused across frames, and
+ * WebGL2 validates every draw's fragment outputs against the enabled draw buffers: a program without a signal output drawing into
+ * an enabled second buffer is INVALID_OPERATION. So both buffers are on while a frame clears and while every draw writes the
+ * signal, and attachment 1 is off for a frame that declines (late, or the first draw that cannot write it).
+ */
+export function setSelectiveSignalDrawBuffer(device: RenderDevice, target: RenderTarget, enabled: boolean): void {
+  const host = webgl2DeviceHost(device);
+  const framebuffer = (target as RenderTarget & { readonly drawFramebuffer?: WebGLFramebuffer }).drawFramebuffer;
+  if (!host || !framebuffer || !selectiveDeviceIsBuiltin(device)) return;
+  const gl = host.gl;
+  const previous = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, framebuffer);
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0, enabled ? gl.COLOR_ATTACHMENT1 : gl.NONE]);
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, previous);
+  host.stateCache.invalidate();
+}
+
+/**
+ * The first early post pass (any anchor before `before-tonemap`) that blocks the separate signal, or undefined. A registered
+ * pass that carries an `enabled` predicate is conditional (the underwater distortion the engine registers at import runs only
+ * below a water surface) and is not evaluated here: the executor (`LegacyPost` `signal-source-transformed`) gives any frame on
+ * which an early pass replaced the source target ordinary bloom. A registered early pass without a predicate, and every early
+ * pass the caller supplies in `pipeline.customPasses`, still block.
+ */
+export function blockingEarlyPass(
+  registered: readonly PostPassDescriptor[],
+  supplied: readonly PostPassDescriptor[] = []
+): PostPassDescriptor | undefined {
+  const early = (pass: PostPassDescriptor): boolean => pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap";
+  return registered.find((pass) => early(pass) && typeof pass.enabled !== "function") ?? supplied.find(early);
+}
+
 /** Returns a reason, never runs custom passes or contributors to discover it. */
 export function selectiveBloomDecline(
   device: RenderDevice,
@@ -322,8 +355,7 @@ export function selectiveBloomDecline(
   if (stage) return `pre-bloom-stage:${stage[0]}`;
   // On the v2 HDR route before-tonemap is explicitly deferred until after
   // bloom. Earlier anchors transform color without a signal contract.
-  const customs = [...registeredPostPasses(), ...(p.customPasses ?? [])];
-  const early = customs.find((pass) => pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap");
+  const early = blockingEarlyPass(registeredPostPasses(), p.customPasses ?? []);
   if (early) return `pre-bloom-custom-pass:${typeof early.insertAt === "string" ? early.insertAt : "unknown"}`;
   return null;
 }

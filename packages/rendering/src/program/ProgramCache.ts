@@ -35,6 +35,11 @@ interface CacheEntry {
   ordinarySources?: ShaderSources;
   ordinarySelectiveSafe?: boolean;
   selectiveBaseKey?: string;
+  /**
+   * The signal twin the captured prewarm derived from this entry's `ordinarySources` (`from`), with its key; both absent when
+   * that source cannot gain the output. Written only by the prewarm, so caches that never request selective bloom never set it.
+   */
+  selectiveDerived?: { readonly from: ShaderSources; readonly key?: string; readonly sources?: ShaderSources };
 }
 
 /*
@@ -297,15 +302,26 @@ export class ProgramCache implements ProgramCacheLike {
         if (optional) continue;
         return { reason: "shader-feature" };
       }
-      const source = selectiveSources(base.ordinarySources);
-      if (!source) {
+      // The twin depends only on this entry's exact ordinary source and its
+      // key, so derive it once per source object, not on every selective frame.
+      let derived = base.selectiveDerived;
+      if (!derived || derived.from !== base.ordinarySources) {
+        const twin = selectiveSources(base.ordinarySources);
+        derived = { from: base.ordinarySources };
+        if (twin) {
+          // The cache key is already canonical JSON from the ordinary acquire:
+          // parsing it avoids inspecting material or user-owned feature objects.
+          const features = JSON.parse(baseKey) as ProgramFeatures;
+          derived = { ...derived, sources: twin, key: programKey({ ...features, features: { ...features.features, [SELECTIVE_BLOOM_FEATURE]: true } }) };
+        }
+        base.selectiveDerived = derived;
+      }
+      const source = derived.sources;
+      const key = derived.key;
+      if (!source || key === undefined) {
         if (optional) continue;
         return { reason: "shader-feature" };
       }
-      // The cache key is already canonical JSON from the ordinary acquire:
-      // parsing it avoids inspecting material or user-owned feature objects.
-      const features = JSON.parse(baseKey) as ProgramFeatures;
-      const key = programKey({ ...features, features: { ...features.features, [SELECTIVE_BLOOM_FEATURE]: true } });
       const existing = this.entries.get(key);
       if (existing && (existing.selectiveBaseKey !== baseKey ||
           existing.ordinarySources?.vertex !== source.vertex || existing.ordinarySources?.fragment !== source.fragment)) {

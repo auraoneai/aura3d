@@ -3,6 +3,17 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { identityMat4 } from "@aura3d/scene";
+import { Geometry } from "../../../../packages/rendering/src/Geometry";
+import { PBRMaterial } from "../../../../packages/rendering/src/PBRMaterial";
+import { invalidateSelectiveBloomFrame, selectiveItemsDecline } from "../../../../packages/rendering/src/ForwardPass";
+import { blockingEarlyPass } from "../../../../packages/rendering/src/renderer/SelectiveBloom";
+import { registeredPostPasses, type PostInsertAt, type PostPassDescriptor } from "../../../../packages/rendering/src/contracts/post";
+import { registerPrd10UnderwaterFeatures } from "../../../../packages/rendering/src/world/water/UnderwaterState";
+import { MockRenderDevice, type RenderShaderProgram, type ShaderSources } from "../../../../packages/rendering/src/RenderDevice";
+import { ProgramCache, prewarmCapturedSelectiveBloom } from "../../../../packages/rendering/src/program/ProgramCache";
+import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
+import type { QrFlags } from "../../../../packages/rendering/src/contracts/core";
 import {
   BLOOM_WEIGHT_GLSL,
   bloomPrefilterExcess,
@@ -151,5 +162,103 @@ void main() {
     const file = join(dir, "prefilter.frag");
     writeFileSync(file, source);
     expect(() => execFileSync(tool!, [file], { stdio: "pipe" })).not.toThrow();
+  });
+});
+
+describe("preflight: conditional early passes and the draw-level pre-decline", () => {
+  const pass = (insertAt: PostInsertAt, enabled?: () => boolean) => ({
+    id: "test.pass", insertAt, space: insertAt === "after-tonemap" ? "display" : "linear-hdr", inputs: ["color"], fragment: { glsl: "" }, gpuOnly: true,
+    ...(enabled ? { enabled } : {})
+  }) as unknown as PostPassDescriptor;
+
+  it("a registered pass with an enabled predicate does not block the separate signal; a registered early pass without one does", () => {
+    expect(blockingEarlyPass([pass("after-depth", () => false)])).toBeUndefined();
+    expect(blockingEarlyPass([pass("before-taa", () => true), pass("after-taa", () => false)])).toBeUndefined();
+    const blocking = pass("after-depth");
+    expect(blockingEarlyPass([pass("after-depth", () => false), blocking])).toBe(blocking);
+    expect(blockingEarlyPass([])).toBeUndefined();
+  });
+
+  it("an early pass the caller supplies in pipeline.customPasses blocks even when it carries an enabled predicate", () => {
+    const supplied = pass("after-depth", () => false);
+    expect(blockingEarlyPass([], [supplied])).toBe(supplied);
+    expect(blockingEarlyPass([pass("after-depth", () => false)], [pass("before-tonemap"), supplied])).toBe(supplied);
+  });
+
+  it("passes at before-tonemap and after-tonemap never block", () => {
+    expect(blockingEarlyPass([pass("before-tonemap"), pass("after-tonemap")], [pass("before-tonemap"), pass("after-tonemap")])).toBeUndefined();
+  });
+
+  it("the underwater distortion the engine registers at import is conditional (this is what held the receipt back)", () => {
+    const find = () => registeredPostPasses().find((candidate) => candidate.id === "prd10.underwaterDistortion");
+    const dispose = find() ? undefined : registerPrd10UnderwaterFeatures();
+    try {
+      const underwater = find();
+      expect(underwater?.insertAt).toBe("after-depth");
+      expect(typeof underwater?.enabled).toBe("function");
+      expect(blockingEarlyPass([underwater!])).toBeUndefined();
+    } finally {
+      dispose?.();
+    }
+  });
+
+  it("selectiveItemsDecline names the first draw that cannot write the signal, before any target is chosen", () => {
+    const stock = () => ({ geometry: Geometry.litCube(1), material: new PBRMaterial({ name: "stock" }), modelMatrix: Float32Array.from(identityMat4()), label: "stock" });
+    expect(selectiveItemsDecline([])).toBeNull();
+    expect(selectiveItemsDecline([stock(), stock()] as never)).toBeNull();
+    expect(selectiveItemsDecline([stock(), { ...stock(), instanceTransforms: new Float32Array(16) }] as never)).toBe("draw-producer");
+    expect(selectiveItemsDecline([{ ...stock(), skinning: {} }] as never)).toBe("draw-producer");
+    expect(selectiveItemsDecline([{ ...stock(), material: new PBRMaterial({ name: "glass", renderState: { blendMode: "alpha" } }) }] as never)).toBe("transparent-or-transmission");
+    expect(selectiveItemsDecline([{ ...stock(), material: { name: "custom" } }] as never)).toBe("material-program");
+  });
+
+  it("the first invalidation of a frame turns the signal draw buffer off once, and keeps the first reason", () => {
+    const calls: boolean[] = [];
+    const frame: { enabled: boolean; valid: boolean; invalidReason?: string; setSignalWrite: (enabled: boolean) => void } = {
+      enabled: true, valid: true, setSignalWrite: (enabled) => { calls.push(enabled); }
+    };
+    invalidateSelectiveBloomFrame(frame, "draw-producer");
+    invalidateSelectiveBloomFrame(frame, "signal-program-unprepared");
+    expect(calls).toEqual([false]);
+    expect(frame.valid).toBe(false);
+    expect(frame.invalidReason).toBe("draw-producer");
+    // a frame without the hook (any scene that never selected the target) is unchanged
+    const plain = { valid: true, invalidReason: undefined as string | undefined };
+    invalidateSelectiveBloomFrame(plain, "material-program");
+    expect(plain).toEqual({ valid: false, invalidReason: "material-program" });
+  });
+});
+
+describe("captured selective prewarm: the derived twin is memoised on its base entry", () => {
+  it("repeat prewarms reuse one derived entry, one derived source object and one twin compile", async () => {
+    const device = new MockRenderDevice();
+    const compiled: ShaderSources[] = [];
+    const compile = (sources: ShaderSources): Promise<RenderShaderProgram> => {
+      compiled.push(sources);
+      return Promise.resolve(device.createShaderProgram(sources));
+    };
+    Object.defineProperty(device, "compileAsync", { value: compile });
+    // The prewarm authenticates the cache by its exact flags value; with none, no registered feature contributes and
+    // this lit forward record is provenance-safe.
+    const flags = undefined as unknown as QrFlags;
+    const cache = new ProgramCache(device, { parallelCompile: true });
+    const base = cache.acquire(normalizeProgramFeatures({ lighting: "lit", pass: "forward", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }));
+    await cache.precompile([]);
+    expect(base.status).toBe("ready");
+    const derived = () => (base as unknown as { selectiveDerived?: { readonly key?: string; readonly sources?: ShaderSources } }).selectiveDerived;
+    const first = prewarmCapturedSelectiveBloom(cache, device, flags, compile);
+    const memo = derived();
+    const second = prewarmCapturedSelectiveBloom(cache, device, flags, compile);
+    expect(first.reason).toBeUndefined();
+    expect(first.handles).toHaveLength(1);
+    expect(second.handles).toHaveLength(1);
+    expect(second.handles![0]).toBe(first.handles![0]);
+    expect(first.handles![0]!.key).toBe(memo?.key);
+    expect(derived()).toBe(memo);
+    expect(memo?.sources?.fragment).toContain("a3dBloomSignal");
+    // The base compile, then the twin once, from the memoised source object.
+    expect(compiled).toHaveLength(2);
+    expect(compiled[1]).toBe(memo?.sources);
+    cache.dispose();
   });
 });

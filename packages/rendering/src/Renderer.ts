@@ -47,11 +47,11 @@ import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
 import { consumeTaaHistoryWritten, setSelectiveBloomSkipped } from "./renderer/postSkipped";
-import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomRequested, selectiveContributorContract, transferUnmergedBloomWeights, type SelectiveBloomTarget } from "./renderer/SelectiveBloom";
+import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomRequested, selectiveContributorContract, setSelectiveSignalDrawBuffer, transferUnmergedBloomWeights, type SelectiveBloomTarget } from "./renderer/SelectiveBloom";
 import { webgl2DeviceHost } from "./webgl2/Counters";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, selectiveItemsDecline, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
@@ -1130,11 +1130,17 @@ export class Renderer {
         targetBound = true;
         const flags = route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device);
         selectiveEarlyReason = selectiveBloomDecline(this.device, postprocess, forwardTarget, flags, Boolean(environmentBackground), this.host.post.v2SeamDeclineFor(postprocess), source);
+        // Draw-level declines (instanced, skinned, transparent, non-stock) are data checks the forward pass would reach later:
+        // take them before the frame commits to the second-attachment target, so a request that cannot be served never pays for it.
+        if (!selectiveEarlyReason) selectiveEarlyReason = selectiveItemsDecline(items);
         if (!selectiveEarlyReason) {
           const candidate = this.selectiveBloomCandidate(forwardTarget);
           if (candidate) {
             forwardTarget = candidate;
             selectiveCandidate = true;
+            // Both draw buffers on while the frame clears; the frame turns the signal buffer off if it declines (see setSelectiveSignalDrawBuffer).
+            selectiveFrame.setSignalWrite = (enabled) => setSelectiveSignalDrawBuffer(this.device, candidate, enabled);
+            selectiveFrame.setSignalWrite(true);
             frameHooks.observeSelectiveBloom(selectiveFrame, (contributor) => selectiveContributorContract(contributor, this.device));
           } else {
             selectiveEarlyReason = sampleCount > 1 ? "signal-msaa-target-unavailable" : "signal-target-unavailable";
@@ -1344,6 +1350,8 @@ export class Renderer {
           const flags = route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device);
           const reason = selectiveEarlyReason ?? (!selectiveCandidate ? "target-not-selected" :
             this.prepareSelectiveBloom(forwardPass, selectiveFrame, postprocess, flags, Boolean(environmentBackground), ownedTargets[0], source));
+          // A late decline keeps the chosen target but its draws are ordinary programs: signal buffer off before any of them runs.
+          if (selectiveCandidate && reason !== null) selectiveFrame.setSignalWrite?.(false);
           setSelectiveBloomSkipped(this.canvas ?? this.device, reason ?? undefined);
         }
         this.graph.addPass(forwardPass);

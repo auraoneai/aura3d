@@ -288,11 +288,16 @@ export interface SelectiveBloomFrame {
   maxRadiance?: number;
   preparedKeys?: ReadonlySet<string>;
   readonly weights?: WeakMap<RenderItem, number>;
+  /** Set by the renderer: turns the signal attachment's draw buffer on or off on the frame's target (see `setSelectiveSignalDrawBuffer`). */
+  setSignalWrite?: (enabled: boolean) => void;
 }
 
-/** Mark a selective frame unusable; the first reason is kept. */
-export function invalidateSelectiveBloomFrame(frame: { valid: boolean; invalidReason?: string }, reason: string): void {
-  if (frame.valid) frame.invalidReason = reason;
+/** Mark a selective frame unusable; the first reason is kept, and the signal buffer goes off so later ordinary draws stay valid. */
+export function invalidateSelectiveBloomFrame(frame: { valid: boolean; invalidReason?: string; setSignalWrite?: (enabled: boolean) => void }, reason: string): void {
+  if (frame.valid) {
+    frame.invalidReason = reason;
+    frame.setSignalWrite?.(false);
+  }
   frame.valid = false;
 }
 
@@ -308,6 +313,20 @@ function selectiveDrawDecline(item: RenderItem): string | null {
   const state = material.renderState;
   if (blendStateIsTransparent(state) || state.alphaToCoverage || !stockArrayMatches(state.colorWrite, [true, true, true, true]) ||
       isTransmissionRenderItem(item)) return "transparent-or-transmission";
+  return null;
+}
+
+/**
+ * The first data-only reason a draw in `items` cannot write the separate signal, or null. The renderer asks before it commits a
+ * frame to the second-attachment target, so a request the forward pass would decline later (an instanced, skinned, transparent
+ * or non-stock draw) never pays for that target. A subset of what `prepareSelectiveBloom` checks: it never declines a frame the
+ * later check would accept.
+ */
+export function selectiveItemsDecline(items: readonly RenderItem[]): string | null {
+  for (const item of items) {
+    const reason = selectiveDrawDecline(item);
+    if (reason) return reason;
+  }
   return null;
 }
 
