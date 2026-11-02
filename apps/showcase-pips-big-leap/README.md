@@ -109,13 +109,10 @@ heart, three checkpoints, hazards, and a seed-gated Sun-Gate:
   step-up, mover carry, `game.jumpAssist` coyote+buffer, variable/double jump,
   dive, pound, glide, swim pockets, hazard knockback + i-frames, respawn.
 - `src/game/boss.ts` — Brambleback state machine.
-- `src/game/certify.ts` — lowers each world into the engine's public
-  platformer-geometry pipeline (`game.assetBoundPlatformerLevel` →
-  `game.platformerSceneBinding` → `game.publicPlatformerPresentation` →
-  `game.certifyPlatformerGeometry`/`certifyPlatformerPresentation`) plus a
-  `game.platformer` kit snapshot — honestly, with the world's real typed
-  backdrop hash. `publicReady` is `false` only because retained browser proof
-  (screenshot + sha-256) requires a captured run.
+- `src/game/certify.ts` — attempts to bind the authored course to the engine's
+  public platformer-geometry pipeline. Certification is blocked: the referenced
+  backdrop GLB is not mounted, and no validated model-to-course overlay exists.
+  A screenshot alone cannot establish that binding.
 - `src/game/hud.ts` — DOM for the shell (HUD chips, boss bar, banners, toasts,
   pause/atlas/studio/complete overlays).
 - `src/game/save.ts` — schema-1 localStorage save (seeds, completion, best
