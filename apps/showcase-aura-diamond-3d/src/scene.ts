@@ -11,7 +11,7 @@ import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
 import { probes } from "@aura3d/engine/lanes";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
-import { FAN_MODEL, fanColors, fanModelYaw, fanSeats, fanTint } from "../art/crowd";
+import { FAN_MODEL, fanColors, fanModelYaw, fanSeats, fanTint, fanVariantB } from "../art/crowd";
 import {
   makeRng,
   MOUND_Z,
@@ -309,14 +309,17 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
     })
   );
 
-  // GU47 DIA-A2 + WP-36: about 600 seated fans on the benches above, one instanced draw of the Meshy seated fan
-  // (`ballpark_fanA`, 625 triangles), its cream kit tinted towards the section colour (art/crowd.ts keeps seats and colours).
+  // GU47 DIA-A2 + WP-36: about 600 seated fans on the benches above, instanced draws of the two Meshy seated fans
+  // (`ballpark_fanA`, 625 triangles; wave 1: `ballpark_fanB`, 555 triangles, on about half the seats, art/crowd.ts
+  // `fanVariantB`), the kit tinted towards the section colour (art/crowd.ts keeps seats and colours).
   if (ctx.variant === "gu47") {
     const seats = fanSeats(park, ctx.tier);
     const { shirts } = fanColors(park, seats);
-    nodes.push(
-      instances.model(assets.ballpark_fanA, {
-        name: "stand-fans",
+    const useB = fanVariantB(park, seats);
+    const fanGroup = (asset: typeof assets.ballpark_fanA | typeof assets.ballpark_fanB, name: string, pickB: boolean) => {
+      const idx = seats.map((_, i) => i).filter((i) => useB[i] === pickB);
+      return instances.model(asset, {
+        name,
         targetHeight: FAN_MODEL.height,
         scaleMode: "fit",
         role: "setDressing",
@@ -326,10 +329,14 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
         // Phase 4 round 3: the textured cream kit read as a grey mass behind the back-lit benches at stand distance; a flat
         // material under the section colours keeps the seated silhouettes and brings the crowd colour back.
         material: material.pbr({ color: "#ffffff", roughness: 0.8 }),
-        transforms: seats.map((s) => ({ position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3, rotation: [0, fanModelYaw(s.yaw), 0] as Vec3 })),
-        colors: shirts.map((c) => fanTint(c))
-      })
-    );
+        transforms: idx.map((i) => {
+          const s = seats[i]!;
+          return { position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3, rotation: [0, fanModelYaw(s.yaw), 0] as Vec3 };
+        }),
+        colors: idx.map((i) => fanTint(shirts[i]!))
+      });
+    };
+    nodes.push(fanGroup(assets.ballpark_fanA, "stand-fans", false), fanGroup(assets.ballpark_fanB, "stand-fans-b", true));
   }
 
   // Animated front-row wavers — real admitted 3D Meshy athletes grounded at y = 0

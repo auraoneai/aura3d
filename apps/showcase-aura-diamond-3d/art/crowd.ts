@@ -61,6 +61,16 @@ export function fanColors(park: ParkSpec, seats: readonly FanSeat[]): { readonly
 }
 
 /**
+ * GU47 wave 1 (DIA-A2): which seats take the second Meshy seated fan (`ballpark_fanB`, cap, tee and shorts) instead of
+ * `ballpark_fanA`: about half of them, seeded per park on its own generator so the two meshes mix without stripes and
+ * the shirt colours (`fanColors`) stay exactly as they were.
+ */
+export function fanVariantB(park: ParkSpec, seats: readonly FanSeat[]): readonly boolean[] {
+  const rng = makeRng(0xfb2 + PARK_ORDER.indexOf(park.id) * 613);
+  return seats.map(() => rng() < 0.5);
+}
+
+/**
  * GU47 WP-36 (DIA-A2): the Meshy seated fan (`ballpark_fanA`). Fitted to `FAN_MODEL.height` from the feet; its seat sits
  * `seat` of that height above the feet, so the feet go that far below the bench top. The mesh faces +z, so a fan on a
  * bench at angle theta turns by -theta to face home plate. `tint` is how far the section colour pulls the cream kit.

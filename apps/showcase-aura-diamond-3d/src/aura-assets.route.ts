@@ -42,6 +42,7 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "diamondWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "ballpark_fanA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ballpark_fanB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -353,6 +354,18 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-98745357514b73865fb520081ca3d1e837822d6e257e0042197186ba68b65e57",
     bounds: [1.062, 1.903, 1.242],
     sizeBytes: 46724,
+  },
+  // GU47 wave 1 (DIA-A2): the second Diamond-owned Meshy seated fan (cap, tee and shorts), admitted with `aura3d assets
+  // import-meshy --into apps/showcase-aura-diamond-3d/assets --prefix ballpark --name fanB --profile humanoid` (rights:
+  // assets/provenance/ballpark_fanB.rights.json); sloppy-simplified 19,552 -> 555 triangles, 256 px maps
+  // (scripts/optimize-fan.mjs, ratio 0.032, error 0.1). Served from this app's public/aura-assets.
+  "ballpark_fanB": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ballpark_fanB.ca3de84c.glb",
+    hash: "sha256-ca3de84cd75aa880f994904d5c75e497bf0a2dcf23f865c21d22fac5fbba1ecd",
+    bounds: [0.792, 1.894, 0.896],
+    sizeBytes: 48724,
   },
 } as const);
 
