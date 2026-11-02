@@ -23,6 +23,7 @@ import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
 import { MESHY } from "./models";
+import { assets as cumulusAssets } from "../../apps/showcase-cloud-runner-port/src/aura-assets";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
@@ -198,6 +199,15 @@ export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOO
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
+/** CD-06 storm towers: course distance, lateral offset, height (m) and yaw. The model is about 1.3x as wide as tall, so a
+ *  300 m offset keeps each 240 m tower's near edge about 145 m off the road; A sits in the sky gap left of the title view. */
+const STORM_TOWERS: readonly { s: number; lat: number; height: number; yaw: number }[] = [
+  { s: 900, lat: -300, height: 240, yaw: 0.6 },
+  { s: 1500, lat: 300, height: 240, yaw: 2.3 }
+];
+/** Share of a tower's height sunk below the valley plane: the bottom third of the Meshy model is a grassy rock base. */
+const STORM_TOWER_SINK = 0.34;
+
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
   const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
   addLookNodes(b, ACTIVE_LOOK);
@@ -255,6 +265,14 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     }
   }
   buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
+  /* CD-06 (GU47 WP-36): two Meshy storm towers rising out of the cloud sea beyond the cloud banks, one instanced draw
+     (storm-washed row). Each stands on its rock base sunk below the valley plane, so only the cloud column shows. */
+  if (ACTIVE_LOOK.id === "storm-washed") {
+    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusTowerA, {
+      name: "storm-towers", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
+      transforms: STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
+    }));
+  }
   buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
