@@ -14,6 +14,11 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readShowcaseRouteGateConfig } from "../showcase-library/route-gates.mjs";
+import {
+  routePrimaryProbeExpectedRouteIds,
+  routePrimaryProbeReportDirRelativePath
+} from "../showcase-library/route-primary-probes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
@@ -200,16 +205,132 @@ if (!existsSync(probeDir)) {
     `${mobileChecked.length} routes resized without runtime errors`);
 }
 
-const freshnessPath = join(root, "tests/reports/evidence-freshness/staleness-audit.json");
-if (!existsSync(freshnessPath)) {
-  record("performance", "evidence-freshness", "retained evidence is provably current", "unproven", "run pnpm explain:staleness");
-} else {
-  const freshness = readJson(freshnessPath);
-  const stale = freshness.stale ?? freshness.staleCount ?? (freshness.artifacts ?? []).filter((entry) => entry.stale).length;
-  record("performance", "evidence-freshness",
-    "every retained artifact is provably current for the tree that produced it",
-    stale === 0 ? "pass" : "fail", `${stale} stale artifact(s)`);
+/**
+ * Consume the explainer's verdict rather than recomputing freshness. A count alone cannot prove
+ * that anything was audited or that unbound evidence was included. Older, unversioned reports
+ * may use `stale`/`staleCount` and per-artifact `stale`, but need explicit artifact verdicts and
+ * unbound flags too. All supplied counts must agree with those verdicts.
+ */
+function checkEvidenceFreshness(freshness) {
+  const invalid = (detail) => ({ status: "unproven", detail: `invalid freshness audit: ${detail}` });
+  const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  const has = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+  if (!object(freshness)) return invalid("expected an object");
+
+  const current = freshness.schema === "aura3d-explain-staleness/1.0";
+  if (freshness.schema !== undefined && !current) return invalid(`unsupported schema ${String(freshness.schema)}`);
+  if (!Array.isArray(freshness.artifacts) || freshness.artifacts.length === 0) {
+    return invalid("a non-empty artifact verdict list is required; aggregate counts alone are insufficient");
+  }
+  if (!current && !has(freshness, "stale") && !has(freshness, "staleCount")
+      && !freshness.artifacts.some((entry) => object(entry) && has(entry, "stale"))) {
+    return invalid("missing schema or a recognized legacy stale verdict");
+  }
+  if ((current || has(freshness, "generatedAt"))
+      && (typeof freshness.generatedAt !== "string" || Number.isNaN(Date.parse(freshness.generatedAt)))) {
+    return invalid("missing or malformed generatedAt");
+  }
+  if ((current || has(freshness, "rendererFingerprint"))
+      && (typeof freshness.rendererFingerprint !== "string" || !/^sha256-[a-f0-9]{64}$/.test(freshness.rendererFingerprint))) {
+    return invalid("missing or malformed rendererFingerprint");
+  }
+  for (const key of ["frozenRoutes", "retiredRoutes", "ownershipConflicts", "orderingCycles"]) {
+    // retiredRoutes was added to the existing 1.0 schema; older full audits did not include it.
+    const required = current && key !== "retiredRoutes";
+    if ((required || has(freshness, key)) && !Array.isArray(freshness[key])) return invalid(`${key} must be an array`);
+    if ((key === "frozenRoutes" || key === "retiredRoutes") && Array.isArray(freshness[key])
+        && (freshness[key].some((id) => typeof id !== "string" || !id.trim())
+          || new Set(freshness[key]).size !== freshness[key].length)) {
+      return invalid(`${key} must contain unique route IDs`);
+    }
+  }
+
+  const paths = new Set();
+  const notCurrent = [];
+  for (const [index, entry] of freshness.artifacts.entries()) {
+    if (!object(entry) || typeof entry.artifact !== "string" || !entry.artifact.trim()) {
+      return invalid(`artifact ${index} must identify its path`);
+    }
+    if (paths.has(entry.artifact)) return invalid(`duplicate artifact ${entry.artifact}`);
+    paths.add(entry.artifact);
+    if (typeof entry.unbound !== "boolean") return invalid(`${entry.artifact} is missing a boolean unbound verdict`);
+    if ((current || has(entry, "fresh")) && typeof entry.fresh !== "boolean") {
+      return invalid(`${entry.artifact} is missing a boolean fresh verdict`);
+    }
+    if (has(entry, "stale") && typeof entry.stale !== "boolean") return invalid(`${entry.artifact} has a malformed stale verdict`);
+    if (!has(entry, "fresh") && !has(entry, "stale")) return invalid(`${entry.artifact} has no freshness verdict`);
+    if ((entry.fresh === true && (entry.unbound || entry.stale === true))
+        || (entry.fresh === false && entry.stale === false && !entry.unbound)) {
+      return invalid(`${entry.artifact} has contradictory freshness verdicts`);
+    }
+    const staleOrUnbound = entry.fresh === false || entry.stale === true || entry.unbound;
+    for (const key of ["reasons", "producerConflicts"]) {
+      if ((current || has(entry, key)) && !Array.isArray(entry[key])) return invalid(`${entry.artifact} ${key} must be an array`);
+      if (!staleOrUnbound && entry[key]?.length > 0) return invalid(`${entry.artifact} is fresh but has ${key}`);
+    }
+    if (current && entry.fresh === false && entry.reasons.length === 0) {
+      return invalid(`${entry.artifact} is not fresh but has no reason`);
+    }
+    if (staleOrUnbound) notCurrent.push(`${entry.artifact}${entry.unbound ? " (unbound)" : ""}`);
+  }
+
+  if (current && !has(freshness, "staleArtifactCount")) return invalid("missing staleArtifactCount");
+  for (const key of ["staleArtifactCount", "stale", "staleCount"]) {
+    if (!has(freshness, key)) continue;
+    if (!Number.isSafeInteger(freshness[key]) || freshness[key] < 0) return invalid(`${key} must be a nonnegative integer`);
+    if (freshness[key] !== notCurrent.length) {
+      return invalid(`${key}=${freshness[key]} disagrees with ${notCurrent.length} stale or unbound artifact verdict(s)`);
+    }
+  }
+
+  let routes;
+  try {
+    routes = readShowcaseRouteGateConfig(root).routes;
+    if (routes.length === 0 || routes.some((route) => typeof route.published !== "boolean"
+        || (route.requiresRoutePrimaryProbe !== undefined && typeof route.requiresRoutePrimaryProbe !== "boolean"))) {
+      return invalid("route gate metadata has missing or malformed selection flags");
+    }
+  } catch (error) {
+    return invalid(`cannot read route gate metadata: ${error.message}`);
+  }
+  // The explainer also permits --route --write. A fresh subset must not masquerade as a full audit.
+  const expected = new Set(routePrimaryProbeExpectedRouteIds(routes)
+    .map((id) => `${routePrimaryProbeReportDirRelativePath}/${id}.json`));
+  const missing = [...expected].filter((path) => !paths.has(path));
+  const unexpected = [...paths].filter((path) => !expected.has(path));
+  if (expected.size === 0 || missing.length > 0 || unexpected.length > 0) {
+    return invalid(`audit does not cover the required published, non-frozen probes`
+      + (missing.length ? `; missing: ${missing.join(", ")}` : "")
+      + (unexpected.length ? `; unexpected: ${unexpected.join(", ")}` : ""));
+  }
+  for (const [key, ids] of [
+    ["frozenRoutes", routes.filter((route) => route.retainedEvidenceFrozen === true).map((route) => route.id)],
+    ["retiredRoutes", routes.filter((route) => route.published === false).map((route) => route.id)]
+  ]) {
+    if (has(freshness, key) && (freshness[key].length !== ids.length || ids.some((id) => !freshness[key].includes(id)))) {
+      return invalid(`${key} disagrees with route gate metadata`);
+    }
+  }
+  return notCurrent.length > 0
+    ? { status: "fail", detail: `${notCurrent.length} of ${paths.size} artifact(s) stale or unbound: ${notCurrent.join(", ")}` }
+    : { status: "pass", detail: `${paths.size} required published probe(s) fresh; retired and frozen evidence not audited or approved` };
 }
+
+const freshnessPath = join(root, "tests/reports/evidence-freshness/staleness-audit.json");
+let freshnessResult;
+try {
+  freshnessResult = checkEvidenceFreshness(readJson(freshnessPath));
+} catch (error) {
+  freshnessResult = {
+    status: "unproven",
+    detail: error.code === "ENOENT"
+      ? "freshness audit missing; run node tools/evidence-freshness/explain-staleness.mjs --write"
+      : `freshness audit unreadable or invalid JSON: ${error.message}`
+  };
+}
+record("performance", "evidence-freshness",
+  "required published route-primary evidence is provably current",
+  freshnessResult.status, freshnessResult.detail);
 
 // --- Evidence completeness (Phase 17) ---------------------------------------
 if (audits.length === 0) {
