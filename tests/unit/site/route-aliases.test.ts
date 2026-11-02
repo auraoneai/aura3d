@@ -2,11 +2,8 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdir
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-// @ts-expect-error This build-only .mjs script has no declaration file.
 import { buildCatalogRouteAliases } from "../../../marketing/scripts/build-showcase-routes.mjs";
-// @ts-expect-error This build-only .mjs script has no declaration file.
 import { rewriteBuiltAuraAssetUrls } from "../../../marketing/scripts/showcase-cdn-assets.mjs";
-// @ts-expect-error This pure .mjs build helper has no declaration file.
 import { catalogRouteAliases, planAliasRedirects } from "../../../tools/site/route-aliases.mjs";
 
 const schema = "aura3d-site-games-catalog/1";

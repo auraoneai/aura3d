@@ -45,7 +45,7 @@ describe("Serpentine road scale composition", () => {
     expect(script.spec).toEqual({ ...original.spec, glsl: { ...original.spec.glsl, fragment: SCRIPT_ROAD_FRAGMENT } });
     expect(script.node.geometry).toEqual(original.node.geometry);
     expect(scene.script.camera).toEqual(scene.original.camera);
-    expect(script.spec.uniforms?.lookMode?.value).toBe(0);
+    expect((script.spec.uniforms?.lookMode as { readonly value?: unknown } | undefined)?.value).toBe(0);
     expect(SCRIPT_ROAD_FRAGMENT).not.toBe(ROAD_FRAGMENT);
   });
 

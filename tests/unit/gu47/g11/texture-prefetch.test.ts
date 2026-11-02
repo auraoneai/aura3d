@@ -8,18 +8,33 @@ const asset = (url: string) => defineAuraAssets({
   map: { type: "texture", format: "png", url, hash: "fixture" }
 }).map;
 
-function resource(name: string, materialSpec: Record<string, unknown>) {
-  const value = {
+// Declared explicitly: deriving this from `resource`'s return type is circular because `resource` pushes into `resources`.
+type Resource = {
+  name: string;
+  materialSpec: Record<string, unknown>;
+  sourceNode: { kind: string; primitive: string; material: Record<string, unknown> };
+  material: PBRMaterial;
+  geometry: { vertexBuffer: { format: { hasAttribute: (name: string) => boolean } } };
+  textureStatus: string;
+  textureWarnings: string[];
+  textureSlots: string[];
+  texturedMaterial: PBRMaterial | null;
+  textureDisposer: (() => void) | undefined;
+  textureStage: string | undefined;
+  texturePendingSince: number | undefined;
+};
+
+function resource(name: string, materialSpec: Record<string, unknown>): Resource {
+  const value: Resource = {
     name, materialSpec, sourceNode: { kind: "primitive", primitive: "box", material: materialSpec },
     material: new PBRMaterial(), geometry: { vertexBuffer: { format: { hasAttribute: (_name: string) => true } } },
-    textureStatus: "none", textureWarnings: [] as string[], textureSlots: [] as string[],
-    texturedMaterial: null as PBRMaterial | null, textureDisposer: undefined as (() => void) | undefined,
-    textureStage: undefined as string | undefined, texturePendingSince: undefined as number | undefined
+    textureStatus: "none", textureWarnings: [], textureSlots: [],
+    texturedMaterial: null, textureDisposer: undefined,
+    textureStage: undefined, texturePendingSince: undefined
   };
   resources.push(value);
   return value;
 }
-type Resource = ReturnType<typeof resource>;
 type Entry = { resources: Resource[] };
 type FakeImage = { width: number; height: number; closed: boolean; close: ReturnType<typeof vi.fn> };
 type Decode = { url: string; image: FakeImage; land(): void; fail(error: Error): void };
@@ -287,7 +302,7 @@ test("look-ahead ignores invalid refs, URLs, procedural inputs, live handles, an
   const noUv1 = resource("no-uv1", {
     texture: asset("/no-uv1-base.png"), clearcoatMap: asset("/no-uv1-coat.png"), texCoords: { clearcoat: 1 }
   });
-  noUv1.geometry.vertexBuffer.format.hasAttribute = (name) => name !== "uv1";
+  noUv1.geometry.vertexBuffer.format.hasAttribute = (name: string) => name !== "uv1";
   const good = resource("valid", { texture: asset("/valid.png") });
   const done = run([...floors, ...invalid, noUv, noUv1, good]);
   await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
