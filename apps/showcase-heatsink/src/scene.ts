@@ -462,8 +462,8 @@ export function droneLivery(color: string): AuraModelMaterialOverride {
 
 /** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
 export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
-  "heatsinkTowerL",
-  "heatsinkTowerT",
+  "heatsink_thermalTowerLIron",
+  "heatsink_thermalTowerTIron",
   "heatsinkTowerX",
   "heatsinkHoloBillboard",
   "heatsinkCheckpointRing",
