@@ -16,6 +16,7 @@ import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type Run
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY, runnerModelForLook } from "./models";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookMode, type LookParams, type ResolvedLook } from "./art/colorScript";
+import { SCRIPT_ROAD_FRAGMENT } from "./shaders";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
 import { createAmbientFx } from "./art/ambientFx";
@@ -365,6 +366,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     crossProfile[v * 2] = pt[0];
     crossProfile[v * 2 + 1] = pt[1];
   }
+  const roadMaterial = roadSpec();
   builder.add(
     geometry
       .custom(
@@ -372,7 +374,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           positions: f32(mesh.positions), normals: f32(mesh.normals), uvs: f32(mesh.uvs), indices: Uint32Array.from(mesh.indices),
           attributes: { crossProfile: { itemSize: 2, data: crossProfile } }
         }),
-        { name: "road", material: material.custom(roadSpec()) }
+        { name: "road", material: material.custom(script ? { ...roadMaterial, glsl: { ...roadMaterial.glsl, fragment: SCRIPT_ROAD_FRAGMENT } } : roadMaterial) }
       )
       .runtime({ id: "road" })
   );

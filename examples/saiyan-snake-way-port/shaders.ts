@@ -315,7 +315,7 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-export const ROAD_FRAGMENT = /* glsl */ `
+const ROAD_FRAGMENT_HEAD = /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
 in vec2 vUv;
@@ -361,7 +361,9 @@ void main() {
     albedo = mix(jointColor * 0.9, albedo, joint);
     vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
     albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
-  } else {
+  } else {`;
+
+const ROAD_FRAGMENT_TAIL = /* glsl */ `
     // GU47 SSR-08: living serpent road. Overlapping scales (each plate darker toward its trailing edge), a pearl top
     // over a jade flank ramp into indigo belly scales; per-stage tints come from the colour script.
     float overlap = mix(1.0, 0.72 + 0.28 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
@@ -447,6 +449,37 @@ void main() {
 
   outColor = vec4(fogMix(col, dist), 1.0);
 }`;
+
+// The original mode keeps ROAD_FRAGMENT byte-for-byte. Only the colour-script road adds curved, staggered seams to the
+// existing plates, so the foreground reads more like the serpent's back than a paved bridge. The 0.35-cell maximum bow
+// keeps adjacent rows separated; the existing derivative-based detail fade still suppresses distant moire.
+const SCRIPT_SCALE_FUNCTION = /* glsl */ `
+float serpentScaleBow(float x, float row) {
+  float u = fract(x + mod(row, 2.0) * 0.5);
+  return 1.4 * u * (1.0 - u);
+}
+`;
+const SCRIPT_SCALE_SEAMS = /* glsl */ `
+    if (top > 0.0 && detail > 0.0) {
+      float scaleRow = floor(cell.y);
+      if (cell.y < scaleRow + serpentScaleBow(cell.x, scaleRow)) scaleRow -= 1.0;
+      float scaleColumn = cell.x + mod(scaleRow, 2.0) * 0.5;
+      float scaleStart = scaleRow + serpentScaleBow(cell.x, scaleRow);
+      float scaleEnd = scaleRow + 1.0 + serpentScaleBow(cell.x, scaleRow + 1.0);
+      vec2 scaleF = vec2(fract(scaleColumn), clamp((cell.y - scaleStart) / max(0.65, scaleEnd - scaleStart), 0.0, 1.0));
+      vec2 scaleEdge = min(scaleF, 1.0 - scaleF);
+      float scaleWidth = max(0.05, fwm * 2.0);
+      float scaleJoint = mix(0.9, smoothstep(0.0, scaleWidth, min(scaleEdge.x, scaleEdge.y)), detail);
+      float scaleBevel = mix(0.92, smoothstep(0.0, max(0.16, fwm * 2.0), min(scaleEdge.x, scaleEdge.y * 0.8)), detail);
+      joint = mix(joint, scaleJoint, top);
+      bevel = mix(bevel, scaleBevel, top);
+      f.y = mix(f.y, scaleF.y, top);
+      tint = mix(tint, mix(0.5, fbm(vec2(floor(scaleColumn), scaleRow) * 0.7 + 3.1), detail), top);
+    }
+`;
+
+export const ROAD_FRAGMENT = ROAD_FRAGMENT_HEAD + ROAD_FRAGMENT_TAIL;
+export const SCRIPT_ROAD_FRAGMENT = SCRIPT_SCALE_FUNCTION + ROAD_FRAGMENT_HEAD + SCRIPT_SCALE_SEAMS + ROAD_FRAGMENT_TAIL;
 
 /** Surge aura shell: the original's stacked blade tiers (ported verbatim), shaded with `auraTime` / `auraIntensity` / ... */
 export const AURA_VERTEX = /* glsl */ `
