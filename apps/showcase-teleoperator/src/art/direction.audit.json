@@ -606,6 +606,10 @@
         "node": "player-tail-lamps",
         "emissiveIntensity": 0.315,
         "practical": true
+      },
+      {
+        "node": "player-tail-trails",
+        "practical": false
       }
     ],
     "drawCalls": 0

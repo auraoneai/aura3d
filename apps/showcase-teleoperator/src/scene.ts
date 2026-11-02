@@ -3,6 +3,7 @@ import { assets, type GridAssetKey } from "./aura-assets";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { MANHOLES } from "./vfx";
+import { TAIL_TRAIL_CAPACITY, TAIL_TRAIL_ID, tailTrailMaterial } from "./tailTrails";
 import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
@@ -548,6 +549,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     ),
     ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
+    instances.plane({ name: TAIL_TRAIL_ID, material: material.custom(tailTrailMaterial()), castShadow: false, receiveShadow: false, frustumCulled: false, transforms: pool(TAIL_TRAIL_CAPACITY) }).runtime(game.runtimeNode(TAIL_TRAIL_ID)),
     ...headlightNodes(look)
   ]);
 
