@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-fc-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "favela",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Quite dark overall and the stands are slightly cut off at the top, but it has a textured dirt pitch, a center circle, warm moody lighting and long shadows",
+     "Top of the frame is dark and crushed, and the stands are only partly visible. The dirt texture is a bit muddy, but there's good warm lighting, long shadows and a clear centre circle.",
+     "Somewhat dark and murky overall; black void above stands; minor tiny figure near far line; otherwise textured dirt, centre circle, warm lighting and long shadows give mood"
+    ]
+   },
+   {
+    "variant": "glacier",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright lens-glare blob at lower right and a slightly dim vignette, but the pitch reads cleanly with a reflective ice look and a lit crowd",
+     "A strong sun-glare hotspot at bottom right partly washes out the pitch. Faint line artifacts and reflection streaks. Slightly heavy vignette.",
+     "Bright bloom hotspot on lower right of floor; slight vignette darkness; stands dark"
+    ]
+   },
+   {
+    "variant": "kyoto",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Darkish, and the patchy grass texture is a little noisy, but it has a strong night mood, a center circle and good depth",
+     "Fairly dark and slightly muddy grass with a brownish tint in places. Heavy vignette. The upper stands are crushed dark.",
+     "Fairly dark, grass texture slightly noisy/muddy in places; heavy vignette"
+    ]
+   },
+   {
+    "variant": "lagos",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Somewhat low-contrast warm haze and a plain pitch surface, but it has a center circle, a cohesive warm palette and nice long shadows",
+     "The image is monochrome orange and somewhat low in contrast. The stands blur a little into the background. Otherwise it's coherent, with good warm mood and long shadows.",
+     "Warm haze slightly flattens the stands; stand tops cut off at frame edge"
+    ]
+   },
+   {
+    "variant": "munich",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark at the edges, but it has textured grass, a center circle, a night-stadium mood and good depth",
+     "The stands are dark, and the grass texture is a bit noisy with faint horizontal line artifacts.",
+     "Somewhat dark with heavy vignette; faint reflection artifacts on grass"
+    ]
+   },
+   {
+    "variant": "uyuni",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale low-contrast palette and an odd pink band behind the stands, but the dark lines and center circle keep the pitch and players readable",
+     "Pale, low-saturation palette, and the stands are a bit blurry. It's readable, though, with a dark centre circle, visible shadows and clear players.",
+     "Overall pale/low saturation, stands slightly greyed; still readable with dark lines and shadows"
+    ]
+   }
+  ]
+ }
+]

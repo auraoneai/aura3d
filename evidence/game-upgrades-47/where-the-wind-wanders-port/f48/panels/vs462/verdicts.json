@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "where-the-wind-wanders-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bell",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Distant shore, trees and water are greyed out by haze; the dark-cloaked player is fairly low-contrast against the dark grass; the tree canopy in the top-left corner is very dark.",
+     "Warm dusk grade gives good mood and stronger foreground contrast. Far shore and trees are heavily hazed and greyed out. The player's dark robe blends into the dim foliage a little. A tree canopy is cut off at the top-left corner.",
+     "The far shore and water are a bit flattened by grey-pink haze. The player's dark cloak is somewhat low contrast against the darker grass. The small specks of particles look slightly noisy. Otherwise it has a strong warm dusk mood, richer flower colour, and better depth."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player's hood and face look pale and ghostly; the thin white kite string cutting across the frame is slightly distracting; a windmill sail is cropped at the top-right edge.",
+     "Player's hood and robe look pale or ghostly. The thin white kite string crosses the frame toward the house. The windmill blade at the top-right is cut off. Otherwise there is better contrast, water reflections, deeper greens and more depth.",
+     "The player's cloak is bleached to a pale, almost ghostly white and blends with the grass highlights. The kite string is a thin white line that crosses the house and reads a little like a glitch. The companion isn't visible."
+    ]
+   },
+   {
+    "variant": "epilogue",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark overall, with the lower foreground close to crushed; the square star sprites look blocky; the player outline glow is a bit crude; the windmill sail is cropped at the top-right corner.",
+     "Night scene; the foreground is dark and some flowers are hard to read. Stars are drawn as large square particles. The player is mostly a dark silhouette with a rim glow. The kite string is a visible straight line.",
+     "Stars are rendered as square pixel specks. The far shore is crushed into dark blue haze, the lower foreground is quite dark, and the edges of the frame lose detail. Still, there is a strong night mood, a readable rim-lit player, and nice moonlit water."
+    ]
+   },
+   {
+    "variant": "found0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player looks pale and ghostly; the kite string is a stark white line; the windmill is cropped at the top-right edge.",
+     "Player's white hood and robe look pale and slightly ghostly. The kite string line crosses the frame. The windmill is cropped at the top-right.",
+     "The player's cloak is bleached pale and reads ghostly. A thin white kite string crosses the house, and a windmill sail pokes into the top-right corner. Otherwise it has more saturated greens, reflective water, and better depth."
+    ]
+   },
+   {
+    "variant": "found2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat yellow-green wash with low tonal contrast; plain water; the companion is a pale blob; weak depth.",
+     "Sky is slightly grey and hazy. Player looks pale and ghostly. Kite string crosses the frame. The windmill is cropped at the top-right.",
+     "The sky is slightly greyish and overcast. The player is pale and bleached, the kite string crosses the house, and the windmill is cut off in the top-right corner. Colour and grass depth are richer."
+    ]
+   },
+   {
+    "variant": "found3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sky is slightly dull and pinkish-grey; the player is pale; the kite string is a stark white line; the windmill is cropped at the top-right edge.",
+     "Hazy pinkish-grey sky reduces depth slightly. Player looks pale and ghostly. Kite string line crosses the frame. The windmill is cropped.",
+     "The sky has a slightly muted pinkish haze. The player is pale and bleached, the kite string crosses the house, and the windmill is cut off at the frame edge. It has a warmer grade, deeper greens, and better contrast."
+    ]
+   }
+  ]
+ }
+]

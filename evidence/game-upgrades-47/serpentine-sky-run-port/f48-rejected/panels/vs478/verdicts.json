@@ -1,0 +1,143 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Plain green pole markers look like placeholders; the scalloped floor tiles stretch and smear in the foreground; the scene is washed out and pastel with low contrast; the dragon is cut off at the right edge and floats loose.",
+     "Gate posts are bare green poles with no crossbeams, so they look unfinished; the scalloped road pattern is noisy and stretched; same pink haze washout",
+     "Plain green poles read as placeholder markers and give a weak focal point; the bright pastel road is somewhat washed out; the whole frame is low in contrast under pink haze."
+    ]
+   },
+   {
+    "variant": "stage1",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Green placeholder-looking poles instead of gates; the scalloped tiles stretch and blur in the foreground; washed-out pink haze; weaker focal point.",
+     "Bare green poles stand in for gates and look unfinished; scalloped road tiles are noisy and stretched; pink haze lowers contrast",
+     "Placeholder-looking green poles; the scale pattern is busy and blurs in the foreground; the frame is washed out with a weak focal point."
+    ]
+   },
+   {
+    "variant": "stage2",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same muddy orange cast; green poles look like placeholders; the scalloped texture stretches and smears; less depth and less of a focal point.",
+     "Bare green poles with no gates; yellow-green palette is muddy; scalloped tiles are noisy; the road edge blends into the clouds",
+     "Same muddy orange haze, plus generic green poles and a smeary scale pattern on the road; less focal interest."
+    ]
+   },
+   {
+    "variant": "stage3",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same hazy brown look; plain green poles; the floor pattern stretches and smears; the frame reads flatter.",
+     "Bare green poles; heavy sepia haze makes the frame flat and low contrast; scalloped tiles are noisy",
+     "Murky sepia haze; thin teal poles get lost; the scale texture smears in the foreground."
+    ]
+   },
+   {
+    "variant": "stage4",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same red saturation hurts player readability; teal placeholder poles; the scalloped texture smears; it looks less polished.",
+     "Bare green poles; the strong red monochrome blends the player into the road; scalloped tiles are noisy",
+     "Same red wash; the busy scale pattern competes with the player; the green poles look out of place."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Teal poles look like placeholders; the scalloped tiles stretch; same purple flattening.",
+     "Bare cyan poles with no gates; scalloped tiles are noisy",
+     "Placeholder teal poles; the scale pattern is busy and blurs near the camera."
+    ]
+   },
+   {
+    "variant": "stage6",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same white blotch decals sit on top of the scalloped tiles and look even messier; placeholder teal poles; the floor is very busy.",
+     "Bare cyan poles; large white blotchy decals on the road look like texture glitches; scalloped tiles fight with the decals",
+     "Same white blob decals, which look even more glitchy over the scale pattern, including a rectangular cutout patch; placeholder teal poles."
+    ]
+   },
+   {
+    "variant": "stage7",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Teal poles look like placeholders; the scalloped tile pattern stretches in the foreground; less of a focal structure.",
+     "Bare cyan poles with no gates; scalloped tiles are noisy",
+     "Generic teal poles; the scale pattern is busy; weaker landmark composition."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The bridge is overexposed and washed out; green placeholder poles; the stretched scalloped texture smears into a pale blur.",
+     "Bare green poles; the road is washed out and nearly white; scalloped tiles are noisy",
+     "The road is washed out and its scale pattern smears in the foreground; the green poles look like placeholders."
+    ]
+   }
+  ]
+ }
+]

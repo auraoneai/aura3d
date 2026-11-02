@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The drone sits off to the right instead of centred. A large slab-like overhang on the right looks a bit like stray geometry. There's mild haze in the mid-distance, and the bright purple floor flattens the lower half a little.",
+     "The drone sits off-centre to the right and is a bit small against the busy scene. There is mild haze in the far distance, and the purple floor and white crack lines are slightly noisy. Otherwise the frame is vivid and well layered: a ringed planet, an aurora, a detailed rock arch, and good colour contrast and depth.",
+     "Drone sits off-centre to the right instead of being framed as the hero. The right-mid area under the rock arch looks slightly hazy and washed out. Purple crystals float in mid-air with no visible support. The large flat purple floor makes the lower half a bit busy and repetitive."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Road is slightly washed out and hazy, and the building window textures are stripy and repetitive, but the frame reads well and the car is lit with good detail.",
+     "(recovered by pattern)",
+     "The moonlit grade is a little flat and washed out, and the road texture is grainy. Building window strips look repetitive. Otherwise the car is clear and detailed, and the frame has good depth."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Car is offset to the right; road has a bluish haze; canyon wall textures are a bit flat.",
+     "(recovered by pattern)",
+     "The canyon walls have blurry, low-detail textures, and the road is slightly grainy. Otherwise the warm-against-cool contrast is vivid and the car is easy to read."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sky is somewhat hazy and grey, and a large car shadow stretches oddly ahead on the road, but it has warm sunlight, good depth from the wind turbines and trees, and a readable car.",
+     "(recovered by pattern)",
+     "The sky is somewhat hazy and grey, and the road texture is grainy. Otherwise the warm light, cast shadows, wind turbines and trees give strong depth and polish, and the car is clear."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-hoops-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "athens",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: the same flat grey look, plain buildings and weak lighting",
+     "Flat, low-contrast grey look; plain untextured buildings and an overcast white sky; weak mood and depth; the court reads as dull grey",
+     "Practically the same as A: flat grey lighting, plain blocky buildings, little depth or mood"
+    ]
+   },
+   {
+    "variant": "manila",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same heavy blur and olive-brown cast; the lower-left glyph is a bit distracting; the main player stands upright and reads clearly",
+     "Heavy depth-of-field blur on the background; muddy olive court tone; the floor glyph in the lower left looks like a stray pixel artifact",
+     "Heavy background blur; somewhat muddy olive/brown court tones"
+    ]
+   },
+   {
+    "variant": "orbit",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background is almost all black with no environment detail; the vertical light beam looks like a floating artifact; the foreground floor is very dark",
+     "Same black void and vertical light pillar; the scene is very dark overall, but the upright player reads better against the court",
+     "Very dark frame with a large black void in the upper half; harsh vertical light-pillar artifact; players' dark clothing blends into the floor"
+    ]
+   },
+   {
+    "variant": "rucker",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Essentially the same frame: the same crouched pose, blown-out sky and jagged shadows",
+     "Hazy, washed-out sky gaps between buildings; blocky shadow aliasing at the left edge; somewhat muddy purple palette",
+     "Same blown-out sky gaps and shadow aliasing as A; main player crouched"
+    ]
+   },
+   {
+    "variant": "shanghai",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same lower-left glyph and streaky reflections; the main player's upright dribble pose reads clearly",
+     "Background blur; the blue tower looks like a cheap stretched texture; stray floor glyph; strong reflections slightly busy",
+     "Blurred backdrop; reflection streak artifacts on the floor"
+    ]
+   },
+   {
+    "variant": "venice",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same haze, floating palm tree and faint lines; the main player is bent over in an awkward pose with their head hidden, so the subject is less readable",
+     "Hazy, washed-out low-contrast sky and court; the palm tree appears to float with no visible trunk; the hoop and backboard are faded by fog; there is a stray orange spike above a player's head",
+     "Same haze and washed-out look as A; main player folded over, head down, in a contorted pose that reads as a glitch"
+    ]
+   }
+  ]
+ }
+]

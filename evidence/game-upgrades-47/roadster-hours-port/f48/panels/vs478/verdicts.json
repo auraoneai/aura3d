@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The frames are almost identical, with the same faint haze on the road and the same flat stripe facades. The car sits a little smaller in the frame and the camera is very slightly more pulled back. No clear difference in quality.",
+     "Flat, untextured building blocks with harsh striped windows; a slightly milky blue cast over the road reduces contrast; the distant sign is unreadable.",
+     "Almost identical to A. It has the same flat striped buildings and slightly cool, low-contrast lighting. There's no meaningful difference."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The canyon walls have low-frequency, smeary textures, and the shaded right wall is somewhat muddy. A slight glare washes the far end of the road.",
+     "Practically identical to A: the same blurry wall texture, the same stuck-on rocks along the ridge, and the same colour clash.",
+     "The cliff textures are blurry and smeared, and the right canyon wall has a jagged, aliased edge. The road is a slightly cool blue that clashes with the warm rock. The car reads well."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "It has the same grey haze and low contrast, and the same blocky soft shadow and repetitive water. The scene is essentially identical to A.",
+     "A grey, overcast sky slightly washes out the horizon; the dune has a flat, untextured slope; the odd floating cone shapes in the water read as stray props; the car's shadow is a little blocky.",
+     "Essentially the same as A: the same flat grey haze, stretched water and blocky shadow. The differences are negligible."
+    ]
+   }
+  ]
+ }
+]

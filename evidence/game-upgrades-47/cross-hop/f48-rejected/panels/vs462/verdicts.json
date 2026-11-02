@@ -1,0 +1,65 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Teal haze tints and slightly washes out the ground, and the grass has lost its natural green and reads muddy. The far horizon band is low-contrast. On the plus side it has frog and log shadows, beveled logs, tiled ground and a sun glow.",
+     "(recovered by pattern)",
+     "The teal-tinted ground with soft haze lowers contrast a little in the foreground and on the horizon band. The background traffic band is very crowded. Otherwise it has a proper player shadow, bevelled lit platforms, a readable coin, a sun glow and a sky gradient."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Teal haze washes out the foreground ground plane and the green frog blends into the teal tiles a little. Otherwise the lighting is richer, trams and cars are vivid, the frog casts a shadow and the sun glow adds depth.",
+     "The pale teal ground is slightly washed by haze. The rows of trams and cars are dense. It still has better lighting, contact shadows, a sun bloom, a readable coin and more polished platform materials."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze lowers contrast on the ground plane and the teal-tinted ground looks somewhat washed out. Still, the warm sunset sky, sun bloom, frog shadow and coin highlight give it more mood and polish.",
+     "The sunset haze and teal ground cut contrast slightly toward the horizon. There is some pale banding on the ground tiles. It still has a warm sunset mood, shadows, a sense of depth and readable coins."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pastel haze washes out the foreground and lowers contrast. The tiled ground is pale. The pink sky, pink logs, frog shadow and sun glow make it more atmospheric and polished.",
+     "Haze and pastel teal leave the frame somewhat low in contrast, and the pink logs on teal look a bit candy-washed. It still has a coherent sunset palette, a player shadow, a readable coin and better depth."
+    ]
+   }
+  ]
+ }
+]

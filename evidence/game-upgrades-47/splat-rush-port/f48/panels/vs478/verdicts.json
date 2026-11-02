@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Wind-streak particles clutter the sky. The purple cloud floor is a bit flat and low in contrast. The cloud puffs on the far right are cut off by the frame edge.",
+     "Almost identical to A. Same large, low-detail lavender floor and plain pillars. More wind streaks cross the sky and the left castle island, which adds a little clutter. The ball's shadow sits slightly further from the ball.",
+     "Floating islands and pillars rely on stylized suspension; a large flat lavender cloud floor dominates the lower half and has little texture; wind-streak particles clutter the sky a little."
+    ]
+   }
+  ]
+ }
+]

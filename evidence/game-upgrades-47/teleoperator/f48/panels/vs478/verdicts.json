@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "fog",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze flattens the distance and lowers contrast. An orange car is cut off at the left edge. The large box truck crowds the right third of the frame. There is a soft, blobby headlight pool on the road.",
+     "Thin red debug/laser line runs through the player pod. An orange car is cut off at the bottom-left edge behind the minimap. The large truck on the right crowds the frame. Some haze, but the building colours and contrast are a little better.",
+     "Large box truck crowds the right third and blocks the play area; an orange object is cut off at the left edge; dark rectangular patches on the road look like shadow or decal artifacts; a thin red debug line trails from the player; heavy grey-teal haze makes the frame low-contrast and muddy."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A translucent cyan ghost slab sits on the left building. Red laser lines run from the pod's tail lights across the road. The shadow rectangle looks blocky. A wire line runs across the sky.",
+     "Red debug lines run diagonally from the player's tail lights. Teal ghost slab at the left edge. A black seam line runs across the road. The cyan route line on the sidewalks reads as an overlay.",
+     "Red laser or debug lines fan out from the player's tail lights; a translucent cyan slab covers the left building; the same hard shadow block on the right; otherwise near-identical warm lighting and composition."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Building facades are lit far too bright and orange for night, so they look unlit or flat. A translucent cyan wedge sits on the left. A blown-out flare appears at the bottom right. Red laser lines are visible.",
+     "Buildings are equally washed out and unnaturally bright for night. Red debug lines trail from the player. Teal ghost slab on the left building. Bloom blowout under the pod. The wet-road reflections and the ambulance are a little more readable.",
+     "Doesn't read as night: buildings are lit bright orange and cream under a black sky; a translucent cyan slab on the left building; red debug lines from the player; a strong headlight bloom blob on the road; the wet road reflections of the orange car add depth."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same diamond shadow artifacts appear on the road. A translucent cyan slab sits on the left building. Red laser lines run from the tail lights. A black wire line crosses the frame. The sky is washed out.",
+     "Dithered or blocky shadow patterns on the road around the player. Red debug lines from the tail lights. Teal ghost slab on the left building. Bright, flat sky.",
+     "Flat grey road with shadow-map diamond artifacts; red laser lines from the player's tail lights; a translucent cyan slab on the left building; washed-out horizon; the truck on the right adds detail but crowds the frame."
+    ]
+   }
+  ]
+ }
+]

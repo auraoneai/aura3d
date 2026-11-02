@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Purple floating blob objects are hard to make out and look smeared. The cloud floor is a bit soft and pink-washed, the pillars look plain, and the sky has stray streak lines.",
+     "Some floating purple blob objects next to the islands look like malformed or poorly textured meshes. The brown pillars are plain and untextured. Lavender haze softens the far distance a little. The top of the frame is slightly busy with speed lines. Otherwise there is a strong sunset mood, a clear cloud-floor play area, a glossy outlined ball with a grounded shadow, and good depth.",
+     "Purple islands/objects near the top look distorted and smeared. The cloud floor is a bit hazy and low in contrast. The rows of tall brown pillars feel repetitive. Speed-line streaks clutter the sky."
+    ]
+   }
+  ]
+ }
+]

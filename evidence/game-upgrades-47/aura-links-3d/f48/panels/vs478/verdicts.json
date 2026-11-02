@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "cinderRim",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 1,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A large blurry orange orb (a particle sprite) floats near the player's head on the left. Otherwise this matches B: a flat, flat-coloured brown plain with a sparse horizon, and the second golfer is cut off at the left edge.",
+     "(recovered by pattern)",
+     "Nearly identical to B. A flat, featureless brown plain fills most of the frame, and the tee is plain and dull. The player is pushed against the left edge and a second golfer is cut off by the frame. A large out-of-focus ember sits next to the player's head. The sky is grey and bland, and the white aim line looks like a flat stripe pasted on top."
+    ]
+   },
+   {
+    "variant": "cloudTerrace",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A. The grass is very saturated and flat, there is a large empty middle-ground, and the second golfer is cut off at the left edge.",
+     "(recovered by pattern)",
+     "Nearly identical to A. The greens are oversaturated and uniform, and the fairway is flat and empty. A second golfer is cut off at the left edge, and there is a wide empty gap between the two groups of trees."
+    ]
+   },
+   {
+    "variant": "mapleHollow",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B, apart from where the leaf particles fall. The fairway is wide and empty, the trees look simple and toy-like, and the second golfer is cut off at the left edge.",
+     "(recovered by pattern)",
+     "Nearly identical to B. The fairway is flat and empty, and the trees are simple stacked-blob shapes. A second golfer is cut off at the left edge. The tee marker is a flat red slab."
+    ]
+   },
+   {
+    "variant": "mareCourse",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A. The top 35% of the frame is pure black sky, the scene is low-contrast grey, and the golfer is dark against a pale ground, which makes them hard to read.",
+     "(recovered by pattern)",
+     "Identical to A. The upper third of the frame is pure black sky, and the ground is grey and low in colour. The player is dark and hard to pick out against the shadows. A second golfer is cut off at the left edge."
+    ]
+   },
+   {
+    "variant": "neonBay",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The night teal scene is fairly monochrome, there is little 'neon' accent, and the middle-ground is empty.",
+     "(recovered by pattern)",
+     "Nearly identical to B. The whole frame is one teal colour with low contrast, and the sky is a flat navy. The tee's edge is jagged and aliased. Despite the name, there are no neon accents. A second golfer is cut off at the left edge."
+    ]
+   },
+   {
+    "variant": "stAuroras",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The fairway is a dark, slightly muddy green, the trees look simple, and the second golfer is cut off at the left edge.",
+     "(recovered by pattern)",
+     "Identical to B. The fairway is a dark, uniform green and fairly flat. A second golfer is cut off at the left edge. Otherwise the lighting and depth are decent."
+    ]
+   }
+  ]
+ }
+]

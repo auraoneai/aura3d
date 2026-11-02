@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The pale teal ground looks washed out and low in contrast. The large empty foreground leaves the play area sparse, with all the vehicles pushed to the distant back rows. Haze flattens the depth.",
+     "Pale teal ground is washed out and low in contrast. The lower half of the frame is a large, flat, empty foreground. Traffic is small and squeezed into a far band, so the scene feels sparse and lacks depth. The frog is seen side-on and doesn't stand out much against the ground.",
+     "Pale washed-out teal ground with low contrast; a big empty foreground; the far lanes are packed with overlapping trains, trams and cars; the scene looks hazy and flat"
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal ground is washed out and competes with the hazy sky. The frog blends into the pale ground more. The skyline blocks are flat.",
+     "Teal ground looks slightly washed and flat. The foreground is empty. The tram rows read as a dense red wall. The skyline blocks are plain, untextured grey boxes.",
+     "Washed-out pale teal ground; the tram rows look cluttered and repetitive; the frog's back faces the camera; the foreground is flat and low-contrast"
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The ground is washed out and low in contrast, so the overall look is muddy pastel. The midground is mostly empty and the vehicles are tiny and far away.",
+     "Washed-out pale teal ground with low contrast. Traffic is tiny and far away, and the middle ground is mostly empty water and lily pads. The sunset sky and teal ground clash. Overall the frame looks hazy.",
+     "Pale teal ground is washed out and low-contrast; a large empty foreground; vehicles are tiny and far away; the composition is weak"
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal ground looks hazy and washed out, with low contrast. The vehicles sit far back and are small. The track pattern in the midground is noisy.",
+     "Hazy, low-contrast teal ground. All the vehicles are small and far away. Most of the frame is empty pale ground, so it looks washed out and sparse.",
+     "Washed-out pale teal ground; the purple-and-black track is visually noisy; traffic is distant and small; the large foreground is empty and flat"
+    ]
+   }
+  ]
+ }
+]

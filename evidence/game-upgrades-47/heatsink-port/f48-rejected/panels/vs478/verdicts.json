@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The track gate in the distance shows only its two pillars and no crossbar, so it looks like missing geometry. The mid-distance haze is slightly heavy, and the drone's dark underside sits a little low in contrast against the purple floor.",
+     "Frame is almost identical to A. The gate has no crossbar, leaving only bare dark posts, so the vista is more open but the course is marked less clearly. Distant ground has the same mild haze and low-contrast floor.",
+     "The checkpoint gate down the road shows only its two dark side posts with no top beam, so the objective reads as incomplete or partly missing. Haze over the mid-distance flattens depth a little. The drone's dark underside has low contrast against the purple floor. The floating purple diamonds look a bit disconnected from the scene."
+    ]
+   }
+  ]
+ }
+]

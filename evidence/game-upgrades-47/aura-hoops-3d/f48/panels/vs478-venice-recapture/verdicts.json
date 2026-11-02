@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "aura-hoops-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "venice",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same haze, floating palm canopy and flat shading as A; the player is caught in an awkward, hunched, bent-over pose with the ball at their feet, so their silhouette is much harder to read",
+     "Hazy, low-contrast pastel sky washes out the background; the palm tree floats with no visible trunk; the controlled player is folded into an awkward, contorted bent-over pose that reads poorly; the court surface is flat and muddy grey with weak material detail; the hoop is cropped at the top-right edge; the right-side player is cut off by the frame.",
+     "Same haze, floating palm canopy, cropped hoop and spike artifact as A. The controlled player is also bent over at the waist in an awkward pose, which makes the main subject less readable than A's upright dribble."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The flat grey overcast sky makes it feel dull. The grass is a flat, oversaturated green with pegs and cones on it in a regular, repeating pattern. The slingshot and player birds on the left are small and hard to pick out against the dark rock. The cliff textures look photo-real and clash with the stylised props.",
+     "Looks the same as A. Flat untextured green ground, plain grey sky, small slingshot and player in the left corner, and the flag is only slightly different.",
+     "Looks the same as B. The grey sky is flat and overcast, the green ground is flat and oversaturated, and the cone trees and peg posts look simple and cluttered. The siege targets on the right are small and partly hidden by the rock."
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The grey sky is flat. The grass is uniform and oversaturated with repetitive props. The player and slingshot read poorly against the dark cliff. The stone tower and its pig enemies on the right are small.",
+     "Looks the same as A, with the same flat ground, small player and plain grey block base.",
+     "Looks the same as B. The sky is flat, the green ground is oversaturated and has little depth, and the stone tower target is small and close to the right rock."
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The sky is pale and washed-out grey, so the frame has low atmosphere. The ground is flat green. The slingshot and birds are small against the dark rock. The ice block target is small.",
+     "Looks the same as A, with the same pale sky, flat lighting and untextured ground.",
+     "Looks the same as B. The sky is a washed-out grey, the lighting is flat, the ground is a single flat green, and the ice-block target is low in contrast."
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The warm dusk mood is nice, but the foreground grass is dark and muddy, and the slingshot is dim and low-contrast against the shadowed cliff. The ground reads as a flat plane.",
+     "Looks the same as A, with the same dark, muddy ground and small player.",
+     "Looks the same as B. The sunset mood is pleasant, but the left rock and the shadowed ground are muddy and dark, and the target on the red crate is small."
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The orange sunset is moody, but the grass is dark and muddy, the sea is greyish, and the slingshot is low-contrast. A small pig floating on the right cliff face may be a mid-air projectile or a floating object.",
+     "Looks the same as A, with the same orange haze, low-contrast ground, creature that seems to float on the cliff, and small player.",
+     "Looks the same as B. The heavy orange tint muddies the ground into olive, and contrast in the foreground is low. A small creature seems to float on the right rock face, and the pillar structure is very plain."
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The night sky with stars has good atmosphere, but the cliffs crush to near-black and the slingshot and birds on the left are barely readable. The grass stays bright green, which looks inconsistent with night lighting. The island rim looks pale and overexposed.",
+     "Looks the same as A, with the same black cliffs and low readability.",
+     "Looks the same as B. The night scene crushes the rocks to near-black silhouettes, and the ground green looks unnaturally bright for night. The slingshot area is dim and the shadows are very dark."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B, and the same as the ch0 frames: flat grey sky, oversaturated flat green ground, small slingshot that is hard to read, and realistic rock textures that clash with the stylised props.",
+     "Looks the same as A, with the same flat ground, plain sky and small player.",
+     "Looks the same as B. The grey sky is flat, the green ground is flat and oversaturated, and the cone trees and peg posts look simple. The targets are small."
+    ]
+   }
+  ]
+ }
+]

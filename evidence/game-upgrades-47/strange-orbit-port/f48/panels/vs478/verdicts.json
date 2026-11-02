@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Vehicle hovers a little above the ground with only a faint purple shadow under it. The foreground ground plane is flat and soft. The track and props in the mid-distance are low-detail, and a few track sections float on thin poles.",
+     "The vehicle and rider are slightly washed out and low-contrast against the salmon ground. The terrain is flat and the water reflection looks smeary. Otherwise the frame is clean and has the same composition as A, without the left-side haze.",
+     "Foreground ground plane is large, flat and slightly muddy; the vehicle is a bit pale or washed out against the orange floor; the track floats with thin supports; the mid-ground is somewhat cluttered"
+    ]
+   }
+  ]
+ }
+]
