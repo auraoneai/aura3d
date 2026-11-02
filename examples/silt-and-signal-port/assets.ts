@@ -152,7 +152,9 @@ const MODELS = defineModelAssets({
  */
 const DUNE_HOVERBOARD_FILE = "silt_and_signal_port_duneHoverboardJade.95526b63.glb";
 const MESHY_RETEXTURE_LICENSE = "Meshy generated asset (paid API, plan terms at generation time)";
-const ROUTE_LOCAL = defineAuraAssets({
+
+export const assets = defineAuraAssets({
+  ...MODELS,
   silt_and_signal_port_duneHoverboardJade: {
     type: "model",
     format: "glb",
@@ -174,12 +176,7 @@ const ROUTE_LOCAL = defineAuraAssets({
         retrievedAt: "2026-11-01T21:45:26.239Z"
       }
     }
-  }
-});
-
-export const assets = defineAuraAssets({
-  ...MODELS,
-  ...ROUTE_LOCAL,
+  },
   grassColor: tex("grass", "Color"),
   grassNormal: tex("grass", "NormalGL"),
   grassRough: tex("grass", "Roughness"),

@@ -47,6 +47,7 @@ export default defineArtDirection({
   assets: [
     { role: "character", assetKey: "courier", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "walk", "run"] } },
     { role: "vehicle", assetKey: "hoverboard", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "silt_and_signal_port_duneHoverboardJade", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048 },
     { role: "world", assetKey: "canyonrocks", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
     { role: "world", assetKey: "aqueduct", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
     { role: "world", assetKey: "gatehouse", maxTriangles: 60000, textureSet: "BC+N", maxTextureSize: 2048 },
