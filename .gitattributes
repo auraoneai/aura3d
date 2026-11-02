@@ -24,14 +24,22 @@ tests/fixtures/**/*.glb filter=lfs diff=lfs merge=lfs -text
 # real bytes: a missing file is fetched as an HTML 404 body and surfaces as
 # "Invalid GLB magic" rather than as a clear missing-asset error.
 fixtures/asset-corpus/*.glb filter=lfs diff=lfs merge=lfs -text
+# These exact historical fixtures are already ordinary Git blobs. Review the
+# LFS policy if either is replaced; other corpus GLBs remain LFS-tracked.
+fixtures/asset-corpus/avocado.glb -filter -diff -merge binary
+fixtures/asset-corpus/damaged-helmet.glb -filter -diff -merge binary
 
 # Quality-gate goldens + evidence PNGs are binary and change as goldens are
 # re-admitted; LFS keeps clone size stable (PRD-12 T3.2).
 benchmarks/quality-rebuild/goldens/**/*.png filter=lfs diff=lfs merge=lfs -text
 benchmarks/quality-rebuild/refs/**/*.png filter=lfs diff=lfs merge=lfs -text
 
-# Pinned HDRI corpus payloads must stay in LFS, including the 8k starfield.
+# HDRI corpus payloads default to LFS, including the 8k starfield.
 fixtures/environment-corpus/hdri/*.hdr filter=lfs diff=lfs merge=lfs -text
+# These three legacy 1k fixtures are ordinary Git blobs; review if replaced.
+fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr -filter -diff -merge binary
+fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr -filter -diff -merge binary
+fixtures/environment-corpus/hdri/studio_small_08_1k.hdr -filter -diff -merge binary
 apps/showcase-*-v2/public/aura-assets/*.glb -filter -diff -merge binary
 
 # GU47 E-A HDRI catalogue: 1k copies written by `aura3d assets optimize --hdri 1k` (public/hdri/ATTRIBUTION.md).
