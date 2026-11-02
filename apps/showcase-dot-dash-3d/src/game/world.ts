@@ -22,7 +22,7 @@ import {
 import { TraceField } from "./traces.js";
 import { dustMotesOptions } from "./vfx.js";
 import {
-  CLEAR_LAMP_DIM, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
+  CLEAR_LAMP_DIM, REDUCED_AMPLITUDE, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
   type CourierPose, type ShotPlan
 } from "./motion.js";
 import { boxReflectionProbe } from "./engineCompat.js";
@@ -792,7 +792,7 @@ export function syncVisuals(dt: number): void {
   for (const g of st.ghosts) {
     if (g.state !== "eyes") continue;
     const gp = normGhostPos(g);
-    const bob = 0.45 + Math.sin(st.time * 9 + g.px) * 0.05;
+    const bob = 0.45 + Math.sin(st.time * 9 + g.px) * 0.05 * (calmMotion ? REDUCED_AMPLITUDE : 1);
     inst("eyes", wx(gp.x), bob, wz(gp.y), 0.2, 0.2, 0.2, CORE_COLOR);
   }
 
@@ -800,9 +800,10 @@ export function syncVisuals(dt: number): void {
   try {
     const pp = normPos(m);
     const moving = st.autopilot || st.hasMoved;
+    const motionAmplitude = calmMotion ? REDUCED_AMPLITUDE : 1;
     const chomp = moving ? Math.abs(Math.sin(st.time * 14)) : Math.sin(st.time * 4) * 0.25;
-    const bob = moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025;
-    const pitch = moving ? Math.sin(st.time * 14) * 0.16 : 0;
+    const bob = (moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025) * motionAmplitude;
+    const pitch = moving ? Math.sin(st.time * 14) * 0.16 * motionAmplitude : 0;
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
     const pod = nodes.get("courier-pod");
@@ -818,10 +819,10 @@ export function syncVisuals(dt: number): void {
       byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76)); // a steady shrink; the flicker below is skipped when calm
       podK = Math.max(0.05, st.deathT / 1.6);
     } else if (st.player.dashT > 0) {
-      const ds = 0.82 + Math.sin(st.time * 40) * 0.05;
+      const ds = 0.82 + Math.sin(st.time * 40) * 0.05 * motionAmplitude;
       byte.setScale([ds * 1.06, ds * 0.94, ds * 1.06]);
     } else if (moving) {
-      byte.setScale([0.76 * (1 + chomp * 0.08), 0.76 * (1 - chomp * 0.06), 0.76 * (1 + chomp * 0.08)]);
+      byte.setScale([0.76 * (1 + chomp * 0.08 * motionAmplitude), 0.76 * (1 - chomp * 0.06 * motionAmplitude), 0.76 * (1 + chomp * 0.08 * motionAmplitude)]);
     } else {
       byte.setScale(0.76);
     }
@@ -874,7 +875,7 @@ export function syncVisuals(dt: number): void {
     // sentries — one silhouette each (cone, cube, ring, saucer); colour carries identity and the surge state
     for (const g of st.ghosts) {
       const gp = normGhostPos(g);
-      const wob = Math.sin(st.time * 7 + g.px) * 0.04;
+      const wob = Math.sin(st.time * 7 + g.px) * 0.04 * (calmMotion ? REDUCED_AMPLITUDE : 1);
       const frightened = st.fright > 0 && g.state === "active";
       // surge ending: a white strobe, or a slow 1 Hz pulse between slate and white when motion/flash is reduced
       const ending = frightened && st.fright < 1.8;
@@ -884,13 +885,16 @@ export function syncVisuals(dt: number): void {
       if (hidden) continue;
       const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.94;
       const yaw = yawOf(g.dir);
+      // DD47-AN1: retain the per-sentry rotation styles at full motion, but
+      // replace continuous spins with a small bounded sway on reduced motion.
+      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : st.time * speed;
       const place = (x: number, z: number): void => {
         const y = 0.42 + wob;
         switch (g.id) {
           case "blitz": inst("shC", x, y + 0.08, z, 0.62 * k, 0.9 * k, 0.62 * k, col, yaw); break;
-          case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, st.time * 2.2); break;
-          case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, st.time * 3.1); break;
-          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, st.time * 1.4); break;
+          case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, turn(2.2)); break;
+          case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, turn(3.1)); break;
+          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, turn(1.4)); break;
         }
       };
       place(wx(gp.x), wz(gp.y));
@@ -1027,4 +1031,3 @@ function echoOffset(m: ParsedMaze, x: number, y: number): { x: number; y: number
   if (ex === null && ey === null) return null;
   return { x: ex ?? x, y: ey ?? y };
 }
-
