@@ -380,8 +380,8 @@ export function buildRails(track: Track, spacing = 5): { rails: MeshData; posts:
   return { rails, posts };
 }
 
-/** Dark bone-pipe gantry arches over the road every ~240 m, with a cyan neon strip under the beam. */
-export function buildArches(track: Track, every = 240): { body: MeshData; neon: MeshData } {
+/** Baseline gantries, or open edge markers with the same posts and light strips, every ~240 m. */
+export function buildArches(track: Track, every = 240, style: "gantry" | "open-markers" = "gantry"): { body: MeshData; neon: MeshData } {
   const body = emptyMesh();
   const neon = emptyMesh();
   const up: V3 = [0, 1, 0];
@@ -390,10 +390,18 @@ export function buildArches(track: Track, every = 240): { body: MeshData; neon: 
     const tan: V3 = [fr.tx, 0, fr.tz], rgt: V3 = [fr.rx, 0, fr.rz];
     const span = fr.hw + 2.4;
     const baseY = fr.y - 2;
-    for (const side of [-1, 1]) appendBox(body, [fr.x + fr.rx * span * side, baseY + 6.2, fr.z + fr.rz * span * side], tan, up, rgt, 1.7, 6.2, 1.5);
-    appendBox(body, [fr.x, baseY + 13.2, fr.z], tan, up, rgt, 1.9, 1.3, span + 1.6);
-    appendBox(neon, [fr.x, baseY + 11.7, fr.z], tan, up, rgt, 0.12, 0.08, span - 1.2);
-    appendBox(neon, [fr.x - 0 + fr.tx * 1.95, baseY + 13.2, fr.z + fr.tz * 1.95], tan, up, rgt, 0.05, 0.12, span * 0.85);
+    for (const side of [-1, 1]) {
+      const x = fr.x + fr.rx * span * side, z = fr.z + fr.rz * span * side;
+      appendBox(body, [x, baseY + 6.2, z], tan, up, rgt, 1.7, 6.2, 1.5);
+      if (style === "open-markers") {
+        appendBox(neon, [x - fr.tx * 1.75, baseY + 6.2, z - fr.tz * 1.75], tan, up, rgt, 0.05, 4.8, 0.12);
+      }
+    }
+    if (style === "gantry") {
+      appendBox(body, [fr.x, baseY + 13.2, fr.z], tan, up, rgt, 1.9, 1.3, span + 1.6);
+      appendBox(neon, [fr.x, baseY + 11.7, fr.z], tan, up, rgt, 0.12, 0.08, span - 1.2);
+      appendBox(neon, [fr.x - 0 + fr.tx * 1.95, baseY + 13.2, fr.z + fr.tz * 1.95], tan, up, rgt, 0.05, 0.12, span * 0.85);
+    }
   }
   return { body, neon };
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { engineVoice } from "../../../examples/heatsink-port/audio";
+import { buildArches } from "../../../examples/heatsink-port/meshes";
 import { MODELS, MODELS_LITE, modelSet } from "../../../examples/heatsink-port/models";
 import { STRIKE } from "../../../examples/heatsink-port/operation";
 import { Track } from "../../../examples/heatsink-port/track";
@@ -21,6 +22,28 @@ describe("heatsink-port scene fixes", () => {
 
   it("puts a contact-shadow blob under the drone (HP-08)", () => {
     expect(byName(nodes(), "drone-blob")).toBeDefined();
+  });
+
+  it("twilight opens the 240 m gantries into edge markers (no beam across the road); ?look=original keeps the gantry (GU47 sibling distinctness)", () => {
+    /** vertex count of a custom-geometry node, wherever the scene JSON keeps its `positions` */
+    const vertexCount = (value: unknown): number => {
+      if (value && typeof value === "object") {
+        const positions = (value as Record<string, unknown>).positions;
+        if (Array.isArray(positions) || ArrayBuffer.isView(positions)) return (positions as ArrayLike<number>).length / 3;
+        for (const child of Object.values(value as Record<string, unknown>)) {
+          const n = vertexCount(child);
+          if (n > 0) return n;
+        }
+      }
+      return 0;
+    };
+    const sceneNodes = (look: string): JsonNode[] => ((buildWorld(new Track(), "high", look).scene.toJSON() as unknown as { nodes?: JsonNode[] }).nodes ?? []);
+    const track = new Track();
+    const gantry = buildArches(track).body.positions.length / 3;
+    const open = buildArches(track, 240, "open-markers").body.positions.length / 3;
+    expect(open).toBeLessThan(gantry);
+    expect(vertexCount(byName(sceneNodes("?look=twilight"), "arches"))).toBe(open);
+    expect(vertexCount(byName(sceneNodes("?look=original"), "arches"))).toBe(gantry);
   });
 
   it("gives heavy targets their own silhouette and every target a health ring (HP-17)", () => {
