@@ -135,41 +135,46 @@ export function bloomNormalization(mips: number, scatter: number): number {
 
 /**
  * GU47 E-C (EC-7) selective bloom: per-material `bloom` weight in [0, 2]
- * (`AuraMaterialSpec.bloom`, default 1). Opaque surfaces write the weight
- * into the HDR target's alpha (blend is off for them, so RGB is untouched)
- * and the bloom prefilter multiplies its above-threshold excess by
- * `auraBloomWeight(alpha, selective)`. `selective` is on only when a scene
- * material declares a weight other than 1; off, the factor is exactly 1.0,
- * so weight 1 everywhere reproduces today's bloom bit for bit.
+ * (`AuraMaterialSpec.bloom`, default 1). The supported forward path writes
+ * half-weighted radiance into a separate attachment, resolved alongside HDR
+ * color. HDR alpha retains its coverage and indirect-light meanings.
+ * Unsupported frames use ordinary bloom.
  */
 export const BLOOM_WEIGHT_DEFAULT = 1;
 export const BLOOM_WEIGHT_MAX = 2;
+/** Generated forward-program key for the optional, separate bloom attachment. */
+export const SELECTIVE_BLOOM_FEATURE = "prd03.selectiveBloom";
 
 /** A material `bloom` value as the prefilter sees it: clamped to [0, 2]; missing or non-finite = 1. */
 export function resolveBloomWeight(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? Math.min(BLOOM_WEIGHT_MAX, Math.max(0, value)) : BLOOM_WEIGHT_DEFAULT;
 }
 
-/** True when any weight differs from 1, i.e. the prefilter must read the alpha weight. */
+/** True when any weight differs from 1, i.e. a signal is needed. */
 export function selectiveBloomActive(weights: Iterable<unknown>): boolean {
   for (const weight of weights) if (resolveBloomWeight(weight) !== BLOOM_WEIGHT_DEFAULT) return true;
   return false;
 }
 
-/** GLSL ES 3.00 prefilter helper (include before `main`): the bloom weight carried in HDR alpha, or 1.0 when selective bloom is off. */
+/**
+ * GLSL ES 3.00 prefilter helper, kept byte-identical in the ordinary
+ * prefilter programs. Those programs always run with `u_bloomSelective = 0`
+ * (factor exactly 1.0): HDR alpha is never read as a bloom weight. A verified
+ * selective frame uses the separate-signal prefilter programs instead.
+ */
 export const BLOOM_WEIGHT_GLSL = /* glsl */ `
 float auraBloomWeight(float alpha, int selective) {
   return selective == 1 ? clamp(alpha, 0.0, ${BLOOM_WEIGHT_MAX.toFixed(1)}) : 1.0;
 }
 `;
 
-/** CPU mirror of the weighted soft-knee prefilter excess (u_excess path) for one HDR texel. */
-export function bloomPrefilterExcess(rgb: readonly [number, number, number], alpha: number, threshold: number, softKnee: number, selective: boolean): [number, number, number] {
+/** CPU mirror of the weighted soft-knee prefilter excess for one uniform-weight HDR texel. */
+export function bloomPrefilterExcess(rgb: readonly [number, number, number], weight: number, threshold: number, softKnee: number, selective: boolean): [number, number, number] {
   const luma = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
   const knee = Math.max(softKnee, 0);
   let soft = Math.min(2 * knee, Math.max(0, luma - threshold + knee));
   soft = (soft * soft) / (4 * knee + 1e-5);
-  const excessWeight = (Math.max(soft, luma - threshold) / Math.max(luma, 1e-5)) * (selective ? Math.min(BLOOM_WEIGHT_MAX, Math.max(0, alpha)) : 1);
+  const excessWeight = (Math.max(soft, luma - threshold) / Math.max(luma, 1e-5)) * (selective ? Math.min(BLOOM_WEIGHT_MAX, Math.max(0, weight)) : 1);
   return [rgb[0] * excessWeight, rgb[1] * excessWeight, rgb[2] * excessWeight];
 }
 

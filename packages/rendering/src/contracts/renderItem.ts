@@ -15,6 +15,11 @@ import type { TextureBinding } from "../TextureBinding";
 export interface RenderItem {
   readonly geometry: Geometry;
   readonly material?: RenderMaterial;
+  /**
+   * Per-surface selective-bloom weight. The default is 1; the renderer clamps
+   * finite values to [0, 2]. This is draw data, not an HDR alpha/coverage value.
+   */
+  readonly bloomWeight?: number;
   readonly label?: string;
   readonly drawRange?: RenderItemDrawRange;
   readonly includeInAutoFrame?: boolean;

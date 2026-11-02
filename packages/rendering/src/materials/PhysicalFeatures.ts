@@ -11,6 +11,7 @@
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program";
 import { QUALITY_TIERS } from "../contracts/quality";
 import { materialLobes, type MaterialFeatureContext, type MaterialLobeInput } from "../contracts/materialLobes";
+import type { MaterialLobe } from "../contracts/materialLobes";
 import { Texture } from "../Texture";
 import type { UniformValue } from "../RenderDevice";
 import type { PhysicalMapBinding, PhysicalMapSlot, PhysicalMaterialDescriptor, PhysicalFeatureSet } from "./PhysicalMaterial";
@@ -21,6 +22,12 @@ export type { PhysicalFeatureSet };
 const CORE_MAP_SLOTS = ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive"] as const;
 
 type CoreMapSlot = (typeof CORE_MAP_SLOTS)[number];
+
+/** Internal observation of the normal lobe loop, never an extra selection. */
+const selectiveLobeObservers = new WeakMap<MaterialFeatureContext, (entry: MaterialLobe) => void>();
+export function observeSelectiveLobes(ctx: MaterialFeatureContext, observe: (entry: MaterialLobe) => void): void {
+  selectiveLobeObservers.set(ctx, observe);
+}
 
 /**
  * Projects a descriptor into the `MaterialLobeInput` lobes read. Parameter
@@ -101,7 +108,9 @@ export function physicalFeatureSet(
   const input = physicalMaterialLobeInput(descriptor);
   const lowTier = ctx.tier.maxLightsPerPixel <= QUALITY_TIERS.low.maxLightsPerPixel;
   const extensions: MaterialExtensionFeature[] = [];
+  const observe = selectiveLobeObservers.get(ctx);
   for (const lobe of materialLobes(ctx.flags)) {
+    observe?.(lobe);
     const feature = lobe.feature(input);
     if (!feature) continue;
     extensions.push(
@@ -314,14 +323,15 @@ export function bindMaterialLobeUniforms(
   extensions: readonly MaterialExtensionFeature[],
   material: object,
   flags: MaterialFeatureContext["flags"],
-  set: (uniform: string, value: UniformValue) => void
+  set: (uniform: string, value: UniformValue) => void,
+  observe?: (entry: MaterialLobe) => void
 ): void {
   if (extensions.length === 0) return;
   const input = materialLobeInputOf(material);
   if (!input) return;
   for (const lobe of materialLobes(flags)) {
+    observe?.(lobe);
     const active = extensions.some((ext) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension));
     if (active) lobe.bind(input, set);
   }
 }
-

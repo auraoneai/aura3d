@@ -19,26 +19,41 @@ import type { ShadowPcfTapTier } from "./shadows/ShadowFilterTier";
 import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
+import { PBRMaterial } from "./PBRMaterial";
+import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
+import { resolveBloomWeight, SELECTIVE_BLOOM_FEATURE } from "./postprocess/NativeBloomPyramid";
+import { indirectFractionFeature } from "./post/chunks/indirectFraction.glsl";
+import { registeredVelocityFeature } from "./post/chunks/velocity.glsl";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
 import { blendQueueForState, blendStateIsTransparent } from "./BlendModes";
 import { renderStateKey } from "./contracts/blend";
 import type { RenderCommandState } from "./RenderDevice";
 import { type RenderItem } from "./contracts/renderItem";
 import { instanceBufferSlot, type InstanceBufferLike } from "./contracts/geometry";
+import { frameUniformsSlot } from "./contracts/frameUniforms";
 import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
-import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
+import { programCacheSlot, shaderFeaturesFor, type ProgramCacheLike, type ProgramFeatures, type ShaderFeature } from "./contracts/program";
+import { materialLobes } from "./contracts/materialLobes";
 import { normalizeProgramFeatures, PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
+import { programKey } from "./program/ProgramKey";
 import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
-import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
-import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
+import { bindShaderFeatureUniforms, selectShaderFeatureBits, stockArrayMatches, stockFeatureVerifier } from "./program/FeatureSelect";
+import { bindMaterialLobeUniforms, observeSelectiveLobes } from "./materials/PhysicalFeatures";
+import { isStockPrd04Lobe } from "./materials/lobes";
+import { isStockPrd04ShaderFeature } from "./materials/features";
+import { PRD02_SHADOW_FILTER_FEATURE } from "./shadows/Prd02ShadowFilter";
+import { isStockPrd02IblBloomFeature } from "./environment/Prd02IblShaderFeature";
+import { isStockPrd07BloomFeature } from "./atmosphere/Prd07ShaderFeatures";
+import { isStockCameraFadeBloomFeature } from "./shaders/camera-fade.glsl";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
-import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame } from "./renderer/qrSubFlags";
 import type { QrFlags } from "./contracts/core";
 import { PRD02_IBL_FEATURE, type EnvironmentProbe } from "./contracts/environment";
 import { packA3DEnvironmentUniforms } from "./environment/EnvUniforms";
 import { dfgLutBinding, dfgLutTexture } from "./program/DFGLut";
+import { webgl2DeviceHost } from "./webgl2/Counters";
 
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
@@ -46,8 +61,8 @@ import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeome
 import type { ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js";
 import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardLocalShadowUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
-import { bindVelocityUniforms } from "./forward/Velocity.js";
-import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
+import { bindVelocityUniforms, velocityFramePrepared } from "./forward/Velocity.js";
+import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, isStockInstanceColorTargetFeature, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
 
 export type { RenderItem };
 
@@ -77,6 +92,109 @@ export interface ForwardDrawHook {
 }
 
 const forwardDrawHooks: ForwardDrawHook[] = [];
+
+// ProgramCache installs this non-enumerable discovery set only after the real
+// module has already loaded. It is not an authority; the module authenticates
+// its own instances before it is allowed to prewarm.
+const SELECTIVE_CACHE_DISCOVERY = Symbol.for("aura3d.prd01.selectiveBloom.builtinCaches");
+const stockCoreSelectiveFeatures = stockFeatureVerifier([
+  indirectFractionFeature, registeredVelocityFeature, PRD02_SHADOW_FILTER_FEATURE
+]);
+const stockMaterialGetParameter = Material.prototype.getParameter;
+const stockMaterialGetParameters = Material.prototype.getParameters;
+const stockMaterialAssertAlive = Object.getOwnPropertyDescriptor(Material.prototype, "assertAlive")?.value;
+const stockPbrFeatures = PBRMaterial.prototype.programFeatures;
+const stockTexturedFeatures = TexturedPBRMaterial.prototype.programFeatures;
+const stockUnlitFeatures = Material.prototype.programFeatures;
+
+/** Authenticate the concrete implementation, including mutable method slots. */
+function stockSelectiveMaterial(material: RenderMaterial | undefined): material is Material {
+  if (!material || material instanceof MaterialInstance) return false;
+  const prototype = Object.getPrototypeOf(material);
+  const expected = prototype === PBRMaterial.prototype ? stockPbrFeatures :
+    prototype === TexturedPBRMaterial.prototype ? stockTexturedFeatures :
+    prototype === UnlitMaterial.prototype ? stockUnlitFeatures : undefined;
+  if (!expected || Object.getPrototypeOf(prototype) !== Material.prototype ||
+      Object.getOwnPropertyDescriptor(prototype, "getParameter") !== undefined ||
+      Object.getOwnPropertyDescriptor(prototype, "getParameters") !== undefined ||
+      Object.getOwnPropertyDescriptor(prototype, "assertAlive") !== undefined ||
+      (prototype === UnlitMaterial.prototype && Object.getOwnPropertyDescriptor(prototype, "programFeatures") !== undefined) ||
+      Object.getOwnPropertyDescriptor(material, "programFeatures") !== undefined ||
+      Object.getOwnPropertyDescriptor(material, "getParameter") !== undefined ||
+      Object.getOwnPropertyDescriptor(material, "getParameters") !== undefined ||
+      Object.getOwnPropertyDescriptor(material, "assertAlive") !== undefined ||
+      Object.getOwnPropertyDescriptor(Material.prototype, "getParameter")?.value !== stockMaterialGetParameter ||
+      Object.getOwnPropertyDescriptor(Material.prototype, "getParameters")?.value !== stockMaterialGetParameters ||
+      Object.getOwnPropertyDescriptor(Material.prototype, "assertAlive")?.value !== stockMaterialAssertAlive ||
+      Object.getOwnPropertyDescriptor(prototype === UnlitMaterial.prototype ? Material.prototype : prototype, "programFeatures")?.value !== expected) return false;
+  const parameters = Object.getOwnPropertyDescriptor(material, "parameters")?.value;
+  return Object.getOwnPropertyDescriptor(material, "disposed")?.value === false &&
+    parameters instanceof Map && Object.getPrototypeOf(parameters) === Map.prototype &&
+    Object.getOwnPropertyDescriptor(parameters, "get") === undefined &&
+    Object.getOwnPropertyDescriptor(parameters, Symbol.iterator) === undefined;
+}
+
+function stockSelectiveFeature(feature: ShaderFeature): boolean {
+  return stockCoreSelectiveFeatures(feature) || isStockPrd04ShaderFeature(feature) || isStockInstanceColorTargetFeature(feature) ||
+    isStockPrd02IblBloomFeature(feature) || isStockPrd07BloomFeature(feature) || isStockCameraFadeBloomFeature(feature);
+}
+const coreProviderFlags: QrFlags = {
+  values: Object.freeze({ A3D_QR_CORE: true }),
+  on: (name) => name === "A3D_QR_CORE"
+};
+interface TrustedSelectiveCompiler {
+  readonly provider: ReturnType<typeof programCacheSlot.get>;
+  readonly cacheModule: typeof import("./program/ProgramCache");
+  readonly webgl: typeof import("./WebGL2Device");
+  readonly compile: NonNullable<RenderDevice["compileAsync"]>;
+}
+let trustedSelectiveCompiler: TrustedSelectiveCompiler | undefined;
+let selectiveCompilerLoading = false;
+let selectiveCompilerUnavailable = false;
+
+/**
+ * Authenticate the actual lane provider without invoking it or importing the
+ * generator on unrelated frames. C-02 is single-assignment. If the lane
+ * module resolves successfully, its own `provide` succeeded; if an arbitrary
+ * provider was installed first, the guarded import fails on the already
+ * provided C-07 slot before changing any slot.
+ */
+function selectiveCompilerFor(cache: ProgramCacheLike, device: RenderDevice): TrustedSelectiveCompiler | "pending" | "unavailable" {
+  if (!programCacheSlot.provided || !instanceBufferSlot.provided || !frameUniformsSlot.provided || !webgl2DeviceHost(device)) return "unavailable";
+  const discovery = Object.getOwnPropertyDescriptor(programCacheSlot, SELECTIVE_CACHE_DISCOVERY);
+  try {
+    if (!discovery || !WeakSet.prototype.has.call(discovery.value, cache)) return "unavailable";
+  } catch {
+    return "unavailable";
+  }
+  const provider = programCacheSlot.get(coreProviderFlags);
+  if (provider === programCacheSlot.stub) return "unavailable";
+  if (trustedSelectiveCompiler) return trustedSelectiveCompiler.provider === provider ? trustedSelectiveCompiler : "unavailable";
+  if (selectiveCompilerUnavailable) return "unavailable";
+  if (!selectiveCompilerLoading) {
+    selectiveCompilerLoading = true;
+    void import("./lanes/prd01.js")
+      .then(() => Promise.all([import("./program/ProgramCache.js"), import("./WebGL2Device.js")]))
+      .then(([cacheModule, webgl]) => {
+        const compile: unknown = Object.getOwnPropertyDescriptor(webgl.WebGL2Device.prototype, "compileAsync")?.value;
+        if (programCacheSlot.get(coreProviderFlags) !== provider || typeof compile !== "function") {
+          selectiveCompilerUnavailable = true;
+          return;
+        }
+        trustedSelectiveCompiler = { provider, cacheModule, webgl, compile: compile as NonNullable<RenderDevice["compileAsync"]> };
+      })
+      .catch(() => { selectiveCompilerUnavailable = true; });
+  }
+  return "pending";
+}
+
+/** Do not invoke a custom device's compiler or an instrumented replacement. */
+function selectiveCompilerMatchesDevice(compiler: TrustedSelectiveCompiler, device: RenderDevice): boolean {
+  const prototype = compiler.webgl.WebGL2Device.prototype;
+  return Object.getPrototypeOf(device) === prototype &&
+    Object.getOwnPropertyDescriptor(device, "compileAsync") === undefined &&
+    Object.getOwnPropertyDescriptor(prototype, "compileAsync")?.value === compiler.compile;
+}
 
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export function registerForwardDrawHook(hook: ForwardDrawHook): () => void {
@@ -161,6 +279,38 @@ export const MAX_GPU_MORPH_VERTICES = 64;
 export const MAX_GPU_MORPH_TARGETS = 4;
 export const MAX_GPU_INSTANCES = 64;
 
+/** Per-frame state, shared with the post executor; never shared across frames. */
+export interface SelectiveBloomFrame {
+  enabled: boolean;
+  valid: boolean;
+  /** The first stable reason this frame's signal became unusable (reported as POST_SELECTIVE_BLOOM_UNAVAILABLE:<reason>). */
+  invalidReason?: string;
+  maxRadiance?: number;
+  preparedKeys?: ReadonlySet<string>;
+  readonly weights?: WeakMap<RenderItem, number>;
+}
+
+/** Mark a selective frame unusable; the first reason is kept. */
+export function invalidateSelectiveBloomFrame(frame: { valid: boolean; invalidReason?: string }, reason: string): void {
+  if (frame.valid) frame.invalidReason = reason;
+  frame.valid = false;
+}
+
+/**
+ * Why one draw cannot write the separate signal, or null. Reads only data and
+ * authenticated stock implementations; never invokes an item or material callback.
+ */
+function selectiveDrawDecline(item: RenderItem): string | null {
+  const material = item.material;
+  if (!stockSelectiveMaterial(material)) return "material-program";
+  if (item.onBeforeRender || item.skinning || item.morphTargets || item.morphWeights ||
+      item.instanceTransforms || item.instanceAttributes || (item as RenderItem & { multiDraw?: unknown }).multiDraw) return "draw-producer";
+  const state = material.renderState;
+  if (blendStateIsTransparent(state) || state.alphaToCoverage || !stockArrayMatches(state.colorWrite, [true, true, true, true]) ||
+      isTransmissionRenderItem(item)) return "transparent-or-transmission";
+  return null;
+}
+
 export interface ForwardPassOptions {
   readonly items: readonly RenderItem[];
   readonly lights?: readonly CollectedLight[];
@@ -202,6 +352,8 @@ export interface ForwardPassOptions {
    * applied to every generated program in the pass.
    */
   readonly backgroundCoverage?: boolean;
+  /** Internal, capability-checked signal attachment; absent on ordinary frames. */
+  readonly selectiveBloom?: SelectiveBloomFrame;
   /**
    * §9.1 split (C-05): the v2 frame runs several forward passes; the
    * RenderGraph requires unique names and single-producer writes, so each
@@ -503,10 +655,70 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
+  /**
+   * Prepare the exact extra-output programs before committing to an MRT frame.
+   * Only asynchronous compiler devices participate: compiling a new signal
+   * variant must not consume the normal draw's synchronous compile budget.
+   * No draw, draw callback, or feature binder is invoked here.
+   */
+  prepareSelectiveBloom(device: RenderDevice): string | null {
+    const flags = rendererQrFlags(device);
+    if (!qrCoreGeneratorOn(flags) || !device.probe?.parallelShaderCompile) return "generated-programs-unavailable";
+    if (this.options.backgroundCoverage || forwardDrawHooks.length > 0) return "forward-hook-or-coverage";
+    if ((this.options.lights?.length ?? 0) > FORWARD_DIRECT_LIGHT_CAPACITY) return "clustered-lighting";
+    // A registered feature that selects nothing for a draw adds nothing to its
+    // program (e.g. the default prd06.deform on rigid items). Features that do
+    // select are checked where the ordinary loop selects them (non-stock ->
+    // "shader-feature"), and only an ordinary program assembled from audited
+    // producers can gain the signal output (ProgramGenerator provenance).
+    // The velocity MRT writes the same output location as the signal.
+    if (shaderFeaturesFor(flags).includes(registeredVelocityFeature) && flags.on("A3D_QR_POST_VELOCITY_MRT") && velocityFramePrepared()) return "velocity-mrt";
+    if (materialLobes(flags).some((lobe) => !isStockPrd04Lobe(lobe))) return "material-lobe";
+    // The normal warm-up already created this cache. Authenticate both its
+    // actual lane provider and built-in implementation without calling either
+    // an arbitrary provider or acquire (which can invoke a degradation sink).
+    const cache = rendererProgramCachePeek(device);
+    if (!cache) return "generated-programs-unavailable";
+    const compiler = selectiveCompilerFor(cache, device);
+    if (compiler === "pending") return "signal-program-pending";
+    if (compiler === "unavailable" || !selectiveCompilerMatchesDevice(compiler, device) ||
+        !compiler.cacheModule.isBuiltinSelectiveBloomCache(cache, device, flags)) return "generated-programs-unavailable";
+    this.generatorProgramCache = cache;
+    for (const item of this.options.items) {
+      const material = item.material;
+      if (stockSelectiveMaterial(material) &&
+          !materialRoutesToGeneratedProgram(material, { core: true, lobes: false }, { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high })) return "material-program";
+      const reason = selectiveDrawDecline(item);
+      if (reason) return reason;
+    }
+    // Reuse records already selected and generated by ordinary warmup or a
+    // matching prior draw. No lobe/feature selector, binder, defines callback
+    // or degradation sink is run to build these variants.
+    const captured = compiler.cacheModule.prewarmCapturedSelectiveBloom(cache, device, flags, compiler.compile);
+    if (!captured.handles) return captured.reason ?? "signal-program-unavailable";
+    let pending = false;
+    const preparedKeys = new Set<string>();
+    for (const handle of captured.handles) {
+      if (handle.status === "failed") return "signal-program-failed";
+      if (handle.status !== "ready" || !handle.program) { pending = true; continue; }
+      if (!handle.program.reflection.uniforms.has("u_a3dBloomWeight") ||
+          !handle.program.reflection.uniforms.has("u_a3dBloomMaxRadiance")) return "signal-program-unavailable";
+      preparedKeys.add(handle.key);
+    }
+    if (pending) return "signal-program-pending";
+    if (this.options.selectiveBloom) this.options.selectiveBloom.preparedKeys = preparedKeys;
+    return null;
+  }
+
   private drawItem(device: RenderDevice, sourceItem: RenderItem): void {
     let item = sourceItem;
     // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
+    const selective = this.options.selectiveBloom;
+    if (selective?.enabled && selective.valid) {
+      const reason = selectiveDrawDecline(item) ?? (forwardDrawHooks.length > 0 ? "forward-hook-or-coverage" : null);
+      if (reason) invalidateSelectiveBloomFrame(selective, reason);
+    }
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
     // immediately before the draw call.
     item.onBeforeRender?.(item);
@@ -515,11 +727,13 @@ export class ForwardPass extends BaseRenderPass {
     this.applyLightUniforms(material);
     let shader: RenderShaderProgram | undefined;
     const knownFailure = this.shaderFailureOutcome(baseMaterial);
+    if (knownFailure !== undefined && selective?.enabled) invalidateSelectiveBloomFrame(selective, "shader-failure");
     if (knownFailure === undefined) {
       try {
         shader = this.getShader(baseMaterial, device, item);
       } catch (error) {
         if (!isShaderFailureError(error)) throw error;
+        if (selective?.enabled) invalidateSelectiveBloomFrame(selective, "shader-failure");
         this.lastProgramFeatures = undefined;
         const mode = this.handleShaderFailure(error, baseMaterial, device);
         if (mode === "magenta") {
@@ -534,10 +748,16 @@ export class ForwardPass extends BaseRenderPass {
       }
       return;
     }
-    if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
+    if (shader === undefined) {
+      if (selective?.enabled) invalidateSelectiveBloomFrame(selective, "program-pending");
+      return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
+    }
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
     let generated = this.lastProgramFeatures !== undefined;
+    if (selective?.enabled && (!generated || this.lastProgramFeatures?.features[SELECTIVE_BLOOM_FEATURE] !== true)) {
+      invalidateSelectiveBloomFrame(selective, generated ? "signal-program-unprepared" : "legacy-program");
+    }
     // Large instanced draws: submit only the instances whose bounding sphere meets this pass's view frustum.
     const culled = this.cullInstancesToView(item, baseMaterial);
     if (culled !== null) {
@@ -580,6 +800,7 @@ export class ForwardPass extends BaseRenderPass {
         : this.materialBinding.bind(material, shader);
     } catch (error) {
       if (!(error instanceof MaterialBindingError) || rendererQrFlags(device).on("A3D_QR_STRICT")) throw error;
+      if (selective?.enabled) invalidateSelectiveBloomFrame(selective, "material-binding");
       warnBindingOnce(item, baseMaterial, error, generated);
       if (!generated) return;
       this.lastProgramFeatures = undefined;
@@ -646,16 +867,22 @@ export class ForwardPass extends BaseRenderPass {
     }
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
-      bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+      bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item,
+        (name, value) => uniforms.set(name, value),
+        selective?.enabled && selective.valid ? (feature) => { if (!stockSelectiveFeature(feature)) invalidateSelectiveBloomFrame(selective, "shader-feature"); } : undefined);
       // E3 stage-2b bind site: `prd02.ibl` has no feature-local bind (the
       // probe, knob and ambient are pass state, not item state), so the
       // PRD-02 environment pack is bound here, in the feature-bind slot.
       if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, item, material, uniforms);
       // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
       // lobes this record carries. Material parameters stay authoritative.
-      bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
-        if (!uniforms.has(name)) uniforms.set(name, value);
-      });
+      bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device),
+        (name, value) => { if (!uniforms.has(name)) uniforms.set(name, value); },
+        selective?.enabled && selective.valid ? (lobe) => { if (!isStockPrd04Lobe(lobe)) invalidateSelectiveBloomFrame(selective, "material-lobe"); } : undefined);
+    }
+    if (generated && this.lastProgramFeatures?.features[SELECTIVE_BLOOM_FEATURE] === true && this.options.selectiveBloom?.enabled) {
+      uniforms.set("u_a3dBloomWeight", resolveBloomWeight(this.options.selectiveBloom.weights?.get(sourceItem) ?? item.bloomWeight));
+      uniforms.set("u_a3dBloomMaxRadiance", this.options.selectiveBloom.maxRadiance ?? 65504);
     }
     if (item.skinning && !generated) {
       // Legacy skinned programs take the u_jointMatrices palette; on the
@@ -821,10 +1048,25 @@ export class ForwardPass extends BaseRenderPass {
       core: qrCoreGeneratorOn(flags),
       lobes: qrMaterialsLobeProgramsOn(flags) && this.options.outputColorSpace === "linear"
     };
+    if (this.options.selectiveBloom?.enabled && !route.core) invalidateSelectiveBloomFrame(this.options.selectiveBloom, "generated-programs-unavailable");
     if ((route.core || route.lobes) && materialRoutesToGeneratedProgram(material, route, { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high })) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
       this.lastProgramFeatures = this.programFeaturesFor(material, device, item);
+      const selective = this.options.selectiveBloom;
+      const compiler = trustedSelectiveCompiler;
+      const cache = this.generatorProgramCache;
+      if (selective?.enabled && this.lastProgramFeatures.features[SELECTIVE_BLOOM_FEATURE] === true &&
+          (!selective.preparedKeys?.has(programKey(this.lastProgramFeatures)) || !compiler || !cache ||
+           !selectiveCompilerMatchesDevice(compiler, device) ||
+           !compiler.cacheModule.capturedSelectiveBloomReady(cache, device, flags, programKey(this.lastProgramFeatures)))) {
+        // State or feature selection changed after preflight. Do not compile a
+        // new optional variant (which could skip this draw or invoke app
+        // callbacks); acquire the exact ordinary variant and ignore the signal.
+        invalidateSelectiveBloomFrame(selective, "signal-program-unprepared");
+        const { [SELECTIVE_BLOOM_FEATURE]: _signal, ...features } = this.lastProgramFeatures.features;
+        this.lastProgramFeatures = { ...this.lastProgramFeatures, features };
+      }
       // #867: a skinned draw needs its program to skin. When no registered
       // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,
       // the generated program has no skinning, so the draw keeps the legacy
@@ -879,11 +1121,22 @@ export class ForwardPass extends BaseRenderPass {
   private programFeaturesFor(material: Material, device: RenderDevice, item?: RenderItem): ProgramFeatures {
     const flags = rendererQrFlags(device);
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
-    const mf = material.programFeatures({ flags, tier });
+    const selective = this.options.selectiveBloom;
+    const context = { flags, tier };
+    if (selective?.enabled && selective.valid) {
+      observeSelectiveLobes(context, (lobe) => { if (!isStockPrd04Lobe(lobe)) invalidateSelectiveBloomFrame(selective, "material-lobe"); });
+    }
+    const mf = material.programFeatures(context);
     const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
     // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
     // at acquire time); the warmup applies the same selection per item.
-    const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
+    // Observe the ordinary selection loop rather than selecting anything a
+    // second time. Registry changes invalidate this frame before consumption.
+    const selected: Record<string, string | number | boolean> = item ? selectShaderFeatureBits(
+      { item, pass: "forward", tier, flags },
+      selective?.enabled && selective.valid ? (feature) => { if (!stockSelectiveFeature(feature)) invalidateSelectiveBloomFrame(selective, "shader-feature"); } : undefined
+    ) : {};
+    if (selective?.enabled && selective.valid) selected[SELECTIVE_BLOOM_FEATURE] = true;
     // E3 stage-2b: `prd02.ibl` shades from a C-09 probe cube; without one
     // (bare preset/procedural lighting) the default indirect body stays.
     if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(this.options.environmentLighting, item)) {

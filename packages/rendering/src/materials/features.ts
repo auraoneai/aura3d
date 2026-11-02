@@ -18,6 +18,7 @@ import { MaterialInstance } from "../MaterialInstance.js";
 import type { UniformValue } from "../RenderDevice";
 import { TextureBinding } from "../TextureBinding.js";
 import { capturedTransmissionTarget } from "../forward/transmissionTargetStore.js";
+import { stockFeatureVerifier } from "../program/FeatureSelect";
 
 /**
  * KHR_texture_transform matrix per PRD-04 §8.9: `T · R · S` with
@@ -284,6 +285,9 @@ export const rimFeature: ShaderFeature = {
 };
 
 const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
+
+/** Used only to decline unauthenticated producers during selective preflight. */
+export const isStockPrd04ShaderFeature = stockFeatureVerifier(FEATURES);
 
 let registered = false;
 

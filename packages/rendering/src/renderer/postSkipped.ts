@@ -5,6 +5,16 @@
  * safe); kept out of `post/` so PostprocessExecution has no static `post/`
  * import (§9 bundle gate, prd03-post-bundle-split). `postSections` folds these into `diagnostics().post.skipped`. */
 const postSkippedReasonsSet = new Set<string>();
+let selectiveBloomByCanvas = new WeakMap<object, string>();
+let latestSelectiveBloomReason: string | undefined;
+
+/** Per-canvas transient outcome: one app's successful frame cannot hide another's fallback. */
+export function setSelectiveBloomSkipped(key: object, reason?: string): void {
+  const value = reason ? `POST_SELECTIVE_BLOOM_UNAVAILABLE:${reason}` : undefined;
+  if (value) selectiveBloomByCanvas.set(key, value);
+  else selectiveBloomByCanvas.delete(key);
+  latestSelectiveBloomReason = value;
+}
 
 export function recordPostSkipped(reason: string): void {
   postSkippedReasonsSet.add(reason);
@@ -19,8 +29,9 @@ export function clearPostSkipped(reason: string): void {
   postSkippedReasonsSet.delete(reason);
 }
 
-export function postSkippedReasons(): readonly string[] {
-  return [...postSkippedReasonsSet];
+export function postSkippedReasons(canvas?: object): readonly string[] {
+  const bloom = canvas ? selectiveBloomByCanvas.get(canvas) : latestSelectiveBloomReason;
+  return [...postSkippedReasonsSet, ...(bloom ? [bloom] : [])];
 }
 
 /**
@@ -61,6 +72,8 @@ export function consumeTaaHistoryWritten(): boolean {
 /** Test hook — clears the §6.9 skip registry. */
 export function resetPostSkipped(): void {
   postSkippedReasonsSet.clear();
+  selectiveBloomByCanvas = new WeakMap<object, string>();
+  latestSelectiveBloomReason = undefined;
 }
 
 /** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */

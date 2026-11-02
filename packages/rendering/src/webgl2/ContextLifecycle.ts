@@ -271,6 +271,7 @@ export class WebGL2ContextLifecycle {
       // other attachments untouched. Normalized and float formats both take
       // clearBufferfv (normalized formats are floating-point clears).
       this.host.gl.clearBufferfv(this.host.gl.COLOR, attachment, new Float32Array(color));
+      if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
       return;
     }
     this.host.gl.clearColor(color[0], color[1], color[2], color[3]);

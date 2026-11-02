@@ -194,6 +194,7 @@ export class WebGL2RenderTarget implements RenderTarget {
   public readonly colorTextures?: readonly Texture[];
   public layerTargets?: readonly RenderTarget[];
   private readonly extraColorHandles: readonly WebGLTexture[];
+  private extraMultisampleColorHandles: readonly WebGLRenderbuffer[] = [];
   private readonly layerFramebuffers: readonly WebGLFramebuffer[];
   private readonly layerChild: boolean;
 
@@ -206,11 +207,11 @@ export class WebGL2RenderTarget implements RenderTarget {
     public readonly depthTexture: Texture | undefined,
     public readonly framebuffer: WebGLFramebuffer,
     public readonly colorHandle: WebGLTexture,
-    public readonly depthHandle: WebGLRenderbuffer | null,
+    public depthHandle: WebGLRenderbuffer | null,
     public readonly depthTextureHandle: WebGLTexture | null,
-    public readonly sampleCount: number,
-    public readonly drawFramebuffer: WebGLFramebuffer,
-    public readonly multisampleColorHandle: WebGLRenderbuffer | null,
+    public sampleCount: number,
+    public drawFramebuffer: WebGLFramebuffer,
+    public multisampleColorHandle: WebGLRenderbuffer | null,
     private readonly gl: WebGL2RenderingContext,
     options: WebGL2RenderTargetOptions = {}
   ) {
@@ -221,6 +222,24 @@ export class WebGL2RenderTarget implements RenderTarget {
     this.extraColorHandles = options.extraColorHandles ?? [];
     this.layerFramebuffers = options.layerFramebuffers ?? [];
     this.layerChild = options.layerChild === true;
+  }
+
+  /** Take ownership only after both multisample attachments are complete. */
+  installSelectiveMultisample(
+    sampleCount: number,
+    framebuffer: WebGLFramebuffer,
+    colors: readonly [WebGLRenderbuffer, WebGLRenderbuffer],
+    depth: WebGLRenderbuffer
+  ): void {
+    this.sampleCount = sampleCount;
+    this.drawFramebuffer = framebuffer;
+    this.multisampleColorHandle = colors[0];
+    this.extraMultisampleColorHandles = [colors[1]];
+    this.depthHandle = depth;
+  }
+
+  get selectiveMultisampleAttachments(): boolean {
+    return this.sampleCount > 1 && this.extraMultisampleColorHandles.length === 1;
   }
 
   dispose(): void {
@@ -240,6 +259,7 @@ export class WebGL2RenderTarget implements RenderTarget {
       }
       if (this.depthHandle) this.gl.deleteRenderbuffer(this.depthHandle);
       if (this.multisampleColorHandle) this.gl.deleteRenderbuffer(this.multisampleColorHandle);
+      for (const handle of this.extraMultisampleColorHandles) this.gl.deleteRenderbuffer(handle);
       if (this.depthTextureHandle) this.gl.deleteTexture(this.depthTextureHandle);
       this.colorTexture.dispose();
       for (const texture of this.colorTextures ?? []) {
@@ -632,9 +652,17 @@ export class WebGL2Device implements RenderDevice {
     this.host.lifecycle.assertAlive();
     this.assertShaderMarker(sources);
     const vertexShader = this.issueShaderCompile(this.gl.VERTEX_SHADER, sources.vertex, sources.label);
-    const fragmentShader = this.issueShaderCompile(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
+    let fragmentShader: WebGLShader;
+    try {
+      fragmentShader = this.issueShaderCompile(this.gl.FRAGMENT_SHADER, sources.fragment, sources.label);
+    } catch (error) {
+      this.gl.deleteShader(vertexShader);
+      throw error;
+    }
     const program = this.gl.createProgram();
     if (!program) {
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
       throw new RenderDeviceError("Failed to allocate WebGL shader program", "WEBGL_ALLOCATION_FAILED");
     }
     this.host.counters.shaderProgramCreateCount += 1;
@@ -647,6 +675,9 @@ export class WebGL2Device implements RenderDevice {
       const poll = (): void => {
         if (this.host.disposed || this.host.contextLost) {
           this.parallelCompilesPending -= 1;
+          this.gl.deleteShader(vertexShader);
+          this.gl.deleteShader(fragmentShader);
+          this.gl.deleteProgram(program);
           reject(new RenderDeviceError("Device lost during parallel shader compile", "DEVICE_LOST", { label: sources.label }));
           return;
         }
@@ -693,8 +724,13 @@ export class WebGL2Device implements RenderDevice {
     if (!shader) {
       throw new RenderDeviceError("Failed to allocate WebGL shader", "WEBGL_ALLOCATION_FAILED", { label });
     }
-    this.gl.shaderSource(shader, source);
-    this.gl.compileShader(shader);
+    try {
+      this.gl.shaderSource(shader, source);
+      this.gl.compileShader(shader);
+    } catch (error) {
+      this.gl.deleteShader(shader);
+      throw error;
+    }
     return shader;
   }
 
@@ -1351,6 +1387,68 @@ export class WebGL2Device implements RenderDevice {
     return target;
   }
 
+  /**
+   * Promote the renderer-owned, two-color selective target to an MSAA draw
+   * framebuffer. Its existing texture framebuffer remains the resolve target.
+   * This deliberately does not extend the public generic MRT contract.
+   */
+  promoteSelectiveBloomMultisample(target: RenderTarget, samples: number): boolean {
+    const gl = this.gl;
+    if (!(target instanceof WebGL2RenderTarget) || !this.renderTargets.has(target) || target.disposed ||
+        target.sampleCount !== 1 || target.depthHandle || target.colorTextures?.length !== 2 ||
+        target.colorTextures[0] !== target.colorTexture ||
+        target.colorTextures[1]?.format !== target.colorTexture.format ||
+        !Number.isInteger(samples) || samples <= 1) return false;
+    const format = target.colorTexture.format;
+    if (format !== "rgba16f" && format !== "rgba32f") return false;
+    const internal = resolveRenderTargetFormat(gl, format).internalFormat;
+    const supports = (value: GLenum): boolean => {
+      const counts = gl.getInternalformatParameter(gl.RENDERBUFFER, value, gl.SAMPLES) as Int32Array | null;
+      return counts !== null && Array.from(counts).includes(samples);
+    };
+    if (!supports(internal) || !supports(gl.DEPTH_COMPONENT24)) return false;
+    const previousDraw = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const previousRead = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const previousRenderbuffer = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
+    let framebuffer: WebGLFramebuffer | null = null;
+    const colors: WebGLRenderbuffer[] = [];
+    let depth: WebGLRenderbuffer | null = null;
+    let committed = false;
+    try {
+      framebuffer = gl.createFramebuffer();
+      if (!framebuffer) return false;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      for (let i = 0; i < 2; i += 1) {
+        const color = gl.createRenderbuffer();
+        if (!color) return false;
+        colors.push(color);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, color);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, internal, target.width, target.height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.RENDERBUFFER, color);
+      }
+      depth = gl.createRenderbuffer();
+      if (!depth) return false;
+      gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+      gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT24, target.width, target.height);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+      gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return false;
+      target.installSelectiveMultisample(samples, framebuffer, [colors[0]!, colors[1]!], depth);
+      committed = true;
+      return true;
+    } finally {
+      if (!committed) {
+        if (framebuffer) gl.deleteFramebuffer(framebuffer);
+        for (const color of colors) gl.deleteRenderbuffer(color);
+        if (depth) gl.deleteRenderbuffer(depth);
+      }
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, previousDraw);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousRead);
+      gl.bindRenderbuffer(gl.RENDERBUFFER, previousRenderbuffer);
+      this.stateCache.invalidate();
+    }
+  }
+
   setRenderTarget(target: RenderTarget | null): void {
     this.host.lifecycle.assertAlive();
     if (this.host.activeRenderTarget?.disposed) {
@@ -1418,6 +1516,11 @@ export class WebGL2Device implements RenderDevice {
     const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, target.drawFramebuffer);
     this.gl.bindFramebuffer(this.gl.DRAW_FRAMEBUFFER, target.framebuffer);
+    const mrt = target.selectiveMultisampleAttachments;
+    if (mrt) {
+      this.gl.readBuffer(this.gl.COLOR_ATTACHMENT0);
+      this.gl.drawBuffers([this.gl.COLOR_ATTACHMENT0, this.gl.NONE]);
+    }
     let mask = this.gl.COLOR_BUFFER_BIT;
     if (target.depthTextureHandle) mask |= this.gl.DEPTH_BUFFER_BIT;
     this.gl.blitFramebuffer(
@@ -1426,6 +1529,16 @@ export class WebGL2Device implements RenderDevice {
       mask,
       this.gl.NEAREST
     );
+    if (mrt) {
+      this.gl.readBuffer(this.gl.COLOR_ATTACHMENT1);
+      this.gl.drawBuffers([this.gl.NONE, this.gl.COLOR_ATTACHMENT1]);
+      this.gl.blitFramebuffer(
+        0, 0, target.width, target.height, 0, 0, target.width, target.height,
+        this.gl.COLOR_BUFFER_BIT, this.gl.NEAREST
+      );
+      this.gl.readBuffer(this.gl.COLOR_ATTACHMENT0);
+      this.gl.drawBuffers([this.gl.COLOR_ATTACHMENT0, this.gl.COLOR_ATTACHMENT1]);
+    }
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, previousFramebuffer);
     target.needsResolve = false;
     this.stateCache.invalidate();
@@ -1634,6 +1747,14 @@ export class WebGL2Device implements RenderDevice {
     if (this.host.post.bloomBrightExtractProgram) {
       this.gl.deleteProgram(this.host.post.bloomBrightExtractProgram);
       this.host.post.bloomBrightExtractProgram = null;
+    }
+    if (this.host.post.bloomBrightExtractSelectiveProgram) {
+      this.gl.deleteProgram(this.host.post.bloomBrightExtractSelectiveProgram);
+      this.host.post.bloomBrightExtractSelectiveProgram = null;
+    }
+    if (this.host.post.bloomPrefilterDownsampleSelectiveProgram) {
+      this.gl.deleteProgram(this.host.post.bloomPrefilterDownsampleSelectiveProgram);
+      this.host.post.bloomPrefilterDownsampleSelectiveProgram = null;
     }
     if (this.host.post.bloomBlurProgram) {
       this.gl.deleteProgram(this.host.post.bloomBlurProgram);

@@ -98,6 +98,115 @@ export interface FrameContributor extends RegistryEntry {
   dispose?(): void;
 }
 
+/**
+ * Internal provenance support for stock contributors. The owner retains the
+ * fingerprint privately and only certifies objects it constructed itself.
+ * Compare data descriptors, callback identity and phase contents without
+ * invoking contributor code or trusting an ID supplied by a registrant.
+ */
+export interface FrameContributorFingerprint {
+  readonly object: FrameContributor;
+  readonly descriptors: PropertyDescriptorMap;
+  readonly phases: readonly AuraFramePhase[];
+}
+
+export function captureFrameContributor(contributor: FrameContributor): FrameContributorFingerprint {
+  return {
+    object: contributor,
+    descriptors: Object.getOwnPropertyDescriptors(contributor),
+    phases: [...contributor.phases]
+  };
+}
+
+export function matchesFrameContributor(contributor: FrameContributor, fingerprint: FrameContributorFingerprint): boolean {
+  if (contributor !== fingerprint.object || Object.getPrototypeOf(contributor) !== Object.prototype) return false;
+  const actual = Object.getOwnPropertyDescriptors(contributor);
+  const expected = fingerprint.descriptors;
+  const keys = Reflect.ownKeys(expected);
+  if (Reflect.ownKeys(actual).length !== keys.length) return false;
+  for (const key of keys) {
+    const a = Reflect.get(actual, key) as PropertyDescriptor | undefined;
+    const b = Reflect.get(expected, key) as PropertyDescriptor | undefined;
+    if (!a || !b || a.value !== b.value || a.get !== b.get || a.set !== b.set ||
+        a.writable !== b.writable || a.configurable !== b.configurable || a.enumerable !== b.enumerable ||
+        a.get !== undefined || a.set !== undefined) return false;
+  }
+  const phases = actual.phases?.value;
+  return Array.isArray(phases) && Object.getPrototypeOf(phases) === Array.prototype &&
+    Reflect.ownKeys(phases).length === fingerprint.phases.length + 1 && phases.length === fingerprint.phases.length &&
+    fingerprint.phases.every((phase, index) => Object.getOwnPropertyDescriptor(phases, index)?.value === phase);
+}
+
+/**
+ * @internal Owner-only certificate for a stock contributor whose collect is
+ * audited and whose non-collect callbacks are safe only when they emit no
+ * passes or transparent draws. This is not a public contributor opt-in.
+ */
+const emptyStockContributors = new WeakMap<FrameContributor, {
+  readonly fingerprint: FrameContributorFingerprint;
+  readonly eligible?: () => boolean;
+}>();
+
+export function certifyEmptyStockContributor<T extends FrameContributor>(contributor: T, eligible?: () => boolean): T {
+  emptyStockContributors.set(contributor, { fingerprint: captureFrameContributor(contributor), eligible });
+  return contributor;
+}
+
+export function isEmptyStockContributor(contributor: FrameContributor): boolean {
+  const certificate = emptyStockContributors.get(contributor);
+  if (!certificate || !matchesFrameContributor(contributor, certificate.fingerprint)) return false;
+  try {
+    return certificate.eligible === undefined || certificate.eligible();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * @internal Engine/renderer bridge provenance, not an application opt-in.
+ * The engine bridge may register only its own stock feed objects and must
+ * supply a stock-implementation check. Copies, substituted callbacks and
+ * unrelated source objects do not inherit this provenance.
+ */
+type StockFrameFeedKind = "vfx" | "atmosphere";
+interface StockFrameFeed {
+  readonly kind: StockFrameFeedKind;
+  readonly owner: object;
+  readonly descriptors: PropertyDescriptorMap;
+  readonly validate: () => boolean;
+}
+const stockFrameFeeds = new WeakMap<object, StockFrameFeed>();
+
+export function registerStockFrameFeed<T extends object>(
+  feed: T,
+  kind: StockFrameFeedKind,
+  owner: object,
+  validate: () => boolean
+): T {
+  stockFrameFeeds.set(feed, { kind, owner, descriptors: Object.getOwnPropertyDescriptors(feed), validate });
+  return feed;
+}
+
+export function stockFrameFeedOwner(feed: unknown, kind: StockFrameFeedKind): object | null {
+  if (!feed || typeof feed !== "object" || Object.getPrototypeOf(feed) !== Object.prototype) return null;
+  const stock = stockFrameFeeds.get(feed);
+  if (!stock || stock.kind !== kind) return null;
+  const current = Object.getOwnPropertyDescriptors(feed);
+  const keys = Reflect.ownKeys(stock.descriptors);
+  if (Reflect.ownKeys(current).length !== keys.length) return null;
+  for (const key of keys) {
+    const a = Reflect.get(current, key) as PropertyDescriptor | undefined;
+    const b = Reflect.get(stock.descriptors, key) as PropertyDescriptor | undefined;
+    if (!a || !b || a.value !== b.value || a.get !== undefined || a.set !== undefined ||
+        a.writable !== b.writable || a.configurable !== b.configurable || a.enumerable !== b.enumerable) return null;
+  }
+  try {
+    return stock.validate() ? stock.owner : null;
+  } catch {
+    return null;
+  }
+}
+
 import { createRegistry } from "./core";
 
 const frameContributorRegistry = createRegistry<FrameContributor>("frameContributors");

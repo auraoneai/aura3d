@@ -8,7 +8,7 @@
  * feature is inactive (registry filters by flag) and no draw changes.
  */
 import { registerShaderChunk, registerShaderFeature } from "../contracts/program";
-import { registerFrameContributor } from "../contracts/frameGraph";
+import { certifyEmptyStockContributor, registerFrameContributor } from "../contracts/frameGraph";
 import {
   cameraFadeParsChunk,
   cameraFadeDiscardChunk,
@@ -19,4 +19,4 @@ import {
 registerShaderChunk(cameraFadeParsChunk);
 registerShaderChunk(cameraFadeDiscardChunk);
 registerShaderFeature(cameraFadeFeature);
-registerFrameContributor(createCameraFadeOffsetContributor());
+registerFrameContributor(certifyEmptyStockContributor(createCameraFadeOffsetContributor()));

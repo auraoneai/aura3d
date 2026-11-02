@@ -71,6 +71,11 @@ export function guardRendererPostprocessPlan(
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
 let postV2Modules: typeof import("../post/v2Entry") | undefined;
 
+/** A signal frame must not race the deferred v2 HDR stage driver. */
+export function postV2ModulesAvailable(): boolean {
+  return postV2Modules !== undefined;
+}
+
 /* 03-S18c: what the last `tryExecutePostGraphV2` call did — "v2" when the v2
  * stages (and C-13 custom passes) ran, "v2-modules-loading" while the
  * deferred bag is still loading, or `legacy-chain:<reason>` when the seam

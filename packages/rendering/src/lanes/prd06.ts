@@ -21,7 +21,7 @@ import { A3D_PRD06_DEFORM_GLSL } from "../shaders/deform/deform.glsl.js";
 import { registerPrd06WgslTwins } from "../shaders/deform/twins.js";
 import { registerPrd06DeformDepthFeature } from "../shaders/deform/depthFeature.js";
 import { registerPrd06DeformFeature } from "../shaders/deform/forwardFeature.js";
-import { registerSkinnedBoundsProvider } from "../contracts/shadows.js";
+import { registerSkinnedBoundsProvider, withStockDepthRegistration } from "../contracts/shadows.js";
 import { prd06SkinnedBounds } from "../renderer/SkinnedBounds.js";
 
 /* ------------------------------------------------------------------ flags */
@@ -252,6 +252,6 @@ export { applySkinningUniformsCached, bindBoneTexture, bindBoneTextureForSkinnin
 // `A3D_QR_ANIMATION_SKINNED_SHADOWS` resolves on — flag-off keeps the lane's
 // registries untouched (DepthPass consumption is C-11 real, Q-02-1).
 if (prd06FlagsOn("A3D_QR_ANIMATION_SKINNED_SHADOWS")) {
-  registerPrd06DeformDepthFeature(skinningPaletteCache);
+  withStockDepthRegistration(() => registerPrd06DeformDepthFeature(skinningPaletteCache));
   registerSkinnedBoundsProvider(prd06SkinnedBounds);
 }

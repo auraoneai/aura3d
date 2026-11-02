@@ -16,6 +16,7 @@ import { registerShaderChunk, registerShaderFeature, shaderChunk, type ShaderFea
 import type { RenderItem } from "../../contracts/renderItem";
 import type { Material } from "../../Material";
 import { MaterialInstance } from "../../MaterialInstance";
+import { stockFeatureVerifier } from "../../program/FeatureSelect";
 
 export type InstanceColorTarget = "base" | "emissive" | "both";
 
@@ -93,6 +94,8 @@ const FEATURE: ShaderFeature = {
   chunks: [A3D_INSTANCE_EMISSIVE_VTX_PARS_CHUNK, A3D_INSTANCE_EMISSIVE_VTX_END_CHUNK, A3D_INSTANCE_EMISSIVE_FRAG_PARS_CHUNK, A3D_INSTANCE_EMISSIVE_FRAG_CALL_CHUNK],
   hooks: ["vertex:pars", "vertex:end", "fragment:pars", "fragment:emissive"]
 };
+
+export const isStockInstanceColorTargetFeature = stockFeatureVerifier([FEATURE]);
 
 let registered = false;
 

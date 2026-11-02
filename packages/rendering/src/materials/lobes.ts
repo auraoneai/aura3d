@@ -17,6 +17,7 @@ import {
 } from "../contracts/materialLobes";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
+import { stockArrayMatches } from "../program/FeatureSelect";
 
 const FLAG = "A3D_QR_MATERIALS";
 /** Generator-owned map slots (u_*Map samplers), never rebound by a lobe. */
@@ -247,6 +248,35 @@ const LOBES: readonly MaterialLobe[] = [
     bind: () => {}
   })
 ];
+
+// The lobe registry exposes mutable objects. Capture the stock producer
+// identities and their complete relevant shape before anything registers them.
+// Selective bloom uses this only for authentication; it never calls feature
+// or bind to discover whether a lobe will be selected.
+const lobeKeys = ["id", "owner", "flag", "order", "feature", "bind", "glTFExtension", "chunks", "samplerSlots"] as const;
+const lobeChunkKeys = ["pars", "fragment", "ibl", "direct"] as const;
+const stockLobeSnapshots = new Map(LOBES.map((entry) => [entry, {
+  descriptors: lobeKeys.map((key) => Object.getOwnPropertyDescriptor(entry, key)),
+  chunks: lobeChunkKeys.map((key) => Object.getOwnPropertyDescriptor(entry.chunks, key)),
+  slots: [...entry.samplerSlots]
+}] as const));
+
+/** True only for an unmodified PRD-04 lobe object created by this module. */
+export function isStockPrd04Lobe(entry: MaterialLobe): boolean {
+  const snapshot = stockLobeSnapshots.get(entry);
+  if (!snapshot) return false;
+  for (let i = 0; i < lobeKeys.length; i++) {
+    const before = snapshot.descriptors[i];
+    const now = Object.getOwnPropertyDescriptor(entry, lobeKeys[i]!);
+    if (before === undefined ? now !== undefined : !now || !("value" in now) || now.value !== before.value) return false;
+  }
+  for (let i = 0; i < lobeChunkKeys.length; i++) {
+    const before = snapshot.chunks[i];
+    const now = Object.getOwnPropertyDescriptor(entry.chunks, lobeChunkKeys[i]!);
+    if (before === undefined ? now !== undefined : !now || !("value" in now) || now.value !== before.value) return false;
+  }
+  return stockArrayMatches(entry.samplerSlots, snapshot.slots);
+}
 
 let registered = false;
 

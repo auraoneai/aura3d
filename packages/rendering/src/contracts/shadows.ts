@@ -57,6 +57,53 @@ export function registerDepthVariantFeature(feature: DepthVariantFeature): () =>
   return depthVariantFeatures.register(feature);
 }
 
+/**
+ * @internal Stock lane registration bridge. The callback is the lane's own
+ * synchronous registration, not an application eligibility callback. Snapshot
+ * only objects actually added by that call, without selecting or binding them.
+ */
+const stockDepthFeatures = new WeakMap<DepthVariantFeature, {
+  readonly descriptors: PropertyDescriptorMap;
+  readonly arrays: ReadonlyMap<string, readonly unknown[]>;
+}>();
+
+export function withStockDepthRegistration<T>(register: () => T): T {
+  const before = new Set(depthVariantFeatures.all());
+  const result = register();
+  for (const feature of depthVariantFeatures.all()) {
+    if (before.has(feature)) continue;
+    const descriptors = Object.getOwnPropertyDescriptors(feature);
+    const arrays = new Map<string, readonly unknown[]>();
+    for (const key of ["passes", "chunks", "hooks"] as const) {
+      const value = descriptors[key]?.value;
+      if (Array.isArray(value)) arrays.set(key, [...value]);
+    }
+    stockDepthFeatures.set(feature, { descriptors, arrays });
+  }
+  return result;
+}
+
+export function isStockDepthVariantFeature(feature: DepthVariantFeature): boolean {
+  const snapshot = stockDepthFeatures.get(feature);
+  if (!snapshot || Object.getPrototypeOf(feature) !== Object.prototype) return false;
+  const current = Object.getOwnPropertyDescriptors(feature);
+  const keys = Reflect.ownKeys(snapshot.descriptors);
+  if (Reflect.ownKeys(current).length !== keys.length) return false;
+  for (const key of keys) {
+    const a = Reflect.get(current, key) as PropertyDescriptor | undefined;
+    const b = Reflect.get(snapshot.descriptors, key) as PropertyDescriptor | undefined;
+    if (!a || !b || a.value !== b.value || a.get !== undefined || a.set !== undefined ||
+        a.writable !== b.writable || a.configurable !== b.configurable || a.enumerable !== b.enumerable) return false;
+  }
+  for (const [key, expected] of snapshot.arrays) {
+    const actual = current[key]?.value;
+    if (!Array.isArray(actual) || Object.getPrototypeOf(actual) !== Array.prototype ||
+        actual.length !== expected.length || Reflect.ownKeys(actual).length !== expected.length + 1 ||
+        !expected.every((value, index) => Object.getOwnPropertyDescriptor(actual, index)?.value === value)) return false;
+  }
+  return true;
+}
+
 /** Depth-variant features active under `flags`, in (order, id) order (#751, 02-DEPTH). */
 export function depthVariantFeaturesFor(flags: QrFlags): readonly DepthVariantFeature[] {
   return depthVariantFeatures.active(flags);

@@ -12,6 +12,7 @@ import { registerWorldDiagnosticsSection } from "../production-runtime/world/Wor
 import { registerWorldNodeHandlers } from "../agent-api/compiler/world.js";
 import { registerWorldPhase6 } from "../agent-api/world/register.js";
 import { registerPrd10WindFeatures, registerPrd10FoliageLobe, registerPrd10UnderwaterFeatures, registerPrd10Chunks } from "@aura3d/rendering/world";
+import { withStockDepthRegistration } from "@aura3d/rendering/contracts";
 // 10-CHUNKS: explicit call — the lanes barrel's side-effect registration is
 // dropped by "sideEffects": false in chunked builds. T0-23: imported through
 // the `@aura3d/rendering/world` subpath, not a cross-package relative path.
@@ -45,7 +46,7 @@ registerWorldNodeHandlers();
 registerWorldPhase6();
 // T3.3/T3.4: Path G program-cache features (wind deform + foliage lobe) —
 // registered unconditionally; the registries gate them on A3D_QR_WORLD.
-registerPrd10WindFeatures();
+withStockDepthRegistration(() => registerPrd10WindFeatures());
 registerPrd10FoliageLobe();
 // T4.5: `prd10.caustics` ShaderFeature + `prd10.underwaterDistortion` post pass
 // (A3D_QR_WORLD-gated by the registries).

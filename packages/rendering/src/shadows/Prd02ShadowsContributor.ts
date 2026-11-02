@@ -14,7 +14,7 @@
 import { PointLight, SpotLight, type Light, type Vec3 } from "@aura3d/scene";
 import type { CollectedLight } from "../LightCollector";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
-import type { FrameContributor, FrameContributorContext } from "../contracts/frameGraph";
+import { captureFrameContributor, matchesFrameContributor, type FrameContributorFingerprint, type FrameContributor, type FrameContributorContext } from "../contracts/frameGraph";
 import { SHADOW_BLACKBOARD_KEY } from "../contracts/shadows";
 import { sceneFromSource } from "../renderer/RenderShared";
 import type { Prd02ShadowFrameUniforms, Prd02ShadowSystem, ShadowSystemConfigInput, ShadowSystemLocalLight } from "./ShadowSystem";
@@ -194,8 +194,16 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
   }
 }
 
+const selectiveContributors = new WeakMap<FrameContributor, FrameContributorFingerprint>();
+
+/** Only this factory's unchanged stock callbacks carry the offscreen contract. */
+export function isStockPrd02ShadowsContributor(contributor: FrameContributor): boolean {
+  const fingerprint = selectiveContributors.get(contributor);
+  return fingerprint !== undefined && matchesFrameContributor(contributor, fingerprint);
+}
+
 export function createPrd02ShadowsContributor(): FrameContributor {
-  return {
+  const contributor: FrameContributor = {
     id: "prd02.shadows",
     owner: "prd02",
     flag: "A3D_QR_LIGHTING",
@@ -217,4 +225,6 @@ export function createPrd02ShadowsContributor(): FrameContributor {
         ? [new Prd02ShadowsRenderPass(ctx)] : [];
     }
   };
+  selectiveContributors.set(contributor, captureFrameContributor(contributor));
+  return contributor;
 }

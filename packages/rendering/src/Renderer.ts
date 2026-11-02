@@ -17,7 +17,7 @@ import { Frustum, type Ray } from "@aura3d/math";
 import { createRenderDevice, type RenderBackendOptions } from "./RenderBackend";
 import { type LdrPostprocessPassDescriptor, type RenderDevice, RenderDeviceError, type RenderDeviceDiagnostics, type RenderTarget, type RenderTargetDescriptor } from "./RenderDevice";
 import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, EnvironmentBackgroundPass, type EnvironmentBackgroundOptions } from "./EnvironmentBackgroundPass";
-import { ForwardPass, type EnvironmentLightingOptions, type ForwardEnvironmentFogOptions, type ForwardShadowMapOptions, type RenderItem, type RenderMaterial, type SkinningPaletteBinding } from "./ForwardPass";
+import { ForwardPass, type EnvironmentLightingOptions, type ForwardEnvironmentFogOptions, type ForwardShadowMapOptions, type RenderItem, type RenderMaterial, type SkinningPaletteBinding, type SelectiveBloomFrame } from "./ForwardPass";
 import { CascadedShadowMaps, CascadedShadowPass, shadowCameraFitViewProjectionMatrix } from "./CascadedShadowMaps";
 import { type CollectedLight, LightCollector } from "./LightCollector";
 import { Geometry, type Bounds3 } from "./Geometry";
@@ -46,7 +46,9 @@ import { PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
-import { consumeTaaHistoryWritten } from "./renderer/postSkipped";
+import { consumeTaaHistoryWritten, setSelectiveBloomSkipped } from "./renderer/postSkipped";
+import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomRequested, selectiveContributorContract, transferUnmergedBloomWeights, type SelectiveBloomTarget } from "./renderer/SelectiveBloom";
+import { webgl2DeviceHost } from "./webgl2/Counters";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
 import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
@@ -471,6 +473,7 @@ export class Renderer {
    * paid a full target build-and-teardown every frame.
    */
   private forwardColorTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
+  private selectiveBloomTarget: (SelectiveBloomTarget & { readonly key: string }) | null = null;
   private readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
   private width: number;
   private height: number;
@@ -514,7 +517,11 @@ export class Renderer {
     armFirstFrameGate();
     if (options.qrFlags) setRendererQrFlags(options.qrFlags, device);
     this.temporalHistory = temporalHistory;
-    this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
+    this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => {
+      this.temporalHistory.dispose();
+      this.selectiveBloomTarget?.dispose();
+      this.selectiveBloomTarget = null;
+    });
     this.canvas = options.canvas;
     this.width = options.width ?? inferInitialCanvasDimension(options.canvas, "width");
     this.height = options.height ?? inferInitialCanvasDimension(options.canvas, "height");
@@ -700,7 +707,11 @@ export class Renderer {
     if (width <= 0 || height <= 0 || !Number.isInteger(width) || !Number.isInteger(height)) {
       throw new RenderDeviceError("Renderer dimensions must be positive integers", "INVALID_FRAME_SIZE", { width, height });
     }
-    if (this.width !== width || this.height !== height) this.temporalHistory.dispose();
+    if (this.width !== width || this.height !== height) {
+      this.temporalHistory.dispose();
+      this.selectiveBloomTarget?.dispose();
+      this.selectiveBloomTarget = null;
+    }
     this.width = width;
     this.height = height;
     this.resizeCanvas(width, height);
@@ -1049,7 +1060,9 @@ export class Renderer {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
       if (autoFrame) {
         cameraViewProjection = autoFrame.viewProjectionMatrix;
+        const previousItems = items;
         items = applyViewProjection(items, autoFrame.viewProjectionMatrix);
+        transferBloomWeightReferences(previousItems, items, collectedItems.bloomWeightAssignments);
         cameraPosition = sourceCameraPosition ?? autoFrame.cameraPosition;
       }
     }
@@ -1057,6 +1070,14 @@ export class Renderer {
     this.assertViewsSupported(postprocess);
     if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
+    const selectiveFrame: SelectiveBloomFrame = { enabled: false, valid: true, weights: collectedItems.bloomWeightAssignments };
+    // A contributor can retain the target/depth during collect or even draw
+    // immediately.  Select the frame's target before calling any contributor,
+    // and never replace it if a later signal check declines.
+    let selectiveRequested = Boolean(postprocess?.bloom) &&
+      (Boolean(collectedItems.bloomRequestedBeforeBatching) || selectiveBloomRequested(postprocess, items));
+    let selectiveCandidate = false;
+    let selectiveEarlyReason: string | null = collectedItems.bloomMetadataUnsafe ? "batching" : null;
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     // C-05 (§8.4): under A3D_QR_CORE_OUTPUT encode happens once, in OutputPass.
@@ -1102,9 +1123,26 @@ export class Renderer {
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
-      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
+      let forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
+      let targetBound = false;
+      if (selectiveRequested && !selectiveEarlyReason) {
+        this.device.setRenderTarget(forwardTarget);
+        targetBound = true;
+        const flags = route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device);
+        selectiveEarlyReason = selectiveBloomDecline(this.device, postprocess, forwardTarget, flags, Boolean(environmentBackground), this.host.post.v2SeamDeclineFor(postprocess), source);
+        if (!selectiveEarlyReason) {
+          const candidate = this.selectiveBloomCandidate(forwardTarget);
+          if (candidate) {
+            forwardTarget = candidate;
+            selectiveCandidate = true;
+            frameHooks.observeSelectiveBloom(selectiveFrame, (contributor) => selectiveContributorContract(contributor, this.device));
+          } else {
+            selectiveEarlyReason = sampleCount > 1 ? "signal-msaa-target-unavailable" : "signal-target-unavailable";
+          }
+        }
+      }
       ownedTargets.push(forwardTarget);
-      this.device.setRenderTarget(forwardTarget);
+      if (!targetBound || selectiveCandidate) this.device.setRenderTarget(forwardTarget);
       frameHooks.setForwardTarget(forwardTarget);
     } else if (qrOutput) {
       // C-05: the v2 scene always renders into the HDR target — also on the
@@ -1121,6 +1159,8 @@ export class Renderer {
     try {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
+      selectiveRequested = selectiveRequested || (Boolean(postprocess?.bloom) && selectiveBloomRequested(postprocess, items));
+      setSelectiveBloomSkipped(this.canvas ?? this.device, selectiveRequested ? "not-prepared" : undefined);
       // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
       // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
       // (frustum-culled casters rejoin); flag-off keeps the visible items only.
@@ -1178,6 +1218,21 @@ export class Renderer {
         this.device.setRenderTarget(explicitRenderTarget ?? null);
       }
       this.clearAndApplyView(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
+      if (selectiveCandidate) {
+        // Clear the signal immediately after the ordinary clear, before even
+        // pass-planning callbacks can touch the selected target.
+        const format = ownedTargets[0]!.colorTexture.format;
+        const maxRadiance = format === "rgba16f" ? 65504 : 3.402823466e38;
+        const gl = webgl2DeviceHost(this.device)?.gl;
+        const clear = gl?.getParameter(gl.COLOR_CLEAR_VALUE) as Float32Array | undefined;
+        if (!clear || clear.length < 3) {
+          selectiveEarlyReason = "signal-target-unavailable";
+        } else {
+          const half = (value: number): number => Math.max(-maxRadiance, Math.min(maxRadiance, value)) * 0.5;
+          this.device.clearRenderTarget!([half(clear[0]!), half(clear[1]!), half(clear[2]!), 1], 1);
+          selectiveFrame.maxRadiance = maxRadiance;
+        }
+      }
       if (environmentBackground) {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
@@ -1267,7 +1322,7 @@ export class Renderer {
         this.graph.addPass(new InterleavedTransparentPass({ ...shared, items: [] }, split.transparent, queues, contributorCtx, [lastColorResource]));
         frameHooks.addPasses(this.graph, "after-transparent", items);
       } else {
-        this.graph.addPass(new ForwardPass({
+        const forwardPass = new ForwardPass({
           items,
           lights,
           environmentLighting,
@@ -1282,8 +1337,16 @@ export class Renderer {
           customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
-          shaderLibrary: this.shaderLibrary
-        }));
+          shaderLibrary: this.shaderLibrary,
+          ...(selectiveRequested ? { selectiveBloom: selectiveFrame } : {})
+        });
+        if (selectiveRequested && postprocess && ownedTargets[0]) {
+          const flags = route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device);
+          const reason = selectiveEarlyReason ?? (!selectiveCandidate ? "target-not-selected" :
+            this.prepareSelectiveBloom(forwardPass, selectiveFrame, postprocess, flags, Boolean(environmentBackground), ownedTargets[0], source));
+          setSelectiveBloomSkipped(this.canvas ?? this.device, reason ?? undefined);
+        }
+        this.graph.addPass(forwardPass);
         frameHooks.addPasses(this.graph, "after-opaque", items);
         frameHooks.addPasses(this.graph, "transmission", items);
         frameHooks.addPasses(this.graph, "transparent", items);
@@ -1320,6 +1383,7 @@ export class Renderer {
         // under the "post" scope (lane 03 owns the chain internals).
         this.scopePost(() => {
           frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
+          postprocess = this.finishSelectiveBloom(postprocess!, selectiveFrame, selectiveRequested, route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device), Boolean(environmentBackground), ownedTargets[0], source);
           this.executePostprocess(postprocess!, ownedTargets, explicitRenderTarget);
         });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
@@ -1446,7 +1510,9 @@ export class Renderer {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
       if (autoFrame) {
         cameraViewProjection = autoFrame.viewProjectionMatrix;
+        const previousItems = items;
         items = applyViewProjection(items, autoFrame.viewProjectionMatrix);
+        transferBloomWeightReferences(previousItems, items, collectedItems.bloomWeightAssignments);
         cameraPosition = sourceCameraPosition ?? autoFrame.cameraPosition;
       }
     }
@@ -1454,6 +1520,8 @@ export class Renderer {
     this.assertViewsSupported(postprocess);
     if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
+    const selectiveFrame: SelectiveBloomFrame = { enabled: false, valid: true, weights: collectedItems.bloomWeightAssignments };
+    let selectiveRequested = false;
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     // C-05 (§8.4): under A3D_QR_CORE_OUTPUT encode happens once, in OutputPass.
@@ -1518,6 +1586,8 @@ export class Renderer {
     try {
       this.lastShadowEvidence = null;
       items = frameHooks.collect(items);
+      selectiveRequested = Boolean(postprocess?.bloom) && (collectedItems.bloomRequestedBeforeBatching || selectiveBloomRequested(postprocess, items));
+      setSelectiveBloomSkipped(this.canvas ?? this.device, selectiveRequested ? "not-prepared" : undefined);
       // C-28 (#90): scope the shadow-phase CPU submission for frameStats.
       // 02-S5: under A3D_QR_LIGHTING casters come from the pre-cull set
       // (frustum-culled casters rejoin); flag-off keeps the visible items only.
@@ -1661,7 +1731,7 @@ export class Renderer {
         this.graph.addPass(new InterleavedTransparentPass({ ...shared, items: [] }, split.transparent, queues, contributorCtx, [lastColorResource]));
         frameHooks.addPasses(this.graph, "after-transparent", items);
       } else {
-        this.graph.addPass(new ForwardPass({
+        const forwardPass = new ForwardPass({
           items,
           lights,
           environmentLighting,
@@ -1676,8 +1746,16 @@ export class Renderer {
           customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
-          shaderLibrary: this.shaderLibrary
-        }));
+          shaderLibrary: this.shaderLibrary,
+          ...(selectiveRequested ? { selectiveBloom: selectiveFrame } : {})
+        });
+        if (selectiveRequested && postprocess && ownedTargets[0]) {
+          // Async frames yield between forward and bloom (post-hdr hooks and
+          // the deferred v2 import). Another submission could overwrite a
+          // reused signal target during that gap, so keep the ordinary path.
+          setSelectiveBloomSkipped(this.canvas ?? this.device, collectedItems.bloomMetadataUnsafe ? "batching" : "async-frame");
+        }
+        this.graph.addPass(forwardPass);
         frameHooks.addPasses(this.graph, "after-opaque", items);
         frameHooks.addPasses(this.graph, "transmission", items);
         frameHooks.addPasses(this.graph, "transparent", items);
@@ -1715,6 +1793,7 @@ export class Renderer {
         await this.scopePost(async () => {
           await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
           if (this.disposed || this.device.disposed) return;
+          postprocess = this.finishSelectiveBloom(postprocess!, selectiveFrame, selectiveRequested, route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device), Boolean(environmentBackground), ownedTargets[0], source);
           await this.executePostprocessAsync(postprocess!, ownedTargets, explicitRenderTarget);
         });
         if (!this.disposed && !this.device.disposed && postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.commitTemporalHistory(Boolean(postprocess.taa));
@@ -1910,6 +1989,8 @@ export class Renderer {
     this.shadowDepthTarget = null;
     this.forwardColorTarget?.target.dispose();
     this.forwardColorTarget = null;
+    this.selectiveBloomTarget?.dispose();
+    this.selectiveBloomTarget = null;
     this.hdrSceneTarget?.target.dispose();
     this.hdrSceneTarget = null;
     this.sceneDepthCopyTarget?.dispose();
@@ -1922,7 +2003,7 @@ export class Renderer {
   }
   /** True for renderer-lifetime targets that must survive end-of-frame disposal. */
   private isReusedTarget(target: RenderTarget): boolean {
-    return target === this.forwardColorTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget;
+    return target === this.forwardColorTarget?.target || target === this.selectiveBloomTarget?.target || target === this.shadowDepthTarget || target === this.hdrSceneTarget?.target || target === this.sceneDepthCopyTarget;
   }
 
   /**
@@ -2011,6 +2092,89 @@ export class Renderer {
     this.forwardColorTarget = { target, key };
     return target;
   }
+
+  /** Select a candidate before contributors see the target or scene depth. */
+  private selectiveBloomCandidate(original: RenderTarget): RenderTarget | null {
+    const format = original.colorTexture.format;
+    if (format !== "rgba16f" && format !== "rgba32f") return null;
+    const samples = original.sampleCount ?? 1;
+    const key = `${this.width}x${this.height}:${format}:${original.depthTexture ? "texture" : "renderbuffer"}:${samples}`;
+    let target = this.selectiveBloomTarget?.key === key && !this.selectiveBloomTarget.target.disposed
+      ? this.selectiveBloomTarget.target : undefined;
+    if (!target) {
+      const created = createSelectiveBloomTarget(this.device, this.width, this.height, format, Boolean(original.depthTexture), samples);
+      if (!created) return null;
+      this.selectiveBloomTarget?.dispose();
+      this.selectiveBloomTarget = { ...created, key };
+      target = created.target;
+    }
+    return target.colorTextures?.[1] ? target : null;
+  }
+
+  /** A late decline never changes the chosen target or replays callbacks. */
+  private prepareSelectiveBloom(
+    pass: ForwardPass,
+    frame: SelectiveBloomFrame,
+    post: RendererPostProcessOptions,
+    flags: QrFlags,
+    hasBackground: boolean,
+    target: RenderTarget,
+    source: unknown
+  ): string | null {
+    if (!frame.valid) return frame.invalidReason ?? "frame-contributor-output";
+    const reason = selectiveBloomDecline(this.device, post, target, flags, hasBackground, this.host.post.v2SeamDeclineFor(post), source);
+    if (reason) return reason;
+    const programReason = pass.prepareSelectiveBloom(this.device);
+    if (programReason) return programReason;
+    frame.enabled = true;
+    return null;
+  }
+
+  /** Only the signal from this successfully completed frame may reach bloom. */
+  private finishSelectiveBloom(
+    post: RendererPostProcessOptions,
+    frame: SelectiveBloomFrame,
+    requested: boolean,
+    flags: QrFlags,
+    hasBackground: boolean,
+    target: RenderTarget | undefined,
+    source: unknown
+  ): RendererPostProcessOptions {
+    // Neither public bloom bag may smuggle an unverified alpha/texture signal
+    // into the legacy chain. Preserve every other option on fallback. A frame
+    // without any selective key returns `post` itself (no copy).
+    const signalKeys = (bag: object): boolean =>
+      "selective" in bag || "signalTexture" in bag || "selectiveRequested" in bag || "selectiveUnsupportedSource" in bag;
+    let sanitized = post;
+    if (post.bloom && typeof post.bloom === "object" && signalKeys(post.bloom)) {
+      const { selective, signalTexture, selectiveRequested, selectiveUnsupportedSource, ...rest } = post.bloom as unknown as Record<string, unknown>;
+      if (selective !== undefined || signalTexture !== undefined || selectiveRequested !== undefined || selectiveUnsupportedSource !== undefined) {
+        sanitized = { ...post, bloom: rest as unknown as RendererPostProcessOptions["bloom"] };
+      }
+    }
+    const pipeline = sanitized.pipeline as Record<string, unknown> | undefined;
+    const bloom = pipeline?.bloom;
+    if (!pipeline || !bloom || typeof bloom !== "object") return sanitized;
+    if (!requested && !signalKeys(bloom)) return sanitized;
+    const {
+      selective: _selective,
+      signalTexture: _signalTexture,
+      selectiveRequested: _selectiveRequested,
+      selectiveUnsupportedSource: _selectiveUnsupportedSource,
+      ...rest
+    } = bloom as Record<string, unknown>;
+    let signal: Texture | undefined;
+    if (requested && frame.enabled && target) {
+      const reason = !frame.valid ? frame.invalidReason ?? "forward-program-fallback" :
+        selectiveBloomDecline(this.device, post, target, flags, hasBackground, this.host.post.v2SeamDeclineFor(post), source);
+      signal = reason ? undefined : target.colorTextures?.[1];
+      setSelectiveBloomSkipped(this.canvas ?? this.device, reason ?? (signal ? undefined : "signal-target-unavailable"));
+    }
+    if (!signal && _selective === undefined && _signalTexture === undefined &&
+        _selectiveRequested === undefined && _selectiveUnsupportedSource === undefined) return sanitized;
+    return { ...sanitized, pipeline: { ...pipeline, bloom: { ...rest, ...(signal ? { selective: true, signalTexture: signal } : {}) } } };
+  }
+
   /** PRD 11: this device's app-bound live C-27 tier (A3D_QR_TIERS on), else undefined. */
   private liveQualityTier(): LiveQualityTierSource | undefined {
     return prd11LiveQualityTier(rendererQrFlags(this.device));
@@ -2361,7 +2525,7 @@ function collectRenderItemsWithDiagnostics(
   camera?: Camera,
   keepCulledShadowCasters = false,
   cameraLayerMask?: number
-): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly cullingFrustum?: Frustum } {
+): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly cullingFrustum?: Frustum; readonly bloomRequestedBeforeBatching?: boolean; readonly bloomMetadataUnsafe?: boolean; readonly bloomWeightAssignments?: WeakMap<RenderItem, number> } {
   const diagnostics = createRenderCollectionDiagnostics();
   // 02-S5 (A3D_QR_LIGHTING): frustum-culled items that still cast. A caster
   // outside the view (a pole behind the camera under a low sun) must reach
@@ -2384,6 +2548,9 @@ function collectRenderItemsWithDiagnostics(
     items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters, cameraLayerMask));
   }
   const explicitItems: RenderItem[] = [];
+  let bloomRequestedBeforeBatching = false;
+  let bloomMetadataUnsafe = false;
+  let bloomWeightAssignments: WeakMap<RenderItem, number> | undefined;
   if (source.collectRenderItems) {
     explicitItems.push(...source.collectRenderItems());
   }
@@ -2395,10 +2562,34 @@ function collectRenderItemsWithDiagnostics(
     cullingFrustum ??= explicitFrustum;
     const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters, cameraLayerMask ?? camera?.layerMask);
     const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
+    const transferred = (source.staticBatching || source.staticMeshConsolidation) && collectPostprocess(source)?.bloom
+      ? transferUnmergedBloomWeights(visibleItems, optimizedItems)
+      : { weights: undefined, requested: false, unsafe: false };
+    bloomRequestedBeforeBatching = transferred.requested;
+    bloomMetadataUnsafe = transferred.unsafe;
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
+    if (transferred.weights) {
+      bloomWeightAssignments = new WeakMap<RenderItem, number>();
+      projectedItems.forEach((item, index) => bloomWeightAssignments!.set(item, transferred.weights![index]!));
+    }
     items.push(...projectedItems);
   }
-  return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(cullingFrustum ? { cullingFrustum } : {}) };
+  return {
+    items, diagnostics, culledShadowCasters: culledShadowCasters ?? [],
+    ...(bloomRequestedBeforeBatching ? { bloomRequestedBeforeBatching: true } : {}),
+    ...(bloomMetadataUnsafe ? { bloomMetadataUnsafe: true } : {}),
+    ...(bloomWeightAssignments ? { bloomWeightAssignments } : {}),
+    ...(cullingFrustum ? { cullingFrustum } : {})
+  };
+}
+
+/** Auto-framing clones items; keep only the private bloom metadata in step. */
+function transferBloomWeightReferences(before: readonly RenderItem[], after: readonly RenderItem[], weights?: WeakMap<RenderItem, number>): void {
+  if (!weights) return;
+  before.forEach((item, index) => {
+    const weight = weights.get(item);
+    if (weight !== undefined && after[index]) weights.set(after[index]!, weight);
+  });
 }
 function collectSceneRenderItems(
   scene: Scene,

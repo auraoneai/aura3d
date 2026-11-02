@@ -10,15 +10,19 @@ import {
   selectiveBloomActive
 } from "../../../../packages/rendering/src/postprocess/NativeBloomPyramid";
 import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
+import { postSkippedReasons, resetPostSkipped, setSelectiveBloomSkipped } from "../../../../packages/rendering/src/renderer/postSkipped";
 import { createRootPostPipeline } from "../../../../packages/engine/src/agent-api/postBridge";
 import { effects } from "../../../../packages/engine/src/agent-api/nodes/effects.composite";
 
 /**
- * GU47 E-C WP-3 item 7: per-material `bloom` weight (0..2, default 1) carried
- * in HDR alpha and applied by the bloom prefilter. The prefilter read landed
- * (eint); the forward weight write did not, so the bridge withholds the flag
- * and reports POST_SELECTIVE_BLOOM_UNAVAILABLE. This proves the weight math,
- * the shader helper and the bridge behaviour.
+ * GU47 E-C WP-3 item 7: per-material `bloom` weight (0..2, default 1) applied
+ * by the bloom prefilter. HDR alpha is never the weight (it carries coverage
+ * and the S2 indirect-fraction tag). The bridge only forwards a request
+ * marker; the renderer writes a separate half-weighted signal attachment when
+ * it can verify the whole frame, and otherwise keeps ordinary bloom and
+ * reports `POST_SELECTIVE_BLOOM_UNAVAILABLE:<reason>` per frame in
+ * `diagnostics().post.skipped`. This proves the weight math, the shader
+ * helper, the bridge request and the reporting channel.
  */
 
 describe("bloom weight math", () => {
@@ -61,16 +65,38 @@ describe("bridge: pipeline.bloom.selective", () => {
   const bloomNode = () => effects.bloom({ intensity: 0.5 }).toJSON();
   const box = (material: Record<string, unknown>) => ({ kind: "primitive", primitive: "box", material });
 
-  // GU47 phase 2 (receipt effects-selective-bloom: the weight-0 wall bloomed by 157): no forward
-  // program writes the weight, and generated programs already put the S2 indirect-fraction tag
-  // (2 + f_ind) in HDR alpha, which the selective prefilter clamps to weight 2 for every opaque
-  // pixel. The bridge therefore keeps bloom unweighted and reports why.
-  it("a weight other than 1 is reported unavailable and never stamps the prefilter's alpha weight", () => {
+  // GU47 phase 2 (receipt effects-selective-bloom: the weight-0 wall bloomed by 157): generated
+  // programs put the S2 indirect-fraction tag (2 + f_ind) in HDR alpha, which an alpha-weighted
+  // prefilter clamps to weight 2 for every opaque pixel. The bridge therefore never stamps
+  // `selective`; it forwards a request only, and availability is decided (and reported, below)
+  // per frame by the renderer, which alone can verify the target, programs and producers.
+  it("a weight other than 1 is forwarded as a request only and never stamps the prefilter's alpha weight", () => {
     const { options, diagnostics } = result(bloomNode(), box({ color: "#fff", bloom: 0 }), box({ color: "#fa0", emissive: "#fa0" }));
     expect((options as Record<string, any>).bloom && "selective" in (options as Record<string, any>).bloom).toBe(false);
-    expect((options as Record<string, any>).bloom).toEqual(derive(bloomNode(), box({ color: "#fff" })).bloom);
-    expect(diagnostics.map((d) => d.code)).toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE");
+    expect((options as Record<string, any>).bloom).toEqual({ ...derive(bloomNode(), box({ color: "#fff" })).bloom, selectiveRequested: true });
+    // No compile-time claim either way: the bridge cannot know whether a frame can carry the signal.
+    expect(diagnostics.map((d) => d.code)).not.toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE");
     expect(result(bloomNode(), box({ color: "#fff" })).diagnostics.map((d) => d.code)).not.toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE");
+  });
+
+  it("a weight on a producer the renderer cannot carry is marked unsupported for the per-frame report", () => {
+    const bag = derive(bloomNode(), { kind: "sprite", material: { color: "#fff", bloom: 0 } }).bloom;
+    expect(bag).toMatchObject({ selectiveRequested: true, selectiveUnsupportedSource: true });
+    expect("selective" in bag).toBe(false);
+  });
+
+  it("the renderer's per-frame fallback reason reaches post.skipped for that canvas only", () => {
+    resetPostSkipped();
+    const first = {};
+    const second = {};
+    setSelectiveBloomSkipped(first, "frame-contributor");
+    setSelectiveBloomSkipped(second, undefined);
+    expect(postSkippedReasons(first)).toContain("POST_SELECTIVE_BLOOM_UNAVAILABLE:frame-contributor");
+    expect(postSkippedReasons(second).some((reason) => reason.startsWith("POST_SELECTIVE_BLOOM_UNAVAILABLE"))).toBe(false);
+    // A later successful frame clears that canvas's reason.
+    setSelectiveBloomSkipped(first, undefined);
+    expect(postSkippedReasons(first).some((reason) => reason.startsWith("POST_SELECTIVE_BLOOM_UNAVAILABLE"))).toBe(false);
+    resetPostSkipped();
   });
 
   it("the generated forward path's alpha tag would read as weight 2 (why the stamp is withheld)", () => {

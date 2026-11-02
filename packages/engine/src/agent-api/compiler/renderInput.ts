@@ -304,11 +304,14 @@ export function createProductionRuntimeRendererInput(
     const localActorItems = modelInstanceAttach.instanceTransforms
       ? entry.actor.collectRenderItems({ modelMatrix: identityMat4(), ...(wrinkleStrength === undefined ? {} : { wrinkleStrength }) })
       : undefined;
+    // The live material rides on the runtime snapshot this frame already took.
+    const bloomMaterial = currentState.runtimeMaterial ?? currentNode.material;
     items.push(...actorItems.map((item, itemIndex) => {
       const nativeMatrices = modelInstanceAttach.instanceTransforms;
       const localItem = localActorItems?.[itemIndex];
       if (nativeMatrices && !localItem) throw new Error("Instanced GLB mesh collection changed within one frame");
       return { ...item, label: `actor-${actorIndex}:mesh-${itemIndex}:${item.label ?? "mesh"}`, castShadow: currentNode.castShadow,
+        ...(bloomMaterial?.bloom === undefined ? {} : { bloomWeight: bloomMaterial.bloom }),
         // threejs-parity L7/SG-09: spec parity fields (see primitive path below).
         renderOrder: currentNode.renderOrder, frustumCulled: currentNode.frustumCulled,
         layerMask: currentNode.layers, userData: currentNode.userData,
@@ -368,6 +371,9 @@ export function createProductionRuntimeRendererInput(
       geometry: resource.geometry,
       ...(resource.shadowGeometry ? { shadowGeometry: resource.shadowGeometry } : {}),
       material: drawMaterial,
+      ...((currentState.node.lod ? resource.materialSpec : currentState.node.material)?.bloom === undefined ? {} : {
+        bloomWeight: (currentState.node.lod ? resource.materialSpec : currentState.node.material)!.bloom
+      }),
       modelMatrix: prd01ModelMatrixCache?.modelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time) ?? createModelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
@@ -412,7 +418,29 @@ export function createProductionRuntimeRendererInput(
   };
   // Direct path (quality "auto", no authored post/HDR/transmission): no postprocess object at all, so the
   // renderer draws straight into the canvas instead of an HDR target plus a tone-mapping present pass.
-  const builtPostprocess = isDirectRenderPath(canvas) ? undefined : (postFlagOn ? undefined : injectedPostprocess) ?? buildPostprocess();
+  let builtPostprocess = isDirectRenderPath(canvas) ? undefined : (postFlagOn ? undefined : injectedPostprocess) ?? buildPostprocess();
+  // Non-primitive/model producers do not carry this signal through the
+  // production bridge. Preserve their request even on the legacy post route,
+  // including live material updates, so the renderer reports its fallback.
+  // Only bloom frames look, and only nodes that author a material are read
+  // (a live snapshot per runtime node per frame would cost every scene).
+  const bloomFrame = typeof builtPostprocess === "object" && builtPostprocess !== null && Boolean(builtPostprocess.bloom);
+  const unknownBloomSource = bloomFrame && groups.flatten(snapshot.nodes).some((node) => {
+    if (node.kind === "primitive" || node.kind === "model" || !("material" in node)) return false;
+    const id = "runtime" in node ? node.runtime?.id : undefined;
+    const live = id ? (runtimeNodes?.get(id)?.snapshot() as unknown as { readonly material?: { readonly bloom?: unknown } } | undefined)?.material : undefined;
+    const authored = (node as { readonly material?: { readonly bloom?: unknown } }).material;
+    const weight = (live ?? authored)?.bloom;
+    return typeof weight === "number" && Number.isFinite(weight) && Math.min(2, Math.max(0, weight)) !== 1;
+  });
+  if (unknownBloomSource && typeof builtPostprocess === "object" && builtPostprocess?.bloom) {
+    const markedBloom = {
+      ...(typeof builtPostprocess.bloom === "object" ? builtPostprocess.bloom : {}),
+      selectiveRequested: true,
+      selectiveUnsupportedSource: true
+    };
+    builtPostprocess = { ...builtPostprocess, bloom: markedBloom };
+  }
   const source: RenderSource = {
     ...(compatibility?.source ?? {}),
     collectRenderItems: () => items,

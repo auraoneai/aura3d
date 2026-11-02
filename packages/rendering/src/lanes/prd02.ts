@@ -4,8 +4,8 @@
  * regardless of flag state (chunks are dead code until a feature selects
  * them), and re-exports the PR-B math modules.
  */
-import { registerShaderChunk, registerShaderFeature, type ShaderFeature } from "../contracts/program.js";
-import { SH9_CHUNK, PRD02_IBL_FEATURE, environmentProbeFactorySlot } from "../contracts/environment.js";
+import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
+import { SH9_CHUNK, environmentProbeFactorySlot } from "../contracts/environment.js";
 import { SHADOW_LOOKUP_CHUNK } from "../contracts/shadows.js";
 import { createEnvironmentProbeFactory } from "../environment/EnvironmentProbeFactory.js";
 import { SH9_CHUNK_GLSL } from "../shaders/chunks/sh9.glsl.js";
@@ -17,8 +17,6 @@ import { CONTACT_SHADOW_CHUNK_GLSL } from "../shaders/chunks/contact_shadow.glsl
 import { PROBE_BOX_CHUNK, PROBE_BOX_CHUNK_GLSL } from "../probes/ProbeBoxProjection.js";
 
 const PRD02_CHUNKS = [
-  { name: "a3d_prd02_lighting_ibl", glsl: LIGHTING_IBL_CHUNK_GLSL, stage: "fragment" as const },
-  { name: "a3d_prd02_lighting_ibl_call", glsl: LIGHTING_IBL_CALL_GLSL, stage: "fragment" as const },
   { name: "a3d_prd02_lighting_punctual", glsl: LIGHTING_PUNCTUAL_CHUNK_GLSL, stage: "fragment" as const },
   { name: SHADOW_LOOKUP_CHUNK, glsl: SHADOW_RECEIVE_CHUNK_GLSL, stage: "fragment" as const },
   { name: "a3d_prd02_shadow_caster", glsl: SHADOW_CASTER_CHUNK_GLSL, stage: "fragment" as const },
@@ -27,6 +25,7 @@ const PRD02_CHUNKS = [
   { name: PROBE_BOX_CHUNK, glsl: PROBE_BOX_CHUNK_GLSL, stage: "fragment" as const }
 ];
 
+registerPrd02IblChunks();
 for (const chunk of PRD02_CHUNKS) {
   registerShaderChunk({ name: chunk.name, owner: "prd02", glsl: chunk.glsl, stage: chunk.stage });
 }
@@ -44,6 +43,7 @@ import { createPrd02ContactShadowsContributor } from "../passes/Prd02ContactShad
 import { createPrd02ProbesContributor } from "../probes/Prd02ProbesContributor.js";
 import { ensurePrd02DepthFeatures } from "../shadows/Prd02DepthShaderLibrary.js";
 import { PRD02_SHADOW_FILTER_FEATURE } from "../shadows/Prd02ShadowFilter.js";
+import { PRD02_IBL_SHADER_FEATURE, registerPrd02IblChunks } from "../environment/Prd02IblShaderFeature.js";
 
 registerFrameContributor(createPrd02ShadowsContributor());
 registerFrameContributor(createPrd02ContactShadowsContributor());
@@ -62,22 +62,8 @@ registerShaderFeature(PRD02_SHADOW_FILTER_FEATURE);
  * stage-2a knob and the ambient term are pass-level state, so ForwardPass
  * packs `packA3DEnvironmentUniforms` at its feature-bind slot.
  */
-export const PRD02_IBL_SHADER_FEATURE: ShaderFeature = {
-  id: PRD02_IBL_FEATURE,
-  owner: "prd02",
-  flag: "A3D_QR_LIGHTING",
-  hooks: ["fragment:pars", "fragment:indirect"],
-  chunks: ["a3d_prd02_lighting_ibl", "a3d_prd02_lighting_ibl_call"],
-  select(input) {
-    return input.pass === "forward" && input.flags.on("A3D_QR_COMPILER") && input.flags.on("A3D_QR_LIGHTING")
-      ? true
-      : undefined;
-  },
-  defines(value): Readonly<Record<string, string | number | true>> {
-    return value === true ? { A3D_PRD02_IBL: true } : {};
-  }
-};
 registerShaderFeature(PRD02_IBL_SHADER_FEATURE);
+export { PRD02_IBL_SHADER_FEATURE };
 
 // Named re-exports (not `export *`): the root barrel merges contracts/index
 // and lanes/index, and contract names like `projectCubeToSH9` /
