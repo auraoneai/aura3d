@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-heatsink/art/direction.ts",
-  "sourceSha256": "0c027a50500fad50e1026c68b826b4dc963c33a210489f459ec5885d97cbfccb",
+  "sourceSha256": "4972a39a2d695e360b60ce0434621de7c5ef8c4d99bad903fd840f263d1e1d30",
   "id": "showcase-heatsink",
   "genre": "racing",
   "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
@@ -170,21 +170,21 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkTowerL",
+        "assetKey": "heatsink_thermalTowerLIron",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkTowerL",
+        "assetKey": "heatsink_thermalTowerLIron",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkTowerT",
+        "assetKey": "heatsink_thermalTowerTIron",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -529,16 +529,16 @@
       },
       {
         "role": "backdrop",
-        "assetKey": "heatsinkTowerL",
+        "assetKey": "heatsink_thermalTowerLIron",
         "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM+E",
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
         "role": "backdrop",
-        "assetKey": "heatsinkTowerT",
+        "assetKey": "heatsink_thermalTowerTIron",
         "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM+E",
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {

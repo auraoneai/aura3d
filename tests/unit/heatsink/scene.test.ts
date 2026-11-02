@@ -149,7 +149,7 @@ describe("heatsink asset manifest (RH-06)", () => {
     // GU47 WP-36: Meshy admissions (`heatsink_<key>`) are isolated imports: their rights and metadata rows live in
     // aura-evidence/meshy/, not in the shared root catalog.
     const wp36 = HEATSINK_ASSET_KEYS.filter((k) => k.startsWith("heatsink_"));
-    expect(wp36).toEqual(["heatsink_thermalArchIron"]);
+    expect(wp36).toEqual(["heatsink_thermalArchIron", "heatsink_thermalTowerLIron", "heatsink_thermalTowerTIron"]);
     expect(HEATSINK_ASSET_KEYS).toHaveLength(26 + wp36.length);
     for (const key of wp36) {
       const def = (assets as unknown as Record<string, { url: string; hash: string }>)[key]!;
