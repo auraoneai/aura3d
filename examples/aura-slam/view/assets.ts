@@ -43,7 +43,7 @@ const hdriDefinitions = {
   venice_sunset: hdri("venice_sunset", 1437625, "ada97320249204fe041054c281ead9425e54302ac1538466a71cc9c1f381c725", "Poly Haven venice_sunset"),
   "outdoor-midday": hdri("outdoor-midday", 1173154, "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34", "Poly Haven kloppenheim_06_puresky (library outdoor-midday)"),
   "sunset-dramatic": hdri("sunset-dramatic", 1541600, "169745b6baf57aefe59c71b2f0019857cbbc5ab9c87f70d7d5c87eaa7bc83929", "Poly Haven the_sky_is_on_fire (library sunset-dramatic)"),
-  deep_space_starfield: hdri("deep_space_starfield", 1831733, "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526", "Aura3D procedural starfield (tools/asset-optimize/gen-starfield.py)")
+  deep_space_starfield: hdri("deep_space_starfield", 1156882, "fe86526ea60bdd7354681209175ef1b09e5b83db29c5baa246b639e611b12443", "Aura3D procedural starfield (tools/asset-optimize/gen-starfield.py), requantised within 1 tone-mapped level")
 } as const;
 
 export type VenueHdriKey = keyof typeof hdriDefinitions;

@@ -189,8 +189,8 @@
     {
       "id": "deep_space_starfield",
       "file": "/hdri/deep_space_starfield_1k.hdr",
-      "bytes": 1831733,
-      "sha256": "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526",
+      "bytes": 1156882,
+      "sha256": "fe86526ea60bdd7354681209175ef1b09e5b83db29c5baa246b639e611b12443",
       "resolution": [
         1024,
         512
@@ -201,7 +201,14 @@
       "polyHavenId": null,
       "source": "fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr (LFS)",
       "sourceSha256": "99768ccad307fa4ff1ce6d1d745132fca5d29760beb49aa9c4495cda785eff40",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr --out public/hdri/deep_space_starfield_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr --out public/hdri/deep_space_starfield_1k.hdr --hdri 1k",
+      "requantized": {
+        "from": { "bytes": 1831733, "sha256": "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526" },
+        "method": "tolerance-bounded run extension of the RGBE mantissa planes (exponent plane exact; smooth-gradient texels exact; texels at or above 1.0 move at most one mantissa unit)",
+        "exposures": "76 tone-map exposures from 0.2 to 12: a 65-step geometric ladder plus 0.26, 0.5, 0.65, 0.97, 1, 1.06, 1.46, 1.87, 4.1, 4.4, 8.8",
+        "bound": "ACES filmic + sRGB 8-bit value within 1 level of the 1831733-byte file at every texel at those exposures; at 104 unseen exposures none exceeds 1 level below 4.2 and at most 9 of 1572864 channel samples reach 2 levels between 4.2 and 12; banding loss 0.00%; diffuse irradiance change 0.014% (limit 0.25%); no texel at or above 1.0 changed",
+        "tool": "scratch script of the GU47 hdri unit (not in the repository); deterministic, byte-identical on re-run"
+      }
     },
     {
       "id": "outdoor-midday",

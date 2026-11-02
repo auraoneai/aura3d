@@ -52,6 +52,8 @@ The 6 noisy sources exceed 1.5 MiB as lossless 1024x512 RGBE RLE: three incompre
 | sunset-dramatic | 1,541,600 | no | yes |
 | indoor-workshop | 1,638,244 | no | no |
 
+**Update 2026-11-02 (GU47 continuation).** `deep_space_starfield` is now 1,156,882 bytes (under both thresholds): a procedural starfield that is mostly black, requantised with a tolerance bound so its ACES-filmic, sRGB 8-bit output stays within 1 level of the 1,831,733-byte file at every texel across the tested exposures (0.2 to 12; the transform and the bound are recorded in `assets/art-direction/hdri-environments.json`). Lossless re-encoding saves only 0.6 to 1.5% on these files, so the other five were examined and left unchanged: `hangar_interior` has no invisible option under the budget (best 1,628,003 bytes against 1,572,864), `indoor-workshop` is invisible only for exposures 1 to 2, and `rooftop_night`, `cobblestone_street_night` and `kloppenheim_02` pass only with little exposure headroom. Those four remain an owner decision (accept as Poly Haven's own 1k sizes, or a lossy floor quantiser with a visual check). The starfield is drawn as the background in Aura Slam's Moon venue, Hoops' orbit court and Aura Links' Moon course, so those views need a recapture before any look claim.
+
 Production command (one per file; the outdoor-midday row is `cp public/hdri/kloppenheim_06_puresky_1k.hdr public/hdri/outdoor-midday_1k.hdr`):
 
 ```bash
