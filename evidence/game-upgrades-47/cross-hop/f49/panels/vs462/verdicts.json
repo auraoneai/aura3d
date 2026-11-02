@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Traffic lanes are very crowded and cars overlap, so the play area is harder to read. The dark band along the bottom edge is a bit heavy. Otherwise richer colour, a sun glow, a frog shadow and better-looking platform materials.",
+     "Distant rows are crowded with overlapping vehicles. The sun glow is soft and slightly hazy.",
+     "Traffic is very crowded and the background is cluttered. The frame edges are slightly dark from heavy vignetting. Otherwise the lighting is richer, colours are more saturated, the frog has a grounded shadow and the logs look polished."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Busy background with a lot of vehicles. Slight darkening at the bottom edge. Otherwise good saturation, a sun bloom, a frog shadow, and readable lanes and platforms.",
+     "The background is dense with traffic and slightly cluttered. The skyline buildings are plain boxes.",
+     "Dense, cluttered traffic. Slight vignette and a soft hazy sun glow. Otherwise better contrast, with a shadowed, grounded frog and warmer, more polished colours."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The warm haze in the sky is slightly washed out and the vignette darkens the corners. Lanes are dense. Still more vivid, with clear contact shadows and a stronger mood.",
+     "The sunset sky and foreground are fairly dim. Vignette darkening at the edges is a little heavy.",
+     "The bottom edge is darkened by heavy vignetting and the traffic is busy. The warm sunset sky is attractive and the frog is grounded with a shadow. Good contrast overall."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sunset sky is a little hazy. The pink platforms are very saturated. Still more polished, with warm lighting, clear shadows and readable lanes.",
+     "The pastel palette is somewhat washed out by haze. The sky is a muddy pink-brown.",
+     "The pastel palette is a little soft or hazy and the bottom is vignetted. Otherwise it has a warm sunset, a grounded frog with a shadow, and clearer, more polished pink platforms and trams."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,143 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Hazy pink wash with low contrast on the pale bridge deck; the dragon is cut off at the right edge",
+     "Identical scene to A apart from the animation pose. The road is washed out by the pink haze in the same way, and the dragon floats with no anchoring.",
+     "Pink haze washes out the bridge and gives low contrast. The road surface looks flat and overexposed. The dragon is cropped at the frame edge."
+    ]
+   },
+   {
+    "variant": "stage1",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A apart from the pose: hazy pink wash with low contrast on the bridge",
+     "The haze leaves the road pale and low in contrast. The lighting is flat and the pink mood is muddy.",
+     "Same as A: hazy pink wash with low contrast. Only the pose differs."
+    ]
+   },
+   {
+    "variant": "stage2",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A: strong orange cast and muddy olive bridge edges",
+     "The amber haze makes the frame murky and low in contrast. The road edges have a sickly green-yellow tint, and the sky and clouds blend together with weak depth.",
+     "Looks identical to A: heavy amber haze, muddy tint, low contrast."
+    ]
+   },
+   {
+    "variant": "stage3",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A apart from the pose: sepia haze and muddy olive bridge sides",
+     "The sepia haze flattens the background and gives it low contrast. The olive-green tint on the road edges looks off.",
+     "Same as A: muddy sepia haze with little depth. Only the pose differs."
+    ]
+   },
+   {
+    "variant": "stage4",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A: saturated red, and the player has low contrast against the bridge",
+     "The colour grade is a heavy red monotone, so the red player loses some separation from the red road. The look is saturated but readable.",
+     "Looks identical to A: saturated red monochrome with the player blending into the bridge."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A apart from the pose: monochrome purple and grainy clouds",
+     "The purple monotone is slightly flat, but the night mood is good and the player reads well.",
+     "Same as A: purple monochrome with grainy clouds. Only the pose differs."
+    ]
+   },
+   {
+    "variant": "stage6",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A: noisy white caustic patterns on the deck and grainy clouds",
+     "Large white caustic or puddle blobs on the road look like a texture glitch and pull attention. The frame is otherwise moody and clear.",
+     "Same white blob decal artifacts and noisy clouds as A."
+    ]
+   },
+   {
+    "variant": "stage7",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A apart from the pose: mostly blue and noisy clouds",
+     "The cool blue grade is slightly monotone. Otherwise the starry sky and moonlit mood are strong and the player reads clearly.",
+     "Same as A: grainy clouds, otherwise a solid night mood. Only the pose differs."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A apart from the pose: washed-out, near-white deck with low tile contrast",
+     "The road surface is blown out to near-white lavender, which reduces readability of the play area. The dragon floats with no anchoring.",
+     "Same as A: overexposed white-pink deck with low contrast. Only the pose differs."
+    ]
+   }
+  ]
+ }
+]

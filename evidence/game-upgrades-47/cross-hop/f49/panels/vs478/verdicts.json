@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly hazier and more washed-out background, sparser near lane, large flat empty foreground grass, slightly flatter contrast",
+     "Mid-ground composition is weak: two identical teal box trucks fill the nearest road and one is cut off at the left edge. Back rows are a dense, cluttered wall of vehicles. Far trees float a little above the horizon edge. The coin is edge-on and hard to read.",
+     "Flat, slightly hazy lighting and plain ground; the far rows are still busy; the frog is a bit small and sits low in the frame."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sun bloom haze, flat empty foreground, low-detail building boxes; otherwise a well-layered and varied composition",
+     "Trams and cars overlap at the left (a tram partly behind red cars). Back rows are crowded. The large flat green foreground is empty. The city blocks are plain untextured boxes.",
+     "The city blocks are plain untextured boxes; the far rows are crowded; the foreground grass is empty; the scene is slightly hazy overall."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dim, muddy sunset grade with heavy vignette; somewhat low contrast overall, but the frog's profile and the vehicles read more clearly",
+     "The dark vignette and dim sunset grade make the image slightly muddy. A coin floats in a distant lane. A far-left car is cut off. The foreground grass is empty.",
+     "Heavy vignetting and muted lighting; the far rows are busy; the warm haze on the horizon slightly washes out the background."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Washed-out pastel haze and low contrast, emptier middle ground, repetitive trams, flat foreground",
+     "Pink haze washes out the frame and contrast is low. A big empty pastel band sits between the frog and the traffic. Trams and cars are bunched in the back and partly overlap. The palette is muddy.",
+     "Washed-out pastel palette with low contrast and a hazy, pink sky; repetitive trams; a large empty band in the mid-ground."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically the same as B. The midground is hazy and teal-washed, so the mountains and the rock arch lose contrast. The floating purple diamonds look ungrounded. The drone sits off-centre to the right and its legs look like they are hovering above the track. The distant gate and track detail are small and hard to read.",
+     "Virtually identical to A, with perhaps a touch more haze and slightly lower floor contrast, but not clearly worse. Same issues: drone cropped and close to the camera, flat rock arch, mild haze in the distance, floating crystals.",
+     "The two frames look almost identical. The drone sits close to the camera on the right and is cut into by the composition. Haze softens the mid-distance mountains and the arch structure, and the right side is somewhat low in contrast. The large flat purple track in the foreground has little material detail."
+    ]
+   }
+  ]
+ }
+]
