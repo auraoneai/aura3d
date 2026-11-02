@@ -88,14 +88,6 @@ Not ported (the original continues past these):
 | Audio | Not recorded by the look spec | Synthesised one-shots only (pickup, jump, land, hit, surge, flight, fall, fanfare) |
 | Ink outlines, ground-contact shadow | Present | Contact shadow blob only; no outlines |
 
-The colour-script look uses paired jade-and-gold roadside markers (three stacked sections per side, no cross-road beam)
-instead of the repeated red cross-road pilgrim gates. The gates read as torii in sibling judging, the same cue as the
-Shadowstep Gauntlet gate. The markers reuse the same six flag instances per pair, and the script road shader's analytic sun
-shadow traces only their posts. The original-look shader text is byte-identical and still carries the beam terms. The serpent
-head, the original look, simulated hazards (including the slide-under arch) and the centred original camera are unchanged.
-This presentation change has not been recaptured or judged against the sibling games, so its visibility, its cost and its
-effect on sibling distinctness remain unproven.
-
 ## Engine findings
 
 - The post chain throws `RenderDeviceError ... 0x502 [WEBGL_LDR_POSTPROCESS_FAILED]` when any GL error is pending, including one an
