@@ -51,10 +51,19 @@ export const PROP_ASSETS = defineModelAssets({
  */
 const DUSK_LICENSE = "Meshy generated asset (paid API, AuraOne account plan terms at generation time), retextured from the game's own mesh with an own text style prompt, GU47 WP-36 2026-10-30";
 const dusk = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}.glb`, import.meta.url).pathname, sha256 });
+/**
+ * Wave-1 rows (post-4.7.9) are served from the app's public/aura-assets/ with a ROOT-RELATIVE url (an absolute
+ * new URL(..., import.meta.url).href would be flagged unsafe-url and the scene would not mount).
+ */
+const duskPublic = (file: string, sha256: string) => ({ url: `/aura-assets/${file}`, sha256, sourcePath: `public/aura-assets/${file}` });
 export const DUSK_PROP_ASSETS = defineModelAssets({
-  houseA: dusk("ninja_houseADusk", "b4c9348054f98be49092dc87749e7326b18cb3132158e6d8f4c058500e9caf80")
+  houseA: dusk("ninja_houseADusk", "b4c9348054f98be49092dc87749e7326b18cb3132158e6d8f4c058500e9caf80"),
+  houseC: duskPublic("ninja_houseCDusk.50903503.glb", "5090350397b82057c75c156be1d3479c034821a46b1565ed83ca68b36844e122")
 }, { license: DUSK_LICENSE, queryParam: null }).refs;
-/** Uniform scale that maps each dusk GLB onto the 4.6.2 prop's bounds (houseA: 2.0 x 1.679 x 1.04 m vs 1.9 x 1.595 x 0.988 m). */
-export const DUSK_PROP_SCALE: Readonly<Partial<Record<keyof typeof DUSK_PROP_ASSETS, number>>> = { houseA: 1.9 / 2.0 };
+/**
+ * Uniform scale that maps each dusk GLB onto the 4.6.2 prop's bounds (houseA: 2.0 x 1.679 x 1.04 m vs 1.9 x 1.595 x
+ * 0.988 m; houseC: 1.984 x 2.0 x 1.411 m vs 1.883 x 1.898 x 1.339 m, 0.949 on every axis).
+ */
+export const DUSK_PROP_SCALE: Readonly<Partial<Record<keyof typeof DUSK_PROP_ASSETS, number>>> = { houseA: 1.9 / 2.0, houseC: 1.898 / 2.0 };
 /** WP-36 plan keys of the swaps (lane report and checklist). */
-export const DUSK_PROP_KEYS: Readonly<Record<keyof typeof DUSK_PROP_ASSETS, string>> = { houseA: "ninjaHouseADusk" };
+export const DUSK_PROP_KEYS: Readonly<Record<keyof typeof DUSK_PROP_ASSETS, string>> = { houseA: "ninjaHouseADusk", houseC: "ninjaHouseCDusk" };
