@@ -31,6 +31,8 @@ export const LINKS_ASSET_KEYS = [
 export const LINKS_LOCAL_ASSETS = [
   // golfMarram (WP-36 row, LINKS-07): meshoptimizer sloppy simplify 159,492 -> 6,793 triangles, 1k -> 512 px maps
   { key: "links_marram", url: "/aura-assets/links_marram.1a43521b.glb", hash: "sha256-1a43521bacd8787754a0795d6467319e52ab6bba48a7c8eec192b08d47ce754e", bounds: [1.762, 1.27, 1.82] },
+  // golfGorse (WP-36 row, LINKS-07; GU47 wave 1): meshoptimizer sloppy simplify 973,844 -> 6,541 triangles, 1k -> 512 px maps
+  { key: "links_gorse", url: "/aura-assets/links_gorse.ff3e35f0.glb", hash: "sha256-ff3e35f0acbb9bc030d3f0085c276de855bf5a8a9b336274ed5776fc44574fb0", bounds: [1.84, 1.32, 1.84] },
   // GU47 phase 9 (D2): replaces the dunes landmark tower; CC0 kenney:city-kit-industrial:water-tower (Kenney), 968 triangles
   { key: "linksDunesBeaconTower", url: "/aura-assets/linksDunesBeaconTower.76dd47f8.glb", hash: "sha256-76dd47f8fefa762e1d7f6a27e545cc211f2f726a67dbd32bc86cafb2e9bac303", bounds: [0.852, 2.142, 0.832] },
   // GU47 phase 9 (D2): replaces the dunes burn bridge; CC0 kenney:mini-forest:bridge (Kenney), 372 triangles
