@@ -1,10 +1,11 @@
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { closeSync, constants, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 import { assertNoGitLfsPointers, assertNotGitLfsPointer } from "./git-lfs-pointer.mjs";
+import { assertSafeAssetSegment, catalogRouteAliases, planAliasRedirects } from "../../tools/site/route-aliases.mjs";
 
 /*
  * Engine version is derived from the repository, not restated here.
@@ -118,6 +119,12 @@ const retiredPrototypeRoutes = [
 const evidenceRoutes = [];
 
 const publicRoutes = [...showcaseRoutes, ...evidenceRoutes];
+const supersededPublicRoutes = [
+  "showcase-material-asset-inspector",
+  "showcase-public-racing-presentation-proof",
+  "showcase-public-platformer-presentation-proof"
+];
+const reservedAliasRoutes = [...retiredPrototypeRoutes, ...supersededPublicRoutes, "aura-clash"];
 
 const requiredPublicGameEngineHelpers = [
   "racingRoadMesh",
@@ -298,6 +305,184 @@ function copyRouteHealth() {
   }
 }
 
+function lstatIfPresent(file) {
+  try {
+    return lstatSync(file);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function requireDirectory(dir, label) {
+  const stat = lstatIfPresent(dir);
+  if (!stat?.isDirectory()) throw new Error(`${label} is missing or is not a real directory: ${dir}`);
+}
+
+function assertBuiltRootAssets(html, outputDir) {
+  const content = readFileSync(html, "utf8");
+  for (const match of content.matchAll(/\b(?:src|href)\s*=\s*(["'])(\/assets\/[^"']*)\1/gi)) {
+    const assetUrl = match[2].split(/[?#]/, 1)[0];
+    const parts = assetUrl.slice("/assets/".length).split("/");
+    let file = path.join(outputDir, "assets");
+    requireDirectory(file, "Built root assets directory");
+    for (let i = 0; i < parts.length; i++) {
+      assertSafeAssetSegment(parts[i]);
+      file = path.join(file, parts[i]);
+      if (i < parts.length - 1) requireDirectory(file, "Built root asset directory");
+      else if (!lstatIfPresent(file)?.isFile()) throw new Error(`Missing or unsafe built root asset: ${file}`);
+    }
+  }
+}
+
+function sameFileBytes(left, right) {
+  if (lstatSync(left).size !== lstatSync(right).size) return false;
+  const leftFd = openSync(left, "r");
+  let rightFd;
+  try {
+    rightFd = openSync(right, "r");
+    const a = Buffer.alloc(64 * 1024);
+    const b = Buffer.alloc(64 * 1024);
+    let position = 0;
+    for (;;) {
+      const n = readSync(leftFd, a, 0, a.length, position);
+      const m = readSync(rightFd, b, 0, b.length, position);
+      if (n !== m || !a.subarray(0, n).equals(b.subarray(0, m))) return false;
+      if (n === 0) return true;
+      position += n;
+    }
+  } finally {
+    closeSync(leftFd);
+    if (rightFd !== undefined) closeSync(rightFd);
+  }
+}
+
+// The normal build already copies public directories to the original route.
+// Check every public descendant before advertising its alias. Shared Aura
+// assets are deduplicated at /aura-assets and must be byte-identical there.
+function assertBuiltPublicTree(source, target, compareBytes = false) {
+  requireDirectory(source, "Route public directory");
+  requireDirectory(target, "Built route public directory");
+  for (const entry of readdirSync(source, { withFileTypes: true })) {
+    assertSafeAssetSegment(entry.name);
+    const sourcePath = path.join(source, entry.name);
+    const targetPath = path.join(target, entry.name);
+    const targetStat = lstatIfPresent(targetPath);
+    if (entry.isDirectory()) {
+      assertBuiltPublicTree(sourcePath, targetPath, compareBytes);
+    } else if (entry.isFile()) {
+      if (!targetStat?.isFile()) throw new Error(`Missing or unsafe built public asset: ${targetPath}`);
+      if (compareBytes && !sameFileBytes(sourcePath, targetPath)) {
+        throw new Error(`Shared Aura asset collision: ${sourcePath} differs from ${targetPath}`);
+      }
+    } else {
+      throw new Error(`Unsafe route public asset (symlinks are not supported): ${sourcePath}`);
+    }
+  }
+}
+
+// Exported for fixture-only unit tests. No source public/_redirects is edited:
+// Vite copied it to dist already, and only that output receives generated rules.
+export function buildCatalogRouteAliases({ catalog, routes, reservedRoutes = [], rootDir, outDir }) {
+  const aliases = catalogRouteAliases(catalog, routes, reservedRoutes);
+  requireDirectory(rootDir, "Repository root");
+  requireDirectory(path.join(rootDir, "apps"), "Repository apps directory");
+  requireDirectory(outDir, "Build output");
+  const outputApps = path.join(outDir, "apps");
+  requireDirectory(outputApps, "Built apps directory");
+
+  const redirectsPath = path.join(outDir, "_redirects");
+  const redirectsStat = lstatIfPresent(redirectsPath);
+  if (redirectsStat && !redirectsStat.isFile()) throw new Error(`Unsafe build _redirects: ${redirectsPath}`);
+  const existingRedirects = redirectsStat ? readFileSync(redirectsPath, "utf8") : "";
+  const entriesByApp = new Map();
+  const publicFilesToCopy = [];
+
+  for (const alias of aliases) {
+    const appDir = path.join(rootDir, "apps", alias.appFolder);
+    const builtDir = path.join(outputApps, alias.appFolder);
+    requireDirectory(appDir, "Catalog app source");
+    requireDirectory(builtDir, "Built catalog app source");
+    const html = path.join(builtDir, "index.html");
+    const htmlStat = lstatIfPresent(html);
+    if (!htmlStat?.isFile() || htmlStat.size === 0) throw new Error(`Missing or unsafe built source HTML: ${html}`);
+    assertBuiltRootAssets(html, outDir);
+
+    const entries = new Map();
+    for (const entry of readdirSync(builtDir, { withFileTypes: true })) {
+      assertSafeAssetSegment(entry.name);
+      if (entry.name === "index.html") continue;
+      if (!entry.isFile() && !entry.isDirectory()) {
+        throw new Error(`Unsafe built route asset (symlinks are not supported): ${path.join(builtDir, entry.name)}`);
+      }
+      entries.set(entry.name, { name: entry.name, kind: entry.isDirectory() ? "directory" : "file" });
+    }
+
+    const publicDir = path.join(appDir, "public");
+    const publicStat = lstatIfPresent(publicDir);
+    if (publicStat && !publicStat.isDirectory()) throw new Error(`Unsafe route public directory: ${publicDir}`);
+    if (publicStat) {
+      for (const entry of readdirSync(publicDir, { withFileTypes: true })) {
+        assertSafeAssetSegment(entry.name);
+        const source = path.join(publicDir, entry.name);
+        const built = path.join(builtDir, entry.name);
+        if (entry.name === "index.html" || entry.name === "route-health.json") {
+          throw new Error(`Route public file collides with built output: ${source}`);
+        }
+        if (entry.name === "aura-assets") {
+          if (!entry.isDirectory() || entries.has(entry.name)) throw new Error(`Unsafe or duplicate Aura assets: ${source}`);
+          const sharedAssets = path.join(outDir, "aura-assets");
+          if (!lstatIfPresent(sharedAssets)?.isDirectory()) {
+            throw new Error(`Shared Aura assets for ${alias.url} are missing; CDN-only builds need an explicit route-local asset mapping: ${sharedAssets}`);
+          }
+          assertBuiltPublicTree(source, sharedAssets, true);
+          entries.set(entry.name, { name: entry.name, kind: "directory", sharedAuraAssets: true });
+        } else if (entry.isDirectory()) {
+          if (entries.get(entry.name)?.kind !== "directory") throw new Error(`Missing built public directory: ${built}`);
+          assertBuiltPublicTree(source, built);
+        } else if (entry.isFile()) {
+          assertNotGitLfsPointer(source, `Route public asset ${source}`);
+          const builtStat = lstatIfPresent(built);
+          if (builtStat && (!builtStat.isFile() || !sameFileBytes(source, built))) {
+            throw new Error(`Route public file collides with built output: ${built}`);
+          }
+          if (!builtStat) publicFilesToCopy.push({ source, built });
+          entries.set(entry.name, { name: entry.name, kind: "file" });
+        } else {
+          throw new Error(`Unsafe route public asset (symlinks are not supported): ${source}`);
+        }
+      }
+    }
+    entriesByApp.set(alias.appFolder, [...entries.values()]);
+  }
+
+  const plan = planAliasRedirects(aliases, entriesByApp, existingRedirects);
+  for (const alias of aliases) {
+    const targetDir = path.join(outputApps, alias.slug);
+    const targetStat = lstatIfPresent(targetDir);
+    if (!targetStat) continue;
+    if (!targetStat.isDirectory() || plan.previous.get(alias.url) !== alias.sourceUrl) {
+      throw new Error(`Catalog alias collides with existing build output: ${targetDir}`);
+    }
+    for (const entry of readdirSync(targetDir, { withFileTypes: true })) {
+      if (entry.name !== "index.html" || !entry.isFile()) {
+        throw new Error(`Catalog alias contains unexpected build output: ${targetDir}/${entry.name}`);
+      }
+    }
+  }
+
+  // Preflight above covers every alias before any writes. Only HTML is copied;
+  // nested public payloads keep their one existing copy under the source route.
+  for (const file of publicFilesToCopy) copyFileSync(file.source, file.built, constants.COPYFILE_EXCL);
+  for (const alias of aliases) {
+    const targetDir = path.join(outputApps, alias.slug);
+    mkdirSync(targetDir, { recursive: true });
+    copyFileSync(path.join(outputApps, alias.appFolder, "index.html"), path.join(targetDir, "index.html"));
+  }
+  if (aliases.length || redirectsStat) writeFileSync(redirectsPath, plan.text, "utf8");
+  return aliases;
+}
+
 function ensureBuiltRouteFavicons() {
   for (const route of publicRoutes) {
     const builtHtml = path.join(distDir, "apps", route, "index.html");
@@ -471,11 +656,6 @@ function copyRouteLocalAuraAssets(route) {
 function assertBuiltRoutes() {
   assertNoGitLfsPointers(distDir, "marketing/dist");
 
-  const supersededPublicRoutes = [
-    "showcase-material-asset-inspector",
-    "showcase-public-racing-presentation-proof",
-    "showcase-public-platformer-presentation-proof"
-  ];
   for (const route of supersededPublicRoutes) {
     const staleRoute = path.join(distDir, "apps", route);
     rmSync(staleRoute, { recursive: true, force: true });
@@ -527,6 +707,9 @@ function assertBuiltRoutes() {
 
 function main() {
   assertEngineBuildContract();
+  const catalog = readJson(path.join(repoRoot, "tools", "site", "games.catalog.json"));
+  // Validate catalog paths/collisions before starting the expensive Vite build.
+  catalogRouteAliases(catalog, publicRoutes, reservedAliasRoutes);
   const showcaseAssetBaseUrl = resolveShowcaseAssetBaseUrl();
   if (!showcaseAssetBaseUrl) assertShowcaseAssetsMaterialized();
   const tempDir = mkdtempSync(path.join(tmpdir(), "aura3d-marketing-showcase-"));
@@ -537,15 +720,18 @@ function main() {
     copyRouteHealth();
     if (showcaseAssetBaseUrl) {
       removeLocalAuraAssets(distDir);
-      rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
     } else if (!process.env.AURA3D_ONLY_ROUTE || !existsSync(path.join(distDir, "aura-assets"))) {
       copyAuraAssets();
     }
     assertBuiltRoutes();
-    console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with the local @aura3d/engine public source (lanes included) for package version ${expectedEngineVersion}.`);
+    const aliases = buildCatalogRouteAliases({ catalog, routes: publicRoutes, reservedRoutes: reservedAliasRoutes, rootDir: repoRoot, outDir: distDir });
+    // Copy aliases before the optional CDN pass so both HTML copies and any
+    // newly included route-local public files receive identical URL rewriting.
+    if (showcaseAssetBaseUrl) rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
+    console.log(`Built ${showcaseRoutes.length} showcase routes, ${aliases.length} catalog aliases, and ${evidenceRoutes.length} evidence routes with the local @aura3d/engine public source (lanes included) for package version ${expectedEngineVersion}.`);
   } finally {
     rmSync(tempDir, { force: true, recursive: true });
   }
 }
 
-main();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
