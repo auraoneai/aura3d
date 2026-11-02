@@ -255,10 +255,10 @@ describe("GU47 TT-V1 / TT-V2: signature VFX controller", () => {
   }
   const rally = (n: number) => Array.from({ length: n }, (_, i) => ({ x: -0.5 + i * 0.17, y: (i % 2 ? 1 : -1) * 0.6, life: 4 }));
 
-  it("registers one preset per surface family plus the out ring and the ace flash", () => {
+  it("registers one preset per surface family plus the out ring, the ace flash, the beach and grass ambient emitters and the win confetti", () => {
     const f = fakeEffects();
     expect(registerSlamVfx(f.effects as never)).toEqual(Object.keys(SLAM_VFX_PRESETS));
-    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash", "win-confetti"]);
+    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash", "beach-spray", "grass-leaves", "win-confetti"]);
   });
 
   it("a 6-bounce clay rally leaves 6 clay marks and 6 clay puffs in the venue particle colour; marks outlive the point", () => {

@@ -14,7 +14,7 @@ import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { LINE_COLOR, buildGrassStripesNodes, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
-import { buildNetMeshNode } from "./net";
+import { buildNetMeshNode, netTapeParts, NET_TAPE_ID } from "./net";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -207,7 +207,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("net-fault-right"))
   ]);
 
-  statics.box("netTape", netTapeMat, [0.055, 0.914, 0.034], [0, 0.457, 0]);
+  for (const part of netTapeParts()) statics.box("netTape", netTapeMat, part.size, part.position);
   const netSegments = 9;
   const netHalfSpan = NET_POST_X;
   for (let i = 0; i < netSegments; i++) {
@@ -219,7 +219,6 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     const topH = 0.914 + (1.07 - 0.914) * tm * tm;
     // TT-M2: the World Tour net is one textured strip (view/net.ts); `?look=original` keeps the nine 4.6.1 boxes.
     if (original) statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
-    statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
   }
   if (!original) s.add(buildNetMeshNode());
 
@@ -284,7 +283,9 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       castShadow: false,
       scaleMode: "fit",
       targetMaxDimension: 6.2
-    }).position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION)),
+    })
+      .position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION))
+      .runtime(game.runtimeNode("stadium-scoreboard-gantry")),
     model(assets.rooftopFloodlightTowerMeshy, {
       name: "stadium-floodlight-left",
       role: "setDressing",
@@ -314,7 +315,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   }
 
   s.addMany(buildBleacherNodes(statics));
-  s.addMany(statics.build("static", STATIC_RUNTIME_IDS));
+  s.addMany(statics.build("static", original ? STATIC_RUNTIME_IDS : { ...STATIC_RUNTIME_IDS, netTape: NET_TAPE_ID }));
   if (original) {
     s.addMany(buildSpectatorNodes());
   } else {

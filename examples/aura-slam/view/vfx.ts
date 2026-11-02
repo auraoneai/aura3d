@@ -14,7 +14,7 @@ import type { AuraAppEffects, AuraEffectInstanceHandle, AuraTrailHandle, AuraVec
 import { COURT_X, COURT_Z } from "./constants";
 import type { VenueBurstKind, VenueLook } from "./look";
 
-export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "win-confetti";
+export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "win-confetti" | "beach-spray" | "grass-leaves";
 
 /** Registered effect kinds: one bounce burst per surface family, the out-call ring and the ace flash. */
 export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> = {
@@ -45,6 +45,14 @@ export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> 
       { type: "emitter", preset: "spark", count: 10, speed: 2.2, life: 0.35, size: 0.06, color: "#f2ff7a", additive: true, sprite: "spark-streak" },
       { type: "light", intensity: 2.5, range: 4, duration: 0.18, color: "#f2ff7a" }
     ]
+  },
+  "beach-spray": {
+    name: "beach-spray",
+    layers: [{ type: "emitter", preset: "splash", count: 9, speed: 1.3, life: 0.85, gravity: -3.5, size: 0.075, spread: 0.65, direction: [0, 1, 0], color: "#bcece8", sprite: "splash" }]
+  },
+  "grass-leaves": {
+    name: "grass-leaves",
+    layers: [{ type: "emitter", preset: "debris", count: 8, speed: 0.8, life: 1.5, gravity: -0.7, size: 0.065, spread: 0.7, drag: 0.8, direction: [0.7, 0.3, 0], color: "#b5ce84", sprite: "debris-chips" }]
   },
   // TT-V3: match-won confetti over the net (tour lime and white chips drifting down; one sprite batch).
   "win-confetti": {
@@ -84,6 +92,7 @@ interface SimMark { readonly x: number; readonly y: number; readonly life: numbe
 interface SimStateLike {
   readonly mode?: string;
   readonly phase?: string;
+  readonly time?: number;
   readonly marks?: readonly unknown[];
   readonly outFeedback?: unknown;
   readonly lastCall?: string;
@@ -125,6 +134,10 @@ export function createSlamVfx(
   let lastMarkPos: AuraVec3 = [0, MARK_Y, 0];
   const events: SlamVfxEvents = { bounces: 0, outCalls: 0, aces: 0, marks: 0, wins: 0 };
   let celebrated = false;
+  let ambientVenue = "";
+  let nextAmbientAt = 0;
+  let ambientIndex = 0;
+  let previousTime = 0;
   const live = (): boolean => Boolean(effects) && effects!.runtime !== "off";
 
   const clearMarks = (): void => {
@@ -151,6 +164,28 @@ export function createSlamVfx(
         }
       } else if (state.mode !== "gameover") celebrated = false;
       lastGames = games;
+
+      // TT-V3: sparse edge-of-court spray/leaves use the existing sprite atlas and never modify gameplay.
+      // Re-arm on venue or match-clock changes; only one of these venue-specific emitters can run at once.
+      const now = Number(state.time);
+      if (look.id !== ambientVenue || (Number.isFinite(now) && now < previousTime)) {
+        ambientVenue = look.id;
+        nextAmbientAt = Number.isFinite(now) ? now + 2.5 : 0;
+        ambientIndex = 0;
+      }
+      if (Number.isFinite(now)) {
+        previousTime = now;
+        const kind = look.id === "beach" ? "beach-spray" : look.id === "grass" ? "grass-leaves" : null;
+        if (kind && state.mode === "playing" && live() && now >= nextAmbientAt) {
+          const side = ambientIndex++ % 2 === 0 ? -1 : 1;
+          try {
+            effects.burst(kind, [side * 6.4, 0.08, -4 + (ambientIndex % 3) * 3], {
+              count: burstCount(kind, reducedMotion()), camera: false
+            });
+          } catch { /* effects surface unavailable */ }
+          nextAmbientAt = now + 3.5;
+        }
+      }
 
       const list = Array.isArray(state.marks) ? state.marks : [];
       const newest = list.length > 0 ? list[list.length - 1] : undefined;

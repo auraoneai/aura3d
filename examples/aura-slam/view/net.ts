@@ -12,12 +12,15 @@
  * - Draws: 1 (it replaces the 4.6.1 `static-netMesh` group, 1 draw). The tape stays the merged `static-netTape` group.
  * `?look=original` keeps the nine 4.6.1 boxes.
  */
-import { game, geometry, material, type AuraAssetRef, type AuraCustomGeometrySpec, type AuraMaterialSpec } from "@aura3d/engine";
-import { NET_POST_X } from "./constants";
+import { game, geometry, material, type AuraAssetRef, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { COURT_X, NET_POST_X } from "./constants";
 import { slamTextureAssets } from "./assets";
+import { mergeBoxes } from "./statics";
+import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 
 export const NET_MESH_ID = "net-mesh";
+export const NET_TAPE_ID = "net-tape";
 /** Side of one net square (metres; a tennis net square is 3.5-4.5 cm). */
 export const NET_CELL = 0.045;
 /** Squares per side of the authored tile (`tools/gen-textures.mjs`). */
@@ -37,6 +40,23 @@ const TAPE_GAP = 0.03;
 /** Net height at `t` in [-1, 1] across the court (centre 0.914 m, posts 1.07 m), the 4.6.1 sag. */
 export function netTopHeight(t: number): number {
   return 0.914 + (1.07 - 0.914) * t * t;
+}
+
+/** The same ten boxes as the original tape and centre strap, merged into one draw. */
+export function netTapeParts(): Array<{ size: Vec3; position: Vec3 }> {
+  const parts: Array<{ size: Vec3; position: Vec3 }> = [
+    { size: [0.055, 0.914, 0.034], position: [0, 0.457, 0] }
+  ];
+  for (let i = 0; i < 9; i++) {
+    const t0 = -1 + (i / 9) * 2;
+    const t1 = -1 + ((i + 1) / 9) * 2;
+    const t = (t0 + t1) * 0.5;
+    parts.push({
+      size: [(t1 - t0) * NET_POST_X + 0.015, 0.062, 0.036],
+      position: [t * NET_POST_X, netTopHeight(t) - 0.02, 0]
+    });
+  }
+  return parts;
 }
 
 /** The strip: (NET_COLUMNS + 1) x 2 vertices, UVs in tile units (metres / tile side). */
@@ -83,4 +103,57 @@ export function buildNetMeshNode(): NodeInput {
   return geometry
     .custom(netMeshGeometry(), { name: NET_MESH_ID, material: netMeshMaterial(), castShadow: false })
     .runtime(game.runtimeNode(NET_MESH_ID)) as unknown as NodeInput;
+}
+
+/**
+ * TT-AN2: deform the existing mesh and its merged tape together, without adding draws or touching the simulation.
+ * A rising netTouched flag is produced by both a tape graze and a net hit. The 0.3 s pulse peaks at 3 cm,
+ * is pinned at the posts, and resets on reduced motion. Attribute uploads retain the original vertex counts.
+ */
+export function createNetCordMotion(mesh: AuraRuntimeNodeHandle, tape: AuraRuntimeNodeHandle) {
+  const meshBase = Float32Array.from((netMeshGeometry() as unknown as { positions: number[] }).positions);
+  const tapeBase = Float32Array.from((mergeBoxes(netTapeParts()) as unknown as { positions: number[] }).positions);
+  const meshPositions = meshBase.slice();
+  const tapePositions = tapeBase.slice();
+  let touched = false;
+  let elapsed = Infinity;
+  let hitX = 0;
+  let direction = 1;
+  let displaced = false;
+
+  function write(base: Float32Array, positions: Float32Array, amount: number): void {
+    for (let i = 0; i < base.length; i += 3) {
+      const x = base[i]!;
+      const y = base[i + 1]!;
+      const postWeight = Math.max(0, 1 - (x / NET_POST_X) ** 2);
+      const localWeight = Math.exp(-(((x - hitX) / 2.8) ** 2));
+      const heightWeight = Math.min(1, Math.max(0, y / 0.9));
+      positions[i + 2] = base[i + 2]! + amount * postWeight * localWeight * heightWeight;
+    }
+  }
+
+  return {
+    step(ball: { readonly netTouched: boolean; readonly x: number; readonly lastHit: string | null }, dt: number, reducedMotion: boolean): void {
+      if (ball.netTouched && !touched && !reducedMotion) {
+        hitX = Math.max(-NET_POST_X, Math.min(NET_POST_X, ball.x * COURT_X));
+        direction = ball.lastHit === "player" ? -1 : 1;
+        elapsed = 0;
+      }
+      touched = ball.netTouched;
+      if (reducedMotion) elapsed = Infinity;
+      if (elapsed < 0.3) {
+        elapsed = Math.min(0.3, elapsed + Math.max(0, Math.min(0.05, Number.isFinite(dt) ? dt : 1 / 60)));
+        const amount = direction * 0.03 * Math.sin(Math.PI * elapsed / 0.3);
+        write(meshBase, meshPositions, amount);
+        write(tapeBase, tapePositions, amount);
+        mesh.updateAttribute?.("position", { array: meshPositions });
+        tape.updateAttribute?.("position", { array: tapePositions });
+        displaced = true;
+      } else if (displaced) {
+        mesh.updateAttribute?.("position", { array: meshBase });
+        tape.updateAttribute?.("position", { array: tapeBase });
+        displaced = false;
+      }
+    }
+  };
 }
