@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/ninja-runner-port/f48/ninja-runner-port/frames/f48-ninja-runner-default/ninja-runner-port--default--settle-60s.jpg",
+      "sha256": "be9b20f1128f7725d46752da543fb0fa8668960ce7a465d5ad074292c8154b57"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single soft directional light from the left gives readable form on the houses. The fill is flat and evenly bright, so the grass, path and buildings share one exposure with no warm/cool separation or key-light drama."
+    },
+    {
+      "category": "shadows",
+      "seen": "Bushes on the left grass cast soft, low-contrast shadows, and the houses have faint contact darkening. The ninja casts almost no readable shadow on the cobblestones, so the character looks pasted onto the path."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The cobblestones show uniform glossy specular highlights on every stone that do not pick up sky color. The roofs, plaster and grass show no environment reflection, so the scene reads as unlit-ambient plus a spec term."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The village layout is coherent: a central cobbled road with a red gate and red trees as the landmark, and mixed stone and timber-frame houses. The grass is one huge flat tiled green plane with no variation, wear, flowers or height change, and the houses sit on it without foundations or paths."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The distant mountains get a light haze fade, and the sky is a static cloud skybox. There are no particles, foliage motion cues, god rays or ground-level fog to give depth between midground and background."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The path uses a normal/parallax brick texture with oversaturated orange-brown and repetitive tiling. The grass is a noisy, saturated green texture repeated visibly. The house stone and plaster textures are clean but low-detail, and the bushes read as noise-textured spheres."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The buildings are simple box-and-prism kits with flat roof planes. The red trees are clustered blob spheres, and the bushes are lumpy domes. The ninja model is the most detailed asset, but its idle pose turns the head and body sideways off the travel direction."
+    },
+    {
+      "category": "composition",
+      "seen": "The path's strong one-point perspective leads cleanly to the red gate and trees as the focal point. The player sits low-center, and the houses frame both sides. The large empty grass areas on the lower left and right dilute the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "A high third-person chase camera behind the character shows the route ahead well. The character is small in the lower frame, and the wide FOV stretches the near cobblestones."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Saturation and contrast are pushed, especially on the greens and the path, with mild bloom on the sky. There is no visible tone mapping finesse, depth of field or color grading tying the palette together, and the greens clip toward neon."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

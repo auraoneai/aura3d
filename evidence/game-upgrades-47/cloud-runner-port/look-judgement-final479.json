@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/cloud-runner-port/f48/cloud-runner-port/frames/f48-cloud-runner-default/cloud-runner-port--default--settle-60s.jpg",
+      "sha256": "af85e4a5d3aa97b5524abe6a2c6168e4f94969d8112fcbebd7ef2d1c41a14999"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 4.5,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Illumination is flat and ambient-dominated. The trees, boulders and character show almost no sun-side versus shade-side contrast, and the 3/4 front key sun at 48°/35° does not read anywhere."
+    },
+    {
+      "category": "shadows",
+      "seen": "The character has no contact shadow on the log. The trees, boulders, bushes and cliff cast no visible shadows onto the grass or the dirt path, so objects look pasted onto the ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No surface shows specular response or sky reflection. The log, boulders and character all read as uniformly matte, and the water at the horizon is a flat band."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The scene has a dirt path, pines, cracked boulders, a large sandstone cliff and a sea horizon. The grass is a flat untextured green plane, and the scattered small purple and pink triangle particles look like debug confetti."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some distance haze softens the horizon, and a large dark storm or tornado cloud adds sky interest. There is no visible light shafts or depth layering in the midground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The foreground log is a smooth brown gradient with no bark texture and visible vertical seam lines. The grass has no texture. The dirt, boulder crack and cliff textures are acceptable, but texel density varies between them."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The log is a low-segment cylinder whose faceted silhouette is visible at the ends. The trees use leaf cards in a stylized way. The character model is readable but small."
+    },
+    {
+      "category": "composition",
+      "seen": "The untextured log fills roughly the bottom third of the frame and blocks the view. The character sits dead center. The path's vanishing point is centered, which reads static."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-back chase view instead of the side-on follow the recipe calls for. The character covers well under 18% of the frame area."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image shows no color grading, bloom or daylight warmth. The palette looks slightly washed out, and the greens and sky blue fall short of the saturated recipe."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible: no coin counter, lives, timer or score. The gold coin accent from the recipe is absent from the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/dot-dash-3d/f48/dot-dash-3d/frames/f48-dot-dash-default/dot-dash-3d--default--settle-60s.jpg",
+      "sha256": "11e9239601bb153bb91defe0c591c9f8113a94db90c4cfe04559696fa9db653c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 7,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "ui_hud": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm key light from the upper left falls across the board, with small orange point lights at the four maze corners and a cool fill on the right side. The light reads as a moody desk-lamp setup."
+    },
+    {
+      "category": "shadows",
+      "seen": "The maze blocks and gem pedestals cast soft shadows to the lower right, and contact grounding is present. Shadows inside the dense maze are faint and mush together, so wall height reads weakly."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The gems are flat-shaded low-poly solids with no visible refraction, specular glints or environment reflection. The PCB and chip tops show almost no reflection of the surroundings."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The board sits on a blue grid cutting mat in front of a pegboard wall, which gives a coherent tabletop context. The surroundings are sparse and fall to near-black at the frame edges."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Volumetric light shafts fan in from the upper left over the mat. Apart from these, there is no dust, haze or depth falloff over the board."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The green solder mask, copper traces, via holes and silkscreen text sell the PCB theme. The chip blocks are uniform matte dark brown with little roughness variation, and the gems look like plain colored plastic instead of crystal."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The maze walls are simple repeated cubes, and the gems are low-poly icosahedra on box pedestals. The player sprite, ghost cones and pellets are small primitive shapes with little detail."
+    },
+    {
+      "category": "camera",
+      "seen": "The high three-quarter perspective shows the whole maze, but the board's bottom edge is cropped. The far rows compress, which makes the top corridors harder to read."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the corner lights and the player glow, plus a heavy vignette and darkened edges. Tone mapping holds, but the overall image is somewhat dim and low in contrast within the maze."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is no conventional HUD. The only readouts are diegetic silkscreen labels ('V1 J2 C14 R7', 'GLINT COURIER REV 4.7') at small size on the board, which hurts readability of the game state."
+    },
+    {
+      "category": "composition",
+      "seen": "The maze is centered and fills the frame, with the colored gem pedestals flanking both sides symmetrically. The player, ghosts and pellets read clearly against the copper traces."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

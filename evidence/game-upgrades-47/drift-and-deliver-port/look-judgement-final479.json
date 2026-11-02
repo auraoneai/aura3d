@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/drift-and-deliver-port/f48/drift-and-deliver-port/frames/f48-drift-and-deliver-default/drift-and-deliver-port--default--settle-60s.jpg",
+      "sha256": "ae6a8021d4d3ae516b781fd67dd593d149837dfb571cd8a4697045287726d32e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 7,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun down the street axis gives a convincing golden-hour tint on facades and sidewalks. Shading on the buildings is flat, though: lit faces and side faces differ little, and the sidewalks read as uniformly bright yellow slabs with no falloff."
+    },
+    {
+      "category": "shadows",
+      "seen": "The car has only a faint dark contact patch beneath it. With a sun this low, the tall buildings should throw long shadows across the street, but only a few soft dark bands cross the road. Lamp posts, signals and the pedestrian cast no visible shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The rear window shows a single bright specular blob plus some baked-looking streaks, not a reflection of the street or sky. The car paint and building glass show no environment reflection, and the windows are flat dark-blue fills."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The long canyon of repeated boxy towers has a good vanishing point. The buildings tile the same window and storefront modules with simple flat-color textures. Street furniture (lamps, signals) repeats at fixed intervals, and the world has little clutter, traffic or variation."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Warm distance haze fades the far towers into an orange-beige sky, which matches the 30–180 m fog recipe. There are no sun shafts, dust or volumetric depth near the camera."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The mint car body uses a smeared, low-resolution texture with blotchy baked lighting. The license plate and rear bumper insert look like blurry photo scraps. The asphalt is an untextured brown, and the building materials are flat albedo with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car silhouette is reasonable, but its surface detail lives in a muddy texture rather than geometry. The pedestrian on the right is a blocky low-poly figure. The buildings are extruded boxes with decal-like windows, and the art fidelity is mixed between assets."
+    },
+    {
+      "category": "composition",
+      "seen": "The centered chase view and one-point perspective lead the eye down the street. The car covers roughly 10% of the frame area, just under the 15–25% target. The mint green clashes with the warm asphalt, burnt orange and charcoal palette the recipe asks for."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the car at a FOV of roughly 60–65°, close to the recipe. The framing is static and perfectly centered, with no lean, offset or speed cue visible in this frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A warm grade is applied, but the image looks clean and digital. There is no visible bloom on the lit lamps or the sun-facing glass, no film grain, no vignette and no motion blur, so it does not read as cinematic-film."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "A thin orange speedometer arc at the bottom left has no numeric readout. The minimap at the bottom right is a dense grid of tiny colored dots with no clear player marker, route or destination, which matters for a courier game."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

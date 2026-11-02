@@ -1,0 +1,83 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/where-the-wind-wanders-port/f48/where-the-wind-wanders-port/frames/f48-where-the-wind-wanders-1/where-the-wind-wanders-port--default--settle-60s.jpg",
+      "sha256": "992c35a5305df2b4350999e5a48122a59a6cc18f6f01febe0dab98cd1e3b1fb1"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/where-the-wind-wanders-port/f48/where-the-wind-wanders-port/frames/f48-where-the-wind-wanders-1/where-the-wind-wanders-port--found0--settle-60s.jpg",
+      "sha256": "3c2646f11192a7635a508c2fa2ca25820d8247e66230afd1c6592f7bcb1a7b6d"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/where-the-wind-wanders-port/f48/where-the-wind-wanders-port/frames/f48-where-the-wind-wanders-1/where-the-wind-wanders-port--found2--settle-60s.jpg",
+      "sha256": "b4de58c5fd618ae0320fe92b43ec4985616fd4f9eff5b6e68301ba85b9dd7e1b"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/where-the-wind-wanders-port/f48/where-the-wind-wanders-port/frames/f48-where-the-wind-wanders-2/where-the-wind-wanders-port--epilogue--settle-60s.jpg",
+      "sha256": "5052fd97d106636659dfe8368a2395c3399b90fb9c5848f16bc4879b82912fbb"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The daytime frames are lit almost entirely by flat ambient light. The meadow, house walls and trees show little key/fill separation, so forms read as evenly bright. The night frame shifts to a blue palette with a bright rim/outline on the character that has no visible light source."
+    },
+    {
+      "category": "shadows",
+      "seen": "The large foreground tree, the cottage and the pine cast no readable shadows on the grass. The character has at most a faint dark smudge at its feet. Nothing in the scene shows contact shadowing, so the objects look pasted onto the ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake shows a soft, blurred reflection of the far shore with horizontal streaks, which works in daylight. At night the water turns into a bright cyan band that is brighter than the sky and reads as unlit and emissive. No other surface picks up any environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The layering is pleasant: dense flower meadow, fence and signpost, red-roofed cottage, lake, then a far shore with a lighthouse. The far shore of trees, lighthouse and hills looks like a flat painted backdrop card with no parallax depth."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The night frame has floating fireflies and haze over the far shore. The stars are hard-edged square pixels scattered uniformly across the sky, including directly over the trees. The daytime frames have almost no aerial perspective toward the backdrop."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The roof tiles, plaster walls and arched wooden doors on the cottage are clean hand-painted textures. The grass and bushes use flat green albedo with dot-pattern flowers. The character's cloak looks semi-realistic and grainy, which clashes with the soft stylized meadow."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The cottage, with its chimney, ivy, window boxes and pine, is the strongest asset. The foreground tree canopy at top-left is a crude low-poly blob with hard facets. The hooded character is small and loosely silhouetted. The windmill at the right edge is cut off."
+    },
+    {
+      "category": "composition",
+      "seen": "The cottage and character sit near the center-thirds with the lake as a horizontal band, which reads clearly. The meadow fills the lower half with uniform busy noise. The cropped tree trunk on the left and the cut-off windmill on the right crowd the frame edges."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is fixed at a high third-person angle and is identical in all four frames. The character occupies a small fraction of the screen. The near tree canopy intrudes into the top-left corner."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Screen-door dither patches appear around the character and in the grass in front of it, visible as checkered stippling. The night frame's character outline glows unnaturally. Color grading is saturated but flat, and there is no visible depth of field or tonal shaping."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

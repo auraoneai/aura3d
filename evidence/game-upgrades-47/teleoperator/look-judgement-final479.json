@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-1/teleoperator--golden--settle-60s.jpg",
+      "sha256": "1ffa3d29b2cf1d62912e54b055ab26f2d453e665566ef0e9f18110817b63a599"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-1/teleoperator--noon--settle-60s.jpg",
+      "sha256": "d82f1d8a22c389f03fe0f53521d7bc857903fe610fc7f664b5487c8968b99fde"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-2/teleoperator--fog--settle-60s.jpg",
+      "sha256": "d077168119b376a0cfd89dd6f70f540525421080670cd19835fcee4cd3919943"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-2/teleoperator--night--settle-60s.jpg",
+      "sha256": "896c1d37650284dd645fcfae939643b028e9e8381b33e4f843ab3bd99b546ec9"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 gets close to the golden-hour target, with a warm horizon band and warm-lit facades. Frame 2 is flat midday grey with little key direction. In frame 4 the sky is black but the buildings are lit bright orange and cream, as if by daylight, so the key light and the sky contradict each other."
+    },
+    {
+      "category": "shadows",
+      "seen": "Large hard-edged black rectangles sit on the road in frames 1 and 4 with no clear caster. Frame 2 shows a blocky checker-pattern shadow artifact around the pod. The pod's contact shadow is weak in every frame."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet road in frames 3 and 4 reflects the orange car and the headlight pool, and the pod shell shows a specular highlight. In frame 2 the asphalt is matte grey and shows almost no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city is dense, with brick, glass and classical facades, overhead wires and street lamps. The trees are simple lollipop spheres on sticks, and the sidewalks have no pedestrians or props."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 3 has convincing distance fog that swallows the skyline. In frame 2 the far end of the street is washed out to white haze. Frame 4 has no visible atmosphere against its black sky."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Building facades look like flat, low-resolution baked textures with smeared window detail. The asphalt is a uniform plane with no wear or tar variation, apart from the wet pass."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pod, the box truck and the small orange car are serviceable low-poly models. The trees are primitive spheres, and the distant cars are very simple shapes."
+    },
+    {
+      "category": "composition",
+      "seen": "The pod sits slightly right of a centered vanishing point. The truck at the right edge is hard-cropped. Cyan geofence lines and red laser rays clutter the frame and compete with the subject."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the pod with a roughly 60° FOV. The pod covers about 16% of the frame width but less area than the recipe asks for. The pose is identical in three of the four frames, so no dynamic framing is visible."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom on the headlight pool and a lens flare at the bottom right of frame 4 are visible. The color grade swings between warm, washed-out, teal and crushed-black across the frames, and none of them shows a consistent cinematic-film treatment such as grain or a tonal curve."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a circular minimap at the bottom left, with no speed, objective or timer readout. The red sensor rays and cyan wall overlays read as debug visualization rather than designed UI."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

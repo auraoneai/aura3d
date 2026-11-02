@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/cross-hop/f49/cross-hop/frames/f49-cross-hop-1/cross-hop--theme0--settle-60s.jpg",
+      "sha256": "29d7bb8801cb8d609c49bb7130cd7b79c0f06e5ccde8bd2e381799f9e5b3c6ca"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/cross-hop/f49/cross-hop/frames/f49-cross-hop-theme1-r2/cross-hop--theme1--settle-60s.jpg",
+      "sha256": "625cbc5e55369a4894bc72095e1cc57ca41dd18f0cc06084328149aa5a50a8bd"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/cross-hop/f49/cross-hop/frames/f49-cross-hop-2/cross-hop--theme2--settle-60s.jpg",
+      "sha256": "72b979afea10021fde0b3811db7371c2b12556bfa98b3814fce513f14669335d"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/cross-hop/f49/cross-hop/frames/f49-cross-hop-2/cross-hop--theme5--settle-60s.jpg",
+      "sha256": "5aebc10f45c742db7ffef01cc4f388e290f9c3bb0589194fe3094667aa112e49"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 4.5,
+    "environment_world": 4,
+    "atmospheric_effects": 3.5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 4.5,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sun sits upper-left in the sky, behind the play field, so the frog is backlit and its visible back reads as a flat, slightly dim green. The recipe calls for a 3/4 front key. The ground planes show almost no light variation apart from a central hotspot behind the coin."
+    },
+    {
+      "category": "shadows",
+      "seen": "The frog casts a soft, blob-like shadow offset to the right that is detached from the feet. Vehicles have only faint contact darkening, and the logs cast no visible shadow onto the water strip."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Car and taxi paint shows mild specular sheen, but the water strips are flat blue with no sky reflection. The coin reads as dull bronze with no gold glint."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The ground is untextured flat green planes that end in a hard straight edge against the sky. The water is solid blue bands, the trees are lollipop primitives, and the buildings in frame 2 are grey extruded boxes. A wide empty green band fills the bottom fifth of every frame."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The horizon has no fog falloff and the far vehicle rows are as crisp and saturated as the near ones. The only atmospheric element is a soft radial sun glow sprite. Frames 3 and 4 swap to an orange-pink sky gradient without matching haze on the ground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The logs are glossy orange slabs, pink in frame 4, that look like plastic rather than warm wood. The frog skin is a matte uniform green. The ground and road surfaces have no texture or roughness variation, which clashes with the detailed vehicle textures."
+    },
+    {
+      "category": "composition",
+      "seen": "Dense, evenly spaced rows of vehicles crowd the upper half while the foreground is empty grass. The frog is centred at about 15–18% of frame height, small in area, and partly hidden by the coin and log row directly ahead. Repeated identical trucks at fixed spacing read as a grid."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high behind-the-subject chase view, not the side-on follow the recipe specifies. The framing gives good lane readability but puts too much screen space on empty near ground."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 3 has a heavy dark vignette and overall underexposure that crushes the corners. Frame 4 has a washed, low-contrast pink cast. The colour grade swings between frames, and none of them shows the clean daylight-outdoor look."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible in any frame: no score, coin counter, lane progress, or lives."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "critique: The vehicle assets (taxis, trucks, trams, steam locomotives) are detailed and carry most of the visual quality, but they sit on bare green planes, flat blue water strips and glossy orange slabs that read as placeholders. The world ends in a"
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

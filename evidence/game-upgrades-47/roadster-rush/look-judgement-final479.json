@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/roadster-rush/f48/roadster-rush/frames/f48-roadster-rush-default/roadster-rush--default--settle-60s.jpg",
+      "sha256": "ee196e77856d73e7b2b87dea0065cd981d842a1f40dc5eac66862cdd2641c499"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 3.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low sun sits near the horizon behind the EXIT 4B HARBOUR gantry and throws a warm specular streak down the right lanes. That matches the golden-hour recipe. The building facades are lit flat and evenly with a purple tint, and none of them show the warm rim or side light a 12° sun should produce."
+    },
+    {
+      "category": "shadows",
+      "seen": "The sun is low and backlit, yet the towers cast no long shadows across the highway. The car has only a faint contact darkening under its wheels, and the guardrails and lamp posts show no visible shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The blue car body picks up some sky and orange tones on its curved panels. The reflections are blotchy and low-detail. The buildings' window glass shows no reflection at all."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The towers are plain extruded boxes with a repeating tiled window texture. A blank billboard and floating yellow rings look like placeholders. The road markings and gantry sign give a believable sense of place, but the city has no props, traffic density, or variety."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some light haze softens the far gantry and the distant traffic. The fog is weak and gives no clear depth falloff in the 30–180 m range. The towers on both sides stay crisp and saturated all the way back."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt reads as rough and catches a convincing sun glint. The building surfaces are flat and unlit, with no roughness variation. The car paint has a glossy look but noisy, faceted highlights."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The hero car silhouette is detailed, with exposed wheels, a rear wing and a center stripe. The environment assets are primitive: box buildings, simple poles, and torus rings."
+    },
+    {
+      "category": "composition",
+      "seen": "The car is centered and takes up roughly 15–18% of the frame. The road's vanishing point lines up with the sun and the gantry, which makes a strong leading-line layout. The symmetry is rigid, and the upper frame is crowded with equally weighted towers."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera is low and close behind the car with a moderate FOV near the recipe's 60°. It gives a good sense of speed. Its placement is static and centered, with no visible offset."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Strong radial motion blur smears the road surface, and the sun has a soft bloom halo. The blur is heavy enough that the asphalt turns to mush near the camera. Cyan exhaust glows clash with the warm palette, and there is no film grain or vignette for the cinematic-film target."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible. The frame has no speedometer, position, lap, timer, or minimap."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

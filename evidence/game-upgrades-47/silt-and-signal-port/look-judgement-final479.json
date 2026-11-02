@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/silt-and-signal-port/f48/silt-and-signal-port/frames/f48-silt-and-signal-default/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "c3955edf77e2580236bb62e26f0f6b0d982c497a4cea801c50a71c5520fcd65c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 5.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm orange-pink sunset tint covers the whole scene, but objects have little directional shading. The white buildings on the right read as nearly unlit flat planes, and the trees show only a two-tone toon split."
+    },
+    {
+      "category": "shadows",
+      "seen": "None of the trees, the gold cylinder, or the boarder cast a clear shadow onto the cobblestone ground. There is only a faint darkening near the tree bases, so objects look like they float on the plane."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The gold cylinder on the right has a single soft highlight band and nothing else reflects. The translucent arch shows no sky or environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The themed street has a gate arch, stacked rings, a pine-lined avenue and a skyline, which reads as a coherent track. The buildings are plain extruded boxes with flat white blocks, and the ground is a large empty plaza with little set dressing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A warm distance haze fades the far rings and skyline into the sunset sky, which gives decent depth. There are no particles, dust or light shafts, even though the desert/silt theme invites them."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone ground texture repeats visibly and produces moire arcs across the foreground. The building walls use a noisy stipple texture, and the white structures look untextured."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pines are simple stacked low-poly cones and are repeated many times. The buildings are basic boxes with inset window rectangles. The boarder and board are reasonably shaped but small and low on detail."
+    },
+    {
+      "category": "composition",
+      "seen": "The arch frames the rings and the vanishing point well, and the trees lead the eye inward. The vertical cyan pillar splits the frame dead center, directly above the character, which flattens the image."
+    },
+    {
+      "category": "camera",
+      "seen": "The third-person chase camera sits high and far back, so the character is small at the bottom center. The pillar and arch dominate the view and partly block the route ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Ink outlines and hatching give a consistent illustrated style. The arch's upper edges show smeared, wobbly outline artifacts and dark ghosting blotches against the sky, and outline thickness varies unevenly across the scene."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

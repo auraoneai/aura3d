@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/strange-orbit-port/f48/strange-orbit-port/frames/f48-strange-orbit-default/strange-orbit-port--default--settle-60s.jpg",
+      "sha256": "ebd1adb8b31c4702b193ba30e23d9f37fb110ee357e1865deea1d89b8239f736"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 5.5,
+    "composition": 5.5,
+    "camera": 5.5,
+    "postprocessing": 4,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sidecar bike and astronaut are evenly lit and washed out to near-white with no clear key direction. Nothing reads as a low sun. The scene feels lit by flat ambient light rather than a golden-hour key."
+    },
+    {
+      "category": "shadows",
+      "seen": "There is no contact or cast shadow under the bike, only a faint purple glow beneath it, so the vehicle appears to float on the orange ground. The track pillars and floating rocks also cast no visible shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The orange ground has a smeared, blotchy reflection patch on the left that reads as low-res noise rather than a coherent reflection. The bike's glossy white and teal body shows no environment reflection of the planet or sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has a sci-fi identity: a large banded gas planet, a teal nebula sky with stars, an elevated ribbon track with white marker lights, and floating rocks. However, the mountains are a flat dark low-poly silhouette, and the foreground is an empty flat plane."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Some soft haze and background blur are present, but there is no distance fog gradient on the mountains or track. Depth layers read as flat cutouts instead of receding into atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The ground plane is a uniform orange gloss with no asphalt or regolith texture. The bike body looks like plastic without roughness variation. The planet's limb has a hard bright rim artifact against the sky."
+    },
+    {
+      "category": "composition",
+      "seen": "The bike sits lower-right at roughly 15% of the frame, which is acceptable. The bottom third, however, is empty ground, and the bike is off the visible track, which weakens the racing read."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low 3/4 side view rather than a behind-the-vehicle chase angle. The FOV looks moderate (about 55–60). The heading is not toward the course."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A soft overall bloom and blur lowers contrast and lifts the blacks. The vehicle is overexposed, and the image has no film grade, vignette or tonal punch."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible: no speed, lap, position or minimap."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "critique: The art direction has a clear sci-fi idea: a sidecar-bike astronaut racing under a giant banded planet, with a ribbon track of marker lights over a teal sea. The rendering does not support it. The bike is lit flat and blown out with no shad"
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}
