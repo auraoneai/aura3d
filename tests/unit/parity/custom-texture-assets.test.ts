@@ -104,6 +104,26 @@ describe("upgradeCustomMaterialTextures — asset refs on custom materials (R-26
     expect(resource.textureDisposer).toBeUndefined();
   });
 
+  it("an entry removed in place while an earlier one loads does not make the pass skip the next entry", async () => {
+    let finishFirst: (value: ImageBitmap) => void = () => undefined;
+    loader.mockImplementation((url) => url === "/first.png"
+      ? new Promise<ImageBitmap>((resolve) => { finishFirst = resolve; })
+      : Promise.resolve(bitmap()));
+    const first = fixture(assetRef("/first.png"));
+    const second = fixture(assetRef("/second.png"));
+    // The compiled scene's live array: `removeSubtree` compacts it in place while the pass awaits the first image.
+    const live = [first.entries[0], second.entries[0]] as ProductionRuntimePrimitiveEntry[];
+    const pending = upgradeCustomMaterialTextures(live, second.warn, loader);
+    await vi.waitFor(() => expect(loader).toHaveBeenCalledWith("/first.png"));
+    live.splice(0, 1);
+    finishFirst(bitmap());
+    await pending;
+    expect(loader).toHaveBeenCalledWith("/second.png");
+    expect(bindingOf(second.material).texture).not.toBeNull();
+    first.material.dispose();
+    second.material.dispose();
+  });
+
   it("a handle-bound uniform needs no load and raises no warning", async () => {
     const { texture } = await import("../../../packages/engine/src/agent-api/nodes/texture.js");
     const handle = texture.data({ width: 2, height: 2, data: new Uint8Array(16).fill(255) });

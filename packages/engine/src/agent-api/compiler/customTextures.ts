@@ -101,11 +101,18 @@ export async function upgradeCustomMaterialTextures(
   loadBitmap?: BitmapLoader
 ): Promise<void> {
   const acquire = loadBitmap ? injectedAcquirer(loadBitmap) : sharedAcquirer;
-  for (const entry of entries) {
-    for (const resource of entry.resources) {
-      if (passed.has(resource)) continue;
-      passed.add(resource);
-      await bindResource(resource, warn, acquire);
+  // `entries` can be the compiled scene's live array: `removeSubtree` compacts it in place and `addSubtree` appends to it
+  // while this pass awaits an image. A live `for...of` then skips whichever entry shifted into a visited slot, so sweep a
+  // snapshot and sweep again while a sweep still found an unvisited resource (`passed` keeps each resource to one bind).
+  for (let found = true; found;) {
+    found = false;
+    for (const entry of [...entries]) {
+      for (const resource of entry.resources) {
+        if (passed.has(resource)) continue;
+        passed.add(resource);
+        found = true;
+        await bindResource(resource, warn, acquire);
+      }
     }
   }
 }
