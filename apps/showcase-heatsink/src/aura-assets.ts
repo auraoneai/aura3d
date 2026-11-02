@@ -9,8 +9,11 @@ const definitions = {
   "heatsink_thermalArchIron": {
     type: "model",
     format: "glb",
-    // Route-local (the shared root catalog is never written by an isolated Meshy import): Vite fingerprints and ships it.
-    url: new URL("../models/heatsink_thermalArchIron.7d727eff.glb", import.meta.url).href,
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): lives in this app's
+    // public/aura-assets and ships through copyRouteLocalAuraAssets. The URL stays root-relative: an absolute
+    // `new URL(..., import.meta.url)` is a remote URL to the production bridge, and a model whose manifest path
+    // is not public/aura-assets/ is then `unsafe-url`, which blocks the whole scene (RENDERER_MOUNT_FAILED).
+    url: "/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
     hash: "sha256-7d727eff8025a6e9e549187ad06a7b13420fc2103da26f39d26606a881c8a083",
     bounds: [
       2,
@@ -82,7 +85,7 @@ const definitions = {
         "checkedAt": "2026-10-30T08:59:38.033Z"
       },
       "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
-      "outputPath": "apps/showcase-heatsink/models/heatsink_thermalArchIron.7d727eff.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
       "license": "Meshy generated asset (paid API, plan terms at generation time)",
       "boundsMetadata": {
         "min": [
