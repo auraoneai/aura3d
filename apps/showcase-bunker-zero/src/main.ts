@@ -9,7 +9,7 @@
  */
 import "../../showcase-port-shared/quickbar.css";
 import {
-  camera, decals, effects, environments, game, gameFeel, lights, material, model,
+  camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material, model,
   primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
@@ -36,8 +36,8 @@ import { createFloorSurfaceLoader, nextSlotOf, placeholderId, withoutMaps } from
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 import {
-  BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, BZ_HAZARD_DECALS, BZ_HAZARD_SIZE, bulletHoleId, bulletHolePose, decalUrl, decalsForTier, floorDecalId, floorDecalKind,
-  floorDecals, floorStencil, hazardDecalId, hazardPoses, holeExpired, nextHoleSlot, type DecalKind
+  BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, BZ_HAZARD_DECALS, BZ_HAZARD_SIZE, bulletHoleId, bulletHolePose, createBunkerDecalTextures, decalsForTier, floorDecalId, floorDecalKind,
+  floorDecals, floorStencil, hazardDecalId, hazardPoses, holeExpired, nextHoleSlot
 } from "./art/decals";
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
@@ -622,12 +622,12 @@ function buildScene() {
       .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
   );
   // BZ-10: one shared pool of 12 floor decals (moved to the active floor by placeFloorDecals) and a ring of 12 bullet holes
-  const decalTex = (kind: DecalKind) => ({ kind: "aura-asset-ref", type: "texture", format: "png", url: decalUrl(kind) }) as unknown as Parameters<typeof decals.project>[0]["texture"];
+  const decalTextures = createBunkerDecalTextures(defineAuraAssets);
   const bootDecals = floorDecals(floorDefOf(BOOT_SLOT));
   for (let i = 0; i < BZ_FLOOR_DECAL_COUNT; i++) {
     const kind = floorDecalKind(i), pose = bootDecals[i];
     nodes.push(decals.project({
-      name: `bunker floor ${kind} ${i}`, texture: decalTex(kind), color: BZ_DECAL_TINT[kind], opacity: kind === "scorch" ? 0.8 : 0.9, roughness: 0.9,
+      name: `bunker floor ${kind} ${i}`, texture: decalTextures[kind], color: BZ_DECAL_TINT[kind], opacity: kind === "scorch" ? 0.8 : 0.9, roughness: 0.9,
       size: pose?.size ?? 1, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(floorDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
@@ -635,13 +635,13 @@ function buildScene() {
   for (let i = 0; i < BZ_HAZARD_DECALS; i++) {
     const pose = bootHazard[i];
     nodes.push(decals.project({
-      name: `bunker hazard stripe ${i}`, texture: decalTex("hazard"), color: BZ_DECAL_TINT.hazard, opacity: 0.9, roughness: 0.7,
+      name: `bunker hazard stripe ${i}`, texture: decalTextures.hazard, color: BZ_DECAL_TINT.hazard, opacity: 0.9, roughness: 0.7,
       size: BZ_HAZARD_SIZE, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(hazardDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
   for (let i = 0; i < BZ_BULLET_HOLES; i++) {
     nodes.push(decals.project({
-      name: `bunker bullet hole ${i}`, texture: decalTex("bullet"), color: BZ_DECAL_TINT.bullet, opacity: 0.9, roughness: 0.95,
+      name: `bunker bullet hole ${i}`, texture: decalTextures.bullet, color: BZ_DECAL_TINT.bullet, opacity: 0.9, roughness: 0.95,
       size: 0.16, position: [0, -50, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(bulletHoleId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
