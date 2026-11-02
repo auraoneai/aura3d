@@ -7,7 +7,7 @@
  * Provenance per file: `public/aura-assets/textures/ATTRIBUTION.md`. One repeat per 3 m cell; instance colours carry
  * only a +-6% jitter (main.ts).
  */
-import type { AuraAssetRef } from "@aura3d/engine";
+import { defineAuraAssets, type AuraAssetRef } from "@aura3d/engine";
 
 export const BZ_TEXTURE_SETS = [
   "concrete034",
@@ -58,13 +58,25 @@ export const BZ_TEXTURE_FILES = {
 } as const;
 export type BunkerTextureFile = keyof typeof BZ_TEXTURE_FILES;
 
-const ref = (file: BunkerTextureFile): AuraAssetRef<"texture"> =>
-  ({ kind: "aura-asset-ref", type: "texture", format: "jpg", url: `/aura-assets/textures/${file}`, hash: BZ_TEXTURE_FILES[file].sha256, metadata: { license: "CC0-1.0 (ambientCG)" } }) as unknown as AuraAssetRef<"texture">;
+const textureRefs = new Map<BunkerTextureFile, AuraAssetRef<"texture">>();
+
+/** Use stable, distinct factory IDs for each set and map; repeated lookups reuse the same branded ref. */
+function ref(set: BunkerTextureSet, map: "color" | "normal"): AuraAssetRef<"texture"> {
+  const file: BunkerTextureFile = `bz-${set}-${map}.jpg`;
+  const cached = textureRefs.get(file);
+  if (cached) return cached;
+  const id = `bunkerZero.${set}.${map}`;
+  const texture = defineAuraAssets({
+    [id]: { type: "texture", format: "jpg", url: `/aura-assets/textures/${file}`, hash: BZ_TEXTURE_FILES[file].sha256, metadata: { license: "CC0-1.0 (ambientCG)" } }
+  })[id]!;
+  textureRefs.set(file, texture);
+  return texture;
+}
 
 export interface BunkerTextureRefs { readonly color: AuraAssetRef<"texture">; readonly normal: AuraAssetRef<"texture"> }
 export const bunkerTexture = (set: BunkerTextureSet): BunkerTextureRefs => ({
-  color: ref(`bz-${set}-color.jpg` as BunkerTextureFile),
-  normal: ref(`bz-${set}-normal.jpg` as BunkerTextureFile)
+  color: ref(set, "color"),
+  normal: ref(set, "normal")
 });
 
 /** Wall, accent wall and floor set per floor slot (0..5 descent, 6 the Kill House). */
