@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { identityMat4 } from "@aura3d/scene";
 import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { PBRMaterial } from "../../../../packages/rendering/src/PBRMaterial";
-import { selectiveItemsDecline } from "../../../../packages/rendering/src/ForwardPass";
+import { invalidateSelectiveBloomFrame, selectiveItemsDecline } from "../../../../packages/rendering/src/ForwardPass";
 import { unconditionalEarlyPass } from "../../../../packages/rendering/src/renderer/SelectiveBloom";
 import { registeredPostPasses, type PostInsertAt, type PostPassDescriptor } from "../../../../packages/rendering/src/contracts/post";
 import { registerPrd10UnderwaterFeatures } from "../../../../packages/rendering/src/world/water/UnderwaterState";
@@ -199,5 +199,21 @@ describe("preflight: conditional early passes and the draw-level pre-decline", (
     expect(selectiveItemsDecline([{ ...stock(), skinning: {} }] as never)).toBe("draw-producer");
     expect(selectiveItemsDecline([{ ...stock(), material: new PBRMaterial({ name: "glass", renderState: { blendMode: "alpha" } }) }] as never)).toBe("transparent-or-transmission");
     expect(selectiveItemsDecline([{ ...stock(), material: { name: "custom" } }] as never)).toBe("material-program");
+  });
+
+  it("the first invalidation of a frame turns the signal draw buffer off once, and keeps the first reason", () => {
+    const calls: boolean[] = [];
+    const frame: { enabled: boolean; valid: boolean; invalidReason?: string; setSignalWrite: (enabled: boolean) => void } = {
+      enabled: true, valid: true, setSignalWrite: (enabled) => { calls.push(enabled); }
+    };
+    invalidateSelectiveBloomFrame(frame, "draw-producer");
+    invalidateSelectiveBloomFrame(frame, "signal-program-unprepared");
+    expect(calls).toEqual([false]);
+    expect(frame.valid).toBe(false);
+    expect(frame.invalidReason).toBe("draw-producer");
+    // a frame without the hook (any scene that never selected the target) is unchanged
+    const plain = { valid: true, invalidReason: undefined as string | undefined };
+    invalidateSelectiveBloomFrame(plain, "material-program");
+    expect(plain).toEqual({ valid: false, invalidReason: "material-program" });
   });
 });

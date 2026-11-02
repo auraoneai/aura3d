@@ -271,6 +271,24 @@ export function createSelectiveBloomTarget(
 }
 
 /**
+ * Switch the signal attachment's draw buffer on the selective target's draw framebuffer. The target is reused across frames, and
+ * WebGL2 validates every draw's fragment outputs against the enabled draw buffers: a program without a signal output drawing into
+ * an enabled second buffer is INVALID_OPERATION. So both buffers are on while a frame clears and while every draw writes the
+ * signal, and attachment 1 is off for a frame that declines (late, or the first draw that cannot write it).
+ */
+export function setSelectiveSignalDrawBuffer(device: RenderDevice, target: RenderTarget, enabled: boolean): void {
+  const host = webgl2DeviceHost(device);
+  const framebuffer = (target as RenderTarget & { readonly drawFramebuffer?: WebGLFramebuffer }).drawFramebuffer;
+  if (!host || !framebuffer || !selectiveDeviceIsBuiltin(device)) return;
+  const gl = host.gl;
+  const previous = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, framebuffer);
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0, enabled ? gl.COLOR_ATTACHMENT1 : gl.NONE]);
+  gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, previous);
+  host.stateCache.invalidate();
+}
+
+/**
  * The first post pass that always runs ahead of bloom and so blocks the separate signal, or undefined. A pass that carries an
  * `enabled` predicate is conditional (the underwater distortion runs only below a water surface) and cannot be evaluated here
  * without running the frame; the executor (`LegacyPost` `signal-source-transformed`) declines any frame on which an enabled

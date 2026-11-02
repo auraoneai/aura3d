@@ -187,6 +187,7 @@ interface SelectiveBloomObservedFrame {
   valid: boolean;
   invalidReason?: string;
   readonly weights?: WeakMap<RenderItem, number>;
+  setSignalWrite?: (enabled: boolean) => void;
 }
 
 /**
@@ -244,7 +245,10 @@ export class RendererFrameHooks {
   private invalidateSelective(reason: string): void {
     const frame = this.selectiveObservation?.frame;
     if (!frame) return;
-    if (frame.valid) frame.invalidReason = reason;
+    if (frame.valid) {
+      frame.invalidReason = reason;
+      frame.setSignalWrite?.(false);
+    }
     frame.valid = false;
   }
 

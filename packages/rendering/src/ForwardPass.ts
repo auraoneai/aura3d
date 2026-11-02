@@ -288,11 +288,16 @@ export interface SelectiveBloomFrame {
   maxRadiance?: number;
   preparedKeys?: ReadonlySet<string>;
   readonly weights?: WeakMap<RenderItem, number>;
+  /** Set by the renderer: turns the signal attachment's draw buffer on or off on the frame's target (see `setSelectiveSignalDrawBuffer`). */
+  setSignalWrite?: (enabled: boolean) => void;
 }
 
-/** Mark a selective frame unusable; the first reason is kept. */
-export function invalidateSelectiveBloomFrame(frame: { valid: boolean; invalidReason?: string }, reason: string): void {
-  if (frame.valid) frame.invalidReason = reason;
+/** Mark a selective frame unusable; the first reason is kept, and the signal buffer goes off so later ordinary draws stay valid. */
+export function invalidateSelectiveBloomFrame(frame: { valid: boolean; invalidReason?: string; setSignalWrite?: (enabled: boolean) => void }, reason: string): void {
+  if (frame.valid) {
+    frame.invalidReason = reason;
+    frame.setSignalWrite?.(false);
+  }
   frame.valid = false;
 }
 
