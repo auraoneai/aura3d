@@ -10,14 +10,16 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, TURF_BAND_M, TURF_BAND_X, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, turfFor, vividFloorFor, P5_DUSK_SKY, P5_CANDY_RAFT, type ThemeLook } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
 
 // ---------------- pool capacities ----------------
 const CAP = {
-  ground: 56, detail: 260, glow: 140, glowS: 60,
+  // `ground` holds one box per lane (at most 36) and, in the vivid look, 17 turf bands per meadow row (GU47 phase 8):
+  // 36 rows * 17 bands bounds it. `detail` is unchanged (260): Emberline and Neon already overflow it, and a larger cap would change them.
+  ground: 612, detail: 260, glow: 140, glowS: 60,
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
   truck: 18, tram: 12, train: 6 * TRAIN_CARS, hover: 26,
   log: 48, logEnd: 96, raft: 96, pad: 48, stone: 48, coin: 26,
@@ -609,7 +611,7 @@ function buildVividScene(): unknown {
       target: [0, CAM.targetY, -CAM.ahead],
       fov: CAM.fov
     }));
-  s.addMany(poolNodes(false, true, V0.floor) as never[]);
+  s.addMany(poolNodes(false, true, vividFloorFor(0)) as never[]);
   return s.toJSON();
 }
 
@@ -622,7 +624,7 @@ function swapVividLook(ti: number): void {
   attempt(() => n0.add(buildVividLookGroup(ti) as never));
   attempt(() => n0.remove("sky"));
   attempt(() => n0.add(buildVividSky(ti) as never));
-  attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: V.floor, roughness: 0.96, metalness: 0 })));
+  attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: vividFloorFor(ti), roughness: 0.96, metalness: 0 })));
   try {
     (n0.get("sun-key") as LightHandleLike | undefined)?.setLight?.({ color: V.sun.color, intensity: V.sun.intensity, direction: sunDirection(V.sun.elevationDeg, V.sun.azimuthDeg) }, { transitionSeconds: reducedMotion ? 0 : 0.6 });
   } catch { /* setLight needs A3D_QR_LIGHTING */ }
@@ -1629,6 +1631,14 @@ function paintDioramaGround(l: Lane, z: number): boolean {
   return false;
 }
 
+/**
+ * Meadow colour of a theme (lanes, river banks, tufts): the vivid look's mint turf (GU47 phase 8) where the theme has one,
+ * otherwise the theme palette's `meadow`, which the 4.6 and diorama looks and the dusk and night themes keep.
+ */
+function meadowColor(ti: number): string {
+  return turfFor(lookMode, ti)?.meadow ?? THEMES[ti]!.palette.meadow;
+}
+
 function paintLane(l: Lane, r: number, tr: number, statics: boolean, playerX: number): void {
   const z = laneZ(r);
   if (statics && paintDioramaGround(l, z)) {
@@ -1646,7 +1656,13 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
   const pal = th.palette;
   switch (l.type) {
     case "meadow":
-      if (statics && withGround) inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.meadow);
+      if (statics && withGround) {
+        // GU47 phase 8: the vivid look's mint turf is 17 flush 2 m bands, odd ones lighter (themes with a turf row); every
+        // other look and theme keeps its single full-width strip.
+        const turf = turfFor(lookMode, l.theme);
+        if (turf) TURF_BAND_X.forEach((x, k) => inst("ground", x, 0, z, TURF_BAND_M, 0.24, LANE_D, k % 2 === 1 ? turf.stripe : turf.meadow));
+        else inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, meadowColor(l.theme));
+      }
       break;
     case "road": {
       if (!statics) break;
@@ -1672,10 +1688,10 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
       // Water top is at y = 0.00 (-0.08 + 0.16 / 2); bank trim only against non-river neighbors
       if (withGround) inst("ground", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water);
       if (lane(r + 1).type !== "river") {
-        inst("detail", 0, 0.04, z - LANE_D * 0.47, STRIP_W, 0.10, 0.06, pal.meadow);
+        inst("detail", 0, 0.04, z - LANE_D * 0.47, STRIP_W, 0.10, 0.06, meadowColor(l.theme));
       }
       if (r > 0 && lane(r - 1).type !== "river") {
-        inst("detail", 0, 0.04, z + LANE_D * 0.47, STRIP_W, 0.10, 0.06, pal.meadow);
+        inst("detail", 0, 0.04, z + LANE_D * 0.47, STRIP_W, 0.10, 0.06, meadowColor(l.theme));
       }
       break;
     case "rail": {
@@ -1852,7 +1868,7 @@ function paintMeadowEdge(r: number, z: number, fenceX: number, softTheme: boolea
     // Grass tufts / low shrubs soften the fence line and the empty verge.
     if (rndA < 0.8) {
       const tw = 0.34 + rndB * 0.24;
-      inst("canopy", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.9 + rndB * 0.8), 0.14 + tw * 0.4, z, tw, tw * 0.6, tw, softTheme ? pal.meadow : pal.dressingA);
+      inst("canopy", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.9 + rndB * 0.8), 0.14 + tw * 0.4, z, tw, tw * 0.6, tw, softTheme ? meadowColor(st.themeIdx) : pal.dressingA);
     }
     // Occasional roadside sign gives midground scale and a pop of accent.
     if (r % 12 === 5) {

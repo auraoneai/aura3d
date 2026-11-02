@@ -265,10 +265,44 @@ export interface VividLook {
   readonly fog: { readonly color: string; readonly density: number };
   /** The flat world floor beyond the lane strip (laid flat, so no sky band shows under the course). */
   readonly floor: string;
+  /** GU47 phase 8: mint turf (see `VividTurf`). Absent = the 4.7.8 plain meadow colour and `floor` above. */
+  readonly turf?: VividTurf;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   readonly exposureEv: number;
 }
+
+/**
+ * GU47 phase 8: the vivid look's "mint turf", the G14 identity colour "chalk mint" (PRD 6.1) laid as a striped lawn.
+ * Why: the sibling judge's tells against pips-big-leap on the day views include "same soft pale-blue sky and green
+ * ground"; the mean-frame colour distance of Downtown vs Pip's academy/w1 frames is 10, the closest of the 28 pairs of
+ * themes 1-4, and Downtown owns four of the six lowest-confidence pairs (academy is 3rd lowest, w1 6th). The blind-panel
+ * replies on the shipped vivid frames (rounds g14p6f1 and g14p7c1) repeatedly name the plain, flat or empty green
+ * foreground as a defect besides the traffic.
+ * Presentation only: the colours below are spec values. The vivid light draws a meadow at 0.70-0.77 (red), 0.64-0.75
+ * (green) and 0.55-0.72 (blue) of its spec colour depending on the theme's light (sampled on the g14p7-c1 frames), so
+ * the spec hues of 152-169 degrees render at 133 (golden hour, the greenest) to 168 degrees (candy dusk, the tealest)
+ * against about 92 for Pip's lawn. Removing a row's `turf` restores that theme's 4.7.8 colours exactly (the `floor`
+ * above is kept for that).
+ */
+export interface VividTurf {
+  /** Meadow lane colour (replaces the theme palette's `meadow`, also used for tufts and river banks); the even bands of `TURF_BAND_X`. */
+  readonly meadow: string;
+  /** Lighter colour of the odd bands of `TURF_BAND_X` (a mown-lawn stripe that converges in perspective). */
+  readonly stripe: string;
+  /** The world floor beyond the lane strips (replaces `VividLook.floor`). */
+  readonly floor: string;
+}
+
+/** Width of one turf band (metres along x). */
+export const TURF_BAND_M = 2;
+/**
+ * Band centres, edge to edge across the 34 m lane strip (17 bands of `TURF_BAND_M`, symmetric about the start column).
+ * A meadow row in the vivid look is drawn as these tiles in the `ground` pool: even indices (the start column's band
+ * among them) in `turf.meadow`, odd indices in `turf.stripe`. Tiles instead of overlays: no coplanar faces, and the
+ * `detail` pool, which Emberline and Neon already overflow, keeps its demand.
+ */
+export const TURF_BAND_X: readonly number[] = [-16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16];
 
 export const VIVID_LOOKS: readonly VividLook[] = [
   { // 0 Meadow Roads: clear morning
@@ -278,6 +312,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     sky: { zenith: "#2a64b8", horizon: "#78b0e4", ground: "#9fc4a0", horizonGlow: 0.25, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 0.6, discSize: 0 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
     fog: { color: "#a8cbe8", density: 0 },
     floor: "#3f8a46",
+    turf: { meadow: "#58baa0", stripe: "#64d4b7", floor: "#449989" },
     grade: { contrast: 1.16, saturation: 1.18, temperature: 0.02 },
     bloom: { intensity: 0.12, threshold: 0.95 },
     exposureEv: -0.1
@@ -289,6 +324,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     sky: { zenith: "#3a6cb4", horizon: "#8cb4e2", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
     fog: { color: "#b8cadc", density: 0 },
     floor: "#5f8a46",
+    turf: { meadow: "#63b8a7", stripe: "#70d1bf", floor: "#4f9a81" },
     grade: { contrast: 1.16, saturation: 1.16, temperature: -0.02 },
     bloom: { intensity: 0.1, threshold: 1.0 },
     exposureEv: -0.1
@@ -300,6 +336,7 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     sky: { zenith: "#3f62a6", horizon: "#ffa860", ground: "#b0a070", horizonGlow: 0.55, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
     fog: { color: "#f2b884", density: 0 },
     floor: "#5e8f3e",
+    turf: { meadow: "#70c8b2", stripe: "#7fe5cc", floor: "#58a682" },
     grade: { contrast: 1.16, saturation: 1.16, temperature: 0.06 },
     bloom: { intensity: 0.16, threshold: 0.9 },
     exposureEv: -0.1
@@ -333,11 +370,23 @@ export const VIVID_LOOKS: readonly VividLook[] = [
     sky: { zenith: "#4b3a86", horizon: "#f2a07e", ground: "#c890a8", horizonGlow: 0.7, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb48a", intensity: 0.9, discSize: 0 }, clouds: { coverage: 0.25, speed: 0.3, color: "#ffc8b4" } },
     fog: { color: "#e8a08c", density: 0 },
     floor: "#5e9a5a",
+    turf: { meadow: "#77dbb5", stripe: "#86f2c7", floor: "#67b3a2" },
     grade: { contrast: 1.16, saturation: 1.15, temperature: 0.06 },
     bloom: { intensity: 0.2, threshold: 0.88 },
     exposureEv: 0
   }
 ];
+
+/** The mint turf of a theme in the vivid look; `undefined` in the 4.6 and diorama looks and on themes without a row. */
+export function turfFor(look: "vivid" | "original" | "diorama", ti: number): VividTurf | undefined {
+  return look === "vivid" ? VIVID_LOOKS[ti]?.turf : undefined;
+}
+
+/** World-floor colour of a theme in the vivid look: its turf floor, otherwise the 4.7.8 `floor`. */
+export function vividFloorFor(ti: number): string {
+  const row = VIVID_LOOKS[ti]!;
+  return row.turf?.floor ?? row.floor;
+}
 
 /**
  * Views whose default is the vivid look: the `?theme=N` variants (quick play and World Tour start on theme 0, so they
