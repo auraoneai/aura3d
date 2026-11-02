@@ -1,6 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { isHostingRedirectedApp, liveGameIssue, readCatalogRoutePlan, readClassificationLabels, readGameInventory, readGateRoutes, readHostingRedirects } from "../../../tools/route-tiers/index";
+import { parseAliasBuildContract, parseMarketingRoutes } from "../../../tools/route-tiers/marketing";
 
 /**
  * WS-5.1 — every public route has a tier, and the classification is derived rather than authored.
@@ -38,15 +41,26 @@ interface Report {
 function runClassifier(): Report {
   // Exits non-zero when anything is unclassified, which is the gate; capture either way so the
   // failure message below can name the routes rather than just the exit code.
+  let executionError: unknown;
   try {
-    execFileSync("npx", ["tsx", "tools/route-tiers/index.ts"], { encoding: "utf8", stdio: "pipe" });
-  } catch {
-    /* fall through to the report, which records why */
+    execFileSync(resolve("node_modules/.bin/tsx"), ["tools/route-tiers/index.ts"], { encoding: "utf8", stdio: "pipe" });
+  } catch (error) {
+    executionError = error;
   }
-  return JSON.parse(readFileSync(REPORT_PATH, "utf8")) as Report;
+  const result = JSON.parse(readFileSync(REPORT_PATH, "utf8")) as Report;
+  // A launcher/runtime failure must not pass by reading an old successful report.
+  if (executionError && result.unclassified.length === 0) throw executionError;
+  return result;
 }
 
 const report = runClassifier();
+const marketingSource = readFileSync("marketing/scripts/build-showcase-routes.mjs", "utf8");
+const marketing = parseMarketingRoutes(marketingSource);
+const hostingRedirects = readHostingRedirects();
+const aliasPlan = await readCatalogRoutePlan(marketing, parseAliasBuildContract(marketingSource), hostingRedirects);
+const games = readGameInventory();
+const gates = readGateRoutes();
+const labels = readClassificationLabels();
 
 describe("every public route has a release tier", () => {
   it("classifies every route, with no unclassified remainder", () => {
@@ -68,7 +82,7 @@ describe("every public route has a release tier", () => {
     for (const route of report.routes) {
       // Each rationale must name where the tier came from, so an inventory row can be checked.
       expect(
-        /classification doc|route-gates\.json|create-aura3d template|shipped document|retained spec|diagnostic naming|Tier 4 candidate/.test(
+        /classification doc|route-gates\.json|marketing\/scripts\/build-showcase-routes\.mjs|marketing\/public\/_redirects|docs\/workflows\/game-inventory\.json|create-aura3d template|shipped document|retained spec|diagnostic naming|Tier 4 candidate/.test(
           route.rationale
         ),
         `${route.id}: rationale does not cite a signal — "${route.rationale}"`
@@ -76,27 +90,58 @@ describe("every public route has a release tier", () => {
     }
   });
 
-  it("keeps Tier 1 aligned with the shipped release gate rather than widening it", () => {
-    // Tier 1 is "public and marketed", and route-gates.json is what actually gates a release.
-    // A Tier 1 route that is not gated would be a marketing claim with no gate behind it.
+  it("keeps Tier 1 aligned with marketing and a valid gate or candidate label", () => {
+    // An empty Tier 1 is valid while all candidates redirect or lack a valid signal.
     const tier1 = report.routes.filter((route) => route.tier === 1);
-    expect(tier1.length).toBeGreaterThan(0);
     for (const route of tier1) {
+      expect(route.root, route.id).toBe("apps");
+      expect(marketing.publicRoutes.has(route.id), `${route.id} is not in the marketing public list`).toBe(true);
+      expect(marketing.redirectedRoutes.has(route.id), `${route.id} is a marketing redirect`).toBe(false);
+      const sourceRoute = existsSync(resolve("apps", route.id, "index.html"));
+      expect(sourceRoute, `${route.id} has no source entry point`).toBe(true);
+      const game = games.get(route.id);
+      if (game) expect(liveGameIssue(game, route.id, marketing, hostingRedirects, sourceRoute, aliasPlan), route.id).toBeUndefined();
+      expect(isHostingRedirectedApp(route.id, hostingRedirects), `${route.id} is a host redirect`).toBe(false);
+      const validGate = gates.get(route.id)?.releaseClass === "release-ready candidate";
+      const candidateLabel = /^release-ready candidate/.test(labels.get(route.id) ?? "");
       expect(
-        route.rationale.includes("route-gates.json") || route.rationale.includes("release-ready candidate"),
-        `${route.id} is Tier 1 without a release gate`
+        validGate || candidateLabel,
+        `${route.id} is Tier 1 without a release gate or candidate label`
       ).toBe(true);
     }
   });
 
-  it("keeps the three blocked routes out of Tier 1 and Tier 2 (R5)", () => {
-    // R5: these must not be promoted without human review. A tier is a promotion, so the
-    // classifier must not hand them one — this is the mechanical half of WS-5.4.
-    for (const id of ["showcase-blockfall-reactor", "showcase-skyline-runner", "showcase-turbo-drift-circuit"]) {
-      const route = report.routes.find((candidate) => candidate.id === id);
-      expect(route, `${id} is missing from the inventory`).toBeDefined();
-      expect(route!.tier, `${id} was promoted to tier ${route!.tier}; R5 forbids it`).toBe(3);
+  it("includes every non-redirected marketing app even when it lacks a classification", () => {
+    for (const id of marketing.publicRoutes) {
+      if (marketing.redirectedRoutes.has(id)) continue;
+      expect(report.routes.some((route) => route.root === "apps" && route.id === id), id).toBe(true);
     }
+  });
+
+  it("keeps retained Blockfall at Tier 3 and retired prototypes out of the inventory (R5)", () => {
+    const blockfall = report.routes.find((candidate) => candidate.id === "showcase-blockfall-reactor");
+    expect(blockfall, "retained Blockfall is missing from the inventory").toBeDefined();
+    expect(blockfall!.tier, "Blockfall must not be promoted to Tier 1 or 2").toBe(3);
+
+    const gates = JSON.parse(readFileSync("tools/showcase-library/route-gates.json", "utf8")) as {
+      readonly routes: readonly { readonly id: string; readonly published: boolean; readonly releaseClass: string }[];
+    };
+    for (const id of ["showcase-skyline-runner", "showcase-turbo-drift-circuit"]) {
+      expect(existsSync(`apps/${id}`), `${id} source is retired`).toBe(false);
+      expect(report.routes.find((candidate) => candidate.id === id), `${id} has no current route to tier`).toBeUndefined();
+      expect(gates.routes.find((candidate) => candidate.id === id)).toMatchObject({
+        published: false,
+        releaseClass: "prototype-blocked"
+      });
+    }
+  });
+
+  it.each([
+    "compute-lab", "guard-canvas-lab", "instanced-texture-probe", "selfheal-lab", "webgpu-presentation-probe"
+  ])("keeps %s classified as a diagnostic rather than a public release", (id) => {
+    const row = report.routes.find((candidate) => candidate.root === "examples" && candidate.id === id);
+    expect(row).toMatchObject({ tier: 3 });
+    expect(row?.rationale).toContain("classification doc: diagnostic");
   });
 
   it("records the derivation method, not a hand-authored list", () => {
