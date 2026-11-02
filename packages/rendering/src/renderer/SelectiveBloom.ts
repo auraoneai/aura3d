@@ -289,13 +289,18 @@ export function setSelectiveSignalDrawBuffer(device: RenderDevice, target: Rende
 }
 
 /**
- * The first post pass that always runs ahead of bloom and so blocks the separate signal, or undefined. A pass that carries an
- * `enabled` predicate is conditional (the underwater distortion runs only below a water surface) and cannot be evaluated here
- * without running the frame; the executor (`LegacyPost` `signal-source-transformed`) declines any frame on which an enabled
- * early pass replaced the source target, so only unconditional early passes block the preflight.
+ * The first early post pass (any anchor before `before-tonemap`) that blocks the separate signal, or undefined. A registered
+ * pass that carries an `enabled` predicate is conditional (the underwater distortion the engine registers at import runs only
+ * below a water surface) and is not evaluated here: the executor (`LegacyPost` `signal-source-transformed`) gives any frame on
+ * which an early pass replaced the source target ordinary bloom. A registered early pass without a predicate, and every early
+ * pass the caller supplies in `pipeline.customPasses`, still block.
  */
-export function unconditionalEarlyPass(passes: readonly PostPassDescriptor[]): PostPassDescriptor | undefined {
-  return passes.find((pass) => typeof pass.enabled !== "function" && pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap");
+export function blockingEarlyPass(
+  registered: readonly PostPassDescriptor[],
+  supplied: readonly PostPassDescriptor[] = []
+): PostPassDescriptor | undefined {
+  const early = (pass: PostPassDescriptor): boolean => pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap";
+  return registered.find((pass) => early(pass) && typeof pass.enabled !== "function") ?? supplied.find(early);
 }
 
 /** Returns a reason, never runs custom passes or contributors to discover it. */
@@ -350,7 +355,7 @@ export function selectiveBloomDecline(
   if (stage) return `pre-bloom-stage:${stage[0]}`;
   // On the v2 HDR route before-tonemap is explicitly deferred until after
   // bloom. Earlier anchors transform color without a signal contract.
-  const early = unconditionalEarlyPass([...registeredPostPasses(), ...(p.customPasses ?? [])]);
+  const early = blockingEarlyPass(registeredPostPasses(), p.customPasses ?? []);
   if (early) return `pre-bloom-custom-pass:${typeof early.insertAt === "string" ? early.insertAt : "unknown"}`;
   return null;
 }
