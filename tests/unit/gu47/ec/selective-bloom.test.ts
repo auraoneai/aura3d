@@ -3,6 +3,13 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { identityMat4 } from "@aura3d/scene";
+import { Geometry } from "../../../../packages/rendering/src/Geometry";
+import { PBRMaterial } from "../../../../packages/rendering/src/PBRMaterial";
+import { selectiveItemsDecline } from "../../../../packages/rendering/src/ForwardPass";
+import { unconditionalEarlyPass } from "../../../../packages/rendering/src/renderer/SelectiveBloom";
+import { registeredPostPasses, type PostInsertAt, type PostPassDescriptor } from "../../../../packages/rendering/src/contracts/post";
+import { registerPrd10UnderwaterFeatures } from "../../../../packages/rendering/src/world/water/UnderwaterState";
 import {
   BLOOM_WEIGHT_GLSL,
   bloomPrefilterExcess,
@@ -151,5 +158,46 @@ void main() {
     const file = join(dir, "prefilter.frag");
     writeFileSync(file, source);
     expect(() => execFileSync(tool!, [file], { stdio: "pipe" })).not.toThrow();
+  });
+});
+
+describe("preflight: conditional early passes and the draw-level pre-decline", () => {
+  const pass = (insertAt: PostInsertAt, enabled?: () => boolean) => ({
+    id: "test.pass", insertAt, space: insertAt === "after-tonemap" ? "display" : "linear-hdr", inputs: ["color"], fragment: { glsl: "" }, gpuOnly: true,
+    ...(enabled ? { enabled } : {})
+  }) as unknown as PostPassDescriptor;
+
+  it("a pass with an enabled predicate does not block the separate signal; an unconditional early pass does", () => {
+    expect(unconditionalEarlyPass([pass("after-depth", () => false)])).toBeUndefined();
+    expect(unconditionalEarlyPass([pass("before-taa", () => true), pass("after-taa", () => false)])).toBeUndefined();
+    const blocking = pass("after-depth");
+    expect(unconditionalEarlyPass([pass("after-depth", () => false), blocking])).toBe(blocking);
+    expect(unconditionalEarlyPass([])).toBeUndefined();
+  });
+
+  it("passes at before-tonemap and after-tonemap never block", () => {
+    expect(unconditionalEarlyPass([pass("before-tonemap"), pass("after-tonemap")])).toBeUndefined();
+  });
+
+  it("the underwater distortion the engine registers at import is conditional (this is what held the receipt back)", () => {
+    const dispose = registerPrd10UnderwaterFeatures();
+    try {
+      const underwater = registeredPostPasses().find((candidate) => candidate.id === "prd10.underwaterDistortion");
+      expect(underwater?.insertAt).toBe("after-depth");
+      expect(typeof underwater?.enabled).toBe("function");
+      expect(unconditionalEarlyPass([underwater!])).toBeUndefined();
+    } finally {
+      dispose();
+    }
+  });
+
+  it("selectiveItemsDecline names the first draw that cannot write the signal, before any target is chosen", () => {
+    const stock = () => ({ geometry: Geometry.litCube(1), material: new PBRMaterial({ name: "stock" }), modelMatrix: Float32Array.from(identityMat4()), label: "stock" });
+    expect(selectiveItemsDecline([])).toBeNull();
+    expect(selectiveItemsDecline([stock(), stock()] as never)).toBeNull();
+    expect(selectiveItemsDecline([stock(), { ...stock(), instanceTransforms: new Float32Array(16) }] as never)).toBe("draw-producer");
+    expect(selectiveItemsDecline([{ ...stock(), skinning: {} }] as never)).toBe("draw-producer");
+    expect(selectiveItemsDecline([{ ...stock(), material: new PBRMaterial({ name: "glass", renderState: { blendMode: "alpha" } }) }] as never)).toBe("transparent-or-transmission");
+    expect(selectiveItemsDecline([{ ...stock(), material: { name: "custom" } }] as never)).toBe("material-program");
   });
 });

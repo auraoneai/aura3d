@@ -311,6 +311,20 @@ function selectiveDrawDecline(item: RenderItem): string | null {
   return null;
 }
 
+/**
+ * The first data-only reason a draw in `items` cannot write the separate signal, or null. The renderer asks before it commits a
+ * frame to the second-attachment target, so a request the forward pass would decline later (an instanced, skinned, transparent
+ * or non-stock draw) never pays for that target. A subset of what `prepareSelectiveBloom` checks: it never declines a frame the
+ * later check would accept.
+ */
+export function selectiveItemsDecline(items: readonly RenderItem[]): string | null {
+  for (const item of items) {
+    const reason = selectiveDrawDecline(item);
+    if (reason) return reason;
+  }
+  return null;
+}
+
 export interface ForwardPassOptions {
   readonly items: readonly RenderItem[];
   readonly lights?: readonly CollectedLight[];

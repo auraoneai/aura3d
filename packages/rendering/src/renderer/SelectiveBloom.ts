@@ -7,7 +7,7 @@ import { RenderDeviceError, type RenderDevice, type RenderTarget } from "../Rend
 import type { RenderItem } from "../contracts/renderItem";
 import type { QrFlags } from "../contracts/core";
 import { captureFrameContributor, frameContributors, isEmptyStockContributor, matchesFrameContributor, stockFrameFeedOwner, type FrameContributor } from "../contracts/frameGraph";
-import { registeredPostPasses, type PostPipelineOptions } from "../contracts/post";
+import { registeredPostPasses, type PostPassDescriptor, type PostPipelineOptions } from "../contracts/post";
 import { SCREEN_FEEL_CONTRIBUTOR } from "../post/ScreenFeelPass";
 import { POST_ONLY_TIER_CONTRIBUTOR } from "../post/PostQualityTiers";
 import { resolveBloomWeight } from "../postprocess/NativeBloomPyramid";
@@ -270,6 +270,16 @@ export function createSelectiveBloomTarget(
   }
 }
 
+/**
+ * The first post pass that always runs ahead of bloom and so blocks the separate signal, or undefined. A pass that carries an
+ * `enabled` predicate is conditional (the underwater distortion runs only below a water surface) and cannot be evaluated here
+ * without running the frame; the executor (`LegacyPost` `signal-source-transformed`) declines any frame on which an enabled
+ * early pass replaced the source target, so only unconditional early passes block the preflight.
+ */
+export function unconditionalEarlyPass(passes: readonly PostPassDescriptor[]): PostPassDescriptor | undefined {
+  return passes.find((pass) => typeof pass.enabled !== "function" && pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap");
+}
+
 /** Returns a reason, never runs custom passes or contributors to discover it. */
 export function selectiveBloomDecline(
   device: RenderDevice,
@@ -322,8 +332,7 @@ export function selectiveBloomDecline(
   if (stage) return `pre-bloom-stage:${stage[0]}`;
   // On the v2 HDR route before-tonemap is explicitly deferred until after
   // bloom. Earlier anchors transform color without a signal contract.
-  const customs = [...registeredPostPasses(), ...(p.customPasses ?? [])];
-  const early = customs.find((pass) => pass.insertAt !== "before-tonemap" && pass.insertAt !== "after-tonemap");
+  const early = unconditionalEarlyPass([...registeredPostPasses(), ...(p.customPasses ?? [])]);
   if (early) return `pre-bloom-custom-pass:${typeof early.insertAt === "string" ? early.insertAt : "unknown"}`;
   return null;
 }

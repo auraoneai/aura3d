@@ -51,7 +51,7 @@ import { createSelectiveBloomTarget, selectiveBloomDecline, selectiveBloomReques
 import { webgl2DeviceHost } from "./webgl2/Counters";
 import { qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { forwardPassFeatureAxes, prd02IblEnvironmentAvailable, selectiveItemsDecline, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { InterleavedTransparentPass } from "./renderer/InterleavedTransparentPass";
 import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/SceneDepthCopyPass";
@@ -1130,6 +1130,9 @@ export class Renderer {
         targetBound = true;
         const flags = route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device);
         selectiveEarlyReason = selectiveBloomDecline(this.device, postprocess, forwardTarget, flags, Boolean(environmentBackground), this.host.post.v2SeamDeclineFor(postprocess), source);
+        // Draw-level declines (instanced, skinned, transparent, non-stock) are data checks the forward pass would reach later:
+        // take them before the frame commits to the second-attachment target, so a request that cannot be served never pays for it.
+        if (!selectiveEarlyReason) selectiveEarlyReason = selectiveItemsDecline(items);
         if (!selectiveEarlyReason) {
           const candidate = this.selectiveBloomCandidate(forwardTarget);
           if (candidate) {
