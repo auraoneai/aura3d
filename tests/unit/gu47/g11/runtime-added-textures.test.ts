@@ -128,6 +128,60 @@ describe("GU47 g11 phase 10: runtime-added textured primitives", () => {
     expect(bitmap.close).toHaveBeenCalledTimes(1);
   });
 
+  it("releases a removed queued prefetch immediately and upgrades a later replacement in the next sweep", async () => {
+    const maps = defineAuraAssets({
+      floor0: { type: "texture", format: "png", url: "/scene-floor-0.png", hash: "0" },
+      floor1: { type: "texture", format: "png", url: "/scene-floor-1.png", hash: "1" },
+      floor2: { type: "texture", format: "png", url: "/scene-floor-2.png", hash: "2" },
+      floor3: { type: "texture", format: "png", url: "/scene-floor-3.png", hash: "3" },
+      decal: { type: "texture", format: "png", url: "/scene-decal.png", hash: "decal" }
+    });
+    const openFloors: (() => void)[] = [];
+    const fetchMock = vi.fn((url: string) => url.startsWith("/scene-floor-")
+      ? new Promise<Response>((resolve) => { openFloors.push(() => resolve(new Response(url))); })
+      : Promise.resolve(new Response(url)));
+    const bitmaps: { url: string; width: number; height: number; close: ReturnType<typeof vi.fn> }[] = [];
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("createImageBitmap", vi.fn(async (blob: Blob) => {
+      const bitmap = { url: await blob.text(), width: 1, height: 1, close: vi.fn() };
+      bitmaps.push(bitmap);
+      return bitmap;
+    }));
+    const scene = compiled();
+    const append = (id: string, map: (typeof maps)[keyof typeof maps]) =>
+      scene.addSubtree(node(primitives.box({ name: id, material: material.pbr({ texture: map }) }).runtime({ id })));
+    [maps.floor0, maps.floor1, maps.floor2, maps.floor3].forEach((map, i) => append(`floor-${i}`, map));
+    append("removed-decal", maps.decal);
+    const warnings: string[] = [];
+    const done = upgradeProductionPrimitiveTextures(scene.primitiveEntries, (message) => warnings.push(message));
+    try {
+      await vi.waitFor(() => expect(bitmaps.filter(({ url }) => url === "/scene-decal.png")).toHaveLength(1));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      const old = bitmaps.find(({ url }) => url === "/scene-decal.png")!;
+      expect(scene.primitiveEntries.find((entry) => entry.node.name === "removed-decal")!.resources[0]!.textureStage).toBe("queued");
+      expect(scene.removeSubtree("removed-decal")).toBe(true);
+      expect(old.close).toHaveBeenCalledTimes(1);
+      expect(scene.primitiveEntries.every((entry) => entry.resources[0]!.textureStatus === "pending")).toBe(true);
+      append("replacement", maps.decal);
+      const replacement = scene.primitiveEntries.find((entry) => entry.node.name === "replacement")!.resources[0]!;
+      expect(replacement.textureStatus).toBe("none");
+      for (const open of openFloors) open();
+      await done;
+      expect(replacement.textureStatus).toBe("textured");
+      expect(fetchMock.mock.calls.filter(([url]) => url === "/scene-decal.png")).toHaveLength(2);
+      const fresh = bitmaps.filter(({ url }) => url === "/scene-decal.png")[1]!;
+      expect(fresh.close).not.toHaveBeenCalled();
+      expect(warnings).toEqual([]);
+      scene.dispose();
+      expect(fresh.close).toHaveBeenCalledTimes(1);
+      expect(old.close).toHaveBeenCalledTimes(1);
+    } finally {
+      for (const open of openFloors) open();
+      await done;
+      scene.dispose();
+    }
+  });
+
   it("upgrades and hides a primitive added through the runtime node registry", async () => {
     const bitmap = { width: 1, height: 1, close: vi.fn() };
     vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([1]))));

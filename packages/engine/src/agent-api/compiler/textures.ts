@@ -360,6 +360,7 @@ export type ProductionTextureLoadStep = "fetch" | "body" | "decode" | "decode-fa
  * so the option suffix is constant, but a future option would get its own entry.
  */
 const SHARED_DECODE_OPTIONS_KEY = "premultiplyAlpha=none;colorSpaceConversion=none;flipY=false";
+const sharedProductionTextureKey = (url: string): string => `${url}#${SHARED_DECODE_OPTIONS_KEY}`;
 
 interface SharedProductionTextureDecode {
   readonly key: string;
@@ -373,6 +374,9 @@ interface SharedProductionTextureDecode {
 }
 
 const sharedProductionTextureDecodes = new Map<string, SharedProductionTextureDecode>();
+// Includes abandoned prefetches until their non-abortable decode settles.
+const speculativeProductionTextureDecodes = new Map<string, object>();
+const PRIMITIVE_TEXTURE_PREFETCH_URL_LIMIT = 16;
 
 /** Distinct decodes started through the shared cache (diagnostics and tests). */
 export const sharedProductionTextureDecodeStats = { decodes: 0, hits: 0 };
@@ -390,7 +394,7 @@ export function acquireSharedProductionTextureImage(
   loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> =
     (source, report) => loadProductionPrimitiveBitmapImpl(source, report, true)
 ): SharedProductionTextureImageHandle {
-  const key = `${url}#${SHARED_DECODE_OPTIONS_KEY}`;
+  const key = sharedProductionTextureKey(url);
   let entry = sharedProductionTextureDecodes.get(key);
   if (entry) {
     sharedProductionTextureDecodeStats.hits += 1;
@@ -450,6 +454,7 @@ export function acquireSharedProductionTextureImage(
 /** Tests: forget every shared decode (does not close images still held). */
 export function resetSharedProductionTextureDecodes(): void {
   sharedProductionTextureDecodes.clear();
+  speculativeProductionTextureDecodes.clear();
   sharedProductionTextureDecodeStats.decodes = 0;
   sharedProductionTextureDecodeStats.hits = 0;
 }
@@ -538,6 +543,165 @@ export function interleaveByMapSet(queue: readonly ProductionRuntimePrimitiveRes
   return out;
 }
 
+/** Only speculate on well-formed image asset refs, never procedural or live texture handles. */
+function prefetchableTextureUrl(input: unknown): string | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const ref = input as Partial<AuraAssetRef>;
+  if (ref.kind !== "aura-asset-ref" || ref.type !== "texture" || typeof ref.id !== "string" || !ref.id
+    || !["png", "jpg", "jpeg", "webp"].includes(ref.format ?? "") || typeof ref.url !== "string"
+    || !ref.url || /[\s\u0000-\u001f\u007f]/.test(ref.url)) return undefined;
+  try {
+    const protocol = new URL(ref.url, "https://aura3d.invalid/").protocol;
+    if (protocol === "http:" || protocol === "https:"
+      || (protocol === "data:" && /^data:image\/(?:png|jpe?g|webp)(?:;|,)/i.test(ref.url))
+      || (protocol === "blob:" && /^blob:(?:https?:\/\/[^/]+|null)\/[^/]+/i.test(ref.url))) return ref.url;
+  } catch { /* Leave invalid URLs to the normal upgrade path. */ }
+  return undefined;
+}
+
+function prefetchableResourceUrls(resource: ProductionRuntimePrimitiveResource): string[] {
+  const spec = resource.materialSpec;
+  if (!spec || resource.material.disposed || !resource.geometry.vertexBuffer.format.hasAttribute("uv")) return [];
+  if (ROOT_EXTENSION_TEXTURE_SLOTS.some((slot) =>
+    spec[`${slot}Map`] && !isAuraTextureRef(spec[`${slot}Map`]) && spec.texCoords?.[slot] === 1
+  ) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) return [];
+  const inputs = [
+    spec.texture, spec.normal, spec.roughnessMap, spec.metalnessMap, spec.occlusionMap, spec.emissiveMap,
+    ...ROOT_EXTENSION_TEXTURE_SLOTS.map((slot) => spec[`${slot}Map`])
+  ];
+  return [...new Set(inputs.map(prefetchableTextureUrl).filter((url): url is string => url !== undefined))];
+}
+
+/**
+ * A speculative lease consumes a global slot until both released and settled.
+ * Fetch/decode currently cannot be aborted: retaining the slot for an abandoned
+ * request prevents repeated removals/additions from creating unbounded work.
+ */
+function acquireTexturePrefetch(url: string, onFailure: () => void): (() => void) | undefined {
+  if (speculativeProductionTextureDecodes.size >= PRIMITIVE_TEXTURE_PREFETCH_URL_LIMIT
+    || speculativeProductionTextureDecodes.has(url)
+    || sharedProductionTextureDecodes.has(sharedProductionTextureKey(url))) return undefined;
+  const token = {};
+  speculativeProductionTextureDecodes.set(url, token);
+  const forget = (): void => {
+    if (speculativeProductionTextureDecodes.get(url) === token) speculativeProductionTextureDecodes.delete(url);
+  };
+  let handle: SharedProductionTextureImageHandle;
+  try {
+    handle = acquireSharedProductionTextureImage(url);
+  } catch {
+    forget();
+    return undefined; // The real upgrade will report its own failure.
+  }
+  let released = false;
+  let settled = false;
+  const release = (): void => {
+    if (released) return;
+    released = true;
+    try { handle.release(); } finally { if (settled) forget(); }
+  };
+  // Failure evicts the shared decode, so the real upgrade can retry and report
+  // its own error. Drop failed leases instead of retaining them behind stalled workers.
+  void handle.image.then(() => {
+    settled = true;
+    if (released) forget();
+  }, () => {
+    settled = true;
+    forget();
+    release();
+    onFailure();
+  });
+  return release;
+}
+
+interface TexturePrefetchOwner {
+  released: boolean;
+  readonly releases: (() => void)[];
+  release(): void;
+}
+
+function createQueuedTexturePrefetch() {
+  const owners = new Map<ProductionRuntimePrimitiveResource, TexturePrefetchOwner>();
+  const ownerFor = (resource: ProductionRuntimePrimitiveResource): TexturePrefetchOwner => {
+    const existing = owners.get(resource);
+    if (existing) return existing;
+    const previous = resource.textureDisposer;
+    const owner: TexturePrefetchOwner = {
+      released: false,
+      releases: [],
+      release: () => {
+        if (owner.released) return;
+        owner.released = true;
+        owners.delete(resource);
+        for (const release of owner.releases) release();
+        owner.releases.length = 0;
+        if (resource.textureDisposer === disposePrefetch) {
+          if (previous) resource.textureDisposer = previous;
+          else delete resource.textureDisposer;
+        }
+      }
+    };
+    // The normal scene/subtree disposer runs this even if all workers are stuck.
+    const disposePrefetch = (): void => { owner.release(); previous?.(); };
+    resource.textureDisposer = disposePrefetch;
+    owners.set(resource, owner);
+    return owner;
+  };
+  return {
+    start: (queue: readonly ProductionRuntimePrimitiveResource[], from: number): void => {
+      // Local to this scan: validate each queued resource only once, even when it has many maps.
+      const urlsByResource = new Map<ProductionRuntimePrimitiveResource, readonly string[]>();
+      // The queue is already map-set-interleaved. Give each queued set one URL
+      // before taking its second, and never create more than 16 global leases.
+      try {
+        for (let slot = 0; slot < 6 + ROOT_EXTENSION_TEXTURE_SLOTS.length; slot += 1) {
+          let hasCandidate = false;
+          for (let i = from; i < queue.length; i += 1) {
+            const resource = queue[i]!;
+            let url: string | undefined;
+            try {
+              let urls = urlsByResource.get(resource);
+              if (!urls) {
+                urls = prefetchableResourceUrls(resource);
+                urlsByResource.set(resource, urls);
+              }
+              // A synchronous fetch callback can dispose a resource between rounds.
+              if (resource.material.disposed) continue;
+              url = urls[slot];
+            } catch {
+              urlsByResource.set(resource, []);
+              continue;
+            }
+            if (!url) continue;
+            hasCandidate = true;
+            if (speculativeProductionTextureDecodes.has(url) || sharedProductionTextureDecodes.has(sharedProductionTextureKey(url))) continue;
+            if (speculativeProductionTextureDecodes.size >= PRIMITIVE_TEXTURE_PREFETCH_URL_LIMIT) return;
+            const owner = ownerFor(resource);
+            let release: (() => void) | undefined;
+            release = acquireTexturePrefetch(url, () => {
+              const index = release ? owner.releases.indexOf(release) : -1;
+              if (index < 0) return;
+              owner.releases.splice(index, 1);
+              if (owner.releases.length === 0) owner.release();
+            });
+            if (!release) {
+              if (owner.releases.length === 0) owner.release();
+            } else if (owner.released || resource.material.disposed) {
+              release();
+              owner.release();
+            } else owner.releases.push(release);
+          }
+          if (!hasCandidate) break;
+        }
+      } finally {
+        urlsByResource.clear();
+      }
+    },
+    releaseFor: (resource: ProductionRuntimePrimitiveResource): void => { owners.get(resource)?.release(); },
+    releaseAll: (): void => { for (const owner of owners.values()) owner.release(); }
+  };
+}
+
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
@@ -576,13 +740,16 @@ export async function upgradeProductionPrimitiveTextures(
     }
     return queued;
   };
-  const upgradeOne = async (resource: ProductionRuntimePrimitiveResource): Promise<void> => {
+  const upgradeOne = async (resource: ProductionRuntimePrimitiveResource, releasePrefetch: () => void): Promise<void> => {
     try {
       if (resource.material.disposed) return;
       markTextureStage(resource, "start");
       const spec = resource.materialSpec;
       const intent = createProductionPrimitiveTextureIntent(spec);
-      await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
+      const upgrade = upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
+      // The upgrade has synchronously acquired its own handles before yielding.
+      releasePrefetch();
+      await upgrade;
     } catch (error) {
       if (resource.material.disposed) return;
       resource.textureStatus = "fallback";
@@ -591,6 +758,7 @@ export async function upgradeProductionPrimitiveTextures(
       resource.textureWarnings.push(message);
       warn(message);
     } finally {
+      releasePrefetch();
       if (resource.material.disposed) {
         resource.textureStatus = "none";
         delete resource.texturePendingSince;
@@ -600,10 +768,21 @@ export async function upgradeProductionPrimitiveTextures(
   };
   for (let queue = interleaveByMapSet(sweep(), qrMaterials); queue.length > 0; queue = interleaveByMapSet(sweep(), qrMaterials)) {
     let next = 0;
+    const prefetch = createQueuedTexturePrefetch();
     const worker = async (): Promise<void> => {
-      while (next < queue.length) await upgradeOne(queue[next++]!);
+      while (next < queue.length) {
+        const resource = queue[next++]!;
+        await upgradeOne(resource, () => prefetch.releaseFor(resource));
+      }
     };
-    await Promise.all(Array.from({ length: Math.min(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY, queue.length) }, worker));
+    const workers = Promise.all(Array.from({ length: Math.min(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY, queue.length) }, worker));
+    void workers.catch(() => undefined);
+    try {
+      prefetch.start(queue, next);
+      await workers;
+    } finally {
+      prefetch.releaseAll();
+    }
   }
 }
 

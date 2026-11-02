@@ -43,8 +43,9 @@ test("a texture load finishing after material disposal cannot resurrect the reso
   const warnings = vi.fn(); const pending = upgrade(value, warnings);
   await vi.waitFor(() => expect(decode).toHaveBeenCalledTimes(1));
   value.material.dispose(); finish({ width: 1, height: 1, close }); await pending;
-  expect(value.textureStatus).toBe("fallback"); expect(value.texturedMaterial).toBeNull(); expect(close).toHaveBeenCalledTimes(1);
-  expect(warnings).toHaveBeenCalledWith(expect.stringContaining("disposed while texture upgrade was pending"));
+  expect(value).toMatchObject({ textureStatus: "none", textureStage: "cancelled" });
+  expect(value.texturedMaterial).toBeNull(); expect(close).toHaveBeenCalledTimes(1);
+  expect(warnings).not.toHaveBeenCalled();
 });
 
 for(const slot of ["clearcoat","clearcoatRoughness","clearcoatNormal","sheenColor","sheenRoughness","iridescence","iridescenceThickness","anisotropy"]){
