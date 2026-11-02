@@ -9,6 +9,7 @@ import { mowStripeTexels, normalTexels, patchTexels, type LinksMaskKind, type Li
 
 const cache = new Map<string, unknown>();
 let unavailable = typeof document === "undefined";
+let cachedSurfaceMark: unknown | null | undefined;
 
 function blockFor(kind: LinksMaskKind | LinksNormalKind): TexelBlock {
   if (kind === "mow") return mowStripeTexels();
@@ -49,4 +50,29 @@ export function turfTexture(map: SurfaceMap<LinksMaskKind | LinksNormalKind>): u
     unavailable = true;
     return null;
   }
+}
+
+/** LINKS-10: soft-edged mask for the batched, course-coloured surface marks. */
+export function surfaceMarkTexture(): unknown | null {
+  if (cachedSurfaceMark !== undefined) return cachedSurfaceMark;
+  if (typeof document === "undefined") return (cachedSurfaceMark = null);
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return (cachedSurfaceMark = null);
+    const gradient = ctx.createRadialGradient(32, 32, 2, 32, 32, 31);
+    gradient.addColorStop(0, "rgba(255,255,255,1)");
+    gradient.addColorStop(0.55, "rgba(255,255,255,0.8)");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+    const handle = texture.canvas({ canvas, colorSpace: "srgb", flipY: false });
+    handle.anisotropy = 4;
+    cachedSurfaceMark = handle;
+  } catch {
+    cachedSurfaceMark = null;
+  }
+  return cachedSurfaceMark;
 }

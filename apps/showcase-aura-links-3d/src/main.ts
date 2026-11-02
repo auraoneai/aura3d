@@ -98,7 +98,7 @@ import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCa
 import { linksQaCrops } from "./game/qaCrops";
 import { discOnTerrain, flatPad, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
-import { turfTexture } from "./game/turfTextures";
+import { surfaceMarkTexture, turfTexture } from "./game/turfTextures";
 import { coverWind, groundCover } from "./game/groundCover";
 import { HORIZON_SPECS, horizonRing } from "./game/horizon";
 import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
@@ -380,12 +380,23 @@ function buildBleacherNodes(
       .position(...at(0, 0.22, -0.35))
       .rotate(0, yaw, 0)
   ];
-  for (let tier = 0; tier < 3; tier++) {
-    nodes.push(
-      primitives.box({ name: `gallery-stand-${id}-tier-${tier}`, size: [6.0, 0.34, 1.06], material: seatMat })
-        .position(...at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95))
-        .rotate(0, yaw, 0)
-    );
+  if (turfOn) {
+    // LINKS-15: retain the three seat tiers and their shadows in one draw.
+    nodes.push(instances.box({
+      name: `gallery-stand-${id}-tiers`, size: [6.0, 0.34, 1.06], material: seatMat,
+      transforms: Array.from({ length: 3 }, (_, tier) => ({
+        position: at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95),
+        rotation: [0, yaw, 0] as Vec3
+      }))
+    }));
+  } else {
+    for (let tier = 0; tier < 3; tier++) {
+      nodes.push(
+        primitives.box({ name: `gallery-stand-${id}-tier-${tier}`, size: [6.0, 0.34, 1.06], material: seatMat })
+          .position(...at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95))
+          .rotate(0, yaw, 0)
+      );
+    }
   }
   nodes.push(
     primitives.box({ name: `gallery-stand-${id}-back`, size: [6.2, 1.3, 0.18], material: frameMat })
@@ -795,6 +806,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const lay = hole.layout;
   const rng = makeRng(hole.number * 7919 + course.id.length * 131);
   const isNight = course.look === "night-city" || course.look === "space";
+  // LINKS-15: thin surface overlays receive shadows but need not cast them
+  // into every cascade. The original-look scene keeps its authored settings.
+  const overlayShadow = turfOn ? { castShadow: false } : {};
 
   const nodes: any[] = [];
 
@@ -874,8 +888,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022, undefined, undefined, surfaceUv);
   const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035, undefined, undefined, surfaceUv);
   nodes.push(
-    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9) }),
-    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84) })
+    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9), ...overlayShadow }),
+    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84), ...overlayShadow })
   );
   if (!turfOn) {
     const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
@@ -888,9 +902,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36, 0, surfaceUv);
   const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96, surfaceUv);
   nodes.push(
-    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88) }),
-    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85) }),
-    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74) })
+    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88), ...overlayShadow }),
+    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85), ...overlayShadow }),
+    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74), ...overlayShadow })
   );
 
   // --- Tee box + surround + markers ---
@@ -901,15 +915,76 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
-    primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
-    primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
+    ...(turfOn
+      ? [instances.box({
+          name: "tee-markers", size: [0.3, 0.1, 0.12], material: markMat, castShadow: false,
+          transforms: [-3.2, 3.2].map((x) => ({ position: [terrain.tee[0] + x, terrain.tee[1] + 0.05, terrain.tee[2]] as Vec3 }))
+        })]
+      : [
+          primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
+          primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
+        ])
   );
   // GU47 phase 3 (rubric: the tee deck filled a third of every address frame as one flat colour): the deck carries the
   // course's tight-cut surface (mottle mask, blade normals; the fairway mow bands read as shadow-map striping at night)
   // on a quad just above the box top; `?look=original`
   // keeps the 4.6.2 slab.
   if (turfOn) {
-    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82) }));
+    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82), castShadow: false }));
+
+    // LINKS-09: one hole-specific SDF sign, outside the tee and facing back
+    // towards the approach camera. Board and post share a single draw.
+    const yaw = terrain.lineYaw + Math.PI;
+    const x = terrain.tee[0] + Math.cos(terrain.lineYaw) * 5.2 + Math.sin(terrain.lineYaw);
+    const z = terrain.tee[2] - Math.sin(terrain.lineYaw) * 5.2 + Math.cos(terrain.lineYaw);
+    const y = terrain.height(x, z);
+    nodes.push(
+      instances.box({
+        name: "tee-sign", size: [1, 1, 1], material: material.pbr({ color: "#273e31", roughness: 0.88 }),
+        castShadow: false,
+        transforms: [
+          { position: [x, y + 0.54, z], rotation: [0, yaw, 0], scale: [0.12, 1.08, 0.12] },
+          { position: [x, y + 1.1, z], rotation: [0, yaw, 0], scale: [2.5, 0.56, 0.12] }
+        ]
+      }),
+      text3D(`${hole.number}  PAR ${hole.par}  ${hole.lengthM} M`, {
+        name: "tee-sign-text", size: 0.18, backend: "sdf", castShadow: false,
+        material: material.emissive({ color: "#f4e7c8", emissive: "#e8d6ad", emissiveIntensity: 0.25 })
+      })
+        .position(x - Math.cos(yaw) * 1.02 + Math.sin(yaw) * 0.07, y + 1.01, z + Math.sin(yaw) * 1.02 + Math.cos(yaw) * 0.07)
+        .rotate(0, yaw, 0)
+    );
+
+    // LINKS-10: subtle static divots/footprints and bunker rake lines in one
+    // non-shadowing batch. They are presentation-only and never enter terrain.
+    const marks: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+    const markColors: string[] = [];
+    const addMark = (mx: number, mz: number, width: number, length: number, heightOffset: number, color: string) => {
+      const [dx, dz] = terrain.slope(mx, mz);
+      marks.push({
+        position: [mx, terrain.height(mx, mz) + heightOffset, mz],
+        rotation: [-Math.atan(dz), 0, Math.atan(dx)],
+        scale: [width, 1, length]
+      });
+      markColors.push(color);
+    };
+    for (let i = 0; i < 3; i++) {
+      addMark(terrain.tee[0] + 1.2 + i * 0.22, terrain.tee[2] + 1.1 + i * 0.12, 0.08, 0.22, 0.04, shade(pal.teeBox, 0.7));
+    }
+    const bunker = lay.bunkers[0];
+    if (bunker) {
+      for (let i = -2; i <= 2; i++) {
+        addMark(bunker.center[0] + i * 0.17, bunker.center[1], 0.035, Math.min(1.1, bunker.radius * 0.4), 0.1, shade(pal.sand, 0.72));
+      }
+    }
+    const markTexture = surfaceMarkTexture();
+    if (markTexture) {
+      nodes.push(instances.plane({
+        name: "course-surface-marks", size: [1, 1, 1], transforms: marks, colors: markColors,
+        material: material.pbr({ color: "#ffffff", roughness: 1, opacity: 0.5, texture: markTexture as any }),
+        castShadow: false, receiveShadow: false
+      }));
+    }
   }
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
@@ -917,8 +992,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
     const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
     nodes.push(
-      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }) }),
-      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84) })
+      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }), ...overlayShadow }),
+      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84), ...overlayShadow })
     );
   });
 
@@ -2046,6 +2121,7 @@ function startRound(): void {
 }
 
 function startHole(idx: number): void {
+  clearLandingEffects();
   hideFinalCard();
   const hole = state.course.holes[idx]!;
   state.hole = hole;
@@ -2326,6 +2402,17 @@ function spawnTurfPuff(pos: Vec3, zone: LieKind): void {
   try { fxCtlRef?.spawn("ground-dust", pos, { radius: 0.35, color, intensity: 1 }); } catch { /* optional */ }
 }
 
+// LINKS-10: eight static marks plus at most 24 live divot decals per hole.
+// Retain the composite burst handles so evicting a mark removes its decal too.
+const landingEffects: { stop(options?: { immediate?: boolean }): void }[] = [];
+const MAX_LANDING_EFFECTS = 24;
+
+function clearLandingEffects(): void {
+  for (const handle of landingEffects.splice(0)) {
+    try { handle.stop(); } catch { /* optional effects surface */ }
+  }
+}
+
 /** One Links preset burst (LINKS-11). Divot and sand take the course's own turf and sand; the hole-out ring its accent. */
 function linksBurst(id: LinksVfxId, pos: Vec3): void {
   const pal = state.course.palette;
@@ -2334,7 +2421,13 @@ function linksBurst(id: LinksVfxId, pos: Vec3): void {
     : id === "links-holeout-ring" ? COURSE_LOOKS[state.courseId].accent
     : undefined;
   try {
-    (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+    const handle = (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+    if (id === "links-divot" && handle && typeof handle.stop === "function") {
+      if (landingEffects.length >= MAX_LANDING_EFFECTS) {
+        try { landingEffects.shift()?.stop(); } catch { /* optional effects surface */ }
+      }
+      landingEffects.push(handle);
+    }
   } catch { /* optional */ }
 }
 
