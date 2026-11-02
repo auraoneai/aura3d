@@ -50,6 +50,8 @@ export default defineArtDirection({
     { role: "vehicle", assetKey: "rivalBike", maxTriangles: 120000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "vehicle", assetKey: "skateRider", maxTriangles: 120000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "prop", assetKey: "pylon", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // GU47 SO47-M1: the painted gate pylon (gouache look; `?look=original` keeps `pylon`).
+    { role: "prop", assetKey: "strange_orbit_port_craterPylon", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "boulderA", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "boulderB", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "lander", maxTriangles: 80000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
