@@ -128,7 +128,7 @@ describe("GU47 g11 phase 10: runtime-added textured primitives", () => {
     expect(bitmap.close).toHaveBeenCalledTimes(1);
   });
 
-  it("releases a removed queued prefetch immediately and upgrades a later replacement in the next sweep", async () => {
+  it("releases a removed ready texture immediately and upgrades a later replacement in the next sweep", async () => {
     const maps = defineAuraAssets({
       floor0: { type: "texture", format: "png", url: "/scene-floor-0.png", hash: "0" },
       floor1: { type: "texture", format: "png", url: "/scene-floor-1.png", hash: "1" },
@@ -156,9 +156,10 @@ describe("GU47 g11 phase 10: runtime-added textured primitives", () => {
     const done = upgradeProductionPrimitiveTextures(scene.primitiveEntries, (message) => warnings.push(message));
     try {
       await vi.waitFor(() => expect(bitmaps.filter(({ url }) => url === "/scene-decal.png")).toHaveLength(1));
-      await new Promise<void>((resolve) => setTimeout(resolve, 0));
       const old = bitmaps.find(({ url }) => url === "/scene-decal.png")!;
-      expect(scene.primitiveEntries.find((entry) => entry.node.name === "removed-decal")!.resources[0]!.textureStage).toBe("queued");
+      const removed = scene.primitiveEntries.find((entry) => entry.node.name === "removed-decal")!.resources[0]!;
+      await vi.waitFor(() => expect(removed.textureStatus).toBe("textured"));
+      expect(removed.textureStage).toBe("done");
       expect(scene.removeSubtree("removed-decal")).toBe(true);
       expect(old.close).toHaveBeenCalledTimes(1);
       expect(scene.primitiveEntries.every((entry) => entry.resources[0]!.textureStatus === "pending")).toBe(true);

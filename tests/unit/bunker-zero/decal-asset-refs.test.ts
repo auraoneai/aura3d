@@ -202,7 +202,8 @@ describe("Bunker Zero queued texture prefetch", () => {
       expect(queue.floors.map((value) => value.textureStage)).toEqual(queue.floorUrls.map((url) => `decode ${url}`));
     });
     expect(queue.floors.every((value) => value.textureStatus === "pending")).toBe(true);
-    expect(queue.queued.every(({ value }) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
+    await vi.waitFor(() => expect(queue.queued.every(({ value }) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
+    expect(queue.floors.every((value) => value.textureStatus === "pending")).toBe(true);
     expect(queue.fetches).toHaveLength(8);
     for (const url of [...queue.floorUrls, ...decalUrls]) expect(queue.fetches.filter((fetched) => fetched === url)).toHaveLength(1);
 

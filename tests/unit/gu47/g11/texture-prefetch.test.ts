@@ -112,8 +112,7 @@ test("four blocked floor map sets do not prevent all four shared decal decodes f
   expect(decals.every((value) => texturePendingMs(value) !== undefined)).toBe(true);
 
   for (const started of mock.starts.filter(({ url }) => urls.includes(url))) started.land();
-  await turn();
-  expect(decals.every((value) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
+  await vi.waitFor(() => expect(decals.every((value) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
   expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   mock.unblock();
   await done;
@@ -161,7 +160,8 @@ test.each(["fetch", "body", "decode"] as const)("look-ahead runs while the four 
     expect(decals.every((_, i) => mock.starts.some(({ url }) => url === `/phase-decal-${i}.png`))).toBe(true);
     expect(floors.map((value) => value.textureStage)).toEqual(floors.map((_, i) => `${phase} /phase-floor-${i}.png`));
   });
-  expect(decals.every((value) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
+  await vi.waitFor(() => expect(decals.every((value) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
+  expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   for (const release of releaseGates) release();
   mock.unblock();
   await done;
@@ -320,7 +320,9 @@ test("a failed prefetch retries when its resource starts and reports the real fa
   expect(mock.counts.get("/failure.png")).toBe(1);
   expect(warn).not.toHaveBeenCalled();
   expect([retry.textureStage, failure.textureStage]).toEqual(["queued", "queued"]);
-  expect([retry.textureDisposer, failure.textureDisposer]).toEqual([undefined, undefined]);
+  // The queue head may have a lease-free disposal watcher; the other failed
+  // prefetch must release its speculative owner immediately.
+  expect(failure.textureDisposer).toBeUndefined();
   mock.unblock();
   await done;
   expect(mock.counts.get("/retry.png")).toBe(2);
@@ -356,7 +358,7 @@ test("a bad queued geometry check is reported by its real worker, not by specula
   expect(mock.counts.has("/broken.png")).toBe(false);
 });
 
-test("disposing a queued owner immediately closes its decoded prefetch while workers remain blocked", async () => {
+test("disposing a ready owner immediately closes its decoded image while workers remain blocked", async () => {
   const mock = browser();
   const floors = floor("dispose-floor");
   const owner = resource("owner", { texture: asset("/disposed.png") });
@@ -374,7 +376,7 @@ test("disposing a queued owner immediately closes its decoded prefetch while wor
   expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   mock.unblock();
   await done;
-  expect(owner.textureStage).toBe("cancelled");
+  expect(owner.textureStage).toBe("done");
   expect(image.close).toHaveBeenCalledTimes(1);
 });
 
@@ -400,7 +402,7 @@ test("an active worker takes ownership of an in-flight prefetch and reports its 
   expect(prefetched.image.close).toHaveBeenCalledTimes(1);
 });
 
-test("sweep cleanup releases queued prefetches if a worker unexpectedly rejects", async () => {
+test("a worker rejection preserves a completed ready material's image ownership", async () => {
   const mock = browser();
   const floors = floor("exception-floor");
   const queued = resource("queued", { texture: asset("/queued.png") });
@@ -412,12 +414,14 @@ test("sweep cleanup releases queued prefetches if a worker unexpectedly rejects"
   expect(prefetched.image.close).not.toHaveBeenCalled();
   mock.starts.find(({ url }) => url === "/exception-floor-0.png")!.fail(new Error("decode failure"));
   await expect(done).rejects.toThrow("warning sink failed");
-  expect(prefetched.image.close).toHaveBeenCalledTimes(1);
-  expect(queued.textureDisposer).toBeUndefined();
+  expect(queued.textureStatus).toBe("textured");
+  expect(prefetched.image.close).not.toHaveBeenCalled();
+  expect(queued.textureDisposer).toBeDefined();
   expect(floors.slice(1).every((value) => value.textureStatus === "pending")).toBe(true);
   for (const value of [...floors, queued]) dispose(value);
+  expect(prefetched.image.close).toHaveBeenCalledTimes(1);
   mock.unblock();
-  await vi.waitFor(() => expect([...floors.slice(1), queued].every((value) => value.textureStage === "cancelled")).toBe(true));
+  await vi.waitFor(() => expect(floors.slice(1).every((value) => value.textureStage === "cancelled")).toBe(true));
 });
 
 test("a cancelled pending prefetch closes on arrival and a replacement never reuses it", async () => {
@@ -440,17 +444,18 @@ test("a cancelled pending prefetch closes on arrival and a replacement never reu
   fresh.land();
   await replacementDone;
   expect(source(replacement).source).toBe(fresh.image);
+  await vi.waitFor(() => expect(remaining.textureStatus).toBe("textured"));
+  expect(source(remaining).source).toBe(fresh.image);
   expect(fresh.image.close).not.toHaveBeenCalled();
   dispose(replacement);
-  expect(fresh.image.close).toHaveBeenCalledTimes(1);
+  expect(fresh.image.close).not.toHaveBeenCalled();
   mock.unblock();
   await done;
-  const last = mock.starts.filter(({ url }) => url === "/late.png")[2]!;
-  expect(source(remaining).source).toBe(last.image);
-  expect(last.image.closed).toBe(false);
+  expect(mock.starts.filter(({ url }) => url === "/late.png")).toHaveLength(2);
+  expect(fresh.image.closed).toBe(false);
   expect(warn).not.toHaveBeenCalled();
   dispose(remaining);
-  expect(last.image.close).toHaveBeenCalledTimes(1);
+  expect(fresh.image.close).toHaveBeenCalledTimes(1);
   expect(old.image.close).toHaveBeenCalledTimes(1);
 });
 
@@ -557,7 +562,7 @@ test("prefetched PNGs stay lazy and preserve exact transparent scalar pixels", a
   await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
   await turn();
   expect(decode).not.toHaveBeenCalled();
-  expect([color.textureStage, scalar.textureStage]).toEqual(["queued", "queued"]);
+  expect([color.textureStage, scalar.textureStage]).toEqual(["done", "queued"]);
   mock.unblock();
   await done;
   expect(mock.counts.get("/transparent.png")).toBe(1);
