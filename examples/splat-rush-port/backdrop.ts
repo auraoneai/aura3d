@@ -133,17 +133,25 @@ const ramp = (t: number): number => {
   return x * x * (3 - 2 * x);
 };
 
+/** The shared backdrop pose also anchors presentation effects to the scrolling island. */
+export function backdropPose(p: Piece, distance: number, elapsed: number, look: SplatLook): {
+  readonly x: number; readonly y: number; readonly z: number; readonly fade: number;
+  readonly yaw: number; readonly sway: { readonly x: number; readonly z: number };
+} {
+  const z = ((((p.z0 + distance * 0.55) % SPAN) + SPAN) % SPAN) + FAR;
+  const x = p.side * p.offset + curve(-distance + z);
+  const fade = ramp((z - FAR) / 24) * ramp((NEAR - z) / 26);
+  const bob = Math.sin(elapsed * 0.8 + p.z0) * (p.kind === "balloon" ? 0.5 : 0.25);
+  return { x, y: p.y + bob, z, fade, yaw: elapsed * p.spin + p.z0, sway: backdropSway(look, p, elapsed) };
+}
+
 export function updateBackdrop(node: (id: string) => NodeHandle, distance: number, elapsed: number, look: SplatLook = LOOKS.original): void {
   for (const p of PIECES) {
-    const z = ((((p.z0 + distance * 0.55) % SPAN) + SPAN) % SPAN) + FAR;
-    const x = p.side * p.offset + curve(-distance + z);
-    const fade = ramp((z - FAR) / 24) * ramp((NEAR - z) / 26);
-    const bob = Math.sin(elapsed * 0.8 + p.z0) * (p.kind === "balloon" ? 0.5 : 0.25);
-    const sway = backdropSway(look, p, elapsed);
+    const pose = backdropPose(p, distance, elapsed, look);
     node(p.id)
-      .setVisible(fade > 0.02)
-      .setPosition(x, p.y + bob, z)
-      .setRotation(sway.x, elapsed * p.spin + p.z0, sway.z)
-      .setScale(Math.max(0.001, fade));
+      .setVisible(pose.fade > 0.02)
+      .setPosition(pose.x, pose.y, pose.z)
+      .setRotation(pose.sway.x, pose.yaw, pose.sway.z)
+      .setScale(Math.max(0.001, pose.fade));
   }
 }

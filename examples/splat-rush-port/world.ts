@@ -14,7 +14,7 @@ import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, gateDripMesh, mergeMeshe
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
-import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, addBackdrop, updateBackdrop } from "./backdrop";
+import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, PAINT_POT_PIECES, PIECES, addBackdrop, backdropPose, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
 import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
@@ -797,7 +797,11 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
 
   /* particles (world space, rewritten while any is alive), clouds (drift frame), streaks (rewritten per frame), shield */
-  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles, [1, 1, 1]);
+  // CR-V4: reserve a few visual-only paint-pot drops in the existing particle
+  // batch, rather than adding an emitter/draw for each island.
+  const dripsPerPot = 4;
+  const dripCount = carnival ? PAINT_POT_PIECES.length * dripsPerPot : 0;
+  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1]);
   addBatch("particles", particles, toon([1, 1, 1], { tone: true }));
   const puff = mergeMeshes([
     sphereMesh(2.5, 14, 10),
@@ -859,6 +863,8 @@ export function buildWorld(options: WorldOptions): World {
       const splatScale: number[] = Array.from({ length: POOL.splatters }, () => -1);
       const particleColor: string[] = Array.from({ length: POOL.particles }, () => "");
       const particleShown: boolean[] = Array.from({ length: POOL.particles }, () => false);
+      const dripShown: boolean[] = Array.from({ length: dripCount }, () => false);
+      for (let i = 0; i < dripCount; i++) particles.setTone(POOL.particles + i, hexLinear(i < dripsPerPot ? "#f3bac8" : "#c9b8ec"));
       const cloudLocal: number[] = Array.from({ length: CLOUDS }, () => Number.NaN);
       let ballColorKey = "";
       let ballSymbolKind: SymbolKind | "" = "";
@@ -1067,6 +1073,23 @@ export function buildWorld(options: WorldOptions): World {
           particles.place(i, pa.x, pa.y, pa.z, 0, pa.scale, pa.scale, pa.scale);
           particleShown[i] = true;
           if (particleColor[i] !== pa.color) { particles.setTone(i, hexLinear(pa.color)); particleColor[i] = pa.color; }
+        }
+        // Droplets fall from the two admitted paint-pot islands. They share
+        // their scrolling/fade pose and never consume or mutate sim particles.
+        for (let i = 0; i < dripCount; i++) {
+          const slot = POOL.particles + i;
+          const piece = PIECES[PAINT_POT_PIECES[Math.floor(i / dripsPerPot)]!]!;
+          const pose = backdropPose(piece, o.distance - back, elapsed, look);
+          if (view.reducedMotion || view.cameraLayers !== true || app.effects?.runtime === "off" || pose.fade <= 0.1) {
+            if (dripShown[i]) { particles.collapse(slot); dripShown[i] = false; }
+            continue;
+          }
+          const drop = i % dripsPerPot;
+          const phase = ((elapsed * 0.55 + drop / dripsPerPot + piece.z0 * 0.03) % 1 + 1) % 1;
+          const offset = (drop - 1.5) * 0.38 * pose.fade;
+          const size = pose.fade * (1.2 - 0.35 * phase);
+          particles.place(slot, pose.x + offset * Math.cos(pose.yaw), pose.y - (0.15 + phase * 2.8) * pose.fade, pose.z - offset * Math.sin(pose.yaw), 0, size, size * 1.35, size);
+          dripShown[i] = true;
         }
 
         /* clouds: rewritten only when one respawns; the node carries the shared drift */
