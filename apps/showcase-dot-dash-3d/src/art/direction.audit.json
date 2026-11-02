@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-dot-dash-3d/src/art/direction.ts",
-  "sourceSha256": "e0dd1758398ea8477b34a8f7aa9584135f5c5023aa1153ebfb1b217a0c50a75a",
+  "sourceSha256": "3d030d3784c093f4f11dcb147137eaf7a9f7d046c3c3792e4887fc950e5a3f0d",
   "id": "dot-dash-3d",
   "genre": "maze-arcade",
   "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
@@ -72,6 +72,34 @@
       },
       {
         "assetKey": "dotdashCourierPod",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "dotdashSentryBeetle",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "dotdashSentryBeetle",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "dotdashSentrySpider",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "dotdashSentrySpider",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -150,10 +178,6 @@
         "practical": true
       },
       {
-        "node": "sentry-hunter",
-        "practical": false
-      },
-      {
         "node": "sentry-ambusher",
         "practical": false
       },
@@ -162,7 +186,7 @@
         "practical": false
       },
       {
-        "node": "sentry-skittish",
+        "node": "sentry-status-lenses",
         "practical": false
       },
       {
@@ -322,7 +346,7 @@
       },
       {
         "role": "enemy",
-        "assetKey": "dotDashSentryHunter",
+        "assetKey": "dotdashSentryBeetle",
         "maxTriangles": 8000,
         "minTriangles": 2000,
         "textureSet": "BC+N+ORM+E",
@@ -346,7 +370,7 @@
       },
       {
         "role": "enemy",
-        "assetKey": "dotDashSentrySkittish",
+        "assetKey": "dotdashSentrySpider",
         "maxTriangles": 8000,
         "minTriangles": 2000,
         "textureSet": "BC+N+ORM+E",

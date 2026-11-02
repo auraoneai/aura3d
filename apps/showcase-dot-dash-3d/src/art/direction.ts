@@ -53,12 +53,14 @@ export default defineArtDirection({
   framing: { rig: "topDown", subjectHeightFraction: [0.025, 0.08], fovDeg: [45, 52], mobile: "both" },
   assets: [
     // WP-36 generations. Phase 4 (4.7.2): the courier pod is admitted as `dotdashCourierPod` (the WP-36 key,
-    // simplified to 10.5k triangles); the sentries and dressing stay procedural (Meshy keys refuse API calls).
+    // simplified to 10.5k triangles). Wave 1 (post-4.7.9): the Hunter and Skittish sentries are the WP-36 keys
+    // `dotdashSentryBeetle` and `dotdashSentrySpider` (simplified to 7.6k each); Ambusher, Drifter and the dressing
+    // stay procedural (their Meshy rows never finished).
     { role: "hero", assetKey: "dotdashCourierPod", maxTriangles: 12000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentryHunter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    { role: "enemy", assetKey: "dotdashSentryBeetle", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "enemy", assetKey: "dotDashSentryAmbusher", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "enemy", assetKey: "dotDashSentryDrifter", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "dotDashSentrySkittish", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
+    { role: "enemy", assetKey: "dotdashSentrySpider", maxTriangles: 8000, minTriangles: 2000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "world", assetKey: "dotDashBoardSet", maxTriangles: 4000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024 },
     { role: "prop", assetKey: "dotDashComponentKit", maxTriangles: 24000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "dotDashBenchProps", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
