@@ -85,7 +85,9 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
   it("every model asset exists, matches its sha256 and the size budget", () => {
     let total = 0;
     for (const [key, ref] of Object.entries(MODELS as unknown as Record<string, { url: string; hash: string }>)) {
-      const file = resolve("examples/splat-rush-port/assets/models", ref.url.split("/").pop() as string);
+      /* Root-relative /aura-assets/ models (GU47 wave 1) live in the app's public tree; the rest next to models.ts. */
+      const dir = ref.url.startsWith("/aura-assets/") ? "apps/showcase-splat-rush-port/public/aura-assets" : "examples/splat-rush-port/assets/models";
+      const file = resolve(dir, ref.url.split("/").pop() as string);
       expect(existsSync(file), `${key} missing`).toBe(true);
       const hash = `sha256-${createHash("sha256").update(readFileSync(file)).digest("hex")}`;
       expect(hash, `${key} hash`).toBe(ref.hash);
