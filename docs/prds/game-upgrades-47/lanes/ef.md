@@ -52,7 +52,7 @@
 | E-I | `tools/real-gpu/scenarios.json` | owner scenario: FC, Links, Iron Crown with `?vfx=on&vfxdebug=1`, read `__AURA_VFX_DEBUG__()` after a goal / shot / exchange | only a real GPU can close the owner's report |
 | G05, G09, G10 | `apps/showcase-iron-crown/src/main.ts:399`, `apps/showcase-aura-fc-3d/src/main.ts:97`, `apps/showcase-aura-links-3d/src/main.ts:2816` | delete `effects.runtime = "off"` after the vfx-floating-dot receipt passes | engine paths closed (EF-8) |
 | G08, G09, G10 | Diamond `main.ts:766`, FC `game/scene.ts:418`, Links `main.ts:899` (`effects.trail({ target })`) | these ribbons now draw; add `life` (about 0.4 s) and `widthOverSpeed`, or remove the node | default change 99900dc51 |
-| (unowned follow-up) | `tools/vfx-atlas-bake/bake.mjs`, `packages/engine/assets/vfx/*` | advance `cy` by `rows * pitch` for multi-row sequences, re-bake, then restore full rows in `VFX_SPRITE_LAYOUT` | baked rows overlap |
+| (unowned follow-up) | `tools/vfx-atlas-bake/bake.mjs`, `packages/engine/assets/vfx/*` | advance `cy` by `rows * pitch` for multi-row sequences, re-bake, then restore full rows in `VFX_SPRITE_LAYOUT` | baked rows overlap; **done 2026-11-02 (c4bb2a056, see eint.md EF-6)** |
 | (unowned follow-up) | `packages/rendering/src/vfx/VfxAtlas.ts:sequence` | compute twin rects from the 132 px pitch | halved rects sample 4 px off |
 
 ## API as shipped
