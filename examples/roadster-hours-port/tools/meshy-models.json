@@ -14,7 +14,7 @@
  {
   "key": "sedan",
   "kind": "vehicle",
-  "glb": "artifacts/meshy/rr-sedan-r/model.glb",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindSedanSalt/opt/model.glb",
   "dims": [
    1.64,
    1.15,
@@ -62,7 +62,7 @@
  {
   "key": "bus",
   "kind": "vehicle",
-  "glb": "artifacts/meshy/rr-bus-r/model.glb",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindBusSalt/opt/model.glb",
   "dims": [
    2.5,
    3.3,
