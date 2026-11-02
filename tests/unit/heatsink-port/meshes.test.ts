@@ -155,24 +155,6 @@ describe("art-pass meshes", () => {
     expect(neon.positions.length / 3).toBe(count * 2 * 24);
   });
 
-  it("arches, open-markers style (twilight): the gantry's two pillars at the same spots, no beam across the road, a neon strip on each pillar", () => {
-    const gantry = buildArches(track);
-    const open = buildArches(track, 240, "open-markers");
-    check(open.body);
-    check(open.neon);
-    const count = Math.floor((track.length - 60 - 120 - 1) / 240) + 1;
-    expect(open.body.positions.length / 3).toBe(count * 2 * 24);
-    expect(open.neon.positions.length / 3).toBe(count * 2 * 24);
-    // the pillars are the gantry's first two boxes (same coordinates, same order); only the beam is gone
-    for (let k = 0; k < count; k++) {
-      const pillars = gantry.body.positions.slice(k * 3 * 24 * 3, k * 3 * 24 * 3 + 2 * 24 * 3);
-      expect(open.body.positions.slice(k * 2 * 24 * 3, (k + 1) * 2 * 24 * 3)).toEqual(pillars);
-    }
-    // the default style stays the gantry, so `?look=original` is unchanged
-    expect(buildArches(track, 240, "gantry").body.positions).toEqual(gantry.body.positions);
-    expect(buildArches(track, 240, "gantry").neon.positions).toEqual(gantry.neon.positions);
-  });
-
   it("shards are well formed, floating above the course and deterministic", () => {
     const a = buildShards(track);
     check(a);
