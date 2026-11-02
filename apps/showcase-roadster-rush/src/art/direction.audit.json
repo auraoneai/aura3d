@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-roadster-rush/src/art/direction.ts",
-  "sourceSha256": "c523fcbe86a2b13714d35bb65e54cba49c1aca72249e99b23a6587ad59d51357",
+  "sourceSha256": "550c168fd6b1b4a59ccf0e3fb4292b01eb899d1a69c8dc32749b24bd2f223d92",
   "id": "showcase-roadster-rush",
   "genre": "racing",
   "signatureEffect": "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
@@ -72,7 +72,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "roadsterRushSkyCar",
+        "assetKey": "roadster_rush_apexRivalInterceptor",
         "triangles": 0,
         "textures": 4,
         "unlit": false,
@@ -297,7 +297,7 @@
       },
       {
         "role": "enemy",
-        "assetKey": "roadsterRushSkyCar",
+        "assetKey": "roadster_rush_apexRivalInterceptor",
         "maxTriangles": 60000,
         "minTriangles": 4000,
         "textureSet": "BC+N+ORM",
