@@ -82,9 +82,9 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsBall.2aed886a.glb",
-    hash: "sha256-2aed886a35ff619d7a165d971d633400153461d9a87fef3c35030a07568cc003",
+    hash: "sha256-158f2bb2b516623368509d02854b0f88bb7e0ae7663bf21d659a8ce2a08b9e22",
     bounds: [1.902,1.903,1.903],
-    sizeBytes: 1822980,
+    sizeBytes: 933456,
   },
   "hoopsBallCart": {
     type: "model",
@@ -290,9 +290,9 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsHoopRig.b6d696b6.glb",
-    hash: "sha256-b6d696b6ae7d75097a33f242045c28c225f91bd90e514c12c8a7148229c7331c",
+    hash: "sha256-f538cf590d928ffeb3dc30624917cef8cc4466c50c326e13f833be8e469a931c",
     bounds: [1.002,1.903,0.489],
-    sizeBytes: 5440984,
+    sizeBytes: 1030296,
   },
   "hoopsDunkSfx": {
     type: "audio",
