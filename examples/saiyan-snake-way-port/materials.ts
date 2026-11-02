@@ -129,7 +129,8 @@ export const roadSpec = (): CustomSpec => ({
      * GU47 phase 4: analytic sun shadows of the pilgrim gates (world.ts GATE_*), since their shadow-map casts do not land on
      * this custom road in software WebGL2. gateSun = (ground direction away from the sun along the road, across it, tan of
      * the sun elevation); gateSpacing, post offset; gateSkip = road distances of the two nearest stage boards (no gate there).
-     * gateSun.z 0 (default, `?look=original`) draws nothing.
+     * gateSun.z 0 (default, `?look=original`) draws nothing. The script road shader (SCRIPT_ROAD_FRAGMENT) traces only the
+     * posts of the jade markers that replaced the cross-road gates; the shared original shader text keeps the beam terms.
      */
     gateSun: { type: "vec3", value: [0, 0, 0] },
     gateSpacing: { type: "f32", value: 54 },

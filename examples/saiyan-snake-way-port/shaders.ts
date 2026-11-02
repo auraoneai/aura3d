@@ -400,11 +400,19 @@ const ROAD_FRAGMENT_TAIL = /* glsl */ `
       float pen = 0.12 + u * 0.012;
       float xr = vCross.x - u * gateSun.y;        // this fragment traced back under the gate plane
       float post = (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr - gatePost))) + (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr + gatePost)));
-      post *= 1.0 - smoothstep(9.3, 9.6, h);
+      post *= 1.0 - smoothstep(9.3, 9.6, h);`;
+
+// Keep the original road shader byte-for-byte; script-mode markers have no crossbars to cast these beam shadows.
+const ROAD_GATE_BEAM_SHADOW = /* glsl */ `
       float hb = pen * te;
       float tie = (smoothstep(7.72 - hb, 7.72, h) - smoothstep(8.07, 8.07 + hb, h)) * (1.0 - smoothstep(gatePost + 0.1, gatePost + 0.1 + pen, abs(xr)));
       float lintel = (smoothstep(9.15 - hb, 9.15, h) - smoothstep(10.01, 10.01 + hb, h)) * (1.0 - smoothstep(gatePost + 1.5, gatePost + 1.8 + pen, abs(xr)));
-      gate = max(gate, clamp(max(post, max(tie, lintel)), 0.0, 1.0));
+      gate = max(gate, clamp(max(post, max(tie, lintel)), 0.0, 1.0));`;
+
+const SCRIPT_MARKER_SHADOW = /* glsl */ `
+      gate = max(gate, clamp(post, 0.0, 1.0));`;
+
+const ROAD_FRAGMENT_FINISH = /* glsl */ `
     }
     gateShade = gate;
   }
@@ -478,8 +486,8 @@ const SCRIPT_SCALE_SEAMS = /* glsl */ `
     }
 `;
 
-export const ROAD_FRAGMENT = ROAD_FRAGMENT_HEAD + ROAD_FRAGMENT_TAIL;
-export const SCRIPT_ROAD_FRAGMENT = SCRIPT_SCALE_FUNCTION + ROAD_FRAGMENT_HEAD + SCRIPT_SCALE_SEAMS + ROAD_FRAGMENT_TAIL;
+export const ROAD_FRAGMENT = ROAD_FRAGMENT_HEAD + ROAD_FRAGMENT_TAIL + ROAD_GATE_BEAM_SHADOW + ROAD_FRAGMENT_FINISH;
+export const SCRIPT_ROAD_FRAGMENT = SCRIPT_SCALE_FUNCTION + ROAD_FRAGMENT_HEAD + SCRIPT_SCALE_SEAMS + ROAD_FRAGMENT_TAIL + SCRIPT_MARKER_SHADOW + ROAD_FRAGMENT_FINISH;
 
 /** Surge aura shell: the original's stacked blade tiers (ported verbatim), shaded with `auraTime` / `auraIntensity` / ... */
 export const AURA_VERTEX = /* glsl */ `

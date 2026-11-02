@@ -49,7 +49,7 @@ describe("Serpentine road scale composition", () => {
     expect(SCRIPT_ROAD_FRAGMENT).not.toBe(ROAD_FRAGMENT);
   });
 
-  it("adds the bow only inside the script branch, after the existing derivative filter", () => {
+  it("adds the bow only inside the script branch, after the existing derivative filter, and traces only marker posts", () => {
     const functionEnd = SCRIPT_ROAD_FRAGMENT.indexOf("\nin vec3 vNormal;");
     const bow = SCRIPT_ROAD_FRAGMENT.slice(0, functionEnd);
     expect(bow).toBe(`
@@ -63,7 +63,17 @@ float serpentScaleBow(float x, float row) {
     const insertedAt = branch + "  } else {".length;
     const after = withoutFunction.indexOf("\n    // GU47 SSR-08: living serpent road.", insertedAt);
     const inserted = withoutFunction.slice(insertedAt, after);
-    expect(withoutFunction.slice(0, insertedAt) + withoutFunction.slice(after)).toBe(ROAD_FRAGMENT);
+    // The script look draws paired jade markers (posts only, no cross-road beam), so its road shader drops the original gates'
+    // tie and lintel shadow terms: with the bow removed it equals the shared original shader with exactly that block replaced.
+    const beamStart = ROAD_FRAGMENT.indexOf("\n      float hb = pen * te;");
+    const beamEndMarker = "gate = max(gate, clamp(max(post, max(tie, lintel)), 0.0, 1.0));";
+    const beamEnd = ROAD_FRAGMENT.indexOf(beamEndMarker) + beamEndMarker.length;
+    expect(beamStart).toBeGreaterThan(0);
+    expect(beamEnd).toBeGreaterThan(beamStart);
+    const originalWithMarkerShadow = ROAD_FRAGMENT.slice(0, beamStart) + "\n      gate = max(gate, clamp(post, 0.0, 1.0));" + ROAD_FRAGMENT.slice(beamEnd);
+    expect(withoutFunction.slice(0, insertedAt) + withoutFunction.slice(after)).toBe(originalWithMarkerShadow);
+    expect(ROAD_FRAGMENT).toContain("float lintel");
+    for (const beam of ["float hb", "float tie", "float lintel"]) expect(SCRIPT_ROAD_FRAGMENT).not.toContain(beam);
     expect(withoutFunction.indexOf("fwidth(cell)")).toBeLessThan(branch);
     expect(inserted).toContain("if (top > 0.0 && detail > 0.0)");
     expect(inserted).toContain("joint = mix(joint, scaleJoint, top)");

@@ -100,10 +100,9 @@ const POST_TINT: V3 = [0.16, 0.025, 0.03];
 const CORD_TINT: V3 = [0.09, 0.05, 0.06];
 export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SPACING);
 /**
- * GU47 phase 4 (rubric: shadows): pilgrim gates (two lacquer posts, a gold tie beam and a lintel) span the road every
- * `GATE_EVERY` verge spans, drawn as extra instances of the flag draw (0 new draws). The flag draw casts the sun shadow, so
- * the gates lay shadow bands across the plates. They stand outside the road top (posts at +-GATE_HALF_SPAN m) and their beams
- * clear 7.6 m, above every grounded runner pose; presentation only (no collision). None within GATE_BOARD_CLEAR m of a board.
+ * Script-mode pilgrim markers stand in pairs every `GATE_EVERY` verge spans. Each jade-and-gold marker is three stacked
+ * sections in the existing flag draw; their combined silhouette is the same width and height as the old gate posts.
+ * They stand outside the road top, have no collision, and leave the path overhead clear. None is near a stage board.
  */
 export const GATE_EVERY = 3;
 export const GATE_HALF_SPAN = 5.6;
@@ -112,11 +111,10 @@ export const GATE_POST_WIDTH = 0.8;
 const GATE_PIECES = 6;
 const GATE_BOARD_CLEAR = 30;
 export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
-/** Temple-craft palette (identity row): deep red lacquer posts, an indigo lacquer lintel under a gold-leaf ridge, a gold tie. */
-const GATE_POST_TINT: V3 = [0.2, 0.022, 0.026];
-const GATE_LINTEL_TINT: V3 = [0.045, 0.03, 0.12];
-const GATE_TIE_TINT: V3 = [0.52, 0.3, 0.06];
-const GATE_RIDGE_TINT: V3 = [0.62, 0.38, 0.08];
+/** Jade lacquer, gold inlay and pearl-jade capitals from the serpent-road palette. */
+const GATE_POST_TINT: V3 = [0.025, 0.16, 0.12];
+const GATE_BAND_TINT: V3 = [0.52, 0.3, 0.06];
+const GATE_CAP_TINT: V3 = [0.12, 0.28, 0.22];
 /** Flag-draw capacity: verge pieces plus the gate pieces. */
 export const FLAG_DRAW_SLOTS = VERGE_POSTS * VERGE_PIECES + GATE_SLOTS * GATE_PIECES;
 /**
@@ -720,7 +718,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           shadow.setUniform?.("blobDir", [g[0] / gl, g[1] / gl, g[2] / gl]);
           shadow.setUniform?.("blobShade", [0.04, 0.02, 0.08]);
           shadow.setUniform?.("blobAlpha", 0.6);
-          // GU47 phase 4: the gates' analytic shadows on the road use the same sun, in road coordinates (along F, across R)
+          // The markers' analytic post shadows use the same sun, in road coordinates (along F, across R).
           const gn: V3 = [g[0] / gl, g[1] / gl, g[2] / gl];
           const te = Math.max(0.01, su) / Math.sqrt(Math.max(1e-4, 1 - su * su));
           const roadNode = node("road") as Partial<ReturnType<typeof node>>;
@@ -867,7 +865,7 @@ export function buildWorld(options: WorldOptions = {}): World {
               }
             }
           }
-          // GU47 phase 4: pilgrim gates across the road on every GATE_EVERY-th span (shadow casters, same draw)
+          // Paired markers replace the cross-road gate silhouette, retaining six instances and the two post shadows.
           for (let k = 0; k < VERGE_POSTS / 2; k++) {
             if (mod(first + k, GATE_EVERY) !== 0) continue;
             const s0 = (first + k) * VERGE_SPACING;
@@ -878,12 +876,11 @@ export function buildWorld(options: WorldOptions = {}): World {
               writeMatrix(flagBuf.data, fi * 16, [gb[0] * sx, gb[1] * sx, gb[2] * sx, gb[3] * sy, gb[4] * sy, gb[5] * sy, gb[6] * sz, gb[7] * sz, gb[8] * sz], at, 1);
               flagBuf.rgba.set([...tint, 1], fi * 4); fi++;
             };
-            box(onRoad(gf, -GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
-            box(onRoad(gf, GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
-            box(onRoad(gf, 0, 7.9), GATE_HALF_SPAN * 2 + 0.2, 0.35, 0.45, GATE_TIE_TINT);
-            box(onRoad(gf, 0, 9.45), GATE_HALF_SPAN * 2 + 3, 0.6, 0.85, GATE_LINTEL_TINT);
-            box(onRoad(gf, 0, 9.9), GATE_HALF_SPAN * 2 + 3.6, 0.22, 1.25, GATE_RIDGE_TINT);
-            box(onRoad(gf, 0, 8.65), 1.3, 1.1, 0.25, GATE_LINTEL_TINT);
+            for (const side of [-1, 1]) {
+              box(onRoad(gf, side * GATE_HALF_SPAN, 3.0), GATE_POST_WIDTH, 6.6, GATE_POST_WIDTH, GATE_POST_TINT);
+              box(onRoad(gf, side * GATE_HALF_SPAN, 6.55), GATE_POST_WIDTH, 0.5, GATE_POST_WIDTH, GATE_BAND_TINT);
+              box(onRoad(gf, side * GATE_HALF_SPAN, 8.05), GATE_POST_WIDTH, 2.5, GATE_POST_WIDTH, GATE_CAP_TINT);
+            }
           }
           const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
           flags.setInstanceMatrices?.(flagBuf.data, fi, flagBuf.rgba);
