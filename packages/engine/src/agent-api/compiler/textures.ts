@@ -176,6 +176,7 @@ export function blankProductionPrimitiveTextureState(): {
 export const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", "clearcoatNormal", "sheenColor", "sheenRoughness", "iridescence", "iridescenceThickness", "anisotropy"] as const;
 
 export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[number];
+const ROOT_SCALAR_ATLAS_SLOTS: readonly RootExtensionTextureSlot[] = ["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"];
 
 /**
  * GU47 e6 phase 7: a decoded map. Normally an `ImageBitmap`; when `createImageBitmap` does not settle within
@@ -185,6 +186,68 @@ export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[numbe
 export type ProductionTextureImage = ImageBitmap | (HTMLImageElement & { close(): void });
 
 export const productionPrimitiveBitmapPixels = new WeakMap<ProductionTextureImage, { readonly width: number; readonly height: number; readonly data: Uint8Array }>();
+
+interface PendingProductionTexturePixels {
+  readonly bytes: Uint8Array;
+  promise?: Promise<void>;
+}
+
+// A shared image can be used first by a GPU-only slot and later by a scalar
+// slot. Retain its encoded PNG until the first CPU request (or last release),
+// rather than deciding from whichever user happened to acquire the URL first.
+const pendingProductionTexturePixels = new WeakMap<ProductionTextureImage, PendingProductionTexturePixels>();
+// Identity works for both the <img> fallback and bitmaps from another realm,
+// including non-PNG / unsupported PNG sources that need canvas readback.
+const productionTextureImageStates = new WeakMap<ProductionTextureImage, "live" | "released">();
+
+function trackProductionTextureImage(bitmap: ProductionTextureImage): void {
+  if (!productionTextureImageStates.has(bitmap)) productionTextureImageStates.set(bitmap, "live");
+}
+
+function isTrackedProductionTextureImage(source: TexImageSource): source is ProductionTextureImage {
+  const bitmap = source as ProductionTextureImage;
+  return productionTextureImageStates.has(bitmap) || productionPrimitiveBitmapPixels.has(bitmap);
+}
+
+function assertProductionTextureImageLive(bitmap: ProductionTextureImage): void {
+  if (productionTextureImageStates.get(bitmap) === "released") throw new Error("shared texture image was released");
+}
+
+/**
+ * Prepare a shared image's exact PNG pixels before synchronous readback with
+ * `bitmapRgbaPixels` or `auraTextureRefPixels`. Direct loads already prepare
+ * them; GPU-only shared loads do not. Keep the shared handle held through the
+ * read. Failed preparation can be retried while the image is still held.
+ */
+export async function prepareProductionTexturePixels(bitmap: ProductionTextureImage): Promise<void> {
+  assertProductionTextureImageLive(bitmap);
+  const pending = pendingProductionTexturePixels.get(bitmap);
+  if (!pending) return;
+  if (!pending.promise) {
+    const decode = (async (): Promise<void> => {
+      const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
+      const pixels = await decodePngTexturePixels(pending.bytes);
+      // The last holder may have released while the decode was in flight.
+      if (pendingProductionTexturePixels.get(bitmap) !== pending) throw new Error("texture PNG was released while preparing pixels");
+      if (pixels) productionPrimitiveBitmapPixels.set(bitmap, pixels);
+      pendingProductionTexturePixels.delete(bitmap);
+    })();
+    pending.promise = decode;
+    // Failed CPU reads remain retryable, including while a GPU-only holder is
+    // still using the image. Every requesting consumer also observes the error.
+    void decode.catch(() => {
+      if (pending.promise === decode) delete pending.promise;
+    });
+  }
+  await pending.promise;
+}
+
+function closeSharedProductionTextureImage(bitmap: ProductionTextureImage): void {
+  productionTextureImageStates.set(bitmap, "released");
+  pendingProductionTexturePixels.delete(bitmap);
+  productionPrimitiveBitmapPixels.delete(bitmap);
+  bitmap.close();
+}
 
 /**
  * GU47 e6 phase 7 (g09 texPending): how long a map waits for `createImageBitmap` before it decodes through an
@@ -244,7 +307,11 @@ async function decodeProductionTextureImage(blob: Blob, onFallback?: () => void)
   return winner;
 }
 
-export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step: "fetch" | "body" | "decode" | "decode-fallback" | "pixels") => void): Promise<ProductionTextureImage> {
+async function loadProductionPrimitiveBitmapImpl(
+  url: string,
+  onStep: ((step: ProductionTextureLoadStep) => void) | undefined,
+  deferPixels: boolean
+): Promise<ProductionTextureImage> {
   if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
     throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
   }
@@ -258,16 +325,21 @@ export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step:
   const blob = new Blob([bytes], { type: response.headers.get("content-type") ?? "" });
   onStep?.("decode");
   const bitmap = await decodeProductionTextureImage(blob, () => onStep?.("decode-fallback"));
-  onStep?.("pixels");
+  trackProductionTextureImage(bitmap);
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    pendingProductionTexturePixels.set(bitmap, { bytes });
+  }
+  if (deferPixels) return bitmap;
   try {
-    // Only a PNG carries exact CPU pixels (decodePngTexturePixels returns undefined for anything else).
-    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
-      const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
-      const pixels = await decodePngTexturePixels(bytes);
-      if (pixels) productionPrimitiveBitmapPixels.set(bitmap, pixels);
-    }
+    onStep?.("pixels");
+    await prepareProductionTexturePixels(bitmap);
     return bitmap;
-  } catch (error) { bitmap.close(); throw error; }
+  } catch (error) { closeSharedProductionTextureImage(bitmap); throw error; }
+}
+
+/** Direct consumers, including cube backgrounds, retain the eager CPU-pixel contract. */
+export async function loadProductionPrimitiveBitmap(url: string, onStep?: (step: ProductionTextureLoadStep) => void): Promise<ProductionTextureImage> {
+  return loadProductionPrimitiveBitmapImpl(url, onStep, false);
 }
 
 export type ProductionTextureLoadStep = "fetch" | "body" | "decode" | "decode-fallback" | "pixels";
@@ -280,6 +352,8 @@ export type ProductionTextureLoadStep = "fetch" | "body" | "decode" | "decode-fa
  * releases, and the entry leaves the cache at that moment, so a later acquire decodes afresh and never receives a
  * closed image. A failed decode leaves the cache too (the next acquire retries). Only the CPU-side decoded image is
  * shared: every material still builds and disposes its own GPU `Texture`.
+ * A `TextureHandle` wrapping the image does not retain a cache reference; keep an explicit shared handle until every
+ * such use is finished. GPU-only acquisitions defer PNG pixels; await `prepareProductionTexturePixels` before readback.
  *
  * The key carries the decode options as well as the URL. Every map decodes with the same unpack settings today
  * (`premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip; the sRGB/linear choice is made per GPU texture),
@@ -304,6 +378,7 @@ const sharedProductionTextureDecodes = new Map<string, SharedProductionTextureDe
 export const sharedProductionTextureDecodeStats = { decodes: 0, hits: 0 };
 
 export interface SharedProductionTextureImageHandle {
+  /** GPU-ready image; shared PNG CPU pixels may still need preparation. */
   readonly image: Promise<ProductionTextureImage>;
   /** Gives the reference back; idempotent. The last release closes the image. */
   release(): void;
@@ -312,7 +387,8 @@ export interface SharedProductionTextureImageHandle {
 export function acquireSharedProductionTextureImage(
   url: string,
   onStep?: (step: ProductionTextureLoadStep) => void,
-  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> = loadProductionPrimitiveBitmap
+  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> =
+    (source, report) => loadProductionPrimitiveBitmapImpl(source, report, true)
 ): SharedProductionTextureImageHandle {
   const key = `${url}#${SHARED_DECODE_OPTIONS_KEY}`;
   let entry = sharedProductionTextureDecodes.get(key);
@@ -326,9 +402,10 @@ export function acquireSharedProductionTextureImage(
       if (created) created.step = step;
       for (const listener of listeners) listener(step);
     }).then((image) => {
+      trackProductionTextureImage(image);
       created!.image = image;
       listeners.clear();
-      if (created!.dead) image.close();
+      if (created!.dead) closeSharedProductionTextureImage(image);
       return image;
     }, (error: unknown) => {
       listeners.clear();
@@ -348,12 +425,15 @@ export function acquireSharedProductionTextureImage(
     if (held.step) onStep(held.step);
   }
   let released = false;
+  const image = held.promise.then((value) => {
+    // Defensive: a holder's own reference keeps the entry alive, so its image cannot have been closed.
+    if (held.dead) throw new Error(`shared texture decode for ${url} was released before it was read`);
+    return value;
+  });
+  // A released holder may never observe its derived promise.
+  void image.catch(() => undefined);
   return {
-    image: held.promise.then((image) => {
-      // Defensive: a holder's own reference keeps the entry alive, so its image cannot have been closed.
-      if (held.dead) throw new Error(`shared texture decode for ${url} was released before it was read`);
-      return image;
-    }),
+    image,
     release: () => {
       if (released) return;
       released = true;
@@ -362,7 +442,7 @@ export function acquireSharedProductionTextureImage(
       if (held.refs > 0) return;
       held.dead = true;
       if (sharedProductionTextureDecodes.get(held.key) === held) sharedProductionTextureDecodes.delete(held.key);
-      held.image?.close();
+      if (held.image) closeSharedProductionTextureImage(held.image);
     }
   };
 }
@@ -374,9 +454,14 @@ export function resetSharedProductionTextureDecodes(): void {
   sharedProductionTextureDecodeStats.hits = 0;
 }
 
+/** Synchronous readback: prepare a lazy shared PNG first and keep its cache handle held while reading. */
 export function bitmapRgbaPixels(bitmap: ProductionTextureImage): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
+  assertProductionTextureImageLive(bitmap);
   const decoded = productionPrimitiveBitmapPixels.get(bitmap);
   if (decoded) return decoded;
+  // Canvas readback can destroy RGB under low/zero alpha. Never silently use
+  // it for a shared PNG whose exact decode was not awaited by the consumer.
+  if (pendingProductionTexturePixels.has(bitmap)) throw new Error("texture PNG pixels must be prepared before synchronous readback; await prepareProductionTexturePixels(image)");
   if (typeof document === "undefined") throw new Error("texture compositing requires a DOM canvas");
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
@@ -493,6 +578,12 @@ export async function upgradeProductionPrimitiveResource(
   const needsScalarAtlas = extensionEntries.some(([slot]) => slot.startsWith("clearcoat"))
     && extensionEntries.some(([slot]) => slot.startsWith("sheen") || slot === "anisotropy")
     && extensionEntries.some(([slot]) => slot.startsWith("iridescence"));
+  const pixelUrls = new Set<string>();
+  if (intent.roughnessUrl) pixelUrls.add(intent.roughnessUrl);
+  if (intent.metalnessUrl) pixelUrls.add(intent.metalnessUrl);
+  if (needsScalarAtlas) {
+    for (const [slot, map] of extensionEntries) if (ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) pixelUrls.add(map.url);
+  }
   if (extensionEntries.some(([, map]) => map.texCoord === 1) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) {
     throw fail(`"${resource.name}" geometry carries no uv1 set requested by extension texture`);
   }
@@ -528,7 +619,14 @@ export async function upgradeProductionPrimitiveResource(
       showLoadSteps();
       const handle = acquireSharedProductionTextureImage(url, (step) => { if (loadSteps.has(url)) { loadSteps.set(url, step); showLoadSteps(); } });
       releases.push(handle.release);
-      pending = handle.image.then((bitmap) => {
+      pending = handle.image.then(async (bitmap) => {
+        if (pixelUrls.has(url)) {
+          loadSteps.set(url, "pixels");
+          showLoadSteps();
+          await prepareProductionTexturePixels(bitmap);
+        }
+        return bitmap;
+      }).then((bitmap) => {
         loadSteps.delete(url);
         showLoadSteps();
         return bitmap;
@@ -564,6 +662,19 @@ export async function upgradeProductionPrimitiveResource(
     const failure = [...baseResults, ...settledExtensions].find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
     const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
+    // A texture handle can wrap an image already held by a GPU-only resource.
+    // Its synchronous pixel reader needs the same exact PNG preparation.
+    const pixelRefs = [intent.roughnessRef, intent.metalnessRef, ...Object.entries(intent.extensionRefs ?? {})
+      .filter(([slot]) => needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot as RootExtensionTextureSlot))
+      .map(([, ref]) => ref)];
+    for (const ref of pixelRefs) {
+      if (!ref) continue;
+      const source = auraTextureRefTexture(ref)?.source;
+      if (source && isTrackedProductionTextureImage(source) && pendingProductionTexturePixels.has(source)) {
+        markTextureStage(resource, `pixels texture:${ref.id}`);
+        await prepareProductionTexturePixels(source);
+      }
+    }
     const slots: string[] = [];
     const extensionOptions: Record<string, unknown> = {};
     const extensionSources: ProductionTextureImage[] = [];
@@ -571,7 +682,7 @@ export async function upgradeProductionPrimitiveResource(
     for (const [slot, map] of extensionEntries) {
       const source = await load(map.url);
       extensionSources.push(source);
-      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+      if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         Object.assign(atlasPixels, { [slot]: bitmapRgbaPixels(source) });
       }
       extensionOptions[`${slot}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
@@ -582,7 +693,7 @@ export async function upgradeProductionPrimitiveResource(
     // directly — handle-owned textures, handle sampler, handle transform.
     for (const [slot, ref] of Object.entries(intent.extensionRefs ?? {}) as [RootExtensionTextureSlot, AuraTextureRef][]) {
       const binding = refBindingFor(`ext:${slot}`, ref)!;
-      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+      if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         const pixels = auraTextureRefPixels(ref);
         if (!pixels) throw fail(`"${resource.name}" extension slot ${slot}Map texture handle has no CPU-readable pixels for the scalar atlas`);
         Object.assign(atlasPixels, { [slot]: pixels });
@@ -1061,6 +1172,9 @@ export function resolveAuraTextureRef(ref: AuraTextureRef): AuraTextureRefBindin
       `texture handle "${ref.id}" has no backing device texture (disposed or never uploaded)`
     );
   }
+  if (texture.source && productionTextureImageStates.get(texture.source as ProductionTextureImage) === "released") {
+    throw new AuraRuntimeError("unsupported-texture", `texture handle "${ref.id}" references a released shared texture image`);
+  }
   return { texture, sampler: auraTextureRefSampler(ref), transform: auraTextureRefTransform(ref) };
 }
 
@@ -1083,7 +1197,7 @@ export function auraTextureRefPixels(
   if (data instanceof Uint8Array) return { width: texture.width, height: texture.height, data };
   const source = texture.source;
   if (!source) return undefined;
-  if (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap) {
+  if (isTrackedProductionTextureImage(source) || (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap)) {
     return bitmapRgbaPixels(source);
   }
   // Canvas sources read back through a 2d canvas (browser path only).

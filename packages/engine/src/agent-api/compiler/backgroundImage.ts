@@ -95,13 +95,16 @@ export function createProductionRuntimeBackgroundImage(
       warn("scene background({ cube }) faces must be urls or aura-asset-refs with a url; authored clear colour retained");
       return undefined;
     }
-    void Promise.all((urls as string[]).map((url) => loadProductionPrimitiveBitmap(url)))
+    let failed = false;
+    void Promise.all((urls as string[]).map((url) => loadProductionPrimitiveBitmap(url).then((bitmap) => {
+      // Own each face as soon as it lands: Promise.all can reject before
+      // siblings finish, or the background can be disposed while they load.
+      if (disposed || failed) bitmap.close();
+      else ownedBitmaps.push(bitmap);
+      return bitmap;
+    })))
       .then((bitmaps) => {
-        if (disposed) {
-          for (const bitmap of bitmaps) bitmap.close();
-          return;
-        }
-        ownedBitmaps.push(...bitmaps);
+        if (disposed) return;
         const faceSize = bitmaps[0]!.width;
         if (bitmaps.some((bitmap) => bitmap.width !== faceSize || bitmap.height !== faceSize)) {
           throw new Error("cube background faces must be square and equal-sized");
@@ -126,7 +129,14 @@ export function createProductionRuntimeBackgroundImage(
           ...(spec.cube.rotation !== undefined ? { rotation: spec.cube.rotation } : {})
         };
       })
-      .catch((error: unknown) => fail(error instanceof Error ? error.message : String(error)));
+      .catch((error: unknown) => {
+        failed = true;
+        for (const texture of ownedTextures) texture.dispose();
+        for (const bitmap of ownedBitmaps) bitmap.close();
+        ownedTextures.length = 0;
+        ownedBitmaps.length = 0;
+        fail(error instanceof Error ? error.message : String(error));
+      });
   }
 
   return {
