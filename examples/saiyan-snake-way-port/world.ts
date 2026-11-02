@@ -123,6 +123,13 @@ export const FLAG_DRAW_SLOTS = VERGE_POSTS * VERGE_PIECES + GATE_SLOTS * GATE_PI
  * recycled every SERPENT_HEAD.cycle m, alternating sides, entering from the fog far ahead.
  */
 export const SERPENT_HEAD = { cycle: 1400, ahead: 1050, lateral: 150, height: 130, rise: -12, yawDeg: 45 } as const;
+
+/**
+ * GU47 wave 1 (WP-36 serpPavilion, SSR-10/17): one red lacquer pavilion on its floating rock, left of the road (the empty side of
+ * the chase frame; the islands and serpent head hold the right), recycled every `cycle` m and `ahead` m in front at the start.
+ * Background only: no collision, no shadow casting, one model node.
+ */
+export const SERPENT_PAVILION = { cycle: 840, ahead: 95, lateral: -34, height: 22, rise: 7, yawDeg: 150 } as const;
 /**
  * GU47 SSR-11: island parallax bands beyond the six near Meshy islands. Each band is one instanced draw of inverted spire
  * cones recycled along the road: `count` islands every `spacing` m, `lateral` m out, `up` m above the road, `fog` the
@@ -425,6 +432,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
   for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `island-${i}` }));
   if (script) builder.add(model(MESHY.serpentHead, { name: "serpent-head", targetHeight: SERPENT_HEAD.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-head" }));
+  if (script) builder.add(model(MESHY.pavilion, { name: "serpent-pavilion", targetHeight: SERPENT_PAVILION.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-pavilion" }));
 
   /* the runner and the aura shell */
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
@@ -825,6 +833,15 @@ export function buildWorld(options: WorldOptions = {}): World {
           const hp = onRoad(hf, side * SERPENT_HEAD.lateral, SERPENT_HEAD.rise + (reducedMotion ? 0 : Math.sin(time * 0.25) * 2));
           const he = matrixEuler(frameBasis(hf, (-side * SERPENT_HEAD.yawDeg * Math.PI) / 180));
           show("serpent-head", true).setPosition(hp[0], hp[1], hp[2]).setRotation(he[0], he[1], he[2]);
+        }
+
+        /* GU47 wave 1 (WP-36 serpPavilion): the lacquer pavilion floating left of the road, recycled ahead */
+        if (script) {
+          const rel = mod(SERPENT_PAVILION.ahead + 90 - S.s, SERPENT_PAVILION.cycle) - 90;
+          const pf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+          const pp = onRoad(pf, SERPENT_PAVILION.lateral, SERPENT_PAVILION.rise + (reducedMotion ? 0 : Math.sin(time * 0.35 + 0.8) * 0.8));
+          const pe = matrixEuler(frameBasis(pf, (SERPENT_PAVILION.yawDeg * Math.PI) / 180));
+          show("serpent-pavilion", true).setPosition(pp[0], pp[1], pp[2]).setRotation(pe[0], pe[1], pe[2]);
         }
 
         /* GU47 SSR-11: flag lines strung between verge posts every 18 m, a lantern hanging at each post */

@@ -15,7 +15,16 @@ export const MESHY = defineModelAssets({
   feast: glb("feast.glb", "sha256-ef57f499e2352bb73b9098a73190f88412b86aa54a1b9b711d7f69b2e856bac7"),
   lantern: glb("lantern.glb", "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b"),
   /** GU47 WP-36 `serpSerpentHead` (admitted 2026-10-31, provenance/serpentHead.*): the colossal serpent landmark (SSR-10/17). */
-  serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34")
+  serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34"),
+  /**
+   * GU47 wave 1 (post-4.7.9) WP-36 `serpPavilion` (typed key serpentine_sky_run_port_serpPavilion, admitted 2026-11-02 with
+   * `aura3d assets import-meshy`, provenance/serpPavilion.*): the red lacquer pavilion on its rock, a background landmark
+   * (SSR-10/17). Served from the app's public/aura-assets/ with a ROOT-RELATIVE url (never new URL(..., import.meta.url)).
+   */
+  pavilion: {
+    url: "/aura-assets/serpentine_sky_run_port_serpPavilion.glb",
+    sha256: "sha256-3564ee27ed01e2dbde9f85eed5b236e11adde0c40a688423f30a9b7554c63879"
+  }
 }, { license: LICENSE, queryParam: null }).refs;
 
 /** Both versions retain the same rig and clips; only the original uses the 4.6.2 teal atlas. */

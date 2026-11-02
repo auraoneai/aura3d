@@ -52,7 +52,9 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "lantern", maxTriangles: 12000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "island", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
     // GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent landmark
-    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 }
+    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
+    // GU47 wave 1 (WP-36 serpPavilion): the lacquer pavilion landmark, 113,872 triangles as admitted (no decimation pass in this lane)
+    { role: "backdrop", assetKey: "pavilion", maxTriangles: 120000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "orb-pickup", kind: "serpent-orb" },
