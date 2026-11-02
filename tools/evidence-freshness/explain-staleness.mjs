@@ -45,7 +45,10 @@ const root = resolve(readFlag(args, "--root") ?? process.cwd());
 
 function readFlag(argv, flag) {
   const index = argv.indexOf(flag);
-  return index >= 0 ? argv[index + 1] : undefined;
+  if (index < 0) return undefined;
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`${flag} requires a value`);
+  return value;
 }
 
 function readJson(absolutePath) {
@@ -56,46 +59,58 @@ function readJson(absolutePath) {
   }
 }
 
+const gateModule = await import(resolve(root, "tools/showcase-library/route-gates.mjs"));
+const probeModule = await import(resolve(root, "tools/showcase-library/route-primary-probes.mjs"));
+if (typeof gateModule.readShowcaseRouteGateConfig !== "function") {
+  throw new Error("Route gate metadata reader is unavailable");
+}
+if (typeof probeModule.routePrimaryProbeExpectedRouteIds !== "function" ||
+    typeof probeModule.createRouteSourceHash !== "function" ||
+    typeof probeModule.hashRouteHealthDependency !== "function" ||
+    typeof probeModule.ROUTE_PRIMARY_PROBE_PRODUCER_VERSION !== "string" ||
+    !probeModule.ROUTE_PRIMARY_PROBE_PRODUCER_VERSION.trim()) {
+  throw new Error("Route-primary producer metadata is unavailable or malformed");
+}
+
+const gatePath = resolve(root, "tools/showcase-library/route-gates.json");
+let gates;
+try {
+  gates = gateModule.readShowcaseRouteGateConfig(root);
+} catch (error) {
+  throw new Error(`Cannot read valid route gate metadata ${gatePath}: ${error.message}`, { cause: error });
+}
+if (gates.routes.length === 0) {
+  throw new Error(`${gatePath} must contain at least one route`);
+}
+
+// The shared gate reader validates the route schema, including IDs, assets, and frozen markers.
+// The two selection flags also need checking: a typo must not silently remove an expected probe.
+for (const route of gates.routes) {
+  if (typeof route.published !== "boolean") {
+    throw new Error(`${gatePath} route ${route.id} must define published as a boolean`);
+  }
+  if (route.requiresRoutePrimaryProbe !== undefined && typeof route.requiresRoutePrimaryProbe !== "boolean") {
+    throw new Error(`${gatePath} route ${route.id} requiresRoutePrimaryProbe must be a boolean`);
+  }
+}
+if (routeFilter && !gates.routes.some((route) => route.id === routeFilter)) {
+  throw new Error(`${gatePath} has no route matching --route ${routeFilter}`);
+}
+const inScope = (route) => !routeFilter || route.id === routeFilter;
+
 /**
- * Route ids that publish a route-primary probe.
- *
- * Filtered by the producer's own requirement rule rather than "every gated route". `showcase-index` is a gated route
- * with no primary assets, so the producer never writes a probe for it -- and reporting it as `unbound` accused a
- * correctly-absent artifact of being stale. A staleness report that flags files which are not supposed to exist
- * trains readers to skim it, which is the failure this tooling exists to prevent.
- *
- * A route whose probe is *expected* but missing still reports, because `readJson` returns undefined and the artifact
- * is then correctly `unbound`.
+ * Audit exactly the route set the producer can regenerate, including required probes that are missing.
+ * The producer excludes both unpublished routes and deliberately frozen historical evidence.
  */
 function routeIds() {
-  const gates = readJson(resolve(root, "tools/showcase-library/route-gates.json"));
-  const ids = (gates?.routes ?? [])
-    .filter((route) => Boolean(route?.id))
-    .filter((route) => Boolean(route.primaryAssets?.length) || route.requiresRoutePrimaryProbe === true)
-    /*
-     * Skip routes whose retained evidence is deliberately frozen.
-     *
-     * `retainedEvidenceFrozen: true` means producers must *not* regenerate the artifact -- it is a preserved record of
-     * a superseded route. (The two game-layer-proof routes were the original frozen pair; they have since been
-     * deleted as discontinued examples.) Reporting frozen evidence as
-     * stale is not a finding: it is unfalsifiable by construction, because the only remedy the report implies
-     * (regenerate) is the one thing the freeze forbids. Two such entries were the last "not provably current"
-     * artifacts, and treating them as defects would have made a clean report permanently unreachable.
-     */
-    .filter((route) => route.retainedEvidenceFrozen !== true)
-    .map((route) => route.id);
-  return routeFilter ? ids.filter((id) => id === routeFilter) : ids;
+  return probeModule.routePrimaryProbeExpectedRouteIds(gates.routes)
+    .filter((id) => !routeFilter || id === routeFilter);
 }
 
-/** Frozen route ids, reported separately so the freeze is visible rather than silently skipped. */
-function frozenRouteIds() {
-  const gates = readJson(resolve(root, "tools/showcase-library/route-gates.json"));
-  return (gates?.routes ?? [])
-    .filter((route) => route?.id && route.retainedEvidenceFrozen === true)
-    .map((route) => route.id);
+/** Frozen and retired routes remain visible, but their historical probes receive no freshness verdict. */
+function excludedRouteIds(predicate) {
+  return gates.routes.filter(inScope).filter(predicate).map((route) => route.id);
 }
-
-const probeModule = await import(resolve(root, "tools/showcase-library/route-primary-probes.mjs")).catch(() => undefined);
 
 const rendererFingerprint = createRendererFingerprint(root);
 /*
@@ -107,7 +122,7 @@ const rendererFingerprint = createRendererFingerprint(root);
  */
 const producerFingerprint = createProducerFingerprint(
   "tools/showcase-library/route-primary-probes.mjs",
-  probeModule?.ROUTE_PRIMARY_PROBE_PRODUCER_VERSION ?? "unknown",
+  probeModule.ROUTE_PRIMARY_PROBE_PRODUCER_VERSION,
   root
 );
 
@@ -135,7 +150,7 @@ function currentDependenciesForRoute(routeId, probe) {
    */
   const healthPath = resolve(appDir, "route-health.json");
   const healthHash = existsSync(healthPath)
-    ? probeModule?.hashRouteHealthDependency?.(healthPath) ?? hashFileIfPresent(healthPath)
+    ? probeModule.hashRouteHealthDependency(healthPath)
     : undefined;
   if (healthHash) dependencies.push({ kind: "route-health", id: `${routeId}/route-health.json`, hash: healthHash });
 
@@ -164,7 +179,7 @@ function computeRouteSourceHash(routeId) {
   if (!existsSync(appDir)) return undefined;
   // Reuse the producer's implementation rather than re-deriving its file selection.
   try {
-    return probeModule?.createRouteSourceHash?.(routeId, root);
+    return probeModule.createRouteSourceHash(routeId, root);
   } catch {
     return undefined;
   }
@@ -246,7 +261,8 @@ for (const routeId of routeIds()) {
   }));
 }
 
-const frozenRoutes = frozenRouteIds();
+const frozenRoutes = excludedRouteIds((route) => route.retainedEvidenceFrozen === true);
+const retiredRoutes = excludedRouteIds((route) => route.published === false);
 
 const report = {
   schema: "aura3d-explain-staleness/1.0",
@@ -254,6 +270,8 @@ const report = {
   rendererFingerprint,
   /** Routes excluded because their retained evidence is deliberately frozen. */
   frozenRoutes,
+  /** Unpublished routes; any retained probes are historical, not current or approved. */
+  retiredRoutes,
   ownershipConflicts,
   orderingCycles,
   artifacts,
@@ -288,7 +306,10 @@ if (asJson) {
   if (orderingCycles.length === 0) console.log("producer ordering: no cycles");
   for (const cycle of orderingCycles) console.log(`ORDERING CYCLE      ${cycle.detail}`);
   if (frozenRoutes.length > 0) {
-    console.log(`frozen (evidence deliberately preserved, not regenerated): ${frozenRoutes.join(", ")}`);
+    console.log(`frozen (evidence deliberately preserved, not regenerated; historical, not audited or approved): ${frozenRoutes.join(", ")}`);
+  }
+  if (retiredRoutes.length > 0) {
+    console.log(`retired (unpublished; any retained evidence is historical, not audited or approved): ${retiredRoutes.join(", ")}`);
   }
   console.log("");
   for (const artifact of artifacts) {
