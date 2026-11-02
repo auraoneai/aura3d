@@ -29,13 +29,17 @@ const legacyMeta = {
 const newFields = [
   "texPendingBeforeWait", "texWaitStatus", "texWaitElapsedMs",
   "screenshotRequestedSinceReadyMs", "screenshotCompletedSinceReadyMs",
-  "diagnosticsRequestedSinceReadyMs", "diagnosticsCompletedSinceReadyMs"
+  "diagnosticsRequestedSinceReadyMs", "diagnosticsCompletedSinceReadyMs",
+  "texPendingRequestedSinceReadyMs", "texPendingCompletedSinceReadyMs"
 ];
 
 type TextureRow = { status?: string } | null;
 type Scenario = {
   rows?: TextureRow[] | null;
   appPresent?: boolean;
+  preWaitMs?: number;
+  preWaitRows?: TextureRow[] | null;
+  preWaitWallClockJumpMs?: number;
   waitMs?: number;
   waitError?: Error;
   waitSnapshots?: (TextureRow[] | null)[];
@@ -63,10 +67,13 @@ function harness(options: Scenario = {}) {
   let reads = 0;
   const events: string[] = [];
   const logs: string[] = [];
+  const preWaitRequests: { at: number; rows: TextureRow[] | null }[] = [];
+  const diagnosticsReadTimes: number[] = [];
   const predicateValues: unknown[] = [];
   const handles: { jsonValue: ReturnType<typeof vi.fn>; dispose: ReturnType<typeof vi.fn> }[] = [];
   const app = {
     diagnostics() {
+      diagnosticsReadTimes.push(clock);
       if (diagnosticsError) throw diagnosticsError;
       return {
         renderPath: { path: "hdr-msaa" }, drawCalls: 12, triangles: 123,
@@ -87,8 +94,15 @@ function harness(options: Scenario = {}) {
         return legacyMeta;
       }
       reads++;
-      events.push(reads % 2 ? "pre-wait" : "diagnostics");
-      clock += reads % 2 ? 20 : 100;
+      const isPreWait = reads % 2 !== 0;
+      events.push(isPreWait ? "pre-wait" : "diagnostics");
+      if (isPreWait) preWaitRequests.push({ at: clock, rows });
+      if (isPreWait && options.preWaitMs !== undefined) await Promise.resolve();
+      clock += isPreWait ? options.preWaitMs ?? 20 : 100;
+      if (isPreWait) {
+        wallOffset += options.preWaitWallClockJumpMs ?? 0;
+        if (options.preWaitRows !== undefined) rows = options.preWaitRows;
+      }
       return fn();
     }),
     waitForFunction: vi.fn(async (predicate: string) => {
@@ -134,7 +148,7 @@ function harness(options: Scenario = {}) {
     })
   };
   return {
-    page, events, logs, predicateValues, handles, now: () => clock,
+    page, events, logs, preWaitRequests, diagnosticsReadTimes, predicateValues, handles, now: () => clock,
     setDiagnosticsError: (error: Error) => { diagnosticsError = error; },
     metas: () => parseCaptureLog(logs.join("")).metas
   };
@@ -157,18 +171,30 @@ describe("game luma capture timing", () => {
     expect(h.page.waitForFunction).toHaveBeenCalledWith(expect.any(String), undefined, { timeout: 30_000, polling: 2_000 });
     expect(h.handles[0]?.jsonValue).toHaveBeenCalledOnce();
     expect(h.handles[0]?.dispose).toHaveBeenCalledOnce();
+    expect(h.page.screenshot).toHaveBeenCalledOnce();
+    expect(h.page.screenshot).toHaveBeenCalledWith({ type: "png" });
     expect(row).toMatchObject({
       target: "g--a", id: "settle-25s", slug: "g", variant: "a", sinceReadyMs: 25_000,
       ...legacyMeta.v1, ...legacyMeta.v2,
       info: { app: true, renderPath: "hdr-msaa", drawCalls: 12, triangles: 123, texPending: 0, texTotal: 0 },
       texPendingBeforeWait: 2, texWaitStatus: "resolved", texWaitElapsedMs: 4_000,
+      texPendingRequestedSinceReadyMs: 25_000, texPendingCompletedSinceReadyMs: 25_020,
       screenshotRequestedSinceReadyMs: 29_300, screenshotCompletedSinceReadyMs: 99_300,
       diagnosticsRequestedSinceReadyMs: 100_500, diagnosticsCompletedSinceReadyMs: 100_600
     });
-    expect(Object.keys(row).slice(0, 14)).toEqual([
-      "target", "id", "slug", "variant", "sinceReadyMs", "mean", "p5", "p50", "p95", "darkFrac", "clipFrac", "grid", "info", "gl"
+    expect(h.diagnosticsReadTimes[0]).toBe(25_020);
+    expect(row.texPendingRequestedSinceReadyMs).toBeLessThanOrEqual(row.texPendingCompletedSinceReadyMs);
+    expect(row.texPendingCompletedSinceReadyMs).toBeLessThanOrEqual(row.screenshotRequestedSinceReadyMs);
+    expect(row.screenshotRequestedSinceReadyMs).toBeLessThanOrEqual(row.screenshotCompletedSinceReadyMs);
+    expect(row.screenshotCompletedSinceReadyMs).toBeLessThanOrEqual(row.diagnosticsRequestedSinceReadyMs);
+    expect(row.diagnosticsRequestedSinceReadyMs).toBeLessThanOrEqual(row.diagnosticsCompletedSinceReadyMs);
+    expect(Object.keys(row)).toEqual([
+      "target", "id", "slug", "variant", "sinceReadyMs", "mean", "p5", "p50", "p95", "darkFrac", "clipFrac", "grid", "info",
+      "gl", "blank", "w", "h", "cells", "crops", ...newFields
     ]);
-    expect(h.logs.some((line) => line.startsWith("GL_JPG g--a settle-25s 1/1 "))).toBe(true);
+    expect(h.logs).toHaveLength(2);
+    expect(h.logs[0]).toMatch(/^GL_META /);
+    expect(h.logs[1]).toMatch(/^GL_JPG g--a settle-25s 1\/1 /);
   });
 
   it("records timeouts even when textures finish during a long screenshot", async () => {
@@ -192,11 +218,36 @@ describe("game luma capture timing", () => {
 
   it("records zero pending and an immediately resolved wait", async () => {
     const { grab } = await loadCapture("30");
-    const h = harness({ rows: [], waitMs: 0 });
+    const h = harness({ rows: [], preWaitMs: 0, waitMs: 0 });
     await grab(h.page as unknown as Parameters<typeof grab>[0], target, "settle-25s", { slug: "g", variant: "a", sinceReadyMs: 25_000 }, 0);
-    expect(h.metas()[0]).toMatchObject({
-      texPendingBeforeWait: 0, texWaitStatus: "resolved", texWaitElapsedMs: 0, info: { texPending: 0 }
+    const [row] = h.metas();
+    expect(row).toMatchObject({
+      texPendingBeforeWait: 0, texWaitStatus: "resolved", texWaitElapsedMs: 0, info: { texPending: 0 },
+      texPendingRequestedSinceReadyMs: 25_000, texPendingCompletedSinceReadyMs: 25_000
     });
+    expect(row.texPendingBeforeWait === 0 && row.texPendingCompletedSinceReadyMs <= 25_000).toBe(true);
+  });
+
+  it("does not treat a zero sample completed at 37s as proof of readiness at 25s", async () => {
+    const { grab } = await loadCapture("30");
+    const h = harness({
+      rows: [{ status: "pending" }], preWaitMs: 12_000, preWaitRows: [], waitMs: 4_000, screenshotMs: 1_000
+    });
+    const capture = grab(h.page as unknown as Parameters<typeof grab>[0], target, "settle-25s", { slug: "g", variant: "a", sinceReadyMs: 25_000 }, 0);
+    expect(h.preWaitRequests).toEqual([{ at: 25_000, rows: [{ status: "pending" }] }]);
+    expect(h.page.waitForFunction).not.toHaveBeenCalled();
+    expect(h.metas()).toEqual([]);
+    await capture;
+    const [row] = h.metas();
+    expect(h.diagnosticsReadTimes[0]).toBe(37_000);
+    expect(row).toMatchObject({
+      id: "settle-25s", sinceReadyMs: 25_000, texPendingBeforeWait: 0,
+      texPendingRequestedSinceReadyMs: 25_000, texPendingCompletedSinceReadyMs: 37_000,
+      texWaitStatus: "resolved", texWaitElapsedMs: 4_000,
+      screenshotRequestedSinceReadyMs: 41_280, screenshotCompletedSinceReadyMs: 42_280,
+      diagnosticsRequestedSinceReadyMs: 43_480, diagnosticsCompletedSinceReadyMs: 43_580
+    });
+    expect(row.texPendingBeforeWait === 0 && row.texPendingCompletedSinceReadyMs <= 25_000).toBe(false);
   });
 
   it("records pending textures even when waiting is disabled", async () => {
@@ -205,7 +256,8 @@ describe("game luma capture timing", () => {
     await grab(h.page as unknown as Parameters<typeof grab>[0], target, "settle-25s", { slug: "g", variant: "a", sinceReadyMs: 25_000 }, 0);
     expect(h.page.waitForFunction).not.toHaveBeenCalled();
     expect(h.metas()[0]).toMatchObject({
-      texPendingBeforeWait: 2, texWaitStatus: "disabled", texWaitElapsedMs: 0, info: { texPending: 2 }
+      texPendingBeforeWait: 2, texWaitStatus: "disabled", texWaitElapsedMs: 0, info: { texPending: 2 },
+      texPendingRequestedSinceReadyMs: 25_000, texPendingCompletedSinceReadyMs: 25_020
     });
     expect(evaluateBands(h.metas())[0].pass).toBe(false);
   });
@@ -217,6 +269,7 @@ describe("game luma capture timing", () => {
     expect(h.page.waitForFunction).not.toHaveBeenCalled();
     expect(h.metas()[0]).toMatchObject({
       texPendingBeforeWait: null, texWaitStatus: "disabled", texWaitElapsedMs: 0,
+      texPendingRequestedSinceReadyMs: 25_000, texPendingCompletedSinceReadyMs: 25_020,
       info: { app: true, texPending: 0 }
     });
   });
@@ -300,6 +353,10 @@ describe("game luma capture timing", () => {
     expect(first.screenshotCompletedSinceReadyMs).toBeGreaterThan(60_000);
     expect(second.id).toBe("settle-60s");
     expect(second.sinceReadyMs).toBe(beforeSecondGrab);
+    expect(second.texPendingRequestedSinceReadyMs).toBe(beforeSecondGrab);
+    expect(second.texPendingCompletedSinceReadyMs).toBe(beforeSecondGrab + 20);
+    expect(second.texPendingCompletedSinceReadyMs).toBeGreaterThan(60_000);
+    expect(second.texPendingCompletedSinceReadyMs).toBeLessThanOrEqual(second.screenshotRequestedSinceReadyMs);
     expect(second.screenshotRequestedSinceReadyMs).toBeGreaterThan(second.sinceReadyMs);
     expect(second.screenshotCompletedSinceReadyMs).toBeGreaterThan(second.screenshotRequestedSinceReadyMs);
     expect(second.diagnosticsRequestedSinceReadyMs).toBeGreaterThan(second.screenshotCompletedSinceReadyMs);
@@ -307,12 +364,15 @@ describe("game luma capture timing", () => {
 
   it("uses a monotonic clock for the new time bounds when the wall clock jumps", async () => {
     const { grab } = await loadCapture("30");
-    const h = harness({ wallClockJumpMs: -3_600_000 });
-    await grab(h.page as unknown as Parameters<typeof grab>[0], target, "settle-25s", { slug: "g", variant: "a", sinceReadyMs: 25_000 }, 0);
+    const h = harness({ preWaitMs: 12_000, preWaitWallClockJumpMs: -3_600_000, wallClockJumpMs: -3_600_000 });
+    const wallStart = Date.now();
+    await grab(h.page as unknown as Parameters<typeof grab>[0], target, "settle-25s", { slug: "g", variant: "a", sinceReadyMs: 24_000 }, 1_000.5);
+    expect(Date.now()).toBeLessThan(wallStart);
     expect(h.metas()[0]).toMatchObject({
       texWaitElapsedMs: 4_000,
-      screenshotRequestedSinceReadyMs: 29_300, screenshotCompletedSinceReadyMs: 99_300,
-      diagnosticsRequestedSinceReadyMs: 100_500, diagnosticsCompletedSinceReadyMs: 100_600
+      texPendingRequestedSinceReadyMs: 24_000, texPendingCompletedSinceReadyMs: 36_000,
+      screenshotRequestedSinceReadyMs: 40_280, screenshotCompletedSinceReadyMs: 110_280,
+      diagnosticsRequestedSinceReadyMs: 111_480, diagnosticsCompletedSinceReadyMs: 111_580
     });
   });
 

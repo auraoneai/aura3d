@@ -105,7 +105,9 @@ async function screenshotCanvas(page: Page): Promise<Buffer> {
 }
 
 export async function grab(page: Page, target: GameLumaTarget, id: string, extra: Record<string, unknown>, readyAt: number): Promise<void> {
+  const texPendingRequestedSinceReadyMs = Math.round(performance.now() - readyAt);
   const texPendingBeforeWait = await texturePending(page);
+  const texPendingCompletedSinceReadyMs = Math.round(performance.now() - readyAt);
   const texWait = await waitForTextures(page);
   const handle = await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
@@ -123,7 +125,8 @@ export async function grab(page: Page, target: GameLumaTarget, id: string, extra
   log(`GL_META ${JSON.stringify({
     target: target.name, id, ...extra, ...meta.v1, info, ...meta.v2,
     texPendingBeforeWait, texWaitStatus: texWait.status, texWaitElapsedMs: texWait.elapsedMs,
-    screenshotRequestedSinceReadyMs, screenshotCompletedSinceReadyMs, diagnosticsRequestedSinceReadyMs, diagnosticsCompletedSinceReadyMs
+    screenshotRequestedSinceReadyMs, screenshotCompletedSinceReadyMs, diagnosticsRequestedSinceReadyMs, diagnosticsCompletedSinceReadyMs,
+    texPendingRequestedSinceReadyMs, texPendingCompletedSinceReadyMs
   })}`);
   logJpeg(target.name, id, meta.jpeg);
   if (PAIR_MS > 0) await pair(page, target, id, png, shotAt, meta.rects, extra);
