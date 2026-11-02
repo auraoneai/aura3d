@@ -204,6 +204,12 @@ export class CompiledSceneImpl implements CompiledScene {
   private readonly mountLights: readonly CollectedLight[];
   /** GU47 eint EB-4: collected lights of light nodes added through `addSubtree`, per flattened node. */
   private readonly runtimeLights = new Map<AuraSceneNode, readonly CollectedLight[]>();
+  /**
+   * GU47 g11 phase 10: called with the primitive entries an `addSubtree` call created. The renderer runs the textured
+   * upgrade on them: the mount's upgrade pass only sweeps entries added while it is still running, so a textured primitive
+   * added after it drained kept its scalar material (no maps) and never reported `pending`.
+   */
+  onPrimitiveEntriesAdded: ((entries: readonly ProductionRuntimePrimitiveEntry[]) => void) | undefined;
 
   constructor(
     readonly snapshotVersion: number,
@@ -253,6 +259,7 @@ export class CompiledSceneImpl implements CompiledScene {
     const ctx = this.mountCtx;
     const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx));
     this.primitiveEntries.push(...extraPrimitive);
+    if (extraPrimitive.length > 0) this.onPrimitiveEntriesAdded?.(extraPrimitive);
 
     const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
       isRenderableModelNode(candidate) && createAssetProvenance(candidate.asset).source === "typed-aura-assets-manifest"
@@ -340,7 +347,8 @@ export class CompiledSceneImpl implements CompiledScene {
         }
       } else keepPrimitive.push(entry);
     }
-    this.primitiveEntries = keepPrimitive;
+    this.primitiveEntries.length = 0;
+    for (const entry of keepPrimitive) this.primitiveEntries.push(entry);
     const keepActors: ProductionRuntimeActorEntry[] = [];
     for (const entry of this.actorEntries) {
       if (targetSet.has(entry.node)) entry.actor.dispose();

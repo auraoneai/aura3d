@@ -500,6 +500,44 @@ function primitiveTextureIntentFor(
   return urls.length === 0 && !proceduralOnly && !hasTextureRef ? null : intent;
 }
 
+/** The map URLs a resource's textured upgrade loads, as one key (resources with the same key share every decode). */
+function mapSetKey(resource: ProductionRuntimePrimitiveResource, qrMaterials: boolean): string {
+  const intent = primitiveTextureIntentFor(resource, qrMaterials);
+  if (!intent) return "";
+  const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)]
+    .filter((url): url is string => typeof url === "string" && url.length > 0);
+  return urls.length > 0 ? JSON.stringify([...new Set(urls)].sort()) : "";
+}
+
+/**
+ * GU47 g11 phase 10: queue order. Decodes are shared per URL (e6 phase 8), so N resources over one map set cost one decode,
+ * but in authoring order they sat together in the queue and every worker waited on the same in-flight decode (Bunker Zero:
+ * 12 floor decals, 7 hazard stripes and 12 bullet holes over 4 PNGs decoded one PNG at a time). The queue is now taken
+ * round-robin over map sets in first-appearance order: each distinct set starts as soon as a worker is free, and the
+ * resources that share it follow and resolve from the shared decode. Resources with distinct maps keep their order.
+ */
+export function interleaveByMapSet(queue: readonly ProductionRuntimePrimitiveResource[], qrMaterials: boolean): ProductionRuntimePrimitiveResource[] {
+  const groups = new Map<string, ProductionRuntimePrimitiveResource[]>();
+  for (const resource of queue) {
+    const key = mapSetKey(resource, qrMaterials);
+    // No URL (procedural or live texture handle): its own group, so it keeps its place.
+    const group = key === "" ? undefined : groups.get(key);
+    if (group) group.push(resource);
+    else groups.set(key === "" ? `\u0000${groups.size}` : key, [resource]);
+  }
+  const out: ProductionRuntimePrimitiveResource[] = [];
+  let active = [...groups.values()].map((list) => ({ list, index: 0 }));
+  while (active.length > 0) {
+    const next: typeof active = [];
+    for (const group of active) {
+      out.push(group.list[group.index++]!);
+      if (group.index < group.list.length) next.push(group);
+    }
+    active = next;
+  }
+  return out;
+}
+
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
@@ -514,6 +552,7 @@ export async function upgradeProductionPrimitiveTextures(
     const queued: ProductionRuntimePrimitiveResource[] = [];
     for (const entry of entries) {
       for (const resource of entry.resources) {
+        if (resource.material.disposed) continue;
         if (seen.has(resource)) continue;
         seen.add(resource);
         const intent = createProductionPrimitiveTextureIntent(resource.materialSpec);
@@ -538,20 +577,28 @@ export async function upgradeProductionPrimitiveTextures(
     return queued;
   };
   const upgradeOne = async (resource: ProductionRuntimePrimitiveResource): Promise<void> => {
-    markTextureStage(resource, "start");
-    const spec = resource.materialSpec;
-    const intent = createProductionPrimitiveTextureIntent(spec);
     try {
+      if (resource.material.disposed) return;
+      markTextureStage(resource, "start");
+      const spec = resource.materialSpec;
+      const intent = createProductionPrimitiveTextureIntent(spec);
       await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
     } catch (error) {
+      if (resource.material.disposed) return;
       resource.textureStatus = "fallback";
       markTextureStage(resource, "failed");
       const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
       resource.textureWarnings.push(message);
       warn(message);
+    } finally {
+      if (resource.material.disposed) {
+        resource.textureStatus = "none";
+        delete resource.texturePendingSince;
+        markTextureStage(resource, "cancelled");
+      }
     }
   };
-  for (let queue = sweep(); queue.length > 0; queue = sweep()) {
+  for (let queue = interleaveByMapSet(sweep(), qrMaterials); queue.length > 0; queue = interleaveByMapSet(sweep(), qrMaterials)) {
     let next = 0;
     const worker = async (): Promise<void> => {
       while (next < queue.length) await upgradeOne(queue[next++]!);
@@ -646,6 +693,9 @@ export async function upgradeProductionPrimitiveResource(
     ownedTextures.length = 0;
     releases.length = 0;
   };
+  const previousDisposer = resource.textureDisposer;
+  const disposeUpgradeTextures = (): void => { previousDisposer?.(); disposeTextures(); };
+  resource.textureDisposer = disposeUpgradeTextures;
   try {
     // GU47 e6 phase 8: every map of the resource (base slots and extension slots) starts decoding at once.
     const extensionResults = Promise.allSettled(extensionEntries.map(([, map]) => load(map.url)));
@@ -658,6 +708,7 @@ export async function upgradeProductionPrimitiveResource(
       intent.emissiveUrl ? load(intent.emissiveUrl) : Promise.resolve(undefined)
     ]);
     const settledExtensions = await extensionResults;
+    if (resource.material.disposed) { disposeTextures(); return; }
     markTextureStage(resource, "decoded");
     const failure = [...baseResults, ...settledExtensions].find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
@@ -949,12 +1000,15 @@ export async function upgradeProductionPrimitiveResource(
       resource.texturedMaterial = null;
       throw fail("primitive disposed while texture upgrade was pending");
     }
-    resource.textureDisposer = disposeTextures;
     resource.textureStatus = "textured";
     markTextureStage(resource, "done");
     resource.textureSlots = slots;
   } catch (error) {
     disposeTextures();
+    if (resource.textureDisposer === disposeUpgradeTextures) {
+      if (previousDisposer) resource.textureDisposer = previousDisposer;
+      else delete resource.textureDisposer;
+    }
     throw error;
   }
 }

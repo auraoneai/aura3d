@@ -281,6 +281,20 @@ export async function createProductionRuntimeSceneRenderer(
       }).catch((error) => {
         textureUpgradeWarnings.add(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`);
       });
+      // GU47 g11 phase 10: primitives added later through `app.nodes.add` (C-37 subtree path) get the same textured and
+      // custom-texture upgrades. The pass runs on the added entries only (a resource is never queued twice).
+      (compiledScene as { onPrimitiveEntriesAdded?: (entries: readonly ProductionRuntimePrimitiveEntry[]) => void }).onPrimitiveEntriesAdded = (added) => {
+        void upgradeProductionPrimitiveTextures(added, (message) => {
+          textureUpgradeWarnings.add(message);
+        }, webGL2MaxTextureSize(canvas)).catch((error) => {
+          textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+        });
+        void upgradeCustomMaterialTextures(added, (message) => {
+          textureUpgradeWarnings.add(message);
+        }).catch((error) => {
+          textureUpgradeWarnings.add(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`);
+        });
+      };
       // C-37: bind the mounted compiled scene so registry add/remove can take the
       // subtree-compile path (no remount) under A3D_QR_COMPILER.
       (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);

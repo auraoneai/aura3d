@@ -801,8 +801,10 @@ test("disposal during a pending scalar decode closes once and drops cached pixel
   value.material.dispose();
   paused.unblock();
   await pending;
-  expect(value.textureStatus).toBe("fallback");
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining("disposed while texture upgrade was pending"));
+  expect(value.textureStatus).toBe("none");
+  expect(value.textureStage).toBe("cancelled");
+  expect(value.texturePendingSince).toBeUndefined();
+  expect(warn).not.toHaveBeenCalled();
   expect(bitmaps[0]!.close).toHaveBeenCalledTimes(1);
   expect(productionPrimitiveBitmapPixels.has(bitmaps[0] as unknown as ImageBitmap)).toBe(false);
 });
