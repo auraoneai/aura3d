@@ -10,7 +10,7 @@
 import "../../showcase-port-shared/quickbar.css";
 import {
   camera, decals, effects, environments, game, gameFeel, lights, material, model,
-  primitives, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
+  primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
@@ -32,6 +32,7 @@ import {
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
+import { createFloorSurfaceLoader, nextSlotOf, placeholderId, withoutMaps } from "./art/floorLoad";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 import {
@@ -62,6 +63,7 @@ const LOOK_ID = "bunker-practicals" as const;
 const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
+const DEFER_FLOOR_SURFACES = resolveQrFlags({ options: ["game"], url: location.href }).on("A3D_QR_COMPILER");
 /**
  * GU47 phase 2: the F6 moon shaft (S4 volumetric fog) is opt-in with `?godrays=1`. On software WebGL2 it drew no shaft and
  * washed the silo in pink beacon inscatter (fix run g11fix1, floor6 frame); the dark lamp haze reads better (PRD D11).
@@ -155,6 +157,24 @@ function slotNode(slot: number, id: string, tags: string[], isStatic = false) {
   return game.runtimeNode(id, { tags });
 }
 const staticNode = (slot: number, key: string) => slotNode(slot, `f${slot}-s-${key}`, ["floor-static"], true);
+/**
+ * GU47 g11 phase 10 (art/floorLoad.ts): only the boot slot's mapped surfaces mount with the scene. Every other slot mounts
+ * a hidden map-free placeholder of the same geometry, and its mapped surfaces are added when the floor is prepared.
+ */
+const SURFACES = createFloorSurfaceLoader<AuraNodeBuilder<AuraSceneNode>>(BOOT_SLOT, (builder) => {
+  if (!app.nodes.add) throw new Error("Bunker Zero: app.nodes.add is unavailable; floor surfaces cannot be prepared");
+  app.nodes.add(builder);
+}, (slot) => {
+  if (slot !== activeSlot()) for (const id of SLOT_STATIC_IDS[slot]!) opt(id)?.setVisible(false);
+});
+type PbrOptions = NonNullable<Parameters<typeof material.pbr>[0]>;
+const pbrMaps = (options: PbrOptions, maps: boolean) => material.pbr(maps ? options : withoutMaps(options));
+function mappedSurface(slot: number, key: string, make: (maps: boolean) => ReturnType<typeof primitives.box>): AuraNodeBuilder<AuraSceneNode> {
+  const mapped = make(true).runtime(staticNode(slot, key));
+  if (slot === BOOT_SLOT || !DEFER_FLOOR_SURFACES) return mapped;
+  SURFACES.defer(slot, mapped);
+  return make(false).runtime(slotNode(slot, placeholderId(`f${slot}-s-${key}`), ["floor-static", "placeholder"]));
+}
 
 function buildScene() {
   // BZ-01: no look preset, ambient, hemisphere or directional fill. The light is the practical rig (one shadowed key
@@ -195,8 +215,8 @@ function buildScene() {
     const floorBase = compensatedBase(shade(def.palette.floor, BZ_FLOOR_LIFT), tex.floor, BZ_SURFACE_GAIN.floor);
     const ceilBase = compensatedBase(shade(def.palette.ceil, 0.1), BZ_CEIL_TEXTURE, BZ_SURFACE_GAIN.ceiling);
     const ceilTex = bunkerTexture(BZ_CEIL_TEXTURE);
-    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.25 : 0 });
-    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.25 : 0 });
+    const wallMat = (maps: boolean) => pbrMaps({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.25 : 0 }, maps);
+    const altMat = (maps: boolean) => pbrMaps({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, textureAnisotropy: 8, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.25 : 0 }, maps);
     const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
@@ -275,24 +295,24 @@ function buildScene() {
     }
     nodes.push(
       // structural walls — one instanced draw call per material group
-      primitives.box({ name: `f${slot} walls`, material: wallMat, instances: wallInst, instanceColors: wallCol }).runtime(staticNode(slot, "walls")),
-      primitives.box({ name: `f${slot} accent`, material: altMat, instances: altInst, instanceColors: altCol }).runtime(staticNode(slot, "accent")),
+      mappedSurface(slot, "walls", (maps) => primitives.box({ name: `f${slot} walls`, material: wallMat(maps), instances: wallInst, instanceColors: wallCol })),
+      mappedSurface(slot, "accent", (maps) => primitives.box({ name: `f${slot} accent`, material: altMat(maps), instances: altInst, instanceColors: altCol })),
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       // GU47 phase 6: the slab casts nothing on F6 (nothing lies under it; it was a moon shadow-pass draw)
-      primitives.box({ name: `f${slot} floor`, castShadow: def.id !== BZ_HATCH_FLOOR_ID, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
+      mappedSurface(slot, "floor", (maps) => primitives.box({ name: `f${slot} floor`, castShadow: def.id !== BZ_HATCH_FLOOR_ID, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: pbrMaps({
         color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: BZ_FLOOR_ROUGHNESS(slot), metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         // GU47 phase 3: two repeats per 3 m cell and anisotropic filtering (rubric: the floor smeared like a stretched noise map)
         texTransforms: { baseColor: { scale: [w * 2, h * 2] }, normal: { scale: [w * 2, h * 2] } }
-      }) }).runtime(staticNode(slot, "floor")),
+      }, maps) })),
       // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
       def.id === 5
         ? primitives.box({ name: `f${slot} ceil`, instances: hatchCeiling(w, h, wallH), material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil"))
-        : primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({
+        : mappedSurface(slot, "ceil", (maps) => primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: pbrMaps({
           // GU47 phase 3: board-formed concrete slab, one repeat per cell, so the lamps light a ceiling instead of a black void
           color: ceilBase, texture: ceilTex.color, normal: ceilTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: 0.92, metalness: 0,
           texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
-        }) }).runtime(staticNode(slot, "ceil")),
+        }, maps) })),
       primitives.box({
         name: `f${slot} wall-trim`,
         // BZ-01: the glowing baseboard is gone; a painted hazard-yellow kick strip only reads where a lamp reaches it
@@ -352,16 +372,16 @@ function buildScene() {
       );
     }
     if (faltInst.length) {
-      nodes.push(primitives.box({
+      nodes.push(mappedSurface(slot, "floor-alt", (maps) => primitives.box({
         name: `f${slot} floor-alt`, instances: faltInst,
         // BZ-06: only the F3 forge grates glow. F2's flood is dark standing water (a near-black, glossy tint that the
         // lamps and the IBL catch as highlights) instead of the cyan emissive slab.
         material: slot === 2 && def.palette.floorEmissive
-          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4, ...(tex.floorAlt ? { texture: bunkerTexture(tex.floorAlt).color } : {}) })
+          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4, ...(tex.floorAlt && maps ? { texture: bunkerTexture(tex.floorAlt).color } : {}) })
           : slot === 1
             ? material.pbr({ color: BZ_WATER.color, roughness: BZ_WATER.roughness, metalness: 0 })
             : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
-      }).runtime(staticNode(slot, "floor-alt")));
+      })));
     }
     // ---- per-cell runtime 3D Meshy entities & props -----------------------
     let dI = 0, pI = 0, eI = 0, kI = 0;
@@ -561,7 +581,7 @@ function buildScene() {
     }
     if (columnInst.length) {
       nodes.push(
-        primitives.box({ name: `f${slot} columns`, castShadow: true, material: wallMat, instances: columnInst }).runtime(staticNode(slot, "columns")),
+        mappedSurface(slot, "columns", (maps) => primitives.box({ name: `f${slot} columns`, castShadow: true, material: wallMat(maps), instances: columnInst })),
         primitives.box({ name: `f${slot} column strips`, castShadow: false, material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }), instances: columnStrip }).runtime(staticNode(slot, "column-strips"))
       );
     }
@@ -1056,6 +1076,8 @@ function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions 
   const def = m === "killhouse" ? KILL_HOUSE : FLOORS[idx]!;
   sim = createSim(def, { ox: (m === "killhouse" ? 6 : idx) * FLOOR_SPAN, mode: m, seed: 1337 + idx * 97 + (m === "killhouse" ? 7 : 0), loadout: entryLoadout });
   pilot = createAutopilot();
+  // GU47 g11 phase 10: a floor that was not prepared ahead (menu jump, QA hook) mounts its mapped surfaces now
+  if (appReady) SURFACES.prepare(activeSlot());
   eventSeq = 0;
   hideAllRuntime();
   bindFloor();
@@ -1653,6 +1675,9 @@ function checkOutcome() {
       kind: outcome === "killhouse-timeup" ? "killhouse-retry" : outcome === "killhouse-clear" ? "to-descent" : outcome === "campaign-complete" ? "results" : "next",
       t: outcome === "campaign-complete" ? 2.2 : 2.6, age: 0
     };
+    // GU47 g11 phase 10: the next floor's surface maps load behind the outcome banner and the descent
+    const nextSlot = nextSlotOf(pending.kind, floorIdx, activeSlot(), FLOORS.length);
+    if (nextSlot !== null) SURFACES.prepare(nextSlot);
     return;
   }
   if (!p.alive && !sim.state.finished && !pending) {
@@ -2219,6 +2244,7 @@ elHud.classList.remove("hidden");
 void mg.ready().then(() => {
   appReady = true;
   lastWall = performance.now();
+  SURFACES.prepare(activeSlot());
   // C18: visibility set before the renderer mounted does not stick, so hide the inactive floors again once it is up
   hideAllRuntime();
   bindFloor();
