@@ -1,10 +1,15 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { createModelMatrix } from "../../../packages/engine/src/agent-api/sceneMath";
+import { accessor, readGlb } from "../../../tools/aura-fc/glb.mjs";
+import { checkRowBand, evaluateBands } from "../../../tools/look-metrics/region-luma.mjs";
 import { fitCameraToAspect, fullTimeOrbitPose, hybridBroadcastPose } from "../../../apps/showcase-aura-fc-3d/src/game/camera";
 import { MAIN_FLOOD_TOWER } from "../../../apps/showcase-aura-fc-3d/src/game/look";
 import { fcQaCrops, projectBox, projectPoint, type QaCamera, type V3 } from "../../../apps/showcase-aura-fc-3d/src/game/qaCrops";
-import { FLOOD_TOWERS, mainFloodPosition } from "../../../apps/showcase-aura-fc-3d/src/game/scene";
+import { buildFcScene, FLOOD_TOWERS, mainFloodPosition } from "../../../apps/showcase-aura-fc-3d/src/game/scene";
 
 /** GU47 E-I crop contract (lane g09): crops are named, normalised 0..1 and follow the camera. */
+const NIGHT_VENUES = ["munich", "kyoto", "favela", "glacier"] as const;
 const BROADCAST = { eye: [0, 11.5, 23.5] as const, target: [0, 0.9, -1] as const, fovDeg: 40, aspect: 16 / 9 };
 const floodHead = (index: number): V3 => {
   const [x, z] = FLOOD_TOWERS[index]!;
@@ -58,6 +63,40 @@ describe("aura-fc-3d QA crops", () => {
     const visible = floodCrop(cam, other);
     expect(visible).not.toBeNull();
     expect(fcQaCrops(cam, null, [0, 0.21, 0]).filter((c) => c.name === "flood-bank")).toEqual([visible]);
+  });
+
+  it.each(NIGHT_VENUES)("%s: the natural full-time crop geometrically overlaps the authored pylon head", (venue) => {
+    const glb = readGlb("public/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb");
+    const index = glb.json.meshes[0].primitives[0].attributes.POSITION;
+    const { min, max } = glb.json.accessors[index];
+    const { data } = accessor(glb, index);
+    const node = buildFcScene(venue).toJSON().nodes.find((n) => n.kind === "model" && n.name === "flood-0");
+    expect(node?.kind).toBe("model");
+    if (!node || node.kind !== "model") throw new Error("flood-0 is missing");
+    const matrix = createModelMatrix(node, { min, max }, true);
+    const pose = fullTimeOrbitPose(0, false);
+    const cam = { eye: pose.eye, target: pose.target, fovDeg: pose.fov, aspect: 16 / 9 };
+    const crop = fcQaCrops(cam, null, [0, 0.21, 0]).find((c) => c.name === "flood-bank");
+    expect(crop).toBeDefined();
+    if (!crop) throw new Error("full-time flood crop is missing");
+    let headVertices = 0, verticesInCrop = 0;
+    for (let i = 0; i < data.length; i += 3) {
+      const x = data[i]!, y = data[i + 1]!, z = data[i + 2]!;
+      const world: V3 = [
+        matrix[0]! * x + matrix[4]! * y + matrix[8]! * z + matrix[12]!,
+        matrix[1]! * x + matrix[5]! * y + matrix[9]! * z + matrix[13]!,
+        matrix[2]! * x + matrix[6]! * y + matrix[10]! * z + matrix[14]!
+      ];
+      if (world[1] < 11.2) continue;
+      const point = projectPoint(cam, world);
+      if (!point) continue;
+      headVertices++;
+      if (point[0] >= crop.x && point[0] <= crop.x + crop.w && point[1] >= crop.y && point[1] <= crop.y + crop.h) verticesInCrop++;
+    }
+    expect(headVertices).toBeGreaterThan(0);
+    // Geometric feasibility only: this does not prove that the model is loaded,
+    // unoccluded, or visible in a genuinely presented browser frame.
+    expect(verticesInCrop / headVertices).toBeGreaterThan(0.75);
   });
 
   it.each([0, 2, 3])("projects alternate tower %i from its actual scene position", (index) => {
@@ -121,6 +160,37 @@ describe("aura-fc-3d QA crops", () => {
     const crops = fcQaCrops(cam, null, [0, 0.21, 0]);
     expect(crops.find((c) => c.name === "pitch")).toEqual({ name: "pitch", x: 0.1743, y: 0.4838, w: 0.6514, h: 0.4346 });
     expect(crops.some((c) => c.name === "flood-bank")).toBe(false);
+  });
+
+  it("keeps a per-shot missing-crop miss for all four affected venues and both steady shots", () => {
+    const bands = JSON.parse(readFileSync("evidence/game-upgrades-47/aura-fc-3d/luma-bands.json", "utf8"));
+    const pose = hybridBroadcastPose(0, 0, 0);
+    const cam = { eye: pose.eye, target: pose.target, fovDeg: pose.fov, aspect: 16 / 9 };
+    const names = fcQaCrops(cam, null, [0, 0.21, 0]).map((c) => c.name);
+    expect(names).not.toContain("flood-bank");
+    // Synthetic rows exercise the gate contract only; they are not captured
+    // luminance evidence, and a full-time shot cannot fill a kickoff miss.
+    const rows = NIGHT_VENUES.flatMap((venue) => [25, 60].map((sec) => ({
+      slug: "aura-fc-3d", target: `aura-fc-3d--${venue}`, variant: venue,
+      id: `settle-${sec}s`, crops: Object.fromEntries(names.map((name) => [name, {}]))
+    })));
+    const results = evaluateBands(rows, bands);
+    expect(results).toHaveLength(8);
+    for (const result of results) {
+      expect(result.misses).toContainEqual(expect.objectContaining({
+        region: "crop:flood-bank", metric: "*", reason: "crop not published at this shot"
+      }));
+    }
+  });
+
+  it.each(NIGHT_VENUES)("%s: the unchanged flood p95 threshold is inclusive at 230", (venue) => {
+    const bands = JSON.parse(readFileSync("evidence/game-upgrades-47/aura-fc-3d/luma-bands.json", "utf8"));
+    const flood = bands.variants[venue].crops["flood-bank"];
+    expect(flood.p95).toEqual([230, null]);
+    const onlyFlood = { crops: { "flood-bank": flood } };
+    expect(checkRowBand({ crops: { "flood-bank": { p95: 229 } } }, onlyFlood))
+      .toContainEqual(expect.objectContaining({ region: "crop:flood-bank", metric: "p95", value: 229, min: 230 }));
+    expect(checkRowBand({ crops: { "flood-bank": { p95: 230 } } }, onlyFlood)).toEqual([]);
   });
 
   it("omits the flood crop when every tower is behind the camera", () => {
