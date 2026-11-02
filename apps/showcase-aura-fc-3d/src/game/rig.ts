@@ -103,7 +103,7 @@ export const KIT_FABRIC_RIM = { color: "#e8eef6", power: 4, intensity: 0.45 } as
 /** Blob-disc opacity under each athlete: 0.32 (4.6.2); the phase-4 hybrid path, where the key casts real shadows, 0.14. */
 export const BLOB_OPACITY = 0.32;
 export const HYBRID_BLOB_OPACITY = 0.14;
-export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY): RigNode[] {
+export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY, castMarkerShadows = true): RigNode[] {
   const isKeeper = id.endsWith("-gk");
   const isPower = isPowerFrameRole(id);
   const bodyAsset = isKeeper ? assets.fcGoalkeeperMeshy : assets.fcSoccerStrikerMeshy;
@@ -123,9 +123,9 @@ export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY): Ri
     } as any)
       .position(0, 0, 0)
       .runtime(game.runtimeNode(`${id}-body`)),
-    primitives.cylinder({ name: `${id}-shadow`, size: [1, 0.01, 1], material: material.pbr({ color: "#000000", roughness: 1, opacity: blobOpacity }) })
+    primitives.cylinder({ name: `${id}-shadow`, size: [1, 0.01, 1], material: material.pbr({ color: "#000000", roughness: 1, opacity: blobOpacity }), ...(castMarkerShadows ? {} : { castShadow: false }) })
       .runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [0.68, 0.04, 0.04], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.1 }) })
+    primitives.torus({ name: `${id}-ring`, size: [0.68, 0.04, 0.04], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.1 }), ...(castMarkerShadows ? {} : { castShadow: false }) })
       .runtime(game.runtimeNode(`${id}-ring`))
   ];
 }

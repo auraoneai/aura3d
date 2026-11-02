@@ -591,20 +591,23 @@ export function centreCircleTransforms(): { position: [number, number, number]; 
 function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   const lineMat = lineMaterial(v);
   const surfaces = surfaceMaterials(v, mode);
+  const m = mode ?? fcLookMode(v.id);
+  // FC47-PF1: ground-flush paint and planes receive shadows but do not need
+  // to be redrawn into every shadow cascade. Keep the original look intact.
+  const groundShadow = m === "original" ? {} : { castShadow: false };
 
   // Horizontal XZ planes use size: [widthX, 1, depthZ]
   const nodes: any[] = [
-    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: surfaces.ground })
+    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: surfaces.ground, ...groundShadow })
       .position(0, -0.03, 0).runtime(gameRuntime("fc-ground")),
-    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: surfaces.apron })
+    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: surfaces.apron, ...groundShadow })
       .position(0, -0.012, 0).runtime(gameRuntime("fc-apron")),
-    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch })
+    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch, ...groundShadow })
       .position(0, 0.002, 0).runtime(gameRuntime("fc-pitch"))
   ];
   // FC47-M3: Uyuni's mirror flat: a planar reflection over the pitch (thin water film tint), under the lines (y 0.014)
   // and above the pitch plane. Doubles the scene draws in its capture: `?mirror=off` is the QA fallback (phase 2
   // measures it against the 480-draw Uyuni budget and picks the probe fallback if it is over).
-  const m = mode ?? fcLookMode(v.id);
   const mirror = m === "hybrid" ? HYBRID_LAYERS[v.id].mirror : m === "gu47" ? VENUE_LOOKS[v.id].mirror : null;
   if (mirror && mirrorEnabled()) {
     nodes.push(engineSurfaces.mirror({ name: "fc-mirror", size: [PITCH_HX * 2, PITCH_HZ * 2], resolution: mirror.resolution, tint: mirror.tint, position: [0, 0.006, 0] }));
@@ -613,40 +616,54 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {
     const st = stripeInstances(v);
-    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v, mode) })
+    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v, mode), ...groundShadow })
       .runtime(gameRuntime("fc-stripes")));
   }
 
   // touchlines, goal lines, centre line, boxes and six-yard boxes: one instanced batch
   nodes.push((instances as any).box({
-    name: "fc-lines", size: [1, 1, 1], material: lineMat,
+    name: "fc-lines", size: [1, 1, 1], material: lineMat, ...groundShadow,
     transforms: pitchLines().map(([w, l, x, z]) => ({ position: [x, 0.014, z], scale: [w, 0.018, l] }))
   }));
   // centre circle + spot. The unit torus scaled [R, 0.05, 0.05] drew a flat 9 m dash, not a ring (4.6.2); the hybrid
   // path draws the circle as CIRCLE_SEGMENTS thin chords in one instanced batch.
   nodes.push(
     m === "hybrid"
-      ? (instances as any).box({ name: "line-circle", size: [1, 1, 1], material: lineMat, transforms: centreCircleTransforms() })
-      : primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat })
+      ? (instances as any).box({ name: "line-circle", size: [1, 1, 1], material: lineMat, transforms: centreCircleTransforms(), ...groundShadow })
+      : primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat, ...groundShadow })
         .position(0, 0.02, 0).rotate(Math.PI / 2, 0, 0),
-    primitives.cylinder({ name: "line-spot-c", size: [0.22, 0.016, 0.22], material: lineMat }).position(0, 0.015, 0)
+    primitives.cylinder({ name: "line-spot-c", size: [0.22, 0.016, 0.22], material: lineMat, ...groundShadow }).position(0, 0.015, 0)
   );
 
   // penalty spots both ends
   for (const sx of [-1, 1] as const) {
     nodes.push(
-      primitives.cylinder({ name: `pen-spot-${sx}`, size: [0.2, 0.016, 0.2], material: lineMat }).position(sx * PEN_X, 0.015, 0)
+      primitives.cylinder({ name: `pen-spot-${sx}`, size: [0.2, 0.016, 0.2], material: lineMat, ...groundShadow }).position(sx * PEN_X, 0.015, 0)
     );
   }
 
   // corner flags + arc quarter-marks
   const flagMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.9 });
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+  if (m === "original") {
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      nodes.push(
+        primitives.cylinder({ name: `flag-${sx}-${sz}`, size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }) })
+          .position(sx * (PITCH_HX - 0.15), 0.65, sz * (PITCH_HZ - 0.15)),
+        primitives.box({ name: `flagtip-${sx}-${sz}`, size: [0.22, 0.16, 0.02], material: flagMat })
+          .position(sx * (PITCH_HX - 0.15), 1.28, sz * (PITCH_HZ - 0.15))
+      );
+    }
+  } else {
+    const corners = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => [sx * (PITCH_HX - 0.15), sz * (PITCH_HZ - 0.15)] as const));
     nodes.push(
-      primitives.cylinder({ name: `flag-${sx}-${sz}`, size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }) })
-        .position(sx * (PITCH_HX - 0.15), 0.65, sz * (PITCH_HZ - 0.15)),
-      primitives.box({ name: `flagtip-${sx}-${sz}`, size: [0.22, 0.16, 0.02], material: flagMat })
-        .position(sx * (PITCH_HX - 0.15), 1.28, sz * (PITCH_HZ - 0.15))
+      (instances as any).cylinder({
+        name: "fc-corner-poles", size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }),
+        transforms: corners.map(([x, z]) => ({ position: [x, 0.65, z] }))
+      }),
+      (instances as any).box({
+        name: "fc-corner-flags", size: [0.22, 0.16, 0.02], material: flagMat,
+        transforms: corners.map(([x, z]) => ({ position: [x, 1.28, z] }))
+      })
     );
   }
   return nodes;
@@ -980,7 +997,9 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates), mode))
     .addMany(ballNodes());
   // phase 4 hybrid: the fitted key casts the players' shadows, so the blob discs fade to a soft contact darkening
-  for (const id of ATHLETE_IDS) s.addMany(hybrid ? athleteNodes(id, HYBRID_BLOB_OPACITY) : athleteNodes(id));
+  for (const id of ATHLETE_IDS) {
+    s.addMany(original ? athleteNodes(id) : athleteNodes(id, hybrid ? HYBRID_BLOB_OPACITY : undefined, false));
+  }
   s.addMany(atmosphereNodes(venue, opts))
     // phase 4 hybrid: longer, full-strength contact shadows under the fitted key (feet and goal-frame grounding)
     .add(effects.contactShadows(hybrid ? { intensity: 1, length: 0.5 } : { intensity: 0.85, length: 0.32 }));

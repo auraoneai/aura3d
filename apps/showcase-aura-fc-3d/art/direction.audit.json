@@ -285,38 +285,11 @@
         "practical": false
       },
       {
-        "node": "flag--1--1",
+        "node": "fc-corner-poles",
         "practical": false
       },
       {
-        "node": "flagtip--1--1",
-        "emissiveIntensity": 0.9,
-        "practical": true
-      },
-      {
-        "node": "flag--1-1",
-        "practical": false
-      },
-      {
-        "node": "flagtip--1-1",
-        "emissiveIntensity": 0.9,
-        "practical": true
-      },
-      {
-        "node": "flag-1--1",
-        "practical": false
-      },
-      {
-        "node": "flagtip-1--1",
-        "emissiveIntensity": 0.9,
-        "practical": true
-      },
-      {
-        "node": "flag-1-1",
-        "practical": false
-      },
-      {
-        "node": "flagtip-1-1",
+        "node": "fc-corner-flags",
         "emissiveIntensity": 0.9,
         "practical": true
       },
