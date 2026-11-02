@@ -171,6 +171,77 @@ describe("borrowed-asset and prop-exclusivity checks", () => {
       ["beta-hoops", 'asset key "corridorPulseRifleMeshy" is also used by alpha-port']
     ]);
   });
+
+  it("borrowed-asset reports a later unmarked occurrence after an allowed occurrence", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      'const props = assets; model(props["hoopsLamp"]);'
+    ].join("\n"));
+    expect(run(root, ["borrowed-asset"])).toMatchObject([
+      { check: "borrowed-asset", severity: GU47_SEVERITY_BY_CHECK["borrowed-asset"], game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 }
+    ]);
+  });
+
+  it("prop-exclusivity reports a later unmarked occurrence after an allowed occurrence", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      'const props = assets; model(props["corridorPulseRifleMeshy"]);'
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy);");
+    expect(run(root, ["prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "prop-exclusivity", severity: "error", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 },
+      { check: "prop-exclusivity", severity: "error", game: "beta-hoops", file: "apps/showcase-beta/src/main.ts", line: 1 }
+    ]);
+  });
+
+  it("honors each escape hatch when all occurrences are marked for that check", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", [
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toEqual([]);
+  });
+
+  it("evaluates borrowed-asset and prop-exclusivity markers independently", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.hoopsLamp); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // borrowed-asset: ok"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok");
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "borrowed-asset", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 },
+      { check: "prop-exclusivity", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 4 }
+    ]);
+  });
+
+  it("reports later unmarked occurrences in another source file", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/a-first.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    put("apps/showcase-alpha/src/z-later.ts", [
+      "model(assets.hoopsLamp);",
+      "model(assets.corridorPulseRifleMeshy);"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok");
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "borrowed-asset", game: "alpha-port", file: "apps/showcase-alpha/src/z-later.ts", line: 1 },
+      { check: "prop-exclusivity", game: "alpha-port", file: "apps/showcase-alpha/src/z-later.ts", line: 2 }
+    ]);
+  });
 });
 
 describe("luma-band check", () => {

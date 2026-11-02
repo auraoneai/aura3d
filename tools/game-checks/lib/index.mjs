@@ -503,7 +503,7 @@ function checkSkin({ root, inventory }) {
 
 const CODE_KIND = /^[cm]?[jt]sx?$/;
 const firstLine = (files, re) => { for (const f of files) { const i = f.text.split("\n").findIndex((l) => re.test(l)); if (i >= 0) return { f, no: i + 1 }; } return null; };
-const okMarker = (f, no, tag) => new RegExp(`${tag}: ok`).test(f.raw.split("\n")[no - 1] ?? "");
+const okMarker = (f, no, tag, rawLines = f.raw.split("\n")) => new RegExp(`${tag}: ok`).test(rawLines[no - 1] ?? "");
 
 /** Body of the first `{ ... }` object literal that starts at or after `from` (brace matched on comment-free text). */
 function objectAt(text, from) {
@@ -959,12 +959,16 @@ function assetKeysUsed(root, game) {
     for (const f of src.files) {
       if (!CODE_KIND.test(f.kind) && f.kind !== "json") continue;
       const lines = f.text.split("\n");
+      const rawLines = f.raw.split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const hit = (id) => {
           const e = universe.get(id);
-          if (!e || used.has(id) || (!e.root && ![...e.apps].some((a) => ownDirs.has(a)))) return;
-          used.set(id, { f, no: i + 1 });
+          if (!e || (!e.root && ![...e.apps].some((a) => ownDirs.has(a)))) return;
+          const occurrences = used.get(id) ?? [];
+          const last = occurrences[occurrences.length - 1];
+          if (last?.f !== f || last?.no !== i + 1) occurrences.push({ f, no: i + 1, rawLines });
+          used.set(id, occurrences);
         };
         for (const m of line.matchAll(/[A-Za-z_][A-Za-z0-9_]{2,}/g)) if (MULTI_WORD.test(m[0])) hit(m[0]);
         for (const m of line.matchAll(/\bassets\s*(?:\.\s*([A-Za-z_]\w*)|\[\s*["'`]([A-Za-z_]\w*)["'`]\s*\])|"id"\s*:\s*"([A-Za-z_]\w*)"/g)) hit(m[1] ?? m[2] ?? m[3]);
@@ -982,8 +986,10 @@ function assetKeysUsed(root, game) {
 function checkBorrowedAsset({ game, root, terms, inventory }) {
   const universe = assetUniverse(root);
   const out = [];
-  for (const [id, at] of assetKeysUsed(root, game)) {
-    if (isGenericAsset(id, terms) || okMarker(at.f, at.no, "borrowed-asset")) continue;
+  for (const [id, occurrences] of assetKeysUsed(root, game)) {
+    if (isGenericAsset(id, terms)) continue;
+    const at = occurrences.find(({ f, no, rawLines }) => !okMarker(f, no, "borrowed-asset", rawLines));
+    if (!at) continue;
     const owner = assetOwnerOf(id, terms, universe, inventory);
     if (!owner || owner.owner === game.slug) continue;
     out.push(finding("borrowed-asset", gu47Severity("borrowed-asset"), game, at.f.rel, at.no, `asset key "${id}" belongs to ${owner.owner} (${owner.via}): replace it with an asset this game owns (D2: no borrowed keys across games)`));
@@ -1001,8 +1007,10 @@ function checkPropExclusivity({ game, root, terms, inventory }) {
   const out = [];
   const mine = assetKeysUsed(root, game);
   const others = liveGames(inventory).filter((g) => g.slug !== game.slug);
-  for (const [id, at] of mine) {
-    if (isGenericAsset(id, terms) || okMarker(at.f, at.no, "prop-exclusivity")) continue;
+  for (const [id, occurrences] of mine) {
+    if (isGenericAsset(id, terms)) continue;
+    const at = occurrences.find(({ f, no, rawLines }) => !okMarker(f, no, "prop-exclusivity", rawLines));
+    if (!at) continue;
     const owner = assetOwnerOf(id, terms, universe, inventory);
     if (owner && owner.owner !== game.slug) continue; // borrowed-asset reports it
     const sharers = others.filter((g) => assetKeysUsed(root, g).has(id) && !(owner && owner.owner === g.slug)).map((g) => g.slug);
