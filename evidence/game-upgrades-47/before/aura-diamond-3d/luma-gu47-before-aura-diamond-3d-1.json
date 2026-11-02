@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-diamond-3d--sandlot",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "sandlot",
+  "sinceReadyMs": 25003,
+  "mean": 83.55,
+  "p5": 49,
+  "p50": 81,
+  "p95": 152,
+  "darkFrac": 0.002,
+  "clipFrac": 0,
+  "grid": [
+   89.1,
+   105.8,
+   92.7,
+   73.4,
+   98.8,
+   75,
+   59.6,
+   95,
+   62.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 496
+  }
+ },
+ {
+  "target": "aura-diamond-3d--sandlot",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "sandlot",
+  "sinceReadyMs": 244064,
+  "mean": 85.97,
+  "p5": 50,
+  "p50": 82,
+  "p95": 156,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   94.1,
+   111.7,
+   96.9,
+   74.9,
+   99.1,
+   76.3,
+   60.1,
+   96.9,
+   63.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 496
+  }
+ },
+ {
+  "target": "aura-diamond-3d--skyline",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "skyline",
+  "sinceReadyMs": 25001,
+  "mean": 73.59,
+  "p5": 1,
+  "p50": 79,
+  "p95": 108,
+  "darkFrac": 0.072,
+  "clipFrac": 0,
+  "grid": [
+   55.5,
+   73.7,
+   49.5,
+   81.7,
+   99.2,
+   77.7,
+   64.7,
+   96.4,
+   64.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 338
+  }
+ },
+ {
+  "target": "aura-diamond-3d--skyline",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "skyline",
+  "sinceReadyMs": 344374,
+  "mean": 73.73,
+  "p5": 1,
+  "p50": 79,
+  "p95": 109,
+  "darkFrac": 0.0809,
+  "clipFrac": 0,
+  "grid": [
+   52.2,
+   73.4,
+   47.3,
+   82.9,
+   99.6,
+   78.6,
+   65.3,
+   98.9,
+   65.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 338
+  }
+ }
+]

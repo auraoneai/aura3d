@@ -1,0 +1,118 @@
+[
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 25010,
+  "mean": 106.25,
+  "p5": 54,
+  "p50": 111,
+  "p95": 147,
+  "darkFrac": 0.0023,
+  "clipFrac": 0,
+  "grid": [
+   109.2,
+   134.1,
+   111.9,
+   92.9,
+   118.7,
+   91.6,
+   93.8,
+   110.3,
+   93.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163
+  }
+ },
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 338740,
+  "mean": 104.79,
+  "p5": 45,
+  "p50": 111,
+  "p95": 147,
+  "darkFrac": 0.0047,
+  "clipFrac": 0,
+  "grid": [
+   113.9,
+   134.3,
+   107.8,
+   92.7,
+   118.3,
+   79.3,
+   93.4,
+   110,
+   93.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 165
+  }
+ },
+ {
+  "target": "cross-hop--theme3",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme3",
+  "sinceReadyMs": 25007,
+  "mean": 61.67,
+  "p5": 13,
+  "p50": 59,
+  "p95": 122,
+  "darkFrac": 0.0167,
+  "clipFrac": 0,
+  "grid": [
+   65.9,
+   82.3,
+   61.7,
+   55.1,
+   71.2,
+   53.1,
+   51.3,
+   63.2,
+   51.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 170
+  }
+ },
+ {
+  "target": "cross-hop--theme3",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme3",
+  "sinceReadyMs": 542380,
+  "mean": 62.58,
+  "p5": 13,
+  "p50": 62,
+  "p95": 121,
+  "darkFrac": 0.0185,
+  "clipFrac": 0,
+  "grid": [
+   68.5,
+   82.4,
+   63.6,
+   55.7,
+   71.6,
+   52.1,
+   52.6,
+   64,
+   52.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 170
+  }
+ }
+]

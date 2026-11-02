@@ -33,4 +33,22 @@ describe("example dev server: import.meta.url in bundled app entries", () => {
       await server.close();
     }
   });
+
+  it("resolves Vite ?url asset imports in both bundled and per-module paths", async () => {
+    mkdirSync(join(root, "apps", "showcase-font", "src"), { recursive: true });
+    writeFileSync(join(root, "apps", "showcase-font", "src", "font.woff2"), "woff2");
+    writeFileSync(
+      join(root, "apps", "showcase-font", "src", "main.ts"),
+      'import fontUrl from "./font.woff2?url";\n(globalThis as { fontUrl?: string }).fontUrl = fontUrl;\n'
+    );
+    const server = await startExampleDevServer(root);
+    try {
+      const bundled = await (await fetch(`${server.origin}/apps/showcase-font/src/main.ts`)).text();
+      expect(bundled).toContain('"/apps/showcase-font/src/font.woff2"');
+      const perModule = await (await fetch(`${server.origin}/apps/showcase-font/src/font.woff2?url`)).text();
+      expect(perModule).toBe('export default "/apps/showcase-font/src/font.woff2";');
+    } finally {
+      await server.close();
+    }
+  });
 });

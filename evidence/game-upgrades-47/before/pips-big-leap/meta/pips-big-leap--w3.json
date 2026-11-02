@@ -1,0 +1,77 @@
+{
+ "target": "pips-big-leap--w3",
+ "slug": "pips-big-leap",
+ "variant": "w3",
+ "url": "/apps/showcase-pips-big-leap/",
+ "group": "g2",
+ "runId": "gu47-before-pips-big-leap-2",
+ "acrRunId": "ch5uj",
+ "readyMs": 34027,
+ "shots": {
+  "settle-25s": {
+   "target": "pips-big-leap--w3",
+   "id": "settle-25s",
+   "slug": "pips-big-leap",
+   "variant": "w3",
+   "sinceReadyMs": 25002,
+   "mean": 207.59,
+   "p5": 152,
+   "p50": 212,
+   "p95": 235,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    208.9,
+    192.7,
+    197.6,
+    193.1,
+    199.1,
+    182.5,
+    230.5,
+    233.4,
+    230.4
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 458
+   }
+  },
+  "settle-60s": {
+   "target": "pips-big-leap--w3",
+   "id": "settle-60s",
+   "slug": "pips-big-leap",
+   "variant": "w3",
+   "sinceReadyMs": 117624,
+   "mean": 207.63,
+   "p5": 152,
+   "p50": 212,
+   "p95": 235,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    208.9,
+    192.6,
+    197.6,
+    193.1,
+    199.4,
+    182.6,
+    230.5,
+    233.5,
+    230.4
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 458
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-pips-big-leap-2/pips-big-leap--w3--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-pips-big-leap-2/pips-big-leap--w3--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

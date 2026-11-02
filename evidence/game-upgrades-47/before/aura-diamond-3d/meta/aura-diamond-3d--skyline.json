@@ -1,0 +1,81 @@
+{
+ "target": "aura-diamond-3d--skyline",
+ "slug": "aura-diamond-3d",
+ "variant": "skyline",
+ "url": "/apps/showcase-aura-diamond-3d/index.html?park=skyline",
+ "group": "g4",
+ "runId": "gu47-before-aura-diamond-3d-1",
+ "acrRunId": "ch5u9",
+ "readyMs": 39486,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-diamond-3d--skyline",
+   "id": "settle-25s",
+   "slug": "aura-diamond-3d",
+   "variant": "skyline",
+   "sinceReadyMs": 25001,
+   "mean": 73.59,
+   "p5": 1,
+   "p50": 79,
+   "p95": 108,
+   "darkFrac": 0.072,
+   "clipFrac": 0,
+   "grid": [
+    55.5,
+    73.7,
+    49.5,
+    81.7,
+    99.2,
+    77.7,
+    64.7,
+    96.4,
+    64.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 338
+   }
+  },
+  "settle-60s": {
+   "target": "aura-diamond-3d--skyline",
+   "id": "settle-60s",
+   "slug": "aura-diamond-3d",
+   "variant": "skyline",
+   "sinceReadyMs": 344374,
+   "mean": 73.73,
+   "p5": 1,
+   "p50": 79,
+   "p95": 109,
+   "darkFrac": 0.0809,
+   "clipFrac": 0,
+   "grid": [
+    52.2,
+    73.4,
+    47.3,
+    82.9,
+    99.6,
+    78.6,
+    65.3,
+    98.9,
+    65.3
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 338
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-diamond-3d-1/aura-diamond-3d--skyline--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-diamond-3d-1/aura-diamond-3d--skyline--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

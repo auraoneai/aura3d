@@ -1,0 +1,11 @@
+run gu47-before-aura-fc-3d-3 acr ch5uk was successful after 18m57s playwrightExit 0
+GL_HTTP aura-fc-3d--uyuni 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-fc-3d--uyuni Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-fc-3d--uyuni 28222ms
+GL_DONE aura-fc-3d--uyuni
+GL_HTTP aura-fc-3d--glacier 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-fc-3d--glacier Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-fc-3d--glacier 36241ms
+GL_DONE aura-fc-3d--glacier
+2 passed (17.8m)
+[task-run] PLAYWRIGHT_EXIT=0

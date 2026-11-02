@@ -1,0 +1,5 @@
+run gu47-before-heatsink-port acr ch5uu was successful after 13m6s playwrightExit 0
+GL_READY heatsink-port--default 47035ms
+GL_DONE heatsink-port--default
+1 passed (11.9m)
+[task-run] PLAYWRIGHT_EXIT=0

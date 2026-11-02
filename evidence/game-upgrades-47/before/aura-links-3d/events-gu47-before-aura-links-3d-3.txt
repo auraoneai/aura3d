@@ -1,0 +1,11 @@
+run gu47-before-aura-links-3d-3 acr ch5uc was successful after 9m54s playwrightExit 0
+GL_HTTP aura-links-3d--mapleHollow 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-links-3d--mapleHollow Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-links-3d--mapleHollow 22423ms
+GL_DONE aura-links-3d--mapleHollow
+GL_HTTP aura-links-3d--mareCourse 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-links-3d--mareCourse Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-links-3d--mareCourse 21966ms
+GL_DONE aura-links-3d--mareCourse
+2 passed (8.5m)
+[task-run] PLAYWRIGHT_EXIT=0

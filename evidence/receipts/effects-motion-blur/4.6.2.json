@@ -1,0 +1,31 @@
+{
+  "capability": "effects-motion-blur",
+  "version": "4.6.2",
+  "gitSha": "5050f3cbc",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/post-receipts.ts body(): grey floor (glossy for SSR), emissive white wall (left), warm emissive lamp sphere (right), grey crate (runtime id mover), one shadow-casting sun, camera (0, 2.2, 5.2) -> (0, 0.8, 0), 480x270; crate moving 0.25 m/step, motionBlur absent vs shutter 0.75",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-motion-blur/mb-off.png",
+      "sha256": "5156b175847aa41be61ee614d428521390ebe509b793682c3408e3865bc09201",
+      "meanLuma": 80.58829811015625,
+      "nonBlackRatio": 1,
+      "label": "mb-off"
+    },
+    {
+      "file": "evidence/receipts/effects-motion-blur/mb-on.png",
+      "sha256": "026826f2e6808e6ebe91df7ec75eeab9a95b9fb2d50a3d3951e57d98e07d37ae",
+      "meanLuma": 80.76235684218749,
+      "nonBlackRatio": 1,
+      "label": "mb-on"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/ec/hdr-grade-and-stage-trace.test.ts"
+  ],
+  "date": "2026-10-30T15:14:37.250Z",
+  "checks": {
+    "changedFraction": 0.0040546875,
+    "changedFractionAtLeast": 0.002
+  }
+}

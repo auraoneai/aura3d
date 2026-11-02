@@ -1,0 +1,11 @@
+run gu47-before-aura-fc-3d-1 acr ch5um was successful after 13m0s playwrightExit 0
+GL_HTTP aura-fc-3d--favela 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-fc-3d--favela Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-fc-3d--favela 25098ms
+GL_DONE aura-fc-3d--favela
+GL_HTTP aura-fc-3d--munich 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-fc-3d--munich Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-fc-3d--munich 25377ms
+GL_DONE aura-fc-3d--munich
+2 passed (11.8m)
+[task-run] PLAYWRIGHT_EXIT=0

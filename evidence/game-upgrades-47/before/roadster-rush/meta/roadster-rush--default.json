@@ -1,0 +1,77 @@
+{
+ "target": "roadster-rush--default",
+ "slug": "roadster-rush",
+ "variant": "default",
+ "url": "/apps/showcase-roadster-rush/?seed=42&capture=1",
+ "group": "g1",
+ "runId": "gu47-before-roadster-rush",
+ "acrRunId": "ch5ut",
+ "readyMs": 75173,
+ "shots": {
+  "settle-25s": {
+   "target": "roadster-rush--default",
+   "id": "settle-25s",
+   "slug": "roadster-rush",
+   "variant": "default",
+   "sinceReadyMs": 25006,
+   "mean": 81.95,
+   "p5": 25,
+   "p50": 74,
+   "p95": 173,
+   "darkFrac": 0.0099,
+   "clipFrac": 0,
+   "grid": [
+    109.7,
+    144.7,
+    113.4,
+    66.2,
+    108.1,
+    44.8,
+    32.7,
+    81.3,
+    36.6
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 150
+   }
+  },
+  "settle-60s": {
+   "target": "roadster-rush--default",
+   "id": "settle-60s",
+   "slug": "roadster-rush",
+   "variant": "default",
+   "sinceReadyMs": 243879,
+   "mean": 82.22,
+   "p5": 21,
+   "p50": 77,
+   "p95": 159,
+   "darkFrac": 0.0126,
+   "clipFrac": 0,
+   "grid": [
+    105.1,
+    132.3,
+    103.1,
+    96.8,
+    84,
+    48,
+    52.9,
+    81.1,
+    36.4
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 149
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-roadster-rush/roadster-rush--default--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-roadster-rush/roadster-rush--default--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

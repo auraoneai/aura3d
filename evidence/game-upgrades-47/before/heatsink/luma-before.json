@@ -1,0 +1,60 @@
+[
+ {
+  "target": "heatsink--default",
+  "id": "settle-25s",
+  "slug": "heatsink",
+  "variant": "default",
+  "sinceReadyMs": 25003,
+  "mean": 36.96,
+  "p5": 1,
+  "p50": 22,
+  "p95": 117,
+  "darkFrac": 0.2615,
+  "clipFrac": 0,
+  "grid": [
+   29.3,
+   20.2,
+   42.5,
+   44.3,
+   69.1,
+   53,
+   17.4,
+   34.5,
+   22.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 915
+  }
+ },
+ {
+  "target": "heatsink--default",
+  "id": "settle-60s",
+  "slug": "heatsink",
+  "variant": "default",
+  "sinceReadyMs": 137069,
+  "mean": 36.97,
+  "p5": 1,
+  "p50": 22,
+  "p95": 117,
+  "darkFrac": 0.2614,
+  "clipFrac": 0,
+  "grid": [
+   29.3,
+   20.2,
+   42.5,
+   44.3,
+   69.1,
+   53,
+   17.4,
+   34.5,
+   22.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 915
+  }
+ }
+]

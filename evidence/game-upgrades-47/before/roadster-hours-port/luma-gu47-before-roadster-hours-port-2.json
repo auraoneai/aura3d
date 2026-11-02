@@ -1,0 +1,60 @@
+[
+ {
+  "target": "roadster-hours-port--halo",
+  "id": "settle-25s",
+  "slug": "roadster-hours-port",
+  "variant": "halo",
+  "sinceReadyMs": 25014,
+  "mean": 12.68,
+  "p5": 0,
+  "p50": 7,
+  "p95": 50,
+  "darkFrac": 0.5547,
+  "clipFrac": 0,
+  "grid": [
+   5.7,
+   13.8,
+   10.8,
+   16.6,
+   36.4,
+   17,
+   1.8,
+   10.2,
+   1.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 86
+  }
+ },
+ {
+  "target": "roadster-hours-port--halo",
+  "id": "settle-60s",
+  "slug": "roadster-hours-port",
+  "variant": "halo",
+  "sinceReadyMs": 118909,
+  "mean": 12.69,
+  "p5": 0,
+  "p50": 7,
+  "p95": 50,
+  "darkFrac": 0.5546,
+  "clipFrac": 0,
+  "grid": [
+   5.7,
+   13.8,
+   10.8,
+   16.6,
+   36.4,
+   17,
+   1.8,
+   10.2,
+   1.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 86
+  }
+ }
+]

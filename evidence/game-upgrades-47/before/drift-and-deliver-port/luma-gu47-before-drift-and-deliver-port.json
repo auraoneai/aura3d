@@ -1,0 +1,118 @@
+[
+ {
+  "target": "drift-and-deliver-port--default",
+  "id": "settle-25s",
+  "slug": "drift-and-deliver-port",
+  "variant": "default",
+  "sinceReadyMs": 25007,
+  "mean": 110.9,
+  "p5": 59,
+  "p50": 107,
+  "p95": 169,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   103.6,
+   144.1,
+   114.5,
+   103.7,
+   137.3,
+   113.3,
+   89.1,
+   107.1,
+   85.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 84
+  }
+ },
+ {
+  "target": "drift-and-deliver-port--default",
+  "id": "settle-60s",
+  "slug": "drift-and-deliver-port",
+  "variant": "default",
+  "sinceReadyMs": 319306,
+  "mean": 110.74,
+  "p5": 58,
+  "p50": 107,
+  "p95": 170,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   104,
+   144.3,
+   114.6,
+   103.2,
+   137.2,
+   112.5,
+   88.6,
+   107.2,
+   85.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 84
+  }
+ },
+ {
+  "target": "drift-and-deliver-port--noenv",
+  "id": "settle-25s",
+  "slug": "drift-and-deliver-port",
+  "variant": "noenv",
+  "sinceReadyMs": 25003,
+  "mean": 131.48,
+  "p5": 66,
+  "p50": 132,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   119.4,
+   158.1,
+   118.2,
+   126.4,
+   174.5,
+   127.1,
+   115.9,
+   136,
+   107.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 84
+  }
+ },
+ {
+  "target": "drift-and-deliver-port--noenv",
+  "id": "settle-60s",
+  "slug": "drift-and-deliver-port",
+  "variant": "noenv",
+  "sinceReadyMs": 310161,
+  "mean": 131.35,
+  "p5": 66,
+  "p50": 132,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   119.6,
+   158.2,
+   118.3,
+   126.2,
+   174.3,
+   126.6,
+   115.6,
+   135.8,
+   107.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 84
+  }
+ }
+]

@@ -1,0 +1,118 @@
+[
+ {
+  "target": "pips-big-leap--w4",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w4",
+  "sinceReadyMs": 25005,
+  "mean": 146.5,
+  "p5": 46,
+  "p50": 118,
+  "p95": 237,
+  "darkFrac": 0.0025,
+  "clipFrac": 0,
+  "grid": [
+   157.9,
+   201.7,
+   173.2,
+   141.4,
+   140.5,
+   150.2,
+   117.6,
+   116.3,
+   119.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 620
+  }
+ },
+ {
+  "target": "pips-big-leap--w4",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w4",
+  "sinceReadyMs": 306999,
+  "mean": 146.51,
+  "p5": 46,
+  "p50": 118,
+  "p95": 237,
+  "darkFrac": 0.0025,
+  "clipFrac": 0,
+  "grid": [
+   157.9,
+   201.8,
+   173.2,
+   141.4,
+   140.7,
+   149.7,
+   117.6,
+   116.6,
+   119.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 620
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 25008,
+  "mean": 181.52,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155,
+   192.2,
+   169.4,
+   140.8,
+   205.5,
+   149.7,
+   203.8,
+   212,
+   205.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 652
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 271617,
+  "mean": 181.62,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155,
+   192.1,
+   169.4,
+   140.8,
+   206.3,
+   149.7,
+   203.9,
+   212.1,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 652
+  }
+ }
+]

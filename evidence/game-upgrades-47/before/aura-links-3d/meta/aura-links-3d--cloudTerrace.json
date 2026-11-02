@@ -1,0 +1,81 @@
+{
+ "target": "aura-links-3d--cloudTerrace",
+ "slug": "aura-links-3d",
+ "variant": "cloudTerrace",
+ "url": "/apps/showcase-aura-links-3d/index.html?course=cloudTerrace",
+ "group": "g5",
+ "runId": "gu47-before-aura-links-3d-2",
+ "acrRunId": "ch5ua",
+ "readyMs": 47985,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-links-3d--cloudTerrace",
+   "id": "settle-25s",
+   "slug": "aura-links-3d",
+   "variant": "cloudTerrace",
+   "sinceReadyMs": 25001,
+   "mean": 151.7,
+   "p5": 93,
+   "p50": 158,
+   "p95": 188,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    158.5,
+    176.5,
+    134.8,
+    133,
+    177.1,
+    132.9,
+    146,
+    168.6,
+    137.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 218
+   }
+  },
+  "settle-60s": {
+   "target": "aura-links-3d--cloudTerrace",
+   "id": "settle-60s",
+   "slug": "aura-links-3d",
+   "variant": "cloudTerrace",
+   "sinceReadyMs": 448778,
+   "mean": 151.8,
+   "p5": 91,
+   "p50": 158,
+   "p95": 188,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    158.7,
+    176.2,
+    134.2,
+    132.4,
+    177.9,
+    133.1,
+    146.8,
+    168.6,
+    138.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 218
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-links-3d-2/aura-links-3d--cloudTerrace--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-links-3d-2/aura-links-3d--cloudTerrace--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

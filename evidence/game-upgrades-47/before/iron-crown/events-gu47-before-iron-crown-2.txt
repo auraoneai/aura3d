@@ -1,0 +1,19 @@
+run gu47-before-iron-crown-2 acr ch5tc was successful after 32m32s playwrightExit 0
+GL_HTTP iron-crown--bangkok-dock 404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2
+GL_CONSOLE iron-crown--bangkok-dock Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--bangkok-dock 404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2
+GL_CONSOLE iron-crown--bangkok-dock Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--bangkok-dock 404 /apps/showcase-iron-crown/fonts/fonts.css
+GL_CONSOLE iron-crown--bangkok-dock Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY iron-crown--bangkok-dock 61260ms
+GL_DONE iron-crown--bangkok-dock
+GL_HTTP iron-crown--colosseum-ruins 404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2
+GL_CONSOLE iron-crown--colosseum-ruins Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--colosseum-ruins 404 /apps/showcase-iron-crown/fonts/fonts.css
+GL_CONSOLE iron-crown--colosseum-ruins Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--colosseum-ruins 404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2
+GL_CONSOLE iron-crown--colosseum-ruins Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY iron-crown--colosseum-ruins 59998ms
+GL_DONE iron-crown--colosseum-ruins
+2 passed (31.4m)
+[task-run] PLAYWRIGHT_EXIT=0

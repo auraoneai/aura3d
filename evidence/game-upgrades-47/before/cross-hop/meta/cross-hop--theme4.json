@@ -1,0 +1,77 @@
+{
+ "target": "cross-hop--theme4",
+ "slug": "cross-hop",
+ "variant": "theme4",
+ "url": "/apps/showcase-cross-hop/?theme=4",
+ "group": "g6",
+ "runId": "gu47-before-cross-hop-3",
+ "acrRunId": "ch5u6",
+ "readyMs": 68862,
+ "shots": {
+  "settle-25s": {
+   "target": "cross-hop--theme4",
+   "id": "settle-25s",
+   "slug": "cross-hop",
+   "variant": "theme4",
+   "sinceReadyMs": 25006,
+   "mean": 59.17,
+   "p5": 23,
+   "p50": 56,
+   "p95": 119,
+   "darkFrac": 0.0218,
+   "clipFrac": 0,
+   "grid": [
+    67.1,
+    69.4,
+    59.6,
+    51,
+    67.1,
+    51,
+    52,
+    63.5,
+    51.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 140
+   }
+  },
+  "settle-60s": {
+   "target": "cross-hop--theme4",
+   "id": "settle-60s",
+   "slug": "cross-hop",
+   "variant": "theme4",
+   "sinceReadyMs": 343337,
+   "mean": 59.31,
+   "p5": 24,
+   "p50": 56,
+   "p95": 118,
+   "darkFrac": 0.0232,
+   "clipFrac": 0,
+   "grid": [
+    66.9,
+    71.6,
+    59.7,
+    49.3,
+    66.2,
+    50.6,
+    52.6,
+    64.3,
+    52.5
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 145
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-cross-hop-3/cross-hop--theme4--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-cross-hop-3/cross-hop--theme4--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

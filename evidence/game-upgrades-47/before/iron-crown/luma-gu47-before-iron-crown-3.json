@@ -1,0 +1,118 @@
+[
+ {
+  "target": "iron-crown--desert-airbase",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "desert-airbase",
+  "sinceReadyMs": 25002,
+  "mean": 104.41,
+  "p5": 55,
+  "p50": 107,
+  "p95": 163,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   126.3,
+   149.6,
+   122.7,
+   107.6,
+   123.2,
+   93.5,
+   68.3,
+   81.7,
+   66.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 182
+  }
+ },
+ {
+  "target": "iron-crown--desert-airbase",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "desert-airbase",
+  "sinceReadyMs": 284927,
+  "mean": 104.44,
+  "p5": 55,
+  "p50": 107,
+  "p95": 163,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   126.3,
+   149.6,
+   122.7,
+   107.6,
+   123.2,
+   93.6,
+   68.3,
+   81.7,
+   66.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 182
+  }
+ },
+ {
+  "target": "iron-crown--himalayan-monastery",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "himalayan-monastery",
+  "sinceReadyMs": 25004,
+  "mean": 115.3,
+  "p5": 66,
+  "p50": 116,
+  "p95": 171,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.3,
+   148,
+   124.3,
+   119.9,
+   148.2,
+   107.5,
+   81,
+   98.2,
+   80.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 3731
+  }
+ },
+ {
+  "target": "iron-crown--himalayan-monastery",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "himalayan-monastery",
+  "sinceReadyMs": 636729,
+  "mean": 115.31,
+  "p5": 66,
+  "p50": 116,
+  "p95": 171,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.3,
+   148,
+   124.2,
+   120.2,
+   148.2,
+   107.4,
+   81,
+   98.2,
+   80.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 3731
+  }
+ }
+]

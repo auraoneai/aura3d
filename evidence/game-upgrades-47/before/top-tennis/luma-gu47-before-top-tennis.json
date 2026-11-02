@@ -1,0 +1,60 @@
+[
+ {
+  "target": "top-tennis--default",
+  "id": "settle-25s",
+  "slug": "top-tennis",
+  "variant": "default",
+  "sinceReadyMs": 25011,
+  "mean": 57.35,
+  "p5": 16,
+  "p50": 59,
+  "p95": 133,
+  "darkFrac": 0.0248,
+  "clipFrac": 0,
+  "grid": [
+   47.7,
+   74.5,
+   42.4,
+   48.9,
+   85,
+   46.3,
+   53.8,
+   65.7,
+   51.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 117
+  }
+ },
+ {
+  "target": "top-tennis--default",
+  "id": "settle-60s",
+  "slug": "top-tennis",
+  "variant": "default",
+  "sinceReadyMs": 150128,
+  "mean": 57.34,
+  "p5": 16,
+  "p50": 59,
+  "p95": 133,
+  "darkFrac": 0.0248,
+  "clipFrac": 0,
+  "grid": [
+   47.7,
+   74.5,
+   42.4,
+   48.9,
+   85,
+   46.3,
+   53.8,
+   65.7,
+   51.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 117
+  }
+ }
+]

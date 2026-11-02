@@ -1,0 +1,81 @@
+{
+ "target": "aura-fc-3d--favela",
+ "slug": "aura-fc-3d",
+ "variant": "favela",
+ "url": "/apps/showcase-aura-fc-3d/index.html?venue=favela",
+ "group": "g4",
+ "runId": "gu47-before-aura-fc-3d-1",
+ "acrRunId": "ch5um",
+ "readyMs": 25098,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-fc-3d--favela",
+   "id": "settle-25s",
+   "slug": "aura-fc-3d",
+   "variant": "favela",
+   "sinceReadyMs": 25011,
+   "mean": 135.87,
+   "p5": 92,
+   "p50": 123,
+   "p95": 234,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    159.4,
+    153.7,
+    167.5,
+    124.9,
+    124.4,
+    123.9,
+    122.6,
+    124.6,
+    121.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 310
+   }
+  },
+  "settle-60s": {
+   "target": "aura-fc-3d--favela",
+   "id": "settle-60s",
+   "slug": "aura-fc-3d",
+   "variant": "favela",
+   "sinceReadyMs": 132026,
+   "mean": 135.86,
+   "p5": 92,
+   "p50": 123,
+   "p95": 234,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    159.4,
+    153.7,
+    167.5,
+    124.9,
+    124.4,
+    123.9,
+    122.6,
+    124.6,
+    121.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 310
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-fc-3d-1/aura-fc-3d--favela--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-fc-3d-1/aura-fc-3d--favela--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

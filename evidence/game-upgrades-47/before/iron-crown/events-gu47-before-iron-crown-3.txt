@@ -1,0 +1,19 @@
+run gu47-before-iron-crown-3 acr ch5tb was successful after 30m19s playwrightExit 0
+GL_HTTP iron-crown--desert-airbase 404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2
+GL_CONSOLE iron-crown--desert-airbase Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--desert-airbase 404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2
+GL_CONSOLE iron-crown--desert-airbase Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--desert-airbase 404 /apps/showcase-iron-crown/fonts/fonts.css
+GL_CONSOLE iron-crown--desert-airbase Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY iron-crown--desert-airbase 60854ms
+GL_DONE iron-crown--desert-airbase
+GL_HTTP iron-crown--himalayan-monastery 404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2
+GL_CONSOLE iron-crown--himalayan-monastery Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--himalayan-monastery 404 /apps/showcase-iron-crown/fonts/fonts.css
+GL_CONSOLE iron-crown--himalayan-monastery Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_HTTP iron-crown--himalayan-monastery 404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2
+GL_CONSOLE iron-crown--himalayan-monastery Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY iron-crown--himalayan-monastery 58616ms
+GL_DONE iron-crown--himalayan-monastery
+2 passed (29.2m)
+[task-run] PLAYWRIGHT_EXIT=0

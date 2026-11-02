@@ -1,0 +1,60 @@
+[
+ {
+  "target": "bunker-zero--default",
+  "id": "settle-25s",
+  "slug": "bunker-zero",
+  "variant": "default",
+  "sinceReadyMs": 25006,
+  "mean": 74.59,
+  "p5": 31,
+  "p50": 73,
+  "p95": 105,
+  "darkFrac": 0.0222,
+  "clipFrac": 0,
+  "grid": [
+   67.9,
+   91.6,
+   68.5,
+   68.2,
+   68.7,
+   54.4,
+   67.1,
+   97.5,
+   87.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163
+  }
+ },
+ {
+  "target": "bunker-zero--default",
+  "id": "settle-60s",
+  "slug": "bunker-zero",
+  "variant": "default",
+  "sinceReadyMs": 208043,
+  "mean": 74.59,
+  "p5": 31,
+  "p50": 73,
+  "p95": 105,
+  "darkFrac": 0.0222,
+  "clipFrac": 0,
+  "grid": [
+   67.9,
+   91.6,
+   68.5,
+   68.2,
+   68.7,
+   54.4,
+   67.1,
+   97.5,
+   87.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163
+  }
+ }
+]

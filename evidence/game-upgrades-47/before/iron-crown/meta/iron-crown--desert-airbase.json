@@ -1,0 +1,85 @@
+{
+ "target": "iron-crown--desert-airbase",
+ "slug": "iron-crown",
+ "variant": "desert-airbase",
+ "url": "/apps/showcase-iron-crown/",
+ "group": "g2",
+ "runId": "gu47-before-iron-crown-3",
+ "acrRunId": "ch5tb",
+ "readyMs": 60854,
+ "shots": {
+  "settle-25s": {
+   "target": "iron-crown--desert-airbase",
+   "id": "settle-25s",
+   "slug": "iron-crown",
+   "variant": "desert-airbase",
+   "sinceReadyMs": 25002,
+   "mean": 104.41,
+   "p5": 55,
+   "p50": 107,
+   "p95": 163,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    126.3,
+    149.6,
+    122.7,
+    107.6,
+    123.2,
+    93.5,
+    68.3,
+    81.7,
+    66.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 182
+   }
+  },
+  "settle-60s": {
+   "target": "iron-crown--desert-airbase",
+   "id": "settle-60s",
+   "slug": "iron-crown",
+   "variant": "desert-airbase",
+   "sinceReadyMs": 284927,
+   "mean": 104.44,
+   "p5": 55,
+   "p50": 107,
+   "p95": 163,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    126.3,
+    149.6,
+    122.7,
+    107.6,
+    123.2,
+    93.6,
+    68.3,
+    81.7,
+    66.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 182
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-iron-crown-3/iron-crown--desert-airbase--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-iron-crown-3/iron-crown--desert-airbase--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2",
+  "404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2",
+  "404 /apps/showcase-iron-crown/fonts/fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

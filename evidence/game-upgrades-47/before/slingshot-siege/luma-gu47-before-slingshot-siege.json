@@ -1,0 +1,60 @@
+[
+ {
+  "target": "slingshot-siege--default",
+  "id": "settle-25s",
+  "slug": "slingshot-siege",
+  "variant": "default",
+  "sinceReadyMs": 25005,
+  "mean": 109.76,
+  "p5": 13,
+  "p50": 121,
+  "p95": 183,
+  "darkFrac": 0.0281,
+  "clipFrac": 0,
+  "grid": [
+   129.2,
+   145.5,
+   93.1,
+   96.5,
+   127,
+   57.8,
+   105.5,
+   125.7,
+   107.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 412
+  }
+ },
+ {
+  "target": "slingshot-siege--default",
+  "id": "settle-60s",
+  "slug": "slingshot-siege",
+  "variant": "default",
+  "sinceReadyMs": 539018,
+  "mean": 106.46,
+  "p5": 10,
+  "p50": 115,
+  "p95": 183,
+  "darkFrac": 0.041,
+  "clipFrac": 0,
+  "grid": [
+   121.7,
+   146.1,
+   80.2,
+   94.9,
+   129.1,
+   52.9,
+   114.4,
+   121.9,
+   96.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 412
+  }
+ }
+]

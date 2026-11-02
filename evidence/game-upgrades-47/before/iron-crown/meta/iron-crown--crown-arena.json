@@ -1,0 +1,85 @@
+{
+ "target": "iron-crown--crown-arena",
+ "slug": "iron-crown",
+ "variant": "crown-arena",
+ "url": "/apps/showcase-iron-crown/",
+ "group": "g1",
+ "runId": "gu47-before-iron-crown-1",
+ "acrRunId": "ch5u4",
+ "readyMs": 43910,
+ "shots": {
+  "settle-25s": {
+   "target": "iron-crown--crown-arena",
+   "id": "settle-25s",
+   "slug": "iron-crown",
+   "variant": "crown-arena",
+   "sinceReadyMs": 25011,
+   "mean": 55.2,
+   "p5": 3,
+   "p50": 45,
+   "p95": 141,
+   "darkFrac": 0.1156,
+   "clipFrac": 0,
+   "grid": [
+    28.6,
+    23.3,
+    31,
+    60.6,
+    73.2,
+    43.5,
+    92,
+    85.7,
+    58.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 221
+   }
+  },
+  "settle-60s": {
+   "target": "iron-crown--crown-arena",
+   "id": "settle-60s",
+   "slug": "iron-crown",
+   "variant": "crown-arena",
+   "sinceReadyMs": 482911,
+   "mean": 56.41,
+   "p5": 3,
+   "p50": 47,
+   "p95": 144,
+   "darkFrac": 0.1142,
+   "clipFrac": 0,
+   "grid": [
+    28.6,
+    23.2,
+    31,
+    60.5,
+    73.3,
+    43.6,
+    95.4,
+    89.6,
+    62.3
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 221
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-iron-crown-1/iron-crown--crown-arena--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-iron-crown-1/iron-crown--crown-arena--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2",
+  "404 /apps/showcase-iron-crown/fonts/fonts.css",
+  "404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

@@ -1,0 +1,7 @@
+run gu47-before-drift-and-deliver-port acr ch5ue was successful after 25m20s playwrightExit 0
+GL_READY drift-and-deliver-port--default 138501ms
+GL_DONE drift-and-deliver-port--default
+GL_READY drift-and-deliver-port--noenv 125326ms
+GL_DONE drift-and-deliver-port--noenv
+2 passed (23.9m)
+[task-run] PLAYWRIGHT_EXIT=0

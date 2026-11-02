@@ -1,0 +1,81 @@
+{
+ "target": "aura-diamond-3d--canyon",
+ "slug": "aura-diamond-3d",
+ "variant": "canyon",
+ "url": "/apps/showcase-aura-diamond-3d/index.html?park=canyon",
+ "group": "g4",
+ "runId": "gu47-before-aura-diamond-3d-2",
+ "acrRunId": "ch5u8",
+ "readyMs": 36168,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-diamond-3d--canyon",
+   "id": "settle-25s",
+   "slug": "aura-diamond-3d",
+   "variant": "canyon",
+   "sinceReadyMs": 25004,
+   "mean": 108.26,
+   "p5": 48,
+   "p50": 113,
+   "p95": 153,
+   "darkFrac": 0.004,
+   "clipFrac": 0,
+   "grid": [
+    102.5,
+    108.2,
+    89.2,
+    104.3,
+    143.4,
+    110.2,
+    86.9,
+    135.9,
+    93.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 330
+   }
+  },
+  "settle-60s": {
+   "target": "aura-diamond-3d--canyon",
+   "id": "settle-60s",
+   "slug": "aura-diamond-3d",
+   "variant": "canyon",
+   "sinceReadyMs": 213498,
+   "mean": 109.57,
+   "p5": 47,
+   "p50": 116,
+   "p95": 153,
+   "darkFrac": 0.004,
+   "clipFrac": 0,
+   "grid": [
+    105.1,
+    109.3,
+    90.6,
+    105.8,
+    143.1,
+    111.6,
+    88,
+    136.7,
+    95.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 330
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-diamond-3d-2/aura-diamond-3d--canyon--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-diamond-3d-2/aura-diamond-3d--canyon--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

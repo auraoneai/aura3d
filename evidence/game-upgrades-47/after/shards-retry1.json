@@ -1,0 +1,20 @@
+[
+  {"run":"gu47-after-r1-ninja-runner-port-2","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--gau","expect":["ninja-runner-port--gauntlet-run"]},
+  {"run":"gu47-after-r1-ninja-runner-port-3","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--village.@g","expect":["ninja-runner-port--village"]},
+  {"run":"gu47-after-r1-ninja-runner-port-4","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--ro","expect":["ninja-runner-port--rooftops"]},
+  {"run":"gu47-after-r1-ninja-runner-port-5","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--ri","expect":["ninja-runner-port--river"]},
+  {"run":"gu47-after-r1-ninja-runner-port-6","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--f","expect":["ninja-runner-port--forest"]},
+  {"run":"gu47-after-r1-ninja-runner-port-7","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--gate.@g","expect":["ninja-runner-port--gate"]},
+  {"run":"gu47-after-r1-ninja-runner-port-8","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--o","expect":["ninja-runner-port--original"]},
+  {"run":"gu47-after-r1-ninja-runner-port-9","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--village-","expect":["ninja-runner-port--village-lanterns-off"]},
+  {"run":"gu47-after-r1-ninja-runner-port-10","slug":"ninja-runner-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=ninja-runner-port--gate-","expect":["ninja-runner-port--gate-cones-off"]},
+  {"run":"gu47-after-r1-pips-big-leap-1","slug":"pips-big-leap","specs":"tests/browser/game-luma-capture.spec.ts --grep=pips-big-leap--[aw][12c]","expect":["pips-big-leap--academy","pips-big-leap--w1","pips-big-leap--w2"]},
+  {"run":"gu47-after-r1-pips-big-leap-2","slug":"pips-big-leap","specs":"tests/browser/game-luma-capture.spec.ts --grep=pips-big-leap--w[345]","expect":["pips-big-leap--w3","pips-big-leap--w4","pips-big-leap--w5"]},
+  {"run":"gu47-after-r1-pips-big-leap-3","slug":"pips-big-leap","specs":"tests/browser/game-luma-capture.spec.ts --grep=pips-big-leap--w6","expect":["pips-big-leap--w6"]},
+  {"run":"gu47-after-r1-aura-links-3d-1","slug":"aura-links-3d","specs":"tests/browser/game-luma-capture.spec.ts --grep=aura-links-3d--[ms][at][Ap]","expect":["aura-links-3d--stAuroras","aura-links-3d--mapleHollow"]},
+  {"run":"gu47-after-r1-last-train-port-3","slug":"last-train-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=last-train-port--band-[de]","expect":["last-train-port--band-d","last-train-port--band-e"]},
+  {"run":"gu47-after-r1-roadster-hours-port-1","slug":"roadster-hours-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=roadster-hours-port--sunbreak.@g","expect":["roadster-hours-port--sunbreak"]},
+  {"run":"gu47-after-r1-roadster-hours-port-2","slug":"roadster-hours-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=roadster-hours-port--redline.@g","expect":["roadster-hours-port--redline"]},
+  {"run":"gu47-after-r1-roadster-hours-port-3","slug":"roadster-hours-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=roadster-hours-port--halo.@g","expect":["roadster-hours-port--halo"]},
+  {"run":"gu47-after-r1-roadster-hours-port-4","slug":"roadster-hours-port","specs":"tests/browser/game-luma-capture.spec.ts --grep=roadster-hours-port--[hrs][aeu][dln][blo][-ir][eno][aer][-ik][-go]","expect":["roadster-hours-port--sunbreak-original","roadster-hours-port--redline-original","roadster-hours-port--halo-original"]}
+]

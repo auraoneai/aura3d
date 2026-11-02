@@ -1,0 +1,7 @@
+run gu47-before-heatsink acr ch5uv was successful after 5m52s playwrightExit 0
+GL_HTTP heatsink--default 404 /fonts/aura-fonts.css
+GL_CONSOLE heatsink--default Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY heatsink--default 23128ms
+GL_DONE heatsink--default
+1 passed (4.7m)
+[task-run] PLAYWRIGHT_EXIT=0

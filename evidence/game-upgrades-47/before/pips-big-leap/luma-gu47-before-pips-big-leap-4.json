@@ -1,0 +1,60 @@
+[
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 25002,
+  "mean": 109.04,
+  "p5": 23,
+  "p50": 131,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.8,
+   24.3,
+   136.1,
+   104.4,
+   95.3,
+   176.1,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 484
+  }
+ },
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 152610,
+  "mean": 109.21,
+  "p5": 23,
+  "p50": 134,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.9,
+   24.3,
+   136.1,
+   105.9,
+   95.3,
+   176,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 484
+  }
+ }
+]

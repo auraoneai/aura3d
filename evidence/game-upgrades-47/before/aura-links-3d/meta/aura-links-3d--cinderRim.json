@@ -1,0 +1,81 @@
+{
+ "target": "aura-links-3d--cinderRim",
+ "slug": "aura-links-3d",
+ "variant": "cinderRim",
+ "url": "/apps/showcase-aura-links-3d/index.html?course=cinderRim",
+ "group": "g5",
+ "runId": "gu47-before-aura-links-3d-2",
+ "acrRunId": "ch5ua",
+ "readyMs": 17882,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-links-3d--cinderRim",
+   "id": "settle-25s",
+   "slug": "aura-links-3d",
+   "variant": "cinderRim",
+   "sinceReadyMs": 25009,
+   "mean": 117.27,
+   "p5": 57,
+   "p50": 105,
+   "p95": 195,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    160.6,
+    189.8,
+    143.6,
+    107.4,
+    115.7,
+    80.8,
+    95.3,
+    97.9,
+    64.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 106
+   }
+  },
+  "settle-60s": {
+   "target": "aura-links-3d--cinderRim",
+   "id": "settle-60s",
+   "slug": "aura-links-3d",
+   "variant": "cinderRim",
+   "sinceReadyMs": 143614,
+   "mean": 117.57,
+   "p5": 57,
+   "p50": 105,
+   "p95": 195,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    160.6,
+    189.9,
+    144,
+    107.9,
+    116.4,
+    81.2,
+    95.5,
+    98.3,
+    64.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 106
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-links-3d-2/aura-links-3d--cinderRim--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-links-3d-2/aura-links-3d--cinderRim--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

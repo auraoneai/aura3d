@@ -1,0 +1,5 @@
+run gu47-before-silt-and-signal-port acr ch5v3 was successful after 10m12s playwrightExit 0
+GL_READY silt-and-signal-port--default 31036ms
+GL_DONE silt-and-signal-port--default
+1 passed (9.1m)
+[task-run] PLAYWRIGHT_EXIT=0

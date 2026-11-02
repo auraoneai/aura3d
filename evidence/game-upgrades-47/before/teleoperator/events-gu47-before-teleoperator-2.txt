@@ -1,0 +1,7 @@
+run gu47-before-teleoperator-2 acr ch5u3 was successful after 26m56s playwrightExit 0
+GL_READY teleoperator--fog 153643ms
+GL_DONE teleoperator--fog
+GL_READY teleoperator--night 151648ms
+GL_DONE teleoperator--night
+2 passed (25.7m)
+[task-run] PLAYWRIGHT_EXIT=0
