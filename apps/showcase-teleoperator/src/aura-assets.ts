@@ -103,12 +103,15 @@ export const assets = defineAuraAssets({
     hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
     bounds: [0.9023, 1.0833, 1.9004]
   },
+  // GU47 wave 1 (WP-36 dispatchFacadeVictorian, GD-12/GD-02): Meshy retexture of this game's own Victorian facade (blue-grey
+  // bay windows with lit panes; same 5,858 triangles, same aspect, centred and rescaled to longest side 2, so the position
+  // hash changed), route-local like the pod (rights and meta in public/aura-assets/meshy/provenance).
   gridBldgVictorian: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopBldg_victorian.39183fbd.glb",
-    hash: "sha256-39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
-    bounds: [0.912, 1.737, 1.918]
+    url: "/aura-assets/meshy/models/teleoperator_dispatchFacadeVictorian.glb",
+    hash: "sha256-594d4a197910c149f2a1c8e1f8397c00d3d66d8af31299449cbfa21c1798b5ac",
+    bounds: [0.951, 1.812, 2]
   },
   gridBldgMidrise: {
     type: "model",
@@ -154,7 +157,7 @@ export const CATALOG_IDS: Readonly<Record<GridAssetKey, string | null>> = {
   gridVan: "gridVan",
   gridPickup: "gridPickup",
   gridBoxTruck: "gridBoxTruck",
-  gridBldgVictorian: "teleopBldg_victorian",
+  gridBldgVictorian: null,
   gridBldgMidrise: "teleopBldg_midrise",
   gridBldgGlassTower: "teleopBldg_glasstower",
   gridBldgArtDeco: "teleopBldg_artdeco"
