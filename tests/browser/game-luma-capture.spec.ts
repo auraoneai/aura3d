@@ -1,4 +1,4 @@
-import { test, type Page } from "@playwright/test";
+import { errors, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import { glMetaInPage, glPairInPage, type LumaPixelRect } from "./game-luma-stats";
 import { GAME_LUMA_TARGETS, type GameLumaTarget } from "./game-luma-targets";
@@ -65,11 +65,34 @@ async function engineInfo(page: Page) {
   });
 }
 
+async function texturePending(page: Page): Promise<number | null> {
+  return page.evaluate(() => {
+    const reg = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__;
+    const rows = reg?.all()[0]?.diagnostics?.()?.renderer?.runtime?.texturedMaterials;
+    return Array.isArray(rows) ? rows.filter((r) => r?.status === "pending").length : null;
+  });
+}
+
 /** GL_TEX_WAIT_S: wait (bounded) while the app still reports pending textured materials. */
-async function waitForTextures(page: Page): Promise<void> {
-  if (TEX_WAIT_MS <= 0) return;
-  const pending = "(() => { const a = window.__AURA3D_LIVE_APPS__?.all()[0]; const rows = a?.diagnostics?.()?.renderer?.runtime?.texturedMaterials ?? []; return !rows.some((r) => r && r.status === 'pending'); })()";
-  await page.waitForFunction(pending, undefined, { timeout: TEX_WAIT_MS, polling: 2000 }).catch(() => undefined);
+async function waitForTextures(page: Page): Promise<{ status: "disabled" | "resolved" | "timed-out" | "unavailable"; elapsedMs: number }> {
+  if (TEX_WAIT_MS <= 0) return { status: "disabled", elapsedMs: 0 };
+  const pending = "(() => { try { const a = window.__AURA3D_LIVE_APPS__?.all()[0]; const rows = a?.diagnostics?.()?.renderer?.runtime?.texturedMaterials; if (!Array.isArray(rows)) return 'unavailable'; return rows.some((r) => r && r.status === 'pending') ? false : 'resolved'; } catch (error) { throw new Error('Texture readiness check failed: ' + String(error)); } })()";
+  const started = performance.now();
+  let result: Awaited<ReturnType<Page["waitForFunction"]>>;
+  try {
+    result = await page.waitForFunction(pending, undefined, { timeout: TEX_WAIT_MS, polling: 2000 });
+  } catch (error) {
+    if (!(error instanceof errors.TimeoutError) || !error.message.includes(`Timeout ${TEX_WAIT_MS}ms exceeded`)) throw error;
+    return { status: "timed-out", elapsedMs: Math.round(performance.now() - started) };
+  }
+  const elapsedMs = Math.round(performance.now() - started);
+  try {
+    const status = await result.jsonValue();
+    if (status !== "resolved" && status !== "unavailable") throw new Error(`Unexpected texture wait result: ${String(status)}`);
+    return { status, elapsedMs };
+  } finally {
+    await result.dispose();
+  }
 }
 
 function logJpeg(target: string, id: string, b64: string): void {
@@ -81,21 +104,30 @@ async function screenshotCanvas(page: Page): Promise<Buffer> {
   return page.screenshot({ type: "png" });
 }
 
-async function grab(page: Page, target: GameLumaTarget, id: string, extra: Record<string, unknown>): Promise<void> {
-  await waitForTextures(page);
+export async function grab(page: Page, target: GameLumaTarget, id: string, extra: Record<string, unknown>, readyAt: number): Promise<void> {
+  const texPendingBeforeWait = await texturePending(page);
+  const texWait = await waitForTextures(page);
   const handle = await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
+  const screenshotRequestedSinceReadyMs = Math.round(performance.now() - readyAt);
   const png = await screenshotCanvas(page);
   const shotAt = Date.now();
+  const screenshotCompletedSinceReadyMs = Math.round(performance.now() - readyAt);
   // Crops are read in the page right after the screenshot; the JPEG is encoded there from the same pixels (a second
   // page.screenshot costs another presented frame, which is tens of seconds per shot on the software-GL runner).
   const meta = await page.evaluate(glMetaInPage, { png: png.toString("base64"), crops: target.crops ?? [] });
+  const diagnosticsRequestedSinceReadyMs = Math.round(performance.now() - readyAt);
   const info = await engineInfo(page);
+  const diagnosticsCompletedSinceReadyMs = Math.round(performance.now() - readyAt);
   // GL_META v1 fields keep their names and order (decode-luma.mjs); the v2 fields follow `info`.
-  log(`GL_META ${JSON.stringify({ target: target.name, id, ...extra, ...meta.v1, info, ...meta.v2 })}`);
+  log(`GL_META ${JSON.stringify({
+    target: target.name, id, ...extra, ...meta.v1, info, ...meta.v2,
+    texPendingBeforeWait, texWaitStatus: texWait.status, texWaitElapsedMs: texWait.elapsedMs,
+    screenshotRequestedSinceReadyMs, screenshotCompletedSinceReadyMs, diagnosticsRequestedSinceReadyMs, diagnosticsCompletedSinceReadyMs
+  })}`);
   logJpeg(target.name, id, meta.jpeg);
   if (PAIR_MS > 0) await pair(page, target, id, png, shotAt, meta.rects, extra);
-  await handle.evaluate((el) => el.remove());
+  await handle.evaluate((el) => (el as Element).remove());
 }
 
 async function pair(page: Page, target: GameLumaTarget, id: string, first: Buffer, firstAt: number, rects: readonly LumaPixelRect[], extra: Record<string, unknown>): Promise<void> {
@@ -134,11 +166,12 @@ test.describe("game luma capture", () => {
       await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 });
       if (target.prepare) await target.prepare(page);
       const loaded = Date.now();
+      const readyAt = performance.now();
       log(`GL_READY ${target.name} ${loaded - started}ms`);
       for (const sec of SETTLE_SECONDS) {
         const wait = sec * 1000 - (Date.now() - loaded);
         if (wait > 0) await page.waitForTimeout(wait);
-        await grab(page, target, `settle-${sec}s`, { slug: target.slug, variant: target.variant, sinceReadyMs: Date.now() - loaded });
+        await grab(page, target, `settle-${sec}s`, { slug: target.slug, variant: target.variant, sinceReadyMs: Date.now() - loaded }, readyAt);
       }
       log(`GL_DONE ${target.name}`);
     });
