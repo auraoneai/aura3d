@@ -7,12 +7,12 @@
  * a painted sky with clouds and light shafts, water with foam, an animated traveller, glowing
  * letters and a bell. Gameplay state comes from `sim.ts`; this module only draws it.
  */
-import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraActorAnimationApi, type AuraApp } from "@aura3d/engine";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { createCameraSequencer, type SequenceId } from "./camera-seq";
 import { WIND_DIR, gustAt } from "./wind";
-import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
+import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
@@ -250,6 +250,8 @@ export function bellLightIntensity(complete: boolean, swing: number, lanterns: n
 export const SHAFT_INTENSITY = 0.22;
 /** GU47 phase 2: the volumetricFog shafts stage is not mounted (see the post block in `buildWorld`). */
 export const SHAFTS_ENABLED: boolean = false;
+/** WW47-P4: a shallow lens reserved for the title and voyage. */
+export const STORY_DOF = { focusDistance: 16, fStop: 2.8, focalLength: 50, maxBlur: 6 } as const;
 export function shaftPatch(godRays: number): { intensity: number; godRayDensity: number } | null {
   if (!(godRays > 0.02)) return null;
   return { intensity: SHAFT_INTENSITY, godRayDensity: Math.round(Math.min(1, Math.max(0.05, godRays)) * 1000) / 1000 };
@@ -320,6 +322,8 @@ export interface BuildWorldOptions {
   quality?: "low" | "high";
   /** WW47-C1 camera sequences (intro crane, bell finale); off for captures (`manual=1`, `start=1`). */
   sequences?: boolean;
+  /** Presentation-only title state; keeps depth of field out of normal play. */
+  titleVisible?: () => boolean;
 }
 
 export function buildWorld(options: BuildWorldOptions = {}): World {
@@ -593,6 +597,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // clean (phase-2 A/B capture g23ab1, found0 = fog off only); the sun sits behind the follow camera, so no shafts
       // were visible either. `shaftPatch` stays as the per-key table for when the stage is re-enabled.
       builder.add(effects.filmGrain({ name: "paper grain", intensity: post.grain }));
+      builder.add(effects.depthOfField({ name: "story-dof", ...STORY_DOF }));
     }
   }
 
@@ -608,6 +613,33 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         return h;
       };
       const heroAnim = set.hero ? createHeroAnimator(app) : null;
+      // WW47-AN2: the admitted hero rig has `neck`, `Head` and the forward-facing `headfront` joint.
+      // Constraints are registered only after the model loads and only while an interaction is in reach.
+      const heroActor = !original && set.hero ? node("hero") as ReturnType<typeof node> & { readonly animation?: AuraActorAnimationApi } : null;
+      let gazeTarget: string | null = null;
+      let disposeGaze: (() => void) | null = null;
+      const clearGaze = (): void => { disposeGaze?.(); disposeGaze = null; gazeTarget = null; };
+      const updateGaze = (state: WindState, onBoat: boolean): void => {
+        if (!heroActor || onBoat) { clearGaze(); return; }
+        const near = nearbyInteraction(state.pos, state.found);
+        const id = near.letter >= 0 ? `letter-${near.letter}` : near.bell ? "bell" : null;
+        if (id === gazeTarget) return;
+        clearGaze();
+        if (!id) return;
+        const animation = heroActor.animation;
+        if (!animation?.ik || !animation.socket("neck").valid
+          || !animation.socket("Head").valid || !animation.socket("headfront").valid) return;
+        const letter = near.letter >= 0 ? LETTERS[near.letter] : undefined;
+        const target: [number, number, number] = letter
+          ? [letter.x, terrainHeight(letter.x, letter.z) + 1.35, letter.z]
+          : [sc.bellHang.x, sc.bellHang.y, sc.bellHang.z];
+        disposeGaze = animation.ik.add({
+          kind: "look-at", target, forwardAxis: "+y", yawLimitDeg: 175, pitchLimitDeg: 35,
+          bones: [{ bone: "neck", weight: 0.2 }, { bone: "Head", weight: 0.8 }, { bone: "headfront", weight: 0 }],
+          halfLife: options.reducedMotion?.() ? 0.45 : 0.15
+        });
+        gazeTarget = id;
+      };
       if (set.bell) node("bell").setVisible(false);
       const cam = app.camera;
       if (!cam) throw new Error("where-the-wind-wanders-port: the app exposes no camera controller");
@@ -659,6 +691,26 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // phase 3: dusk-ness of the shown light (post table and storybook framing), and the eased framing amount
       let shownDusk = isDuskKey(options.daylightKey ?? 0);
       let story = shownDusk ? 1 : 0;
+      const cinematicPost = !original && options.quality !== "low";
+      let dofOn: boolean | null = null, dofFocus: number | null = null;
+      // WW47-P4 (title/epilogue DOF only): the lens is on for the title card and the epilogue voyage, off in play.
+      // The mirrored sun ghost is not shipped: the WSW sun is behind the camera in every view (follow, intro crane, bell
+      // finale and voyage), so a ghost that needs the sun in frame never drew; its uniform and shader lines were removed.
+      const applyStoryPost = (eye: readonly number[], target: readonly number[]): void => {
+        if (!cinematicPost) return;
+        const active = options.titleVisible?.() === true || epilogue !== null;
+        if (dofOn !== active) {
+          dofOn = active;
+          app.post?.setEffectEnabled?.("depthOfField", active);
+        }
+        if (active) {
+          const focus = Math.max(2, Math.min(80, Math.hypot(target[0]! - eye[0]!, target[1]! - eye[1]!, target[2]! - eye[2]!)));
+          if (dofFocus === null || Math.abs(focus - dofFocus) > dofFocus * 0.08) {
+            dofFocus = focus;
+            app.post?.setEffect?.("depthOfField", { focusDistance: focus });
+          }
+        } else dofFocus = null;
+      };
       // WW47-P2: the shaft patch last sent (only on High; written when the density moves, not every eased frame)
       const shafts = SHAFTS_ENABLED && !original && options.quality !== "low";
       let shownShaft: string | null = null;
@@ -707,13 +759,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { sequencer.skip(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
+        snap(state) { sequencer.skip(); clearGaze(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
         playSequence(id) { sequencer.start(id); },
         skipSequence() { sequencer.skip(); },
         reset() {
           daylight.snap(options.daylightKey ?? 0);
+          clearGaze();
           sequencer.skip(); seqComplete = false;
           vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
@@ -757,6 +810,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           if (heroAnim) {
             heroAnim.update({ x, z, airborne: state.hop.phase !== "idle", onBoat, time });
           } else tr.setScale(1.3);
+          if (!original) updateGaze(state, onBoat);
           if (!heroAnim) {
             tr.setUniform?.("gait", gait);
             tr.setUniform?.("walkAmt", onBoat ? 0 : walkAmt);
@@ -856,6 +910,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + EPILOGUE_CAMERA_RISE, look.z + 14];
             node("sky").setPosition(ep[0], ep[1], ep[2]);
             cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: aspect < 1 ? 52 : 45 }, { cut: false });
+            applyStoryPost(ep, [look.x, look.y, look.z]);
             return;
           }
           // camera follow: the look target eases toward the traveller (original: lerp 1 - exp(-2.5 dt))
@@ -885,6 +940,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             up: [0, 1, 0],
             fov: shown.fov
           }, { cut: false });
+          applyStoryPost(shown.position, shown.target);
         }
       };
       function boatPose(e: number): { x: number; y: number; z: number; yaw: number } {
@@ -918,4 +974,3 @@ function beam(halfWidth: number, height: number): { positions: Float32Array; nor
 function ground(r: number): { positions: Float32Array; normals: Float32Array; uvs: Float32Array; indices: number[] } {
   return { positions: f32([-r, 0, -r, r, 0, -r, r, 0, r, -r, 0, r]), normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: [0, 2, 1, 0, 3, 2] };
 }
-
