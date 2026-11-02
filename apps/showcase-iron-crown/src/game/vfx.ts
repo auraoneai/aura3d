@@ -175,7 +175,7 @@ export interface AmbientEmitter {
 /**
  * Ambient emitters per venue: embers off the Crown's corner braziers (y 2.0 is the bowl at targetMaxDimension 2.2),
  * motes off the Dock's lanterns, dust gusts across the Colosseum sand. Neo-Tokyo and the Monastery carry rain and snow
- * volumes instead; the Airstrip's heat shimmer is a post pass (not shipped by the engine yet).
+ * volumes instead; the Airstrip's heat shimmer uses the app-local post pass in `airstripHaze.ts`.
  */
 export const AMBIENT_EMITTERS: Readonly<Record<StageId, readonly AmbientEmitter[]>> = {
   "crown-arena": [{ kind: "ic-forge-embers", interval: 0.55, points: [[-3.5, 2.0, -1.65], [3.5, 2.0, -1.65]] }],
