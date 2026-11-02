@@ -447,6 +447,8 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
   float flicker = glowAmount * (0.85 + 0.15 * sin(u_time * 4.0 + vWorld.z * 0.05));
+  // RH47-15: relay frames breathe together instead of the old per-fragment flicker; 0 keeps the original look.
+  if (gantryPulse > 0.0) flicker = glowAmount * (1.0 + 0.3 * gantryPulse * sin(u_time * 1.6));
   // GU47 RH47-10: galvanised spangle (crystal patches a few cm across) on the guardrails, faded by the pixel footprint.
   vec3 base = baseColor;
   float rough = surfaceRough;

@@ -769,15 +769,17 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- relay gates, data cells, hazards ---- */
   const gantry = gantryColours(look);
-  const gateMat = () => material.custom(solidSpec(look, gantry.frame, gantry.glow, gantry.glowAmount, 0.4));
+  const gateMat = () => material.custom(solidSpec(look, gantry.frame, gantry.glow, gantry.glowAmount, 0.4, 0, 0, row ? 1 : 0));
   level.gates.forEach((g, i) => {
     const psi = -roadProfile(level, g.s).heading;
     const base = roadPoint(level, g.s, 0, 0);
     for (const side of [-1, 1]) {
       const p = roadPoint(level, g.s, side * (width - 0.4), 6);
-      builder.add(primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: row !== null }));
+      const post = primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: row !== null });
+      builder.add(row ? post.runtime({ id: `gate-post-${i}-${side}` }) : post);
     }
-    builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: row !== null }));
+    const bar = primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: row !== null });
+    builder.add(row ? bar.runtime({ id: `gate-bar-${i}` }) : bar);
     // phase 4: on the GU47 looks the relay gate throws its frame across the asphalt as the car drives under it (rubric shadows)
     // RH47-17: the relay's name in SDF text under the bar (salt white, signal-red glow), only the next gate's sign shows.
     if (row) {
@@ -1032,6 +1034,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       const gateSigns = row ? level.gates.map((_g, i) => node(`gate-sign-${i}`)) : [];
+      const gateFrames = row ? level.gates.flatMap((_g, i) => [node(`gate-post-${i}--1`), node(`gate-post-${i}-1`), node(`gate-bar-${i}`)]) : [];
       let signGate = 0;
       gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
@@ -1106,6 +1109,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           lean?.setReducedMotion(on);
           director.setReducedMotion(on);
           shots?.setReducedMotion(on);
+          for (const frame of gateFrames) frame.setUniform?.("gantryPulse", on ? 0.3 : 1);
           fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
           if (row && surfAmount(look) > 0) node("flank-sea").setUniform?.("surfSpeed", surfSpeedFor(on));
           if (sprayNode && row) { sprayNode.setUniform?.("spAmount", sprayAmount(row.spray, { reducedMotion: on })); sprayNode.setUniform?.("spWind", sprayWind(row.spray, on)); }

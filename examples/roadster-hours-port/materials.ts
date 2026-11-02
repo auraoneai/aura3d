@@ -146,12 +146,12 @@ export const plumeSpec = (style: PlumeStyle): CustomSpec => ({
   ...(style.additive ? { blending: "additive" as const } : {})
 });
 
-/** `spangle` (0..1, GU47 RH47-10) adds the galvanised crystal pattern; the guardrails use it on the GU47 look. */
-export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0, spangle = 0): CustomSpec => ({
+/** `spangle` adds galvanised crystals; `gantryPulse` gives GU47 relay frames a coherent, reduced-motion-aware pulse. */
+export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0, spangle = 0, gantryPulse = 0): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
-    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal), spangle: f32(spangle),
+    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal), spangle: f32(spangle), gantryPulse: f32(gantryPulse),
     ...atmosphereUniforms(look)
   },
   side: "double"
