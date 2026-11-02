@@ -3,7 +3,8 @@
 // capture reads them. Read-only: positions come from the sim state and the camera director, nothing is written.
 
 import { PITCH_HX, PITCH_HZ } from "./dims";
-import { mainFloodPosition } from "./scene";
+import { MAIN_FLOOD_TOWER } from "./look";
+import { FLOOD_TOWERS, mainFloodPosition } from "./scene";
 
 export type V3 = readonly [number, number, number];
 export interface QaCamera { readonly eye: V3; readonly target: V3; readonly fovDeg: number; readonly aspect: number }
@@ -54,7 +55,18 @@ export function fcQaCrops(cam: QaCamera, player: { x: number; z: number } | null
   out.push(projectBox(cam, [-6, 0, -6], [6, 0.02, 6], "pitch"));
   out.push(projectBox(cam, [-PITCH_HX, 0.9, -(PITCH_HZ + 12)], [PITCH_HX, 6, -(PITCH_HZ + 4)], "crowd"));
   const [fx, fy, fz] = mainFloodPosition();
-  out.push(projectBox(cam, [fx - 1.2, fy - 0.8, fz - 1.2], [fx + 1.2, fy + 0.8, fz + 1.2], "flood-bank"));
+  let flood = projectBox(cam, [fx - 1.2, fy - 0.8, fz - 1.2], [fx + 1.2, fy + 0.8, fz + 1.2], "flood-bank");
+  if (!flood) {
+    const [mainX, mainZ] = FLOOD_TOWERS[MAIN_FLOOD_TOWER]!;
+    const scale = mainX !== 0 ? fx / mainX : mainZ !== 0 ? fz / mainZ : 0.94;
+    for (const [i, [x, z]] of FLOOD_TOWERS.entries()) {
+      if (i === MAIN_FLOOD_TOWER) continue;
+      const hx = x * scale, hz = z * scale;
+      const candidate = projectBox(cam, [hx - 1.2, fy - 0.8, hz - 1.2], [hx + 1.2, fy + 0.8, hz + 1.2], "flood-bank");
+      if (candidate && (!flood || candidate.w * candidate.h > flood.w * flood.h)) flood = candidate;
+    }
+  }
+  out.push(flood);
   out.push(projectBox(cam, [-PITCH_HX - 20, 16, -(PITCH_HZ + 40)], [PITCH_HX + 20, 40, -(PITCH_HZ + 39)], "sky"));
   return out.filter((c): c is QaCrop => c !== null).slice(0, 16);
 }
