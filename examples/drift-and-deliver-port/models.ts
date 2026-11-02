@@ -6,8 +6,9 @@
  * the ground by `propTransform`.
  * URLs are same-origin pathnames with a content hash: the production bridge refuses http(s) model URLs.
  */
-import { defineModelAssets, instances, model } from "@aura3d/engine";
+import { defineModelAssets, instances, model, type AuraAssetRef } from "@aura3d/engine";
 import type { CarKind } from "./vehicles";
+import { assets as routeAssets } from "../../apps/showcase-drift-and-deliver-port/src/aura-assets";
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23";
 const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}`, import.meta.url).pathname, sha256 });
@@ -61,6 +62,17 @@ export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder
 export const COURIER_PAINT = { roughness: 0.5, clearcoat: 0, envMapIntensity: 1.3 } as const;
 export const TRAFFIC_PAINT = { roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.08, envMapIntensity: 1.3 } as const;
 
+/**
+ * GU47 wave 1 (GC-M3): the WP-36 Meshy retextures of `sedan.glb` and `hatch.glb` (orange sedan, pale mint hatch, 1024 px
+ * BC+N+MR) drive the shift look; `?look=original` keeps the shipped GLBs. Same meshes and triangle counts: Meshy
+ * re-normalised them to length 2 around the origin, so they were scaled back to the old length and lowest point (bounds
+ * within 0.2 % of the old GLBs), which keeps `CAR_LENGTH`, the instance transforms and the collision boxes unchanged.
+ */
+const SHIFT_TRAFFIC_ASSETS: Partial<Record<Exclude<CarKey, "courier">, AuraAssetRef<"model">>> = {
+  sedan: routeAssets.gridlock_gridlockSedanPastel,
+  hatch: routeAssets.gridlock_gridlockHatchPastel
+};
+
 /** Uniform scale that brings a car GLB to its target length. */
 export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
 
@@ -68,10 +80,11 @@ export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
  * Traffic of one car kind as ONE instanced model (one draw per kind instead of one node per car). The app moves the cars
  * with `nodes.require(id).setInstances(transforms)` every frame; `start` holds the first transforms.
  */
-export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[], glossy = false) {
+export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[], glossy = false, restyled = false) {
   const scale = carScale(key);
+  const asset = (restyled ? SHIFT_TRAFFIC_ASSETS[key] : undefined) ?? MODEL_ASSETS[key];
   // GU47 WP-28 GC-L2: traffic casts in the shift look (one instanced shadow draw per kind and cascade)
-  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false, ...(glossy ? { materialOverrides: [TRAFFIC_PAINT] } : {}) }).runtime({ id });
+  return instances.model(asset, { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false, ...(glossy ? { materialOverrides: [TRAFFIC_PAINT] } : {}) }).runtime({ id });
 }
 
 /** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */
