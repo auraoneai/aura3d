@@ -25,3 +25,17 @@ Environment maps shipped to scaffolded projects under `public/hdri/` when a temp
 - `outdoor-midday_1k.hdr` — Poly Haven `kloppenheim_06_puresky` — https://polyhaven.com/a/kloppenheim_06_puresky — CC0-1.0 — byte copy of `kloppenheim_06_puresky_1k.hdr` (the library `outdoor-midday-2k` is Poly Haven `kloppenheim_06_puresky`, source sha256 `99451201586489ef3288c97bfac2a2ac232a5491c51a1faf0ec8ea39f3ccd533`; same sky as `kloppenheim_06_puresky`) — 1173154 bytes — sha256 `206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34`
 - `sunset-dramatic_1k.hdr` — Poly Haven `the_sky_is_on_fire` — https://polyhaven.com/a/the_sky_is_on_fire — CC0-1.0 — from `assets/library/hdri/sunset-dramatic-2k.hdr` (2048x1024, sha256 `0d6de5d26052d30546ebd291ad6e96de88c342da3e5d8aee37298e9c12647911`) — 1541600 bytes — sha256 `169745b6baf57aefe59c71b2f0019857cbbc5ab9c87f70d7d5c87eaa7bc83929`
 - `indoor-workshop_1k.hdr` — Poly Haven `vintage_measuring_lab` — https://polyhaven.com/a/vintage_measuring_lab — CC0-1.0 — from `assets/library/hdri/indoor-workshop-2k.hdr` (2048x1024, sha256 `667e77d41c6f18cd778b32dee6a62a9b06580a67ef653a8813bc95bcf4ffd2fe`) — 1638244 bytes — sha256 `3a7dd0110ad011289abae4f4637aa0a0e58abcbd8a3fe1f5f3ba664276dbb351`
+
+### Size budget (final, 2026-11-02)
+
+The catalogue budget is 1.5 MiB (1,572,864 bytes) per 1k file. `deep_space_starfield_1k.hdr` meets it through the requantisation above. Five files stay above it as final exceptions, shipped byte-for-byte unchanged, because RGBE at 1024x512 has a floor: the three mantissa planes alone are 1,572,864 bytes raw, and these photographic sources compress losslessly only to 1.62 to 1.75 MB. Poly Haven's own 1k downloads have the same sizes (HEAD `content-length`, 2026-11-02).
+
+| file | shipped bytes | lossless optimum | Poly Haven 1k | requantised within 1 tone-mapped level over the used exposures |
+|---|---|---|---|---|
+| `rooftop_night_1k.hdr` | 1,629,654 | 1,619,441 | 1,624,479 | 1,619,113 (gains 0.3 to 12) |
+| `cobblestone_street_night_1k.hdr` | 1,766,411 | 1,750,976 | 1,760,191 | 1,750,194 (gains 0.5 to 1.5) |
+| `hangar_interior_1k.hdr` | 1,761,250 | 1,747,795 | 1,755,683 | 1,745,214 (gains 0.05 to 1.9) |
+| `kloppenheim_02_1k.hdr` | 1,744,238 | 1,729,280 | 1,740,414 | 1,727,089 (gains 0.8 to 1.7) |
+| `indoor-workshop_1k.hdr` | 1,638,244 | 1,620,987 | 1,632,977 | 1,613,268 (gains 0.3 to 1.8) |
+
+The last column is the starfield's transform (ACES filmic, sRGB 8-bit within 1 level at every texel on a 7% exposure ladder over each file's range of use in the shipping games) run once per file: 0.65% to 1.52% smaller, still over the budget, so none was adopted and no pixel of any game changes. Rows with the per-file numbers are in `assets/art-direction/hdri-environments.json` (`budgetDisposition`); the use table and the rule are in `docs/prds/game-upgrades-47/lanes/ea.md`.
