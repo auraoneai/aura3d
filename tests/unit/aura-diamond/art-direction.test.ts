@@ -15,7 +15,7 @@ const DIRECTION_FILE = "apps/showcase-aura-diamond-3d/art/direction.ts";
  * Triangle counts measured from the GLB index buffers (apps/showcase-aura-diamond-3d/route-health.json); the other models
  * have no count in the manifest yet, so their triangle floor is checked on the phase-2 capture.
  */
-const KNOWN_TRIANGLES = { assets: { diamondAthlete: { triangles: 31758 }, diamondCrowdAthlete: { triangles: 3809 }, ballpark_fanA: { triangles: 625 } } };
+const KNOWN_TRIANGLES = { assets: { diamondAthlete: { triangles: 31758 }, diamondCrowdAthlete: { triangles: 3809 }, ballpark_fanA: { triangles: 625 }, ballpark_fanB: { triangles: 555 } } };
 
 /** Audit snapshot of one park's real GU47 scene (lights, environment, models and materials as `buildParkScene` emits them). */
 function parkSnapshot(park: ParkId): ArtDirectionSnapshot {

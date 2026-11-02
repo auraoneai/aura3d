@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "d9cd0b63a9cff0c0390b4a05ea71496fd41b000b11805c7d20b2c3f8d43edd3f",
+  "sourceSha256": "c6b868cefac394dd744e8179f6784afc0190d71c3e8f195f97c573249f6ed71b",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -70,6 +70,13 @@
       {
         "assetKey": "ballpark_fanA",
         "triangles": 625,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ballpark_fanB",
+        "triangles": 555,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
@@ -486,6 +493,10 @@
         "practical": false
       },
       {
+        "node": "stand-fans-b",
+        "practical": false
+      },
+      {
         "node": "scoreboard-screen",
         "emissiveIntensity": 0.9,
         "practical": true
@@ -782,6 +793,13 @@
       {
         "role": "set-dressing",
         "assetKey": "ballpark_fanA",
+        "maxTriangles": 1000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "ballpark_fanB",
         "maxTriangles": 1000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
