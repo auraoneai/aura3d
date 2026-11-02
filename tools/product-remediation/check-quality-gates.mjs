@@ -11,18 +11,53 @@
  * identical to a route that passed one. Here, `unproven` is a distinct outcome from `pass`,
  * and the gate exits non-zero for either a failure or an unproven required invariant.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createConfigFingerprint,
+  EVIDENCE_FRESHNESS_SCHEMA,
+  explainArtifactStaleness,
+  sha256
+} from "../evidence-freshness/index.mjs";
 import { readShowcaseRouteGateConfig } from "../showcase-library/route-gates.mjs";
 import {
+  createRoutePrimaryProbeContext,
   routePrimaryProbeExpectedRouteIds,
-  routePrimaryProbeReportDirRelativePath
+  routePrimaryProbeReportDirRelativePath,
+  routePrimaryProbeSchema
 } from "../showcase-library/route-primary-probes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+
+// Optionally print a current dependency-bound audit after checking its probe bindings.
+// The ordinary explainer also writes this proof when run with --write.
+if (process.argv.includes("--print-freshness-audit")) {
+  try {
+    const live = recomputeFreshnessAudit();
+    const verdict = checkEvidenceFreshness(live, true);
+    if (verdict.status !== "pass") throw new Error(verdict.detail);
+    const routes = readShowcaseRouteGateConfig(root).routes;
+    const paths = new Set(routePrimaryProbeExpectedRouteIds(routes)
+      .map((id) => `${routePrimaryProbeReportDirRelativePath}/${id}.json`));
+    const bindings = checkCurrentProbeBindings(routes, paths, live.rendererFingerprint);
+    if (bindings.status !== "pass") throw new Error(bindings.detail);
+    live.inputProof = currentInputProof(paths);
+    await new Promise((resolveWrite, rejectWrite) => {
+      process.stdout.write(`${JSON.stringify(live, null, 2)}\n`, (error) => {
+        if (error) rejectWrite(error);
+        else resolveWrite();
+      });
+    });
+    process.exit(0);
+  } catch (error) {
+    console.error(`cannot produce freshness audit: ${error.message}`);
+    process.exit(1);
+  }
+}
 
 const auditDir = join(root, "tests/reports/showcase-interaction-audit");
 const audits = existsSync(auditDir)
@@ -183,8 +218,23 @@ const probeDir = join(root, "tests/reports/showcase-route-primary-probes");
 if (!existsSync(probeDir)) {
   record("performance", "draw-call-budget", "published routes report draw calls within budget", "unproven", "route-primary probes missing");
 } else {
-  const probes = readdirSync(probeDir).filter((name) => name.endsWith(".json")).map((name) => readJson(join(probeDir, name)));
-  const withRenderer = probes.filter((probe) => typeof probe.renderer?.drawCalls === "number");
+  let requiredProbeNames;
+  try {
+    requiredProbeNames = new Set(routePrimaryProbeExpectedRouteIds(readShowcaseRouteGateConfig(root).routes)
+      .map((id) => `${id}.json`));
+  } catch {
+    // If selection cannot be determined, do not silently ignore an unreadable report.
+  }
+  const unreadable = [];
+  const probes = readdirSync(probeDir).filter((name) => name.endsWith(".json")).flatMap((name) => {
+    try {
+      return [readJson(join(probeDir, name))];
+    } catch {
+      if (!requiredProbeNames || requiredProbeNames.has(name)) unreadable.push(name);
+      return [];
+    }
+  });
+  const withRenderer = probes.filter((probe) => typeof probe?.renderer?.drawCalls === "number");
   /*
    * Budget stated, not fitted: 2000 draw calls is a generous ceiling for a browser scene at
    * 60fps on integrated graphics. A route above it is doing something that needs explaining.
@@ -193,8 +243,10 @@ if (!existsSync(probeDir)) {
   const over = withRenderer.filter((probe) => probe.renderer.drawCalls > DRAW_CALL_BUDGET);
   record("performance", "draw-call-budget",
     `published routes stay under ${DRAW_CALL_BUDGET} draw calls`,
-    withRenderer.length === 0 ? "unproven" : over.length === 0 ? "pass" : "fail",
-    withRenderer.length === 0
+    unreadable.length > 0 || withRenderer.length === 0 ? "unproven" : over.length === 0 ? "pass" : "fail",
+    unreadable.length > 0
+      ? `unreadable probe report(s): ${unreadable.join(", ")}`
+      : withRenderer.length === 0
       ? "no probe reported renderer draw calls"
       : `max ${Math.max(...withRenderer.map((probe) => probe.renderer.drawCalls))} across ${withRenderer.length} routes`);
 
@@ -206,12 +258,11 @@ if (!existsSync(probeDir)) {
 }
 
 /**
- * Consume the explainer's verdict rather than recomputing freshness. A count alone cannot prove
- * that anything was audited or that unbound evidence was included. Older, unversioned reports
- * may use `stale`/`staleCount` and per-artifact `stale`, but need explicit artifact verdicts and
- * unbound flags too. All supplied counts must agree with those verdicts.
+ * A retained verdict is not a snapshot of the current tree. Validate its shape and full route
+ * set, then independently re-run the authoritative explainer without --write and check the
+ * current probe bindings. Never turn a missing, stale, partial or unreadable report into a pass.
  */
-function checkEvidenceFreshness(freshness) {
+function checkEvidenceFreshness(freshness, skipRecomputation = false) {
   const invalid = (detail) => ({ status: "unproven", detail: `invalid freshness audit: ${detail}` });
   const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
   const has = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -235,8 +286,7 @@ function checkEvidenceFreshness(freshness) {
     return invalid("missing or malformed rendererFingerprint");
   }
   for (const key of ["frozenRoutes", "retiredRoutes", "ownershipConflicts", "orderingCycles"]) {
-    // retiredRoutes was added to the existing 1.0 schema; older full audits did not include it.
-    const required = current && key !== "retiredRoutes";
+    const required = current;
     if ((required || has(freshness, key)) && !Array.isArray(freshness[key])) return invalid(`${key} must be an array`);
     if ((key === "frozenRoutes" || key === "retiredRoutes") && Array.isArray(freshness[key])
         && (freshness[key].some((id) => typeof id !== "string" || !id.trim())
@@ -311,9 +361,206 @@ function checkEvidenceFreshness(freshness) {
       return invalid(`${key} disagrees with route gate metadata`);
     }
   }
-  return notCurrent.length > 0
-    ? { status: "fail", detail: `${notCurrent.length} of ${paths.size} artifact(s) stale or unbound: ${notCurrent.join(", ")}` }
-    : { status: "pass", detail: `${paths.size} required published probe(s) fresh; retired and frozen evidence not audited or approved` };
+  if (notCurrent.length > 0) {
+    return { status: "fail", detail: `${notCurrent.length} of ${paths.size} artifact(s) stale or unbound: ${notCurrent.join(", ")}` };
+  }
+  if (!current) return invalid("legacy audit lacks current renderer and dependency proof");
+  if (freshness.ownershipConflicts.length > 0 || freshness.orderingCycles.length > 0) {
+    return { status: "fail", detail: "freshness audit has producer ownership conflicts or ordering cycles" };
+  }
+  if (skipRecomputation) return { status: "pass", detail: "valid full current audit" };
+
+  let live;
+  try {
+    live = recomputeFreshnessAudit();
+  } catch (error) {
+    return { status: "unproven", detail: error.message };
+  }
+  const liveResult = checkEvidenceFreshness(live, true);
+  if (liveResult.status !== "pass") {
+    const causes = Array.isArray(live?.artifacts)
+      ? live.artifacts.flatMap((entry) => (Array.isArray(entry?.reasons) ? entry.reasons : []).map((reason) =>
+        `${entry.artifact}: ${reason?.kind}/${reason?.id} ${reason?.status}`))
+      : [];
+    return {
+      ...liveResult,
+      detail: `current freshness audit: ${liveResult.detail}${causes.length ? `; ${causes.join(", ")}` : ""}`
+    };
+  }
+  if (freshness.rendererFingerprint !== live.rendererFingerprint) {
+    return { status: "fail", detail: "retained freshness audit renderer fingerprint differs from the current renderer" };
+  }
+  const liveByPath = new Map(live.artifacts.map((entry) => [entry.artifact, entry]));
+  for (const entry of freshness.artifacts) {
+    const currentEntry = liveByPath.get(entry.artifact);
+    if (!currentEntry || entry.fresh !== currentEntry.fresh || entry.unbound !== currentEntry.unbound
+        || JSON.stringify(entry.reasons) !== JSON.stringify(currentEntry.reasons)
+        || JSON.stringify(entry.producerConflicts) !== JSON.stringify(currentEntry.producerConflicts)) {
+      return { status: "fail", detail: `retained freshness verdict differs from current evidence: ${entry.artifact}` };
+    }
+  }
+  const bindings = checkCurrentProbeBindings(routes, expected, live.rendererFingerprint);
+  if (bindings.status !== "pass") return bindings;
+  if (!object(freshness.inputProof) || freshness.inputProof.schema !== "aura3d-freshness-input-proof/1.0"
+      || typeof freshness.inputProof.routeGateHash !== "string" || !Array.isArray(freshness.inputProof.artifacts)) {
+    return invalid("audit lacks dependency-bound input proof; run node tools/evidence-freshness/explain-staleness.mjs --write");
+  }
+  if (freshness.inputProof.artifacts.some((entry) => !object(entry) || typeof entry.artifact !== "string")) {
+    return invalid("audit has malformed dependency-bound artifact proof");
+  }
+  let proof;
+  try {
+    proof = currentInputProof(expected);
+  } catch (error) {
+    return { status: "unproven", detail: `cannot read current freshness inputs: ${error.message}` };
+  }
+  const normalizedProof = {
+    ...freshness.inputProof,
+    artifacts: [...freshness.inputProof.artifacts].sort((a, b) =>
+      a.artifact < b.artifact ? -1 : a.artifact > b.artifact ? 1 : 0)
+  };
+  if (createConfigFingerprint(normalizedProof) !== createConfigFingerprint(proof)) {
+    return { status: "fail", detail: "retained freshness audit input proof differs from current gate, probes or screenshots" };
+  }
+  return {
+    status: "pass",
+    detail: `${paths.size} required published probe(s) fresh; retired and frozen evidence not audited or approved`
+  };
+}
+
+function recomputeFreshnessAudit() {
+  const explainerPath = join(root, "tools/evidence-freshness/explain-staleness.mjs");
+  const run = spawnSync(process.execPath, [explainerPath, "--root", root, "--json"], {
+    cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 * 1024, timeout: 30_000
+  });
+  if (run.error || run.status !== 0) {
+    throw new Error(`cannot recompute current freshness audit: ${run.error?.message ?? run.stderr?.trim() ?? `exit ${run.status}`}`);
+  }
+  try {
+    return JSON.parse(run.stdout);
+  } catch (error) {
+    throw new Error(`current freshness explainer returned invalid JSON: ${error.message}`);
+  }
+}
+
+/** Hash the exact gate and producer artifacts judged by the audit; no timestamps or file writes. */
+function currentInputProof(expectedPaths) {
+  return {
+    schema: "aura3d-freshness-input-proof/1.0",
+    routeGateHash: sha256(readFileSync(join(root, "tools/showcase-library/route-gates.json"))),
+    artifacts: [...expectedPaths].sort().map((artifact) => ({
+      artifact,
+      probeHash: sha256(readFileSync(join(root, artifact))),
+      screenshotHash: sha256(readFileSync(join(root, artifact.replace(/\.json$/, ".png"))))
+    }))
+  };
+}
+
+/**
+ * The explainer's compact verdict does not contain the inputs of a fresh probe. Check the actual
+ * producer-shaped record and compare each dependency to the current producer context, including
+ * the screenshot, so omitted bindings or missing inputs cannot look fresh by being left out.
+ */
+function checkCurrentProbeBindings(routes, expectedPaths, rendererFingerprint) {
+  const invalid = (detail) => ({ status: "unproven", detail: `current probe proof unavailable: ${detail}` });
+  const changed = (detail) => ({ status: "fail", detail: `current probe proof is stale: ${detail}` });
+  const digest = (value) => typeof value === "string" && /^(?:sha256-)?[a-f0-9]{64}$/i.test(value);
+  const equalDigest = (left, right) => digest(left) && digest(right)
+    && left.replace(/^sha256-/, "").toLowerCase() === right.replace(/^sha256-/, "").toLowerCase();
+
+  for (const route of routes) {
+    const artifact = `${routePrimaryProbeReportDirRelativePath}/${route.id}.json`;
+    if (!expectedPaths.has(artifact)) continue;
+    try {
+      const probe = readJson(join(root, artifact));
+      const context = createRoutePrimaryProbeContext(route, root);
+      const binding = probe?.freshness;
+      if (!probe || probe.schema !== routePrimaryProbeSchema || probe.routeId !== route.id
+          || probe.routePath !== route.path || probe.appId !== route.id) {
+        return invalid(`${artifact} is missing its producer-shaped route identity`);
+      }
+      if (!binding || binding.schema !== EVIDENCE_FRESHNESS_SCHEMA || binding.artifact !== artifact
+          || !Array.isArray(binding.dependencies) || !binding.producer
+          || typeof binding.generatedAt !== "string" || Number.isNaN(Date.parse(binding.generatedAt))) {
+        return invalid(`${artifact} lacks an explicit freshness binding`);
+      }
+      if (binding.producer.id !== context.producerId || binding.producer.version !== context.producerVersion
+          || !equalDigest(binding.producer.fingerprint, context.producerFingerprint)) {
+        return changed(`${artifact} producer identity or fingerprint`);
+      }
+      if (!digest(context.sourceHash) || !digest(context.routeGateHash)
+          || (route.id !== "showcase-index" && !digest(context.routeHealthHash))
+          || !digest(context.rendererFingerprint)) {
+        return invalid(`${artifact} has missing route, gate, health or renderer sources`);
+      }
+      if (!equalDigest(context.rendererFingerprint, rendererFingerprint)
+          || !equalDigest(probe.sourceHash, context.sourceHash)
+          || !equalDigest(probe.routeGateHash, context.routeGateHash)
+          || (route.id !== "showcase-index" && !equalDigest(probe.routeHealthHash, context.routeHealthHash))) {
+        return changed(`${artifact} source, gate, health or renderer fingerprint`);
+      }
+      if (!Number.isInteger(probe.viewport?.width) || probe.viewport.width <= 0
+          || !Number.isInteger(probe.viewport?.height) || probe.viewport.height <= 0) {
+        return invalid(`${artifact} lacks a viewport contract`);
+      }
+      if (!Array.isArray(probe.primaryAssets)
+          || probe.primaryAssets.length !== context.primaryAssets.length) {
+        return invalid(`${artifact} lacks the configured primary assets`);
+      }
+      const dependencies = [
+        { kind: "route-source", id: route.id, hash: context.sourceHash },
+        { kind: "route-gate-config", id: "route-gates.json", hash: context.routeGateHash },
+        ...(context.routeHealthHash
+          ? [{ kind: "route-health", id: `${route.id}/route-health.json`, hash: context.routeHealthHash }]
+          : []),
+        { kind: "renderer-fingerprint", id: "agent-api+assets", hash: context.rendererFingerprint },
+        { kind: "producer-version", id: context.producerId, hash: context.producerFingerprint },
+        { kind: "viewport-contract", id: route.id, hash: createConfigFingerprint(probe.viewport) }
+      ];
+      for (const asset of context.primaryAssets) {
+        const recorded = probe.primaryAssets.filter((item) => item?.id === asset.id);
+        if (!digest(asset.manifestHash) || recorded.length !== 1) {
+          return invalid(`${artifact} lacks manifest proof for primary asset ${asset.id}`);
+        }
+        if (!equalDigest(recorded[0].manifestHash, asset.manifestHash)) {
+          return changed(`${artifact} primary asset ${asset.id}`);
+        }
+        dependencies.push({ kind: "primary-asset", id: asset.id, hash: asset.manifestHash });
+      }
+      const screenshotPath = `${routePrimaryProbeReportDirRelativePath}/${route.id}.png`;
+      if (probe.renderedProbe?.screenshotPath !== screenshotPath || !digest(probe.renderedProbe?.sha256)) {
+        return invalid(`${artifact} lacks a screenshot binding`);
+      }
+      const screenshotHash = sha256(readFileSync(join(root, screenshotPath)));
+      if (!equalDigest(probe.renderedProbe.sha256, screenshotHash)) {
+        return changed(`${artifact} screenshot`);
+      }
+      dependencies.push({ kind: "screenshot", id: `${route.id}.png`, hash: screenshotHash });
+      const recorded = [...binding.dependencies];
+      const keys = new Set();
+      for (const dependency of recorded) {
+        if (!dependency || typeof dependency.kind !== "string" || typeof dependency.id !== "string"
+            || !digest(dependency.hash) || keys.has(`${dependency.kind}:${dependency.id}`)) {
+          return invalid(`${artifact} has malformed or duplicate dependencies`);
+        }
+        keys.add(`${dependency.kind}:${dependency.id}`);
+      }
+      if (!keys.has(`screenshot:${route.id}.png`)) {
+        recorded.push({ kind: "screenshot", id: `${route.id}.png`, hash: probe.renderedProbe.sha256 });
+      }
+      const result = explainArtifactStaleness({
+        artifactPath: artifact,
+        binding: { ...binding, dependencies: recorded },
+        currentDependencies: dependencies
+      });
+      if (!result.fresh) {
+        return changed(`${artifact}: ${result.reasons.map((reason) => `${reason.kind}/${reason.id} ${reason.status}`).join(", ")}`);
+      }
+    } catch (error) {
+      return invalid(`${artifact}: ${error.message}`);
+    }
+  }
+  return { status: "pass", detail: "all current probe bindings verified" };
 }
 
 const freshnessPath = join(root, "tests/reports/evidence-freshness/staleness-audit.json");
@@ -324,7 +571,7 @@ try {
   freshnessResult = {
     status: "unproven",
     detail: error.code === "ENOENT"
-      ? "freshness audit missing; run node tools/evidence-freshness/explain-staleness.mjs --write"
+      ? "freshness audit missing; run node tools/evidence-freshness/explain-staleness.mjs --write (or save output from node tools/product-remediation/check-quality-gates.mjs --print-freshness-audit)"
       : `freshness audit unreadable or invalid JSON: ${error.message}`
   };
 }

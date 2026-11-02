@@ -22,9 +22,20 @@ type GateReport = { totals: { fail: number; unproven: number }; checks: Check[] 
 type ProbeModule = {
   ROUTE_PRIMARY_PROBE_PRODUCER_VERSION: string;
   createRouteSourceHash: (routeId: string, root: string) => string;
+  createRoutePrimaryProbeContext: (routeFixture: ReturnType<typeof route>, root: string) => {
+    sourceHash: string;
+    routeGateHash: string;
+    routeHealthHash: string;
+    rendererFingerprint: string;
+    producerId: string;
+    producerVersion: string;
+    producerFingerprint: string;
+    primaryAssets: { id: string; manifestHash: string }[];
+  };
 };
 type FreshnessModule = {
   sha256: (value: string | Buffer) => string;
+  createConfigFingerprint: (value: unknown) => string;
   createRendererFingerprint: (root: string) => string;
   createProducerFingerprint: (path: string, version: string, root: string) => string;
   createFreshnessBinding: (options: Record<string, unknown>) => unknown;
@@ -38,7 +49,8 @@ const reason = (status: string) => ({
   detail: "synthetic freshness reason"
 });
 
-function route(id: string, options: { published?: boolean; frozen?: boolean; requiresProbe?: boolean } = {}) {
+function route(id: string, options: { published?: boolean; frozen?: boolean; requiresProbe?: boolean; assets?: string[] } = {}) {
+  const assets = options.assets ?? [];
   return {
     id,
     label: id,
@@ -46,31 +58,16 @@ function route(id: string, options: { published?: boolean; frozen?: boolean; req
     globalName: `__${id.replaceAll("-", "_").toUpperCase()}__`,
     published: options.published ?? true,
     releaseClass: options.frozen ? "game-layer-diagnostic" : "internal-diagnostic",
-    primaryAssets: [],
+    primaryAssets: assets,
+    ...(assets.length ? {
+      primaryAssetRoles: Object.fromEntries(assets.map((asset) => [asset, "hero"])),
+      routePrimaryHeroAsset: assets[0],
+      secondaryPrimaryAssets: assets.slice(1)
+    } : {}),
     primitiveBudget: 0,
-    requiresTypedPrimaryAssets: false,
+    requiresTypedPrimaryAssets: assets.length > 0,
     requiresRoutePrimaryProbe: options.requiresProbe ?? true,
     ...(options.frozen ? { retainedEvidenceFrozen: true } : {})
-  };
-}
-
-function freshAudit(): Audit {
-  return {
-    schema: "aura3d-explain-staleness/1.0",
-    generatedAt: "2026-01-01T00:00:00.000Z",
-    rendererFingerprint: `sha256-${"a".repeat(64)}`,
-    frozenRoutes: [frozen],
-    retiredRoutes: [retired],
-    ownershipConflicts: [],
-    orderingCycles: [],
-    artifacts: [published, secondPublished].map((id) => ({
-      artifact: artifactPath(id),
-      fresh: true,
-      unbound: false,
-      reasons: [],
-      producerConflicts: []
-    })),
-    staleArtifactCount: 0
   };
 }
 
@@ -95,8 +92,13 @@ function legacyAudit(countKey?: "stale" | "staleCount"): Audit {
 
 describe("product remediation evidence-freshness gate", () => {
   let root: string;
+  let baselineAudit: Audit;
 
-  function put(path: string, contents: string): void {
+  function freshAudit(): Audit {
+    return structuredClone(baselineAudit);
+  }
+
+  function put(path: string, contents: string | Buffer): void {
     const target = join(root, path);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, contents);
@@ -142,7 +144,7 @@ describe("product remediation evidence-freshness gate", () => {
     return audit;
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "aura3d-quality-staleness-"));
     for (const path of [
       gateScript,
@@ -158,15 +160,16 @@ describe("product remediation evidence-freshness gate", () => {
       copyFileSync(resolve(repoRoot, path), target);
     }
     put("packages/engine/src/agent-api/index.ts", "export const syntheticRenderer = 1;\n");
+    const routes = [
+      route(published, { assets: ["syntheticHero"] }),
+      route(secondPublished, { assets: ["syntheticHero"] }),
+      route(retired, { published: false }),
+      route(frozen, { frozen: true }),
+      route(noProbe, { requiresProbe: false })
+    ];
     putJson("tools/showcase-library/route-gates.json", {
       schema: "aura3d-showcase-route-gates/1.0",
-      routes: [
-        route(published),
-        route(secondPublished),
-        route(retired, { published: false }),
-        route(frozen, { frozen: true }),
-        route(noProbe, { requiresProbe: false })
-      ]
+      routes
     });
     putJson("tests/reports/showcase-interaction-audit/published.json", {
       routeId: published,
@@ -218,8 +221,54 @@ describe("product remediation evidence-freshness gate", () => {
       groundedSampleCount: 100,
       maxAirborneStreak: 10
     });
-    for (const id of [published, secondPublished]) {
-      putJson(artifactPath(id), { renderer: { drawCalls: 10 } });
+    const freshness = await import(
+      /* @vite-ignore */ pathToFileURL(join(root, "tools/evidence-freshness/index.mjs")).href
+    ) as FreshnessModule;
+    const producer = await import(
+      /* @vite-ignore */ pathToFileURL(join(root, "tools/showcase-library/route-primary-probes.mjs")).href
+    ) as ProbeModule;
+    putJson("aura.assets.json", { assets: [{ id: "syntheticHero", hash: freshness.sha256("synthetic hero") }] });
+    const screenshot = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/aWQAAAAASUVORK5CYII=",
+      "base64"
+    );
+    const viewport = { width: 640, height: 480, deviceScaleFactor: 1 };
+    for (const entry of routes.slice(0, 2)) {
+      const id = entry.id;
+      put(`apps/${id}/main.ts`, `export const syntheticScene = "${id}";\n`);
+      putJson(`apps/${id}/route-health.json`, { state: "synthetic-ready" });
+      const context = producer.createRoutePrimaryProbeContext(entry, root);
+      const screenshotPath = `${probeDir}/${id}.png`;
+      put(screenshotPath, screenshot);
+      const dependencies = [
+        { kind: "route-source", id, hash: context.sourceHash },
+        { kind: "route-gate-config", id: "route-gates.json", hash: context.routeGateHash },
+        { kind: "route-health", id: `${id}/route-health.json`, hash: context.routeHealthHash },
+        ...context.primaryAssets.map((asset) => ({ kind: "primary-asset", id: asset.id, hash: asset.manifestHash })),
+        { kind: "renderer-fingerprint", id: "agent-api+assets", hash: context.rendererFingerprint },
+        { kind: "producer-version", id: context.producerId, hash: context.producerFingerprint },
+        { kind: "viewport-contract", id, hash: freshness.createConfigFingerprint(viewport) }
+      ];
+      putJson(artifactPath(id), {
+        schema: "aura3d-route-primary-probe/1.0",
+        routeId: id,
+        routePath: entry.path,
+        appId: id,
+        sourceHash: context.sourceHash,
+        routeGateHash: context.routeGateHash,
+        routeHealthHash: context.routeHealthHash,
+        viewport,
+        primaryAssets: context.primaryAssets,
+        renderer: { drawCalls: 10 },
+        renderedProbe: { screenshotPath, sha256: freshness.sha256(screenshot) },
+        freshness: freshness.createFreshnessBinding({
+          artifact: artifactPath(id),
+          producerId: context.producerId,
+          producerVersion: context.producerVersion,
+          producerFingerprint: context.producerFingerprint,
+          dependencies
+        })
+      });
     }
     for (const id of [retired, frozen]) {
       putJson(artifactPath(id), {
@@ -230,6 +279,14 @@ describe("product remediation evidence-freshness gate", () => {
         historicalSentinel: id
       });
     }
+    // This is an isolated synthetic tree; its verdict is never copied into repository evidence.
+    const initial = spawnSync(process.execPath, [join(root, gateScript), "--print-freshness-audit"], {
+      cwd: root, encoding: "utf8"
+    });
+    expect(initial.status, initial.stderr).toBe(0);
+    baselineAudit = JSON.parse(initial.stdout) as Audit;
+    expect(baselineAudit.staleArtifactCount).toBe(0);
+    expect(existsSync(join(root, auditPath)), "printing a proof must not write the audit").toBe(false);
   });
 
   afterEach(() => {
@@ -259,7 +316,7 @@ describe("product remediation evidence-freshness gate", () => {
   it("records missing evidence as unproven instead of passing or crashing", () => {
     const check = expectVerdict("unproven");
     expect(check.detail).toContain("freshness audit missing");
-    expect(check.detail).toContain("explain-staleness.mjs --write");
+    expect(check.detail).toContain("check-quality-gates.mjs --print-freshness-audit");
   });
 
   it("records invalid JSON as unproven and still writes a gate result", () => {
@@ -350,12 +407,12 @@ describe("product remediation evidence-freshness gate", () => {
     expectVerdict("pass");
   });
 
-  it.each(["stale", "staleCount"] as const)("accepts an unambiguous legacy %s count and per-artifact verdicts", (key) => {
+  it.each(["stale", "staleCount"] as const)("rejects a legacy %s count without current proof", (key) => {
     putJson(auditPath, legacyAudit(key));
-    expectVerdict("pass");
+    expect(expectVerdict("unproven").detail).toContain("legacy audit lacks");
   });
 
-  it("accepts a legacy aggregate with explicit current-style artifact verdicts", () => {
+  it("rejects a legacy aggregate even with explicit current-style artifact verdicts", () => {
     const audit = legacyAudit("staleCount");
     audit.artifacts = [published, secondPublished].map((id) => ({
       artifact: artifactPath(id),
@@ -363,12 +420,12 @@ describe("product remediation evidence-freshness gate", () => {
       unbound: false
     }));
     putJson(auditPath, audit);
-    expectVerdict("pass");
+    expectVerdict("unproven");
   });
 
-  it("accepts unambiguous per-artifact legacy stale flags without an aggregate", () => {
+  it("rejects legacy per-artifact stale flags without current proof", () => {
     putJson(auditPath, legacyAudit());
-    expectVerdict("pass");
+    expectVerdict("unproven");
   });
 
   it("fails for a legacy stale artifact when its aggregate agrees", () => {
@@ -393,11 +450,18 @@ describe("product remediation evidence-freshness gate", () => {
     expect(expectVerdict("unproven").detail).toContain("missing a boolean unbound verdict");
   });
 
-  it("permits an older 1.0 producer report without the later retiredRoutes field", () => {
+  it("rejects an older 1.0 producer report without the retiredRoutes field", () => {
     const audit = freshAudit();
     delete audit.retiredRoutes;
     putJson(auditPath, audit);
-    expectVerdict("pass");
+    expectVerdict("unproven");
+  });
+
+  it("rejects a compact producer audit without dependency-bound input proof", () => {
+    const audit = freshAudit();
+    delete audit.inputProof;
+    putJson(auditPath, audit);
+    expect(expectVerdict("unproven").detail).toContain("lacks dependency-bound input proof");
   });
 
   it("does not audit or approve retired and frozen historical probes", () => {
@@ -407,6 +471,15 @@ describe("product remediation evidence-freshness gate", () => {
     expectVerdict("pass");
     expect(readFileSync(join(root, artifactPath(retired)), "utf8")).toBe(retiredBefore);
     expect(readFileSync(join(root, artifactPath(frozen)), "utf8")).toBe(frozenBefore);
+  });
+
+  it("ignores unreadable retired and frozen probes when checking current evidence", () => {
+    put(artifactPath(retired), "{ historical, not current");
+    put(artifactPath(frozen), "{ deliberately frozen");
+    putJson(auditPath, freshAudit());
+    expectVerdict("pass");
+    expect(readFileSync(join(root, artifactPath(retired)), "utf8")).toBe("{ historical, not current");
+    expect(readFileSync(join(root, artifactPath(frozen)), "utf8")).toBe("{ deliberately frozen");
   });
 
   it("fails on published stale evidence even if retired evidence claims approval", () => {
@@ -448,38 +521,9 @@ describe("product remediation evidence-freshness gate", () => {
     expect(expectVerdict("unproven").detail).toContain("missing or malformed selection flags");
   });
 
-  it("accepts real producer output, rejects its targeted subset, and fails after a published source changes", async () => {
-    const freshness = await import(
-      /* @vite-ignore */ pathToFileURL(join(root, "tools/evidence-freshness/index.mjs")).href
-    ) as FreshnessModule;
-    const producer = await import(
-      /* @vite-ignore */ pathToFileURL(join(root, "tools/showcase-library/route-primary-probes.mjs")).href
-    ) as ProbeModule;
-    const producerPath = "tools/showcase-library/route-primary-probes.mjs";
-    const version = producer.ROUTE_PRIMARY_PROBE_PRODUCER_VERSION;
-    const fingerprint = freshness.createProducerFingerprint(producerPath, version, root);
-    const renderer = freshness.createRendererFingerprint(root);
-    const gateHash = freshness.sha256(readFileSync(join(root, "tools/showcase-library/route-gates.json")));
-    for (const id of [published, secondPublished]) {
-      put(`apps/${id}/main.ts`, `export const syntheticScene = "${id}";\n`);
-      const dependencies = [
-        { kind: "route-source", id, hash: producer.createRouteSourceHash(id, root) },
-        { kind: "route-gate-config", id: "route-gates.json", hash: gateHash },
-        { kind: "renderer-fingerprint", id: "agent-api+assets", hash: renderer },
-        { kind: "producer-version", id: "route-primary-probes", hash: fingerprint }
-      ];
-      putJson(artifactPath(id), {
-        renderer: { drawCalls: 10 },
-        freshness: freshness.createFreshnessBinding({
-          artifact: artifactPath(id),
-          producerId: "route-primary-probes",
-          producerVersion: version,
-          producerFingerprint: fingerprint,
-          dependencies
-        })
-      });
-    }
-    const fresh = runExplainer();
+  it("accepts the full synthetic audit, rejects its targeted subset, and fails after a source change", () => {
+    const fresh = freshAudit();
+    putJson(auditPath, fresh);
     expect(fresh.staleArtifactCount).toBe(0);
     expect(fresh.artifacts).toMatchObject([
       { artifact: artifactPath(published), fresh: true, unbound: false },
@@ -492,7 +536,9 @@ describe("product remediation evidence-freshness gate", () => {
     expect(targeted.artifacts).toHaveLength(1);
     expect(expectVerdict("unproven").detail).toContain(`missing: ${artifactPath(secondPublished)}`);
 
+    putJson(auditPath, fresh);
     put(`apps/${published}/main.ts`, "export const syntheticScene = 'changed';\n");
+    expect(expectVerdict("fail").detail).toContain(artifactPath(published));
     const stale = runExplainer();
     expect(stale.staleArtifactCount).toBe(1);
     expect(stale.artifacts[0]).toMatchObject({
@@ -502,7 +548,157 @@ describe("product remediation evidence-freshness gate", () => {
       reasons: [expect.objectContaining({ kind: "route-source", status: "mismatch" })]
     });
     expect(expectVerdict("fail").detail).toContain(artifactPath(published));
+  }, 20_000);
+
+  it.each([
+    ["renderer", () => put("packages/engine/src/agent-api/index.ts", "export const syntheticRenderer = 2;\n")],
+    ["route source", () => put(`apps/${published}/main.ts`, "export const syntheticScene = 2;\n")],
+    ["route health", () => putJson(`apps/${published}/route-health.json`, { state: "changed" })],
+    ["gate config", () => {
+      const path = "tools/showcase-library/route-gates.json";
+      put(path, `${readFileSync(join(root, path), "utf8")}\n`);
+    }],
+    ["primary asset", () => putJson("aura.assets.json", {
+      assets: [{ id: "syntheticHero", hash: `sha256-${"f".repeat(64)}` }]
+    })],
+    ["screenshot", () => put(`${probeDir}/${published}.png`, "changed synthetic screenshot")],
+    ["missing probe", () => rmSync(join(root, artifactPath(published)))],
+    ["missing screenshot", () => rmSync(join(root, `${probeDir}/${published}.png`))]
+  ])("rejects a previously green cached audit after %s changes without refreshing it", (_name, mutate) => {
+    putJson(auditPath, freshAudit());
+    expectVerdict("pass");
+    const retained = readFileSync(join(root, auditPath), "utf8");
+    mutate();
+    const result = runGate();
+    expect(["fail", "unproven"]).toContain(result.check.status);
+    expect(result.status).toBe(1);
+    expect(readFileSync(join(root, auditPath), "utf8"), "the gate must not rewrite its input audit").toBe(retained);
+  }, 20_000);
+
+  it("reports an unreadable explainer as unproven rather than trusting the cached audit", () => {
+    putJson(auditPath, freshAudit());
+    rmSync(join(root, explainerScript));
+    expect(expectVerdict("unproven").detail).toContain("cannot recompute current freshness audit");
   });
+
+  it("records an unreadable required probe rather than crashing or trusting the cached audit", () => {
+    putJson(auditPath, freshAudit());
+    put(artifactPath(published), "{ invalid JSON");
+    const result = runGate();
+    expect(["fail", "unproven"]).toContain(result.check.status);
+    expect(result.check.detail).toContain(artifactPath(published));
+    expect(result.status).toBe(1);
+    expect(result.report.totals.unproven).toBeGreaterThan(0);
+  });
+
+  it("rejects invalid explainer output rather than trusting the cached audit", () => {
+    putJson(auditPath, freshAudit());
+    put(explainerScript, "console.log('not JSON');\n");
+    expect(expectVerdict("unproven").detail).toContain("explainer returned invalid JSON");
+  });
+
+  it.each(["ownershipConflicts", "orderingCycles"])("rejects a cached audit with %s", (key) => {
+    const audit = freshAudit();
+    audit[key] = [{ synthetic: "conflict" }];
+    putJson(auditPath, audit);
+    expect(expectVerdict("fail").detail).toContain("ownership conflicts or ordering cycles");
+  });
+
+  it("rejects producer-shaped probes with missing required binding dimensions", () => {
+    putJson(auditPath, freshAudit());
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as {
+      freshness: { dependencies: { kind: string }[] };
+    };
+    probe.freshness.dependencies = probe.freshness.dependencies.filter((entry) => entry.kind !== "route-health");
+    putJson(path, probe);
+    expect(expectVerdict("fail").detail).toContain(artifactPath(published));
+  });
+
+  it("rejects a missing health file even if the probe also omits its health dependency", () => {
+    putJson(auditPath, freshAudit());
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as {
+      freshness: { dependencies: { kind: string }[] };
+    };
+    probe.freshness.dependencies = probe.freshness.dependencies.filter((entry) => entry.kind !== "route-health");
+    putJson(path, probe);
+    rmSync(join(root, `apps/${published}/route-health.json`));
+    const live = spawnSync(process.execPath, [join(root, explainerScript), "--root", root, "--json"], {
+      cwd: root, encoding: "utf8"
+    });
+    expect(live.status, live.stderr).toBe(0);
+    expect((JSON.parse(live.stdout) as Audit).staleArtifactCount).toBe(0);
+    expect(expectVerdict("unproven").detail).toContain("missing route, gate, health or renderer sources");
+  });
+
+  it("rejects an omitted screenshot even when the compact explainer verdict is fresh", () => {
+    putJson(auditPath, freshAudit());
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as Record<string, unknown>;
+    delete probe.renderedProbe;
+    putJson(path, probe);
+    rmSync(join(root, `${probeDir}/${published}.png`));
+    const live = spawnSync(process.execPath, [join(root, explainerScript), "--root", root, "--json"], {
+      cwd: root, encoding: "utf8"
+    });
+    expect(live.status, live.stderr).toBe(0);
+    expect((JSON.parse(live.stdout) as Audit).staleArtifactCount).toBe(0);
+    expect(expectVerdict("unproven").detail).toContain("lacks a screenshot binding");
+  });
+
+  it("rejects a changed producer identity even when dependency hashes still match", () => {
+    putJson(auditPath, freshAudit());
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as {
+      freshness: { producer: { id: string } };
+    };
+    probe.freshness.producer.id = "not-the-producer";
+    putJson(path, probe);
+    expect(expectVerdict("fail").detail).toContain("producer identity or fingerprint");
+  });
+
+  it("rejects a cached renderer fingerprint that does not match a fresh current audit", () => {
+    const audit = freshAudit();
+    audit.rendererFingerprint = `sha256-${"f".repeat(64)}`;
+    putJson(auditPath, audit);
+    expect(expectVerdict("fail").detail).toContain("renderer fingerprint differs");
+  });
+
+  it("rejects a replaced probe even when its current dependency verdict remains fresh", () => {
+    putJson(auditPath, freshAudit());
+    expectVerdict("pass");
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as {
+      renderer: { drawCalls: number };
+    };
+    probe.renderer.drawCalls += 1;
+    putJson(path, probe);
+    expect(expectVerdict("fail").detail).toContain("input proof differs");
+  }, 20_000);
+
+  it("rejects an old audit after a changed source is rebound into a newly fresh probe", async () => {
+    putJson(auditPath, freshAudit());
+    expectVerdict("pass");
+    put(`apps/${published}/main.ts`, "export const syntheticScene = 'new capture';\n");
+    const producer = await import(
+      /* @vite-ignore */ pathToFileURL(join(root, "tools/showcase-library/route-primary-probes.mjs")).href
+    ) as ProbeModule;
+    const path = artifactPath(published);
+    const probe = JSON.parse(readFileSync(join(root, path), "utf8")) as {
+      sourceHash: string;
+      freshness: { dependencies: { kind: string; hash: string }[] };
+    };
+    probe.sourceHash = producer.createRouteSourceHash(published, root);
+    probe.freshness.dependencies.find((entry) => entry.kind === "route-source")!.hash = probe.sourceHash;
+    putJson(path, probe);
+    const live = spawnSync(process.execPath, [join(root, explainerScript), "--root", root, "--json"], {
+      cwd: root, encoding: "utf8"
+    });
+    expect(live.status, live.stderr).toBe(0);
+    expect((JSON.parse(live.stdout) as Audit).staleArtifactCount).toBe(0);
+    expect(expectVerdict("fail").detail).toContain("input proof differs");
+  }, 20_000);
 
   it("consumes the real explainer's unbound published verdicts in a temporary synthetic repository", () => {
     for (const id of [published, secondPublished]) rmSync(join(root, artifactPath(id)));

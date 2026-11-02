@@ -275,7 +275,16 @@ const report = {
   ownershipConflicts,
   orderingCycles,
   artifacts,
-  staleArtifactCount: artifacts.filter((artifact) => !artifact.fresh).length
+  staleArtifactCount: artifacts.filter((artifact) => !artifact.fresh).length,
+  inputProof: {
+    schema: "aura3d-freshness-input-proof/1.0",
+    routeGateHash: hashFileIfPresent(gatePath),
+    artifacts: artifacts.map(({ artifact }) => ({
+      artifact,
+      probeHash: hashFileIfPresent(resolve(root, artifact)),
+      screenshotHash: hashFileIfPresent(resolve(root, artifact.replace(/\.json$/, ".png")))
+    })).sort((a, b) => a.artifact < b.artifact ? -1 : a.artifact > b.artifact ? 1 : 0)
+  }
 };
 
 /*
