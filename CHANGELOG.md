@@ -1,8 +1,58 @@
 # Changelog
 
-Version: 4.7.8
+Version: 4.7.9
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.9 (2026-11-02)
+
+GameUpgrades47 continuation after 4.7.8 (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Continuation 2026-11-02" sections). A modest release: a fix for Thermal Drift, which drew a black frame from 4.7.2 on, engine bookkeeping that was staged but not installed, fewer draw calls in four games, small presentation or loading changes in ten more, and tooling repairs. Presentation only: simulation, physics, scoring, input and the reference replays are unchanged. Every visual number below is software WebGL2 (Azure ACR runner, 1280x720).
+
+Every changed view was judged blind by three judges against the 4.6.2 frame and against the live 4.7.8 frame of the same view (Thermal Drift against 4.6.2 only: its 4.7.8 frame is black). A change that lost to 4.7.8 was reverted before this release: Cross Hop's mint turf lawn (0 of 3 judges preferred it on all four views), Serpentine's roadside pillars with a new road pattern (0 of 3 on all nine) and Ion Circuit's open gantries (0 of 3 on its view) are not in 4.7.9.
+
+### Fixes
+
+- **Thermal Drift renders again.** Since 4.7.2 its Meshy arch model was loaded from an absolute `new URL(..., import.meta.url)` address with a manifest path outside `public/aura-assets/`. The production bridge treats an absolute address as remote, and a remote model without that provenance as `unsafe-url`, so it rejected the whole scene (`RENDERER_MOUNT_FAILED`) and the capture was a black frame. The same file (sha256 `7d727eff...`) now sits in the app's `public/aura-assets/` and is referenced as `/aura-assets/heatsink_thermalArchIron.7d727eff.glb`, as the other route-local apps do. A remote capture of the fixed source (software WebGL2) renders all three variants with 1028 draw calls each and every luma band met, and the blind panel prefers each against 4.6.2 (3/0/0). All 25 games were captured again during this release; the sweep of the untouched games is what found this.
+
+### Engine
+
+- **VFX atlas.** The baked atlas pages and the runtime layout are installed together: one generated `VFX_SPRITE_LAYOUT` that matches the baked images (smoke-a 2x2, 4 frames, 12 fps; fireball 4x2, 8 frames, 24 fps; flame-loop 4x2, 8 frames, 16 fps, looping; muzzle, splash, electric and debris-chips moved to non-overlapping cells). The bake is deterministic (two independent remote runs match); `aura-vfx-2k.png` is 772,158 bytes and the 1k page 262,110 bytes.
+- **Starfield HDRI.** `deep_space_starfield_1k.hdr` drops from 1.83 MB to 1.16 MB, within one tone-mapped level of the original, which brings it under the 1.5 MB catalogue budget. The other five over-budget HDRIs are unchanged.
+- **Selective bloom (internal, not yet a visible feature).** Selective bloom now reads a separate signal instead of a weight stored in HDR alpha, and every frame that cannot take that path reports `POST_SELECTIVE_BLOOM_UNAVAILABLE:<reason>` in `diagnostics().post.skipped`. A scene that does not ask for selective bloom renders exactly as before. The path has not been demonstrated end to end: its receipt still fails because a globally registered, conditionally enabled underwater pass blocks it, so no game uses it. On devices with parallel shader compile it keeps the GLSL text of stock programs in memory (tens of KB per program) for later use.
+- **Texture pipeline.** Bounded texture prefetch and queue lifecycle, deferred CPU PNG decoding, and dynamically added texture resources; final pixels are unchanged. A custom-material texture bind no longer skips an entry when a node is removed while an earlier texture is still loading.
+
+### Games
+
+| Game | Change | Panel vs 4.7.8 |
+|---|---|---|
+| Aura FC 3D | instanced corner flags, ground paint no longer drawn into every shadow cascade: 17-22 fewer draw calls per view | glacier and kyoto better, four same |
+| Aura Links 3D | hole sign and surface marks, instanced tiers and markers: 8 fewer draw calls per view | five same, cinderRim 0/1/2 |
+| Aura Diamond 3D | Ivy brick wall and scoreboard face, fans stop casting shadows: 30 fewer draw calls per view | ivy better, five same |
+| Grid Dispatch | twin tail-lamp ribbons that stay in the world; 13-17 fewer draw calls on three views | fog and night better, two same |
+| Thermal Drift | the arch model loads again (see Fixes) | its 4.7.8 frame is black; against 4.6.2 default, dustfall and vesper are all 3/0/0 |
+| Aura Slam 3D | net-cord deflection, beach spray, grass leaves | moon better, five same |
+| Craterline GP | atlas exhaust and lean scuffs | better |
+| Saltwind Highway | the relay gantries breathe together instead of flickering | same on all three |
+| Slingshot Siege | the pennant sways | same on all seven |
+| The Bellkeeper's Walk | the hero looks at the letters and the bell; title and epilogue depth of field | same on all six |
+| Chroma Roll | pastel paint drips under the paint-pot islands | same |
+| Iron Crown | a restrained heat shimmer over the Airstrip deck | same |
+| Glint Courier | calmer courier and sentry motion under reduced motion | unchanged |
+| Aura Hoops 3D | smaller ball and hoop-rig models (1.8 MB to 0.9 MB, 5.4 MB to 1.0 MB); starfield HDRI | orbit better, two 2/0/1, three same, Venice see below |
+| Bunker Zero | typed surface-texture refs | same on all 8 views |
+
+### Tooling
+
+- **Game-checks:** 0 errors, 53 warnings, down from 65. Bunker Zero's 11 texture warnings are cleared by a recapture that waits up to 120 s for textures (34-37 textures were still pending at the nominal 25 s shot, so the 25/60 s loading deadline is not proven). 41 are `borrowed-asset` rows and 12 are `luma-band` rows (a floodlight or lamp off screen at the capture shot, and Cross Hop's opt-in 4.6.2 look).
+- **Evidence freshness gate:** reports now carry dependency-bound input proof, stale or incomplete audits are rejected, and retired routes are told apart from missing probes.
+- **Repository:** five legacy fixtures are exempt from the Git LFS filter so worktrees stay clean; the showcase port credit observer is coalesced.
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game scores 7 or more in all 12 categories (model judge, software WebGL2).
+- **Distinctness pairs still below the bar** (model judge, 48 trials, bar 0.8): Ion Circuit against Thermal Drift (0.69), Saltwind (0.59) and Craterline (0.71); Serpentine against Cumulus (0.77) and Shadowstep (0.59); Aura Hoops against Aura Diamond (0.73, shared athlete model); Cross Hop against Pip's Big Leap (0.79). They need new models, and Meshy still answers paid calls with HTTP 402.
+- **Panel exceptions against 4.7.8 are capture state, not look changes.** The blind panel rated Aura Hoops Venice worse than the live 4.7.8 frame (0/2/1, and 0/3/0 on a recapture) and, on the last of two panels over the same frames, Cross Hop themes 0 and 5 (1/2/0 and 0/2/1). The first panel rated those same frames 1/0/2 and 2/0/1, and Cross Hop theme 1 went from 0/3/0 to 3/0/0 on a recapture of identical code. Nothing in either source changed for these views (Cross Hop differs from 4.7.8 by one unused model file), the sky and foreground bands of the live and new Cross Hop frames agree within 1.2 per channel on all eight shots, and the judges' notes cite traffic positions and the dribbler's pose. Animated scenes are caught in a different phase on the software runner (a screenshot costs 90-200 s), so these verdicts are not repeatable. Nothing was reverted.
+- **Real-GPU judgement is owner-only (PRD D5).**
 
 ## 4.7.8 (2026-11-01)
 
