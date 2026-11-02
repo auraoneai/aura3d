@@ -1,116 +1,146 @@
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { describe, expect, it } from "vitest";
-import { createRouteSourceHash } from "../../../tools/showcase-library/route-primary-probes.mjs";
+import sharp from "sharp";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createRouteSourceHash, hashRouteHealthDependency } from "../../../tools/showcase-library/route-primary-probes.mjs";
+
+interface VisualQaResult {
+  readonly pass: boolean;
+  readonly blockers: readonly string[];
+  readonly humanVisualApproval: boolean;
+  readonly checks: readonly {
+    readonly id: string;
+    readonly verdict: string;
+    readonly tolerance?: unknown;
+    readonly measured?: Record<string, unknown>;
+  }[];
+}
 
 interface VisualQaModule {
-  validateGameVisualQa(input: {
-    readonly route: { readonly id: string; readonly gameTemplateStatus: { readonly category: string } };
-    readonly routeHealth: Record<string, unknown>;
-    readonly root?: string;
-    readonly pngMetrics?: Record<string, unknown>;
-    readonly flatMetrics?: Record<string, unknown>;
-  }): {
-    readonly pass: boolean;
-    readonly blockers: readonly string[];
-    readonly checks: readonly {
-      readonly id: string;
-      readonly verdict: string;
-      readonly tolerance?: Record<string, unknown>;
-      readonly measured?: Record<string, unknown>;
-    }[];
-  };
-  writeGameVisualQaReport(input: {
-    readonly route: { readonly id: string; readonly gameTemplateStatus: { readonly category: string } };
-    readonly routeHealth: Record<string, unknown>;
-    readonly root?: string;
-  }, outputPath?: string): { readonly pass: boolean; readonly routeId: string; readonly checks: readonly { readonly id: string; readonly verdict: string }[] };
+  validateGameVisualQa(input: Record<string, unknown>): VisualQaResult;
+  writeGameVisualQaReport(input: Record<string, unknown>, outputPath?: string): VisualQaResult;
 }
+
 const modulePromise = import(pathToFileURL(join(process.cwd(), "tools/showcase-library/game-visual-qa.mjs")).href) as Promise<VisualQaModule>;
-// Subject route for the visual-QA harness. This was `showcase-turbo-drift-circuit` until
-// that route was deleted in 1.5.0 as superseded; the suite only needs a real racing route with retained
-// route-health and probe artifacts, so it now uses the current one.
-const routeId = "showcase-turbo-drift-circuit";
+const routeId = "showcase-visual-qa-fixture";
 const route = { id: routeId, gameTemplateStatus: { category: "racing" } } as const;
-const routeHealth = JSON.parse(readFileSync(`apps/${routeId}/route-health.json`, "utf8")) as Record<string, unknown>;
+const screenshotPath = `tests/reports/showcase-route-primary-probes/${routeId}.png`;
+const suppressedPath = `tests/reports/showcase-route-primary-probes/${routeId}-subject-suppressed.png`;
+const probePath = `tests/reports/showcase-route-primary-probes/${routeId}.json`;
+const compositionPath = `tests/reports/showcase-spec-compiler/fixture/game-template/${routeId}-asset-pair-composition.json`;
+const healthPath = `apps/${routeId}/route-health.json`;
+
+interface Fixture {
+  readonly root: string;
+  readonly routeHealth: Record<string, unknown>;
+}
+
+function sha(bytes: Buffer): string {
+  return `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+function write(root: string, path: string, data: string | Buffer): void {
+  const target = join(root, path);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, data);
+}
 
 /*
- * File-level timeout, not a weakened assertion.
- *
- * Every test here runs genuine multi-megapixel analysis over retained 1440x900 frames -- the composed frame twice
- * with two different analyses, plus desktop and mobile. Standalone the whole file measures ~2.5s, but the full suite
- * runs 387 files in parallel and this machine reached load average 156 from unrelated processes, at which point the
- * default 5s wall clock stops being a statement about the code and becomes one about the host.
- *
- * The underlying cost was diagnosed and fixed first, per the brief's requirement not to dismiss load-only failures:
- * `png-foreground.mjs` now shares one pixel traversal between the composition and flat-region measurements, uses a
- * dense histogram rather than a per-pixel Map, and memoizes analyses keyed on frame SHA-256 (a path- or mtime-keyed
- * cache would have reintroduced the staleness class this repository exists to prevent -- there is a test for that).
- * Together those took this file from 18.85s to ~2.5s. No assertion is relaxed; only the wall-clock budget.
+ * Entirely synthetic, isolated test data: neither the route, health nor PNGs
+ * are Turbo/Skyline records. Their historical captures are never rebound to a
+ * new source hash or installed as live evidence.
  */
-function currentVisualFixture(prefix = "aura3d-visual-qa-current-"): string {
-  const root = mkdtempSync(join(tmpdir(), prefix));
-  for (const relativePath of [
-    `apps/${routeId}`,
-    `tests/reports/showcase-route-primary-probes/${routeId}.json`,
-    `tests/reports/showcase-route-primary-probes/${routeId}.png`,
-    `tests/reports/showcase-route-primary-probes/${routeId}-subject-suppressed.png`,
-    `tests/reports/showcase-library-screenshots/${routeId}-desktop.png`,
-    `tests/reports/showcase-library-screenshots/${routeId}-mobile.png`,
-    `tests/reports/showcase-gameplay/${routeId}-before-input.png`,
-    `tests/reports/showcase-gameplay/${routeId}-after-input.png`,
-    `tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/${routeId}-asset-pair-composition.json`
-  ]) cpSync(relativePath, join(root, relativePath), { recursive: true });
-  const probePath = join(root, `tests/reports/showcase-route-primary-probes/${routeId}.json`);
-  const probe = JSON.parse(readFileSync(probePath, "utf8")) as Record<string, unknown>;
-  probe.sourceHash = createRouteSourceHash(routeId, root);
-  writeFileSync(probePath, `${JSON.stringify(probe, null, 2)}\n`);
-  return root;
+async function visualFixture(): Promise<Fixture> {
+  const root = mkdtempSync(join(tmpdir(), "aura3d-visual-qa-fixture-"));
+  try {
+    const create = { width: 320, height: 200, channels: 3 as const, background: { r: 50, g: 90, b: 150 } };
+    const background = await sharp({ create }).png().toBuffer();
+    const image = await sharp({ create })
+      .composite([{ input: { create: { width: 100, height: 80, channels: 3, background: { r: 230, g: 45, b: 20 } } }, left: 110, top: 60 }])
+      .png().toBuffer();
+    const viewportDesktop = `tests/reports/showcase-library-screenshots/${routeId}-desktop.png`;
+    const viewportMobile = `tests/reports/showcase-library-screenshots/${routeId}-mobile.png`;
+    const before = `tests/reports/showcase-gameplay/${routeId}-before-input.png`;
+    const after = `tests/reports/showcase-gameplay/${routeId}-after-input.png`;
+    for (const path of [screenshotPath, viewportDesktop, viewportMobile, after]) write(root, path, image);
+    for (const path of [suppressedPath, before]) write(root, path, background);
+    write(root, `apps/${routeId}/src/main.ts`, "// Synthetic source for visual QA unit tests only.\n");
+
+    const routeHealth = {
+      appId: routeId,
+      gameAssetPairEvidence: { verdict: "pass", compositionReport: compositionPath, screenshotEvidence: screenshotPath },
+      evidence: { desktopScreenshot: viewportDesktop, mobileScreenshot: viewportMobile, gameplayBeforeScreenshot: before, gameplayAfterInputScreenshot: after }
+    };
+    write(root, healthPath, `${JSON.stringify(routeHealth)}\n`);
+    const checks = ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"]
+      .map((id) => ({ id, verdict: "pass", blockers: [] }));
+    write(root, compositionPath, JSON.stringify({
+      schema: "aura3d-showcase-asset-pair-composition/1.0",
+      routeId, category: "racing", verdict: "pass", pass: true,
+      screenshot: { path: screenshotPath, sha256: sha(image) }, checks
+    }));
+    write(root, probePath, JSON.stringify({
+      routeId, pass: true,
+      sourceHash: createRouteSourceHash(routeId, root),
+      routeHealthHash: hashRouteHealthDependency(join(root, healthPath)),
+      renderedProbe: {
+        sha256: sha(image), occludedByUi: false, clipped: false, readabilityScore: 80,
+        analysisCrop: { x: 0, y: 0, width: 320, height: 200 },
+        foregroundBounds: { x: 110, y: 60, width: 100, height: 80 },
+        subjectSuppressedScreenshotPath: suppressedPath
+      },
+      compositionProbe: {
+        subjectBounds: { x: 110, y: 60, width: 100, height: 80 },
+        subjectClipped: false, subjectReadabilityScore: 80
+      }
+    }));
+    return { root, routeHealth };
+  } catch (error) {
+    rmSync(root, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 describe("game visual QA", { timeout: 30_000 }, () => {
-  it("separates structural checks from image-derived composition checks", async () => {
-    const root = currentVisualFixture();
-    const result = (await modulePromise).validateGameVisualQa({ route, routeHealth, root });
+  let fixture: Fixture;
+  beforeAll(async () => { fixture = await visualFixture(); });
+  afterAll(() => { if (fixture) rmSync(fixture.root, { recursive: true, force: true }); });
+
+  it("separates structural checks from measured image checks without claiming human approval", async () => {
+    const result = (await modulePromise).validateGameVisualQa({ route, ...fixture });
+    expect(result.blockers).toEqual([]);
     expect(result.pass).toBe(true);
-    expect(result.checks.map((check) => [check.id, check.verdict])).toEqual([
+    expect(result.humanVisualApproval).toBe(false);
+    expect(result.checks.map(({ id, verdict }) => [id, verdict])).toEqual([
       ["subject-bound-to-surface", "pass"], ["contact", "pass"], ["camera-readability", "pass"],
       ["scale-contract", "pass"], ["debug-guide-absence", "pass"],
       ["subject-pixel-isolation", "pass"], ["viewport-composition", "pass"],
-      ["foreground-background-balance", "pass"], ["flat-region-budget", "pass"],
-      ["hud-occlusion-budget", "pass"],
-      ["material-visual-change", "pass"], ["gameplay-pixel-change", "pass"]
+      ["foreground-background-balance", "pass"], ["flat-region-budget", "report-only"],
+      ["hud-occlusion-budget", "pass"], ["material-visual-change", "pass"], ["gameplay-pixel-change", "pass"]
     ]);
-    rmSync(root, { recursive: true, force: true });
   });
 
-
-  it("retains an independently inspectable six-check report", async () => {
-    const root = currentVisualFixture("aura3d-visual-qa-report-");
-    try {
-      const report = (await modulePromise).writeGameVisualQaReport({ route, routeHealth, root });
-      const reportPath = join(root, `tests/reports/showcase-game-visual-qa/${routeId}.json`);
-      expect(report.pass).toBe(true);
-      expect(existsSync(reportPath)).toBe(true);
-      expect(JSON.parse(readFileSync(reportPath, "utf8"))).toMatchObject({
-        routeId,
-        verdict: "pass",
-        pass: true,
-        checks: expect.arrayContaining([expect.objectContaining({ id: "hud-occlusion-budget", verdict: "pass" })])
-      });
-    } finally { rmSync(root, { recursive: true, force: true }); }
+  it("writes an independently inspectable report only in the synthetic fixture", async () => {
+    const result = (await modulePromise).writeGameVisualQaReport({ route, ...fixture });
+    const path = join(fixture.root, `tests/reports/showcase-game-visual-qa/${routeId}.json`);
+    expect(result.pass).toBe(true);
+    expect(existsSync(path)).toBe(true);
+    expect(JSON.parse(readFileSync(path, "utf8"))).toMatchObject({
+      routeId, verdict: "pass", humanVisualApproval: false,
+      checks: expect.arrayContaining([expect.objectContaining({ id: "hud-occlusion-budget", verdict: "pass" })])
+    });
   });
 
-  it("rejects synthetic clipped, unreadable screenshot metrics", async () => {
+  it("rejects clipped, unreadable subject metrics rather than accepting a claimed pass", async () => {
     const result = (await modulePromise).validateGameVisualQa({
-      route,
-      routeHealth,
+      route, ...fixture,
       pngMetrics: {
-        width: 1440, height: 900, crop: { x: 0, y: 0, width: 1440, height: 900 },
-        foregroundBounds: { x: 0, y: 0, width: 1440, height: 900 }, clipped: true,
-        nonBlankPixels: 1, colorBuckets: 1, nonBackgroundRatio: 0, readabilityScore: 1
+        crop: { x: 0, y: 0, width: 320, height: 200 },
+        foregroundBounds: { x: 0, y: 0, width: 320, height: 200 },
+        clipped: true, readabilityScore: 1
       }
     });
     expect(result.pass).toBe(false);
@@ -122,286 +152,166 @@ describe("game visual QA", { timeout: 30_000 }, () => {
   });
 
   it.each([
-    ["tiny subject", { foregroundBounds: { x: 50, y: 50, width: 4, height: 4 }, foregroundAreaRatio: 0.0001, clipped: false }],
-    ["hidden subject", { foregroundAreaRatio: 0, clipped: false }],
-    ["clipped subject", { foregroundBounds: { x: 0, y: 0, width: 200, height: 100 }, foregroundAreaRatio: 0.08, clipped: true }]
-  ])("rejects a deliberately bad %s isolation result", async (_label, isolatedMetrics) => {
-    const result = (await modulePromise).validateGameVisualQa({
-      route,
-      routeHealth,
-      isolatedMetrics
-    } as never);
+    ["tiny", { foregroundBounds: { x: 50, y: 50, width: 4, height: 4 }, foregroundAreaRatio: 0.0001, clipped: false }],
+    ["hidden", { foregroundAreaRatio: 0, clipped: false }],
+    ["clipped", { foregroundBounds: { x: 0, y: 0, width: 200, height: 100 }, foregroundAreaRatio: 0.08, clipped: true }]
+  ])("rejects a %s isolation result", async (_label, isolatedMetrics) => {
+    const result = (await modulePromise).validateGameVisualQa({ route, ...fixture, isolatedMetrics });
     expect(result.pass).toBe(false);
     expect(result.blockers.some((blocker) => blocker.startsWith("subject-pixel-isolation:"))).toBe(true);
   });
 
   it.each([
-    ["giant prop occlusion", {
-      clipped: false,
-      edgeOccupancyRatio: 0.1,
-      foregroundCoverageRatio: 0.8,
-      backgroundCoverageRatio: 0.2,
-      largestComponentAreaRatio: 0.9
-    }],
-    ["empty proof staging", {
-      clipped: false,
-      edgeOccupancyRatio: 0,
-      foregroundCoverageRatio: 0.001,
-      backgroundCoverageRatio: 0.999,
-      largestComponentAreaRatio: 0.001
-    }],
-    ["clipped UI or foreground", {
-      clipped: true,
-      edgeOccupancyRatio: 0.7,
-      foregroundCoverageRatio: 0.2,
-      backgroundCoverageRatio: 0.8,
-      largestComponentAreaRatio: 0.2
-    }]
-  ])("rejects %s from composed screenshot pixels", async (_label, compositionMetrics) => {
-    const result = (await modulePromise).validateGameVisualQa({
-      route,
-      routeHealth,
-      compositionMetrics
-    } as never);
+    ["giant prop", { clipped: false, edgeOccupancyRatio: 0.1, foregroundCoverageRatio: 0.8, backgroundCoverageRatio: 0.2, largestComponentAreaRatio: 0.9 }],
+    ["empty staging", { clipped: false, edgeOccupancyRatio: 0, foregroundCoverageRatio: 0.001, backgroundCoverageRatio: 0.999, largestComponentAreaRatio: 0.001 }],
+    ["clipped foreground", { clipped: true, edgeOccupancyRatio: 0.7, foregroundCoverageRatio: 0.2, backgroundCoverageRatio: 0.8, largestComponentAreaRatio: 0.2 }]
+  ])("rejects %s composition metrics", async (_label, compositionMetrics) => {
+    const result = (await modulePromise).validateGameVisualQa({ route, ...fixture, compositionMetrics });
     expect(result.pass).toBe(false);
     expect(result.blockers.some((blocker) =>
-      blocker.startsWith("viewport-composition:") ||
-      blocker.startsWith("foreground-background-balance:")
+      blocker.startsWith("viewport-composition:") || blocker.startsWith("foreground-background-balance:")
     )).toBe(true);
   });
 
-  it("rejects route-primary evidence after route source becomes stale", async () => {
-    const root = currentVisualFixture("aura3d-visual-qa-");
+  it("rejects source and route-health changes against their original synthetic probe", async () => {
+    const stale = await visualFixture();
     try {
-      const mainPath = join(root, `apps/${routeId}/src/main.ts`);
-      writeFileSync(mainPath, `${readFileSync(mainPath, "utf8")}\n// stale mutation\n`);
-      const result = (await modulePromise).validateGameVisualQa({ route, routeHealth, root });
+      write(stale.root, `apps/${routeId}/src/main.ts`, "// changed source\n");
+      let result = (await modulePromise).validateGameVisualQa({ route, ...stale });
       expect(result.pass).toBe(false);
-      // invariant: source must keep `route-primary-source-stale` — separates structural checks from image-derived composition checks
       expect(result.blockers).toContain("route-primary-source-stale");
+      write(stale.root, healthPath, JSON.stringify({ ...stale.routeHealth, changed: true }));
+      result = (await modulePromise).validateGameVisualQa({ route, ...stale });
+      expect(result.blockers).toContain("route-primary-health-stale");
+    } finally { rmSync(stale.root, { recursive: true, force: true }); }
+  });
+
+  it("rejects a missing source even when a probe copies the missing hash sentinel", async () => {
+    const missing = await visualFixture();
+    try {
+      rmSync(join(missing.root, `apps/${routeId}/src/main.ts`));
+      const probe = JSON.parse(readFileSync(join(missing.root, probePath), "utf8")) as Record<string, unknown>;
+      probe.sourceHash = "sha256-missing";
+      write(missing.root, probePath, JSON.stringify(probe));
+      const result = (await modulePromise).validateGameVisualQa({ route, ...missing });
+      expect(result.pass).toBe(false);
+      expect(result.blockers).toContain("route-primary-source-missing");
+    } finally { rmSync(missing.root, { recursive: true, force: true }); }
+  });
+
+  it("rejects missing route-health even if a caller supplies a health object", async () => {
+    const missing = await visualFixture();
+    try {
+      rmSync(join(missing.root, healthPath));
+      const probe = JSON.parse(readFileSync(join(missing.root, probePath), "utf8")) as Record<string, unknown>;
+      delete probe.routeHealthHash;
+      write(missing.root, probePath, JSON.stringify(probe));
+      const result = (await modulePromise).validateGameVisualQa({ route, ...missing });
+      expect(result.pass).toBe(false);
+      expect(result.blockers).toContain("route-primary-health-missing");
+    } finally { rmSync(missing.root, { recursive: true, force: true }); }
+  });
+
+  it.each([
+    [probePath, `route-primary-missing:${probePath}`],
+    [compositionPath, `composition-missing:${compositionPath}`],
+    [screenshotPath, `screenshot-missing:${screenshotPath}`],
+    [suppressedPath, `subject-suppressed-missing:${suppressedPath}`],
+    [`tests/reports/showcase-library-screenshots/${routeId}-desktop.png`, "viewport-composition:desktop-screenshot-missing"]
+  ])("fails closed when %s is missing", async (path, blocker) => {
+    const missing = await visualFixture();
+    try {
+      rmSync(join(missing.root, path));
+      const result = (await modulePromise).validateGameVisualQa({ route, ...missing });
+      expect(result.pass).toBe(false);
+      expect(result.blockers).toContain(blocker);
+      if (path === screenshotPath) expect(result.blockers).toContain("flat-region-budget:flat-region-metrics-missing");
+    } finally { rmSync(missing.root, { recursive: true, force: true }); }
+  });
+
+  it("rejects a replaced screenshot with mismatching composition and probe hashes", async () => {
+    const stale = await visualFixture();
+    try {
+      copyFileSync(join(stale.root, suppressedPath), join(stale.root, screenshotPath));
+      const result = (await modulePromise).validateGameVisualQa({ route, ...stale });
+      expect(result.pass).toBe(false);
+      expect(result.blockers).toEqual(expect.arrayContaining(["composition-screenshot-stale", "route-primary-screenshot-stale"]));
+    } finally { rmSync(stale.root, { recursive: true, force: true }); }
+  });
+
+  it("rejects unchanged gameplay pixels and unchanged approved-baseline pixels", async () => {
+    const module = await modulePromise;
+    const gameplay = module.validateGameVisualQa({
+      route, ...fixture, gameplayChangeMetrics: { nonBackgroundRatio: 0, foregroundAreaRatio: 0, changedPixels: 0 }
+    });
+    expect(gameplay.pass).toBe(false);
+    expect(gameplay.blockers).toContain("gameplay-pixel-change:gameplay-pixel-delta-too-small:0");
+    const visual = module.validateGameVisualQa({
+      route, ...fixture, baselinePath: screenshotPath,
+      visualChangeMetrics: { nonBackgroundRatio: 0, foregroundAreaRatio: 0, changedPixels: 0 }
+    });
+    expect(visual.pass).toBe(false);
+    expect(visual.blockers).toContain("material-visual-change:scene-material-change-too-small:0");
+  });
+
+  it("reports the measured flat fraction without inventing a calibrated threshold", async () => {
+    const result = (await modulePromise).validateGameVisualQa({
+      route, ...fixture, flatMetrics: { dominantBucketFraction: 0.97, flatFraction: 0.99, distinctBuckets: 2 }
+    });
+    const check = result.checks.find((entry) => entry.id === "flat-region-budget");
+    expect(check).toMatchObject({
+      verdict: "report-only", tolerance: null,
+      measured: { composed: { dominantBucketFraction: 0.97, flatFraction: 0.99, distinctBuckets: 2 } }
+    });
+  });
+
+  it("classifies graded and flat backdrops as background without clipping the subject", async () => {
+    const png = await import(pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href) as {
+      readPngVisualCompositionMetrics(path: string): {
+        readonly foregroundCoverageRatio: number;
+        readonly backgroundCoverageRatio: number;
+        readonly largestComponentAreaRatio: number;
+        readonly clipped: boolean;
+      };
+    };
+    // Controlled pixels reproduce the per-row background regression without
+    // presenting a retired route's screenshot as a current capture.
+    for (const graded of [false, true]) {
+      const width = 320;
+      const height = 200;
+      const pixels = Buffer.alloc(width * height * 3);
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const subject = x >= 110 && x < 210 && y >= 60 && y < 140;
+          const offset = (y * width + x) * 3;
+          pixels[offset] = subject ? 230 : 40 + (graded ? Math.floor(y * 150 / (height - 1)) : 0);
+          pixels[offset + 1] = subject ? 45 : 90 + (graded ? Math.floor(y * 80 / (height - 1)) : 0);
+          pixels[offset + 2] = subject ? 20 : 150;
+        }
+      }
+      const path = join(fixture.root, graded ? "graded.png" : "flat.png");
+      writeFileSync(path, await sharp(pixels, { raw: { width, height, channels: 3 } }).png().toBuffer());
+      const measured = png.readPngVisualCompositionMetrics(path);
+      expect(measured.foregroundCoverageRatio).toBe(0.125);
+      expect(measured.backgroundCoverageRatio).toBe(0.875);
+      expect(measured.largestComponentAreaRatio).toBe(0.125);
+      expect(measured.clipped).toBe(false);
+    }
+  });
+
+  it("re-measures different image bytes at the same path rather than returning a stale cache entry", async () => {
+    const png = await import(pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href) as {
+      readPngVisualCompositionMetrics(path: string): { readonly dominantBucketFraction: number };
+    };
+    const root = mkdtempSync(join(tmpdir(), "aura3d-visual-qa-cache-"));
+    try {
+      const target = join(root, "frame.png");
+      copyFileSync(join(fixture.root, screenshotPath), target);
+      const first = png.readPngVisualCompositionMetrics(target).dominantBucketFraction;
+      copyFileSync(join(fixture.root, suppressedPath), target);
+      const second = png.readPngVisualCompositionMetrics(target).dominantBucketFraction;
+      expect(second).not.toBe(first);
+      expect(png.readPngVisualCompositionMetrics(target).dominantBucketFraction).toBe(second);
     } finally { rmSync(root, { recursive: true, force: true }); }
-  });
-
-  it("rejects an unchanged gameplay frame even when the HUD could differ outside the measured scene", async () => {
-    const result = (await modulePromise).validateGameVisualQa({
-      route,
-      routeHealth,
-      gameplayChangeMetrics: {
-        nonBackgroundRatio: 0,
-        foregroundAreaRatio: 0,
-        changedPixels: 0
-      }
-    } as never);
-    expect(result.pass).toBe(false);
-    expect(result.blockers).toContain("gameplay-pixel-change:gameplay-pixel-delta-too-small:0");
-  });
-
-  it("rejects a rebuilt scene whose HUD-excluded pixels are unchanged from its approved baseline", async () => {
-    const result = (await modulePromise).validateGameVisualQa({
-      route,
-      routeHealth,
-      baselinePath: `tests/reports/showcase-route-primary-probes/${routeId}.png`,
-      visualChangeMetrics: {
-        nonBackgroundRatio: 0,
-        foregroundAreaRatio: 0,
-        changedPixels: 0
-      }
-    } as never);
-    expect(result.pass).toBe(false);
-    expect(result.blockers).toContain("material-visual-change:scene-material-change-too-small:0");
-  });
-
-  /**
-   * ## The empty-flat-region budget
-   *
-   * The brief requires "no excessive empty-sky ratio beyond a documented threshold". `measureFlatRegionFraction`
-   * existed in the engine but had no consumer outside synthetic unit fixtures, so the *shipped* frame's flat
-   * fraction was never gated -- and no other image check can see it, because every one of them measures the frame
-   * relative to its background colour and flat sky *is* the background.
-   */
-  describe("flat-region budget", () => {
-    it("documents its threshold in the retained report rather than only in code", async () => {
-      // A threshold nobody can read from the evidence is not a documented threshold.
-      const check = (await modulePromise).validateGameVisualQa({ route, routeHealth })
-        .checks.find((entry) => entry.id === "flat-region-budget");
-      expect(check?.tolerance).toEqual({
-        maxDominantBucketFraction: 0.42,
-        maxFlatFraction: 0.58,
-        maxViewportFlatFraction: 0.62
-      });
-    });
-
-    it("measures the real retained frame, not an assumed value", async () => {
-      /*
-       * Turbo's current frame measures dominantBucketFraction 0.167 / flatFraction 0.324. Asserting the
-       * measurement happened -- and is in a plausible range -- distinguishes a working measurement from a
-       * check that silently defaulted to zero and would therefore pass anything.
-       */
-      const check = (await modulePromise).validateGameVisualQa({ route, routeHealth })
-        .checks.find((entry) => entry.id === "flat-region-budget");
-      const composed = check?.measured?.composed as Record<string, number> | undefined;
-      expect(composed?.distinctBuckets).toBeGreaterThan(1);
-      expect(composed?.dominantBucketFraction).toBeGreaterThan(0);
-      expect(composed?.dominantBucketFraction).toBeLessThan(0.42);
-      expect(composed?.flatFraction).toBeLessThan(0.58);
-      // flatFraction counts the two largest buckets, so it can never be below the largest alone.
-      expect(composed?.flatFraction).toBeGreaterThanOrEqual(composed?.dominantBucketFraction ?? 1);
-    });
-
-    it("rejects Skyline's measured pre-fix flat sky", async () => {
-      /*
-       * These are the exact figures measured on the retained frame before the reusable sky backdrop landed
-       * (analysis crop 1108x900). The budget is only meaningful if it fails them -- a threshold every existing
-       * frame already clears documents nothing and prevents nothing.
-       */
-      const result = (await modulePromise).validateGameVisualQa({
-        route,
-        routeHealth,
-        flatMetrics: { dominantBucketFraction: 0.4365, flatFraction: 0.5977, distinctBuckets: 649 }
-      });
-      expect(result.pass).toBe(false);
-      expect(result.blockers).toContain("flat-region-budget:dominant-flat-region:0.4365");
-      expect(result.blockers).toContain("flat-region-budget:flat-region-fraction:0.5977");
-    });
-
-    it("rejects an almost entirely flat frame", async () => {
-      const result = (await modulePromise).validateGameVisualQa({
-        route,
-        routeHealth,
-        flatMetrics: { dominantBucketFraction: 0.97, flatFraction: 0.99, distinctBuckets: 2 }
-      });
-      expect(result.pass).toBe(false);
-      expect(result.blockers.some((blocker) => blocker.startsWith("flat-region-budget:"))).toBe(true);
-    });
-
-    it("fails loudly when the measurement is absent instead of passing by default", async () => {
-      /*
-       * The failure mode this guards is the one that let the defect persist: a check whose metric is missing
-       * and which therefore reports pass. An unmeasured frame is not a compliant frame.
-       */
-      const result = (await modulePromise).validateGameVisualQa({
-        route,
-        routeHealth,
-        flatMetrics: undefined as never,
-        // Point the screenshot at a path that does not exist so no measurement can be taken.
-        root: mkdtempSync(join(tmpdir(), "aura3d-visual-qa-noflat-"))
-      } as never);
-      expect(result.pass).toBe(false);
-    });
-
-    it("re-measures when frame bytes change, so the analysis cache cannot serve a stale answer", async () => {
-      /*
-       * ## Why this test exists
-       *
-       * PNG analysis is memoized, because release tooling re-reads the same 1.3M-pixel frames several times in one
-       * process and the repeated decode made `showcase-game-release-gates` fail on a timeout under load.
-       *
-       * A cache over retained evidence is exactly the staleness class this repository exists to prevent, so the key
-       * is the SHA-256 of the actual bytes rather than a path or mtime. This asserts that property directly:
-       * overwrite a frame with materially different pixels and the reported measurement must change.
-       */
-      const pngModule = await import(
-        pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href
-      ) as {
-        readPngVisualCompositionMetrics(path: string, crop?: unknown): { readonly flatFraction: number };
-      };
-      const root = mkdtempSync(join(tmpdir(), "aura3d-visual-qa-cache-"));
-      try {
-        const target = join(root, "frame.png");
-        // Two genuinely different retained frames: a full-bleed racing shot and a mostly-sky platformer shot.
-        cpSync(`tests/reports/showcase-route-primary-probes/${routeId}.png`, target);
-        const first = pngModule.readPngVisualCompositionMetrics(target).flatFraction;
-        cpSync("tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png", target);
-        const second = pngModule.readPngVisualCompositionMetrics(target).flatFraction;
-        // Same path, different bytes: a path- or mtime-keyed cache would return `first` here.
-        expect(second).not.toBe(first);
-        // And identical bytes must still agree with themselves, or the cache is simply broken.
-        expect(pngModule.readPngVisualCompositionMetrics(target).flatFraction).toBe(second);
-      } finally { rmSync(root, { recursive: true, force: true }); }
-    });
-
-    it("classifies a graded backdrop as background, not as a giant foreground occluder", async () => {
-      /*
-       * ## The defect this pins
-       *
-       * Foreground classification measured each pixel's distance from a *single* background colour sampled from
-       * the four corners. That held for every frame in this repository until Skyline replaced its flat sky plane
-       * with a graded one. With a gradient no single colour represents the backdrop: Skyline's corner average was
-       * rgb(119,175,194) while its sky bands measured 23-98 away from it, so 89% of the frame was classified as
-       * subject, `largestComponentAreaRatio` hit 0.8644 against a 0.72 budget, and the "component" touched the
-       * frame edge and reported clipped.
-       *
-       * Those pixels are unambiguously backdrop, so the measurement was wrong, not the frame. The background
-       * reference is now sampled per row from both side margins. Loosening the 0.72 budget would have hidden a
-       * broken classifier and weakened the check for every route.
-       *
-       * ## Why the live witness is Turbo, not Skyline
-       *
-       * The per-row model needs backdrop touching the side margins. Skyline's night-bowl composition at the
-       * width-floor framing (hero >= 96px) encloses its sky behind the ridge on every row, so no margin
-       * reference can describe it -- a framing precondition failure, not a classifier regression (four
-       * framings measured; the bowl has no edge sky at hero-readable distances). Turbo's sunset gradient
-       * touches both edges and is genuinely graded, so it carries the live pin. Budgets unchanged.
-       */
-      const pngModule = await import(
-        pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href
-      ) as {
-        readPngVisualCompositionMetrics(path: string, crop?: unknown): {
-          readonly largestComponentAreaRatio: number;
-          readonly backgroundCoverageRatio: number;
-          readonly clipped: boolean;
-        };
-      };
-      const probe = JSON.parse(readFileSync(
-        `tests/reports/showcase-route-primary-probes/${routeId}.json`, "utf8"
-      )) as { readonly renderedProbe?: { readonly analysisCrop?: unknown } };
-      const graded = pngModule.readPngVisualCompositionMetrics(
-        `tests/reports/showcase-route-primary-probes/${routeId}.png`,
-        probe.renderedProbe?.analysisCrop
-      );
-      // The graded sunset sky must read as background. Pre-fix (corner average) these were 0.8644 / 0.1073 / true.
-      expect(graded.largestComponentAreaRatio).toBeLessThan(0.72);
-      // The measured background share must remain comfortably above the broken classifier's 0.1073 result.
-      expect(graded.backgroundCoverageRatio).toBeGreaterThan(0.15);
-      expect(graded.clipped).toBe(false);
-    });
-
-    it("leaves a flat-background frame's classification unchanged", async () => {
-      /*
-       * The other half of the contract: a per-row reference must reduce to the old behaviour when the backdrop is
-       * flat, or this fix would silently alter every existing route's metrics. The retained Blockfall Reactor frame
-       * has a flat sky and measured largestComponentAreaRatio 0.001 before the change. Turbo is intentionally not
-       * used here: its current circuit/environment fills the lower half of the frame, so the largest *foreground*
-       * component is expected to be much larger even though the row-wise background classifier is correct.
-       */
-      const pngModule = await import(
-        pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href
-      ) as {
-        readPngVisualCompositionMetrics(path: string, crop?: unknown): {
-          readonly largestComponentAreaRatio: number;
-          readonly clipped: boolean;
-        };
-      };
-      const flatRouteId = "showcase-blockfall-reactor";
-      const probe = JSON.parse(readFileSync(
-        `tests/reports/showcase-route-primary-probes/${flatRouteId}.json`, "utf8"
-      )) as { readonly renderedProbe?: { readonly analysisCrop?: unknown } };
-      const flat = pngModule.readPngVisualCompositionMetrics(
-        `tests/reports/showcase-route-primary-probes/${flatRouteId}.png`,
-        probe.renderedProbe?.analysisCrop
-      );
-      expect(flat.largestComponentAreaRatio).toBeLessThan(0.01);
-      expect(flat.clipped).toBe(false);
-    });
-
-    it("accepts a frame just inside the budget", async () => {
-      // A gate that rejects everything is as useless as one that accepts everything.
-      const result = (await modulePromise).validateGameVisualQa({
-        route,
-        routeHealth,
-        flatMetrics: { dominantBucketFraction: 0.4199, flatFraction: 0.5799, distinctBuckets: 300 }
-      });
-      expect(result.blockers.some((blocker) => blocker.startsWith("flat-region-budget:"))).toBe(false);
-    });
   });
 });

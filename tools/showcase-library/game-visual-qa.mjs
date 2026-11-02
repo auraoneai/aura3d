@@ -314,7 +314,9 @@ export function validateGameVisualQa(input) {
   const screenshotHash = screenshotAbsolute && existsSync(screenshotAbsolute) ? hash(readFileSync(screenshotAbsolute)) : undefined;
   if (screenshotHash && composition?.screenshot?.sha256 !== screenshotHash) failures.push("composition-screenshot-stale");
   if (screenshotHash && rendered?.sha256 !== screenshotHash) failures.push("route-primary-screenshot-stale");
-  if (probe?.sourceHash !== createRouteSourceHash(routeId, root)) failures.push("route-primary-source-stale");
+  const sourceHash = createRouteSourceHash(routeId, root);
+  if (sourceHash === "sha256-missing") failures.push("route-primary-source-missing");
+  if (probe?.sourceHash !== sourceHash) failures.push("route-primary-source-stale");
   const healthAbsolute = safeResolve(root, `apps/${routeId}/route-health.json`, failures, "route-health");
   /*
    * Hash the same narrowed dependency the probe binds.
@@ -324,7 +326,9 @@ export function validateGameVisualQa(input) {
    * probe as stale after composition ran, forcing a second probe run. `hashRouteHealthDependency` excludes that block,
    * so producer and consumer agree on what the probe actually depends on.
    */
-  if (healthAbsolute && existsSync(healthAbsolute) && probe?.routeHealthHash !== hashRouteHealthDependency(healthAbsolute)) {
+  if (!healthAbsolute || !existsSync(healthAbsolute)) {
+    failures.push("route-primary-health-missing");
+  } else if (probe?.routeHealthHash !== hashRouteHealthDependency(healthAbsolute)) {
     failures.push("route-primary-health-stale");
   }
   for (const check of checks) if (check.verdict !== "pass") failures.push(...check.blockers.map((blocker) => `${check.id}:${blocker}`));

@@ -406,6 +406,9 @@ export function validateRoutePrimaryProbeEvidenceRecord(route, evidence, options
   }
   if (evidence.routePath !== route.path) failures.push(`route-path:${String(evidence.routePath)}`);
   if (evidence.appId !== route.id) failures.push(`app-id:${String(evidence.appId)}`);
+  // A matching sentinel is not evidence that a route or its health file exists.
+  if (context.sourceHash === "sha256-missing") failures.push(`route-source-missing:${route.id}`);
+  if (route.id !== "showcase-index" && !context.routeHealthHash) failures.push(`route-health-missing:${route.id}`);
   if (evidence.sourceHash !== context.sourceHash) failures.push(`source-hash:${String(evidence.sourceHash)}`);
   if (evidence.routeGateHash !== context.routeGateHash) failures.push(`route-gate-hash:${String(evidence.routeGateHash)}`);
   if (evidence.routePrimaryHeroAsset !== context.routePrimaryHeroAsset) {
@@ -463,7 +466,10 @@ export function createRouteSourceHash(routeId, root = defaultRepoRoot) {
   const appDir = resolve(root, "apps", routeId);
   const hash = createHash("sha256");
   if (!existsSync(appDir)) return "sha256-missing";
-  for (const file of readSourceFiles(appDir, root)) {
+  const sourceFiles = readSourceFiles(appDir, root);
+  // An empty directory (or one containing only health/evidence JSON) is not app source.
+  if (sourceFiles.length === 0) return "sha256-missing";
+  for (const file of sourceFiles) {
     const relativePath = relative(root, file).replace(/\\/g, "/");
     hash.update(relativePath);
     hash.update("\0");
