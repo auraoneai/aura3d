@@ -56,6 +56,7 @@ describe("Bunker Zero wear decals (BZ-10)", () => {
     expect(holeExpired(0, BZ_BULLET_HOLE_SECONDS - 0.01)).toBe(false);
     expect(holeExpired(0, BZ_BULLET_HOLE_SECONDS)).toBe(true);
     expect(BZ_BULLET_HOLES).toBe(12);
+    // invariant: source must keep `addBulletHole(s.x, s.z)` — shots stamp holes through the 12-slot recycling ring, so the wear decals stay inside the 32-decal budget
     expect(MAIN).toContain("addBulletHole(s.x, s.z)");
   });
 

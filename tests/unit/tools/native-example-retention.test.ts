@@ -107,6 +107,7 @@ describe("retained example source and output identity", () => {
       put(root, path, "synthetic private content");
       expect(() => collectExampleRetainedFiles(root)).toThrow(/private, configuration or nonportable path/);
       try { collectExampleRetainedFiles(root); } catch (error) {
+        // invariant: source must not reintroduce `synthetic private content` in errors — refusing a private path never leaks that file's contents into logs
         expect(String(error)).not.toContain("synthetic private content");
       }
     }

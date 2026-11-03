@@ -137,6 +137,7 @@ describe("native WebGPU scalar volume", () => {
       : readFileSync(new URL("../../../packages/rendering/src/VolumeRenderer.ts", import.meta.url), "utf8");
     expect(source).not.toContain("unproject(0.999999)");
     expect(source).not.toContain("unproject(ndc, 0.999999)");
+    // invariant: source must keep `nearH.w == 0.0 || middleH.w == 0.0` — the volume ray clip guards degenerate homogeneous w so infinite-depth pixels stay finite
     expect(source).toContain("nearH.w == 0.0 || middleH.w == 0.0");
     expect(source).toContain("planeSlope < 0.0");
     expect(source).toContain("planeSlope > 0.0");

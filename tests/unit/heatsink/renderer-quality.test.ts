@@ -11,6 +11,7 @@ const mainSource = readFileSync(resolve(__dirname, "../../../apps/showcase-heats
 
 describe("heatsink renderer quality", () => {
   it("passes renderer.quality as { tier: \"auto\" }, not a fixed tier string", () => {
+    // invariant: source must keep `renderer: { quality: { tier: "auto" } }` — lets Heatsink pick its render tier per device instead of pinning a fixed quality string
     expect(mainSource).toContain('renderer: { quality: { tier: "auto" } }');
     expect(mainSource).not.toMatch(/renderer:\s*\{\s*quality:\s*"/);
   });

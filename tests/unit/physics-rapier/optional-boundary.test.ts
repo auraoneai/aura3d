@@ -198,6 +198,7 @@ describe("optional physical simulation boundary", () => {
     expect(adapter.sideEffects).toBe(false);
     const adapterSource = readFileSync(resolve(root, "packages/physics-rapier/src/index.ts"), "utf8");
     for (const dependency of ["@gltf-transform/core", "@gltf-transform/extensions", "meshoptimizer"]) {
+      // invariant: source must keep `import("<sidecar dep>")` in the rapier adapter — gltf-transform/meshoptimizer load lazily so the optional physics entry stays light
       expect(adapterSource).toContain(`import("${dependency}")`);
       expect(adapter.dependencies[dependency]).toMatch(/^\d+\.\d+\.\d+$/u);
     }

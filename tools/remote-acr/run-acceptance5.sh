@@ -4,7 +4,10 @@
 # docs/prds/aura3d-native-acceptance.md).
 #
 #   1. Refuses unless AURA3D_CODE_COMPLETE_GATE is a CODE_COMPLETE_GO record
-#      bound to this exact clean HEAD and passes
+#      bound to this clean HEAD — the freeze commit F itself, or the commit that
+#      only adds the record on F (freeze sequence step 6: HEAD's only parent is F,
+#      its diff touches only tests/reports/native-capabilities/code-complete-go.json,
+#      and that committed record is the gate) — and passes
 #      tools/native-capability-gate/index.mjs --phase acceptance — before any
 #      Azure call, staging or build.
 #   2. Plans shards from tools/remote-acr/acceptance5-inventory.txt
@@ -98,12 +101,18 @@ fi
 # ---- 1. gate refusal before any provider process -----------------------------
 # The gate binds a frozen Git commit: without a Git checkout (e.g. the ACR source pass, which ships no
 # .git) there is nothing to bind, so refuse here instead of failing later with a raw git error.
-COMMIT="$(git rev-parse HEAD 2>/dev/null)" \
+HEAD_COMMIT="$(git rev-parse HEAD 2>/dev/null)" \
   || { echo "FATAL: acceptance refused: not a Git checkout, so the code-complete gate cannot be bound to HEAD; no Azure work was started." >&2; exit 2; }
+# Clean tracked tree against HEAD. At F the record is an ignored, untracked file;
+# at the record-only commit F+1 it is tracked, so any edit to it shows up here and
+# gate-binding also requires the committed bytes to equal the gate.
 TRACKED_CLEAN=1
 [ -z "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ] || TRACKED_CLEAN=0
-BINDING="$(node tools/remote-acr/acceptance5.mjs gate-binding --gate "$AURA3D_CODE_COMPLETE_GATE" --head "$COMMIT" --tracked-clean "$TRACKED_CLEAN")" \
+BINDING="$(node tools/remote-acr/acceptance5.mjs gate-binding --gate "$AURA3D_CODE_COMPLETE_GATE" --head "$HEAD_COMMIT" --tracked-clean "$TRACKED_CLEAN")" \
   || { echo "FATAL: acceptance refused; no Azure work was started." >&2; exit 2; }
+# The candidate is the freeze commit F (HEAD is F or the record-only commit on F).
+COMMIT="$(node -p 'JSON.parse(process.argv[1]).freezeCommit' "$BINDING")"
+echo "   gate       : freeze $COMMIT, HEAD $HEAD_COMMIT ($(node -p 'JSON.parse(process.argv[1]).headRelation' "$BINDING"))"
 node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE" \
   || { echo "FATAL: code-complete gate failed validation; no Azure work was started." >&2; exit 2; }
 [ ! -e "$OUT_DIR" ] || { echo "FATAL: $OUT_DIR exists; use a new RUN_ID" >&2; exit 2; }
@@ -111,7 +120,8 @@ mkdir -p "$OUT_DIR"
 cp "$PLAN_TMP" "$OUT_DIR/plan.json"
 PLAN_JSON="$REPO_ROOT/$OUT_DIR/plan.json"
 printf '%s\n' "$BINDING" > "$OUT_DIR/gate-binding.json"
-bind() { node -p "JSON.parse(process.argv[1])[process.argv[2]]" "$BINDING" "$1"; }
+# null (examplesSourceReport on the source5 path) is passed as `none`.
+bind() { node -p "JSON.parse(process.argv[1])[process.argv[2]] ?? 'none'" "$BINDING" "$1"; }
 RELEASE_PLAN="$(bind candidatePlan)"
 CONSUMER_SOURCE_REPORT="$(bind consumerSourceReport)"
 MATRIX_SOURCE_REPORT="$(bind matrixSourceReport)"

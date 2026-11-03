@@ -22,6 +22,7 @@ describe("directional shadow receiver depth range", () => {
   for (const [label, file] of samplers) {
     it(`${label} clamps the directional receiver depth to [0, 1]`, () => {
       const source = readFileSync(file, "utf8");
+      // invariant: source must keep `clamp(projected.z * 0.5 + 0.5, 0.0, 1.0)` — receivers beyond the shadow far plane compare as lit instead of falling into false shadow
       expect(source).toContain("clamp(projected.z * 0.5 + 0.5, 0.0, 1.0)");
     });
   }

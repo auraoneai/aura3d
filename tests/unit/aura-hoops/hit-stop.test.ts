@@ -26,6 +26,7 @@ describe("Aura Hoops hit-stop", () => {
   it("the game binds juice hit-stop to the real-time clock, not to game time", () => {
     expect(MAIN).toContain("createHitStop(0)");
     expect(MAIN).toContain("hitStop.trigger(seconds * 1000)");
+    // invariant: source must not reintroduce `hitStopUntil` — a game-time hit-stop deadline froze Hoops forever; the freeze must count down on the real-time juice clock
     expect(MAIN).not.toContain("hitStopUntil");
   });
 });

@@ -29,6 +29,7 @@ describe("Bunker Zero blueprint minimap (BZ-17)", () => {
 
   it("uses the blueprint palette with the lamp colour for the player and exit", () => {
     expect(BLUEPRINT.door).toBe("#e8b400");
+    // invariant: source must keep `blueprintEdges(s.grid, s.w, s.h)` — the minimap draws merged blueprint outlines of the live floor grid instead of one stroke per cell
     expect(MAIN).toContain("blueprintEdges(s.grid, s.w, s.h)");
     expect(MAIN).toMatch(/const lamp = lookOfSlot\(activeSlot\(\)\)\.lamp\.color/);
   });

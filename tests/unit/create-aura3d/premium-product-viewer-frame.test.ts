@@ -197,6 +197,7 @@ describe("premium product viewer source framing", () => {
     const product = manifest.assets.find((entry) => entry.id === node.asset.id);
     expect(product?.hash).toBe(node.asset.hash);
     expect(product?.license).toBe("CC0-1.0");
+    // invariant: source must keep `Khronos` provenance in the template aura.assets.json — the scaffolded CC0 product GLB stays traceable to its Khronos sample source
     expect(product?.provenance).toContain("Khronos");
     expect(node.asset.format).toBe("glb");
     expect(node.visible).toBe(true);

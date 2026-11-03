@@ -309,6 +309,12 @@ function validateUniformSchema(schema: readonly MaterialUniformDescriptor[]): re
 
 function cloneUniformValue(value: RecursiveUniformValue): RecursiveUniformValue {
   if (isTextureBinding(value)) return value;
+  // Flat values (every legacy uniform) need no cycle tracking; the generic walk below is for nested data.
+  if (typeof value === "number" || typeof value === "boolean") return value;
+  if (value instanceof Float32Array) return new Float32Array(value);
+  if (value instanceof Int32Array) return new Int32Array(value);
+  if (value instanceof Uint32Array) return new Uint32Array(value);
+  if (Array.isArray(value) && isFlatNumberArray(value)) return value.slice();
   const active = new Set<object>();
   function clone(input: UniformDataValue, depth: number): UniformDataValue {
     if (typeof input === "number" || typeof input === "boolean") return input;
@@ -333,4 +339,11 @@ function cloneUniformValue(value: RecursiveUniformValue): RecursiveUniformValue 
     }
   }
   return clone(value, 0);
+}
+
+function isFlatNumberArray(value: readonly unknown[]): boolean {
+  for (let index = 0; index < value.length; index += 1) {
+    if (typeof value[index] !== "number") return false;
+  }
+  return true;
 }

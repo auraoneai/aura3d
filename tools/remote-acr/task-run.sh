@@ -187,6 +187,8 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
 const fs = require('node:fs');
 const gate = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 for (const [field, env] of [['sourceConsumerReport','NATIVE_CONSUMER_SOURCE_REPORT'], ['matrixSourceReport','NATIVE_MATRIX_SOURCE_REPORT'], ['examplesSourceReport','NATIVE_EXAMPLES_SOURCE_REPORT']]) {
+  // ACR source5 records bind no examples source report (no source5 stage produces one).
+  if (field === 'examplesSourceReport' && gate.sourceRunner === 'acr-source5' && gate[field] === null && process.env[env] === 'none') continue;
   if (!gate[field]?.path || gate[field].path !== process.env[env]) throw new Error(`source report mismatch: ${field}`);
 }
 NODE

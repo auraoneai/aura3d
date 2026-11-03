@@ -43,6 +43,7 @@ describe("Aura Hoops spray-tag signature (H47-V3)", () => {
     expect(new Set(COURT_IDS.map((id) => COURT_RIGS[id].sprayTag.color)).size).toBe(COURT_IDS.length);
     expect(MAIN.match(/sprayTags\.stamp\(/g)).toHaveLength(1);
     const at = MAIN.indexOf("sprayTags.stamp(");
+    // invariant: source must keep `if (jamDunkPending)` before the stamp — only a Jam dunk sprays a court tag, not every made basket
     expect(MAIN.slice(at - 200, at)).toContain("if (jamDunkPending)");
   });
 });

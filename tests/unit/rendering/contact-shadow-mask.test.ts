@@ -160,6 +160,7 @@ describe("legacy forward shaders", () => {
       const source = readFileSync(`packages/rendering/src/${file}`, "utf8");
       for (const match of source.matchAll(/kind > 0\.5 && kind < 1\.5 \? a3d\w*PointShadowFactor\([^)]*\) : (a3d\w+ShadowFactor\([^)]*\)[^,]*),/g)) {
         expect(match[1], file).toContain("lightIndex == int(u_contactShadowLightIndex)");
+        // invariant: source must keep `a3dContactShadowMaskFactor(kind)` on the non-point shadow branch — contact-shadow masking darkens only directional/spot lights, never point lights
         expect(match[1], file).toContain("a3dContactShadowMaskFactor(kind)");
       }
     }

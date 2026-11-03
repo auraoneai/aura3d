@@ -192,9 +192,11 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
   // not a source directory. The site catalog maps each slug to its source
   // folder; resolve such a mention to that folder instead of a missing example.
   const routeAliases = new Map<string, string>();
+  const liveCatalogGames = new Set<string>();
   const siteCatalogFile = resolve(root, "tools/site/games.catalog.json");
   if (existsSync(siteCatalogFile)) {
     for (const entry of readJson(siteCatalogFile).games ?? []) {
+      if (typeof entry?.appFolder === "string") liveCatalogGames.add(`apps/${entry.appFolder}`);
       const slug = typeof entry?.url === "string" ? /^\/apps\/([a-z0-9][a-z0-9-]*)\/$/.exec(entry.url)?.[1] : undefined;
       if (!slug || typeof entry.appFolder !== "string" || slug === entry.appFolder) continue;
       if (existsSync(resolve(root, "apps", slug)) || !existsSync(resolve(root, "apps", entry.appFolder))) continue;
@@ -250,7 +252,10 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
       !existsSync(resolve(root, "tests/fixtures", name, "index.html"));
     // Explicit non-public classifications take precedence over a documentation mention.
     if (!definedPublic && (shared.has(name) || portSupport)) { exemptions.push({ sourcePath: path, reason: name === "native-capabilities" ? "validated as individually enumerated capability scenarios" : "support-only source directory" }); continue; }
-    const nonPublic = gate && !/^release-ready candidate$/i.test(gate) ? gate : (label && nonPublicLabel.test(label) ? label : undefined);
+    // `development showcase` makes no release claim, but a game the site catalog publishes
+    // (apps-classification.md "Published Games Without Release Gates") stays a documented example.
+    const documentedShowcase = Boolean(label && /^development showcase/i.test(label) && liveCatalogGames.has(path));
+    const nonPublic = gate && !/^release-ready candidate$/i.test(gate) ? gate : (label && nonPublicLabel.test(label) && !documentedShowcase ? label : undefined);
     if (nonPublic) {
       exemptions.push({ sourcePath: path, reason: `non-public classification: ${nonPublic}` });
       continue;

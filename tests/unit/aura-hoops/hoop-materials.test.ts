@@ -42,6 +42,7 @@ describe("Aura Hoops backboard shake (H47-AN1 part)", () => {
   it("shakes only on the new look, without a cosmetic RNG draw, and holds still under reduced motion", () => {
     expect(MAIN).toMatch(/backboardNode = LOOK_ORIGINAL \? undefined : req\("backboard-assembly"\)/);
     const block = MAIN.slice(MAIN.indexOf("if (backboardNode) {"), MAIN.indexOf("if (backboardNode) {") + 260);
+    // invariant: source must keep `reducedMotion ? 0 : rimShake` — the backboard holds still for players with reduced motion instead of shaking on every dunk
     expect(block).toContain("reducedMotion ? 0 : rimShake");
     expect(block).not.toContain("fxRng");
   });

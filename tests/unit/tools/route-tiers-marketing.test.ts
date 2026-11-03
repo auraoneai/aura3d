@@ -410,7 +410,7 @@ describe("live game inventory classification", () => {
     expect(realPlan.aliases.size).toBe(11);
   });
 
-  it.each(expectedGameIds)("leaves ungated live game %s unclassified with and without host redirects", (id) => {
+  it.each(expectedGameIds)("keeps ungated live game %s at its documented non-release Tier 3 label with and without host redirects", (id) => {
     const game = realGames.get(id)!;
     const sourceRoute = existsSync(join("apps", id, "index.html"));
     expect(sourceRoute).toBe(true);
@@ -419,6 +419,9 @@ describe("live game inventory classification", () => {
     expect(realMarketing.redirectedRoutes.has(id)).toBe(false);
     expect(realGates.get(id)?.releaseClass).not.toBe("release-ready candidate");
     expect(realLabels.get(id) ?? "").not.toMatch(/^release-ready candidate/);
+    // apps-classification.md "Published Games Without Release Gates" (2026-11-03): no gate evidence,
+    // so each live game carries the conservative non-release label rather than staying unclassified.
+    expect(realLabels.get(id)).toBe("development showcase");
     const alias = redirectedAliases[id];
     if (alias) {
       expect(game.url).toBe(alias);
@@ -434,12 +437,19 @@ describe("live game inventory classification", () => {
         gate: realGates.get(id), classificationLabel: realLabels.get(id)
       });
       expect(row.tier).toBe(3);
-      expect(row.rationale).toMatch(/^UNCLASSIFIED/);
+      expect(row.rationale).toBe("classification doc: development showcase");
+      // Without the label the same route is still refused, so the label is the only thing classifying it.
+      const unlabelled = classify(id, {
+        marketing: realMarketing, hostingRedirects, aliasPlan, sourceRoute, gameInventory: game,
+        gate: realGates.get(id)
+      });
+      expect(unlabelled.tier).toBe(3);
+      expect(unlabelled.rationale).toMatch(/^UNCLASSIFIED/);
       if (isHostingRedirectedApp(id, hostingRedirects)) {
-        expect(row.rationale).toContain("same game's catalog-planned canonical alias");
-        expect(row.rationale).toContain("source route remains Tier 3");
+        expect(unlabelled.rationale).toContain("same game's catalog-planned canonical alias");
+        expect(unlabelled.rationale).toContain("source route remains Tier 3");
       } else {
-        expect(row.rationale).toContain("release-ready candidate");
+        expect(unlabelled.rationale).toContain("release-ready candidate");
       }
     }
   });

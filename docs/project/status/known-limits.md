@@ -248,3 +248,60 @@ Each has its own row with a concrete reason, expiry 2027-01-31 and reviewer
 Rows written before 5.0 (unique-ownership `2026-11-03`, glsl-location,
 single-renderer and the Phase-8 SCC row `2026-11-15` / `2026-11-30`) keep
 their original expiry dates.
+
+## Runtime-edge debt
+
+`tests/unit/runtime-edge-coverage.test.ts` flags every line in `packages/*/src` that says
+`unavailable`, `not implemented`, `placeholder`, `stub`, `fake success` or `deferred`. On
+2026-11-03 869 flagged lines (844 unique, in 298 files) had no allowlist entry. Each was triaged
+and allowlisted in `tests/unit/runtime-edge-coverage.allowlist.ts`, grouped per file with a reason.
+Every group expires on `2027-01-31` (reviewer: agent, owner-delegated, 2026-11-03). A new test
+case fails once any group is past its expiry. None of the lines is an open FINISH-5.0 row in
+[`docs/prds/aura3d-5.0-scope.md`](../../prds/aura3d-5.0-scope.md).
+
+| Module | Lines | Files |
+| --- | ---: | ---: |
+| `rendering` | 513 | 140 |
+| `engine` | 231 | 90 |
+| `assets` | 52 | 23 |
+| `aura3d-cli` | 21 | 14 |
+| `debug` | 10 | 6 |
+| `audio` | 9 | 2 |
+| `controls` | 8 | 6 |
+| `game` | 7 | 6 |
+| `input` | 7 | 2 |
+| `animation` | 3 | 3 |
+| `physics` | 3 | 1 |
+| `editor-runtime` | 2 | 2 |
+| `addons` | 1 | 1 |
+| `math` | 1 | 1 |
+| `scene` | 1 | 1 |
+| **Total** | **869** | **298** |
+
+The lines by kind:
+
+| Kind | Lines |
+| --- | ---: |
+| Contract-seam stub used only while a lane provider is absent or its `A3D_QR_*` flag is off (C-xx / PR 0a slots) | 200 |
+| Fail-closed refusal that throws a typed error when a host API, backend feature or binding is absent | 193 |
+| `deferred` naming a real mechanism (the deferred drawing path, deferred loads, queues or chunks) | 151 |
+| Explicit `unavailable` status value or reason reported to callers | 83 |
+| Comment describing the fail-closed or fallback path | 68 |
+| Warned fallback or diagnostic | 40 |
+| Internal placeholder object that is never displayed or submitted | 36 |
+| Deferred GPU retirement behind a completion fence | 24 |
+| Note that a former stub or placeholder was removed | 21 |
+| Error-detail redaction fallback text | 15 |
+| Unsupported-option row reported as `option-ignored` (S5-WP19-04) | 15 |
+| Explicit `not implemented` refusal with a stable error code | 14 |
+| Other stub-wording comments | 7 |
+| Legacy throwing stub with a replacement hint | 2 |
+
+Debt to retire before the expiry:
+
+- The contract-seam stubs (200 lines) exist only for the flag-off path.
+- The removed-stub notes and the PRD 11 deprecated backend shims under
+  `rendering/src/production-runtime/backends/` can be deleted with the barrel
+  export they wait on (Q-15-5).
+- `auditArtDirection` from the `@aura3d/engine` root is still the PR 0a stub. It returns
+  `["PENDING"]`. The working audit is in `@aura3d/game`.

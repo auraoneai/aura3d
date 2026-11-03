@@ -442,7 +442,8 @@ export async function startProductionRender(
     try {
       // top-tennis C8: while the WebGL context is lost nothing can be presented; skip the frame instead of throwing, keep the
       // loop alive, and let the app's onDeviceRestored handler remount (the documented recovery contract).
-      if (submittedDrawCalls === undefined && renderer.deviceLost?.()) {
+      // `presented` was read from deviceLost() just above with nothing in between; poll again only when it reported a loss.
+      if (submittedDrawCalls === undefined && !presented && renderer.deviceLost?.()) {
         reportDetectedDeviceLoss();
         drawCalls = 0;
         presented = false;

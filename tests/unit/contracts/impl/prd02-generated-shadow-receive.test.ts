@@ -84,6 +84,7 @@ describe("generated forward program: shadow receive (#1225)", () => {
     const end = core.indexOf("\nfloat a3dPointShadowFaceIndex(", start);
     expect(start).toBeGreaterThan(0);
     expect(end).toBeGreaterThan(start);
+    // invariant: source must keep `float a3dForwardShadowFactor(` in ShaderLibraryCore — generated forward programs darken shadowed receivers exactly like the legacy library
     expect(tokens(SHADOW_FORWARD_FACTOR_GLSL)).toBe(tokens(core.slice(start, end)));
   });
 

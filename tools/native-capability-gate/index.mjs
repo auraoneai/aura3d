@@ -1021,8 +1021,9 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
 }
 // 5.0 decision record item 1: the ACR source5 pass replaces the custody runner.
 // Its gate inputs (tools/remote-acr/source5-gate-inputs.mjs) are re-derived from
-// the retained run files; the custody handoff, portable-input and retained
-// consumer-project checks do not apply. Manifest bytes, the freeze-commit proof
+// the retained run files; the custody handoff and portable-input checks do not
+// apply. The packed-b consumer reports and every file they reference are
+// retained by the launcher and re-hashed here (they become gate inputs). Manifest bytes, the freeze-commit proof
 // and exact scope completion are checked exactly as on the custody path.
 function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports, ledgerRef, ledger, manifest, reports, proof, omitted }) {
   if (!scoped) fail('ACR source5 gate inputs require --scope (5.0 scope list)');
@@ -1042,7 +1043,9 @@ function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports
     ...(ledgerRef ? { ledger: ledgerRef, ledgerRole: 'historical-reference', roadmap: ledger.roadmap ?? null } : {}),
     sourceRunner: 'acr-source5', freezeCommit: proof.commit, testedOrigin: manifest.origin, sourceInputDigest: manifest.inputDigest, lockfileSha256: manifest.lockfileSha256,
     runId: reports.runId, sourceRuns: v.stageSources, releaseKind: v.releaseKind, candidatePlan: v.candidatePlan, archives: v.archives, archiveBinding: v.archiveBinding,
-    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null,
+    // packed-b's consumer source reports, retained and re-hashed (examples: no source5 stage produces one).
+    sourceConsumerReport: v.consumerReports.sourceConsumerReport, matrixSourceReport: v.consumerReports.matrixSourceReport, examplesSourceReport: null,
+    consumerReports: v.consumerReports,
     requiredOutcomeIds: outcome.required, completedOutcomeIds: reports.completedOutcomeIds, outcomeCompletion: reports.outcomeCompletion, outcomeSnapshotSha256: outcome.snapshotSha256,
     expectedCheckIds: v.expectedCheckIds, executedCheckIds: v.executedCheckIds, passingCheckIds: v.passingCheckIds, checks: v.checks,
     deferredToAcceptance: v.deferredToAcceptance, acceptance: 'not-run', commitProof: proof, inputs };

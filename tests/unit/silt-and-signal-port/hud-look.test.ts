@@ -9,6 +9,7 @@ describe("Duneglide poster HUD (DG-H1)", () => {
   for (const file of ["canela-400.woff2", "graphik-400.woff2", "graphik-500.woff2"]) {
     it(`${file} matches the E-J NOTICE sha256`, () => {
       const sha = createHash("sha256").update(readFileSync(`examples/silt-and-signal-port/fonts/${file}`)).digest("hex");
+      // invariant: source must keep `<font file> |` in NOTICE.txt — every Duneglide HUD font ships with a recorded licence row and sha256 provenance
       expect(notice).toContain(`${file} |`);
       expect(notice).toContain(sha);
     });

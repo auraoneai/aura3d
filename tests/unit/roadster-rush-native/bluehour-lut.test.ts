@@ -94,6 +94,7 @@ describe("Apex Overdrive apex-bluehour display LUT (GU47 AO-P1)", () => {
 
   it("main.ts sends the patch through app.post.setEffect('colorGrade') and serves the .cube beside the app", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
+    // invariant: source must keep `setEffect?.("colorGrade", apexGradePatch(frame, APEX_LUT_URL))` — the blue-hour LUT grade reaches the live post stack each frame
     expect(main).toContain('setEffect?.("colorGrade", apexGradePatch(frame, APEX_LUT_URL))');
     expect(main).toContain('new URL("./assets/luts/apex-bluehour.cube", import.meta.url)');
     // one grade stage: no second colorGrade node next to the look

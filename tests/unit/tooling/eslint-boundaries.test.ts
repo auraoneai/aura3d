@@ -163,6 +163,7 @@ describe("versioned package inventory", () => {
       expect(PACKAGE_INVENTORY.find(item => item.directory === `packages/${dir}`)?.name).toBe(manifest.name);
     }
     const targets = releasePackageTargets("5.0.0");
+    // invariant: source must keep `@aura3d/addons` as a release target — the addons workspace package is versioned and published with the 5.0 release set
     expect(targets.map(target => target.name)).toContain("@aura3d/addons");
     expect(targets.find(target => target.name === "@aura3d/engine")?.directory).toBe(".");
     for (const target of targets) expect(existsSync(resolve(repoRoot, target.directory, "package.json"))).toBe(true);

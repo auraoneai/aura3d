@@ -82,6 +82,7 @@ describe("current showcase claims", () => {
     for (const routeId of ids) {
       expect(liveRoutes, `${routeId} is not a marketing app build`).not.toContain(routeId);
       expect(retiredRoutes, `${routeId} has a retired marketing redirect`).toContain(routeId);
+      // invariant: source must not reintroduce `<retired route id>` in the showcase index — retired prototypes are not presented as current playable apps
       expect(indexSource, `${routeId} is not a current index app`).not.toContain(routeId);
       expect(indexHtml, `${routeId} is not a current index link`).not.toContain(`/apps/${routeId}/`);
       const row = classifications.split("\n").find((line) => line.startsWith(`| \`${routeId}\``));

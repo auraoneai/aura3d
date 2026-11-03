@@ -11,6 +11,7 @@ describe("cross hop instanced mover materials", () => {
     it(`${name} uses a white base material so the instance colour is not applied twice`, () => {
       const line = core.split("\n").find((l) => l.includes(`name: "${name}"`));
       expect(line, `${name} node`).toBeDefined();
+      // invariant: source must keep `material.pbr({ color: "#ffffff"` on log/pad/stone pools — per-instance colours are not multiplied by a tinted base and applied twice
       expect(line).toMatch(/material\.pbr\(\{ color: "#ffffff"/);
       expect(line).toContain(`CAP.${pool}`);
     });

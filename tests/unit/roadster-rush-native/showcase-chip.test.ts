@@ -16,6 +16,7 @@ describe("Apex Overdrive Showcase chip (GU47 AO-H1)", () => {
 
   it("opens only with ?dev=1 or ?capture=1", () => {
     expect(main).toContain('SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1")');
+    // invariant: source must keep `bar.hidden = !SHOWCASE_CHIP` — the showcase chip bar stays hidden for players unless ?dev=1 or ?capture=1 is set
     expect(main).toContain("bar.hidden = !SHOWCASE_CHIP");
   });
 

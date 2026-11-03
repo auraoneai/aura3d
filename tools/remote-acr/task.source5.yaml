@@ -1,7 +1,7 @@
 version: v1.1.0
 # Aura3D 5.0 source pass, one stage per run (no browser). All --set values are
 # nonsecret. ARTIFACTS_SAS is a short-lived container SAS that reaches packed-a
-# only through the 0600 --values file in the run context
+# and packed-b only through the 0600 --values file in the run context
 # (tools/remote-acr/sas-transport.sh); every other stage gets ARTIFACTS_SAS=none.
 steps:
   - id: source5

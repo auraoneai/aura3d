@@ -34,6 +34,7 @@ describe("grid dispatch GD-18 operator-console bezel", () => {
     for (const id of ["opBezel", "bzStrip", "bzRec", "bzCam", "bzClock", "bzBars"]) expect(html).toContain(`id="${id}"`);
     expect(html).not.toContain("#wrongWay { background: rgba(255, 58, 58");
     expect(html).toMatch(/#wrongWay \{ background: rgba\(255, 179, 71/);
+    // invariant: source must keep `"bzStrip"]` in main.ts — the Teleoperator bezel strip element is looked up and driven at runtime, not left as dead markup
     expect(readFileSync(new URL("../../../apps/showcase-teleoperator/src/main.ts", import.meta.url), "utf8")).toContain('"bzStrip"]');
   });
 

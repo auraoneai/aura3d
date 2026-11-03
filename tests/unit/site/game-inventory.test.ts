@@ -39,6 +39,7 @@ describe("game inventory (single source of the public game count)", () => {
     const cards = [...html.matchAll(/<a class="showcase-card is-game" href="([^"]+)"/g)].map((m) => m[1]);
     expect(cards.length).toBe(inventory.liveGameCount);
     expect(new Set(cards).size).toBe(cards.length);
+    // invariant: source must keep `<live game url>` as a showcase-index card — every live game in game-inventory.json is reachable from the showcase index
     for (const game of inventory.games.filter((g) => g.status === "live")) expect(cards).toContain(game.url);
     expect(html).not.toMatch(/Aura3D port|\bport\b of a/i);
   });

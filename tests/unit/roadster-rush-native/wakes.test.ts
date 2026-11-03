@@ -128,6 +128,7 @@ describe("Apex Overdrive wakes (GU47 AO-V1)", () => {
 
   it("main.ts draws both wakes as two instanced nodes and only reads the rivals' previous z", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
+    // invariant: source must keep `name: "apex-player-wake"` — the player's water wake renders as its own instanced node alongside the rival wakes
     expect(main).toContain('name: "apex-player-wake"');
     expect(main).toContain('name: "apex-rival-wakes"');
     expect(main.match(/instances\s*\.plane\(\{ name: "apex-(player-wake|rival-wakes)"/g) ?? []).toHaveLength(2);

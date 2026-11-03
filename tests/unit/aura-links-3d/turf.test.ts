@@ -154,6 +154,7 @@ describe("LINKS-05 surface table", () => {
 
   it("main.ts mounts the textured surfaces on the GU47 look only and drops the longitudinal stripe ribbon there", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-aura-links-3d/src/main.ts"), "utf8");
+    // invariant: source must keep `const turfOn = lookMode !== "original"` — textured turf mounts only on the GU47 look, so ?look=original keeps the 4.6.2 course surfaces
     expect(main).toContain('const turfOn = lookMode !== "original"');
     expect(main).toMatch(/if \(!turfOn\) \{\s*const fairB/);
     for (const slot of ["rough", "firstCut", "fairway", "fringe", "green", "bunker"]) expect(main).toContain(`surfaceMaterial(course, "${slot}"`);

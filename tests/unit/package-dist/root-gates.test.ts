@@ -152,6 +152,7 @@ describe("package/dist root gate parity", () => {
     const roleUsage = /export const assetRoleUsage =\s*"([^"]+)"/.exec(readFileSync(join(repoRoot, "packages/aura3d-cli/src/cli-help.ts"), "utf8"))?.[1];
     expect(roleUsage).toBeDefined();
     for (const role of ["character", "vehicle", "world", "environment", "track", "product", "weapon", "prop", "set-dressing", "debug", "abstract", "unknown"]) {
+      // invariant: source must keep `<role>` in `assetRoleUsage` (cli-help.ts) — built CLI help advertises every asset role the root gates accept for `--role`
       expect(roleUsage!.split("|")).toContain(role);
     }
     expect(rootHelp).toContain("--rendered-probe-json");

@@ -56,6 +56,7 @@ describe("LINKS-09 ground cover", () => {
   it("main.ts mounts it on the GU47 look only, two instanced draws, no shadow cast", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-aura-links-3d/src/main.ts"), "utf8");
     expect(main).toMatch(/if \(turfOn\) \{\s*for \(const plan of groundCover\(/);
+    // invariant: source must keep `name: `ground-cover-${l.name}`` — rough ground cover mounts as named instanced draws per layer, keeping it to two draws on the GU47 look
     expect(main).toContain("name: `ground-cover-${l.name}`");
     expect(main).toMatch(/ground-cover-[\s\S]{0,600}castShadow: false/);
   });

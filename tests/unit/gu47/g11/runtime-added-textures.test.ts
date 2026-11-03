@@ -78,6 +78,7 @@ describe("GU47 g11 phase 10: runtime-added textured primitives", () => {
     // Native 5.0: added entries join the renderer's bounded texture job queue (scheduleAddedPrimitiveEntries ->
     // trackPrimitiveEntry -> enqueueTextureJob), and each drained job runs both the textured and custom upgrades.
     const src = readFileSync("packages/engine/src/agent-api/compiler/renderer.ts", "utf8");
+    // invariant: source must keep `onPrimitiveEntriesAdded: scheduleAddedPrimitiveEntries,` — primitives added after mount still get their textures uploaded instead of rendering untextured
     expect(src).toContain("onPrimitiveEntriesAdded: scheduleAddedPrimitiveEntries,");
     const schedule = src.slice(src.indexOf("const scheduleAddedPrimitiveEntries ="), src.indexOf("onPrimitiveEntriesAdded: scheduleAddedPrimitiveEntries,"));
     expect(schedule).toContain("trackPrimitiveEntry(entry, captured)");

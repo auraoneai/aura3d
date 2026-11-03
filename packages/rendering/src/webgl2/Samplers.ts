@@ -70,7 +70,8 @@ export class WebGL2SamplerRegistry {
   private readonly fallbackCompareSamplers = new WeakMap<Sampler, Sampler>();
   private floatLinearSupported: boolean | undefined;
 
-  uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number, uniformType?: string): void {
+  /** `uploadUnit: false` when the program's sampler uniform already holds `textureUnit` (program state, cached by the caller). */
+  uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number, uniformType?: string, uploadUnit = true): void {
     const validation = binding.validate();
     if (!validation.ok) {
       throw new RenderDeviceError("Texture binding validation failed", "INVALID_TEXTURE_BINDING", {
@@ -140,7 +141,7 @@ export class WebGL2SamplerRegistry {
     this.bindTextureForUnit(textureUnit, target, handle);
     const samplerHandle = this.getSamplerHandle(effectiveSampler, target, binding.texture ?? undefined, effectiveSampler.compare !== undefined);
     this.host.stateCache.bindSampler(textureUnit, samplerHandle, () => this.host.gl.bindSampler(textureUnit, samplerHandle));
-    this.host.gl.uniform1i(location, textureUnit);
+    if (uploadUnit) this.host.gl.uniform1i(location, textureUnit);
   }
 
   private fallbackCompareSampler(sampler: Sampler): Sampler {

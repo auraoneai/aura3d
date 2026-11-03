@@ -36,6 +36,7 @@ describe("GU47 eint EH-6: shared glTF decoder registries", () => {
     const source = readFileSync(resolve(__dirname, "../../../../packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.ts"), "utf8");
     const load = source.slice(source.indexOf("export async function loadProductionGLTFRenderPipeline"));
     expect(load).toContain("const registry = sharedGLTFDecoderRegistry({");
+    // invariant: source must not reintroduce `createAssetDecoderRegistry(` — each glTF load reuses the shared decoder registry instead of spinning up fresh decoder workers
     expect(load).not.toContain("createAssetDecoderRegistry(");
     expect(load).toContain("dropSharedGLTFDecoderRegistry(registry);");
   });

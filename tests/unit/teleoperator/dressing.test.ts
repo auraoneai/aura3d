@@ -15,6 +15,7 @@ describe("grid dispatch GD-19 street dressing", () => {
     }
     // main.ts reads the district through the same helper as the signs
     const main = readFileSync(new URL("../../../apps/showcase-teleoperator/src/main.ts", import.meta.url), "utf8");
+    // invariant: source must keep `districtAt(p.z)` — the Teleoperator HUD names the district through the same helper as the street signs so they never disagree
     expect(main).toContain("districtAt(p.z)");
     expect(main).not.toContain("const DISTRICTS");
   });

@@ -13,6 +13,7 @@ describe("GU47 eint EF-1: finalize-dist ships the VFX pages", () => {
   const finalize = readFileSync(resolve(root, "tools/finalize-dist/index.ts"), "utf8");
 
   it("copies both pages (and the licence note) into dist/assets/vfx after the package loop recreated dist/assets", () => {
+    // invariant: source must keep `const targetDir = join(rootDist, "assets", "vfx");` — the VFX atlas pages land where emitted FlipbookAtlas.js resolves them, so flipbooks do not 404
     expect(finalize).toContain('const targetDir = join(rootDist, "assets", "vfx");');
     expect(finalize).toContain('for (const name of ["aura-vfx-1k.png", "aura-vfx-2k.png"]) {');
     const lastPackageLoop = finalize.lastIndexOf("for (const packageName of packageNames) {", finalize.indexOf("copyEngineVfxPages();"));

@@ -146,6 +146,7 @@ describe("Bunker Zero per-floor surface load", () => {
   it("waits for the renderer before preparing a floor selected during the initial mount", () => {
     const start = MAIN.slice(MAIN.indexOf("function startFloor("), MAIN.indexOf("function hideAllRuntime("));
     const ready = MAIN.slice(MAIN.indexOf("void mg.ready().then("));
+    // invariant: source must keep `if (appReady) SURFACES.prepare(activeSlot())` — a floor picked during the initial mount is not prepared before the renderer exists
     expect(start).toContain("if (appReady) SURFACES.prepare(activeSlot())");
     expect(ready.indexOf("SURFACES.prepare(activeSlot())")).toBeGreaterThan(ready.indexOf("appReady = true"));
     expect(ready.indexOf("SURFACES.prepare(activeSlot())")).toBeLessThan(ready.indexOf("hideAllRuntime()"));

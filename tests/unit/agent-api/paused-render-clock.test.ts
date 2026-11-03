@@ -27,6 +27,7 @@ const SOURCE = (function agentApiSource() {
 describe("paused apps hold their render clock", () => {
   it("the production render loop renders at a paused clock, not wall-clock time", () => {
     // The defect was `renderer.render(time)` unconditionally, with `time` from requestAnimationFrame.
+    // invariant: source must keep `resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime)` — a paused app renders at its held clock instead of rAF wall-clock time, so the scene stops animating
     expect(SOURCE).toContain("resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime)");
     expect(SOURCE).toContain("resolveRootRenderTime(time, !automatic, isPaused, pausedRenderTime)");
     expect(SOURCE).toContain("submittedDrawCalls ?? renderer.render(renderTime)");

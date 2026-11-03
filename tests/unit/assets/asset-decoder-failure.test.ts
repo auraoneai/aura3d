@@ -1064,6 +1064,7 @@ describe("actual KTX2 worker protocol", () => {
     send({ data: { type: "cancel", id: 7 } });
     expect(messages).toContainEqual({ type: "cancelled", id: 7 });
     send({ data: { type: "dispose", id: 8 } });
+    // invariant: source must keep the `dispose` -> `disposed` acknowledgement in ktx2.worker.ts — worker pools only recycle a KTX2 transcoder after teardown is confirmed
     expect(messages).toContainEqual({ type: "disposed", id: 8 });
     expect(closed).toBe(true);
   }, 10_000);

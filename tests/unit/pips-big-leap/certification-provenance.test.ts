@@ -42,6 +42,7 @@ describe("pips-big-leap certification provenance", () => {
         const built = buildWorld(spec, { look });
         const scene = JSON.stringify(built.scene.toJSON());
         expect(scene, `${id} ${look} hero`).toContain(assets.pip.url);
+        // invariant: source must not reintroduce `<backdrop url>` in the built world — Pips keeps the uncertified backdrop unmounted so route health never claims it
         expect(scene, `${id} ${look} backdrop`).not.toContain(backdrop.url);
 
         const cert = certifyWorld(spec, built.motion);

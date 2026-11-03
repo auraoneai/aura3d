@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { runtimeEdgeAllowlist, runtimeEdgeAllowlistMarkers } from "./runtime-edge-coverage.allowlist";
 
 const root = process.cwd();
 
@@ -345,6 +346,8 @@ describe("runtime edge-case coverage audit", () => {
       "packages/engine/src/agent-api/diagnostics.ts:message: asset.url ? undefined : \"Optional placeholder asset has no URL yet.\"",
       "packages/engine/src/agent-api/nodes/types.ts:/** Submit a native asynchronous production frame. Rejects unavailable or disposed renderers. */",
       "packages/engine/src/agent-api/rendererDiagnostics.ts:: \"procedural fallback environment requested only; runtime environment prefilter status is unavailable until render\"",
+      // 2026-11-03 owner-delegated triage: per-file groups with reason, expiry and reviewer.
+      ...runtimeEdgeAllowlistMarkers,
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];
@@ -360,5 +363,18 @@ describe("runtime edge-case coverage audit", () => {
     }
 
     expect(failures).toEqual([]);
+  });
+
+  it("keeps every grouped marker allowlist entry reasoned, owned and unexpired", () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const problems: string[] = [];
+    for (const group of runtimeEdgeAllowlist) {
+      if (!/^packages\/[^/]+\/src\/.+\.ts$/.test(group.file)) problems.push(`${group.file}: not a runtime source path`);
+      if (group.reason.trim().length < 20) problems.push(`${group.file}: reason too short`);
+      if (!group.reviewer.trim()) problems.push(`${group.file}: no reviewer`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(group.expires) || group.expires < today) problems.push(`${group.file}: allowlist expired ${group.expires}`);
+      if (group.markers.length === 0) problems.push(`${group.file}: empty group`);
+    }
+    expect(problems).toEqual([]);
   });
 });

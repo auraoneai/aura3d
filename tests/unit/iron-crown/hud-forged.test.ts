@@ -24,6 +24,7 @@ describe("iron-crown forged HUD (GU47 IC47-H1)", () => {
 
   it("uses only the licensed UI font stack and stills motion on reduced motion", () => {
     expect(forged).not.toMatch(/font-family/);
+    // invariant: source must keep `var(--font-ui, "Whitney"` — the forged HUD renders in the licensed UI font stack, never a system or web fallback
     expect(css).toContain('var(--font-ui, "Whitney"');
     expect(forged).toMatch(/prefers-reduced-motion: reduce[\s\S]*animation: none/);
   });

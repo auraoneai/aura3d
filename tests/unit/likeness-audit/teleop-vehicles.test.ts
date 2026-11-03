@@ -69,6 +69,7 @@ describe("Teleoperator vehicles are the generic generated set", () => {
       const start = typed.indexOf(`\n  "${key}": {\n`);
       expect(start, `${key} typed block`).toBeGreaterThan(-1);
       const block = typed.slice(start, typed.indexOf("\n  },\n", start));
+      // invariant: source must keep `url: "<manifest url>"` per vehicle key — typed assets.<vehicle> resolves to the generated generic vehicle GLB recorded in aura.assets.json
       expect(block, `${key} typed url`).toContain(`url: "${String(e.url)}"`);
       expect(block, `${key} typed hash`).toContain(`hash: "sha256-${String(e.sha256)}"`);
       for (const app of ["apps/showcase-teleoperator/src/main.ts"]) {

@@ -270,6 +270,11 @@ function staticEqualNumbers(left: ArrayLike<number>, right: ArrayLike<number>): 
   return true;
 }
 
+/** Generic attribute constants set by `applyDefaultAttributes` (shadow codes). */
+const GENERIC_WHITE = 1;
+const GENERIC_TANGENT_X = 2;
+const GENERIC_ZERO_UV = 3;
+
 export class WebGL2DrawCallBinder {
   constructor(readonly host: WebGL2DeviceHost) {
     // `gl_DrawID` (`#extension GL_ANGLE_multi_draw`) needs WEBGL_multi_draw enabled before the program links, so request it now.
@@ -280,8 +285,16 @@ export class WebGL2DrawCallBinder {
       this.frontFace = undefined;
       this.blendConstant = undefined;
       this.polygonOffsetClamp = undefined;
+      this.genericAttributes.clear();
     });
   }
+
+  /**
+   * Generic vertex-attribute constants this binder last set, by location (`GENERIC_*` codes). They are context
+   * state, not VAO state, so a cached VAO bind re-sets them only when this shadow differs or is unknown. Forgotten
+   * with the device state cache (every frame boundary and every raw-GL site) and on context loss.
+   */
+  private readonly genericAttributes = new Map<number, number>();
 
   nextVertexFormatId = 1;
 
@@ -302,6 +315,12 @@ export class WebGL2DrawCallBinder {
    * bindings by texture/sampler/transform identity).
    */
   private uniformValueCache = new WeakMap<WebGL2ShaderProgram, Map<string, unknown>>();
+  /**
+   * Texture unit last written to each sampler uniform, per program. `uniform1i` on a sampler is program state
+   * (which unit the sampler reads), not the unit's contents, so it survives frame boundaries; the texture and
+   * sampler object are still bound on every draw (#1142). Forgotten with `uniformValueCache`.
+   */
+  private samplerUnitCache = new WeakMap<WebGL2ShaderProgram, Map<string, number>>();
 
   readonly vertexArrayCache = new Map<string, WebGL2VertexArrayCacheEntry>();
 
@@ -332,9 +351,11 @@ export class WebGL2DrawCallBinder {
     this.bufferVaoIndex.clear();
     this.uniformLocationCache = new WeakMap();
     this.uniformValueCache = new WeakMap();
+    this.samplerUnitCache = new WeakMap();
     this.frontFace = undefined;
     this.blendConstant = undefined;
     this.polygonOffsetClamp = undefined;
+    this.genericAttributes.clear();
     this.drawBuffersIndexedExt = undefined;
     this.polygonOffsetClampExt = undefined;
     this.invalidateMultiDrawExtension();
@@ -571,6 +592,7 @@ export class WebGL2DrawCallBinder {
       this.host.stateCache.bindBuffer(gl.ARRAY_BUFFER, previousArray, () => gl.bindBuffer(gl.ARRAY_BUFFER, previousArray));
       this.host.stateCache.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, previousElement, () => gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, previousElement));
       gl.vertexAttrib4fv(4, previousColor);
+      this.genericAttributes.delete(4);
       if (this.host.device.activeFrameToken !== frame || this.host.device.generation !== generation || this.host.lifecycle.isDeviceLost()) {
         throw new RenderDeviceError("Static batch VAO warmup lost its frame or context", "STATIC_BATCH_INVALIDATED");
       }
@@ -642,6 +664,7 @@ export class WebGL2DrawCallBinder {
       this.host.stateCache.bindBuffer(gl.ARRAY_BUFFER, previousArray, () => gl.bindBuffer(gl.ARRAY_BUFFER, previousArray));
       this.host.stateCache.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, previousElement, () => gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, previousElement));
       gl.vertexAttrib4fv(4, previousColor);
+      this.genericAttributes.delete(4);
       if (this.host.device.activeFrameToken !== frame || this.host.device.generation !== generation || this.host.lifecycle.isDeviceLost()) {
         throw new RenderDeviceError("Generated static batch VAO warmup lost its frame or context", "STATIC_BATCH_INVALIDATED");
       }
@@ -860,6 +883,7 @@ export class WebGL2DrawCallBinder {
       // A failed native bind or uniform upload can leave either shadow ahead
       // of the actual GL state. The next ordinary draw must bind values again.
       this.uniformValueCache = new WeakMap();
+      this.samplerUnitCache = new WeakMap();
       try { this.host.stateCache.invalidate(); } catch { /* Preserve the original failure. */ }
       throw error;
     }
@@ -993,10 +1017,21 @@ export class WebGL2DrawCallBinder {
         // passes rebind units in between, so "same texture as the last upload
         // for this uniform" does not mean the unit still holds it: a skipped
         // upload samples whatever the unit holds now. Samplers.bindTextureForUnit
-        // already dedups redundant binds per unit; uniform1i is cheap.
+        // already dedups redundant binds per unit. Only the sampler's unit index
+        // (program state, unaffected by other draws) skips via samplerUnitCache.
         // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
         // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
-        this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
+        let units = this.samplerUnitCache.get(shader);
+        if (!units) {
+          units = new Map();
+          this.samplerUnitCache.set(shader, units);
+        }
+        const unit = textureUnit - 1;
+        const unitKnown = units.get(name) === unit;
+        // Forget first: a throwing upload must not leave the cache claiming the unit was written.
+        if (!unitKnown) units.delete(name);
+        this.host.samplers.uploadTextureUniform(location, value, unit, shader.reflection.uniformDetails.get(name)?.type, !unitKnown);
+        if (!unitKnown) units.set(name, unit);
       } else if (typeof value === "number") {
         if (valueCache.get(name) === value) continue;
         const kind = integerUniformKind(shader.reflection.uniformDetails.get(name)?.type);
@@ -1200,8 +1235,9 @@ export class WebGL2DrawCallBinder {
     const cached = this.vertexArrayCache.get(key);
     if (cached) {
       this.host.stateCache.bindVertexArray(cached.handle, () => this.host.gl.bindVertexArray(cached.handle));
-      // Generic attribute constants are context state, not part of a VAO.
-      this.applyDefaultAttributes(shader, cached.boundLocations);
+      // Generic attribute constants are context state, not part of a VAO; the VAO already holds its disabled
+      // arrays and zero divisors from creation, so only the constants are (re)set, and only when they differ.
+      this.applyDefaultAttributes(shader, cached.boundLocations, false);
       return cached;
     }
 
@@ -1221,7 +1257,7 @@ export class WebGL2DrawCallBinder {
         this.host.stateCache.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.handle));
       }
       this.disableUnboundVertexAttributes(boundLocations);
-      this.applyDefaultAttributes(shader, boundLocations);
+      this.applyDefaultAttributes(shader, boundLocations, true);
     } catch (error) {
       this.bindNoVertexArray();
       this.host.gl.deleteVertexArray(handle);
@@ -1389,31 +1425,30 @@ export class WebGL2DrawCallBinder {
     return shader.reflection.attributes.get(attribute.semantic) ?? -1;
   }
 
-  applyDefaultAttributes(shader: RenderShaderProgram, boundLocations: ReadonlySet<number>): void {
-    const colorLocation = shader.reflection.attributes.get("a_color") ?? shader.reflection.attributes.get("color");
-    if (colorLocation !== undefined && colorLocation >= 0 && !boundLocations.has(colorLocation)) {
-      this.host.gl.disableVertexAttribArray(colorLocation);
-      this.host.gl.vertexAttribDivisor(colorLocation, 0);
-      this.host.gl.vertexAttrib4f(colorLocation, 1, 1, 1, 1);
+  /**
+   * Default constants for the optional inputs a VAO does not feed. `vaoState` (VAO creation) also disables the
+   * array and zeroes its divisor; those are VAO state, recorded once. A cached bind passes `false`.
+   */
+  applyDefaultAttributes(shader: RenderShaderProgram, boundLocations: ReadonlySet<number>, vaoState = true): void {
+    const attributes = shader.reflection.attributes;
+    this.applyDefaultAttribute(attributes.get("a_color") ?? attributes.get("color"), boundLocations, vaoState, GENERIC_WHITE);
+    this.applyDefaultAttribute(attributes.get("a_tangent") ?? attributes.get("tangent"), boundLocations, vaoState, GENERIC_TANGENT_X);
+    this.applyDefaultAttribute(attributes.get("a_uv1") ?? attributes.get("uv1"), boundLocations, vaoState, GENERIC_ZERO_UV);
+    this.applyDefaultAttribute(attributes.get("a_instanceColor") ?? attributes.get("instanceColor"), boundLocations, vaoState, GENERIC_WHITE);
+  }
+
+  private applyDefaultAttribute(location: number | undefined, boundLocations: ReadonlySet<number>, vaoState: boolean, value: number): void {
+    if (location === undefined || location < 0 || boundLocations.has(location)) return;
+    const gl = this.host.gl;
+    if (vaoState) {
+      gl.disableVertexAttribArray(location);
+      gl.vertexAttribDivisor(location, 0);
     }
-    const tangentLocation = shader.reflection.attributes.get("a_tangent") ?? shader.reflection.attributes.get("tangent");
-    if (tangentLocation !== undefined && tangentLocation >= 0 && !boundLocations.has(tangentLocation)) {
-      this.host.gl.disableVertexAttribArray(tangentLocation);
-      this.host.gl.vertexAttribDivisor(tangentLocation, 0);
-      this.host.gl.vertexAttrib4f(tangentLocation, 1, 0, 0, 1);
-    }
-    const uv1Location = shader.reflection.attributes.get("a_uv1") ?? shader.reflection.attributes.get("uv1");
-    if (uv1Location !== undefined && uv1Location >= 0 && !boundLocations.has(uv1Location)) {
-      this.host.gl.disableVertexAttribArray(uv1Location);
-      this.host.gl.vertexAttribDivisor(uv1Location, 0);
-      this.host.gl.vertexAttrib2f(uv1Location, 0, 0);
-    }
-    const instanceColorLocation = shader.reflection.attributes.get("a_instanceColor") ?? shader.reflection.attributes.get("instanceColor");
-    if (instanceColorLocation !== undefined && instanceColorLocation >= 0 && !boundLocations.has(instanceColorLocation)) {
-      this.host.gl.disableVertexAttribArray(instanceColorLocation);
-      this.host.gl.vertexAttribDivisor(instanceColorLocation, 0);
-      this.host.gl.vertexAttrib4f(instanceColorLocation, 1, 1, 1, 1);
-    }
+    if (this.genericAttributes.get(location) === value) return;
+    if (value === GENERIC_TANGENT_X) gl.vertexAttrib4f(location, 1, 0, 0, 1);
+    else if (value === GENERIC_ZERO_UV) gl.vertexAttrib2f(location, 0, 0);
+    else gl.vertexAttrib4f(location, 1, 1, 1, 1);
+    this.genericAttributes.set(location, value);
   }
 
   disableUnboundVertexAttributes(boundLocations: ReadonlySet<number>): void {

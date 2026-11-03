@@ -92,6 +92,7 @@ describe("create-aura3d on-demand template assets (audit RH-14)", () => {
     });
     expect(fetched.failed).toEqual([]);
     expect(urls[0]).toMatch(/^https:\/\/example\.invalid\/aura3d@v4\.5\.0\/packages\/create-aura3d\/templates\/racing-starter\//);
+    // invariant: source must keep `templates/<template>/` files matching template-assets.json sha256 — packed scaffolds refetch missing assets byte for byte
     for (const entry of result.missingAssets) expect(sha(readFileSync(join(result.targetDir, entry.path)))).toBe(entry.sha256);
     expect(missingTemplateAssets(manifest, template, result.targetDir)).toEqual([]);
   });

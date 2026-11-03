@@ -54,6 +54,7 @@ function contrastOver(fg: string, bg: string, backdrop: readonly [number, number
 describe("GU47 WP-10 HUD theme fonts (PRD D9)", () => {
   it("themes.ts names no Roboto, Barlow or platform UI stack (WP-10 acceptance rg)", () => {
     const source = readFileSync("packages/game/src/hud/themes.ts", "utf8");
+    // invariant: source must not reintroduce `Roboto`/`Barlow`/`system-ui` — HUD themes ship only registered licensed WOFF2 faces (PRD D9)
     expect(source.match(/Roboto|Barlow|system-ui|-apple-system/g)).toBeNull();
   });
 

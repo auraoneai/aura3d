@@ -16,6 +16,7 @@ describe("iron-crown attack layering (GU47 IC47-AN1)", () => {
 
   it("forwards each attack's playback speed to playLayer", () => {
     const main = readFileSync("apps/showcase-iron-crown/src/main.ts", "utf8");
+    // invariant: source must keep `ATTACK_LAYER_SPEED: Record<AttackKind, number> = { light: 2.6, …}` — each Iron Crown attack layer plays at its tuned speed instead of the base clip rate
     expect(main).toContain(`ATTACK_LAYER_SPEED: Record<AttackKind, number> = { light: 2.6, heavy: 1.85, special: 2.8, throw: THROW_CLIP_SPEED }`);
     expect(main).toMatch(/playLayer\(ATTACK_LAYER, clip, \{.*speed: ATTACK_LAYER_SPEED\[kind\] \}\)/);
     expect(THROW_CLIP_SPEED).toBeGreaterThan(1);

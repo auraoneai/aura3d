@@ -4,7 +4,9 @@
 # in order, never stops early, and records one exit code per command. No
 # browser stage runs here. Results are printed between SOURCE5_REPORT markers.
 # packed-a also uploads the tested plan, archives and packed reports to
-# source5/<run>/artifacts/ in the run container (artifacts-upload below); the
+# source5/<run>/artifacts/ in the run container (artifacts-upload below), and
+# packed-b uploads its consumer source reports with the projects, logs and
+# archives they reference to source5/<run>/consumers/ (consumers-upload); the
 # container SAS arrives only as AURA3D_ARTIFACTS_SAS from the launcher's 0600
 # --values file and is handed to upload-artifacts.mjs alone.
 set -uo pipefail
@@ -28,8 +30,8 @@ run() {
   local started ended rc
   started=$(date +%s)
   echo "::: SOURCE5_BEGIN ${id} :: $*"
-  # Only artifacts-upload sees the SAS (as SOURCE5_SAS, never in the command text).
-  if [ "$id" = artifacts-upload ]; then
+  # Only the upload commands see the SAS (as SOURCE5_SAS, never in the command text).
+  if [ "$id" = artifacts-upload ] || [ "$id" = consumers-upload ]; then
     SOURCE5_SAS="$A3D_ARTIFACT_SAS" timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
   else
     timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
@@ -105,6 +107,11 @@ case "$STAGE" in
     run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
     run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
     run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
+    # Consumer source reports (clean-install source.json, matrix-source.json) and
+    # every file under their run directories back to the Mac, so the gate can bind
+    # them for the acceptance consumer phase. A staging or upload failure fails
+    # this command and therefore the stage.
+    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; [ "$s" = 0 ] && AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; u=$?; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
   *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
 esac

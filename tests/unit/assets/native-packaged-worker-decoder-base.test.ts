@@ -77,6 +77,7 @@ describe("packaged worker decoder deployment", () => {
     const selected = manifest(url);
     expect(selected).toMatchObject(expectedDecoderAssets(expectedBase));
     for (const key of ["vfx1024", "vfx2048", "humanoid", "retargetWorker", "zstdWorker"] as const) {
+      // invariant: source must keep packaged decoder URLs under `/installed/app/worker-assets/` — VFX, humanoid, retarget and zstd workers load beside the installed worker bundle, not off the Vite base
       expect(selected[key]).toContain("/installed/app/worker-assets/");
     }
     expect(url.pathname).toBe("/installed/app/worker-assets/render.worker.bundle.js");

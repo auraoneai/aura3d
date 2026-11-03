@@ -993,6 +993,7 @@ describe("native shader graph editor", () => {
 
   it("keeps editor weights, typography and controls on the compact scale", () => {
     const css = readFileSync(new URL("../../../apps/editor/src/styles.ts", import.meta.url), "utf8");
+    // invariant: source must keep `font-family: "Whitney"` — the editor UI renders in the licensed local Whitney face instead of a system or Google font
     expect(css).toContain('font-family: "Whitney"');
     expect(css).toContain("font-synthesis: none");
     expect(css).toContain("font-variant-caps: small-caps");

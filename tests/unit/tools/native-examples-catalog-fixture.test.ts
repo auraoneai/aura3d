@@ -136,6 +136,7 @@ describe("source-backed native example catalog fixture", () => {
     expect(source).toContain("autoStart: true");
     expect(source).toContain("const HERO_SCALE = 1.62 / assets.auraclashPlayerRig.bounds[1]");
     expect(source).toContain('.animate({ clip: CERTIFIED_CLIP, loop: true, speed: 0 })');
+    // invariant: source must keep `const CERTIFIED_CLIP = "Walk_Loop"` — the character-controller template animates the hero with the certified rig clip
     expect(source).toContain('const CERTIFIED_CLIP = "Walk_Loop"');
     expect(source).toContain('app.camera?.use(camera.rigs.shoulder({ target: "hero", collision: true }))');
     expect(source).toContain("heroNode.setPosition(position.x, position.y, position.z).setRotation(0, yaw, 0)");

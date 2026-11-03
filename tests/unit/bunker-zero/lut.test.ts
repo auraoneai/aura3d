@@ -43,6 +43,7 @@ describe("Bunker Zero per-floor LUTs (BZ-18)", () => {
   });
 
   it("swaps the LUT per floor through the post surface and offers ?lut=0 for the on/off A/B", () => {
+    // invariant: source must keep `bootParams.get("lut") !== "0"` — ?lut=0 turns the per-floor colour grade off for the on/off A/B comparison
     expect(MAIN).toContain('bootParams.get("lut") !== "0"');
     expect(MAIN).toMatch(/lut: lut \? lutUrlOfSlot\(slot\) : ""/);
   });

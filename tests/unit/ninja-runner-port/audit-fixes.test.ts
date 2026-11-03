@@ -67,6 +67,7 @@ describe("ninja-runner-port audit fixes", () => {
   it("E-01: every enemy kind has a counter hint and the title card states the objective", () => {
     for (const kind of Object.keys(ENEMIES)) expect(ENEMY_HINT[kind as keyof typeof ENEMY_HINT]?.small.length ?? 0, kind).toBeGreaterThan(10);
     expect(OBJECTIVE).toBe("Reach the Valley Gate, 2,640 m.");
+    // invariant: source must keep `Reach the Valley Gate, 2,640 m.` — the Ninja Runner title card states the run objective to the player (audit E-01)
     expect(page).toContain(OBJECTIVE);
   });
 

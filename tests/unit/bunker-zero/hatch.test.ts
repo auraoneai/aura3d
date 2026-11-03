@@ -50,6 +50,7 @@ describe("Bunker Zero F6 hatch set piece (BZ-07)", () => {
     expect(spec.godRayDensity).toBeLessThanOrEqual(1);
     expect([0, 1, 2, 3, 4, 5, 6].filter(shaftOnSlot)).toEqual([5]);
     expect(MAIN).toContain("BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(");
+    // invariant: source must keep `setEffectEnabled("volumetricFog", BZ_GOD_RAYS && shaftOnSlot(slot))` — the hatch shaft god rays light only on F6 and switch off on other floors
     expect(MAIN).toContain('setEffectEnabled("volumetricFog", BZ_GOD_RAYS && shaftOnSlot(slot))');
   });
 });

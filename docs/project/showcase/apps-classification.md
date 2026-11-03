@@ -19,6 +19,7 @@ still not be a public release candidate.
 | `playable-showcase` | Useful prototype route with exact blockers; not public showcase material. |
 | `index route` | Showcase catalog/index route; not a deployable 3D showcase app. |
 | `blocked` | Must not be promoted until named blockers close. |
+| `development showcase` | Playable route that may be live on the site, with no release-ready gate evidence; a documented example, not a release, approval or launch claim. |
 
 ## Starter Registry
 
@@ -75,6 +76,47 @@ generation timestamp, predating these retirements, but was later edited in commi
 gate-config fingerprint embedded in its route-primary freshness dependencies.
 These historical records do not establish a current route inventory, a verified
 current gate binding, or approval; a fresh run is required.
+
+## Published Games Without Release Gates
+
+Decision 2026-11-03 (agent, owner-delegated, 5.0 unit-gate pass). The conservative classifier
+(`tools/route-tiers`, commit `bd5119ec6`) refuses to classify a marketing-published app unless it
+has a `release-ready candidate` gate in `tools/showcase-library/route-gates.json` or an explicit
+`release-ready candidate` label here. The 25 live games below have neither. Evidence checked per
+route: `route-gates.json` (no entry for any of the 25), `tools/site/games.catalog.json` and
+`docs/workflows/game-inventory.json` (all 25 present, `status: live`), and this document (no prior
+row). Catalog membership is not release evidence, so none is promoted to `release-ready candidate`.
+Each is labelled `development showcase` (Tier 3): playable and public, but with no release gate,
+visual approval or launch claim. Promotion requires a fresh `release-ready candidate` gate entry
+with current evidence.
+
+| Route directory | Classification | Evidence |
+| --- | --- | --- |
+| `showcase-top-tennis` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-roadster-rush` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-heatsink` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-teleoperator` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-iron-crown` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-pips-big-leap` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-aura-hoops-3d` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-aura-diamond-3d` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-aura-fc-3d` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-aura-links-3d` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-bunker-zero` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-slingshot-siege` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-dot-dash-3d` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-cross-hop` | development showcase | Live in the games catalog and the marketing build; no `route-gates.json` entry. Not release-ready. |
+| `showcase-strange-orbit-port` | development showcase | Live in the games catalog under the canonical alias `/apps/craterline-gp/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-splat-rush-port` | development showcase | Live in the games catalog under the canonical alias `/apps/chroma-roll/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-serpentine-sky-run-port` | development showcase | Live in the games catalog under the canonical alias `/apps/serpentine-sky-run/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-drift-and-deliver-port` | development showcase | Live in the games catalog under the canonical alias `/apps/gridlock-courier/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-heatsink-port` | development showcase | Live in the games catalog under the canonical alias `/apps/ion-circuit/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-ninja-runner-port` | development showcase | Live in the games catalog under the canonical alias `/apps/shadowstep-gauntlet/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-last-train-port` | development showcase | Live in the games catalog under the canonical alias `/apps/lamplight-line/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-roadster-hours-port` | development showcase | Live in the games catalog under the canonical alias `/apps/saltwind-highway/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-where-the-wind-wanders-port` | development showcase | Live in the games catalog under the canonical alias `/apps/the-bellkeepers-walk/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-silt-and-signal-port` | development showcase | Live in the games catalog under the canonical alias `/apps/duneglide/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
+| `showcase-cloud-runner-port` | development showcase | Live in the games catalog under the canonical alias `/apps/cumulus-dash/` (`marketing/public/_redirects` sends the source URL there); no `route-gates.json` entry. Not release-ready. |
 
 ## Example Diagnostics
 

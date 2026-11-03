@@ -98,6 +98,7 @@ describe("bench gate: 4.1.2 baseline", () => {
     expect(byId(report, "D3").status).toBe("NO-DATA");
     // The live mapping table moves as the codemod improves; the gate must report its current counts.
     const live = countCodemodRows(readFileSync(join(REPO, "packages/aura3d-cli/src/migrate-three/mappings.ts"), "utf8"));
+    // invariant: source must keep `mapping: "…"` rows in migrate-three/mappings.ts — gate M1 reports the live codemod approximate/none/pending split, not the frozen 4.1.2 counts
     expect(byId(report, "M1").measured).toBe(`${live.approximate} / ${live.none} / ${live.pending}`);
     expect(gateExitCode(report.targets).code).toBe(1);
   });

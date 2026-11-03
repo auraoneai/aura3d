@@ -78,6 +78,7 @@ describe("example and app entry modules survive production bundles with plain im
 
   it.each(wrappers)("%s needs no tree-shake workaround (bare imports, no __AURA_PORT_MODULES__)", (rel) => {
     const source = readFileSync(join(root, rel), "utf8");
+    // invariant: source must not reintroduce `__AURA_PORT_MODULES__` — port app wrappers rely on the sideEffects allowlist and bare imports to survive production tree-shaking
     expect(source).not.toContain("__AURA_PORT_MODULES__");
     expect(source).toMatch(/^import "\.\.\/\.\.\/\.\.\/examples\/[a-z0-9-]+-port\/main";$/m);
   });

@@ -2528,7 +2528,8 @@ export class WebGL2Device implements RenderDevice {
       || this.canMirrorStaticGeneratedUniform(webglBuffer.usage, webglBuffer.byteLength)))) {
       try { copied = copyStaticUnlitUpload(data); } catch { /* The normal upload still proceeds. */ }
     }
-    this.host.drawBinder.bindNoVertexArray();
+    // Only the element-array binding is VAO state; a uniform/array upload must not detach the bound VAO.
+    if (webglBuffer.target === this.gl.ELEMENT_ARRAY_BUFFER) this.host.drawBinder.bindNoVertexArray();
     this.stateCache.bindBuffer(webglBuffer.target, webglBuffer.handle, () => this.gl.bindBuffer(webglBuffer.target, webglBuffer.handle));
     try {
       this.gl.bufferSubData(webglBuffer.target, byteOffset, data);

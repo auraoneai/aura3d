@@ -268,6 +268,7 @@ describe("portable consumer source execution", () => {
       process.env.AURA_TEST_UNTRUSTED_CONFIG = "must-not-propagate";
       const env = createPortableSourceEnvironment(f.root, f.project.sourceManifest!.path);
       expect(env.AURA3D_SOURCE_PROCESS_GUARD).toBe("1");
+      // invariant: source must keep `tools/remote-acr/source-checks.mjs` in NODE_OPTIONS — portable consumer runs keep the source-only process guard preloaded
       expect(env.NODE_OPTIONS).toContain("tools/remote-acr/source-checks.mjs");
       expect(env.AURA3D_SOURCE_MANIFEST).toBe(f.project.sourceManifest!.path);
       expect(env.AURA_TEST_UNTRUSTED_CONFIG).toBeUndefined();

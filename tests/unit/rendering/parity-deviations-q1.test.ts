@@ -70,6 +70,7 @@ describe("sRGB output transfer", () => {
     expect((combined.match(/clamped \* 12\.92/g) ?? []).length).toBeGreaterThanOrEqual(6);
     expect((combined.match(/step\(vec3\(0\.0031308\), clamped\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
     expect((combined.match(/1\.055 \* pow\(clamped, vec3\(1\.0 \/ 2\.4\)\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    // invariant: source must not reintroduce `1.0 / 2.2` — PBR output uses the exact piecewise sRGB encode, not the gamma-2.2 approximation that shifts dark tones
     expect(combined).not.toContain("1.0 / 2.2");
     expect(combined).not.toContain("1/2.2");
   });

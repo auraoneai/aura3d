@@ -1,12 +1,12 @@
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  buildPlan, checkGateBinding, classifyPlaywrightTest, collectPlaywrightTests, estimateSpecTests, extractMarkedPayload,
+  buildPlan, checkGateBinding, CODE_COMPLETE_RECORD, classifyPlaywrightTest, collectPlaywrightTests, estimateSpecTests, extractMarkedPayload,
   fetchReports, hardwareLabels, mergeAcceptance, parseInventory, parseTaskRunExits, planBatches, planShards,
-  summarizeVitest, validateInventory
+  readHeadCommit, summarizeVitest, validateInventory
 } from '../../../tools/remote-acr/acceptance5.mjs';
 
 const INVENTORY = `
@@ -139,6 +139,87 @@ describe('acceptance5 gate refusal', () => {
     expect(() => check({ trackedClean: false })).toThrow(/tracked changes/);
     expect(() => check({ gateText: gate({ matrixSourceReport: { path: '../x' } }) })).toThrow(/source consumer reports/);
   });
+
+  it('source5 records bind the clean-install and matrix reports; examplesSourceReport may be null only there', () => {
+    const source5 = { sourceRunner: 'acr-source5', examplesSourceReport: null };
+    expect(check({ gateText: gate(source5) })).toMatchObject({ consumerSourceReport: 'tests/reports/a.json', matrixSourceReport: 'tests/reports/b.json', examplesSourceReport: null });
+    expect(() => check({ gateText: gate({ ...source5, sourceConsumerReport: null }) })).toThrow(/source consumer reports/);
+    expect(() => check({ gateText: gate({ ...source5, matrixSourceReport: null }) })).toThrow(/source consumer reports/);
+    expect(() => check({ gateText: gate({ examplesSourceReport: null }) })).toThrow(/source consumer reports/);
+  });
+
+  it('accepts HEAD == F or the record-only commit on F (stubbed git facts), and refuses everything else', () => {
+    const freeze = 'f'.repeat(40), next = 'e'.repeat(40), text = gate({ freezeCommit: freeze });
+    const facts = (extra: Record<string, unknown> = {}) => () => ({ head: next, parents: [freeze], changedPaths: [CODE_COMPLETE_RECORD], recordAtHead: text, ...extra });
+    const bind = (inspectHead?: () => unknown) => checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head: next, trackedClean: true, inspectHead: inspectHead as never });
+    expect(checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head: freeze, trackedClean: true })).toMatchObject({ freezeCommit: freeze, headRelation: 'freeze-commit' });
+    expect(bind(facts())).toMatchObject({ freezeCommit: freeze, head: next, headRelation: 'record-commit' });
+    expect(() => bind()).toThrow(/stale gate.*history is unavailable/);
+    expect(() => bind(facts({ parents: ['d'.repeat(40)] }))).toThrow(/stale gate.*only parent must be the freeze commit/);
+    expect(() => bind(facts({ parents: [freeze, 'd'.repeat(40)] }))).toThrow(/only parent/);
+    expect(() => bind(facts({ changedPaths: ['src/engine.ts'] }))).toThrow(/must touch only .*code-complete-go\.json \(it touches: src\/engine\.ts\)/);
+    expect(() => bind(facts({ changedPaths: [CODE_COMPLETE_RECORD, 'src/engine.ts'] }))).toThrow(/must touch only/);
+    expect(() => bind(facts({ recordAtHead: `${text} ` }))).toThrow(/differs from the validated gate/);
+    expect(() => bind(facts({ head: 'c'.repeat(40) }))).toThrow(/stale gate/);
+    expect(() => bind(() => { throw new Error('git failed'); })).toThrow(/history is unavailable/);
+    expect(() => checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head: next, trackedClean: false, inspectHead: facts() as never })).toThrow(/tracked changes/);
+  });
+
+  it('reads the real git history: accept F, accept F + record-only commit, refuse F + other change, refuse F + record + other change', () => {
+    const root = mkdtempSync(join(tmpdir(), 'a5-freeze-')), template = mkdtempSync(join(tmpdir(), 'a5-freeze-tpl-'));
+    const env: NodeJS.ProcessEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+    Object.assign(env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null', GIT_TEMPLATE_DIR: template, GIT_TERMINAL_PROMPT: '0' });
+    const git = (...args: string[]) => execFileSync('git', ['-c', 'user.name=Synthetic', '-c', 'user.email=synthetic@example.invalid', '-c', 'commit.gpgsign=false', ...args], { cwd: root, env, encoding: 'utf8' }).trim();
+    const put = (path: string, text: string) => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
+    try {
+      put('.gitignore', 'tests/reports/\n');
+      put('src/engine.ts', 'export const engine = 5;\n');
+      git('init', '-q');
+      git('add', '-A');
+      git('commit', '-qm', 'native 5.0: freeze');
+      const freeze = git('rev-parse', 'HEAD'), text = gate({ freezeCommit: freeze });
+      put(CODE_COMPLETE_RECORD, text);
+      const bind = () => {
+        const head = git('rev-parse', 'HEAD');
+        return checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head, trackedClean: true, inspectHead: f => readHeadCommit(root, f) });
+      };
+      expect(bind()).toMatchObject({ headRelation: 'freeze-commit', freezeCommit: freeze });
+
+      git('add', '-f', CODE_COMPLETE_RECORD);
+      git('commit', '-qm', `native 5.0: CODE_COMPLETE_GO for ${freeze}`);
+      const recordCommit = git('rev-parse', 'HEAD');
+      expect(bind()).toMatchObject({ headRelation: 'record-commit', head: recordCommit, freezeCommit: freeze });
+
+      // F + other change (no record).
+      git('checkout', '-q', freeze);
+      put('src/engine.ts', 'export const engine = 6;\n');
+      git('commit', '-qam', 'product edit');
+      expect(() => bind()).toThrow(/stale gate.*must touch only .*\(it touches: src\/engine\.ts\)/);
+
+      // F + record + other change in one commit.
+      git('checkout', '-q', freeze);
+      put('src/engine.ts', 'export const engine = 7;\n');
+      put(CODE_COMPLETE_RECORD, text); // checking out F removed the tracked record
+      git('add', '-A'); git('add', '-f', CODE_COMPLETE_RECORD);
+      git('commit', '-qm', 'record and product edit');
+      expect(() => bind()).toThrow(/must touch only .*\(it touches: src\/engine\.ts, tests\/reports/);
+
+      // Record-only commit, then another commit on top: HEAD's parent is no longer F.
+      git('checkout', '-q', recordCommit);
+      put('README.md', 'later\n');
+      git('add', 'README.md'); git('commit', '-qm', 'later');
+      expect(() => bind()).toThrow(/only parent must be the freeze commit/);
+
+      // Record-only commit whose committed record is not the validated gate.
+      git('checkout', '-q', freeze);
+      put(CODE_COMPLETE_RECORD, `${text}\n`);
+      git('add', '-f', CODE_COMPLETE_RECORD); git('commit', '-qm', 'other record');
+      expect(() => bind()).toThrow(/differs from the validated gate/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+      rmSync(template, { recursive: true, force: true });
+    }
+  }, 60_000);
 
   it('the launcher refuses a stale gate before any Azure command', () => {
     const root = new URL('../../../', import.meta.url).pathname;

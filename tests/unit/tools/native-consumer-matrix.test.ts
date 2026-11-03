@@ -123,6 +123,7 @@ describe("isolated native consumer matrix", () => {
     expect(client).toMatch(/\bcreateWorkerRendererWorker\(\)/);
     expect(client).toContain('parseGaussianSplat(input, "spz")');
     expect(client).toContain('parseEngineGaussianSplat(input, "spz")');
+    // invariant: source must keep `manifest.zstdWorker` — the React consumer fixture loads the zstd worker via the published manifest URL, not a hard-coded path
     expect(client).toContain("manifest.zstdWorker");
     expect(client).not.toContain("./worker.mjs");
     expect(consumerViteConfig()).not.toMatch(/worker\s*:/);

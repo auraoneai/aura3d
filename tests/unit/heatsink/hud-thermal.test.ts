@@ -25,6 +25,7 @@ describe("heatsink HS-18 thermal HUD", () => {
   });
   it("colours the overlays slag red and molten orange and hides the glazes on the card but keeps the HUD and minimap (GU47 phase 3)", () => {
     expect(html).toContain('id="damage-glaze"');
+    // invariant: source must keep `rgba(210, 54, 28,` — the Heatsink damage glaze reads as slag red, distinct from the molten-orange overheat overlay
     expect(html).toContain("rgba(210, 54, 28,");
     expect(html).toContain("rgba(255, 138, 31,");
     expect(html).toMatch(/body\.td-card \.damage-glaze/);

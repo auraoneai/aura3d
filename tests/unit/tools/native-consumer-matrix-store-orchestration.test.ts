@@ -189,6 +189,7 @@ describe("matrix native offline store orchestration", () => {
       expect(isAbsolute(input.storeDir)).toBe(true);
       expect(input.admission?.capability).toBe(capabilities[index]);
       expect(JSON.parse(Buffer.from(input.admission!.manifestBytes).toString()).name).toBe(`native-consumer-${cell.id}`);
+      // invariant: source must keep `<cell id>` in the admitted lockfile — each pnpm matrix cell seeds its isolated store from its own lockfile, not a shared one
       expect(Buffer.from(input.admission!.lockBytes).toString()).toContain(cell.id);
       expect(existsSync(input.storeDir)).toBe(false);
       expect(existsSync(dirname(input.storeDir))).toBe(false);

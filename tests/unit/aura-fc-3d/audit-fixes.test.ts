@@ -419,6 +419,7 @@ describe("FC-16 football sounds", () => {
     for (const [cue, key] of [["kick", "fcKickSfx"], ["pass", "fcKickSfx"], ["net", "fcNetSfx"], ["post", "fcPostSfx"]] as const) {
       expect(main).toMatch(new RegExp(`${cue}:\\s*\\{ id: "${cue}", asset: assets\\.${key}`));
     }
+    // invariant: source must not reintroduce `hoopsSwishSfx`/`hoopsRimClankSfx`/`hoopsBoardThudSfx` — FC kick, net and post cues play football SFX, not borrowed basketball sounds
     expect(main).not.toMatch(/hoopsBoardThudSfx|hoopsSwishSfx|hoopsRimClankSfx/);
     const manifest = readFileSync("apps/showcase-aura-fc-3d/src/aura-assets-v2.ts", "utf8");
     for (const m of manifest.matchAll(/url: "\/aura-assets\/(fc(?:Kick|Net|Post)Sfx\.[0-9a-f]{8}\.wav)"/g)) {

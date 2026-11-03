@@ -12,9 +12,14 @@
 // re-hashes every downloaded archive against the plan (SHA-256 and SHA-512
 // integrity), checks the plan against the staged candidate identity, and
 // writes the result merged into source-report.json as `artifacts`.
+//
+// packed-b (command `consumers-upload`): `stage-consumers <run-id> <out-dir>`
+// packs its consumer source reports and the files they reference; on the Mac
+// `verify-consumers` re-hashes and extracts them into <run>/artifacts/consumers/
+// (recorded as `artifacts.consumers`). See the consumer section below.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { basename, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export const ARTIFACT_INDEX_SCHEMA = 'aura3d.source5-artifacts/1';
@@ -134,6 +139,156 @@ export function verifyDownloadedArtifacts({ dir, root = process.cwd(), expected 
   return result;
 }
 
+// ---- packed-b consumer reports ------------------------------------------------
+// packed-b retains its clean-install and consumer-matrix source reports with the
+// projects, logs and dependency archives they reference (the acceptance consumer
+// phase re-validates and restores from those exact files). In the image,
+// `stage-consumers` packs both run directories into <= CONSUMER_CHUNK_BYTES
+// chunks plus `consumer-index.json` (per-file SHA-256, offsets); chunks keep the
+// upload inside upload-artifacts.mjs's file-count limit. On the Mac,
+// `verify-consumers` re-hashes every chunk and file and extracts the files under
+// their job paths into <run>/artifacts/consumers/.
+export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
+export const CONSUMER_INDEX_NAME = 'consumer-index.json';
+export const CONSUMER_CHUNK_BYTES = 128 * 1024 * 1024;
+/** Stays under upload-artifacts.mjs MAX_TOTAL_BYTES (512 MiB per invocation) with room for the index. */
+export const CONSUMER_MAX_BYTES = 480 * 1024 * 1024;
+export const CONSUMER_MAX_FILES = 50000;
+const RUN_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
+const CHUNK_NAME = /^bundle-\d{3}\.bin$/;
+/** Job repository-relative directories packed-b writes for one run. */
+export const consumerRoots = runId => [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`];
+/** The two packed-b source reports the gate binds (field name -> job path). */
+export const consumerReportPaths = runId => ({
+  sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`,
+  matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json`
+});
+/** Why the third bound report (examplesSourceReport) is null on the source5 path. */
+export const EXAMPLES_SOURCE_REPORT_ABSENT = 'tools/agent-examples/index.ts --phase source needs the custody example lock input (NATIVE_EXAMPLE_LOCK_INPUT) and the retained native-capabilities/<run>/source-manifest.json; it is not a Phase A §4 command and no source5 stage produces it';
+
+const safeJobPath = (path, runId) => typeof path === 'string' && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
+  && path.split('/').every(part => part && part !== '.' && part !== '..')
+  && consumerRoots(runId).some(root => path.startsWith(`${root}/`));
+
+/** In-image: pack the packed-b consumer run directories into chunks + index under `outDir`. */
+export function stageConsumers({ root, runId, outDir, chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
+  if (!RUN_ID.test(runId ?? '')) throw new Error('invalid run id');
+  const reports = consumerReportPaths(runId);
+  for (const [field, path] of Object.entries(reports)) if (!regularFile(join(root, path))) throw new Error(`${field} was not produced: ${path}`);
+  const files = [];
+  for (const dir of consumerRoots(runId)) {
+    const absolute = join(root, dir);
+    let stat;
+    try { stat = lstatSync(absolute); } catch { throw new Error(`consumer report directory missing: ${dir}`); }
+    if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error(`consumer report directory is not a directory: ${dir}`);
+    for (const path of listEntries(root, dir)) files.push(path);
+  }
+  files.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  if (files.length > CONSUMER_MAX_FILES) throw new Error(`consumer reports have ${files.length} files (limit ${CONSUMER_MAX_FILES})`);
+  mkdirSync(outDir, { recursive: true });
+  const chunks = [], entries = [];
+  let chunk = null, total = 0;
+  const closeChunk = () => {
+    if (!chunk) return;
+    const bytes = Buffer.concat(chunk.parts);
+    writeFileSync(join(outDir, chunk.name), bytes, { flag: 'wx' });
+    chunks.push({ path: chunk.name, sha256: sha256(bytes), size: bytes.length });
+    chunk = null;
+  };
+  for (const path of files) {
+    const bytes = readFileSync(join(root, path));
+    if (bytes.length > chunkBytes) throw new Error(`consumer file exceeds the chunk size: ${path}`);
+    total += bytes.length;
+    if (total > maxBytes) throw new Error(`consumer reports exceed ${maxBytes} bytes`);
+    if (chunk && chunk.size + bytes.length > chunkBytes) closeChunk();
+    if (!chunk) chunk = { name: `bundle-${String(chunks.length).padStart(3, '0')}.bin`, parts: [], size: 0 };
+    entries.push({ path, sha256: sha256(bytes), size: bytes.length, chunk: chunk.name, offset: chunk.size });
+    chunk.parts.push(bytes); chunk.size += bytes.length;
+  }
+  closeChunk();
+  const byPath = new Map(entries.map(entry => [entry.path, entry]));
+  const index = {
+    schema: CONSUMERS_SCHEMA, runId, roots: consumerRoots(runId),
+    reports: Object.fromEntries(Object.entries(reports).map(([field, path]) => [field, { path, sha256: byPath.get(path).sha256 }])),
+    examplesSourceReport: null, examplesSourceReportAbsent: EXAMPLES_SOURCE_REPORT_ABSENT,
+    chunks, files: entries, totalBytes: total
+  };
+  writeFileSync(join(outDir, CONSUMER_INDEX_NAME), `${JSON.stringify(index, null, 2)}\n`, { flag: 'wx' });
+  return index;
+}
+
+/** Repository-relative regular files under `dir`; any symlink or special file refuses. */
+function listEntries(root, dir) {
+  const out = [];
+  for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isSymbolicLink()) throw new Error(`consumer reports contain a symlink: ${path}`);
+    if (entry.isDirectory()) out.push(...listEntries(root, path));
+    else if (entry.isFile()) out.push(path);
+    else throw new Error(`consumer reports contain a special file: ${path}`);
+  }
+  return out;
+}
+
+/**
+ * Mac side: verify the downloaded consumer chunks in `dir` and extract every
+ * indexed file to `dest/<job path>` (plus `dest/consumer-index.json`). Returns
+ * the record merged into source-report.json as `artifacts.consumers`.
+ */
+export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId }) {
+  const problems = [], rel = path => relative(root, path).split(sep).join('/');
+  const result = { schema: CONSUMERS_SCHEMA, ok: false, runId, dir: rel(dest), index: null,
+    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null, examplesSourceReportAbsent: EXAMPLES_SOURCE_REPORT_ABSENT,
+    files: 0, bytes: 0, problems };
+  if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
+  let indexBytes, index;
+  try { indexBytes = readFileSync(join(dir, CONSUMER_INDEX_NAME)); index = JSON.parse(indexBytes); } catch { problems.push(`${CONSUMER_INDEX_NAME} missing or unreadable`); return result; }
+  if (index?.schema !== CONSUMERS_SCHEMA || index.runId !== runId || !Array.isArray(index.chunks) || !Array.isArray(index.files)) { problems.push('consumer index has an unknown schema or another run id'); return result; }
+  if (existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
+  const chunks = new Map();
+  for (const chunk of index.chunks) {
+    if (!CHUNK_NAME.test(chunk?.path ?? '') || chunks.has(chunk.path)) { problems.push(`invalid chunk entry ${JSON.stringify(chunk?.path)}`); continue; }
+    if (!regularFile(join(dir, chunk.path))) { problems.push(`chunk not downloaded: ${chunk.path}`); continue; }
+    const bytes = readFileSync(join(dir, chunk.path));
+    if (sha256(bytes) !== chunk.sha256 || bytes.length !== chunk.size) { problems.push(`chunk bytes differ from the index: ${chunk.path}`); continue; }
+    chunks.set(chunk.path, bytes);
+  }
+  const expected = new Set([CONSUMER_INDEX_NAME, ...index.chunks.map(chunk => chunk?.path)]);
+  for (const path of existsSync(dir) ? listFiles(dir) : []) if (!expected.has(path)) problems.push(`unexpected downloaded file: ${path}`);
+  if (problems.length) return result;
+  const seen = new Set(), extracted = [];
+  for (const file of index.files) {
+    if (!safeJobPath(file?.path, runId) || seen.has(file.path)) { problems.push(`unsafe or duplicate consumer path ${JSON.stringify(file?.path)}`); continue; }
+    seen.add(file.path);
+    const bytes = chunks.get(file.chunk);
+    if (!bytes || !Number.isSafeInteger(file.offset) || !Number.isSafeInteger(file.size) || file.offset < 0 || file.size < 0 || file.offset + file.size > bytes.length) { problems.push(`consumer file is outside its chunk: ${file.path}`); continue; }
+    const data = bytes.subarray(file.offset, file.offset + file.size);
+    if (sha256(data) !== file.sha256) { problems.push(`consumer file bytes differ from the index: ${file.path}`); continue; }
+    extracted.push({ path: file.path, data });
+  }
+  for (const [field, path] of Object.entries(consumerReportPaths(runId))) {
+    const entry = index.files.find(file => file?.path === path);
+    if (!entry || index.reports?.[field]?.path !== path || index.reports[field].sha256 !== entry.sha256) problems.push(`${field} is not retained: ${path}`);
+  }
+  if (index.examplesSourceReport !== null) problems.push('examplesSourceReport is not produced on the source5 path');
+  if (problems.length) return result;
+  mkdirSync(dest, { recursive: true });
+  for (const { path, data } of extracted) {
+    const local = join(dest, path);
+    mkdirSync(dirname(local), { recursive: true });
+    writeFileSync(local, data, { flag: 'wx' });
+  }
+  writeFileSync(join(dest, CONSUMER_INDEX_NAME), indexBytes, { flag: 'wx' });
+  result.index = { localPath: rel(join(dest, CONSUMER_INDEX_NAME)), sha256: sha256(indexBytes) };
+  for (const [field, path] of Object.entries(consumerReportPaths(runId))) {
+    result[field] = { localPath: rel(join(dest, path)), jobPath: path, sha256: index.reports[field].sha256 };
+  }
+  result.files = extracted.length;
+  result.bytes = extracted.reduce((sum, file) => sum + file.data.length, 0);
+  result.ok = true;
+  return result;
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [command, ...args] = process.argv.slice(2);
   try {
@@ -151,8 +306,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       console.log(`   artifacts  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.archives.filter(a => a.verified).length}/${result.archives.length} archives)`);
       for (const p of result.problems) console.log(`   artifact problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
+    } else if (command === 'stage-consumers' && args.length === 2) {
+      const [runId, outDir] = args;
+      const index = stageConsumers({ root: process.cwd(), runId, outDir });
+      console.log(`[consumers] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
+    } else if (command === 'verify-consumers' && args.length === 5) {
+      const [dir, dest, root, runId, outJson] = args;
+      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId });
+      writeFileSync(outJson, `${JSON.stringify(result, null, 2)}\n`);
+      console.log(`   consumers  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
+      for (const p of result.problems) console.log(`   consumer problem: ${p}`);
+      if (!result.ok) process.exitCode = 1;
     } else {
-      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json>');
+      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers <run-id> <out-dir> | verify-consumers <download-dir> <dest-dir> <repo-root> <run-id> <out-json>');
     }
   } catch (error) {
     console.error(`[artifacts] ${error.message}`);

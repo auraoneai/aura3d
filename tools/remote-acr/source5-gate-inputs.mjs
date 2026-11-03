@@ -12,7 +12,8 @@
  *
  * Inputs read from each run directory (written by run-source5.sh):
  *   source-report.json      aura3d.source5-report/2 (candidate, stages, commands, problems,
- *                           `artifacts` = retained packed-a uploads, see RETAINED_ARTIFACTS)
+ *                           `artifacts` = retained packed-a uploads, see ARTIFACTS_SCHEMA;
+ *                           `artifacts.consumers` = retained packed-b consumer reports, see CONSUMERS_SCHEMA)
  *   stage-<stage>.json/.rc  per-stage report and `az acr run` exit code
  *   acr-run-<stage>.log     per-stage log (hashed as the check artifact)
  *   source-manifest.json    full pass only: the staged aura3d.native-source-manifest/1
@@ -55,6 +56,15 @@ export const DEFAULT_SCOPE = 'docs/prds/aura3d-5.0-scope.md';
  * repository-relative (or relative to the run directory). Every byte is re-hashed here.
  */
 export const ARTIFACTS_SCHEMA = 'aura3d.source5-artifacts/1';
+/**
+ * `source-report.json#artifacts.consumers`: the packed-b consumer reports downloaded and
+ * extracted by the launcher, as written by `verifyDownloadedConsumers` in
+ * tools/remote-acr/source5-artifacts.mjs ({ schema: 'aura3d.source5-consumers/1', ok, runId,
+ * index: { localPath, sha256 }, sourceConsumerReport / matrixSourceReport: { localPath, jobPath, sha256 },
+ * examplesSourceReport: null }). Every indexed file is re-hashed here; they become gate inputs.
+ */
+export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
+const CONSUMER_FIELDS = ['sourceConsumerReport', 'matrixSourceReport'];
 
 const SHA = /^[a-f0-9]{64}$/;
 const GIT_SHA = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/;
@@ -72,7 +82,7 @@ export const STAGE_COMMANDS = Object.freeze({
   suites: ['assets-qr', 'packages'],
   'packed-a': ['build', 'pack', 'package-dist-unit', 'api-baseline', 'integration', 'packages-dist', 'verify-exports', 'verify-imports',
     'tarballs', 'bundle-size', 'api-diff', 'api-contract', 'api-docs-packed', 'api-docs', 'artifacts-upload'],
-  'packed-b': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumer-matrix', 'runtime-audit']
+  'packed-b': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumer-matrix', 'runtime-audit', 'consumers-upload']
 });
 export const stageCommandIds = stage => (STAGE.exec(stage)?.[1] ? [stage] : STAGE_COMMANDS[stage] ?? null);
 
@@ -111,7 +121,7 @@ export const EXPECTED_CHECKS = Object.freeze([
   { id: 'runtime-audit', section4: 'tools/native-runtime-audit/index.ts --phase source', from: ['packed-b:runtime-audit'] },
   { id: 'api-docs-packed', section4: null, runner: 'S5-WP24-03', from: ['packed-a:api-docs-packed'] },
   { id: 'api-docs', section4: null, runner: 'S5-WP24-03', from: ['packed-a:api-docs'] },
-  { id: 'artifacts-upload', section4: null, runner: 'candidate retention (plan, archives, packed reports)', from: ['packed-a:artifacts-upload'] }
+  { id: 'artifacts-upload', section4: null, runner: 'candidate retention (plan, archives, packed reports; packed-b consumer reports)', from: ['packed-a:artifacts-upload', 'packed-b:consumers-upload'] }
 ].map(Object.freeze));
 
 /**
@@ -214,7 +224,8 @@ export function loadRun(io, dir) {
   const manifestPath = `${dir}/${SOURCE_MANIFEST_FILE}`;
   if (io.exists(manifestPath)) { const file = ref(io, manifestPath); run.manifest = { ...strip(file), content: json(file.data) }; }
   const recorded = run.report.artifacts;
-  if (recorded && typeof recorded === 'object' && !Array.isArray(recorded)) {
+  // packed-a's part; a packed-b-only rerun records just `artifacts.consumers`.
+  if (recorded && typeof recorded === 'object' && !Array.isArray(recorded) && (recorded.schema !== undefined || run.report.stages?.includes?.('packed-a'))) {
     const artifacts = { candidatePlan: null, archives: [], problems: [] };
     if (recorded.schema !== ARTIFACTS_SCHEMA || recorded.ok !== true) artifacts.problems.push(`retained artifacts were not verified by the launcher (${ARTIFACTS_SCHEMA}, ok: ${recorded.ok}): ${(recorded.problems ?? []).join('; ')}`);
     const planRecord = recorded.plan ?? null, planWhere = planRecord?.localPath ?? planRecord?.path;
@@ -234,7 +245,40 @@ export function loadRun(io, dir) {
     }
     run.artifacts = artifacts;
   }
+  if (recorded?.consumers && typeof recorded.consumers === 'object') run.consumers = loadConsumers(io, dir, run.runId, recorded.consumers);
   return run;
+}
+
+/** Re-read the extracted packed-b consumer files through the retained index; every byte is re-hashed. */
+function loadConsumers(io, dir, runId, recorded) {
+  const consumers = { value: null, problems: [] }, problems = consumers.problems;
+  if (recorded.schema !== CONSUMERS_SCHEMA || recorded.ok !== true) { problems.push(`retained consumer reports were not verified by the launcher (${CONSUMERS_SCHEMA}, ok: ${recorded.ok}): ${(recorded.problems ?? []).join('; ')}`); return consumers; }
+  const indexPath = artifactPath(io, dir, recorded.index?.localPath);
+  if (!indexPath) { problems.push(`retained consumer index ${JSON.stringify(recorded.index?.localPath)} not found`); return consumers; }
+  const indexFile = ref(io, indexPath), index = json(indexFile.data);
+  if (indexFile.sha256 !== recorded.index.sha256) problems.push(`retained consumer index ${indexPath} does not match its recorded SHA-256`);
+  if (index?.schema !== CONSUMERS_SCHEMA || index.runId !== runId || !Array.isArray(index.files)) { problems.push(`retained consumer index ${indexPath} is not a ${CONSUMERS_SCHEMA} index of run ${runId}`); return consumers; }
+  const base = dirname(indexPath), files = [], byJob = new Map();
+  for (const file of index.files) {
+    const jobPath = file?.path;
+    if (typeof jobPath !== 'string' || !jobPath || isAbsolute(jobPath) || jobPath.split('/').some(part => !part || part === '.' || part === '..')) { problems.push(`retained consumer index lists an unsafe path ${JSON.stringify(jobPath)}`); continue; }
+    const path = `${base}/${jobPath}`;
+    if (!io.exists(path)) { problems.push(`retained consumer file missing: ${path}`); continue; }
+    const digest = sha256(io.read(path));
+    if (digest !== file.sha256) problems.push(`retained consumer file ${path} does not match the consumer index`);
+    files.push({ path, sha256: digest });
+    byJob.set(jobPath, { path, sha256: digest });
+  }
+  const reports = {};
+  for (const field of CONSUMER_FIELDS) {
+    const jobPath = index.reports?.[field]?.path, file = byJob.get(jobPath);
+    if (!file || index.reports[field].sha256 !== file.sha256 || recorded[field]?.jobPath !== jobPath || recorded[field]?.sha256 !== file.sha256) { problems.push(`retained ${field} ${JSON.stringify(jobPath)} is missing or differs from the consumer index`); continue; }
+    reports[field] = { path: file.path, jobPath, sha256: file.sha256 };
+  }
+  if (index.examplesSourceReport !== null || recorded.examplesSourceReport !== null) problems.push('examplesSourceReport is not produced on the source5 path and must be null');
+  if (!problems.length) consumers.value = { runId, index: { path: indexFile.path, sha256: indexFile.sha256 }, ...reports, examplesSourceReport: null,
+    examplesSourceReportAbsent: typeof index.examplesSourceReportAbsent === 'string' ? index.examplesSourceReportAbsent : null, files };
+  return consumers;
 }
 export const runSummary = run => ({ dir: run.dir, runId: run.runId, sourceReport: run.reportRef, stagesRun: run.report?.stages ?? [] });
 
@@ -300,6 +344,7 @@ export function mergeRuns(runs) {
     const stage = /^stage (\S+): report missing/.exec(problem)?.[1];
     if (stage && winners.get(stage) !== run) continue; // superseded by a later attempt of that stage
     if (/^artifacts: /.test(problem) && winners.get('packed-a') !== run) continue; // packed-a artifacts superseded by a later packed-a run
+    if (/^consumers: /.test(problem) && winners.get('packed-b') !== run) continue; // packed-b consumer reports superseded by a later packed-b run
     if (/^candidate archive digests differ/.test(problem)) continue; // recomputed below from the winning packed stages
     problems.push(`${run.dir}: ${problem}`);
   }
@@ -373,6 +418,16 @@ export function mergeRuns(runs) {
       }
     }
   }
+  // The packed-b consumer source reports (and every file they reference), retained by the winning packed-b run.
+  const consumerRun = winners.get('packed-b');
+  let consumerReports = null;
+  if (consumerRun) {
+    if (!consumerRun.consumers) problems.push(`${consumerRun.dir}: source-report.json has no retained consumer reports (artifacts.consumers); rerun packed-b with the consumer-retaining launcher`);
+    else {
+      problems.push(...consumerRun.consumers.problems.map(problem => `${consumerRun.dir}: ${problem}`));
+      consumerReports = consumerRun.consumers.value;
+    }
+  }
   const value = {
     candidate: { commit, sourceManifestSha256: baseCandidate.sourceManifestSha256, lockfileSha256 },
     sourceManifest: base.manifest ? { path: base.manifest.path, sha256: base.manifest.sha256 } : null,
@@ -380,7 +435,7 @@ export function mergeRuns(runs) {
     expectedCheckIds: EXPECTED_CHECKS.map(check => check.id),
     executedCheckIds: checks.filter(check => check.commands.length).map(check => check.id),
     passingCheckIds: checks.filter(check => check.status === 'passed').map(check => check.id),
-    candidatePlan, archives, archiveBinding: 'retained-rehashed',
+    candidatePlan, archives, archiveBinding: 'retained-rehashed', consumerReports,
     deferredToAcceptance: deferred ?? []
   };
   return { problems, value };
@@ -402,7 +457,8 @@ export function verifySource5GateInputs({ reports, manifestRef, scope, io }) {
   const completion = deriveCompletion(scope, value.passingCheckIds);
   if (completion.problems.length) fail(`scope completion refused:\n  - ${completion.problems.join('\n  - ')}`);
   if (canonical(completion.completedOutcomeIds) !== canonical(reports.completedOutcomeIds) || canonical(completion.completion) !== canonical(reports.outcomeCompletion)) fail('completed outcome IDs differ from the scope + verified checks');
-  const used = [value.candidatePlan.path, ...value.archives.map(archive => archive.path), ...runs.flatMap(run => [run.reportRef.path,
+  const used = [value.candidatePlan.path, ...value.archives.map(archive => archive.path),
+    value.consumerReports.index.path, ...value.consumerReports.files.map(file => file.path), ...runs.flatMap(run => [run.reportRef.path,
     ...Object.values(value.stageSources).filter(source => source.runId === run.runId).flatMap(source => [source.stageReport.path, source.log.path])])];
   return { value, used: [...new Set(used)] };
 }

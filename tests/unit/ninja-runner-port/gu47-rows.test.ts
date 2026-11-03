@@ -47,6 +47,7 @@ describe("ninja-runner-port ink-scroll HUD (GU47 NR-19)", () => {
     const theme = HUD_THEMES["ink-scroll"];
     expect(html).toContain(`--a3g-font: ${theme["--a3g-font"]}`);
     expect(html).toContain(`--a3g-font-display: ${theme["--a3g-font-display"]}`);
+    // invariant: source must keep `href="./fonts/ink-scroll.css"` — the ink-scroll HUD loads its licensed theme faces from the app instead of falling back to default fonts
     expect(html).toContain('href="./fonts/ink-scroll.css"');
   });
 

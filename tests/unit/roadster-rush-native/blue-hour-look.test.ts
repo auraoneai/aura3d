@@ -120,6 +120,7 @@ describe("Apex Overdrive sun shadows (GU47 AO-L4)", () => {
     const { resolve } = await import("node:path");
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
     expect(main).toMatch(/shadow: \{ cascades: 3, maxDistance: 90, filter: "pcss"/);
+    // invariant: source must keep `effects.contactShadows(` — Apex Overdrive grounds the cars with real contact shadows instead of the old black player disc
     expect(main).toContain("effects.contactShadows(");
     expect(main).not.toContain("player-contact-shadow");
     expect(main).not.toMatch(/lights\.ambient\(/);

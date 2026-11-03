@@ -20,6 +20,7 @@ describe("non-finite sample guards (real GPUs propagate NaN/Inf where software G
     const source = readFileSync("packages/rendering/src/webgl2/LegacyPost.ts", "utf8");
     const start = source.indexOf("ensureBloomDownsampleProgram(): WebGLProgram");
     const body = source.slice(start, source.indexOf("ensureBloomAccumulateProgram", start));
+    // invariant: source must keep `vec4 a3dFinite(vec4 c)` in the bloom downsample — NaN/Inf texels on real GPUs are sanitised instead of spreading black/white bloom blotches
     expect(body).toContain("vec4 a3dFinite(vec4 c)");
     expect(body.match(/a3dFinite\(texture\(/g)?.length).toBe(4);
     expect(body).not.toMatch(/[^(]texture\(u_source, uv/);

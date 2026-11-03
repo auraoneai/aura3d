@@ -180,6 +180,7 @@ describe("cross hop hitboxes match the drawn models (CH-5)", () => {
     const core = readFileSync(path.resolve("apps/showcase-cross-hop/src/game/core.ts"), "utf8");
     const dims = [...core.matchAll(/targetMaxDimension: ([^,}]+)/g)].map((m) => m[1]!.trim());
     expect(dims.length).toBeGreaterThanOrEqual(10);
+    // invariant: source must keep `targetMaxDimension: MOVER_LENGTH.*`/`TRAIN_CAR_LENGTH` — drawn vehicles match moverHalf hitboxes, so collisions line up with visuals
     for (const d of dims) expect(d).toMatch(/^(MOVER_LENGTH\.\w+|TRAIN_CAR_LENGTH)$/);
     expect(HIT_MARGIN).toBeLessThanOrEqual(0.2);
   });

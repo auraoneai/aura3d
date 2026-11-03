@@ -6,12 +6,13 @@
  * or network. Nothing here launches Azure work.
  *
  *   plan          --inventory <file> --run-id <id> [--batch <k>] --out <plan.json>
- *   gate-binding  --gate <path> --head <commit> --tracked-clean <0|1>
+ *   gate-binding  --gate <path> --head <commit> --tracked-clean <0|1>   (reads HEAD's parent/diff with git)
  *   safe-inputs   <inputs.json> <gate> [<extra.json>]      (NUL list on stdout)
  *   merge         --out <report.json> --run-dir <dir> [--run-dir <dir>...]
  *   fetch-reports --prefixes <a,b> --dest <dir>             (in-image; SAS from env)
  *   evidence-summary <vitest.json> <fetch.json>             (in-image; base64 on stdout)
  */
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, posix, resolve, sep } from 'node:path';
@@ -218,8 +219,43 @@ export function buildPlan(inventory, options) {
 
 // ---------------------------------------------------------------- gate
 
-/** Host-side refusal before any provider call: the gate must exist, be a GO record and bind this exact clean HEAD. */
-export function checkGateBinding({ gatePath, gateText, head, trackedClean }) {
+/** The committed CODE_COMPLETE_GO record (freeze sequence step 6 force-adds it in the commit after F). */
+export const CODE_COMPLETE_RECORD = 'tests/reports/native-capabilities/code-complete-go.json';
+
+/**
+ * Why HEAD is not the record-only commit on top of freeze commit F, or null when it is:
+ * HEAD's only parent is F, HEAD's diff against F touches exactly CODE_COMPLETE_RECORD
+ * and nothing else, and the record committed at HEAD is byte-identical to the validated gate.
+ * `info` = { head, parents, changedPaths, recordAtHead } (see readHeadCommit).
+ */
+export function recordCommitProblem(info, { head, freezeCommit, gateText }) {
+  if (!info) return 'HEAD history is unavailable';
+  if (info.head !== head) return `HEAD is ${info.head}, not ${head}`;
+  if (!Array.isArray(info.parents) || info.parents.length !== 1 || info.parents[0] !== freezeCommit) return `HEAD's only parent must be the freeze commit (parents: ${(info.parents ?? []).join(' ') || 'none'})`;
+  const changed = Array.isArray(info.changedPaths) ? [...new Set(info.changedPaths)] : [];
+  if (changed.length !== 1 || changed[0] !== CODE_COMPLETE_RECORD) return `HEAD's diff against the freeze commit must touch only ${CODE_COMPLETE_RECORD} (it touches: ${changed.join(', ') || 'nothing'})`;
+  if (typeof info.recordAtHead !== 'string' || info.recordAtHead !== gateText) return `${CODE_COMPLETE_RECORD} committed at HEAD differs from the validated gate`;
+  return null;
+}
+
+/** Git facts recordCommitProblem needs (host side only; nothing is written). */
+export function readHeadCommit(root, freezeCommit) {
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024 });
+  const [head, ...parents] = git('rev-list', '--parents', '-n', '1', 'HEAD').trim().split(/\s+/);
+  let changedPaths = null, recordAtHead = null;
+  try { changedPaths = git('diff-tree', '-r', '--no-commit-id', '--name-only', '--no-renames', '-z', freezeCommit, head, '--').split('\0').filter(Boolean); } catch { changedPaths = null; }
+  try { recordAtHead = git('cat-file', 'blob', `${head}:${CODE_COMPLETE_RECORD}`); } catch { recordAtHead = null; }
+  return { head, parents, changedPaths, recordAtHead };
+}
+
+/**
+ * Host-side refusal before any provider call: the gate must exist, be a GO record and bind this
+ * clean HEAD, which is either the freeze commit F itself or the record-only commit on F
+ * (freeze sequence step 6; see recordCommitProblem). `inspectHead(F)` supplies the git facts.
+ * On the ACR source5 path (sourceRunner acr-source5) examplesSourceReport is null: no source5
+ * stage produces it; the clean-install and matrix source reports are required either way.
+ */
+export function checkGateBinding({ gatePath, gateText, head, trackedClean, inspectHead }) {
   if (!gatePath) throw new Error('AURA3D_CODE_COMPLETE_GATE is required');
   if (!safeRel(gatePath)) throw new Error('gate path must be repository-relative');
   if (gateText === null || gateText === undefined) throw new Error(`gate record missing: ${gatePath}`);
@@ -227,13 +263,22 @@ export function checkGateBinding({ gatePath, gateText, head, trackedClean }) {
   try { gate = JSON.parse(gateText); } catch { throw new Error('gate record is not JSON'); }
   if (gate?.schema !== 'aura3d.native-code-complete/1' || gate.status !== 'CODE_COMPLETE_GO') throw new Error('gate record is not a CODE_COMPLETE_GO record');
   if (!/^[a-f0-9]{40}(?:[a-f0-9]{24})?$/.test(gate.freezeCommit ?? '')) throw new Error('gate has no freeze commit');
-  if (gate.freezeCommit !== head) throw new Error(`stale gate: freeze commit ${gate.freezeCommit} is not HEAD ${head}`);
+  let headRelation = 'freeze-commit';
+  if (gate.freezeCommit !== head) {
+    let info = null;
+    try { info = inspectHead ? inspectHead(gate.freezeCommit) : null; } catch { info = null; }
+    const why = recordCommitProblem(info, { head, freezeCommit: gate.freezeCommit, gateText });
+    if (why) throw new Error(`stale gate: freeze commit ${gate.freezeCommit} is not HEAD ${head}, and HEAD is not the record-only commit on it (${why})`);
+    headRelation = 'record-commit';
+  }
   if (!trackedClean) throw new Error('tracked changes present; acceptance runs only the frozen commit');
   const plan = gate.candidatePlan?.path;
   if (!safeRel(plan)) throw new Error('gate lacks a safe candidate plan path');
-  const reports = ['sourceConsumerReport', 'matrixSourceReport', 'examplesSourceReport'].map(k => gate[k]?.path);
-  if (reports.some(p => !safeRel(p))) throw new Error('gate lacks bound source consumer reports');
-  return { freezeCommit: gate.freezeCommit, gateSha256: createHash('sha256').update(gateText).digest('hex'), candidatePlan: plan,
+  const source5 = gate.sourceRunner === 'acr-source5';
+  const reports = ['sourceConsumerReport', 'matrixSourceReport', 'examplesSourceReport'].map(k => gate[k]?.path ?? null);
+  if (reports.slice(0, 2).some(p => !safeRel(p))) throw new Error('gate lacks bound source consumer reports');
+  if (source5 ? reports[2] !== null && !safeRel(reports[2]) : !safeRel(reports[2])) throw new Error('gate lacks bound source consumer reports');
+  return { freezeCommit: gate.freezeCommit, head, headRelation, gateSha256: createHash('sha256').update(gateText).digest('hex'), candidatePlan: plan,
     consumerSourceReport: reports[0], matrixSourceReport: reports[1], examplesSourceReport: reports[2],
     sourceInputDigest: gate.sourceInputDigest ?? null, lockfileSha256: gate.lockfileSha256 ?? null, sourceRunId: gate.runId ?? null };
 }
@@ -560,7 +605,8 @@ export async function main(argv) {
   } else if (command === 'gate-binding') {
     const gatePath = opts.gate;
     const gateText = gatePath && safeRel(gatePath) && existsSync(gatePath) ? readFileSync(gatePath, 'utf8') : null;
-    const binding = checkGateBinding({ gatePath, gateText, head: opts.head, trackedClean: opts['tracked-clean'] === '1' });
+    const binding = checkGateBinding({ gatePath, gateText, head: opts.head, trackedClean: opts['tracked-clean'] === '1',
+      inspectHead: freezeCommit => readHeadCommit(process.cwd(), freezeCommit) });
     if (opts.out) writeFileSync(opts.out, `${JSON.stringify(binding, null, 2)}\n`);
     process.stdout.write(`${JSON.stringify(binding)}\n`);
   } else if (command === 'safe-inputs') {

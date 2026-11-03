@@ -78,6 +78,7 @@ describe("Bunker Zero decal asset refs", () => {
     expect(pool).toContain("texture: decalTextures[kind]");
     expect(pool).toContain("texture: decalTextures.hazard");
     expect(pool).toContain("texture: decalTextures.bullet");
+    // invariant: source must not reintroduce `kind: "aura-asset-ref"` — hand-built decal refs lacked an id and were rejected by the typed bitmap policy, leaving decals untextured
     expect(pool).not.toContain('kind: "aura-asset-ref"');
   });
 

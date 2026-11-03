@@ -56,6 +56,7 @@ describe("Apex Overdrive motorsport cluster (GU47 AO-H2)", () => {
     const stops = [...markup.matchAll(/stop-color="(#[0-9a-f]{6})"/g)].map((m) => m[1]);
     expect(stops).toEqual(["#1f3fa8", "#4df0ff", "#ff8a3d"]);
     expect(hud).toContain("${clusterMarkup()}");
+    // invariant: source must keep `airRungsLit(air)` — the HUD cluster lights air-time rungs from the live air value instead of a static gauge
     expect(hud).toContain("airRungsLit(air)");
     expect(hud).toContain("strokeDasharray");
   });

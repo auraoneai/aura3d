@@ -137,6 +137,7 @@ describe("aura.skin-allow.json", () => {
 // The Aura FC athletes are the regression: the rebuilt ones ship, the pre-rebuild one tore at the hips.
 function shippedGlb(slug: string): string | null {
   const text = readFileSync(resolve(root, "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts"), "utf8");
+  // invariant: source must keep `url: "/aura-assets/….glb"` beside each FC athlete slug — the skin regression finds the shipped striker/keeper GLBs instead of silently skipping
   const match = new RegExp(`${slug}[\\s\\S]{0,260}?url: "(/aura-assets/[^"]+\\.glb)"`).exec(text);
   const file = match ? resolve(root, "public", match[1]!.replace(/^\//, "")) : null;
   return file && existsSync(file) && readFileSync(file).subarray(0, 4).toString() === "glTF" ? file : null;

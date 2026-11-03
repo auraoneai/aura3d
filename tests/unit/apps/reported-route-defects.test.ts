@@ -131,6 +131,7 @@ describe("showcase-blockfall-reactor — complete game-loop verification", () =>
 
   it("publishes observed gameplay proof rather than asserting its own completion", () => {
     expect(source).toContain("observedGameplayProof");
+    // invariant: source must keep `observedGameplayProof.eventCounts.reset += 1` — Blockfall Reactor reports resets it actually observed instead of self-asserting a complete game loop
     expect(source).toContain("observedGameplayProof.eventCounts.reset += 1");
   });
 

@@ -41,6 +41,7 @@ describe("worker package layout", () => {
     expect(root.exports["./worker"]).toMatchObject({ import: "./dist/engine/public/worker.js", types: "./dist/engine/public/worker.d.ts" });
     expect(root.files).toContain("dist/engine");
     expect(root.sideEffects).toContain("./dist/engine/agent-api/app/render.worker.js");
+    // invariant: source must keep `./src/agent-api/app/render.worker.ts` in engine sideEffects — bundlers keep the self-installing render worker entry instead of tree-shaking it
     expect(engine.sideEffects).toContain("./src/agent-api/app/render.worker.ts");
     expect(engine.sideEffects).toContain("./dist/agent-api/app/render.worker.js");
     expect(build.include).toContain("packages/*/src/**/*.ts");

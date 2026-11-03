@@ -33,6 +33,7 @@ describe("T0-12 mount timing marks", () => {
   });
 
   it("frameLoop marks the first renderFrame", () => {
+    // invariant: source must keep `markTiming("a3d:mount:first-renderFrame")` — the bench harness can measure time-to-first-rendered-frame from the a3d: performance marks
     expect(frameLoop).toContain('markTiming("a3d:mount:first-renderFrame")');
   });
 

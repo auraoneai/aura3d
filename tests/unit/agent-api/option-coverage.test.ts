@@ -240,6 +240,7 @@ describe("option discovery and ownership", () => {
     const gaps = typedOptionGaps(inventory, readOptionProbeSummaries(readFileSync("packages/engine/src/agent-api/compiler/optionCoverage.ts", "utf8")));
     // S5-WP19-04 closed: every typed option of every probed builder has a runtime probe or an
     // actionable unsupported row, so the type-driven audit reports no gap at all.
+    // invariant: source must keep a runtime probe or actionable unsupported row in `optionCoverage.ts` for every typed option — no public builder option is accepted and silently ignored
     expect(gaps.map((f) => f.detail)).toEqual([]);
   }, 120_000);
 

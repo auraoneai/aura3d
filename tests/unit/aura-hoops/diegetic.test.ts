@@ -31,6 +31,7 @@ describe("Aura Hoops tour HUD skin (H47-H1)", () => {
     expect(MAIN).toMatch(/if \(LOOK_ORIGINAL\) delete document\.body\.dataset\.look; else document\.body\.dataset\.look = "tour"/);
     // the skin follows the court: setVenue re-reads the look and re-applies it
     expect(MAIN).toMatch(/LOOK_ORIGINAL = courtLookOriginal\(vId\);\s*applyHudLook\(\);/);
+    // invariant: source must keep `body[data-look="tour"] .scoreboard` — the tour score-bug skin applies only on the GU47 look, so ?look=original keeps the 4.6 HUD
     expect(HTML).toContain('body[data-look="tour"] .scoreboard');
     expect(HTML).toContain('body[data-look="tour"] .jam-meter-wrap .k::before');
     expect(HTML).not.toMatch(/system-ui|-apple-system|Helvetica|Arial|Roboto|Inter\b/);

@@ -24,6 +24,7 @@ describe("serpentine-sky-run HUD theme (SSR-16)", () => {
     const local = readFileSync(new URL("apps/showcase-serpentine-sky-run-port/public/fonts/canela-400.woff2", root));
     const source = readFileSync(new URL("packages/game/src/fonts/canela-400.woff2", root));
     expect(createHash("sha256").update(local).digest("hex")).toBe(createHash("sha256").update(source).digest("hex"));
+    // invariant: source must keep `font-family: "A3G Canela"` — the serpent HUD registers the licensed Canela face under the theme family it styles with
     expect(read("apps/showcase-serpentine-sky-run-port/public/fonts/serpent.css")).toContain('font-family: "A3G Canela"');
     expect(read("apps/showcase-serpentine-sky-run-port/index.html")).toContain('href="./fonts/serpent.css"');
   });

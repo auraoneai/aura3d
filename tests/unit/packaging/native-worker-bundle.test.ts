@@ -86,6 +86,7 @@ describe("release-time worker layout", () => {
     expect(calls).toHaveLength(2);
     expect(calls.every((options) => options.bundle === true && options.splitting === false && options.format === "esm")).toBe(true);
     expect(readFileSync(join(root, "dist/engine/agent-api/app/workerFactory.js"), "utf8")).toBe(factory);
+    // invariant: source must keep `postMessage({ type: "init" })` in the emitted render worker — the bundled worker still runs its init handshake with the host factory
     expect(readFileSync(join(output, "render.worker.bundle.js"), "utf8")).toContain('postMessage({ type: "init" })');
     expect(readFileSync(join(output, "retarget.worker.bundle.js"), "utf8")).toContain('postMessage({ type: "bake" })');
     expect(readFileSync(join(output, "zstd.worker.bundle.js"), "utf8")).toBe(zstdWorker.replace(/\n\/\/# sourceMappingURL=.*\n$/, "\n"));

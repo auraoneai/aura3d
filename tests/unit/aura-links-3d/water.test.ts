@@ -97,6 +97,7 @@ describe("LINKS-17 lava", () => {
 
   it("only Cinder Rim's pools are lava, on the GU47 look", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-aura-links-3d/src/main.ts"), "utf8");
+    // invariant: source must keep `lookMode !== "original" && theme4(course) === "volcanic" ? material.custom(lavaSpec(…` — only Cinder Rim pools render as lava, and only on the GU47 look
     expect(main).toContain('lookMode !== "original" && theme4(course) === "volcanic" ? material.custom(lavaSpec(state.reducedMotion)');
     expect(COURSES.cinderRim.dressing.theme).toBe("volcanic");
   });

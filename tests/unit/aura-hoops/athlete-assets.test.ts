@@ -56,6 +56,7 @@ describe("Aura Hoops athlete models", () => {
   });
 
   it("runs the frame loop behind the library frame error boundary", () => {
+    // invariant: source must keep `createFrameErrorBoundary` — one throwing Hoops frame is contained by the library boundary instead of freezing the game loop
     expect(MAIN).toContain("createFrameErrorBoundary");
     expect(MAIN).toMatch(/frameBoundary\.run\(\(\) => \{[\s\S]*frame\(dt\)/);
   });

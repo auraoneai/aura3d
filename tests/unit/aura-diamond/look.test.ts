@@ -199,6 +199,7 @@ describe("aura-diamond GU47 HUD (DIA-H1)", () => {
     expect(new Set(accents).size).toBe(PARK_ORDER.length);
     for (const p of PARK_ORDER) expect(hudAccent(p, "original")).toBe(ORIGINAL_HUD_ACCENT);
     const html = readFileSync(join(__dirname, "../../../apps/showcase-aura-diamond-3d/index.html"), "utf8");
+    // invariant: source must not reintroduce `Barlow` — the Diamond HUD stays on the licensed site fonts instead of an unlicensed display face
     expect(/barlow/i.test(html)).toBe(false);
     const tick = /\.tick\s*\{[^}]*font-size:\s*([\d.]+)px/.exec(html);
     expect(Number(tick?.[1])).toBeGreaterThanOrEqual(12);

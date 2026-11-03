@@ -166,6 +166,7 @@ describe("heatsink asset manifest (RH-06)", () => {
   });
   it("the app no longer imports the shared root catalog", () => {
     for (const file of ["main.ts", "scene.ts", "view.ts"]) {
+      // invariant: source must not reintroduce `../../../src/aura-assets` — Heatsink resolves models from its own app manifest, not the shared root asset catalog
       expect(readFileSync(`apps/showcase-heatsink/src/${file}`, "utf8"), file).not.toMatch(/\.\.\/\.\.\/\.\.\/src\/aura-assets/);
     }
   });

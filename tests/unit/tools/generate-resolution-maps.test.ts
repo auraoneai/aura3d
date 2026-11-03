@@ -177,6 +177,7 @@ describe("generate-resolution-maps", () => {
     writeFileSync(join(root, "packages/assets/package.json"), JSON.stringify({ name: "@fixture/assets", exports: { ".": "./stale.js" } }));
     writeFileSync(join(root, "packages/other/package.json"), JSON.stringify({ name: "@fixture/other", exports: { ".": "./dist/index.js" } }));
     const drift = generateResolutionMaps(root, "check").diffs;
+    // invariant: source must keep `packages/assets/package.json#exports differs from generated output` — check mode reports stale workspace exports instead of silently passing
     expect(drift).toContain("packages/assets/package.json#exports differs from generated output");
     expect(drift).toContain("packages/other/package.json#exports is not generated from aura.exports.json workspaceExports");
     generateResolutionMaps(root, "write");
