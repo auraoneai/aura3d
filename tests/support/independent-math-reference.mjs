@@ -10,17 +10,18 @@
 // zero vector, the `index is out of range` error text, and the once-per-process deprecation warnings of
 // Matrix3.scale/rotate/translate (which premultiply, with rotate using -theta).
 //
-// Coverage: Vector2, Vector3, Vector4, Matrix3, Matrix4, Quaternion and Euler, completely (every member the
-// compat parity test inventories). Classes listed in INDEPENDENT_CLASSES are compared against this reference;
-// the remaining classes (Color, Box3, Sphere, Plane, Ray, Frustum, Triangle) are still compared against the
-// legacy goldens (open part of S5-WP29-05). Named published algorithms: Shepperd's quaternion-from-matrix,
+// Coverage: every member the compat parity test inventories for all 14 classes — Vector2/3/4, Matrix3/4,
+// Quaternion, Euler, Color, Box3, Sphere, Plane, Ray, Frustum and Triangle (INDEPENDENT_CLASSES); no class is
+// compared against engine-generated values any more. The later sections cite their own sources (CSS Color 4,
+// Ericson, Akenine-Möller, Gribb-Hartmann, Möller-Trumbore, Williams et al.). Named published algorithms here:
+// Shepperd's quaternion-from-matrix,
 // Rodrigues' rotation, Shoemake's uniform random quaternion, Archimedes' sphere-point picking, the standard
 // intrinsic Euler decompositions, and M. Baker's (euclideanspace.com) matrix-to-axis-angle with its 0.01 / 0.1
 // singularity tolerances. Contract conventions also taken from the compat layer: gimbal threshold 0.9999999,
 // slerp's normalized-lerp switch at cos >= 0.9995, the 1e-8 opposite-vector test in setFromUnitVectors, the
 // lookAt 1e-4 nudges, change-callback firing, and the identity/zero results for singular matrices.
 
-export const INDEPENDENT_CLASSES = ["Vector2", "Matrix3", "Vector3", "Matrix4", "Quaternion", "Euler", "Vector4"];
+export const INDEPENDENT_CLASSES = ["Vector2", "Matrix3", "Vector3", "Matrix4", "Quaternion", "Euler", "Vector4", "Color", "Box3", "Sphere", "Plane", "Ray", "Frustum", "Triangle"];
 
 const warned = new Set();
 const warnOnce = (message) => {
@@ -910,4 +911,762 @@ export class Vector4 {
   fromBufferAttribute(a, i) { return this.set(a.getX(i), a.getY(i), a.getZ(i), a.getW(i)); }
   random() { this.x = Math.random(); this.y = Math.random(); this.z = Math.random(); this.w = Math.random(); return this; }
   *[Symbol.iterator]() { yield this.x; yield this.y; yield this.z; yield this.w; }
+}
+
+// ───────────────────────────── Color (CSS Color Module Level 4) ─────────────────────────────
+// Sources: W3C CSS Color Module Level 4 — §6.1 named colors (the 148 keywords, alphabetical), §5 hex
+// notation, §5.1 legacy comma rgb()/rgba(), §7 hsl() with the §7.1 HSL-to-sRGB and §7.2 sRGB-to-HSL
+// algorithms, and §10.2 / Appendix B sRGB transfer functions. Rec. ITU-R BT.709 primaries and luminance
+// coefficients for the srgb / srgb-linear spaces (which share primaries, so conversion is transfer-only).
+
+const NAMED_COLOR_DATA =
+  "aliceblue:f0f8ff antiquewhite:faebd7 aqua:00ffff aquamarine:7fffd4 azure:f0ffff beige:f5f5dc bisque:ffe4c4 black:000000 " +
+  "blanchedalmond:ffebcd blue:0000ff blueviolet:8a2be2 brown:a52a2a burlywood:deb887 cadetblue:5f9ea0 chartreuse:7fff00 chocolate:d2691e " +
+  "coral:ff7f50 cornflowerblue:6495ed cornsilk:fff8dc crimson:dc143c cyan:00ffff darkblue:00008b darkcyan:008b8b darkgoldenrod:b8860b " +
+  "darkgray:a9a9a9 darkgreen:006400 darkgrey:a9a9a9 darkkhaki:bdb76b darkmagenta:8b008b darkolivegreen:556b2f darkorange:ff8c00 darkorchid:9932cc " +
+  "darkred:8b0000 darksalmon:e9967a darkseagreen:8fbc8f darkslateblue:483d8b darkslategray:2f4f4f darkslategrey:2f4f4f darkturquoise:00ced1 darkviolet:9400d3 " +
+  "deeppink:ff1493 deepskyblue:00bfff dimgray:696969 dimgrey:696969 dodgerblue:1e90ff firebrick:b22222 floralwhite:fffaf0 forestgreen:228b22 " +
+  "fuchsia:ff00ff gainsboro:dcdcdc ghostwhite:f8f8ff gold:ffd700 goldenrod:daa520 gray:808080 green:008000 greenyellow:adff2f " +
+  "grey:808080 honeydew:f0fff0 hotpink:ff69b4 indianred:cd5c5c indigo:4b0082 ivory:fffff0 khaki:f0e68c lavender:e6e6fa " +
+  "lavenderblush:fff0f5 lawngreen:7cfc00 lemonchiffon:fffacd lightblue:add8e6 lightcoral:f08080 lightcyan:e0ffff lightgoldenrodyellow:fafad2 lightgray:d3d3d3 " +
+  "lightgreen:90ee90 lightgrey:d3d3d3 lightpink:ffb6c1 lightsalmon:ffa07a lightseagreen:20b2aa lightskyblue:87cefa lightslategray:778899 lightslategrey:778899 " +
+  "lightsteelblue:b0c4de lightyellow:ffffe0 lime:00ff00 limegreen:32cd32 linen:faf0e6 magenta:ff00ff maroon:800000 mediumaquamarine:66cdaa " +
+  "mediumblue:0000cd mediumorchid:ba55d3 mediumpurple:9370db mediumseagreen:3cb371 mediumslateblue:7b68ee mediumspringgreen:00fa9a mediumturquoise:48d1cc mediumvioletred:c71585 " +
+  "midnightblue:191970 mintcream:f5fffa mistyrose:ffe4e1 moccasin:ffe4b5 navajowhite:ffdead navy:000080 oldlace:fdf5e6 olive:808000 " +
+  "olivedrab:6b8e23 orange:ffa500 orangered:ff4500 orchid:da70d6 palegoldenrod:eee8aa palegreen:98fb98 paleturquoise:afeeee palevioletred:db7093 " +
+  "papayawhip:ffefd5 peachpuff:ffdab9 peru:cd853f pink:ffc0cb plum:dda0dd powderblue:b0e0e6 purple:800080 rebeccapurple:663399 " +
+  "red:ff0000 rosybrown:bc8f8f royalblue:4169e1 saddlebrown:8b4513 salmon:fa8072 sandybrown:f4a460 seagreen:2e8b57 seashell:fff5ee " +
+  "sienna:a0522d silver:c0c0c0 skyblue:87ceeb slateblue:6a5acd slategray:708090 slategrey:708090 snow:fffafa springgreen:00ff7f " +
+  "steelblue:4682b4 tan:d2b48c teal:008080 thistle:d8bfd8 tomato:ff6347 turquoise:40e0d0 violet:ee82ee wheat:f5deb3 " +
+  "white:ffffff whitesmoke:f5f5f5 yellow:ffff00 yellowgreen:9acd32";
+const NAMED_COLORS = Object.fromEntries(NAMED_COLOR_DATA.split(" ").map((entry) => { const [name, hex] = entry.split(":"); return [name, parseInt(hex, 16)]; }));
+
+const SRGB_SPACE = "srgb";
+const LINEAR_SPACE = "srgb-linear";
+
+/** CSS Color 4 §10.2 sRGB decode (gamma-encoded -> linear light), with the spec's sign reflection. */
+export const cssSRGBToLinear = (c) => {
+  const m = Math.abs(c);
+  return m <= 0.04045 ? c / 12.92 : Math.sign(c) * ((m + 0.055) / 1.055) ** 2.4;
+};
+/** CSS Color 4 §10.2 sRGB encode (linear light -> gamma-encoded), with the spec's sign reflection. */
+export const cssLinearToSRGB = (c) => {
+  const m = Math.abs(c);
+  return m <= 0.0031308 ? c * 12.92 : Math.sign(c) * (1.055 * m ** (1 / 2.4) - 0.055);
+};
+
+// Compat contract (packages/math/src/three/index.ts declares three-compatible numerics for the public
+// `@aura3d/math/three` Color): the same §10.2 piecewise functions written with the spec constants in a
+// published decimal form — 1/12.92, 1/1.055 and 0.055/1.055 rounded to 10 decimal places, the encode
+// exponent 1/2.4 truncated to 5 decimal places — a strict `<` at the breakpoints, and no sign reflection
+// (negative channels stay on the linear segment). The constants are derived here from the spec values;
+// the largest deviation from cssSRGBToLinear/cssLinearToSRGB on [0, 1] is below 1e-5 (well under one
+// 8-bit step), which the parity test pins.
+const roundTo = (x, places) => Math.round(x * 10 ** places) / 10 ** places;
+const DECODE_LINEAR_SLOPE = roundTo(1 / 12.92, 10);
+const DECODE_SCALE = roundTo(1 / 1.055, 10);
+const DECODE_OFFSET = roundTo(0.055 / 1.055, 10);
+const ENCODE_EXPONENT = Math.trunc((1 / 2.4) * 1e5) / 1e5;
+export const SRGBToLinear = (c) => (c < 0.04045 ? c * DECODE_LINEAR_SLOPE : Math.pow(c * DECODE_SCALE + DECODE_OFFSET, 2.4));
+export const LinearToSRGB = (c) => (c < 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, ENCODE_EXPONENT) - 0.055);
+
+const BT709_PRIMARIES = [0.64, 0.33, 0.3, 0.6, 0.15, 0.06];
+const BT709_LUMINANCE = [0.2126, 0.7152, 0.0722];
+const COLOR_SPACES = {
+  [LINEAR_SPACE]: { transfer: "linear", primaries: BT709_PRIMARIES, luminance: BT709_LUMINANCE },
+  [SRGB_SPACE]: { transfer: "srgb", primaries: BT709_PRIMARIES, luminance: BT709_LUMINANCE },
+};
+
+export const ColorManagement = {
+  enabled: true,
+  workingColorSpace: LINEAR_SPACE,
+  convert(color, from, to) {
+    if (!this.enabled || from === to || !from || !to) return color;
+    const source = COLOR_SPACES[from], target = COLOR_SPACES[to];
+    if (source.transfer === "srgb") { color.r = SRGBToLinear(color.r); color.g = SRGBToLinear(color.g); color.b = SRGBToLinear(color.b); }
+    // srgb and srgb-linear share BT.709 primaries: no primaries matrix is needed between them.
+    if (target.transfer === "srgb") { color.r = LinearToSRGB(color.r); color.g = LinearToSRGB(color.g); color.b = LinearToSRGB(color.b); }
+    return color;
+  },
+  workingToColorSpace(color, space) { return this.convert(color, this.workingColorSpace, space); },
+  colorSpaceToWorking(color, space) { return this.convert(color, space, this.workingColorSpace); },
+  getPrimaries(space) { return COLOR_SPACES[space].primaries; },
+  getTransfer(space) { return space === "" ? "linear" : COLOR_SPACES[space].transfer; },
+  getLuminanceCoefficients(target, space = this.workingColorSpace) { return target.fromArray(COLOR_SPACES[space].luminance); },
+};
+
+const clampTo = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+const wrapUnit = (x) => ((x % 1) + 1) % 1;
+
+/** CSS Color 4 §7.1: HSL (hue in turns, saturation and lightness in [0, 1]) to sRGB channels. */
+const hslToRgb = (h, s, l) => {
+  const chroma = s * Math.min(l, 1 - l);
+  const channel = (n) => {
+    const k = (n + h * 12) % 12;
+    return l - chroma * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+  };
+  return [channel(0), channel(8), channel(4)];
+};
+
+/** CSS Color 4 §7.2: sRGB channels to HSL (hue in turns). Contract: an achromatic colour reports hue 0, saturation 0. */
+const rgbToHsl = (r, g, b) => {
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l <= 0.5 ? d / (max + min) : d / (2 - max - min);
+  let sextant = Number.NaN;
+  if (max === r) sextant = (g - b) / d + (g < b ? 6 : 0);
+  else if (max === g) sextant = (b - r) / d + 2;
+  else if (max === b) sextant = (r - g) / d + 4;
+  return [sextant / 6, s, l];
+};
+
+/** A copy of `color` expressed in `space` (the receiver is untouched). */
+const inSpace = (color, space) => ColorManagement.workingToColorSpace(new Color(color.r, color.g, color.b), space);
+
+export class Color {
+  constructor(r, g, b) { this.r = 1; this.g = 1; this.b = 1; this.set(r, g, b); }
+  set(r, g, b) {
+    if (g === undefined && b === undefined) {
+      if (r && typeof r === "object") this.copy(r);
+      else if (typeof r === "number") this.setHex(r);
+      else if (typeof r === "string") this.setStyle(r);
+      return this;
+    }
+    return this.setRGB(r, g, b);
+  }
+  setScalar(s) { this.r = s; this.g = s; this.b = s; return this; }
+  setHex(hex, space = SRGB_SPACE) {
+    const n = Math.floor(hex);
+    this.r = ((n >> 16) & 0xff) / 255; this.g = ((n >> 8) & 0xff) / 255; this.b = (n & 0xff) / 255;
+    ColorManagement.colorSpaceToWorking(this, space);
+    return this;
+  }
+  setRGB(r, g, b, space = ColorManagement.workingColorSpace) {
+    this.r = r; this.g = g; this.b = b;
+    ColorManagement.colorSpaceToWorking(this, space);
+    return this;
+  }
+  setHSL(h, s, l, space = ColorManagement.workingColorSpace) {
+    const hue = wrapUnit(h), sat = clampTo(s, 0, 1), light = clampTo(l, 0, 1);
+    [this.r, this.g, this.b] = sat === 0 ? [light, light, light] : hslToRgb(hue, sat, light);
+    ColorManagement.colorSpaceToWorking(this, space);
+    return this;
+  }
+  // CSS legacy colour syntax: rgb()/rgba() with integer or integer-percentage channels, hsl()/hsla(),
+  // #rgb / #rrggbb, and named colours. Contract: alpha below 1 and unsupported forms (unknown functions,
+  // 4- and 8-digit hex, unknown names) warn and leave the receiver unchanged; channels clamp to 255 / 100%.
+  setStyle(style, space = SRGB_SPACE) {
+    const warnAlpha = (alpha) => { if (alpha !== undefined && parseFloat(alpha) < 1) console.warn(`THREE.Color: Alpha component of ${style} will be ignored.`); };
+    const fn = /^(\w+)\(([^)]*)\)/.exec(style);
+    if (fn) {
+      const [, name, body] = fn;
+      const ALPHA = "(?:,\\s*(\\d*\\.?\\d+)\\s*)?";
+      if (name === "rgb" || name === "rgba") {
+        let m = new RegExp(`^\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*${ALPHA}$`).exec(body);
+        if (m) { warnAlpha(m[4]); return this.setRGB(...[m[1], m[2], m[3]].map((c) => Math.min(255, parseInt(c, 10)) / 255), space); }
+        m = new RegExp(`^\\s*(\\d+)%\\s*,\\s*(\\d+)%\\s*,\\s*(\\d+)%\\s*${ALPHA}$`).exec(body);
+        if (m) { warnAlpha(m[4]); return this.setRGB(...[m[1], m[2], m[3]].map((c) => Math.min(100, parseInt(c, 10)) / 100), space); }
+        return this;
+      }
+      if (name === "hsl" || name === "hsla") {
+        const m = new RegExp(`^\\s*(\\d*\\.?\\d+)\\s*,\\s*(\\d*\\.?\\d+)%\\s*,\\s*(\\d*\\.?\\d+)%\\s*${ALPHA}$`).exec(body);
+        if (m) { warnAlpha(m[4]); return this.setHSL(parseFloat(m[1]) / 360, parseFloat(m[2]) / 100, parseFloat(m[3]) / 100, space); }
+        return this;
+      }
+      console.warn(`THREE.Color: Unknown color model ${style}`);
+      return this;
+    }
+    const hex = /^#([0-9A-Fa-f]+)$/.exec(style);
+    if (hex) {
+      const digits = hex[1];
+      if (digits.length === 3) return this.setRGB(...Array.from(digits, (d) => parseInt(d, 16) / 15), space);
+      if (digits.length === 6) return this.setHex(parseInt(digits, 16), space);
+      console.warn(`THREE.Color: Invalid hex color ${style}`);
+      return this;
+    }
+    if (style && style.length > 0) return this.setColorName(style, space);
+    return this;
+  }
+  setColorName(name, space = SRGB_SPACE) {
+    const hex = NAMED_COLORS[name.toLowerCase()];
+    if (hex === undefined) console.warn(`THREE.Color: Unknown color ${name}`);
+    else this.setHex(hex, space);
+    return this;
+  }
+  clone() { return new this.constructor(this.r, this.g, this.b); }
+  copy(c) { this.r = c.r; this.g = c.g; this.b = c.b; return this; }
+  copySRGBToLinear(c) { const { r, g, b } = c; this.r = SRGBToLinear(r); this.g = SRGBToLinear(g); this.b = SRGBToLinear(b); return this; }
+  copyLinearToSRGB(c) { const { r, g, b } = c; this.r = LinearToSRGB(r); this.g = LinearToSRGB(g); this.b = LinearToSRGB(b); return this; }
+  convertSRGBToLinear() { return this.copySRGBToLinear(this); }
+  convertLinearToSRGB() { return this.copyLinearToSRGB(this); }
+  getHex(space = SRGB_SPACE) {
+    const c = inSpace(this, space);
+    const byte = (v) => Math.round(clampTo(v * 255, 0, 255));
+    return byte(c.r) * 65536 + byte(c.g) * 256 + byte(c.b);
+  }
+  getHexString(space = SRGB_SPACE) { return this.getHex(space).toString(16).padStart(6, "0"); }
+  getHSL(target, space = ColorManagement.workingColorSpace) {
+    const c = inSpace(this, space);
+    [target.h, target.s, target.l] = rgbToHsl(c.r, c.g, c.b);
+    return target;
+  }
+  getRGB(target, space = ColorManagement.workingColorSpace) {
+    const c = inSpace(this, space);
+    target.r = c.r; target.g = c.g; target.b = c.b;
+    return target;
+  }
+  getStyle(space = SRGB_SPACE) {
+    const c = inSpace(this, space);
+    if (space !== SRGB_SPACE) return `color(${space} ${c.r.toFixed(3)} ${c.g.toFixed(3)} ${c.b.toFixed(3)})`;
+    return `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
+  }
+  offsetHSL(h, s, l) { const hsl = this.getHSL({}); return this.setHSL(hsl.h + h, hsl.s + s, hsl.l + l); }
+  add(c) { this.r += c.r; this.g += c.g; this.b += c.b; return this; }
+  addColors(a, b) { this.r = a.r + b.r; this.g = a.g + b.g; this.b = a.b + b.b; return this; }
+  addScalar(s) { this.r += s; this.g += s; this.b += s; return this; }
+  // Subtraction floors each channel at zero.
+  sub(c) { this.r = Math.max(0, this.r - c.r); this.g = Math.max(0, this.g - c.g); this.b = Math.max(0, this.b - c.b); return this; }
+  multiply(c) { this.r *= c.r; this.g *= c.g; this.b *= c.b; return this; }
+  multiplyScalar(s) { this.r *= s; this.g *= s; this.b *= s; return this; }
+  lerp(c, t) { this.r += (c.r - this.r) * t; this.g += (c.g - this.g) * t; this.b += (c.b - this.b) * t; return this; }
+  lerpColors(a, b, t) { this.r = a.r + (b.r - a.r) * t; this.g = a.g + (b.g - a.g) * t; this.b = a.b + (b.b - a.b) * t; return this; }
+  // Component-wise interpolation of the two HSL triples (no shortest-arc hue rule).
+  lerpHSL(c, t) {
+    const a = this.getHSL({}), b = c.getHSL({});
+    const mix = (x, y) => x + (y - x) * t;
+    return this.setHSL(mix(a.h, b.h), mix(a.s, b.s), mix(a.l, b.l));
+  }
+  setFromVector3(v) { this.r = v.x; this.g = v.y; this.b = v.z; return this; }
+  applyMatrix3(m) {
+    const e = m.elements; const { r, g, b } = this;
+    this.r = e[0] * r + e[3] * g + e[6] * b; this.g = e[1] * r + e[4] * g + e[7] * b; this.b = e[2] * r + e[5] * g + e[8] * b;
+    return this;
+  }
+  equals(c) { return c.r === this.r && c.g === this.g && c.b === this.b; }
+  fromArray(array, offset = 0) { this.r = array[offset]; this.g = array[offset + 1]; this.b = array[offset + 2]; return this; }
+  toArray(array = [], offset = 0) { array[offset] = this.r; array[offset + 1] = this.g; array[offset + 2] = this.b; return array; }
+  fromBufferAttribute(attribute, index) { this.r = attribute.getX(index); this.g = attribute.getY(index); this.b = attribute.getZ(index); return this; }
+  toJSON() { return this.getHex(); }
+  *[Symbol.iterator]() { yield this.r; yield this.g; yield this.b; }
+}
+Color.NAMES = NAMED_COLORS;
+
+// ───────────────────────────── Box3 ─────────────────────────────
+// Axis-aligned box [min, max]; the empty box is min = +Inf, max = -Inf (any max < min is empty).
+// Box/plane: Haines & Wallace's p-vertex / n-vertex test (extreme dot products of the corners).
+// Box/triangle: Akenine-Möller's separating-axis test (3 box normals, triangle normal, 9 edge crosses).
+
+const vec = (p) => new Vector3(p.x, p.y, p.z);
+
+export class Box3 {
+  constructor(min = new Vector3(Infinity, Infinity, Infinity), max = new Vector3(-Infinity, -Infinity, -Infinity)) { this.min = min; this.max = max; }
+  set(min, max) { this.min.copy(min); this.max.copy(max); return this; }
+  setFromArray(array) {
+    this.makeEmpty();
+    for (let i = 0; i < array.length; i += 3) this.expandByPoint(new Vector3().fromArray(array, i));
+    return this;
+  }
+  setFromBufferAttribute(attribute) {
+    this.makeEmpty();
+    for (let i = 0; i < attribute.count; i++) this.expandByPoint(new Vector3().fromBufferAttribute(attribute, i));
+    return this;
+  }
+  setFromPoints(points) { this.makeEmpty(); for (const p of points) this.expandByPoint(p); return this; }
+  setFromCenterAndSize(center, size) {
+    const half = vec(size).multiplyScalar(0.5);
+    this.min.copy(center).sub(half); this.max.copy(center).add(half);
+    return this;
+  }
+  setFromObject(object, precise = false) { return this.makeEmpty().expandByObject(object, precise); }
+  clone() { return new this.constructor().copy(this); }
+  copy(box) { this.min.copy(box.min); this.max.copy(box.max); return this; }
+  makeEmpty() { this.min.set(Infinity, Infinity, Infinity); this.max.set(-Infinity, -Infinity, -Infinity); return this; }
+  isEmpty() { return this.max.x < this.min.x || this.max.y < this.min.y || this.max.z < this.min.z; }
+  getCenter(target) { return this.isEmpty() ? target.set(0, 0, 0) : target.addVectors(this.min, this.max).multiplyScalar(0.5); }
+  getSize(target) { return this.isEmpty() ? target.set(0, 0, 0) : target.subVectors(this.max, this.min); }
+  expandByPoint(p) { this.min.min(p); this.max.max(p); return this; }
+  expandByVector(v) { this.min.sub(v); this.max.add(v); return this; }
+  expandByScalar(s) { this.min.addScalar(-s); this.max.addScalar(s); return this; }
+  // Contract (scene-object walk): the object's world matrix is refreshed without parents/children; with
+  // `precise` and a position attribute on a non-instanced object every vertex is transformed (meshes read
+  // getVertexPosition, others the attribute); otherwise the object's own boundingBox, else its geometry's,
+  // computed lazily when null, is transformed and merged. Children are walked recursively.
+  expandByObject(object, precise = false) {
+    object.updateWorldMatrix(false, false);
+    const geometry = object.geometry;
+    if (geometry !== undefined) {
+      const positions = geometry.getAttribute("position");
+      if (precise === true && positions !== undefined && object.isInstancedMesh !== true) {
+        for (let i = 0; i < positions.count; i++) {
+          const p = new Vector3();
+          if (object.isMesh === true && object.getVertexPosition) object.getVertexPosition(i, p);
+          else p.fromBufferAttribute(positions, i);
+          this.expandByPoint(p.applyMatrix4(object.matrixWorld));
+        }
+      } else {
+        let local;
+        if (object.boundingBox !== undefined) {
+          if (object.boundingBox === null) object.computeBoundingBox?.();
+          local = object.boundingBox;
+        } else {
+          if (geometry.boundingBox === null) geometry.computeBoundingBox();
+          local = geometry.boundingBox;
+        }
+        this.union(new Box3().copy(local).applyMatrix4(object.matrixWorld));
+      }
+    }
+    for (const child of object.children) this.expandByObject(child, precise);
+    return this;
+  }
+  containsPoint(p) {
+    const { min, max } = this;
+    return p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y && p.z >= min.z && p.z <= max.z;
+  }
+  containsBox(b) {
+    const { min, max } = this;
+    return min.x <= b.min.x && b.max.x <= max.x && min.y <= b.min.y && b.max.y <= max.y && min.z <= b.min.z && b.max.z <= max.z;
+  }
+  getParameter(p, target) {
+    const { min, max } = this;
+    return target.set((p.x - min.x) / (max.x - min.x), (p.y - min.y) / (max.y - min.y), (p.z - min.z) / (max.z - min.z));
+  }
+  intersectsBox(b) {
+    const { min, max } = this;
+    return b.max.x >= min.x && b.min.x <= max.x && b.max.y >= min.y && b.min.y <= max.y && b.max.z >= min.z && b.min.z <= max.z;
+  }
+  intersectsSphere(sphere) { return this.clampPoint(sphere.center, new Vector3()).distanceToSquared(sphere.center) <= sphere.radius * sphere.radius; }
+  intersectsPlane(plane) {
+    const n = plane.normal;
+    let lo = 0, hi = 0, first = true;
+    for (const k of ["x", "y", "z"]) {
+      const atMin = n[k] * this.min[k], atMax = n[k] * this.max[k];
+      const [a, b] = n[k] > 0 ? [atMin, atMax] : [atMax, atMin];
+      if (first) { lo = a; hi = b; first = false; } else { lo += a; hi += b; }
+    }
+    return lo <= -plane.constant && hi >= -plane.constant;
+  }
+  intersectsTriangle(triangle) {
+    if (this.isEmpty()) return false;
+    const center = this.getCenter(new Vector3());
+    const extent = new Vector3().subVectors(this.max, center);
+    const v = [triangle.a, triangle.b, triangle.c].map((p) => new Vector3().subVectors(p, center));
+    const edges = [new Vector3().subVectors(v[1], v[0]), new Vector3().subVectors(v[2], v[1]), new Vector3().subVectors(v[0], v[2])];
+    const separates = (axis) => {
+      const r = extent.x * Math.abs(axis.x) + extent.y * Math.abs(axis.y) + extent.z * Math.abs(axis.z);
+      const p = v.map((q) => q.dot(axis));
+      return Math.min(...p) > r || Math.max(...p) < -r;
+    };
+    const boxAxes = [new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)];
+    for (const u of boxAxes) for (const f of edges) if (separates(new Vector3().crossVectors(u, f))) return false;
+    for (const u of boxAxes) if (separates(u)) return false;
+    return !separates(new Vector3().crossVectors(edges[0], edges[1]));
+  }
+  clampPoint(p, target) { return target.copy(p).clamp(this.min, this.max); }
+  distanceToPoint(p) { return this.clampPoint(p, new Vector3()).distanceTo(p); }
+  getBoundingSphere(target) {
+    if (this.isEmpty()) return target.makeEmpty();
+    this.getCenter(target.center);
+    target.radius = this.getSize(new Vector3()).length() * 0.5;
+    return target;
+  }
+  intersect(b) {
+    this.min.max(b.min); this.max.min(b.max);
+    if (this.isEmpty()) this.makeEmpty();
+    return this;
+  }
+  union(b) { this.min.min(b.min); this.max.max(b.max); return this; }
+  // The image of a box under an affine map is bounded by the images of its 8 corners.
+  applyMatrix4(m) {
+    if (this.isEmpty()) return this;
+    const corners = [];
+    for (const x of [this.min.x, this.max.x]) for (const y of [this.min.y, this.max.y]) for (const z of [this.min.z, this.max.z]) corners.push(new Vector3(x, y, z).applyMatrix4(m));
+    return this.setFromPoints(corners);
+  }
+  translate(offset) { this.min.add(offset); this.max.add(offset); return this; }
+  equals(b) { return this.min.equals(b.min) && this.max.equals(b.max); }
+  toJSON() { return { min: this.min.toArray(), max: this.max.toArray() }; }
+  fromJSON(json) { this.min.fromArray(json.min); this.max.fromArray(json.max); return this; }
+}
+
+// ───────────────────────────── Sphere ─────────────────────────────
+// Radius < 0 is the empty sphere. expandByPoint is the incremental bounding-sphere update (Ritter 1990);
+// union is the minimal sphere enclosing two spheres.
+
+export class Sphere {
+  constructor(center = new Vector3(), radius = -1) { this.center = center; this.radius = radius; }
+  set(center, radius) { this.center.copy(center); this.radius = radius; return this; }
+  // Contract: centre = the given point, else the centre of the points' bounding box; radius reaches the farthest point.
+  setFromPoints(points, optionalCenter) {
+    if (optionalCenter !== undefined) this.center.copy(optionalCenter);
+    else new Box3().setFromPoints(points).getCenter(this.center);
+    let far = 0;
+    for (const p of points) far = Math.max(far, this.center.distanceToSquared(p));
+    this.radius = Math.sqrt(far);
+    return this;
+  }
+  copy(s) { this.center.copy(s.center); this.radius = s.radius; return this; }
+  isEmpty() { return this.radius < 0; }
+  makeEmpty() { this.center.set(0, 0, 0); this.radius = -1; return this; }
+  containsPoint(p) { return vec(p).distanceToSquared(this.center) <= this.radius * this.radius; }
+  distanceToPoint(p) { return vec(p).distanceTo(this.center) - this.radius; }
+  intersectsSphere(s) { const reach = this.radius + s.radius; return vec(s.center).distanceToSquared(this.center) <= reach * reach; }
+  intersectsBox(box) { return box.intersectsSphere(this); }
+  intersectsPlane(plane) { return Math.abs(plane.distanceToPoint(this.center)) <= this.radius; }
+  clampPoint(p, target) {
+    target.copy(p);
+    if (this.center.distanceToSquared(p) > this.radius * this.radius) target.sub(this.center).normalize().multiplyScalar(this.radius).add(this.center);
+    return target;
+  }
+  getBoundingBox(target) {
+    if (this.isEmpty()) return target.makeEmpty();
+    return target.set(this.center, this.center).expandByScalar(this.radius);
+  }
+  // Affine images of spheres are bounded by scaling the radius with the largest axis scale.
+  applyMatrix4(m) { this.center.applyMatrix4(m); this.radius *= m.getMaxScaleOnAxis(); return this; }
+  translate(offset) { this.center.add(offset); return this; }
+  expandByPoint(p) {
+    if (this.isEmpty()) { this.center.copy(p); this.radius = 0; return this; }
+    const toPoint = new Vector3().subVectors(p, this.center);
+    const distSq = toPoint.lengthSq();
+    if (distSq > this.radius * this.radius) {
+      const dist = Math.sqrt(distSq);
+      const grow = (dist - this.radius) / 2;
+      this.center.addScaledVector(toPoint, grow / dist);
+      this.radius += grow;
+    }
+    return this;
+  }
+  union(s) {
+    if (s.isEmpty()) return this;
+    if (this.isEmpty()) return this.copy(s);
+    if (this.center.equals(s.center)) { this.radius = Math.max(this.radius, s.radius); return this; }
+    const axis = new Vector3().subVectors(s.center, this.center);
+    const d = axis.length();
+    // grow only when the other sphere reaches outside this one (a NaN comparison leaves the receiver as is)
+    if (!(d + s.radius > this.radius)) return this;
+    if (d + this.radius <= s.radius) return this.copy(s);
+    const radius = (d + this.radius + s.radius) / 2;
+    this.center.addScaledVector(axis, (radius - this.radius) / d);
+    this.radius = radius;
+    return this;
+  }
+  equals(s) { return this.center.equals(s.center) && s.radius === this.radius; }
+  clone() { return new this.constructor().copy(this); }
+  toJSON() { return { radius: this.radius, center: this.center.toArray() }; }
+  fromJSON(json) { this.radius = json.radius; this.center.fromArray(json.center); return this; }
+}
+
+// ───────────────────────────── Plane ─────────────────────────────
+// Hessian form n . p + constant = 0 (not normalized implicitly). Planes transform by the inverse transpose.
+
+export class Plane {
+  constructor(normal = new Vector3(1, 0, 0), constant = 0) { this.normal = normal; this.constant = constant; }
+  set(normal, constant) { this.normal.copy(normal); this.constant = constant; return this; }
+  setComponents(x, y, z, w) { this.normal.set(x, y, z); this.constant = w; return this; }
+  setFromNormalAndCoplanarPoint(normal, point) { this.normal.copy(normal); this.constant = -vec(point).dot(this.normal); return this; }
+  // Counter-clockwise a, b, c faces the normal: n = normalize((b - a) x (c - a)).
+  setFromCoplanarPoints(a, b, c) {
+    const n = new Vector3().crossVectors(new Vector3().subVectors(b, a), new Vector3().subVectors(c, a)).normalize();
+    return this.setFromNormalAndCoplanarPoint(n, a);
+  }
+  copy(p) { this.normal.copy(p.normal); this.constant = p.constant; return this; }
+  normalize() { const k = 1 / this.normal.length(); this.normal.multiplyScalar(k); this.constant *= k; return this; }
+  negate() { this.constant *= -1; this.normal.negate(); return this; }
+  distanceToPoint(p) { return this.normal.dot(p) + this.constant; }
+  distanceToSphere(s) { return this.distanceToPoint(s.center) - s.radius; }
+  projectPoint(p, target) { return target.copy(p).addScaledVector(this.normal, -this.distanceToPoint(p)); }
+  // Segment start + t (end - start); a segment lying in the plane returns its start, a parallel one null.
+  intersectLine(line, target, clampToLine = true) {
+    const d = line.delta(new Vector3());
+    const denom = this.normal.dot(d);
+    if (denom === 0) return this.distanceToPoint(line.start) === 0 ? target.copy(line.start) : null;
+    const t = -this.distanceToPoint(line.start) / denom;
+    if (clampToLine === true && (t < 0 || t > 1)) return null;
+    return target.copy(line.start).addScaledVector(d, t);
+  }
+  // Strict sign change of the signed distance between the endpoints.
+  intersectsLine(line) {
+    const s = this.distanceToPoint(line.start), e = this.distanceToPoint(line.end);
+    return (s < 0 && e > 0) || (e < 0 && s > 0);
+  }
+  intersectsBox(box) { return box.intersectsPlane(this); }
+  intersectsSphere(s) { return s.intersectsPlane(this); }
+  coplanarPoint(target) { return target.copy(this.normal).multiplyScalar(-this.constant); }
+  applyMatrix4(m, normalMatrix) {
+    const nm = normalMatrix || new Matrix3().getNormalMatrix(m);
+    const point = this.coplanarPoint(new Vector3()).applyMatrix4(m);
+    this.normal.applyMatrix3(nm).normalize();
+    this.constant = -point.dot(this.normal);
+    return this;
+  }
+  translate(offset) { this.constant -= this.normal.dot(offset); return this; }
+  equals(p) { return this.normal.equals(p.normal) && p.constant === this.constant; }
+  clone() { return new this.constructor().copy(this); }
+}
+
+// ───────────────────────────── Ray ─────────────────────────────
+// origin + t direction, t >= 0. Misses return null. Box: the slab method with the NaN-robust update of
+// Williams, Barrus, Morley & Shirley (2005). Triangle: Möller & Trumbore (1997). Segment distance: the
+// convex quadratic in (ray t, segment s) minimized over the half-strip t >= 0, |s| <= extent.
+
+export class Ray {
+  constructor(origin = new Vector3(), direction = new Vector3(0, 0, -1)) { this.origin = origin; this.direction = direction; }
+  set(origin, direction) { this.origin.copy(origin); this.direction.copy(direction); return this; }
+  copy(r) { this.origin.copy(r.origin); this.direction.copy(r.direction); return this; }
+  at(t, target) { return target.copy(this.origin).addScaledVector(this.direction, t); }
+  lookAt(v) { this.direction.copy(v).sub(this.origin).normalize(); return this; }
+  recast(t) { this.origin.copy(this.at(t, new Vector3())); return this; }
+  closestPointToPoint(p, target) {
+    const t = new Vector3().subVectors(p, this.origin).dot(this.direction);
+    return t < 0 ? target.copy(this.origin) : this.at(t, target);
+  }
+  distanceToPoint(p) { return Math.sqrt(this.distanceSqToPoint(p)); }
+  distanceSqToPoint(p) { return this.closestPointToPoint(p, new Vector3()).distanceToSquared(p); }
+  distanceSqToSegment(v0, v1, pointOnRay, pointOnSegment) {
+    const mid = new Vector3().addVectors(v0, v1).multiplyScalar(0.5);
+    const axis = new Vector3().subVectors(v1, v0).normalize();
+    const extent = v0.distanceTo(v1) * 0.5;
+    const d = this.direction, w = new Vector3().subVectors(this.origin, mid);
+    // f(t, s) = |w + t d - s axis|^2 with |d| = |axis| = 1 (unit direction assumed)
+    const dd = d.dot(axis), wd = w.dot(d), wa = w.dot(axis);
+    const sOfT = (t) => Math.max(-extent, Math.min(extent, wa + t * dd));
+    const tOfS = (s) => Math.max(0, s * dd - wd);
+    const candidates = [];
+    const gram = 1 - dd * dd;
+    if (Math.abs(gram) > 0 && Number.isNaN(wd + wa)) {
+      // Contract: NaN input propagates to both parameters and the distance (a parallel segment still
+      // picks its end from the directions alone; see below).
+      candidates.push([Number.NaN, Number.NaN]);
+    } else if (Math.abs(gram) > 0) {
+      const t = (dd * wa - wd) / gram, s = (wa - dd * wd) / gram;
+      if (t >= 0 && Math.abs(s) <= extent) candidates.push([t, s]);
+      else {
+        candidates.push([0, sOfT(0)]);
+        candidates.push([tOfS(extent), extent]);
+        candidates.push([tOfS(-extent), -extent]);
+      }
+    } else {
+      // Contract for a direction parallel to the segment: the segment end lying farthest along the ray.
+      const s = dd < 0 ? -extent : extent;
+      candidates.push([tOfS(s), s]);
+    }
+    let best;
+    for (const [t, s] of candidates) {
+      const gap = new Vector3().copy(w).addScaledVector(d, t).addScaledVector(axis, -s).lengthSq();
+      if (best === undefined || gap < best[2]) best = [t, s, gap];
+    }
+    if (pointOnRay) this.at(best[0], pointOnRay);
+    if (pointOnSegment) pointOnSegment.copy(mid).addScaledVector(axis, best[1]);
+    return best[2];
+  }
+  // Geometric ray/sphere test: project the centre on the ray, then step back by the half chord.
+  intersectSphere(sphere, target) {
+    const toCenter = new Vector3().subVectors(sphere.center, this.origin);
+    const along = toCenter.dot(this.direction);
+    const offAxisSq = toCenter.dot(toCenter) - along * along;
+    const rSq = sphere.radius * sphere.radius;
+    if (offAxisSq > rSq) return null;
+    const halfChord = Math.sqrt(rSq - offAxisSq);
+    const near = along - halfChord, far = along + halfChord;
+    if (far < 0) return null;
+    return this.at(near < 0 ? far : near, target);
+  }
+  intersectsSphere(sphere) { return sphere.radius >= 0 && this.distanceSqToPoint(sphere.center) <= sphere.radius * sphere.radius; }
+  distanceToPlane(plane) {
+    const denom = plane.normal.x * this.direction.x + plane.normal.y * this.direction.y + plane.normal.z * this.direction.z;
+    if (denom === 0) return plane.distanceToPoint(this.origin) === 0 ? 0 : null;
+    const t = -(this.origin.dot(plane.normal) + plane.constant) / denom;
+    return t >= 0 ? t : null;
+  }
+  intersectPlane(plane, target) { const t = this.distanceToPlane(plane); return t === null ? null : this.at(t, target); }
+  intersectsPlane(plane) {
+    const dist = plane.distanceToPoint(this.origin);
+    if (dist === 0) return true;
+    const denom = plane.normal.x * this.direction.x + plane.normal.y * this.direction.y + plane.normal.z * this.direction.z;
+    return denom * dist < 0;
+  }
+  intersectBox(box, target) {
+    const slab = (k) => {
+      const inv = 1 / this.direction[k];
+      const a = (box.min[k] - this.origin[k]) * inv, b = (box.max[k] - this.origin[k]) * inv;
+      return inv >= 0 ? [a, b] : [b, a];
+    };
+    let [tmin, tmax] = slab("x");
+    for (const k of ["y", "z"]) {
+      const [near, far] = slab(k);
+      if (tmin > far || near > tmax) return null;
+      if (near > tmin || Number.isNaN(tmin)) tmin = near;
+      if (far < tmax || Number.isNaN(tmax)) tmax = far;
+    }
+    if (tmax < 0) return null;
+    return this.at(tmin >= 0 ? tmin : tmax, target);
+  }
+  intersectsBox(box) { return this.intersectBox(box, new Vector3()) !== null; }
+  intersectTriangle(a, b, c, backfaceCulling, target) {
+    const e1 = new Vector3().subVectors(b, a), e2 = new Vector3().subVectors(c, a);
+    const p = new Vector3().crossVectors(this.direction, e2);
+    const det = e1.dot(p);
+    // det = -direction . (e1 x e2): det > 0 means the ray meets the counter-clockwise front face.
+    if (!(det > 0 || det < 0)) return null;
+    if (det < 0 && backfaceCulling) return null;
+    const inv = 1 / det;
+    const s = new Vector3().subVectors(this.origin, a);
+    const u = s.dot(p) * inv;
+    if (u < 0 || u > 1) return null;
+    const q = new Vector3().crossVectors(s, e1);
+    const v = this.direction.dot(q) * inv;
+    if (v < 0 || u + v > 1) return null;
+    const t = e2.dot(q) * inv;
+    if (t < 0) return null;
+    return this.at(t, target);
+  }
+  applyMatrix4(m) { this.origin.applyMatrix4(m); this.direction.transformDirection(m); return this; }
+  equals(r) { return this.origin.equals(r.origin) && this.direction.equals(r.direction); }
+  clone() { return new this.constructor().copy(this); }
+}
+
+// ───────────────────────────── Frustum ─────────────────────────────
+// Planes from a clip matrix (Gribb & Hartmann 2001): with rows r1..r4 of M, -w <= x <= w gives r4 - r1
+// (right) and r4 + r1 (left), and likewise for y (bottom r4 + r2, top r4 - r2) and z. Clip depth is
+// -w..w for WebGL (2000) and 0..w for WebGPU (2001); reversed depth maps near to w and far to 0.
+// Contract: plane order right, left, bottom, top, far, near; inward normals; unknown systems throw.
+
+export class Frustum {
+  constructor(p0 = new Plane(), p1 = new Plane(), p2 = new Plane(), p3 = new Plane(), p4 = new Plane(), p5 = new Plane()) { this.planes = [p0, p1, p2, p3, p4, p5]; }
+  set(...planes) { planes.forEach((p, i) => this.planes[i].copy(p)); return this; }
+  copy(f) { for (let i = 0; i < 6; i++) this.planes[i].copy(f.planes[i]); return this; }
+  setFromProjectionMatrix(m, coordinateSystem = WEBGL, reversedDepth = false) {
+    const e = m.elements;
+    const row = (i) => [e[i], e[4 + i], e[8 + i], e[12 + i]];
+    const r1 = row(0), r2 = row(1), r3 = row(2), r4 = row(3);
+    const plus = (a, b) => a.map((x, i) => x + b[i]);
+    const minus = (a, b) => a.map((x, i) => x - b[i]);
+    const far = reversedDepth ? r3 : minus(r4, r3);
+    [minus(r4, r1), plus(r4, r1), plus(r4, r2), minus(r4, r2), far].forEach((c, i) => this.planes[i].setComponents(...c).normalize());
+    // Contract: the coordinate system is validated when the near plane is chosen, after the other five are written.
+    let near;
+    if (reversedDepth) near = minus(r4, r3);
+    else if (coordinateSystem === WEBGL) near = plus(r4, r3);
+    else if (coordinateSystem === WEBGPU) near = r3;
+    else throw new Error(`THREE.Frustum.setFromProjectionMatrix(): Invalid coordinate system: ${coordinateSystem}`);
+    this.planes[5].setComponents(...near).normalize();
+    return this;
+  }
+  // Contract: the object's own boundingSphere, else its geometry's (computed lazily), in world space.
+  intersectsObject(object) {
+    let local;
+    if (object.boundingSphere !== undefined) {
+      if (object.boundingSphere === null) object.computeBoundingSphere?.();
+      local = object.boundingSphere;
+    } else {
+      if (object.geometry.boundingSphere === null) object.geometry.computeBoundingSphere();
+      local = object.geometry.boundingSphere;
+    }
+    return this.intersectsSphere(new Sphere().copy(local).applyMatrix4(object.matrixWorld));
+  }
+  // Contract: a sprite is the unit quad about its anchor; its bound is the sphere of radius sqrt(1/2)
+  // (half the quad diagonal) grown by the anchor's offset from the quad centre (0.5, 0.5).
+  intersectsSprite(sprite) {
+    const offset = Math.hypot(sprite.center.x - 0.5, sprite.center.y - 0.5);
+    return this.intersectsSphere(new Sphere(new Vector3(), Math.SQRT1_2 + offset).applyMatrix4(sprite.matrixWorld));
+  }
+  intersectsSphere(s) { return this.planes.every((p) => !(p.distanceToPoint(s.center) < -s.radius)); }
+  intersectsBox(box) {
+    return this.planes.every((p) => {
+      const corner = new Vector3(p.normal.x > 0 ? box.max.x : box.min.x, p.normal.y > 0 ? box.max.y : box.min.y, p.normal.z > 0 ? box.max.z : box.min.z);
+      return !(p.distanceToPoint(corner) < 0);
+    });
+  }
+  containsPoint(point) { return this.planes.every((p) => !(p.distanceToPoint(point) < 0)); }
+  clone() { return new this.constructor().copy(this); }
+}
+
+// ───────────────────────────── Triangle ─────────────────────────────
+// Barycentric coordinates and closest point after Ericson, Real-Time Collision Detection (2005), §3.4
+// and §5.1.5. Contract: a degenerate triangle has no barycentrics (null, target zeroed) and a zero normal.
+
+const barycentric = (p, a, b, c, target) => {
+  const v0 = new Vector3().subVectors(b, a), v1 = new Vector3().subVectors(c, a), v2 = new Vector3().subVectors(p, a);
+  const d00 = v0.dot(v0), d01 = v0.dot(v1), d11 = v1.dot(v1), d20 = v2.dot(v0), d21 = v2.dot(v1);
+  const denom = d00 * d11 - d01 * d01;
+  if (denom === 0) { target.set(0, 0, 0); return null; }
+  const v = (d11 * d20 - d01 * d21) / denom;
+  const w = (d00 * d21 - d01 * d20) / denom;
+  return target.set(1 - v - w, v, w);
+};
+
+export class Triangle {
+  constructor(a = new Vector3(), b = new Vector3(), c = new Vector3()) { this.a = a; this.b = b; this.c = c; }
+  static getNormal(a, b, c, target) {
+    target.crossVectors(new Vector3().subVectors(b, a), new Vector3().subVectors(c, a));
+    const lenSq = target.lengthSq();
+    return lenSq > 0 ? target.multiplyScalar(1 / Math.sqrt(lenSq)) : target.set(0, 0, 0);
+  }
+  static getBarycoord(p, a, b, c, target) { return barycentric(p, a, b, c, target); }
+  static containsPoint(p, a, b, c) {
+    const w = barycentric(p, a, b, c, new Vector3());
+    return w !== null && w.x >= 0 && w.y >= 0 && w.z >= 0;
+  }
+  static getInterpolation(p, p1, p2, p3, v1, v2, v3, target) {
+    const w = barycentric(p, p1, p2, p3, new Vector3());
+    if (w === null) {
+      target.x = 0; target.y = 0;
+      if ("z" in target) target.z = 0;
+      if ("w" in target) target.w = 0;
+      return null;
+    }
+    return target.setScalar(0).addScaledVector(v1, w.x).addScaledVector(v2, w.y).addScaledVector(v3, w.z);
+  }
+  static getInterpolatedAttribute(attribute, i1, i2, i3, weights, target) {
+    const at = (i) => new Vector4(attribute.getX(i), attribute.getY(i), attribute.getZ(i), attribute.getW(i));
+    return target.setScalar(0).addScaledVector(at(i1), weights.x).addScaledVector(at(i2), weights.y).addScaledVector(at(i3), weights.z);
+  }
+  // Front-facing: the counter-clockwise normal points against the view direction.
+  static isFrontFacing(a, b, c, direction) {
+    return new Vector3().crossVectors(new Vector3().subVectors(b, a), new Vector3().subVectors(c, a)).dot(direction) < 0;
+  }
+  set(a, b, c) { this.a.copy(a); this.b.copy(b); this.c.copy(c); return this; }
+  setFromPointsAndIndices(points, i0, i1, i2) { return this.set(points[i0], points[i1], points[i2]); }
+  setFromAttributeAndIndices(attribute, i0, i1, i2) {
+    this.a.fromBufferAttribute(attribute, i0); this.b.fromBufferAttribute(attribute, i1); this.c.fromBufferAttribute(attribute, i2);
+    return this;
+  }
+  clone() { return new this.constructor().copy(this); }
+  copy(t) { return this.set(t.a, t.b, t.c); }
+  getArea() { return new Vector3().crossVectors(new Vector3().subVectors(this.b, this.a), new Vector3().subVectors(this.c, this.a)).length() / 2; }
+  getMidpoint(target) { return target.addVectors(this.a, this.b).add(this.c).divideScalar(3); }
+  getNormal(target) { return Triangle.getNormal(this.a, this.b, this.c, target); }
+  getPlane(target) { return target.setFromCoplanarPoints(this.a, this.b, this.c); }
+  getBarycoord(p, target) { return barycentric(p, this.a, this.b, this.c, target); }
+  getInterpolation(p, v1, v2, v3, target) { return Triangle.getInterpolation(p, this.a, this.b, this.c, v1, v2, v3, target); }
+  containsPoint(p) { return Triangle.containsPoint(p, this.a, this.b, this.c); }
+  isFrontFacing(direction) { return Triangle.isFrontFacing(this.a, this.b, this.c, direction); }
+  intersectsBox(box) { return box.intersectsTriangle(this); }
+  // Ericson §5.1.5: classify p against the Voronoi regions of the vertices, then of the edges, else the face.
+  closestPointToPoint(p, target) {
+    const { a, b, c } = this;
+    const ab = new Vector3().subVectors(b, a), ac = new Vector3().subVectors(c, a);
+    const ap = new Vector3().subVectors(p, a);
+    const d1 = ab.dot(ap), d2 = ac.dot(ap);
+    if (d1 <= 0 && d2 <= 0) return target.copy(a);
+    const bp = new Vector3().subVectors(p, b);
+    const d3 = ab.dot(bp), d4 = ac.dot(bp);
+    if (d3 >= 0 && d4 <= d3) return target.copy(b);
+    const vc = d1 * d4 - d3 * d2;
+    if (vc <= 0 && d1 >= 0 && d3 <= 0) return target.copy(a).addScaledVector(ab, d1 / (d1 - d3));
+    const cp = new Vector3().subVectors(p, c);
+    const d5 = ab.dot(cp), d6 = ac.dot(cp);
+    if (d6 >= 0 && d5 <= d6) return target.copy(c);
+    const vb = d5 * d2 - d1 * d6;
+    if (vb <= 0 && d2 >= 0 && d6 <= 0) return target.copy(a).addScaledVector(ac, d2 / (d2 - d6));
+    const va = d3 * d6 - d5 * d4;
+    if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) {
+      return target.copy(b).addScaledVector(new Vector3().subVectors(c, b), (d4 - d3) / ((d4 - d3) + (d5 - d6)));
+    }
+    const sum = va + vb + vc;
+    return target.copy(a).addScaledVector(ab, vb / sum).addScaledVector(ac, vc / sum);
+  }
+  equals(t) { return this.a.equals(t.a) && this.b.equals(t.b) && this.c.equals(t.c); }
 }

@@ -1,4 +1,4 @@
-export { AssetCache } from "./AssetCache";
+export { AssetCache, AssetCacheKeyError } from "./AssetCache";
 export type { AssetCacheSnapshot } from "./AssetCache";
 export { AssetDependencyGraph } from "./AssetDependencyGraph";
 export { AssetHandle } from "./AssetHandle";
@@ -248,7 +248,7 @@ export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecod
 export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
 export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 export { selectKTX2TargetFormat } from "./KTX2TargetSelection";
-export { AssetDecoderUnavailable, createAssetDecoderRegistry, probeKTX2Header } from "./AssetDecoderRegistry";
+export { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, createAssetDecoderRegistry, probeKTX2Header } from "./AssetDecoderRegistry";
 export type { AssetDecoderId, AssetDecoderRegistry, AssetDecoderRegistryDiagnostics, AssetDecoderRegistryOptions, AuraAssetDecoderSet } from "./AssetDecoderRegistry";
 export type {
   GLTFDracoAttribute,

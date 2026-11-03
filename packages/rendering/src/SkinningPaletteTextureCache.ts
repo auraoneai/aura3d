@@ -134,6 +134,12 @@ export class SkinningPaletteTextureCache implements SkinningPaletteTextureCacheL
     entry.currentData.fill(0, matrices.length);
     entry.currentData.set(matrices);
     entry.current.update(entry.currentData);
+    if (entry.uploadedFrame === -1) {
+      // A new skin has no prior pose: seed the previous palette with the
+      // first pose so its first-frame motion is zero, not a pose from origin.
+      entry.previousData.set(entry.currentData);
+      entry.previous.update(entry.previousData);
+    }
     entry.uploadedFrame = this.frameId;
   }
 

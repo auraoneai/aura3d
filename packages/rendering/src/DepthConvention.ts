@@ -36,6 +36,15 @@ export interface DepthConvention {
   readonly precisionReason?: string;
   /** Storage class of the depth attachment the frame rasterizes into, when known. */
   readonly depthStorage?: DepthStorage;
+  /**
+   * Clip range of the projection matrices the frame's programs receive, when
+   * it differs from what `clipRange` implies. WebGPU always rasterizes
+   * zero-to-one (`clipRange`), but only a reversed frame negotiated with
+   * "zero-to-one" here hands its programs a native zero-to-one projection
+   * (no (z + w) / 2 vertex remap). Absent means minus-one-to-one projections
+   * on WebGPU and `clipRange` elsewhere.
+   */
+  readonly projectionClipRange?: DepthClipRange;
   /** Camera near/far for a logarithmic frame; generated programs encode against it. */
   readonly logRange?: DepthDistanceRange & { readonly kind?: "perspective" | "orthographic" };
 }

@@ -1,7 +1,7 @@
 // examples/splat-rush-port/art/direction.ts — GU47 WP-26 (G16) art direction for Chroma Roll (splat-rush-port).
 // Fantasy: a wet-paint ribbon road through a low-sun sky; hand-inked cel paint carnival at sunset.
 // The look table is `../look.ts` (one row per variant: original, carnival); the VFX preset pack is `../vfx3d.ts`.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "splat-rush-port",

@@ -42,9 +42,9 @@
  *
  * Renderer conventions that are not publications are taken from Aura3D's own
  * shader sources and named where used: the 2^-7 sin^2 floor in the Charlie
- * NDF (`ShaderLibrary.ts`, `physical-wgsl/sheen.wgsl.ts`), the curve-fitted
- * sheen albedo coefficients (parsed from `physical-wgsl/sheen.wgsl.ts`, since
- * a fitted curve has no closed form to re-derive), the IOR roughness scale
+ * NDF (`ShaderLibrary.ts`), the curve-fitted sheen albedo coefficients
+ * (stated as literals below, since a fitted curve has no closed form to
+ * re-derive), the IOR roughness scale
  * (`physical/transmission.glsl.ts`), the 1e-6 visibility denominator guard,
  * and the reciprocal direct-light multiscatter compensation (the two-direction
  * generalisation of [FA19] eq. 16-17 that the oracle documents).
@@ -54,9 +54,6 @@
  * Gauss-Legendre quadrature in `native-reference-environment-clean.ts`) so the
  * unit test can bound the table separately from the formulas that consume it.
  */
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { environmentBRDF as integrateSplitSum } from "./native-reference-environment-clean";
 
 type V3 = [number, number, number];
@@ -91,23 +88,17 @@ export function neubeltV(nv: number, nl: number): number {
 	return Math.min(1, 1 / denominator);
 }
 
-/** Fitted sheen directional albedo; coefficients parsed from Aura3D's WGSL sheen chunk. */
-const SHEEN_FIT = (() => {
-	const here = dirname(fileURLToPath(import.meta.url));
-	const source = readFileSync(join(here, "../../../../packages/rendering/src/shaders/physical-wgsl/sheen.wgsl.ts"), "utf8");
-	const num = String.raw`(-?\d+(?:\.\d+)?)`;
-	const sign = String.raw`([+-])\s*`;
-	const line = (name: string) =>
-		new RegExp(String.raw`let ${name} = ${num}\s*${sign}(\d+(?:\.\d+)?) \* roughness\s*${sign}(\d+(?:\.\d+)?) \* r2\s*${sign}(\d+(?:\.\d+)?) \* rInv;`);
-	const parse = (name: string): [number, number, number, number] => {
-		const m = line(name).exec(source);
-		if (!m) throw new Error(`could not parse sheen fit line '${name}' from sheen.wgsl.ts`);
-		const s = (sg: string, v: string) => (sg === "-" ? -Number(v) : Number(v));
-		return [Number(m[1]), s(m[2]!, m[3]!), s(m[4]!, m[5]!), s(m[6]!, m[7]!)];
-	};
-	if (!/let rInv = 1\.0 \/ \(roughness \+ 0\.1\);/.test(source)) throw new Error("sheen.wgsl.ts rInv definition changed");
-	return { a: parse("a"), b: parse("b") };
-})();
+/**
+ * Fitted sheen directional albedo exp(a * N.V + b), with a and b quadratic in
+ * roughness plus a 1 / (roughness + 0.1) term. These are the oracle's
+ * documented curve-fit constants (the Aura shaders now integrate a
+ * preintegrated table instead, see physical/sheenAlbedoLut.ts); a fitted curve
+ * has no closed form to re-derive, so the constants are stated here.
+ */
+const SHEEN_FIT = {
+	a: [-1.9362, 1.0678, 0.4573, -0.8469] as const,
+	b: [-0.6014, 0.5538, -0.467, -0.1255] as const,
+};
 
 export function sheenAlbedoFit(nv: number, roughness: number): number {
 	const basis = [1, roughness, roughness * roughness, 1 / (roughness + 0.1)];

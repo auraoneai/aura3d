@@ -34,20 +34,11 @@ for (const name of [...METHOD_CLASSES, "Octree"]) {
   methods[name] = Object.getOwnPropertyNames(proto).filter((k) => typeof Object.getOwnPropertyDescriptor(proto, k)?.value === "function" && !k.startsWith("is") && !IGNORED.has(k));
 }
 
-// Every prototype method and accessor (nothing excluded) of the classes the mutable math layer mirrors, plus their
-// static members, so the compat parity test can require a method-level case for each.
-const MATH_CLASSES = ["Vector2", "Vector3", "Vector4", "Matrix3", "Matrix4", "Quaternion", "Euler", "Color", "Box3", "Sphere", "Plane", "Ray", "Frustum", "Triangle"];
-const mathMembers = {};
-for (const name of MATH_CLASSES) {
-  const ctor = THREE[name];
-  const proto = ctor.prototype;
-  const instance = Object.getOwnPropertyNames(proto).filter((k) => k !== "constructor" && !k.startsWith("is"));
-  const statics = Object.getOwnPropertyNames(ctor).filter((k) => !["length", "name", "prototype"].includes(k));
-  mathMembers[name] = { instance, statics };
-}
-
-const goldens = { three: pkg.version, generatedBy: "tests/fixtures/migrate-three/generate.mjs", methods, mathMembers, values: {} };
+// The method-level math cases (`Class#method`, cases.math.mjs) are not generated here: their expected values come
+// from the independent reference (tests/support/independent-math-reference.mjs, S5-WP29-05).
+const goldens = { three: pkg.version, generatedBy: "tests/fixtures/migrate-three/generate.mjs", methods, values: {} };
 for (const [name, run] of Object.entries(cases)) {
+  if (name.includes("#")) continue;
   goldens.values[name] = run(L);
 }
 for (const [name, def] of Object.entries(extraCases)) {

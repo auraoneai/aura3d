@@ -43,7 +43,7 @@ const points = scatterAlongPath({ seed: 7, start: 0, end: 2000, path, step: [20,
 const [near, mid, far] = splitScatterByDistance(points, [camera.x, camera.z], [180, 420]);
 instances.model(assets.pineHigh, { transforms: scatterTransforms(near, { kind: 0 }) });
 instances.model(assets.pineLow, { transforms: scatterTransforms(mid) });
-instances.cone({ transforms: scatterTransforms(far), material: material.standard({ color: "#2f6b3a" }) });
+instances.cone({ transforms: scatterTransforms(far), material: material.pbr({ color: "#2f6b3a" }) });
 ```
 
 `splitScatterByDistance(points, origin, radii)` returns `radii.length + 1` bands, closest first. `scatterTransforms(points, { kind?, baseScale? })` produces `instances.*` transforms (yaw about Y; `depthScale` multiplies Z). An empty list is valid everywhere: `instances.*` skips an empty node with the `INSTANCES_EMPTY` diagnostic instead of throwing.
@@ -60,7 +60,7 @@ const village = mergeStatic([
   { geometry: houseGeometry, position: [12, 0, 4], scale: 1.2, color: "#e8c9a0" },
   { geometry: lampGeometry, position: [6, 0, 2] }
 ]);
-if (village) scene.add(primitives.custom(village, { material: stoneMaterial }));
+if (village) scene.add(geometry.custom(village, { material: stoneMaterial }));
 ```
 
 - Rotation is Euler XYZ in radians composed as `R = Rz * Ry * Rx` applied after scale, identical to instance transforms, so a baked part lands where an instance would.

@@ -16,6 +16,7 @@ import type { DeviceProbe } from "../contracts/device";
 import type { RenderDevice } from "../RenderDevice";
 import { createWebGL2GpuTimingBackend, type RendererGpuTimingBackend } from "../RendererTiming";
 import { webgl2DeviceHost } from "../webgl2/Counters";
+import { FrameStats } from "./FrameStats";
 
 export interface ProbeEnvironment {
   readonly navigator?: {
@@ -103,4 +104,30 @@ export function gpuTimingBackendForDevice(device: RenderDevice): RendererGpuTimi
   }
   gpuBackends.set(device, backend);
   return backend;
+}
+
+const frameStatsByDevice = new WeakMap<RenderDevice, FrameStats>();
+
+/**
+ * The single per-device `FrameStats` ring that owns (and alone polls) the
+ * device's GPU timing backend. Per-view statistics (prd11) and the renderer's
+ * whole-frame inspection ranges share it, so their queries are issued
+ * consecutively on one backend and no second poller drains its results.
+ */
+export function frameStatsForDevice(device: RenderDevice, capacity = 240): FrameStats {
+  let stats = frameStatsByDevice.get(device);
+  if (!stats) {
+    stats = new FrameStats(capacity, gpuTimingBackendForDevice(device) ?? undefined);
+    frameStatsByDevice.set(device, stats);
+  }
+  return stats;
+}
+
+/** Explicit reason reported with `gpuMs: null` when a device cannot time GPU work. */
+export function gpuTimingUnavailableReason(device: RenderDevice): string {
+  const kind = device.info?.backend ?? device.probe?.backend;
+  if (kind === "webgpu") return "WebGPU timestamp-query timing is unavailable for whole-frame inspection";
+  if (kind === "webgl2") return "EXT_disjoint_timer_query_webgl2 unavailable";
+  if (kind === "mock") return "Mock device has no GPU timer queries";
+  return "GPU timer queries unavailable";
 }

@@ -17,6 +17,13 @@ export interface AuraGaussianSplatOptions extends AuraTransformSpec {
   readonly maxRadiusPx?: number;
   readonly sigmaCutoff?: number;
   readonly opacityCutoff?: number;
+  /**
+   * Opt-in GPU back-to-front sort on WebGPU (default false). A frame uses a
+   * GPU order once one is ready for its exact camera and model; other frames,
+   * non-WebGPU devices, devices without compute and any GPU failure use the
+   * CPU sort, reported by the cloud renderer's `gpuSortStatus`.
+   */
+  readonly gpuSort?: boolean;
 }
 export interface AuraGaussianSplatNode extends AuraTransformSpec {
   readonly kind: "gaussian-splat";
@@ -30,6 +37,7 @@ export interface AuraGaussianSplatNode extends AuraTransformSpec {
   readonly maxRadiusPx?: number;
   readonly sigmaCutoff?: number;
   readonly opacityCutoff?: number;
+  readonly gpuSort?: boolean;
 }
 export interface AuraGaussianSplatBackendDiagnostic {
   readonly backend: "webgl2" | "webgpu" | "mock" | "unknown";
@@ -64,5 +72,6 @@ export function gaussianSplat(asset: AuraAssetRef<"gaussian-splat">, options: Au
   if (options.maxRadiusPx !== undefined && (!Number.isFinite(options.maxRadiusPx) || options.maxRadiusPx <= 0)) throw new RangeError("maxRadiusPx must be positive");
   if (options.sigmaCutoff !== undefined && (!Number.isFinite(options.sigmaCutoff) || options.sigmaCutoff <= 0 || options.sigmaCutoff > 4)) throw new RangeError("sigmaCutoff must be in (0,4]");
   if (options.opacityCutoff !== undefined && (!Number.isFinite(options.opacityCutoff) || options.opacityCutoff < 0 || options.opacityCutoff >= 1)) throw new RangeError("opacityCutoff must be in [0,1)");
+  if (options.gpuSort !== undefined && typeof options.gpuSort !== "boolean") throw new TypeError("gpuSort must be boolean");
   return new AuraNodeBuilder({ ...options, kind: "gaussian-splat", asset, visible: options.visible ?? true });
 }

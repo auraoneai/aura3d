@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -122,15 +122,17 @@ describe("installed package conditions", () => {
 });
 
 import { createHash } from "node:crypto";
-import { copyTemplateHdris, TEMPLATE_ENVIRONMENT_PRESETS } from "../../../packages/create-aura3d/src/template-hdri";
+import { copyTemplateHdris, TEMPLATE_ENVIRONMENT_PRESETS, TEMPLATE_HDRI_ATTRIBUTION, TEMPLATE_HDRI_SHA256 } from "../../../packages/create-aura3d/src/template-hdri";
+
+// copyTemplateHdris delivers the whole pinned look catalogue (each file is
+// SHA-256 verified), so the fixture reads the real packaged HDRI set.
+const PACKAGED_HDRI = join(__dirname, "../../../packages/create-aura3d/hdri");
 
 function environmentFixture(): { root: string; hdri: string; project: string } {
   const root = mkdtempSync(join(tmpdir(), "native-template-environments-"));
   roots.push(root);
   const hdri = join(root, "hdri"), source = join(root, "aura-environments"), project = join(root, "project");
-  mkdirSync(hdri); mkdirSync(source); mkdirSync(project);
-  writeFileSync(join(hdri, "look.hdr"), "fixture");
-  writeFileSync(join(hdri, "ATTRIBUTION.md"), "fixture attribution");
+  symlinkSync(PACKAGED_HDRI, hdri, "dir"); mkdirSync(source); mkdirSync(project);
   const sha = (text: string) => createHash("sha256").update(text).digest("hex");
   for (const name of TEMPLATE_ENVIRONMENT_PRESETS) {
     const specular = `${name}.specular.ktx2`, sh9 = `${name}.sh9.f32`;
@@ -145,7 +147,10 @@ describe("template environment assets", () => {
   it("copies every verified promised preset and look HDRI into the scaffold", () => {
     const { hdri, project } = environmentFixture();
     const copied = copyTemplateHdris(hdri, project);
-    expect(copied).toContain("public/hdri/look.hdr");
+    for (const file of [...Object.keys(TEMPLATE_HDRI_SHA256), TEMPLATE_HDRI_ATTRIBUTION]) {
+      expect(copied).toContain(`public/hdri/${file}`);
+      expect(readFileSync(join(project, "public/hdri", file)).equals(readFileSync(join(hdri, file)))).toBe(true);
+    }
     for (const name of TEMPLATE_ENVIRONMENT_PRESETS) {
       for (const suffix of ["manifest.json", "specular.ktx2", "sh9.f32"]) {
         const path = `public/aura-environments/${name}.${suffix}`;
@@ -159,7 +164,7 @@ describe("template environment assets", () => {
     const missing = environmentFixture();
     rmSync(join(missing.root, "aura-environments", "outdoor.sh9.f32"));
     expect(() => copyTemplateHdris(missing.hdri, missing.project)).toThrow(/ENV_PRESET_UNAVAILABLE:outdoor/);
-    expect(() => readFileSync(join(missing.project, "public/hdri/look.hdr"))).toThrow();
+    for (const file of Object.keys(TEMPLATE_HDRI_SHA256)) expect(() => readFileSync(join(missing.project, "public/hdri", file))).toThrow();
     const changed = environmentFixture();
     writeFileSync(join(changed.root, "aura-environments", "night.specular.ktx2"), "different");
     expect(() => copyTemplateHdris(changed.hdri, changed.project)).toThrow(/ENV_PRESET_INVALID:night.*digest mismatch/);

@@ -15,7 +15,8 @@
  */
 
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
-import { AssetDecoderUnavailable, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, withDecoderTimeout } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, decoderTimeoutMs, drainWithDeadline, withDecoderTimeout } from "./decoderLoad.js";
+import { redactAssetUrl } from "./AssetLoader.js";
 import { createMeshoptDecoder, createDracoDecoder, type GLTFMeshoptDecoderModule, type GLTFDracoDecoderModule } from "./GLTFCompressionDecoders.js";
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
 import { MAX_KTX2_INPUT_BYTES, ktx2TargetToTextureFormat, loadBasisTranscoderModule, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder.js";
@@ -38,6 +39,14 @@ export interface AuraAssetDecoderSet {
 export interface AssetDecoderRegistryDiagnostics {
   readonly loaded: readonly AssetDecoderId[];
   readonly failed: readonly { id: string; url: string }[];
+  /**
+   * `timed-out`: disposal gave up waiting on a never-settling initializer or
+   * cleanup (the registry is cancelled; late values are released on arrival;
+   * call dispose again to re-drain). `failed`: a cleanup reported an error.
+   */
+  readonly disposal?: "active" | "disposing" | "disposed" | "timed-out" | "failed";
+  /** Initializer/cleanup operations not yet settled. */
+  readonly pendingOperations?: number;
 }
 
 export interface AssetDecoderRegistry {
@@ -45,11 +54,14 @@ export interface AssetDecoderRegistry {
   diagnostics(): AssetDecoderRegistryDiagnostics;
   /** Cancel immediately. */
   dispose(): void;
-  /** Drain cleanup; an uncooperative initializer can keep this pending. */
+  /**
+   * Drain cleanup. Bounded by `disposeTimeoutMs`: a never-settling initializer
+   * rejects with `AssetDecoderDisposeTimeout` instead of hanging.
+   */
   disposeAsync?(): Promise<void>;
 }
 
-export { AssetDecoderUnavailable };
+export { AssetDecoderUnavailable, AssetDecoderDisposeTimeout };
 
 export interface AssetDecoderRegistryOptions {
   /** Same-origin decoder root, e.g. `/aura-decoders/` (trailing slash optional). */
@@ -59,6 +71,8 @@ export interface AssetDecoderRegistryOptions {
   readonly workerCount: number;
   /** Per-file URLs from the owning packaged render worker, when no caller base overrides them. */
   readonly workerAssets?: BundledWorkerDecoderAssets;
+  /** Bound on draining initialization and cleanup during disposal (default 10 s). */
+  readonly disposeTimeoutMs?: number;
 }
 
 interface KTX2HeaderProbe {
@@ -100,6 +114,8 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
   const lifetime = new AbortController();
   let disposed = false;
   let disposal: Promise<void> | undefined;
+  let disposalState: NonNullable<AssetDecoderRegistryDiagnostics["disposal"]> = "active";
+  const disposeTimeoutMs = decoderTimeoutMs(options.disposeTimeoutMs, DECODER_DISPOSE_TIMEOUT_MS, "Decoder registry disposeTimeoutMs");
 
   const track = (work: Promise<unknown>, cleanup = false): void => {
     const tracked = work.then(
@@ -194,15 +210,18 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
   };
 
   const loadMeshopt = (): Promise<ReturnType<typeof createMeshoptDecoder>> =>
-    withRetry("meshopt", workerAssets?.meshoptModule ?? `${basePath}meshopt/meshopt_decoder.mjs`, async () => {
-      const mod = await loadMeshoptModule(basePath, workerAssets);
-      const decoder = (mod.MeshoptDecoder ?? (mod.default as Record<string, unknown> | undefined)?.MeshoptDecoder) as GLTFMeshoptDecoderModule | undefined;
-      if (!decoder) throw new Error("meshopt decoder did not export MeshoptDecoder");
-      try {
-        if (decoder.ready) await decoder.ready;
-        return attachRelease(createMeshoptDecoder(decoder), decoder);
-      } catch (error) { release(decoder); throw error; }
-    });
+    withRetry("meshopt", workerAssets?.meshoptModule ?? `${basePath}meshopt/meshopt_decoder.mjs`, () =>
+      // A module import or `ready` promise that never settles is bounded like
+      // Draco; a late decoder is released rather than installed.
+      timeoutWithRelease((async () => {
+        const mod = await loadMeshoptModule(basePath, workerAssets);
+        const decoder = (mod.MeshoptDecoder ?? (mod.default as Record<string, unknown> | undefined)?.MeshoptDecoder) as GLTFMeshoptDecoderModule | undefined;
+        if (!decoder) throw new Error("meshopt decoder did not export MeshoptDecoder");
+        try {
+          if (decoder.ready) await decoder.ready;
+          return attachRelease(createMeshoptDecoder(decoder), decoder);
+        } catch (error) { release(decoder); throw error; }
+      })(), "meshopt decoder load"));
 
   const loadDraco = (): Promise<ReturnType<typeof createDracoDecoder>> =>
     withRetry("draco", workerAssets?.dracoModule ?? `${basePath}draco/draco_decoder.js`, () =>
@@ -285,7 +304,7 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
           throwIfCancelled();
           const header = probeKTX2Header(bytes);
           const targetFormat = selectKTX2TargetFormat(options.capabilities, header.source, header.hasAlpha, header.colorSpace);
-          if (typeof Worker !== "undefined") pool ??= createKTX2TranscodeWorkerPool(transcoderUrl, options.workerCount, {}, workerAssets);
+          if (typeof Worker !== "undefined") pool ??= createKTX2TranscodeWorkerPool(transcoderUrl, options.workerCount, { disposeTimeoutMs: Math.ceil(disposeTimeoutMs) }, workerAssets);
           const decoded = await transcodeKTX2BasisTexture(bytes, {
             targetFormat,
             colorSpace: header.colorSpace,
@@ -318,13 +337,26 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
   const dispose = (): Promise<void> => {
     if (disposal) return disposal;
     disposed = true;
-    disposal = Promise.resolve().then(async () => {
-      while (pending.size) await Promise.all([...pending]);
-      if (cleanupErrors.length) throw new AggregateError(cleanupErrors, "Asset decoder registry disposal failed");
+    disposalState = "disposing";
+    const attempt: Promise<void> = Promise.resolve().then(async () => {
+      const unsettled = await drainWithDeadline(pending, disposeTimeoutMs);
+      if (unsettled > 0) {
+        // Never hang on a factory/initializer that cannot settle. The registry
+        // stays cancelled; a later dispose() call re-drains what remains.
+        disposalState = "timed-out";
+        if (disposal === attempt) disposal = undefined;
+        throw new AssetDecoderDisposeTimeout("Asset decoder registry", unsettled, disposeTimeoutMs);
+      }
+      if (cleanupErrors.length) {
+        disposalState = "failed";
+        throw new AggregateError(cleanupErrors, "Asset decoder registry disposal failed");
+      }
+      disposalState = "disposed";
     });
+    disposal = attempt;
     // Keep the existing fire-and-forget call safe while allowing awaiters
     // to observe cleanup failures and late initialization.
-    void disposal.catch(() => {});
+    void attempt.catch(() => {});
     lifetime.abort();
     for (const value of decoderValues) release(value);
     decoderValues.clear();
@@ -360,7 +392,7 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
       return set;
     },
     diagnostics(): AssetDecoderRegistryDiagnostics {
-      return { loaded: [...loaded], failed: [...failed] };
+      return { loaded: [...loaded], failed: [...failed], disposal: disposalState, pendingOperations: pending.size };
     },
     dispose,
     disposeAsync: dispose
@@ -453,21 +485,21 @@ async function loadUmdGlobal(id: AssetDecoderId, dirUrl: string, fileName: strin
   try {
     return await withDecoderTimeout(
       new Promise<unknown>((resolve, reject) => {
-        abort = () => reject(new Error(`script load cancelled: ${url}`));
+        abort = () => reject(new Error(`script load cancelled: ${redactAssetUrl(url)}`));
         if (signal?.aborted) { abort(); return; }
         signal?.addEventListener("abort", abort, { once: true });
         script.src = url;
         script.onload = () => {
           const bound = (globalThis as Record<string, unknown>)[globalName];
-          if (bound === undefined) reject(new Error(`${globalName} not bound by ${url}`));
+          if (bound === undefined) reject(new Error(`${globalName} not bound by ${redactAssetUrl(url)}`));
           else if (typeof bound === "function") {
             resolve((config?: Record<string, unknown>) => bound({ ...config, locateFile }));
           } else resolve(bound);
         };
-        script.onerror = () => reject(new Error(`script load failed: ${url}`));
+        script.onerror = () => reject(new Error(`script load failed: ${redactAssetUrl(url)}`));
         document.head.appendChild(script);
       }),
-      `script load ${url}`
+      `script load ${redactAssetUrl(url)}`
     );
   } finally {
     if (abort) signal?.removeEventListener("abort", abort);

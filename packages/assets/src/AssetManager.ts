@@ -1,4 +1,4 @@
-import { AssetCache } from "./AssetCache";
+import { AssetCache, issueAssetCacheKey, retireAssetCacheKey } from "./AssetCache";
 import { AssetDependencyGraph } from "./AssetDependencyGraph";
 import { AssetHandle } from "./AssetHandle";
 import {
@@ -389,7 +389,7 @@ export class AssetManager {
   private keyFor(identity: string, node: string): string {
     let key = this.identityKeys.get(identity);
     if (!key) {
-      key = `asset-cache-${this.nextKey++}`;
+      key = this.cache[issueAssetCacheKey](`asset-cache-${this.nextKey++}`);
       this.identityKeys.set(identity, key);
       this.keyIdentities.set(key, identity);
       this.keyNodes.set(key, node);
@@ -412,6 +412,7 @@ export class AssetManager {
     if (identity !== undefined && this.identityKeys.get(identity) === key) this.identityKeys.delete(identity);
     this.keyIdentities.delete(key);
     this.keyNodes.delete(key);
+    this.cache[retireAssetCacheKey](key);
   }
 
   private shouldRetry(error: unknown, context: LoadContext, attempt: number, retries: number): boolean {

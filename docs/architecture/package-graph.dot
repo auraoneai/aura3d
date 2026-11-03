@@ -1,5 +1,9 @@
 digraph aura3d {
   rankdir=LR;
+  "addons" [label="addons\ntier 5"];
+  "addons" -> "engine";
+  "addons" -> "rendering";
+  "addons" -> "scene";
   "animation" [label="animation\ntier 2"];
   "animation" -> "math";
   "apps" [label="apps\ntier 4"];
@@ -15,6 +19,7 @@ digraph aura3d {
   "audio" -> "scene";
   "aura3d-cli" [label="aura3d-cli\ntier 6"];
   "aura3d-cli" -> "asset-index";
+  "aura3d-cli" -> "assets";
   "aura3d-cli" -> "audio";
   "aura3d-cli" -> "rendering";
   "controls" [label="controls\ntier 3"];
@@ -34,6 +39,7 @@ digraph aura3d {
   "editor-runtime" [label="editor-runtime\ntier 3"];
   "editor-runtime" -> "animation";
   "editor-runtime" -> "math";
+  "editor-runtime" -> "rendering";
   "editor-runtime" -> "scene";
   "engine" [label="engine\ntier 5"];
   "engine" -> "animation";
@@ -41,6 +47,7 @@ digraph aura3d {
   "engine" -> "assets";
   "engine" -> "audio";
   "engine" -> "core";
+  "engine" -> "debug";
   "engine" -> "ecs";
   "engine" -> "editor-runtime";
   "engine" -> "input";

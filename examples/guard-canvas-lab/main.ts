@@ -7,7 +7,7 @@
  * `?drawEvery=N` draws on every Nth animation-frame callback; `?pattern=timer` draws from setInterval instead of rAF;
  * `?pattern=fbo` renders into an offscreen framebuffer first, then blits to the canvas in a later rAF callback.
  */
-import { installBlackFrameGuard } from "../../packages/debug/src/safety/index";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 type Lab = { mode: string; pattern: string; frames: number; draws: number; rung: () => number; observation: () => unknown; error?: string };
 const w = window as unknown as { __GUARD_LAB__?: Lab };

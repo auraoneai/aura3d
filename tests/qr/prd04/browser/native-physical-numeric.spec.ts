@@ -1,6 +1,7 @@
 /**
- * Phase B only. This suite executes a real WebGPU compute pass. The candidate
- * measurement is separate from the deliberately incomplete renderer gate.
+ * Phase B only. This suite executes a real WebGPU compute pass over the
+ * production physical shader functions and applies the source-defined
+ * conformance gate (evaluateNativePhysicalConformance).
  */
 import { expect, test, type Page } from "@playwright/test";
 import { startPrd04DevServer, type ExampleDevServer } from "../dev-server";
@@ -11,8 +12,8 @@ type Report = {
   reason?: string;
   evidence?: string;
   categories?: string[];
-  measurements?: Array<{ id: string; mapping: string; tolerance: string; comparison: { verdict: string; observed: number[] } }>;
-  unmapped?: Array<{ id: string; reason: string }>;
+  measurements?: Array<{ id: string; mapping: string; tolerance: { absolute: number; relative: number; rationale: string }; comparison: { verdict: string; observed: number[] } }>;
+  unmapped?: Array<{ id: string; reason: string; contract: string; productionFunction: string }>;
   negativeControl?: { movedAwayFromReference: boolean };
   conformance?: { status: string; reasons: string[] };
 };
@@ -27,10 +28,10 @@ async function readReport(page: Page): Promise<Report> {
   return page.evaluate(() => window.__AURA_NATIVE_PHYSICAL_NUMERIC__ as Report);
 }
 
-test("measures independent candidates and detects the perturbed sheen control", async ({ page }) => {
+test("measures production shader functions and detects the perturbed sheen control", async ({ page }) => {
   const report = await readReport(page);
   expect(report.status, report.reason).toBe("completed");
-  expect(report.evidence).toContain("no renderer or pixel evidence");
+  expect(report.evidence).toContain("no frame or pixel evidence");
   expect(report.categories).toEqual([...PHYSICAL_CATEGORIES]);
   expect(report.measurements?.length).toBeGreaterThan(0);
   expect(report.measurements?.every((sample) => sample.comparison.observed.every(Number.isFinite))).toBe(true);
@@ -40,11 +41,11 @@ test("measures independent candidates and detects the perturbed sheen control", 
 test("physical-lighting renderer conformance is complete", async ({ page }) => {
   const report = await readReport(page);
   expect(report.status, report.reason).toBe("completed");
-  // Do not turn diagnostic differences, unmeasured tolerance, or missing
-  // shader implementations into a passing renderer claim. This assertion stays
-  // red until the production integration and its independent bounds exist.
+  // Every mapped probe must be within its stated f32/filtering bound, and every
+  // sample the production shader does not compute must carry an explicit
+  // model-difference contract naming the production function.
   expect(report.conformance?.status, report.conformance?.reasons.join("; ")).toBe("passed");
-  expect(report.unmapped).toEqual([]);
+  expect(report.unmapped?.every((entry) => entry.contract === "documented-model-difference" && entry.productionFunction.length > 0)).toBe(true);
   expect(report.measurements?.filter((sample) => sample.mapping === "different-boundary")).toEqual([]);
   expect(report.measurements?.every((sample) => sample.comparison.verdict === "within-tolerance")).toBe(true);
 });

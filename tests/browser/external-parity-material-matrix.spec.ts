@@ -57,8 +57,7 @@ test.describe("ExternalParity physical material matrix browser evidence", () => 
       ok: errors.length === 0 &&
         state?.status === "ready" &&
         externalParityMaterials.materialIds.length === 12 &&
-        externalParityMaterials.boundedDiagnostics.includes("clearcoat") &&
-        externalParityMaterials.boundedDiagnostics.includes("transmission") &&
+        externalParityMaterials.boundedDiagnostics.length === 0 &&
         externalParityMaterials.transmission.bounded === true &&
         pixelBuckets.size >= 8,
       generatedAt: new Date().toISOString(),
@@ -81,8 +80,8 @@ test.describe("ExternalParity physical material matrix browser evidence", () => 
     expect(errors).toEqual([]);
     expect(state?.status).toBe("ready");
     expect(externalParityMaterials.materialIds).toHaveLength(12);
-    expect(externalParityMaterials.boundedDiagnostics).toContain("clearcoat");
-    expect(externalParityMaterials.boundedDiagnostics).toContain("transmission");
+    // S5-WP04-01: no material lobe remains bounded in the support matrix.
+    expect(externalParityMaterials.boundedDiagnostics).toEqual([]);
     expect(externalParityMaterials.transmission.bounded).toBe(true);
     expect(pixelBuckets.size).toBeGreaterThanOrEqual(8);
   });

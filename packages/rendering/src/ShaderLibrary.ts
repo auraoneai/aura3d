@@ -1,4 +1,5 @@
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
+import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./webgpu/ProjectionClip";
 import { registerAnimationToonShader } from "./animation/AnimationToonMaterial.js";
 import { recordDefaultShaderLibrary } from "./renderer/TrustedShaderLibrary";
 import {
@@ -3427,6 +3428,7 @@ void main() {
     webgpu: {
       vertex: `// ${DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER}
 /* @aura3d-bindings */
+${ZERO_TO_ONE_PROJECTION_WGSL}
 struct LineOut {
   @builtin(position) position: vec4f,
   @location(0) color: vec4f,
@@ -3510,8 +3512,9 @@ struct LineOut {
     clip = vec4f(clipAnchor.xy + offset * (2.0 / aura.u_lineResolution) * clipAnchor.w, clipAnchor.zw);
     capFraction = halfPixels / max(pixelLength, 0.000001);
   }
-  // Engine projection matrices use GL clip depth; WebGPU clips in [0,w].
-  out.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);
+  // Standard frames pass GL clip depth (remapped to WebGPU's [0,w]); zero-to-one
+  // reversed frames specialize a3dZeroToOneProjection and pass clip z through.
+  out.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);
   out.capFraction = capFraction;
   out.cap = vec2f(corner.x, select(-capFraction * capAtEndpoint, 1.0 + capFraction * capAtEndpoint, along > 0.5));
   return out;

@@ -1,6 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectType, AuraEffectNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraRendererRuntimeObservation, AuraSceneSnapshot } from "./nodes/types.js";
+import type { AuraEffectType, AuraEffectNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraRendererFrameTiming } from "./nodes/types.js";
 import { AuraSceneBuilder } from "./nodes/scene.js";
 import { analyzeProductionBridgeEligibility } from "./compiler/observations.js";
 import { resolveProductionCameraDepth } from "./compiler/cameraDepth.js";
@@ -156,6 +156,7 @@ export function createRendererDiagnosticReport(
   return {
     kind: "aura-renderer-diagnostics",
     ...(depth ? { depth } : {}),
+    ...(runtime?.mounted && runtime.frameTiming ? { frameTiming: runtime.frameTiming } : {}),
     colorManagement: rendererColorManagementPreset,
     rendererMode: rendererSelection.mode,
     fallbackMode: rendererSelection.fallback,
@@ -354,4 +355,33 @@ export function resolveRendererSceneCategory(snapshot: AuraSceneSnapshot, names:
   const background = colorToClearColor(snapshot.background);
   const luminance = background[0] * 0.2126 + background[1] * 0.7152 + background[2] * 0.0722;
   return luminance < 0.08 ? "neon" : "product";
+}
+
+interface InspectedFrameTimingLike {
+  readonly frameNumber: number;
+  readonly cpuTimeMs: number | null;
+  readonly gpuTimeMs: number | null;
+  readonly gpuTimeReason?: string;
+  readonly gpuViewTiming?: { readonly views: readonly { readonly viewId: string | number; readonly gpuTimeMs: number | null }[] } | null;
+}
+
+/**
+ * Whole-frame timing from a renderer's inspection history. GPU results settle
+ * frames later, so this reports the newest frame whose GPU total was measured,
+ * or else the newest frame with `gpuMs: null` and the renderer's reason.
+ */
+export function rendererFrameTimingFromInspection(history: readonly InspectedFrameTimingLike[] | null | undefined): AuraRendererFrameTiming | undefined {
+  if (!history || history.length === 0) return undefined;
+  let frame = history[history.length - 1]!;
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    if (history[index]!.gpuTimeMs !== null) { frame = history[index]!; break; }
+  }
+  const gpuMs = frame.gpuTimeMs;
+  return {
+    frameNumber: frame.frameNumber,
+    cpuMs: frame.cpuTimeMs,
+    gpuMs,
+    ...(gpuMs === null ? { gpuReason: frame.gpuTimeReason ?? "GPU frame timing unavailable" } : {}),
+    views: (frame.gpuViewTiming?.views ?? []).map((view) => ({ viewId: view.viewId, gpuMs: view.gpuTimeMs }))
+  };
 }

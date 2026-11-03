@@ -3,7 +3,9 @@ import { RenderDeviceError, type UniformValue } from "../RenderDevice";
 import type { GeneratedPbrDescriptor } from "./GeneratedPbrProgram";
 import { DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
 import { NATIVE_POINT_WGSL } from "./NativePointShader";
+import { ALPHA_TO_COVERAGE_FEATURE, GENERATED_ALPHA_TO_COVERAGE_WGSL, generatedAlphaToCoverage } from "./GeneratedAlphaToCoverage";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
+import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./ProjectionClip";
 
 export interface GeneratedUnlitTextureResource {
   readonly uniform: "u_baseColorMap" | "u_emissiveMap" | "u_pointMap";
@@ -34,6 +36,8 @@ export interface GeneratedUnlitProgram {
   readonly packedLoopColor: boolean;
   /** Writes ln(d / near) / ln(far / near) as @builtin(frag_depth) (logarithmic frames). */
   readonly logarithmicDepth: boolean;
+  /** MASK coverage is written to output alpha for pipeline alpha-to-coverage instead of a hard discard. */
+  readonly alphaToCoverage: boolean;
   readonly fog: "none" | "linear" | "exp2" | "height";
   readonly requiresFloatColorAttachment: boolean;
 }
@@ -129,7 +133,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   for (const [name, map] of Object.entries(f.maps)) {
     if (map && (name !== "baseColor" && name !== "emissive" || (map.uvSet !== 0 && map.uvSet !== 1))) unsupported(`maps.${name}`, `map ${name}`);
   }
-  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])]);
+  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !allowedFeatures.has(name)) unsupported(`features.${name}`, `feature ${name}`);
     if ((name === "a3d.clipping" || name === "a3d.output.srgb" || name === "a3d.packedLoopColor" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name}`);
@@ -137,7 +141,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   const logDepth = f.features[PROGRAM_LOG_DEPTH_FEATURE] === true;
   const active = new Map<string, string | number | boolean>();
   for (const feature of descriptor.activeFeatures) {
-    if (active.has(feature.id) || !["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "a3d.packedLoopColor", ...(isPoint ? ["prd15.parityPoints"] : [])].includes(feature.id)
+    if (active.has(feature.id) || !["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "a3d.packedLoopColor", ALPHA_TO_COVERAGE_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])].includes(feature.id)
       || f.features[feature.id] !== feature.value) unsupported("activeFeatures", `contributor ${feature.id}`);
     active.set(feature.id, feature.value);
   }
@@ -159,11 +163,13 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
     || descriptor.lighting.iblReplacesIndirect !== (descriptor.lighting.compilerLightingConjunction && ibl)) unsupported("lighting", "inconsistent contributor metadata");
   const clipping = f.features["a3d.clipping"] === true;
   const outputSrgb = f.features["a3d.output.srgb"] === true;
+  const alphaToCoverage = generatedAlphaToCoverage(active, f, isPoint || writesDepthCoverage || (fraction && f.alphaMode !== "blend"), unsupported);
   const baseMap = f.maps.baseColor, emissiveMap = f.maps.emissive;
   const uv0 = baseMap?.uvSet === 0 || emissiveMap?.uvSet === 0;
   const uv1 = baseMap?.uvSet === 1 || emissiveMap?.uvSet === 1;
   const expected: Readonly<Record<string, boolean>> = {
     A3D_GENERATED_PROGRAM: true, A3D_LIT: false, A3D_CLIPPING: clipping, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_LOG_DEPTH: logDepth,
+    A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     USE_INSTANCING: Boolean(f.instancing), USE_INSTANCING_COLOR: Boolean(f.instancing?.color), USE_INSTANCING_EMISSIVE: false,
     VERTEX_COLORS: f.vertexColors, USE_BASE_COLOR_MAP: Boolean(baseMap), USE_BASE_COLOR_MAP_UV1: baseMap?.uvSet === 1,
     USE_BASE_COLOR_MAP_TRANSFORM: Boolean(baseMap?.transform), USE_EMISSIVE_MAP: Boolean(emissiveMap),
@@ -197,7 +203,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
     ...(f.vertexColors ? ["@location(4) color: vec4f"] : []), ...(f.instancing ? ["@location(8) instance0: vec4f", "@location(9) instance1: vec4f", "@location(10) instance2: vec4f", "@location(11) instance3: vec4f"] : []),
     ...(f.instancing?.color ? ["@location(12) instanceColor: vec4f"] : [])].join(", ");
   const varyings = `@location(0) ${point ? "@interpolate(flat) " : ""}world: vec3f, ${clipping ? `@location(1) ${point ? "@interpolate(flat) " : ""}local: vec3f,` : ""} ${uv0 ? "@location(2) uv: vec2f," : ""} ${uv1 ? "@location(3) uv1: vec2f," : ""} ${f.vertexColors ? "@location(4) color: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${point ? "@location(6) @interpolate(linear) pointCoord: vec2f, @location(7) pointInvalid: f32," : ""}`;
-  const vertex = `${MATERIAL}\n${FRAME}\n${point ? NATIVE_POINT_WGSL : ""}
+  const vertex = `${MATERIAL}\n${FRAME}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${point ? NATIVE_POINT_WGSL : ""}
 struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
 @vertex fn vs_main(${vertexInput}) -> VertexOutput {
   var output: VertexOutput;
@@ -209,8 +215,8 @@ struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
     let pixels = a3dPointPixelSize(material.pointRaster.x, frame.resolutionFarTime.y, clip.w, ${point.attenuated});
     expanded = a3dPointExpandSceneClip(clip, pointCorner, pixels, material.pointRaster.yz);
   }
-  output.position = vec4f(expanded.clip.xy, (expanded.clip.z + expanded.clip.w) * 0.5, expanded.clip.w);
-  output.pointCoord = pointCorner; output.pointInvalid = expanded.invalid;` : "output.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);"}
+  output.position = vec4f(expanded.clip.xy, ${rasterClipDepthWgsl("expanded.clip")}, expanded.clip.w);
+  output.pointCoord = pointCorner; output.pointInvalid = expanded.invalid;` : `output.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);`}
   output.world = world.xyz;
   ${clipping ? "output.local = local.xyz;" : ""}
   ${uv0 ? "output.uv = uv;" : ""} ${uv1 ? "output.uv1 = uv1;" : ""}
@@ -228,7 +234,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   ${emissiveMap ? `let emissiveSample = textureSample(u_emissiveMapTexture, u_emissiveMapSampler, generatedUnlitMapUv(${uv(emissiveMap.uvSet)}, material.emissiveUv, material.mapControls.y)).rgb;` : ""}
   ${point ? "if (input.pointInvalid > 0.0) { discard; }" : ""}
   ${point?.round ? "if (!a3dPointInRoundFootprint(input.pointCoord)) { discard; }" : ""}
-  ${f.alphaMode === "mask" ? "if (base.a < material.alphaControls.x) { discard; }" : ""}
+  ${alphaToCoverage ? GENERATED_ALPHA_TO_COVERAGE_WGSL("base.a", "material.alphaControls.x") : f.alphaMode === "mask" ? "if (base.a < material.alphaControls.x) { discard; }" : ""}
   let ${f.fog === "none" ? "color" : "unfogged"} = max(base.rgb + material.emissive.rgb * material.emissive.a${emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
   ${f.fog !== "none" ? `let fogDepth = input.position.z / input.position.w;
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let density = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.world.y, 0.0) * material.fogParams.w)" : ""}; let distance = density * fogDepth; let fogAmount = clamp(1.0 - exp(-distance * distance), 0.0, 1.0);`}
@@ -237,15 +243,15 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   ${writesDepthCoverage
     ? `return GeneratedDepthCoverageOutput(vec4f(color, 1.0), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
     : logDepth
-      ? `return GeneratedLogDepthOutput(vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : "1.0"}), generatedUnlitLogFragmentDepth(input.world));`
-      : `return vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : "1.0"});`}
+      ? `return GeneratedLogDepthOutput(vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : alphaToCoverage ? "a3dCoverage" : "1.0"}), generatedUnlitLogFragmentDepth(input.world));`
+      : `return vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : alphaToCoverage ? "a3dCoverage" : "1.0"});`}
 }`;
   return Object.freeze<GeneratedUnlitProgram>({ vertex, fragment, vertexEntryPoint: "vs_main", fragmentEntryPoint: "fs_main",
     materialBinding: { group: 0, binding: 0, byteLength: GENERATED_UNLIT_MATERIAL_LAYOUT.size },
     frameBinding: { group: 1, binding: 0, minimumByteLength: 304 }, resources,
     requiredVertexLocations: [0, ...(uv0 ? [2] : []), ...(point ? [3] : []), ...(f.vertexColors ? [4] : []), ...(uv1 ? [7] : [])],
     requiredInstanceLocations: f.instancing ? [8, 9, 10, 11, ...(f.instancing.color ? [12] : [])] : [],
-    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, clipping, packedLoopColor, writesDepthCoverage, logarithmicDepth: logDepth,
+    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, clipping, packedLoopColor, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage,
     fog: f.fog as GeneratedUnlitProgram["fog"], requiresFloatColorAttachment: tagged });
 }
 

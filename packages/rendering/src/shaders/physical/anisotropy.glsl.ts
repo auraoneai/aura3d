@@ -1,6 +1,7 @@
 /**
  * Aura anisotropic GGX lobe and KHR_materials_anisotropy map interpretation.
- * The separately maintained WGSL companion has its own provenance.
+ * Its WGSL companion (physical-wgsl/anisotropy.wgsl.ts) mirrors it.
+ * Equations: KHR_materials_anisotropy; Heitz, JCGT 2014, eqs. 85-86, 99 (PRD-04 §8.12).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/anisotropy.wgsl.js";

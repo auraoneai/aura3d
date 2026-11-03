@@ -27,8 +27,10 @@ type FrameSource = {
   }): void;
 };
 
-function source(canvas: HTMLCanvasElement): FrameSource {
-  return (getRootRenderSource(canvas)!.source as unknown as { atmosphere: FrameSource }).atmosphere;
+// App-owned overlays are published only under the app's sealed runtime owner;
+// the standalone (ownerless) canvas view serves only standalone bridges.
+function source(canvas: HTMLCanvasElement, owner?: object): FrameSource {
+  return (getRootRenderSource(canvas, owner)!.source as unknown as { atmosphere: FrameSource }).atmosphere;
 }
 
 function mockApp(nodes: EffectNodeLike[] = []) {
@@ -222,7 +224,12 @@ describe("app-owned VFX atmosphere frame source", () => {
     const effectsB = createEffectsExtension(b.app as unknown as AuraApp, { flags, options: { scene: scene() } });
     const apiA = createAtmosphereExtension(a.app as unknown as AuraApp, { flags });
     const apiB = createAtmosphereExtension(b.app as unknown as AuraApp, { flags });
-    const srcA = source(a.canvas), srcB = source(b.canvas);
+    const ownerA = {}, ownerB = {};
+    bindPrd07AppRuntimeOwner(a.app as unknown as AuraApp, ownerA);
+    bindPrd07AppRuntimeOwner(b.app as unknown as AuraApp, ownerB);
+    expect(getRootRenderSource(a.canvas)).toBeUndefined();
+    expect(getRootRenderSource(a.canvas, ownerB)).toBeUndefined();
+    const srcA = source(a.canvas, ownerA), srcB = source(b.canvas, ownerB);
     const off = srcA.onRenderChange(vi.fn());
     apiA.setWetness(0.25); apiB.setWetness(0.75);
     const old = srcA.renderSnapshot()!;
@@ -230,6 +237,8 @@ describe("app-owned VFX atmosphere frame source", () => {
       prd07AppDisposed(effectsA);
       expect(prd07SystemFor(a.app as unknown as AuraApp)).toBeNull();
       expect(getRootRenderSource(a.canvas)).toBeUndefined();
+      expect(getRootRenderSource(a.canvas, ownerA)).toBeUndefined();
+      expect(getRootRenderSource(b.canvas, ownerB)).toBeDefined();
       expect(srcA.renderSnapshot()).toBeNull();
       expect(srcA.isRenderSnapshotCurrent(old)).toBe(false);
       expect(a.callbacks.size).toBe(0);
@@ -299,7 +308,11 @@ describe("app-owned VFX atmosphere frame source", () => {
       expect(authority.overlay).toBeTruthy();
       expect(prd07MountAuthorityFor(appA, a.canvas, ownerB)).toBeNull();
       expect(prd07MountAuthorityFor(appA, b.canvas, ownerA)).toBeNull();
-      expect(prd07MountAuthorityFor(appB, a.canvas, ownerB)).toBeNull();
+      // Overlays are per runtime owner: B on the shared canvas gets only its
+      // own authority, never A's overlay or A's staged values.
+      const authorityB = prd07MountAuthorityFor(appB, a.canvas, ownerB)!;
+      expect(authorityB.owner).toBe(ownerB);
+      expect(authorityB.overlay).not.toBe(authority.overlay);
       expect(() => bindPrd07AppRuntimeOwner(appA, ownerB)).toThrow(/OWNER_MISMATCH/);
       const systemA = prd07SystemFor(appA)!, systemB = prd07SystemFor(appB)!;
       let traps = 0;
@@ -325,7 +338,9 @@ describe("app-owned VFX atmosphere frame source", () => {
       expect(changes).toHaveBeenCalled();
       expect(authority.isCurrent(old)).toBe(false);
       expect(authority.capture()!.wetness.wetness).toBe(0.4);
+      expect(authorityB.capture()!.wetness.wetness).not.toBe(0.4);
       prd07AppDisposed(fxB);
+      expect(authorityB.isLive()).toBe(false);
       expect(authority.isLive()).toBe(true);
       prd07AppDisposed(fxA);
       expect(revoked).toHaveBeenCalledTimes(1);
@@ -528,7 +543,10 @@ describe("app-owned VFX atmosphere frame source", () => {
       authority.noteCamera(1, 5, 3, 0.4, 0, -0.9);
       const snapshot = authority.capture()!;
       const packed = createPrd07EnvironmentFogFromSnapshot(snapshot, 5, 0.4, -0.9);
-      const legacy = createProductionRuntimeEnvironmentFog({ nodes: [] } as never, [], 100, 100, mock.canvas);
+      const legacy = createProductionRuntimeEnvironmentFog({ nodes: [] } as never, [], 100, 100, app);
+      // A managed app's fog is keyed by the app (or its private renderer
+      // owner), never by the canvas.
+      expect(createProductionRuntimeEnvironmentFog({ nodes: [] } as never, [], 100, 100, mock.canvas)).toBe(false);
       expect(packed).toEqual(legacy);
       api.setFog({ mode: "exp", density: 0.8, color: "#ff0000" });
       expect(authority.isCurrent(snapshot)).toBe(false);
@@ -550,7 +568,8 @@ describe("app-owned VFX atmosphere frame source", () => {
     try {
       bindPrd07AppRuntimeOwner(app, owner);
       expect(prd07MountAuthorityFor(app, mock.canvas, owner)).toBeNull();
-      expect(source(mock.canvas).renderSnapshot()).not.toBeNull();
+      expect(getRootRenderSource(mock.canvas)).toBeUndefined();
+      expect(source(mock.canvas, owner).renderSnapshot()).not.toBeNull();
     } finally { prd07AppDisposed(fx); disposeAtmosphereExtension(app); registry.dispose(); }
   });
 
@@ -562,7 +581,8 @@ describe("app-owned VFX atmosphere frame source", () => {
     try {
       bindPrd07AppRuntimeOwner(app, owner);
       expect(prd07MountAuthorityFor(app, mock.canvas, owner)).toBeNull();
-      expect(source(mock.canvas).renderSnapshot()).not.toBeNull();
+      expect(getRootRenderSource(mock.canvas)).toBeUndefined();
+      expect(source(mock.canvas, owner).renderSnapshot()).not.toBeNull();
     } finally { prd07AppDisposed(fx); disposeAtmosphereExtension(app); }
   });
 });

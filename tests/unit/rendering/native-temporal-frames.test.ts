@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { identityMat4 } from "@aura3d/scene";
 import "../../../packages/rendering/src/lanes/prd03";
+import "../../../packages/rendering/src/lanes/prd06";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { MockRenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
@@ -62,18 +63,34 @@ describe("view-owned temporal frames", () => {
     } finally { renderer.dispose(); }
   });
 
-  it("generates compilable rigid and instanced velocity programs using actual transformed positions", () => {
+  it("generates compilable rigid, instanced and deformed velocity programs from the previous pose", () => {
     const executable = spawnSync("glslangValidator", ["--version"], { stdio: "ignore" });
     const dir = mkdtempSync(join(tmpdir(), "aura-temporal-velocity-"));
     try {
-      for (const instancing of [undefined, { color: false }]) {
-        const source = generateProgramImpl(normalizeProgramFeatures({ instancing, features: { "prd03.velocity": "velocity" } }), { flags: v2Flags });
+      const variants = [
+        { name: "rigid", instancing: undefined, velocity: "velocity", deform: undefined },
+        { name: "instanced", instancing: { color: false }, velocity: "velocity-instanced", deform: undefined },
+        { name: "skinned", instancing: undefined, velocity: "velocity", deform: "skin4" }
+      ] as const;
+      for (const variant of variants) {
+        const source = generateProgramImpl(normalizeProgramFeatures({ instancing: variant.instancing,
+          features: { "prd03.velocity": variant.velocity, ...(variant.deform ? { "prd06.deform": variant.deform } : {}) } }),
+          { flags: variant.deform ? { values: {}, on: (flag: string) => flag === "A3D_QR_POST" || flag === "A3D_QR_ANIMATION" } : v2Flags });
         expect(source.vertex).toContain("u_unjitteredViewProjection * a3dWorld");
-        expect(source.vertex).toContain("u_previousModel * instanceMatrix * a3dLocal");
+        expect(source.vertex).toContain("u_previousModel * a3dVelPrevInstance * a3dVelPrevLocal");
+        expect(source.vertex).toContain("#define A3D_VELOCITY");
+        // Instanced draws read each instance's previous matrix; others reuse instanceMatrix.
+        expect(source.vertex.includes("#define A3D_VELOCITY_PREVIOUS_INSTANCE")).toBe(variant.name === "instanced");
+        // Skinned draws evaluate the previous palette through the deform chunk.
+        if (variant.deform) {
+          expect(source.vertex).toContain("uniform highp sampler2D u_prevBoneTexture;");
+          expect(source.vertex).toContain("a3dSkin(u_prevBoneTexture)");
+          expect(source.vertex).toContain("a3dDeformPrevious(a3dVelPrevDeformed);");
+        }
         if (executable.error) continue;
         for (const stage of ["vertex", "fragment"] as const) {
           const ext = stage === "vertex" ? "vert" : "frag";
-          const path = join(dir, `velocity-${instancing ? "instanced" : "rigid"}.${ext}`);
+          const path = join(dir, `velocity-${variant.name}.${ext}`);
           writeFileSync(path, source[stage]);
           const compiled = spawnSync("glslangValidator", ["-S", ext, path], { encoding: "utf8" });
           expect(compiled.status, compiled.stdout + compiled.stderr).toBe(0);
@@ -116,6 +133,53 @@ describe("view-owned temporal frames", () => {
     const afterReset = new Map();
     bindVelocityUniforms?.(movedA, afterReset);
     expect(afterReset.size).toBe(0);
+  });
+
+  it("supplies previous morph weights and per-instance matrices once per authored frame", () => {
+    const owner = new VelocityHistory();
+    const key = {};
+    const instances = (x: number) => Float32Array.from([...matrixAt(x), ...matrixAt(x + 100)]);
+    const deformed = (weight: number, x: number) => ({ ...item(key), morphTargets: [{} as never], morphWeights: [weight], instanceTransforms: instances(x) });
+    owner.prepare(id(), [0, 0], 1);
+    const first = owner.prepareItem(deformed(0.25, 1), true);
+    // First frame: the previous pose is seeded with the current one.
+    expect(Array.from(first.previousMorphWeights!)).toEqual([0.25]);
+    expect(first.previousInstanceTransforms![12]).toBe(1);
+    const columns = first.instanceAttributes!.filter(attribute => attribute.shaderName.startsWith("a_a3dPrevInstance"));
+    expect(columns.map(attribute => attribute.shaderName)).toEqual(["a_a3dPrevInstance0", "a_a3dPrevInstance1", "a_a3dPrevInstance2", "a_a3dPrevInstance3"]);
+    // Column 3 holds each instance's translation.
+    expect(Array.from(columns[3]!.data)).toEqual([1, 0, 0, 1, 101, 0, 0, 1]);
+    const uniforms = new Map();
+    bindVelocityUniforms?.(first, uniforms);
+    expect(uniforms.get("a3d_u_reactive")).toBe(0);
+    // A second pass of the same frame cannot advance or change the pose.
+    expect(owner.prepareItem(deformed(0.25, 1), true).previousMorphWeights![0]).toBe(0.25);
+    expect(() => owner.prepareItem(deformed(0.5, 1), true)).toThrow(/conflicting deformation or instance state/);
+    owner.commit(1);
+
+    owner.prepare(id(), [0, 0], 2);
+    const second = owner.prepareItem(deformed(0.75, 4), true);
+    expect(Array.from(second.previousMorphWeights!)).toEqual([0.25]);
+    expect(second.previousInstanceTransforms![12]).toBe(1);
+    expect(second.previousInstanceTransforms![28]).toBe(101);
+    expect(Array.from(second.instanceAttributes!.find(attribute => attribute.shaderName === "a_a3dPrevInstance3")!.data)).toEqual([1, 0, 0, 1, 101, 0, 0, 1]);
+    owner.commit(2);
+
+    // A changed instance count has no correspondence: the pixels are reactive.
+    owner.prepare(id(), [0, 0], 3);
+    const resized = owner.prepareItem({ ...deformed(0.75, 4), instanceTransforms: matrixAt(4) }, true);
+    const resizedUniforms = new Map();
+    bindVelocityUniforms?.(resized, resizedUniforms);
+    expect(resizedUniforms.get("a3d_u_reactive")).toBe(1);
+    // Without a writable MRT the item is unchanged and deformation stays reactive.
+    owner.reset("explicit-reset");
+    owner.prepare(id(), [0, 0], 4);
+    const noMrt = owner.prepareItem(deformed(0.75, 4), false);
+    expect(noMrt.previousMorphWeights).toBeUndefined();
+    expect(noMrt.instanceAttributes).toBeUndefined();
+    const noMrtUniforms = new Map();
+    bindVelocityUniforms?.(noMrt, noMrtUniforms);
+    expect(noMrtUniforms.get("a3d_u_reactive")).toBe(1);
   });
 
   it("separates two owners and views, and resets or retires only the selected view", () => {

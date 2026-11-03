@@ -1,5 +1,6 @@
 import { RenderDeviceError, type PortableShaderBinding, type ShaderSources } from "../RenderDevice";
 import { CLIPPED_SCREEN_SPACE_LINE_SUFFIX } from "../forward/ScreenSpaceLineClipping";
+import { rasterClipDepthWgsl } from "../webgpu/ProjectionClip";
 import { DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME } from "../ShaderLibraryCore";
 
 /**
@@ -138,7 +139,7 @@ void main() {`, "GLSL fragment entry");
     throw new Error("Specialized line depth requires the clipped forward WGSL source");
   }
   const nativeVertex = replaceOnce(clippedLine.webgpu.vertex,
-    "  out.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);",
+    `  out.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);`,
     `  let a3dDepthClip = aura.u_a3dDepthViewProjection * vec4f(out.clipWorld, 1.0);
   if (out.clipInvalid > 0.0 || !all(abs(a3dDepthClip) < vec4f(1e30))) {
     out.clipInvalid = 1.0;

@@ -174,7 +174,9 @@ describe("public package API contracts", () => {
         disposed += 1;
       }
     };
-    const assets = new AssetManager({ baseUrl: "https://assets.example/" });
+    // 5.0 (docs/migration/4-to-5.md §5.4): only credential-free requests, or
+    // requests carrying a securityContext, are shared and cached.
+    const assets = new AssetManager({ baseUrl: "https://assets.example/", credentials: "omit" });
     assets.register(loader);
 
     const first = await assets.load<{ readonly value: string }>("asset.txt", { type: "text" });
@@ -183,9 +185,19 @@ describe("public package API contracts", () => {
     expect(second.value.value).toBe("https://assets.example/asset.txt");
 
     await assets.release(first);
+    expect(disposed).toBe(0);
     await assets.release(second);
 
     expect(disposed).toBe(1);
+
+    const credentialed = new AssetManager({ baseUrl: "https://assets.example/" });
+    credentialed.register(loader);
+    const a = await credentialed.load<{ readonly value: string }>("asset.txt", { type: "text" });
+    const b = await credentialed.load<{ readonly value: string }>("asset.txt", { type: "text" });
+    expect(a.id).not.toBe(b.id);
+    await credentialed.release(a);
+    await credentialed.release(b);
+    expect(disposed).toBe(3);
   });
 
   it("supports action maps and input snapshots from the public API", () => {
@@ -253,7 +265,12 @@ function publicWorkspacePackageSpecifiers(): string[] {
     .filter((manifestPath) => existsSync(manifestPath))
     .map((manifestPath) => JSON.parse(readFileSync(manifestPath, "utf8")) as { exports?: Record<string, unknown>; name?: string; private?: boolean })
     .filter((manifest) => manifest.private !== true && manifest.name?.startsWith("@aura3d/") && manifest.exports?.["."] !== undefined)
-    .map((manifest) => manifest.name!)
+    // A published package's declared, non-wildcard subpath exports are public
+    // barrels too (e.g. the opt-in `@aura3d/assets/exporters`); source paths,
+    // undeclared subpaths and private packages stay rejected.
+    .flatMap((manifest) => Object.keys(manifest.exports!)
+      .filter((exportPath) => exportPath === "." || (exportPath.startsWith("./") && !exportPath.includes("*") && !/\.(?:css|json)$/.test(exportPath)))
+      .map((exportPath) => exportPath === "." ? manifest.name! : `${manifest.name}/${exportPath.slice(2)}`))
     .sort();
 }
 
@@ -263,7 +280,10 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   const relativeToRoot = relative(process.cwd(), resolved).replaceAll("\\", "/");
   // The CLI-generated root asset map is the one deliberate cross-directory import:
   // examples consume typed `assets.*` rather than guessing public model URLs.
+  // A game port may share its showcase app's generated typed asset map, the
+  // same artifact kind (never app source or package internals).
   return relativeToRoot === "src/aura-assets" || relativeToRoot === "src/aura-assets.js"
+    || /^apps\/[a-z0-9-]+\/src\/aura-assets(?:\.js)?$/.test(relativeToRoot)
     || relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
 }
 

@@ -10,12 +10,20 @@ import {
 } from "../../../packages/rendering/src/environment/neutralEmbedded.js";
 import { quantizeCube } from "../../../tools/environments/embed-neutral.mjs";
 import { readRgb9e5Cube } from "../../../packages/rendering/src/environment/Rgb9e5Cube.js";
-import { buildNeutralFloorProbe } from "../../../packages/rendering/src/environment/probeBuild.js";
+import {
+  NEUTRAL_FLOOR_SH9,
+  NEUTRAL_ROOM_EXPOSURE,
+  buildNeutralFloorProbe,
+  buildRoomFaces,
+  deriveNeutralRoomExposure,
+  projectNeutralRoomSH9
+} from "../../../packages/rendering/src/environment/probeBuild.js";
+import { packRgb9e5 } from "../../../packages/rendering/src/environment/Rgb9e5Cube.js";
 import { createRoomEnvironmentScene, sampleRoomEnvironment } from "../../../packages/rendering/src/environment/RoomEnvironmentScene.js";
 import { KTX2_MAGIC, VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 } from "../../../packages/rendering/src/environment/Rgb9e5Cube.js";
 
 const file = readFileSync("public/aura-environments/neutral.specular.ktx2");
-const manifest = JSON.parse(readFileSync("public/aura-environments/neutral.manifest.json", "utf8")) as { sha256: { specular: string } };
+const manifest = JSON.parse(readFileSync("public/aura-environments/neutral.manifest.json", "utf8")) as { sha256: { specular: string; sh9: string }; exposure: number; bakedBy: string };
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -133,6 +141,33 @@ describe("embedded neutral environment", () => {
     )));
     await expect(defaultProbeLoader(() => ({}) as never)({ preset: "fixture", tier: "high" }))
       .rejects.toThrow(/ENV_PRESET_UNAVAILABLE:fixture: install both assets.*ENV_FETCH_FAILED/);
+  });
+
+  it("is generated from the independent room: exposure, SH9 and mip-0 texels match the generator", () => {
+    // tools/environments/bake-neutral.ts derives every shipped value from RoomEnvironmentScene.ts.
+    expect(deriveNeutralRoomExposure()).toBe(NEUTRAL_ROOM_EXPOSURE);
+    expect(manifest.exposure).toBe(NEUTRAL_ROOM_EXPOSURE);
+    expect(manifest.bakedBy).toMatch(/bake-neutral\.ts.*RoomEnvironmentScene\.ts/);
+    const generated = projectNeutralRoomSH9();
+    expect(Array.from(NEUTRAL_FLOOR_SH9)).toEqual(Array.from(generated));
+    const shFile = readFileSync("public/aura-environments/neutral.sh9.f32");
+    expect(Buffer.compare(shFile, Buffer.from(generated.buffer, generated.byteOffset, generated.byteLength))).toBe(0);
+    expect(createHash("sha256").update(shFile).digest("hex")).toBe(manifest.sha256.sh9);
+    // Mip 0 of the shipped cube is the exposure-scaled room itself, packed to RGB9E5.
+    const faces = buildRoomFaces(256);
+    const view = new DataView(file.buffer, file.byteOffset, file.byteLength);
+    const offset = Number(view.getBigUint64(68, true));
+    for (let face = 0; face < 6; face += 1) {
+      for (let texel = 0; texel < 256 * 256; texel += 1) {
+        const source = faces[face]!;
+        const expected = packRgb9e5(source[texel * 4]!, source[texel * 4 + 1]!, source[texel * 4 + 2]!) >>> 0;
+        const actual = view.getUint32(offset + (face * 256 * 256 + texel) * 4, true);
+        if (actual !== expected) expect({ face, texel, actual }).toEqual({ face, texel, actual: expected });
+      }
+    }
+    // The optional indoor preset is a byte copy of the same bake.
+    expect(Buffer.compare(readFileSync("public/aura-environments/indoor.specular.ktx2"), file)).toBe(0);
+    expect(Buffer.compare(readFileSync("public/aura-environments/indoor.sh9.f32"), shFile)).toBe(0);
   });
 
   it("samples the independently designed room from panel and diffuse surfaces", () => {

@@ -31,7 +31,7 @@
 import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../../contracts/sceneGraph.js";
-import { SCENE_GRAPH_SHEAR, composeTRSInto, decomposeMatrix, eulerToQuaternion, localMatrixOf, multiplyMat4Into, quaternionMultiply } from "../sceneGraph.js";
+import { SCENE_GRAPH_SHEAR, composeTRSInto, decomposeMatrix, eulerToQuaternion, localMatrixOf, lookAtWorldQuaternion, multiplyMat4Into, quaternionMultiply } from "../sceneGraph.js";
 import { animatedPosition, animatedRotation, captureFlattenSceneNodes, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, lowerLookNode, markLookNodeLowered, primitiveSize, resolveModelFitScale, type SceneFlattenOptions, type SceneFlattenVisit, type SceneGroupSpan } from "../sceneMath.js";
 import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 
@@ -494,8 +494,9 @@ export function createModelMatrixV2(
   assertValidPivot(pivot);
   const pivoted = hasNonzeroPivot(pivot);
   const parented = node ? parentTransformOf(node) : undefined;
-  if ((pivoted || parented?.hasPivot === true) && node?.lookAt !== undefined) {
-    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted model matrices cannot use lookAt.");
+  const lookAt = node?.lookAt;
+  if (lookAt !== undefined && (lookAt.length !== 3 || !lookAt.every(Number.isFinite))) {
+    throw new RangeError("LOOK_AT_INVALID: a lookAt target must be a finite vec3.");
   }
   if (parented?.hasPivot && node?.animation !== undefined) {
     throw new Error("PIVOT_UNSUPPORTED_NESTED_ANIMATION: pivoted static hierarchy animation requires a live parent transform.");
@@ -518,6 +519,7 @@ export function createModelMatrixV2(
   const world = worldTransformOf(node);
   if (world?.sheared) {
     // W already carries T·R·S(nodeScale) of the whole chain; size ⊙ fit stays innermost.
+    // A sheared basis has no rigid look rotation to replace; lookAt keeps W's orientation.
     setScaling(M_S, baseSize[0] * fitScale, baseSize[1] * fitScale, baseSize[2] * fitScale);
     multiplyMat4Into(M_B, M_S, M_O);
     const delta = rotationDelta(node, time);
@@ -549,7 +551,22 @@ export function createModelMatrixV2(
   }
   setScaling(M_S, nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale);
   setTranslation(M_T, position[0], position[1], position[2]);
-  if (pivoted && pivot && !world) {
+  if (lookAt !== undefined) {
+    // Look-at composes with the pivot as on Gaussian splats (`applySplatLookAt`)
+    // and the runtime world cache: the drawn pivot point stays fixed, local -Z
+    // faces the world-space target, and the look rotation replaces R.
+    const p = pivot ?? [0, 0, 0];
+    const x = p[0] * nodeScale[0], y = p[1] * nodeScale[1], z = p[2] * nodeScale[2];
+    // Flattened world TRS fields already carry the source pivot.
+    const anchor: AuraVec3 = world
+      ? [position[0] + M_R[0]! * x + M_R[4]! * y + M_R[8]! * z, position[1] + M_R[1]! * x + M_R[5]! * y + M_R[9]! * z, position[2] + M_R[2]! * x + M_R[6]! * y + M_R[10]! * z]
+      : [position[0] + p[0], position[1] + p[1], position[2] + p[2]];
+    composeTRSInto(M_R, [0, 0, 0], lookAtWorldQuaternion(anchor, lookAt), [1, 1, 1]);
+    setTranslation(M_T,
+      anchor[0] - (M_R[0]! * x + M_R[4]! * y + M_R[8]! * z),
+      anchor[1] - (M_R[1]! * x + M_R[5]! * y + M_R[9]! * z),
+      anchor[2] - (M_R[2]! * x + M_R[6]! * y + M_R[10]! * z));
+  } else if (pivoted && pivot && !world) {
     // Flattened world transforms have already applied the source pivot.
     const x = pivot[0] * nodeScale[0], y = pivot[1] * nodeScale[1], z = pivot[2] * nodeScale[2];
     M_T[12] += pivot[0] - (M_R[0]! * x + M_R[4]! * y + M_R[8]! * z);

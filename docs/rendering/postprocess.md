@@ -72,6 +72,33 @@ had made a requested effect unprovable:
   renderer's integer 1-8 sample-kernel range; passing the authored float
   directly made the renderer reject the frame entirely.
 
+## Effect input audit (5.0)
+
+Every built-in postprocess effect reads only the inputs listed here. Inputs
+are produced by the renderer for the current view and frame; an input that is
+not available is reported as `POSTPROCESS_INPUT_UNAVAILABLE:<pass>:<input>`
+instead of being replaced by a blank texture. Depth is always decoded through
+the frame's depth convention (standard, reversed, logarithmic; either clip
+range) before any effect sees it.
+
+| Effect | Inputs | WebGL2 | Native WebGPU |
+| --- | --- | --- | --- |
+| Bloom, tone mapping, color grade, FXAA | color | yes | yes |
+| TAA (spatial) | color, velocity, linear depth, optional reactive | yes | yes (v1 resolve) |
+| Temporal reconstruction (v2 resolve, upscale) | color, object velocity, reactive, current + previous linear depth | yes | refused: `WEBGPU_TEMPORAL_V2_UNSUPPORTED` |
+| Auto exposure | HDR color, frame time | yes | yes (refusals: `WEBGPU_AUTO_EXPOSURE_*`) |
+| Depth of field | color, linear depth | yes | yes for supported combinations (refusals: `WEBGPU_DOF_*`) |
+| Ambient occlusion (GTAO) | linear depth (half-res min/max) | yes | refused: `WEBGPU_POSTPROCESS_UNSUPPORTED` |
+| Motion blur | color, dilated velocity, linear depth | yes | refused: `WEBGPU_POSTPROCESS_UNSUPPORTED` |
+| SSR, god rays, chromatic aberration, SMAA | color, linear depth (SSR, god rays) | yes | refused: `WEBGPU_POSTPROCESS_UNSUPPORTED` |
+| Pixelation, halftone, dot screen, glitch, transition, lens dirt, mask, afterimage | color (+ caller texture for transition/lens dirt/mask; history for afterimage) | yes | yes (refusals: `WEBGPU_NATIVE_EFFECT*`) |
+| Custom passes (`effects.shaderPass`, `app.post.addPostPass`) | color, depth, velocity, normal, reactive as declared | all five at HDR anchors; color and depth in the display tail | color only; depth, velocity, normal and reactive are reported unavailable |
+
+The `normal` input (`u_normal`) is a unit view-space normal reconstructed once
+per view and frame from that view's linear depth and inverse projection, with
+coverage in `.w` (0 on cleared pixels). It is a depth-derived surface normal,
+not a shading normal from normal maps.
+
 ## Public Lower-Level Composer
 
 `@aura3d/rendering` publicly exports `PostProcessComposer`. Its typed pass list

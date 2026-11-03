@@ -478,7 +478,7 @@ export function renderTargetColorFormat(descriptor: Pick<RenderTargetDescriptor,
 /** Physical sampled attachments only; multisample renderbuffers are not textures. */
 function renderTargetTextureBytes(descriptor: RenderTargetDescriptor): number {
   const dimension = descriptor.dimension ?? "2d";
-  const planes = dimension === "cube" ? 6 : dimension === "2d-array" ? descriptor.layers ?? 1 : 1;
+  const planes = dimension === "cube" ? 6 : dimension === "2d-array" || dimension === "3d" ? descriptor.layers ?? 1 : 1;
   const feature = dimension !== "2d" || descriptor.layers !== undefined || descriptor.depthOnly === true || descriptor.depthCompare === true || (descriptor.colorAttachments?.length ?? 0) > 1;
   const colors = descriptor.depthOnly ? [] : feature && descriptor.colorAttachments
     ? descriptor.colorAttachments.map((attachment) => attachment.format)
@@ -635,7 +635,7 @@ export class WebGL2ShaderProgram implements RenderShaderProgram {
 }
 
 export interface WebGL2RenderTargetOptions {
-  readonly dimension?: "2d" | "cube" | "2d-array";
+  readonly dimension?: "2d" | "cube" | "2d-array" | "3d";
   readonly layers?: number;
   readonly colorTextures?: readonly Texture[];
   readonly extraColorHandles?: readonly WebGLTexture[];
@@ -665,7 +665,7 @@ export class WebGL2RenderTarget implements RenderTarget {
   public onFreed?: () => void;
   /** Device-owned sampled attachments may remain alive while GPU work drains. */
   public retireTextures?: (handles: readonly WebGLTexture[], release: () => void) => void;
-  public readonly dimension: "2d" | "cube" | "2d-array";
+  public readonly dimension: "2d" | "cube" | "2d-array" | "3d";
   public readonly layers?: number;
   public readonly colorTextures?: readonly Texture[];
   public readonly depthOnly: boolean;
@@ -3061,14 +3061,15 @@ export class WebGL2Device implements RenderDevice {
         label: descriptor.label
       });
     }
-    if (descriptor.layers !== undefined && dimension !== "2d-array") {
-      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\"", "INVALID_RENDER_TARGET_SIZE", {
+    if (descriptor.layers !== undefined && dimension !== "2d-array" && dimension !== "3d") {
+      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\" or \"3d\"", "INVALID_RENDER_TARGET_SIZE", {
         dimension,
         layers: descriptor.layers,
         label: descriptor.label
       });
     }
-    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" ? descriptor.layers ?? 1 : 1;
+    // A 3d target renders each depth slice of one volume through its own framebuffer.
+    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" || dimension === "3d" ? descriptor.layers ?? 1 : 1;
     const depthOnly = descriptor.depthOnly === true;
     if (depthOnly && (descriptor.colorAttachments?.length ?? 0) > 0) {
       throw new RenderDeviceError("Render target cannot combine `depthOnly` with `colorAttachments`", "INVALID_RENDER_TARGET_SIZE", {
@@ -3111,7 +3112,7 @@ export class WebGL2Device implements RenderDevice {
     }
 
     const label = descriptor.label ?? "render-target";
-    const textureTarget = dimension === "cube" ? gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+    const textureTarget = dimension === "cube" ? gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? gl.TEXTURE_2D_ARRAY : dimension === "3d" ? gl.TEXTURE_3D : gl.TEXTURE_2D;
     const depthMode = depthOnly || descriptor.depth === "texture" || descriptor.depthCompare === true || (layerCount > 1 && descriptor.depth !== false) ? "texture" : descriptor.depth === false ? "none" : "renderbuffer";
     const depthCompare = descriptor.depthCompare === true;
     // A single packed depth/stencil format keeps depth copies compatible
@@ -3143,6 +3144,7 @@ export class WebGL2Device implements RenderDevice {
     const previousTexture = gl.getParameter(gl.TEXTURE_BINDING_2D) as WebGLTexture | null;
     const previousCubeTexture = gl.getParameter(gl.TEXTURE_BINDING_CUBE_MAP) as WebGLTexture | null;
     const previousArrayTexture = gl.getParameter(gl.TEXTURE_BINDING_2D_ARRAY) as WebGLTexture | null;
+    const previousVolumeTexture = dimension === "3d" ? gl.getParameter(gl.TEXTURE_BINDING_3D) as WebGLTexture | null : null;
     const previousDrawFramebuffer = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     const previousReadFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     const previousRenderbuffer = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
@@ -3153,6 +3155,7 @@ export class WebGL2Device implements RenderDevice {
       gl.bindTexture(gl.TEXTURE_2D, previousTexture);
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, previousCubeTexture);
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, previousArrayTexture);
+      if (dimension === "3d") gl.bindTexture(gl.TEXTURE_3D, previousVolumeTexture);
       gl.activeTexture(previousActiveTexture);
       this.stateCache.invalidate();
     };
@@ -3177,7 +3180,8 @@ export class WebGL2Device implements RenderDevice {
         }
         colorHandles.push(handle);
         colorTextures.push(
-          new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension, layers: dimension === "2d" ? undefined : layerCount, renderAttachment: true })
+          new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension,
+            ...(dimension === "3d" ? { depth: layerCount } : { layers: dimension === "2d" ? undefined : layerCount }), renderAttachment: true })
         );
         gl.bindTexture(textureTarget, handle);
         const colorFilter = renderTargetSampleFilter(gl, format);
@@ -3185,6 +3189,7 @@ export class WebGL2Device implements RenderDevice {
         gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, colorFilter);
         gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        if (dimension === "3d") gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
         submittedStorage = true;
         if (dimension === "2d") {
           gl.texImage2D(textureTarget, 0, textureFormat.internalFormat, descriptor.width, descriptor.height, 0, gl.RGBA, textureFormat.type, null);
@@ -3257,7 +3262,7 @@ export class WebGL2Device implements RenderDevice {
         for (let attachment = 0; attachment < colorHandles.length; attachment += 1) {
           if (dimension === "cube") {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + layer, colorHandles[attachment], 0);
-          } else if (dimension === "2d-array") {
+          } else if (dimension === "2d-array" || dimension === "3d") {
             gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, colorHandles[attachment], 0, layer);
           } else {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, colorHandles[attachment], 0);

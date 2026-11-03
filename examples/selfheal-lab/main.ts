@@ -7,7 +7,7 @@
  * Exposes `window.__SELFHEAL_LAB__` for the remote spec.
  */
 import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
-import { installBlackFrameGuard } from "../../packages/debug/src/safety/index";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 type Win = Window & { __SELFHEAL_LAB__?: unknown; __SELFHEAL_LAB_ERROR__?: string };
 

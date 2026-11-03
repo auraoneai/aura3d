@@ -17,8 +17,8 @@ import { RenderDeviceError, type RenderDevice } from "../RenderDevice";
 import { resourceDisposalPending } from "../ResourceLifecycle";
 import { setRendererQrFlags } from "../renderer/FrameGraph";
 import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
-import { attachFrameInspectionCancel, commitFrameInspectionView } from "../quality/FrameInspectionTiming";
-import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
+import { attachFrameInspectionCancel, commitFrameInspectionView, pauseFrameInspectionRange } from "../quality/FrameInspectionTiming";
+import { frameStatsForDevice } from "../quality/DeviceProbe";
 import { RenderTargetPool } from "../resources/RenderTargetPool";
 import { beginPrd11CounterFrame, installPrd11DeviceCounters, webgl2DeviceHost } from "../webgl2/Counters";
 import { prd11BatchingFrameContributor, prd11LatestBatchPlanReport } from "../renderer/CullingBatching";
@@ -50,7 +50,7 @@ export function prd11TelemetryForDevice(device: RenderDevice): Prd11FrameTelemet
   if (existing) return existing;
   const telemetry: Prd11FrameTelemetry = {
     device,
-    stats: new FrameStats(240, gpuTimingBackendForDevice(device) ?? undefined),
+    stats: frameStatsForDevice(device, 240),
     lastSample: null,
     counters: null,
     countersDelta: null,
@@ -449,6 +449,9 @@ registerFrameContributor({
     telemetry.tier = ctx.tier;
     const sequence = (telemetrySequence.get(telemetry) ?? 0) + 1;
     telemetrySequence.set(telemetry, sequence);
+    // End the frame's open non-view GPU range first: the view's own query
+    // must never overlap it (TIME_ELAPSED queries cannot be nested).
+    pauseFrameInspectionRange(blackboard);
     const handle = telemetry.stats.beginTracked(nowMs());
     if (frameAttempts.get(blackboard) !== attempt) {
       telemetry.stats.cancelTracked(handle);

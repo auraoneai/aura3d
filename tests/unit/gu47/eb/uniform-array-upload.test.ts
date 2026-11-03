@@ -22,6 +22,8 @@ function setup(details: Record<string, { type: string; arraySize: number | null 
     calls.push({ fn, name: loc.name, length: (typeof a === "boolean" ? b! : a).length });
   const host = {
     counters: { uniformLocationLookupCount: 0, inactiveUniformBindCount: 0 },
+    // WebGL2DeviceHost.stateCache: the binder subscribes to cache invalidation.
+    stateCache: { onInvalidate: () => {} },
     gl: {
       getUniformLocation: (_p: unknown, name: string) => ({ name }),
       uniform1f() {},

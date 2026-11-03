@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { geometry, texture } from "@aura3d/engine";
+import { geometry, material, texture } from "@aura3d/engine";
+import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
 import { isTextureBinding, MockRenderDevice, PortableShaderMaterial } from "@aura3d/rendering";
-import { createProductionPrimitiveMaterial } from "../../../packages/engine/src/agent-api/compiler/primitives";
+import { createProductionPrimitiveMaterial, createProductionRuntimePrimitiveEntries } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import { Sculptor } from "../../../packages/addons/src/tools/Sculptor";
 import { TubePainter } from "../../../packages/addons/src/tools/TubePainter";
 import { fractureConvex } from "../../../packages/addons/src/tools/Fracture";
@@ -55,6 +56,47 @@ describe("editable isosurfaces", () => {
     surface.applyEdit(edit, "redo"); expect(surface.getSample(4, 4, 4)).toEqual(edit.after);
     surface.dispose(); surface.dispose(); expect(() => surface.generate()).toThrow(/disposed/);
     expect(mesh.positions.length).toBeGreaterThan(0);
+  });
+
+  it("draws each isosurface material group with its own material in the ordinary primitive path", () => {
+    const surface = new MarchingCubes({ resolution: [9, 9, 9], maxTriangles: 5000 });
+    // Left half of the sphere uses slot 0, right half slot 2 (slot 1 unused).
+    surface.fill(([x, y, z]) => ({ value: 0.55 - Math.hypot(x, y, z), materialIndex: x < 0 ? 0 : 2 }));
+    const mesh = surface.generate()!;
+    const slots = geometry.splitGroups(mesh);
+    expect(slots.map((slot) => slot.materialIndex)).toEqual([0, 2]);
+    const counted = slots.reduce((sum, slot) => sum + (slot.geometry.indices as ArrayLike<number>).length, 0);
+    expect(counted).toBe(mesh.indices.length);
+    const red = material.pbr({ color: "#ff0000" }), blue = material.pbr({ color: "#0000ff" });
+    expect(() => geometry.multiMaterial(mesh, [red])).toThrow(/materialIndex 2 has no material/);
+    const node = geometry.multiMaterial(mesh, [red, material.pbr({ color: "#00ff00" }), blue], { name: "blob", position: [1, 2, 3] }).toJSON();
+    expect(node.kind).toBe("group");
+    expect(node.position).toEqual([1, 2, 3]);
+    const children = (node as { children: readonly AuraPrimitiveNode[] }).children;
+    expect(children.map((child) => child.material)).toEqual([red, blue]);
+    // Each child primitive is compiled as its own resource with its own material and index subset.
+    const entries = createProductionRuntimePrimitiveEntries(children);
+    try {
+      expect(entries).toHaveLength(2);
+      const colors = entries.map((entry) => entry.resources[0]!.material.getParameter("u_baseColor") as readonly number[]);
+      expect(colors[0]![0]).toBeGreaterThan(0.9);
+      expect(colors[0]![2]).toBeLessThan(0.1);
+      expect(colors[1]![2]).toBeGreaterThan(0.9);
+      expect(colors[1]![0]).toBeLessThan(0.1);
+      const drawn = entries.map((entry) => entry.resources[0]!.geometry.indexBuffer!.count);
+      expect(drawn).toEqual(slots.map((slot) => (slot.geometry.indices as ArrayLike<number>).length));
+      // Every index of the slot-0 subset belongs to a slot-0 triangle of the source.
+      const leftTriangles = new Set<string>();
+      for (const group of mesh.groups!) {
+        if (group.materialIndex !== 0) continue;
+        for (let i = group.start; i < group.start + group.count; i += 3) leftTriangles.add(`${mesh.indices[i]},${mesh.indices[i + 1]},${mesh.indices[i + 2]}`);
+      }
+      const left = slots[0]!.geometry.indices as ArrayLike<number>;
+      for (let i = 0; i < left.length; i += 3) expect(leftTriangles.has(`${left[i]},${left[i + 1]},${left[i + 2]}`)).toBe(true);
+    } finally {
+      for (const entry of entries) for (const resource of entry.resources) { resource.geometry.dispose(); resource.material.dispose(); }
+      surface.dispose();
+    }
   });
 
   it("enforces grid/output bounds and rolls back failed fills", () => {

@@ -22,8 +22,8 @@ describe("P3 root material.physical spec path", () => {
     assert.deepEqual(boundedWarnings, []);
   });
 
-  test("requested extensions emit bounded matrix diagnostics, never silent acceptance", () => {
-    const { spec, requestedExtensions, boundedWarnings } = createPhysicalMaterialSpec({
+  test("requested extensions emit supported matrix diagnostics, never silent acceptance", () => {
+    const { spec, requestedExtensions, boundedWarnings, extensionDiagnostics } = createPhysicalMaterialSpec({
       color: "#8a1a1a",
       clearcoat: 1,
       clearcoatRoughness: 0.08,
@@ -37,11 +37,13 @@ describe("P3 root material.physical spec path", () => {
     assert.equal(spec.color, "#8a1a1a");
     for (const extension of ["clearcoat", "sheen", "iridescence", "anisotropy", "transmission", "volume", "ior"] as const) {
       assert.ok(requestedExtensions.includes(extension), `missing requested extension: ${extension}`);
-      assert.ok(
-        boundedWarnings.some((warning) => warning.startsWith(`${extension}:`)),
-        `missing bounded warning: ${extension}`
-      );
+      const diagnostic = extensionDiagnostics.find((entry) => entry.extension === extension);
+      assert.equal(diagnostic?.requested, true, `missing requested diagnostic: ${extension}`);
+      assert.equal(diagnostic?.support, "supported", `lobe still bounded: ${extension}`);
+      assert.equal(diagnostic?.diagnostic, getExternalParityMaterialExtensionState(extension).diagnostic);
     }
+    // S5-WP04-01: no lobe is bounded, so no bounded warning is emitted.
+    assert.deepEqual(boundedWarnings, []);
   });
 
   test("local matrix mirrors the MaterialExtensions support table per extension", () => {
@@ -51,16 +53,16 @@ describe("P3 root material.physical spec path", () => {
       assert.equal(entry.diagnostic, source.diagnostic, `diagnostic drift: ${entry.extension}`);
     }
     assert.ok(
-      PHYSICAL_EXTENSION_MATRIX.every((entry) => entry.support === "bounded"),
-      "every physical extension stays bounded until pixel proof lands"
+      PHYSICAL_EXTENSION_MATRIX.every((entry) => entry.support === "supported"),
+      "S5-WP04-01: every physical lobe is supported in both backends"
     );
     assert.ok(EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT.length >= PHYSICAL_EXTENSION_MATRIX.length);
   });
 
   test("volume intent via attenuation params also warns", () => {
-    const { requestedExtensions, boundedWarnings } = createPhysicalMaterialSpec({ attenuationDistance: 2.5 });
+    const { requestedExtensions, extensionDiagnostics } = createPhysicalMaterialSpec({ attenuationDistance: 2.5 });
     assert.ok(requestedExtensions.includes("volume"));
-    assert.ok(boundedWarnings.some((warning) => warning.startsWith("volume:")));
+    assert.equal(extensionDiagnostics.find((entry) => entry.extension === "volume")?.requested, true);
   });
 
   test("every extension propagates its exact requested value, never a default", () => {
@@ -79,8 +81,8 @@ describe("P3 root material.physical spec path", () => {
       assert.ok(result.requestedExtensions.includes(extension), `missing requested extension: ${extension}`);
       assert.equal(result.spec[key], value, `dropped ${key} value`);
       assert.ok(
-        result.boundedWarnings.some((warning) => warning.startsWith(`${extension}:`)),
-        `missing bounded warning: ${extension}`
+        result.extensionDiagnostics.some((entry) => entry.extension === extension && entry.requested && entry.support === "supported"),
+        `missing requested diagnostic: ${extension}`
       );
     }
   });
@@ -91,7 +93,8 @@ describe("P3 root material.physical spec path", () => {
     // not just the values, is earned here.
     const { spec } = createPhysicalMaterialSpec({ clearcoat: 1 });
     assert.equal(spec.clearcoat, 1);
-    assert.ok(createPhysicalMaterialSpec({ clearcoat: 1 }).boundedWarnings.length > 0);
-    assert.deepEqual(createPhysicalMaterialSpec().boundedWarnings, []);
+    assert.deepEqual(createPhysicalMaterialSpec({ clearcoat: 1 }).requestedExtensions, ["clearcoat"]);
+    assert.deepEqual(createPhysicalMaterialSpec().requestedExtensions, []);
+    assert.throws(() => createPhysicalMaterialSpec({ clearcoat: 1, iridescenceIOR: 0.9 }), /iridescenceIOR/);
   });
 });

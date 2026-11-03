@@ -956,13 +956,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/ironcrownCrown.e44eaa1e.glb",
-    hash: "sha256-e44eaa1ee71c642e06a48d4600e92268d139b669ab3f11bd8c596e440eebb631",
+    hash: "sha256-97edaf136f826fd101540a3c06aa9c1bab4001b8ded64ec5912014f4f1bc9f73",
     bounds: [
       1.896,
       1.882,
       1.897
     ],
-    sizeBytes: 17940548,
+    sizeBytes: 850704,
     metadata: {
       "materials": [
         "material-0"

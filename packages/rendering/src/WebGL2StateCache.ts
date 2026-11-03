@@ -107,6 +107,18 @@ export class WebGL2StateCache {
     this.dependents.push(reset);
   }
 
+  /**
+   * Forget only the color-mask and blend shadows after indexed per-attachment
+   * calls (`OES_draw_buffers_indexed`): global state must be reissued on the
+   * next draw because each attachment may now hold a different value.
+   */
+  forgetColorAttachmentState(blendCapability: number): void {
+    this.currentColorMask = null;
+    this.currentBlendFunc = null;
+    this.currentBlendEquation = null;
+    this.enabledCaps.delete(blendCapability);
+  }
+
   invalidate(): void {
     for (const reset of this.dependents) reset();
     this.currentProgram = UNSET;

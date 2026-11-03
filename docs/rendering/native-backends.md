@@ -16,7 +16,7 @@ contracts are already public.
 | Root app, WebGL2 | The root production renderer defaults to WebGL2 and requires a usable WebGL2 canvas when that backend is selected for a renderable browser scene. | Existing receipts in [Claims and Boundaries](../agents/claims-and-boundaries.md) and [renderer lifecycle](renderer-lifecycle.md) cover only their named workloads, largely on software WebGL2. They do not establish every feature on every device. |
 | Root app, WebGPU | Experimental root selection is exposed via `renderer.backend: "webgpu"` or `"auto"`; permitted initialization failures can attempt WebGL2 fallback on the same canvas. | WP-03 still requires candidate-bound verification of selection, selected-device compute, fallback and lifecycle. A browser receipt must show adapter, active backend, dispatch, output and pixels. |
 | `@aura3d/rendering` devices | The lower-level `Renderer` and `createRenderDevice` expose WebGL2, WebGPU and mock device paths. The WebGPU device value is also exposed from `@aura3d/rendering/webgpu`. A package device is a lower-level API, not proof of root-app support. | Selected portable-material workloads have their own bounded package evidence in [portable custom materials](portable-custom-materials.md). A mock tests contracts without establishing browser rasterization or physical-device support. |
-| Depth and section clipping | Root cameras choose standard, reversed or logarithmic depth (experimental, source and mock-device tested). Projection, culling, clear/compare, camera depth prepasses, postprocess linearization and readback follow the frame convention; shadow maps keep standard light depth. Reversed depth is `full` precision on WebGL2 with `EXT_clip_control` (zero-to-one clip, float depth in renderer-owned targets), otherwise `reduced`; logarithmic depth renders on WebGL2 and WebGPU. | Packed-browser and real-GPU evidence per mode; WebGPU programs that consume a native zero-to-one projection (full reversed precision on WebGPU). |
+| Depth and section clipping | Root cameras choose standard, reversed or logarithmic depth (experimental, source and mock-device tested). Projection, culling, clear/compare, camera depth prepasses, postprocess linearization and readback follow the frame convention; shadow maps keep standard light depth. Reversed depth is `full` precision on WebGL2 with `EXT_clip_control` and on WebGPU (zero-to-one projection, float depth in renderer-owned targets), otherwise `reduced`; logarithmic depth renders on WebGL2 and WebGPU. | Packed-browser and real-GPU evidence per mode. |
 | Draw state and vertex data | Material and draw descriptors expose multiple state fields. Their presence does not mean every field is implemented identically by each device. | WP-31 must connect and verify the complete supported state and vertex layouts on each backend. Native WebGPU currently reduces several state choices; see below. |
 | Transparency | The forward queue sorts blended items; object sorting cannot make intersecting transparent geometry order independent. | Weighted order-independent transparency and its sorted fallback are roadmap work under WP-31; refractive multilayer transmission is a separate limitation. |
 | Camera views and postprocessing | Every root `cameras.array` / `cameras.stereo` group is honoured in scene order (distinct group names required). Each view has its own matrices, depth convention, frustum culling (including matrix-only views over Scene sources), sized target, history and inherited, replaced or disabled postprocessing. Native WebGPU depth of field refuses multiview with `NATIVE_DOF_MULTIVIEW_UNSUPPORTED` before any view draws. | Source and mock-device tested; browser `native-multiview.spec.ts` must still show distinct view pixels, viewport boundaries and per-view effects. |
@@ -90,7 +90,7 @@ interval.
 | `standard` | near -> -1, far -> +1 | 1 / `less-equal` | standard window depth | `standard` |
 | `reversed`, WebGL2 with `EXT_clip_control` | near -> 1, far -> 0 (rebuilt zero-to-one projection, `clipControlEXT(LOWER_LEFT_EXT, ZERO_TO_ONE_EXT)`) | 0 / `greater-equal`, negated polygon offset | 1 - standard depth, in `DEPTH32F_STENCIL8` (or `DEPTH_COMPONENT32F` without stencil) | `full` into renderer-owned targets; `reduced` into the canvas or a fixed-point caller target |
 | `reversed`, WebGL2 without `EXT_clip_control` | near -> +1, far -> -1 | 0 / `greater-equal`, negated polygon offset | 1 - standard depth, 24-bit | `reduced`: minus-one-to-one clip, ordering only |
-| `reversed`, WebGPU | near -> +1, far -> -1, remapped to zero-to-one in the vertex stage | 0 / `greater-equal`, negated polygon offset | 1 - standard depth | `reduced`: the in-shader (z + w) / 2 remap cancels the float gain. Float targets are available (`depthPrecision: "float"`: `depth32float`, `depth32float-stencil8` with that feature, else `depth24plus-stencil8`) |
+| `reversed`, WebGPU | near -> 1, far -> 0 (rebuilt zero-to-one projection; scene WGSL programs are specialized with the `a3dZeroToOneProjection` pipeline override and pass clip z through, no (z + w) / 2 remap) | 0 / `greater-equal`, negated polygon offset | 1 - standard depth, in `depth32float-stencil8` (requested automatically when the adapter offers it; `depth32float` without stencil) | `full` into renderer-owned float targets; `reduced` into the canvas, a fixed-point caller target, or without `depth32float-stencil8`. Custom WGSL (`material.custom`, shader graphs) receives the zero-to-one projection; graph and depth programs read `u_a3dClipRange` = 1 |
 | `logarithmic` | standard | 1 / `less-equal` | `ln(d / near) / ln(far / near)` written as fragment depth (`gl_FragDepth` / WGSL `@builtin(frag_depth)`, no early-Z) | `extended` |
 
 The renderer makes the camera's convention the device's active convention for
@@ -189,6 +189,69 @@ it. The WebGPU device observes device loss and rejects later device work, but
 the source does not establish transparent recreation of a device and all
 caller-owned resources. Subscribe/unsubscribe using the relevant API and stop
 issuing work when the device is lost.
+
+### Compressed textures with decoded fallbacks (5.0)
+
+When a device cannot sample a compressed format (no WebGL extension or WebGPU
+feature, or opaque BC1 RGB blocks WebGL could expose as transparent), it
+uploads the texture's decoded RGBA8 fallback instead. Any compressed content
+edit (`updateMip` on a compressed level, or `needsUpdate = true` after editing
+retained bytes) invalidates that fallback for every device, and the next upload
+fails (`WEBGPU_TEXTURE_FALLBACK_UPDATE_UNSUPPORTED` /
+`COMPRESSED_TEXTURE_UNSUPPORTED`) rather than show stale pixels. Supply the
+decoded replacement with `Texture.replaceFallbackLevels(levels)` (largest level
+first, matching the texture extent; BC1 RGB needs every allocated level, opaque).
+Both devices write it into the existing fallback storage on the next revision;
+WebGL2 moves an edited opaque BC1 RGB texture from native storage to the
+replacement fallback. A metadata-only revision keeps the written fallback, and a
+later content edit invalidates the replacement again. Cube and 3D compressed
+textures have no decoded fallback path.
+
+### Dynamic texture and color-output fixtures (5.0)
+
+`tests/browser/native-dynamic-textures.spec.ts` counts real native texture
+handles on both backends (WebGL objects, and GPUTextures through an
+instrumented `createTexture`/`destroy` on the selected device) and awaits
+`device.whenDisposed()` before counting, because WebGPU textures are destroyed
+only after their retirement fences resolve.
+`tests/browser/native-color-output.spec.ts` includes a WebGPU case that requests
+Display-P3 and checks the reported active space against the canvas context
+configuration (opaque alpha for P3) or the reported sRGB fallback. Both are
+Phase B browser evidence; Display-P3 output remains experimental.
+
+### Layered targets, transfers and retirement receipts (5.0)
+
+- `createRenderTarget({ dimension: "3d", layers: depth, depth: false })`
+  allocates one color volume and returns a per-slice child in `layerTargets`
+  (WebGL2 `framebufferTextureLayer` on `TEXTURE_3D`; Mock device). 3D targets
+  are color-only, single-sample, single-mip and single-attachment; other
+  combinations are refused. WebGPU refuses 3D targets
+  (`UNSUPPORTED_RENDER_TARGET_FEATURE`) because per-slice attachments need a
+  `depthSlice` in every pass encoder.
+- WebGPU `cube` and `2d-array` targets use one native array texture (plus a
+  depth array unless `depth: false`), sampled through a cube/2d-array view;
+  each `layerTargets[i]` renders through a single-layer 2D view. Children
+  borrow the parent's leases; only the parent retires native textures, behind
+  the retirement fence. Layered WebGPU targets are single-sample and single-mip;
+  depth-only and comparison targets remain WebGL2-only.
+- WebGPU `copyRenderTarget`, `resolveRenderTarget` and `readRenderTarget`
+  follow the WebGL2 contract: targets stay device-owned, an abort before
+  submission leaves the destination untouched, an abort after submission only
+  stops waiting. Resolve copies the single-sample texture that every 4x pass
+  already resolves into. Depth copies are refused
+  (`WEBGPU_DEPTH_COPY_UNSUPPORTED`): `depth24plus*` is not copyable and
+  `depth32float` cannot be a copy destination.
+- `ResourceLifecycle.whenDisposed()` observes (never starts or retries) a
+  disposal: it resolves once every resource retained by `dispose()` has a
+  release receipt and rejects with a later fence/destructor failure, leaving
+  that resource owned until `dispose()` is called again. WebGPU buffers and
+  render targets expose `whenDisposed()` receipts backed by interop retirement.
+- `GaussianSplatRenderer.prepareAsync(input, { gpuSort: { device, sorter } })`
+  orders visible splats with the bounded `NativeGpuSort` (f32 keys,
+  index-stable ties; indices read back once) and falls back to the CPU sort on
+  any non-abort GPU failure, reported in `sortBackend`/`sortFallbackReason`.
+  The sorter treats a rejected `device.lost` notification as unconfirmed loss
+  and keeps submitted buffers until a successful fence.
 
 ## Evidence needed before promotion
 

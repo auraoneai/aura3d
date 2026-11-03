@@ -98,9 +98,14 @@ export interface RenderTargetDescriptor {
   readonly sampleCount?: number;
   /** Number of allocated color mip levels, including level zero (default 1). */
   readonly mipLevelCount?: number;
-  /** PR 0a (CONTRACTS §3.4): texture dimensionality. "cube" renders 6 faces; "2d-array" renders `layers` slices. */
-  readonly dimension?: "2d" | "cube" | "2d-array";
-  /** Layer count for dimension "2d-array" (cube targets always have 6 faces). */
+  /**
+   * PR 0a (CONTRACTS §3.4): texture dimensionality. "cube" renders 6 faces;
+   * "2d-array" renders `layers` slices; "3d" renders each of `layers` depth
+   * slices of one volume texture (color only: `depth: false`, single-sample,
+   * one mip, no MRT), sampled afterwards as a 3D texture.
+   */
+  readonly dimension?: "2d" | "cube" | "2d-array" | "3d";
+  /** Layer count for "2d-array", or the volume depth (slice count) for "3d"; cube targets always have 6 faces. */
   readonly layers?: number;
   /** PR 0a (C-11, lane 02 Q-01-5): depth-only target — no color attachment; `colorTexture` is an unallocated placeholder, `depthTexture` is the sampleable surface. */
   readonly depthOnly?: boolean;
@@ -134,12 +139,12 @@ export interface RenderTarget extends DisposableResource {
   readonly multisampledDepthTexture?: Texture;
   readonly sampleCount?: number;
   /** Texture dimensionality (default "2d"). */
-  readonly dimension?: "2d" | "cube" | "2d-array";
-  /** Cube faces (6) or 2d-array layers. */
+  readonly dimension?: "2d" | "cube" | "2d-array" | "3d";
+  /** Cube faces (6), 2d-array layers or 3D depth slices. */
   readonly layers?: number;
   /** MRT targets: every color attachment (attachment 0 === `colorTexture`). */
   readonly colorTextures?: readonly Texture[];
-  /** Cube/array targets: one child target per face/layer; callers render into `layerTargets[i]`. */
+  /** Cube/array/3D targets: one child target per face/layer/depth slice; callers render into `layerTargets[i]`. */
   readonly layerTargets?: readonly RenderTarget[];
   readonly depthOnly?: boolean;
   /** Storage class of the depth attachment; absent means fixed point. */
@@ -200,11 +205,12 @@ export function validateRenderTargetDescriptor(descriptor: RenderTargetDescripto
     throw new RenderDeviceError("Render target dimensions must be positive integers", "INVALID_RENDER_TARGET_SIZE");
   }
   const dimension = descriptor.dimension ?? "2d";
-  if (!["2d", "cube", "2d-array"].includes(dimension)) throw new RenderDeviceError("Unsupported render target dimension", "INVALID_RENDER_TARGET_SIZE", { dimension });
+  if (!["2d", "cube", "2d-array", "3d"].includes(dimension)) throw new RenderDeviceError("Unsupported render target dimension", "INVALID_RENDER_TARGET_SIZE", { dimension });
   if (dimension === "cube" && descriptor.width !== descriptor.height) throw new RenderDeviceError("Cube render targets must be square", "INVALID_RENDER_TARGET_SIZE");
-  if (descriptor.layers !== undefined && (dimension !== "2d-array" || !Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
-    throw new RenderDeviceError("Render target layers require a positive 2d-array layer count", "INVALID_RENDER_TARGET_SIZE");
+  if (descriptor.layers !== undefined && ((dimension !== "2d-array" && dimension !== "3d") || !Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
+    throw new RenderDeviceError("Render target layers require a positive 2d-array layer count or 3d depth", "INVALID_RENDER_TARGET_SIZE");
   }
+  if (dimension === "3d") validateVolumeRenderTargetDescriptor(descriptor);
   if (!Number.isInteger(descriptor.sampleCount ?? 1) || (descriptor.sampleCount ?? 1) < 1) throw new RenderDeviceError("Render target sampleCount must be a positive integer", "INVALID_RENDER_TARGET_SAMPLE_COUNT");
   const mipLevelCount = descriptor.mipLevelCount ?? 1;
   const maxMipLevels = Math.floor(Math.log2(Math.max(descriptor.width, descriptor.height))) + 1;
@@ -221,6 +227,21 @@ export function validateRenderTargetDescriptor(descriptor: RenderTargetDescripto
   }
   if (descriptor.stencil !== undefined && typeof descriptor.stencil !== "boolean") {
     throw new RenderDeviceError("Render target stencil must be a boolean", "INVALID_RENDER_TARGET_FORMAT");
+  }
+}
+
+/**
+ * 3D targets render one depth slice at a time into a color volume. Depth,
+ * multisampling, MRT and mip chains have no portable per-slice meaning on
+ * both native backends, so they are refused instead of silently dropped.
+ */
+function validateVolumeRenderTargetDescriptor(descriptor: RenderTargetDescriptor): void {
+  if (descriptor.layers === undefined) throw new RenderDeviceError("3d render targets require `layers` (the volume depth)", "INVALID_RENDER_TARGET_SIZE");
+  if (descriptor.depth !== false || descriptor.depthOnly || descriptor.depthCompare) {
+    throw new RenderDeviceError("3d render targets are color-only; pass depth: false", "UNSUPPORTED_RENDER_TARGET_FEATURE", { dimension: "3d" });
+  }
+  if ((descriptor.sampleCount ?? 1) !== 1 || (descriptor.mipLevelCount ?? 1) !== 1 || (descriptor.colorAttachments?.length ?? 0) > 1) {
+    throw new RenderDeviceError("3d render targets must be single-sample, single-mip and single-attachment", "UNSUPPORTED_RENDER_TARGET_FEATURE", { dimension: "3d" });
   }
 }
 
@@ -967,7 +988,7 @@ export class MockRenderTarget implements RenderTarget {
   public readonly colorPixels: Uint8Array;
   public readonly colorFloatPixels: Float32Array | null;
   public readonly depthPixels: Float32Array | null;
-  public readonly dimension: "2d" | "cube" | "2d-array";
+  public readonly dimension: "2d" | "cube" | "2d-array" | "3d";
   public readonly layers?: number;
   public readonly colorTextures?: readonly Texture[];
   public layerTargets?: readonly RenderTarget[];
@@ -990,7 +1011,7 @@ export class MockRenderTarget implements RenderTarget {
     public readonly depthTexture?: Texture,
     public readonly sampleCount = 1,
     options: {
-      readonly dimension?: "2d" | "cube" | "2d-array";
+      readonly dimension?: "2d" | "cube" | "2d-array" | "3d";
       readonly layers?: number;
       readonly colorTextures?: readonly Texture[];
       readonly colorPixels?: Uint8Array;
@@ -1218,8 +1239,8 @@ export class MockRenderDevice implements RenderDevice {
         label
       });
     }
-    if (descriptor.layers !== undefined && dimension !== "2d-array") {
-      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\"", "INVALID_RENDER_TARGET_SIZE", {
+    if (descriptor.layers !== undefined && dimension !== "2d-array" && dimension !== "3d") {
+      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\" or \"3d\"", "INVALID_RENDER_TARGET_SIZE", {
         dimension,
         layers: descriptor.layers,
         label
@@ -1236,14 +1257,15 @@ export class MockRenderDevice implements RenderDevice {
         label
       });
     }
-    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" ? descriptor.layers ?? 1 : 1;
+    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" || dimension === "3d" ? descriptor.layers ?? 1 : 1;
     const colorAttachmentCount = depthOnly ? 0 : Math.max(1, descriptor.colorAttachments?.length ?? 1);
+    const volume = dimension === "3d" ? { depth: layerCount } : { layers: layerCount > 1 ? layerCount : undefined };
     const colorTextures: Texture[] = [];
     const attachmentPixels: Uint8Array[] = [];
     for (let attachment = 0; attachment < colorAttachmentCount; attachment += 1) {
       const format = descriptor.colorAttachments?.[attachment]?.format ?? descriptor.format ?? "rgba8";
       const textureLabel = colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color";
-      colorTextures.push(new Texture({ width: descriptor.width, height: descriptor.height, format, label: textureLabel, dimension, layers: layerCount > 1 ? layerCount : undefined, renderAttachment: true }));
+      colorTextures.push(new Texture({ width: descriptor.width, height: descriptor.height, format, label: textureLabel, dimension, ...volume, renderAttachment: true }));
       if (attachment > 0) attachmentPixels.push(new Uint8Array(descriptor.width * descriptor.height * 4));
     }
     const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension, renderAttachment: true });

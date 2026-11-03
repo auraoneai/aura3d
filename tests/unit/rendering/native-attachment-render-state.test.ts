@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { MockRenderDevice, type DrawCommand, type RenderCommandState } from "../../../packages/rendering/src/RenderDevice";
 import { renderPipelineStateKey, renderStateSignature, validateRenderCommandState } from "../../../packages/rendering/src/contracts/blend";
 import { WebGL2DrawCallBinder } from "../../../packages/rendering/src/webgl2/MultiDraw";
+import { WebGL2StateCache } from "../../../packages/rendering/src/WebGL2StateCache";
+import { Material } from "../../../packages/rendering/src/Material";
 
 const base: RenderCommandState = {
   depthTest: true, depthWrite: true, cullMode: "back", blend: false, depthCompare: "less-equal"
@@ -75,5 +77,80 @@ describe("per-attachment render state contract", () => {
     expect(device.drawCommands).toHaveLength(1);
     device.endFrame();
     device.dispose();
+  });
+});
+
+describe("WebGL2 extension-backed command state", () => {
+  function recordingBinder(extensions: Record<string, object>, colorTextures = 2) {
+    const calls: string[] = [];
+    const constants = new Map<string, number>();
+    const record = (name: string) => (...args: unknown[]) => { calls.push(`${name}(${args.join(",")})`); };
+    const ext = (name: string, methods: readonly string[]) => Object.fromEntries(methods.map((method) => [method, record(`${name}.${method}`)]));
+    const available: Record<string, object> = {
+      OES_draw_buffers_indexed: ext("OES", ["enableiOES", "disableiOES", "blendEquationSeparateiOES", "blendFuncSeparateiOES", "colorMaskiOES"]),
+      EXT_polygon_offset_clamp: ext("EXT", ["polygonOffsetClampEXT"])
+    };
+    const gl = new Proxy({}, {
+      get(_target, key: string) {
+        if (key === "getExtension") return (name: string) => (extensions[name] ? available[name] : null) ?? null;
+        if (/^[A-Z0-9_]+$/.test(key)) {
+          if (!constants.has(key)) constants.set(key, 0x1000 + constants.size);
+          return constants.get(key);
+        }
+        return record(key);
+      }
+    });
+    const binder = new WebGL2DrawCallBinder({ gl, stateCache: new WebGL2StateCache({ label: "test" }),
+      activeRenderTarget: { colorTextures: Array.from({ length: colorTextures }, () => ({})) },
+      lifecycle: { effectiveScissor: () => null } } as never);
+    return { binder, calls, constant: (name: string) => constants.get(name) };
+  }
+
+  it("applies independent attachment masks and blending through OES_draw_buffers_indexed, then reissues global state", () => {
+    const { binder, calls, constant } = recordingBinder({ OES_draw_buffers_indexed: {} });
+    binder.applyRenderState({ ...base, blend: true, blendMode: "alpha", depthWrite: false,
+      colorAttachments: [undefined, { colorWrite: [true, false, false, false], blendMode: "opaque" }] });
+    const blend = constant("BLEND");
+    expect(calls).toContain("OES.colorMaskiOES(0,true,true,true,true)");
+    expect(calls).toContain(`OES.enableiOES(${blend},0)`);
+    expect(calls.some((call) => call.startsWith("OES.blendFuncSeparateiOES(0,"))).toBe(true);
+    expect(calls).toContain("OES.colorMaskiOES(1,true,false,false,false)");
+    expect(calls).toContain(`OES.disableiOES(${blend},1)`);
+    calls.length = 0;
+    // The global cache was told to forget, so the next ordinary draw resets every buffer.
+    binder.applyRenderState({ ...base });
+    expect(calls).toContain("colorMask(true,true,true,true)");
+    expect(calls).toContain(`disable(${blend})`);
+  });
+
+  it("applies a polygon offset clamp with EXT_polygon_offset_clamp, clears it later and refuses it without the extension", () => {
+    const { binder, calls } = recordingBinder({ EXT_polygon_offset_clamp: {} });
+    binder.applyRenderState({ ...base, polygonOffset: { factor: 2, units: 3, clamp: 0.5 } });
+    expect(calls).toContain("EXT.polygonOffsetClampEXT(2,3,0.5)");
+    calls.length = 0;
+    binder.applyRenderState({ ...base, polygonOffset: { factor: 2, units: 3 } });
+    expect(calls).toContain("EXT.polygonOffsetClampEXT(2,3,0)");
+    calls.length = 0;
+    binder.applyRenderState({ ...base, polygonOffset: { factor: 2, units: 3 } });
+    expect(calls.some((call) => call.startsWith("EXT."))).toBe(false);
+    const plain = recordingBinder({});
+    expect(() => plain.binder.applyRenderState({ ...base, polygonOffset: { factor: 1, units: 1, clamp: 0.25 } })).toThrow(/EXT_polygon_offset_clamp/);
+    expect(() => plain.binder.applyRenderState({ ...base, sampleMask: 3 })).toThrow(/sample mask/);
+  });
+
+  it("expresses every command-state field through the material API", () => {
+    const material = new Material({ shaderKey: "custom", renderState: {
+      frontFace: "cw", sampleMask: 5, blendConstant: [0.25, 0.5, 0.75, 1], blend: true, blendMode: "alpha", depthWrite: true,
+      blendedDepthWrite: "allow", polygonOffset: { factor: 1, units: 2, clamp: 0.125 },
+      colorAttachments: [undefined, { colorWrite: [true, false, false, false], blendMode: "opaque" }]
+    } });
+    expect(material.renderState).toMatchObject({ frontFace: "cw", sampleMask: 5, blendConstant: [0.25, 0.5, 0.75, 1], blendedDepthWrite: "allow",
+      polygonOffset: { clamp: 0.125 }, colorAttachments: [undefined, { colorWrite: [true, false, false, false], blendMode: "opaque" }] });
+    expect(() => new Material({ shaderKey: "custom", renderState: { blend: true, depthWrite: true } })).toThrow(/depthWrite/);
+    expect(() => new Material({ shaderKey: "custom", renderState: { sampleMask: -1 } })).toThrow(/sampleMask/);
+    expect(() => new Material({ shaderKey: "custom", renderState: { frontFace: "left" as never } })).toThrow(/winding/);
+    expect(() => new Material({ shaderKey: "custom", renderState: { blendConstant: [2, 0, 0, 0] } })).toThrow(/blendConstant/);
+    expect(() => new Material({ shaderKey: "custom", renderState: { colorAttachments: [{ colorWrite: [true] as never }] } })).toThrow(/colorWrite/);
+    material.dispose();
   });
 });

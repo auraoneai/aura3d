@@ -1,11 +1,11 @@
 /**
- * WGSL twin of a3d_prd04_unlit (PRD-04 §8.12): same `a3d_` name, identical
- * math (r185 unlit arm — baseColor straight through).
+ * WGSL companion of Aura's `a3d_prd04_unlit` chunk
+ * (shaders/physical/unlit.glsl.ts). KHR_materials_unlit returns the authored
+ * base color and opacity without lighting.
  */
 const wgsl = /* wgsl */ `
-// Unlit output: baseColor straight through (r185 unlit arm).
-fn a3dPrd04UnlitColor(diffuseColor: vec4f) -> vec4f {
-	return diffuseColor;
+fn a3dPrd04UnlitColor(baseColor: vec4f) -> vec4f {
+  return baseColor;
 }
 `;
 

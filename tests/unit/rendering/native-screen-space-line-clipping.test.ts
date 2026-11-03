@@ -93,7 +93,7 @@ describe("screen-space line clipping source contract", () => {
       expect(code).toContain("u_a3dClipGroups: array<vec4<f32>, 2>");
     }
     expect(vertex.indexOf("aura.u_a3dClipInverseLineTransform * clip"))
-      .toBeLessThan(vertex.indexOf("(clip.z + clip.w) * 0.5"));
+      .toBeLessThan(vertex.indexOf("out.position = vec4f(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);"));
     expect(vertex).toContain("let a3dLineLocal = a3dLineLocalH.xyz / a3dLineLocalH.w");
     expect(vertex).toContain("aura.u_modelMatrix * vec4f(a3dLineLocal, 1.0)");
     expect(vertex).toContain("out.clipInvalid = 1.0");

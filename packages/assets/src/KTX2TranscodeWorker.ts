@@ -1,5 +1,5 @@
 /** Same-origin Basis worker pool with bounded inputs and explicit job ownership. */
-import { AssetDecoderUnavailable, looksLikeWasmBinary } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, drainWithDeadline, looksLikeWasmBinary } from "./decoderLoad.js";
 import type { KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
 
 export interface KTX2WorkerTranscodeRequest {
@@ -24,6 +24,8 @@ export interface KTX2WorkerPoolLimits {
   readonly maxOutputBytes?: number;
   readonly initializeTimeoutMs?: number;
   readonly cancelTimeoutMs?: number;
+  /** Bound on draining initialization and codec cleanup during disposal (default 10 s). */
+  readonly disposeTimeoutMs?: number;
 }
 
 /** Exact same-origin asset URLs emitted by a packaged render worker. */
@@ -163,6 +165,7 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   const maxOutputBytes = positiveInteger(limits.maxOutputBytes, 256 * MiB, "output limit");
   const initializeTimeoutMs = positiveInteger(limits.initializeTimeoutMs, 30_000, "initialization timeout");
   const cancelTimeoutMs = positiveInteger(limits.cancelTimeoutMs, 5_000, "cancellation timeout");
+  const disposeTimeoutMs = positiveInteger(limits.disposeTimeoutMs, DECODER_DISPOSE_TIMEOUT_MS, "disposal timeout");
   const queue: Job[] = [];
   const jobs = new Map<number, Job>();
   const initializations = new Set<Promise<void>>();
@@ -451,13 +454,20 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   function dispose(): Promise<void> {
     if (disposal) return disposal;
     disposed = true;
-    disposal = Promise.resolve().then(async () => {
-      while (initializations.size) await Promise.all([...initializations]);
+    const attempt: Promise<void> = Promise.resolve().then(async () => {
+      // Workers are terminated synchronously below; only fetches/initializers
+      // that ignore abort can remain. Bound the wait instead of hanging.
+      const unsettled = await drainWithDeadline(initializations, disposeTimeoutMs);
+      if (unsettled > 0) {
+        if (disposal === attempt) disposal = undefined;
+        throw new AssetDecoderDisposeTimeout("KTX2 worker pool", unsettled, disposeTimeoutMs);
+      }
       if (cleanupErrors.length) throw new AggregateError(cleanupErrors, "KTX2 worker pool disposal failed");
     });
+    disposal = attempt;
     // Existing synchronous callers may ignore disposal; awaiters can still
     // observe cleanup failures from the original promise.
-    void disposal.catch(() => {});
+    void attempt.catch(() => {});
     initController?.abort();
     for (const slot of slots) terminate(slot, new Error("KTX2 worker pool disposed"));
     for (const job of [...jobs.values()]) finish(job, new Error("KTX2 worker pool disposed"));

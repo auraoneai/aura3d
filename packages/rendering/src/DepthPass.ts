@@ -436,7 +436,7 @@ export function assertDepthClippingSupported(source: RenderItem, clip: ClippingB
     return;
   }
   if (pointGeometry) {
-    throw new RenderDeviceError("Clipping is unavailable for point proxy depth geometry", "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: source.label });
+    throw new RenderDeviceError("Clipping is unavailable for point, screen-space line and billboard sprite depth geometry used as a shadow proxy of other geometry", "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: source.label });
   }
   if (source.instanceTransforms && base?.renderState.cullMode !== "none" && hasInstanceVertexStreams(source)
     && instancedItemNeedsPerInstanceCullState(source, depthUsesGeometryMatrix(source))) {

@@ -56,24 +56,24 @@ describe("P3 material.physical root builder", () => {
     const coated = material.physical({ color: "#ffffff", clearcoat: 1, clearcoatRoughness: 0.1 });
     expect(coated.clearcoat).toBe(1);
     expect(coated.clearcoatRoughness).toBe(0.1);
-    // Requested extensions carry their bound notes; unrequested ones stay silent.
-    expect(coated.physicalWarnings?.join(" ")).toContain("clearcoat");
-    expect(coated.physicalWarnings?.join(" ")).not.toContain("iridescence");
+    // S5-WP04-01: every lobe is supported, so requested lobes carry no bound note.
+    expect(coated.physicalWarnings).toBeUndefined();
   });
 
-  it("stamps bounded warnings for non-supported extensions", () => {
+  it("stamps no bounded warning once every lobe is supported", () => {
     const iridescent = material.physical({ color: "#ffffff", iridescence: 0.8 });
     expect(iridescent.iridescence).toBe(0.8);
-    expect(iridescent.physicalWarnings?.join(" ")).toContain("iridescence");
+    expect(iridescent.physicalWarnings).toBeUndefined();
   });
 
-  it("physical is not a pbr alias: the same params warn only through physical", () => {
+  it("physical is not a pbr alias: the same params validate only through physical", () => {
     const viaPbr = material.pbr({ color: "#ffffff", clearcoat: 1 });
     expect(viaPbr.clearcoat).toBe(1);
     expect(viaPbr.physicalWarnings).toBeUndefined();
     const viaPhysical = material.physical({ color: "#ffffff", clearcoat: 1 });
     expect(viaPhysical.clearcoat).toBe(1);
-    expect(viaPhysical.physicalWarnings?.join(" ")).toContain("clearcoat");
+    expect(() => material.pbr({ color: "#ffffff", clearcoat: 1, iridescenceIOR: 0.9 })).not.toThrow();
+    expect(() => material.physical({ color: "#ffffff", clearcoat: 1, iridescenceIOR: 0.9 })).toThrow(/iridescenceIOR/);
   });
 
   it("M2 assets.ensureDecoders stays fail-closed when probes reject decoders", async () => {

@@ -1,13 +1,13 @@
 /**
- * WGSL twin of a3d_prd04_emissive_strength (PRD-04 §8.12): same `a3d_` name,
- * identical math (r185 emissivemap_fragment.glsl.js:1-13 ×
- * KHR_materials_emissive_strength).
+ * WGSL companion of Aura's `a3d_prd04_emissive_strength` chunk
+ * (shaders/physical/emissive_strength.glsl.ts), kept operation-for-operation
+ * equal to it. glTF 2.0 emission is emissiveFactor x emissiveTexture.rgb in
+ * linear light; KHR_materials_emissive_strength multiplies it by a
+ * nonnegative scalar strength. Negative inputs are clamped to zero.
  */
 const wgsl = /* wgsl */ `
-// Emissive term: emissiveFactor * emissiveTex.rgb * emissiveStrength.
-// emissiveTex = emissiveMap texel; pass vec4f(1.0) when no map is bound.
-fn a3dPrd04EmissiveRadiance(emissiveFactor: vec3f, emissiveTex: vec4f, emissiveStrength: f32) -> vec3f {
-	return emissiveFactor * emissiveTex.rgb * emissiveStrength;
+fn a3dPrd04EmissiveRadiance(factor: vec3f, texel: vec4f, strength: f32) -> vec3f {
+  return max(factor, vec3f(0.0)) * max(texel.rgb, vec3f(0.0)) * max(strength, 0.0);
 }
 `;
 

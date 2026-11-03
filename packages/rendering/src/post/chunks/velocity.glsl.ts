@@ -7,9 +7,16 @@
  *   `vertex:pars`    — u_previousModel / u_previousViewProjection /
  *                      u_unjitteredViewProjection (bound by the C-14
  *                      `velocityMrtBinder`) + clip varyings.
- *   `vertex:end`     — writes both clip positions from the object-space
- *                      generated current world position and geometry/local
- *                      transform for a rigid previous-model reprojection.
+ *   `vertex:end`     — writes both clip positions. The previous position is
+ *                      rebuilt from the previous pose, not the current one:
+ *                      skinned and morphed vertices run the deform chunk's
+ *                      `a3dDeformPrevious` (previous bone palette and
+ *                      previous morph weights, enabled by `A3D_VELOCITY`),
+ *                      and instanced draws read each instance's previous
+ *                      matrix from `a_a3dPrevInstance0..3`. Both previous
+ *                      inputs are supplied per object by the scoped
+ *                      VelocityHistory, which seeds them with the current
+ *                      pose on an object's first frame.
  *   `fragment:pars`  — AURA_VELOCITY outputs: `layout(location = 1) out vec4`
  *                      (velocity, rg16f on the wire) and `layout(location = 2)
  *                      out float` (reactive mask, r8) per VELOCITY_MRT.
@@ -20,12 +27,13 @@
  * the chunk only emits meaningfully when the forward target actually carries
  * the location-1/2 attachments — Q-01-2 (lane 01 MRT) is still pending, so
  * the feature is registered and ChunkHarness-compiled but never selected by
- * default. Deformed and instanced history requires a separate producer; the
- * rigid approximation marks those items reactive and reports the limitation.
+ * default. A graph material that replaces the vertex position reprojects
+ * its deformed pre-graph previous position; graph displacement history is
+ * not tracked.
  */
 import type { ShaderChunk, ShaderFeature } from "../../contracts/program";
 import { VELOCITY_MRT } from "../../contracts/velocity";
-import { velocityFramePrepared } from "../../forward/Velocity";
+import { VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES, velocityFramePrepared } from "../../forward/Velocity";
 
 export const velocityParsVertexChunk: ShaderChunk = {
   name: "a3d_prd03_velocityParsVertex",
@@ -37,6 +45,12 @@ uniform mat4 u_previousViewProjection;
 uniform mat4 u_unjitteredViewProjection;
 out vec4 a3d_velPrevClip;
 out vec4 a3d_velCurrClip;
+#ifdef A3D_VELOCITY_PREVIOUS_INSTANCE
+in vec4 a_a3dPrevInstance0;
+in vec4 a_a3dPrevInstance1;
+in vec4 a_a3dPrevInstance2;
+in vec4 a_a3dPrevInstance3;
+#endif
 `,
   wgsl: `// WGSL mirror lands in Phase 7 (§7 parity pass).
 struct A3dVelOut { @location(10) prevClip: vec4<f32>, @location(11) currClip: vec4<f32> };
@@ -49,7 +63,19 @@ export const velocityWriteVertexChunk: ShaderChunk = {
   stage: "vertex",
   requires: ["a3d_prd03_velocityParsVertex"],
   glsl: `a3d_velCurrClip = u_unjitteredViewProjection * a3dWorld;
-a3d_velPrevClip = u_previousViewProjection * (u_previousModel * instanceMatrix * a3dLocal);`,
+#if defined(A3D_VELOCITY) && defined(A3D_DEFORM_ENTRY) && (defined(A3D_MORPH) || defined(A3D_SKINNING))
+vec4 a3dVelPrevDeformed;
+a3dDeformPrevious(a3dVelPrevDeformed);
+vec4 a3dVelPrevLocal = u_geometryMatrix * a3dVelPrevDeformed;
+#else
+vec4 a3dVelPrevLocal = a3dLocal;
+#endif
+#ifdef A3D_VELOCITY_PREVIOUS_INSTANCE
+mat4 a3dVelPrevInstance = mat4(a_a3dPrevInstance0, a_a3dPrevInstance1, a_a3dPrevInstance2, a_a3dPrevInstance3);
+#else
+mat4 a3dVelPrevInstance = instanceMatrix;
+#endif
+a3d_velPrevClip = u_previousViewProjection * (u_previousModel * a3dVelPrevInstance * a3dVelPrevLocal);`,
   wgsl: `// see vertex pars`
 };
 
@@ -82,6 +108,9 @@ a3d_o_reactive = a3d_u_reactive;`,
 };
 
 export const VELOCITY_BIT = "velocity";
+/** Instanced draws additionally read per-instance previous matrices. */
+export const VELOCITY_INSTANCED_BIT = "velocity-instanced";
+export { VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES };
 
 export const velocityFeature: ShaderFeature = {
   id: "prd03.velocity",
@@ -99,10 +128,16 @@ export const velocityFeature: ShaderFeature = {
     // the feature unless A3D_QR_POST_VELOCITY_MRT is explicitly on.
     if (input.pass !== "forward") return undefined;
     if (!input.flags.on("A3D_QR_POST_VELOCITY_MRT")) return undefined;
-    return VELOCITY_BIT;
+    const previousInstances = input.item.instanceAttributes?.some(attribute => attribute.shaderName === VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES[0]);
+    return previousInstances ? VELOCITY_INSTANCED_BIT : VELOCITY_BIT;
   },
-  defines() {
-    return { [VELOCITY_MRT.define]: true };
+  defines(value) {
+    // A3D_VELOCITY enables the deform chunks' previous-pose inputs.
+    return {
+      [VELOCITY_MRT.define]: true,
+      A3D_VELOCITY: true,
+      ...(value === VELOCITY_INSTANCED_BIT ? { A3D_VELOCITY_PREVIOUS_INSTANCE: true } : {})
+    };
   }
 };
 

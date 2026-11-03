@@ -8,6 +8,9 @@ import { loadRenderableAsset } from "../../packages/assets/src/loadRenderableAss
 import { createRenderableScene, type RenderableScene } from "../../packages/assets/src/createRenderableScene";
 import { PLYLoader } from "../../packages/assets/src/loaders/MeshFormatLoaders";
 import type { GLTFRenderResources } from "../../packages/assets/src/GLTFRenderResources";
+import { DataTextureLoader } from "../../packages/assets/src/DataTextureLoader";
+import { loadProductionGLTFRenderPipeline } from "../../packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline";
+import { webcrypto } from "node:crypto";
 
 const abcDigest = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
 const integrity = { version: 1 as const, digest: `sha256-${abcDigest}` };
@@ -290,5 +293,72 @@ describe("native public loader contracts", () => {
     await disposal;
     expect(sceneDispose).toHaveBeenCalledOnce();
     expect(dispose).toHaveBeenCalledOnce();
+  });
+
+  it("applies the request contract to DataTextureLoader fetches (credentials, headers, integrity, cancellation)", async () => {
+    vi.stubGlobal("crypto", webcrypto);
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response("abc"));
+    vi.stubGlobal("fetch", fetchMock);
+    class BytesLoader extends DataTextureLoader<number> { parse(buffer: ArrayBuffer) { return buffer.byteLength; } }
+    const loader = new BytesLoader().setPath("https://example.test/data/").setWithCredentials(true)
+      .setRequestHeader({ "X-Token": "loader" }).setRequestOptions({ allowedOrigins: ["https://example.test"], redirect: "error" });
+    await expect(loader.loadAsync("a.bin", undefined, { integrity })).resolves.toBe(3);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(String(url)).toBe("https://example.test/data/a.bin");
+    expect(init).toMatchObject({ credentials: "include", redirect: "error" });
+    expect(new Headers(init!.headers).get("x-token")).toBe("loader");
+    await expect(loader.loadAsync("a.bin", undefined, { integrity: { ...integrity, digest: "0".repeat(64) } })).rejects.toThrow(/integrity mismatch/);
+    await expect(new BytesLoader().setRequestOptions({ allowedOrigins: ["https://other.test"] }).loadAsync("https://example.test/b.bin")).rejects.toThrow(/not allowed/);
+    const controller = new AbortController();
+    controller.abort();
+    await expect(loader.loadAsync("a.bin", undefined, { signal: controller.signal })).rejects.toBeDefined();
+  });
+
+  it("reads external images for an uncapped custom glTF decoder through the document request contract", async () => {
+    vi.stubGlobal("crypto", webcrypto);
+    const positions = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]).buffer);
+    const document = {
+      asset: { version: "2.0" },
+      buffers: [{ uri: `data:application/octet-stream;base64,${positions.toString("base64")}`, byteLength: 64 }],
+      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }, { buffer: 0, byteOffset: 36, byteLength: 24 }],
+      accessors: [
+        { bufferView: 0, componentType: 5126, type: "VEC3", count: 3, min: [0, 0, 0], max: [1, 1, 0] },
+        { bufferView: 1, componentType: 5126, type: "VEC2", count: 3 }
+      ],
+      images: [{ uri: "textures/base.png" }],
+      textures: [{ source: 0 }],
+      materials: [{ pbrMetallicRoughness: { baseColorTexture: { index: 0 } } }],
+      meshes: [{ primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1 }, material: 0 }] }],
+      nodes: [{ mesh: 0 }], scenes: [{ nodes: [0] }], scene: 0
+    };
+    const documentUrl = "https://cdn.example.test/models/scene.gltf";
+    const imageUrl = "https://cdn.example.test/models/textures/base.png";
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input) === documentUrl
+      ? new Response(JSON.stringify(document)) : new Response(new Uint8Array([1, 2, 3, 4])));
+    vi.stubGlobal("fetch", fetchMock);
+    const received: Array<{ data?: ArrayBuffer; uri?: string }> = [];
+    const imageDecoder = vi.fn((image: { data?: ArrayBuffer; uri?: string }) => {
+      received.push({ data: image.data, uri: image.uri });
+      return { width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]), colorSpace: "srgb" as const };
+    });
+    const request = { credentials: "include" as const, headers: { "X-Asset-Key": "k" }, allowedOrigins: ["https://cdn.example.test"], redirect: "error" as const, securityContext: "generation-1" };
+    const pipeline = await loadProductionGLTFRenderPipeline({ url: documentUrl, assetId: "contract", request, imageDecoder });
+    try {
+      expect(imageDecoder).toHaveBeenCalledOnce();
+      expect([...new Uint8Array(received[0]!.data!)]).toEqual([1, 2, 3, 4]);
+      const imageCall = fetchMock.mock.calls.find(([input]) => String(input) === imageUrl);
+      expect(imageCall?.[1]).toMatchObject({ credentials: "include", redirect: "error" });
+      expect(new Headers(imageCall?.[1]?.headers).get("x-asset-key")).toBe("k");
+    } finally { pipeline.dispose(); }
+
+    // The origin policy also governs the decoder's image: no decode, no image fetch.
+    imageDecoder.mockClear();
+    fetchMock.mockClear();
+    const crossOrigin = { ...document, images: [{ uri: "https://elsewhere.test/base.png" }] };
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => String(input) === documentUrl
+      ? new Response(JSON.stringify(crossOrigin)) : new Response(new Uint8Array([1, 2, 3, 4])));
+    await expect(loadProductionGLTFRenderPipeline({ url: documentUrl, assetId: "contract-cross", request, imageDecoder, failOnMissingTexture: true } as never)).rejects.toThrow();
+    expect(imageDecoder).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([documentUrl]);
   });
 });

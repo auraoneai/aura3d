@@ -488,7 +488,7 @@ const MIME: Record<string, string> = {
 
 function outputInventory(project: SourceProject, kind: CatalogKind): BrowserOutputFile[] {
   if (kind === "template") {
-    if (project.retention !== "portable-v1" || !Array.isArray(project.files)) throw new Error("Template lacks its portable retained file inventory");
+    if ((project.retention !== "portable-v1" && project.retention !== "packed-v1") || !Array.isArray(project.files)) throw new Error("Template lacks its retained file inventory");
     return project.files.filter(file => file.path.startsWith("dist/")).map(file => ({
       path: file.path.slice("dist/".length), size: file.size, sha256: file.sha256
     }));

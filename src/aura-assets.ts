@@ -17128,6 +17128,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/deliveryCar.426a3e3a.glb",
     hash: "sha256-426a3e3a2c242c05c889b1445ba02ef95b2c8b7cd6f597e1275ef736a826014b",
+    integrity: { version: 1, digest: "sha256-426a3e3a2c242c05c889b1445ba02ef95b2c8b7cd6f597e1275ef736a826014b", dependencies: { "Textures/colormap.png": "sha256-f3622a03a20c6696065cae9cbe391351be873508af190c2ebd1d420c055787a5" }, requireDependencies: true },
     bounds: [
       1.5,
       1.65,
@@ -25541,13 +25542,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/gravityPostStationRing.7e72f31f.glb",
-    hash: "sha256-7e72f31fefa1a02a12373ded04b972583707e6e8636cb05ad27c420bfef8420f",
+    hash: "sha256-abc1f25daf4084ae8157f8ac1f6ef675a443998f61f5b679371c3e20cc65d7ee",
     bounds: [
       35.334,
       30.571,
       35.332
     ],
-    sizeBytes: 44840768,
+    sizeBytes: 5420492,
     metadata: {
       "materials": [
         "rocket0_material",
@@ -36159,6 +36160,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/helperChar.30ed390a.glb",
     hash: "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a",
+    integrity: { version: 1, digest: "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a", dependencies: { "Textures/texture-b.png": "sha256-c614148428fbf63ab701ab95e2ebe0b6103ea0e2e6212c986d8931899bad7692" }, requireDependencies: true },
     bounds: [
       1.6,
       2.7,
@@ -38999,13 +39001,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/mechHeroDecimated.0e52ceb3.glb",
-    hash: "sha256-0e52ceb36af6ca3e5bf2351252788f5a0e206f61976e10ca6ccb7f227d85da0d",
+    hash: "sha256-25040668d702ec2f313fa635d7e8793a7984dfaed9f63eb6d35a49182530ddca",
     bounds: [
       1.01,
       1.903,
       0.766
     ],
-    sizeBytes: 27963704,
+    sizeBytes: 2056124,
     metadata: {
       "materials": [
         "material"
@@ -41220,13 +41222,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/neonArena.7327d83f.glb",
-    hash: "sha256-7327d83f8c49650515e6f23ef4a2e8a857415001e37a469dcf5407adaa96dd15",
+    hash: "sha256-b1a9e278640a9037e7a6bddf832b517e0414e726f1e1bdfc548e5e5e5b3556e5",
     bounds: [
       1.904,
       1.169,
       0.244
     ],
-    sizeBytes: 33052244,
+    sizeBytes: 5519528,
     metadata: {
       "materials": [
         "material"
@@ -48414,13 +48416,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     type: "model",
     format: "glb",
     url: "/aura-assets/pulseArena.2445a728.glb",
-    hash: "sha256-2445a7289e758eedc1f5a91c769322258723586ae972dad9235df4a54f377958",
+    hash: "sha256-6ff2db60c8cc95175492578d7f77837ff3e6e3360bb2744238b974f5ee51541d",
     bounds: [
       1.162,
       1.268,
       1.903
     ],
-    sizeBytes: 29283100,
+    sizeBytes: 4872588,
     metadata: {
       "materials": [
         "material"
@@ -66918,6 +66920,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/showcaseDataStation.fc418d37.glb",
     hash: "sha256-fc418d3747a037f8889a028a9ebcfc7f6d07007495e2d80fb515e1a380923533",
+    integrity: { version: 1, digest: "sha256-fc418d3747a037f8889a028a9ebcfc7f6d07007495e2d80fb515e1a380923533", dependencies: { "Textures/colormap.png": "sha256-f3622a03a20c6696065cae9cbe391351be873508af190c2ebd1d420c055787a5" }, requireDependencies: true },
     bounds: [
       20.001,
       5.25,
@@ -85124,6 +85127,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/showcasePlatformHero.8ee5dae1.glb",
     hash: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+    integrity: { version: 1, digest: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616", dependencies: { "Textures/texture-a.png": "sha256-257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a" }, requireDependencies: true },
     bounds: [
       1.6,
       2.7,
@@ -90555,6 +90559,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/showcaseRunnerGirl.9a126849.glb",
     hash: "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+    integrity: { version: 1, digest: "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675", dependencies: { "Textures/texture-e.png": "sha256-6bbdb4f76b8d2ba7feb1ad8e4a341ca87afd655a4f061c77a86c400ad3125049" }, requireDependencies: true },
     bounds: [
       1.6,
       2.7,
@@ -91850,6 +91855,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     format: "glb",
     url: "/aura-assets/showcaseSidekickRunner.8ee5dae1.glb",
     hash: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+    integrity: { version: 1, digest: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616", dependencies: { "Textures/texture-a.png": "sha256-257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a" }, requireDependencies: true },
     bounds: [
       8,
       9,

@@ -1,7 +1,6 @@
 import { defineContractSlot, type QrFlags } from "../contracts/core";
 import {
   claimScopedTemporalHistory,
-  setTemporalHistoryImpl,
   type TemporalCameraMatrices,
   type TemporalFrameId,
   type TemporalHistoryLike,
@@ -9,6 +8,7 @@ import {
   type TemporalResetReason
 } from "../contracts/velocity.js";
 import type { RenderItem } from "../contracts/renderItem.js";
+import type { RenderItemInstanceAttribute } from "../ForwardPass.js";
 import type { UniformValue } from "../RenderDevice.js";
 import { temporalJitter } from "../TemporalMath";
 
@@ -40,6 +40,36 @@ interface VelocityDrawContext {
   readonly mrtWritable: boolean;
 }
 const velocityContext: unique symbol = Symbol("aura.velocity.draw");
+
+/** Per-instance previous-matrix columns read by the velocity MRT vertex chunk. */
+export const VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES = [
+  "a_a3dPrevInstance0", "a_a3dPrevInstance1", "a_a3dPrevInstance2", "a_a3dPrevInstance3"
+] as const;
+
+/** Deformation and instance state that the previous-pose shader path needs. */
+interface PoseState {
+  readonly morph?: Float32Array;
+  readonly instances?: Float32Array;
+}
+
+function finiteArray(value: Float32Array | readonly number[], name: string): Float32Array {
+  const copy = Float32Array.from(value);
+  if (!copy.every(Number.isFinite)) throw new RangeError(`Temporal ${name} must be finite`);
+  return copy;
+}
+function sameOptional(a: Float32Array | undefined, b: Float32Array | undefined): boolean {
+  return a === undefined ? b === undefined : b !== undefined && sameMatrix(a, b);
+}
+function instanceColumns(transforms: Float32Array): RenderItemInstanceAttribute[] {
+  const count = transforms.length / 16;
+  return VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES.map((shaderName, column) => {
+    const data = new Float32Array(count * 4);
+    for (let instance = 0; instance < count; instance += 1) {
+      data.set(transforms.subarray(instance * 16 + column * 4, instance * 16 + column * 4 + 4), instance * 4);
+    }
+    return { shaderName, components: 4 as const, data, divisor: 1 };
+  });
+}
 type ContextItem = RenderItem & {
   readonly temporalObjectKey?: TemporalIdentity;
   readonly [velocityContext]?: VelocityDrawContext;
@@ -68,6 +98,11 @@ export class VelocityHistory implements TemporalHistoryLike {
   private previousModels = new Map<TemporalIdentity, Float32Array>();
   private framePreviousModels = new Map<TemporalIdentity, Float32Array>();
   private pendingModels = new Map<TemporalIdentity, Float32Array>();
+  // Previous morph weights and instance transforms, keyed and committed
+  // exactly like model transforms (once per authored frame).
+  private previousPoses = new Map<TemporalIdentity, PoseState>();
+  private framePreviousPoses = new Map<TemporalIdentity, PoseState>();
+  private pendingPoses = new Map<TemporalIdentity, PoseState>();
   private pendingPreviousModels = new Map<TemporalIdentity, Float32Array | undefined>();
   private counted = new Set<TemporalIdentity>();
   private activeFrame?: TemporalFrameId;
@@ -106,7 +141,9 @@ export class VelocityHistory implements TemporalHistoryLike {
     // Commit replaces previousModels, so retain the frame-start map for every
     // pass of this frame, including passes prepared after commit.
     this.framePreviousModels = this.previousModels;
+    this.framePreviousPoses = this.previousPoses;
     this.pendingModels = new Map();
+    this.pendingPoses = new Map();
     this.pendingPreviousModels = new Map();
     this.counted = new Set();
     this.currentCoverage = emptyCoverage();
@@ -132,6 +169,14 @@ export class VelocityHistory implements TemporalHistoryLike {
     const baseline = item.previousModelMatrix ? matrix(item.previousModelMatrix) : this.framePreviousModels.get(key);
     const priorPending = this.pendingModels.get(key);
     if (priorPending && !sameMatrix(priorPending, model)) throw new RangeError("A temporal object key has conflicting transforms within one frame");
+    const pose: PoseState = {
+      ...(item.morphTargets?.length && item.morphWeights ? { morph: finiteArray(item.morphWeights, "morph weights") } : {}),
+      ...(item.instanceTransforms?.length ? { instances: finiteArray(item.instanceTransforms, "instance transforms") } : {})
+    };
+    const priorPose = this.pendingPoses.get(key);
+    if (priorPose && (!sameOptional(priorPose.morph, pose.morph) || !sameOptional(priorPose.instances, pose.instances))) {
+      throw new RangeError("A temporal object key has conflicting deformation or instance state within one frame");
+    }
     if (priorPending) {
       const priorBaseline = this.pendingPreviousModels.get(key);
       if ((priorBaseline === undefined) !== (baseline === undefined)
@@ -140,7 +185,11 @@ export class VelocityHistory implements TemporalHistoryLike {
       }
     } else {
       this.pendingModels.set(key, model);
-      if (this.committedFrame === this.activeFrame) this.previousModels.set(key, new Float32Array(model));
+      this.pendingPoses.set(key, pose);
+      if (this.committedFrame === this.activeFrame) {
+        this.previousModels.set(key, new Float32Array(model));
+        this.previousPoses.set(key, pose);
+      }
       // Preserve history availability separately from the model fallback: it
       // affects coverage even when an explicit previous transform equals it.
       this.pendingPreviousModels.set(key, baseline === undefined ? undefined : new Float32Array(baseline));
@@ -155,12 +204,47 @@ export class VelocityHistory implements TemporalHistoryLike {
         movingWithHistory: this.currentCoverage.movingWithHistory + (moving && baseline ? 1 : 0)
       };
     }
-    // Until the producer supplies actual deformation/instance history, reject
-    // those pixels as reactive rather than pretending rigid motion is enough.
-    const reactive = item.writesReactive || item.skinning || item.morphTargets?.length || item.instanceTransforms?.length ? 1 : 0;
-    return { ...item, temporalObjectKey: key, [velocityContext]: {
-      matrices: this.prepared, objectKey: key, previousModel: new Float32Array(baseline ?? model), reactive, owner: this, mrtWritable
-    } } as ContextItem;
+    // The MRT program reprojects the previous pose: previous bone palette
+    // (palette cache), previous morph weights and previous instance matrices
+    // (this history). Without an MRT the separate camera-velocity path cannot
+    // represent deformation, so those pixels stay reactive.
+    const prior = this.framePreviousPoses.get(key);
+    let previousMorph: Float32Array | undefined;
+    let previousInstances: Float32Array | undefined;
+    let poseUnavailable = false;
+    if (pose.morph) {
+      const supplied = item.previousMorphWeights ? finiteArray(item.previousMorphWeights, "previous morph weights") : undefined;
+      const history = prior?.morph?.length === pose.morph.length ? prior.morph : undefined;
+      previousMorph = supplied ?? history ?? pose.morph;
+      poseUnavailable ||= supplied === undefined && history === undefined && baseline !== undefined;
+    }
+    if (pose.instances) {
+      const supplied = item.previousInstanceTransforms?.length === pose.instances.length
+        ? finiteArray(item.previousInstanceTransforms, "previous instance transforms") : undefined;
+      const history = prior?.instances?.length === pose.instances.length ? prior.instances : undefined;
+      previousInstances = supplied ?? history ?? pose.instances;
+      // A changed instance count has no per-instance correspondence.
+      poseUnavailable ||= supplied === undefined && history === undefined && baseline !== undefined;
+    }
+    // Eight-influence skinning already uses every portable attribute slot.
+    const instanceSlots = Boolean(previousInstances) && !item.skinning?.extraInfluences;
+    const deformed = Boolean(item.skinning || item.morphTargets?.length || item.instanceTransforms?.length);
+    const reactive = item.writesReactive || poseUnavailable || (deformed && (!mrtWritable || (pose.instances && !instanceSlots))) ? 1 : 0;
+    return {
+      ...item,
+      temporalObjectKey: key,
+      // Only MRT draws consume previous pose inputs; other passes keep the
+      // caller's item fields unchanged.
+      ...(mrtWritable && previousMorph ? { previousMorphWeights: new Float32Array(previousMorph) } : {}),
+      ...(mrtWritable && previousInstances ? { previousInstanceTransforms: new Float32Array(previousInstances) } : {}),
+      ...(mrtWritable && instanceSlots
+        ? { instanceAttributes: [...(item.instanceAttributes ?? []).filter(attribute =>
+          !(VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES as readonly string[]).includes(attribute.shaderName)), ...instanceColumns(previousInstances!)] }
+        : {}),
+      [velocityContext]: {
+        matrices: this.prepared, objectKey: key, previousModel: new Float32Array(baseline ?? model), reactive, owner: this, mrtWritable
+      }
+    } as ContextItem;
   }
 
   get coverage(): VelocityCoverage { return { ...this.currentCoverage }; }
@@ -172,13 +256,16 @@ export class VelocityHistory implements TemporalHistoryLike {
     if (frameId === undefined || frameId !== this.activeFrame || frameId === this.committedFrame || !this.prepared) return;
     this.previousViewProjection = new Float32Array(this.prepared.unjittered);
     this.previousModels = new Map(this.pendingModels);
+    this.previousPoses = new Map(this.pendingPoses);
     this.committedFrame = frameId;
     this.frame += 1;
   }
   cancel(frameId: TemporalFrameId | undefined = this.activeFrame): boolean {
     if (frameId === undefined || frameId !== this.activeFrame || frameId === this.committedFrame) return false;
     this.framePreviousModels = new Map();
+    this.framePreviousPoses = new Map();
     this.pendingModels.clear();
+    this.pendingPoses.clear();
     this.pendingPreviousModels.clear();
     this.counted.clear();
     this.activeFrame = undefined;
@@ -193,6 +280,9 @@ export class VelocityHistory implements TemporalHistoryLike {
     this.previousModels.clear();
     this.framePreviousModels.clear();
     this.pendingModels.clear();
+    this.previousPoses.clear();
+    this.framePreviousPoses.clear();
+    this.pendingPoses.clear();
     this.pendingPreviousModels.clear();
     this.counted.clear();
     this.activeFrame = undefined;
@@ -241,10 +331,11 @@ export function isReplaySafeVelocityBinder(): boolean {
 
 export interface VelocitySurface {
   readonly kind: "legacy" | "v2";
-  /** Shared compatibility history; renderer and view owners should use a scoped history. */
-  readonly history: TemporalHistoryLike;
-  /** Return a fresh caller-owned history. Older custom providers may omit this capability. */
-  readonly createHistory?: () => TemporalHistoryLike;
+  /**
+   * Return a fresh caller-owned history. 5.0 has no shared compatibility
+   * history: every renderer, device and view owner creates its own.
+   */
+  readonly createHistory: () => TemporalHistoryLike;
 }
 class LegacyVelocityHistoryStub implements TemporalHistoryLike {
   prepare(viewProjection: Float32Array, _jitter: readonly [number, number]): TemporalCameraMatrices {
@@ -269,15 +360,10 @@ function createBuiltinLegacyHistory(): TemporalHistoryLike { return issueBuiltin
 function createBuiltinVelocityHistory(): TemporalHistoryLike { return issueBuiltinScopedHistory(new VelocityHistory()); }
 
 export const velocityHistorySlot = defineContractSlot<VelocitySurface>(
-  "C-14", "prd03", "A3D_QR_POST", {
-    kind: "legacy", history: new LegacyVelocityHistoryStub(), createHistory: createBuiltinLegacyHistory
-  }
+  "C-14", "prd03", "A3D_QR_POST", { kind: "legacy", createHistory: createBuiltinLegacyHistory }
 );
 
-/**
- * Create a caller-owned history from the flag-selected provider. The original
- * slot history remains shared for legacy callers and unscoped reset only.
- */
+/** Create a caller-owned history from the flag-selected provider. */
 export function createScopedVelocityHistory(flags: QrFlags): TemporalHistoryLike {
   const surface = velocityHistorySlot.get(flags);
   const factory = surface.createHistory;
@@ -295,7 +381,7 @@ export function createScopedVelocityHistory(flags: QrFlags): TemporalHistoryLike
     throw new TypeError("A scoped velocity history must implement prepare and reset");
   }
   const freshBuiltin = (builtinScopedIssuance.get(history) ?? 0) > issuedBefore;
-  if (history === surface.history || history === velocityHistorySlot.stub.history || issuedScopedVelocityHistories.has(history)
+  if (issuedScopedVelocityHistories.has(history)
     || (!freshBuiltin && !claimScopedTemporalHistory(history))) {
     throw new Error("A scoped velocity history factory must return a fresh history");
   }
@@ -303,10 +389,8 @@ export function createScopedVelocityHistory(flags: QrFlags): TemporalHistoryLike
   return history;
 }
 
-/** Legacy slot remains available; renderer-owned histories never use its singleton instance. */
+/** Provides the scoped factory only; no module-global history instance exists. */
 export function provideVelocityHistory(): void {
-  const history = new VelocityHistory();
-  velocityHistorySlot.provide({ kind: "v2", history, createHistory: createBuiltinVelocityHistory });
-  setTemporalHistoryImpl(history);
+  velocityHistorySlot.provide({ kind: "v2", createHistory: createBuiltinVelocityHistory });
   setVelocityUniformBinder(velocityMrtBinder);
 }

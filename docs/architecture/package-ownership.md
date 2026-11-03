@@ -42,7 +42,7 @@ and fails the gate.
 | 2 | Subsystems over the data model | `animation`, `rendering`, `input`, `audio`, `ecs` |
 | 3 | Subsystems composing other subsystems | `assets`, `controls`, `debug`, `editor-runtime` |
 | 4 | Product surfaces | `product-studio`, `apps`, `workflows` |
-| 5 | Aggregate runtime | `engine`, `game` |
+| 5 | Aggregate runtime and optional add-on modules | `engine`, `game`, `addons` |
 | 6 | Consumers of the aggregate / standalone tools | `react`, `aura3d-cli`, `create-aura3d` |
 
 Nothing may depend on tier 5 or 6 except tier 6.
@@ -69,14 +69,15 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | `assets` | 3 | 22,852 | `@aura3d/assets` | glTF/GLB/KTX2/Draco loading, provenance, admission | `animation`, `rendering`, `scene` |
 | `controls` | 3 | 3,820 | `@aura3d/controls` | orbit/fly/pointer camera controls | `input`, `math`, `scene` |
 | `debug` | 3 | 1,133 | `@aura3d/debug` | inspectors, overlays, physics/animation visualisers | `animation`, `physics`, `rendering` |
-| `editor-runtime` | 3 | 7,663 | `@aura3d/editor-runtime` | editor document model and commands | `animation`, `math`, `scene` |
+| `editor-runtime` | 3 | 7,663 | `@aura3d/editor-runtime` | editor document model and commands | `animation`, `math`, `rendering`, `scene` |
 | `product-studio` | 4 | 740 | `@aura3d/product-studio` | product-viewer application surface | `assets`, `rendering`, `scene` |
 | `apps` | 4 | 162 | `@aura3d/apps` | application shell contracts. **`engine` depends on it** | `core`, `rendering`, `workflows` |
 | `workflows` | 4 | 1,175 | `@aura3d/workflows` | composed authoring workflows, production example runtime | `animation`, `assets`, `product-studio`, `rendering`, `scene` |
-| `engine` | 5 | 111,406 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus isolated `media-node`. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `editor-runtime`, `input`, `math`, `navigation-recast`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `workflows` |
+| `engine` | 5 | 111,406 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus isolated `media-node`. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `debug`, `ecs`, `editor-runtime`, `input`, `math`, `navigation-recast`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `workflows` |
+| `addons` | 5 | 4,048 | `@aura3d/addons` and its per-module subpaths (`/renderers/*`, `/effects/*`, `/objects/*`, `/generators/*`, `/tools/*`, `/utils/WorkerPool`) | optional spatial DOM/vector output, alternative visual outputs, procedural objects and generators, editable geometry tools, bounded worker tasks | `engine`, `rendering`, `scene` |
 | `game` | 5 | 6,815 | `@aura3d/game`, `@aura3d/engine/game`, `/game/art`, `@aura3d/engine/game/capture`, `@aura3d/engine/game/util` | genre kits, game runtime implementation, HUD/evidence, juice, capture, art-direction, util | `audio`, `engine`, `input`, `math`, `rendering` |
 | `react` | 6 | 567 | `@aura3d/react` | React bindings | `engine` |
-| `aura3d-cli` | 6 | 19,885 | `@aura3d/cli` | asset pipeline CLI | `asset-index`, `audio`, `rendering` |
+| `aura3d-cli` | 6 | 19,885 | `@aura3d/cli` | asset pipeline CLI | `asset-index`, `assets`, `audio`, `rendering` |
 | `create-aura3d` | 6 | 9,069 | `create-aura3d` | project scaffolding | `asset-index` |
 
 ## Over-declarations (weight, not failures)

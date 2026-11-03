@@ -6,7 +6,7 @@ import type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } fr
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
-import { assertScenePhysicsPivotSupport, createRuntimeScenePhysicsWithAccess, fixedModelBoundsPhysicsGuard, fixedPivotPhysicsGuard, nodePhysicsPosition, nodePositionFromPhysics, nodeRotationQuaternion, offsetPhysicsPosition, resolveNodePhysicsOffset, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics-core.js";
+import { assertScenePhysicsPivotSupport, createRuntimeScenePhysicsWithAccess, fixedModelBoundsPhysicsGuard, nodePhysicsPosition, pivotPhysicsColliderSync, nodePositionFromPhysics, nodeRotationQuaternion, offsetPhysicsPosition, resolveNodePhysicsOffset, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics-core.js";
 import { hasNonzeroPivot } from "../pivotGuard.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
@@ -14,7 +14,7 @@ import { createComputeSurface, type AuraComputeDeviceSource } from "../nodes/com
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
-import { normalizeSceneSnapshot, scaleToVec3 } from "../sceneMath.js";
+import { animatedPosition, animatedRotation, normalizeSceneSnapshot, scaleToVec3 } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
 import { resolveAppOutputColorPolicy } from "./colorManagement.js";
 import { mountFailureConsoleMessage } from "./mountFailure.js";
@@ -91,6 +91,23 @@ function cleanupFailureReported(failures: readonly unknown[], error: unknown): b
   try {
     return error instanceof AggregateError && error.errors.length > 0 && error.errors.every(reported);
   } catch { return false; }
+}
+
+/** Non-aggregate failures nested in `error` (cycle-safe). */
+function cleanupFailureLeaves(error: unknown): unknown[] {
+  const leaves: unknown[] = [];
+  const visited = new Set<unknown>();
+  const visit = (candidate: unknown): void => {
+    if (visited.has(candidate)) return;
+    visited.add(candidate);
+    let children: readonly unknown[] | undefined;
+    try { children = candidate instanceof AggregateError && Array.isArray(candidate.errors) && candidate.errors.length ? candidate.errors : undefined; }
+    catch { children = undefined; }
+    if (children) children.forEach(visit);
+    else leaves.push(candidate);
+  };
+  visit(error);
+  return leaves;
 }
 
 function distinctCleanupFailures(failures: readonly unknown[]): unknown[] {
@@ -335,6 +352,8 @@ export function createAuraAppWithPhysicsWorldAccess(
   const appPhysicsNodeBindings = new Map<number, NodeBinding>();
   const appPhysicsPivotGuards = new Map<number, () => void>();
   const appPhysicsPivotKinematics = new Map<number, AuraModelNode | AuraPrimitiveNode>();
+  type ColliderSync = { readonly node: AuraModelNode | AuraPrimitiveNode; readonly runtimeId?: string; readonly prepare: NonNullable<ReturnType<typeof pivotPhysicsColliderSync>> };
+  const appPhysicsColliderSyncs = new Map<number, ColliderSync>();
   const appPhysicsModelBounds = new Map<number, ModelBoundsBinding>();
   // Numeric body identities, rather than only node names, keep an older subtree
   // distinct from a same-id replacement published during a removal callback.
@@ -400,6 +419,7 @@ export function createAuraAppWithPhysicsWorldAccess(
             appPhysicsNodeBindings.delete(id);
             appPhysicsPivotGuards.delete(id);
             appPhysicsPivotKinematics.delete(id);
+            appPhysicsColliderSyncs.delete(id);
             appPhysicsModelBounds.delete(id);
           }
         } catch (error) { failures.push(error); }
@@ -469,7 +489,7 @@ export function createAuraAppWithPhysicsWorldAccess(
         }
       }
       const runtimeId = node.runtime?.id;
-      if (modelOffset && (spec.type ?? "dynamic") !== "static" && options.physics?.bindNodes === true && runtimeId === undefined) {
+      if (modelOffset && node.kind === "model" && (spec.type ?? "dynamic") !== "static" && options.physics?.bindNodes === true && runtimeId === undefined) {
         throw new RangeError("MODEL_COLLIDER_UNBOUND: a bound moving model requires a runtime node id.");
       }
       const rotation = nodeRotationQuaternion(node);
@@ -481,6 +501,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     const names = new Map<number, string>();
     const bindings = new Map<number, NodeBinding>();
     const pivotGuards = new Map<number, () => void>();
+    const colliderSyncs = new Map<number, ColliderSync>();
     const pivotKinematics = new Map<number, AuraModelNode | AuraPrimitiveNode>();
     const modelBounds = new Map<number, ModelBoundsBinding>();
     const owners = new Map<number, readonly string[]>();
@@ -523,21 +544,24 @@ export function createAuraAppWithPhysicsWorldAccess(
         owners.set(body.id, source.owners);
         if (node.name) names.set(body.id, node.name);
         const bindingNode = (incremental ? source.node : node) as AuraModelNode | AuraPrimitiveNode;
-        const pivotGuard = fixedPivotPhysicsGuard(bindingNode);
         const modelGuard = fixedModelBoundsPhysicsGuard(source.node as AuraModelNode | AuraPrimitiveNode);
         const flatModelGuard = source.node === node ? undefined : fixedModelBoundsPhysicsGuard(node);
-        if (pivotGuard || modelGuard || flatModelGuard) {
-          pivotGuards.set(body.id, () => { pivotGuard?.(); modelGuard?.(); flatModelGuard?.(); });
+        if (modelGuard || flatModelGuard) {
+          pivotGuards.set(body.id, () => { modelGuard?.(); flatModelGuard?.(); });
         }
         const runtimeId = (node as { readonly runtime?: { readonly id?: string } }).runtime?.id;
-        if (pivotGuard && options.physics?.bindNodes === true && runtimeId !== undefined && spec.type === "kinematic") {
+        // Pivot, scale, size or geometry edits rebuild this body's collider before the next step.
+        const prepareCollider = pivotPhysicsColliderSync(bindingNode);
+        if (prepareCollider) colliderSyncs.set(body.id, { node: bindingNode, ...(runtimeId === undefined ? {} : { runtimeId }), prepare: prepareCollider });
+        if (hasNonzeroPivot(bindingNode.pivot) && options.physics?.bindNodes === true && runtimeId !== undefined && spec.type === "kinematic") {
           pivotKinematics.set(body.id, bindingNode);
         }
         if (options.physics?.bindNodes === true && runtimeId !== undefined && (spec.type ?? "dynamic") === "dynamic") {
           // Initial app handles own flattened nodes; runtime additions own the
           // original subtree node registered by the compiled add path.
           const scale = typeof node.scale === "number" ? [node.scale, node.scale, node.scale] as const : node.scale ?? [1, 1, 1] as const;
-          bindings.set(body.id, { runtimeId, node: bindingNode, worldScale: [scale[0], scale[1], scale[2]], ...(modelOffset ? { modelOffset } : {}),
+          // A primitive's custom-geometry collider centre is resolved from the live node.
+          bindings.set(body.id, { runtimeId, node: bindingNode, worldScale: [scale[0], scale[1], scale[2]], ...(modelOffset && node.kind === "model" ? { modelOffset } : {}),
             ...(hasNonzeroPivot(bindingNode.pivot) ? { pivot: [...bindingNode.pivot!] as AuraVec3 } : {}) });
         }
         if (modelOffset && node.kind === "model" && source.node.kind === "model") {
@@ -569,6 +593,7 @@ export function createAuraAppWithPhysicsWorldAccess(
         for (const [id, name] of names) appPhysicsNodeNames.set(id, name);
         for (const [id, binding] of bindings) appPhysicsNodeBindings.set(id, binding);
         for (const [id, guard] of pivotGuards) appPhysicsPivotGuards.set(id, guard);
+        for (const [id, sync] of colliderSyncs) appPhysicsColliderSyncs.set(id, sync);
         for (const [id, node] of pivotKinematics) appPhysicsPivotKinematics.set(id, node);
         for (const [id, binding] of modelBounds) appPhysicsModelBounds.set(id, binding);
         active = false;
@@ -691,7 +716,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     || (options.renderer?.backend === undefined && options.renderer?.qualityProfile === "experimental-webgpu");
   // WebGPU does not restore a lost device in place. Keep the loss visible
   // until a newly mounted WebGPU renderer has actually presented a frame.
-  let pendingWebGPURecovery: { readonly lossRevision: number; attempted: boolean; readonly cleanupErrors: string[] } | undefined;
+  let pendingWebGPURecovery: { readonly lossRevision: number; attempted: boolean; readonly cleanupErrors: string[]; computeCleanupFailure?: { readonly error: unknown } } | undefined;
   let revokeCurrentPrd07Authority: (() => void) | undefined;
   const appCompute = createComputeSurface(
     () => diagnosticsState.backend,
@@ -980,7 +1005,9 @@ export function createAuraAppWithPhysicsWorldAccess(
     if (currentRenderTermination?.state === "device-lost" && currentRenderTermination.revision === revision) return;
     revokeCurrentPrd07Authority?.();
     let computeCleanupFailure: string | undefined;
+    let computeCleanupError: { readonly error: unknown } | undefined;
     try { appCompute.dispose(); } catch (error) {
+      computeCleanupError = { error };
       let message = productionRenderErrorMessage(error);
       try {
         if (error instanceof AggregateError && Array.isArray(error.errors)) {
@@ -998,6 +1025,7 @@ export function createAuraAppWithPhysicsWorldAccess(
       ? (pendingWebGPURecovery ??= { lossRevision: revision, attempted: false, cleanupErrors: [] })
       : undefined;
     if (recovery && computeCleanupFailure && recovery.cleanupErrors.length < 8) recovery.cleanupErrors.push(computeCleanupFailure);
+    if (recovery && computeCleanupError) recovery.computeCleanupFailure ??= computeCleanupError;
     publishRenderTermination({ state: "device-lost", revision }, true);
     if (!recovery) return;
     // The event may have been detected by a frame before the native loss
@@ -1154,24 +1182,35 @@ export function createAuraAppWithPhysicsWorldAccess(
     const modelKinematics = preflightModelBounds();
     if (!world) return modelKinematics;
     for (const [bodyId, guard] of appPhysicsPivotGuards) if (world.getBody(bodyId)) guard();
+    // Stage collider rebuilds (pivot/scale/size/geometry edits); commit only
+    // after every body and binding has validated.
+    const colliderCommits: Array<() => void> = [];
+    for (const [bodyId, sync] of appPhysicsColliderSyncs) {
+      const body = world.getBody(bodyId);
+      const commit = body ? sync.prepare(world, body) : undefined;
+      if (!commit) continue;
+      colliderCommits.push(() => {
+        const { pivoted } = commit();
+        const binding = appPhysicsNodeBindings.get(bodyId);
+        if (binding) {
+          const { pivot: _pivot, ...rest } = binding;
+          const scale = scaleToVec3(sync.node.scale);
+          appPhysicsNodeBindings.set(bodyId, { ...rest, worldScale: [scale[0], scale[1], scale[2]], ...(pivoted ? { pivot: [...sync.node.pivot!] as AuraVec3 } : {}) });
+        }
+        if (pivoted && body!.type === "kinematic" && options.physics?.bindNodes === true && sync.runtimeId !== undefined) {
+          appPhysicsPivotKinematics.set(bodyId, sync.node);
+        }
+      });
+    }
     for (const [bodyId, binding] of appPhysicsNodeBindings) {
       const body = world.getBody(bodyId);
       const handle = runtimeNodes.get(binding.runtimeId);
       if (body && handle) {
-        if (binding.pivot) {
-          const pivot = handle.pivot;
-          const currentScale = handle.scale;
-          const scale = typeof currentScale === "number" ? [currentScale, currentScale, currentScale] : currentScale;
-          if (pivot.some((value, axis) => value !== binding.pivot![axis]) ||
-              scale.some((value, axis) => value !== binding.worldScale[axis])) {
-            throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing a pivoted body's pivot or scale requires rebuilding its collider.");
-          }
-          nodePositionFromPhysics(binding.node, body.position, body.rotation);
-        }
         const position = nodePositionFromPhysics(binding.node, body.position, body.rotation, binding.modelOffset);
         void prepareRuntimeNodeWorldPose(handle, position, body.rotation, binding.worldScale);
       }
     }
+    for (const commit of colliderCommits) commit();
     return modelKinematics;
   };
   /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
@@ -1205,7 +1244,11 @@ export function createAuraAppWithPhysicsWorldAccess(
         // retain the existing explicit-physics semantics.
         const kinematicPoses = [...appPhysicsPivotKinematics].flatMap(([id, node]) => {
           const body = appPhysicsWorldInstance?.getBody(id);
-          return body ? [{ body, position: nodePhysicsPosition(node), rotation: nodeRotationQuaternion(node) }] : [];
+          if (!body) return [];
+          // A transform clip moves the drawn node; the kinematic collider follows the same animated pose.
+          const posed = node.animation === undefined ? node
+            : { ...node, position: animatedPosition(node, runtimeTime), rotation: animatedRotation(node, runtimeTime) };
+          return [{ body, position: nodePhysicsPosition(posed), rotation: nodeRotationQuaternion(posed) }];
         });
         for (const { body, position, rotation } of [...kinematicPoses, ...modelKinematics]) {
           body.setPosition(position);
@@ -1418,7 +1461,17 @@ export function createAuraAppWithPhysicsWorldAccess(
       animationHandle = 0;
       if (handle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(handle);
     });
-    cleanupCurrent(() => appCompute.dispose());
+    cleanupCurrent(() => {
+      try { appCompute.dispose(); } catch (error) {
+        // Lost-generation compute leases whose destroy already failed stay
+        // retained for an explicit retry (and app disposal), but the failure
+        // reported at loss must not block the replacement device generation.
+        // Any new failure still aborts this mount.
+        const lost = recoveryAttempt?.computeCleanupFailure;
+        if (lost && cleanupFailureLeaves(error).every((leaf) => cleanupFailureLeaves(lost.error).includes(leaf))) return;
+        throw error;
+      }
+    });
     cleanupCurrent(() => {
       const controller = productionController;
       productionController = undefined;

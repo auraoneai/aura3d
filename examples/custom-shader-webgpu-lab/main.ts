@@ -1,7 +1,7 @@
 import { Geometry, Renderer, createDefaultShaderLibrary } from "@aura3d/rendering";
-// `material.custom` lowers to this adapter; it is not a public export, so the lab imports it directly
-// to drive the exact GLSL/WGSL pair through `Renderer.create({ backend })` (createAuraApp is WebGL2-only).
-import { createCustomShaderMaterial } from "../../packages/engine/src/agent-api/compiler/customMaterial";
+// `material.custom` lowers to this adapter (public via `@aura3d/engine/shader-graph-runtime`); the lab
+// drives the exact GLSL/WGSL pair through `Renderer.create({ backend })` (createAuraApp is WebGL2-only).
+import { createCustomShaderMaterial } from "@aura3d/engine/shader-graph-runtime";
 
 /**
  * threejs-parity SH-02 / L1-04: the engine's custom-material adapter on a real

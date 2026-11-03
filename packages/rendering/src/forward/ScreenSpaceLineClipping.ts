@@ -1,5 +1,6 @@
 import type { PortableShaderBinding, ShaderSources } from "../RenderDevice";
 import { DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME } from "../ShaderLibraryCore";
+import { rasterClipDepthWgsl } from "../webgpu/ProjectionClip";
 
 /** The inverse maps the GL clip position of an expanded line corner back to object space. */
 export const LINE_CLIP_INVERSE_TRANSFORM = "u_a3dClipInverseLineTransform";
@@ -129,7 +130,7 @@ export function createClippedScreenSpaceLineShader(source: ShaderSources): Shade
   let webgpuVertex = source.webgpu.vertex;
   webgpuVertex = replaceExactlyOnce(webgpuVertex, "  @location(3) capFraction: f32,", "  @location(3) capFraction: f32,\n  @location(4) clipLocal: vec3f,\n  @location(5) clipWorld: vec3f,\n  @location(6) clipInvalid: f32,", "WGSL varyings");
   webgpuVertex = replaceExactlyOnce(webgpuVertex, "    out.capFraction = 0.0;\n    return out;", "    out.capFraction = 0.0;\n    out.clipLocal = vec3f(0.0);\n    out.clipWorld = vec3f(0.0);\n    out.clipInvalid = 1.0;\n    return out;", "WGSL near-plane rejection");
-  webgpuVertex = replaceExactlyOnce(webgpuVertex, "  out.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);", `  let a3dLineLocalH = aura.u_a3dClipInverseLineTransform * clip;
+  webgpuVertex = replaceExactlyOnce(webgpuVertex, `  out.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);`, `  let a3dLineLocalH = aura.u_a3dClipInverseLineTransform * clip;
   out.clipLocal = vec3f(0.0);
   out.clipWorld = vec3f(0.0);
   out.clipInvalid = 1.0;
@@ -144,7 +145,7 @@ export function createClippedScreenSpaceLineShader(source: ShaderSources): Shade
       }
     }
   }
-  out.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);`, "WGSL expanded corner");
+  out.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);`, "WGSL expanded corner");
 
   let webgpuFragment = replaceExactlyOnce(source.webgpu.fragment, "/* @aura3d-bindings */", `/* @aura3d-bindings */\n${WGSL_CLIPPING}`, "WGSL clipping declarations");
   const fragmentSignature = "@fragment fn fs_main(@location(0) color: vec4f, @location(1) distance: f32, @location(2) cap: vec2f, @location(3) capFraction: f32) -> @location(0) vec4f {";

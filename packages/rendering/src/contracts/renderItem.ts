@@ -35,6 +35,15 @@ export interface RenderItem {
   /** Per-item snapshots override the corresponding pass-level clipping groups. */
   readonly globalClipping?: ClippingGroupInput;
   readonly materialClipping?: ClippingGroupInput;
+  /**
+   * The scene raster camera that expanded this item's camera-facing geometry
+   * (billboard sprites, screen-space lines). Depth and shadow passes re-expand
+   * clipped specialized geometry from it so their clipped shape matches forward.
+   */
+  readonly clippingRasterCamera?: {
+    readonly viewMatrix: Float32Array | readonly number[];
+    readonly projectionMatrix: Float32Array | readonly number[];
+  };
   readonly skinning?: SkinningPaletteBinding;
   readonly morphTargets?: readonly MorphTargetDelta[];
   readonly morphWeights?: readonly number[];

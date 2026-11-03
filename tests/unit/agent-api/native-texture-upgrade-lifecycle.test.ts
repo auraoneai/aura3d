@@ -63,6 +63,8 @@ function setupRenderer() {
       isDeviceLost: () => device.contextLost, onDeviceLost: () => () => {}, onDeviceRestored: () => () => {},
       invalidateBenchmarkMaskFrame: () => { item.invalidations++; }, resetTemporalHistory() {}, resize() {},
       postDiagnosticViews: () => undefined, postScopeId: () => undefined,
+      // Renderer contract: teardown awaits the owned device retirement.
+      whenOwnedDeviceDisposed: async () => { if (!device.disposed) throw new Error("device not disposed"); },
       render, renderAsync: async (source: RenderSource) => render(source), dispose: () => device.dispose()
     } as unknown as Renderer;
   });
@@ -220,14 +222,19 @@ describe("mount texture upgrade lifecycle", () => {
 
   it("closes an uncooperative late bitmap after mount cancellation", async () => {
     const { shader, resource, entries } = customFixture();
-    const late = deferred<ImageBitmap>();
-    const loader = vi.fn<(url: string, signal?: AbortSignal) => Promise<ImageBitmap>>().mockReturnValue(late.promise);
+    // Both texture uniforms start loading at once (GU47 e6 phase 8), so each
+    // load gets its own late bitmap and each must be closed exactly once.
+    const late = [deferred<ImageBitmap>(), deferred<ImageBitmap>()];
+    const loader = vi.fn<(url: string, signal?: AbortSignal) => Promise<ImageBitmap>>()
+      .mockReturnValueOnce(late[0]!.promise).mockReturnValueOnce(late[1]!.promise);
     const controller = new AbortController(); const notify = vi.fn(); const warn = vi.fn();
     const pending = upgradeCustomMaterialTextures(entries, warn, loader, controller.signal, notify);
     controller.abort(); shader.dispose();
-    const image = bitmap(); late.resolve(image);
+    const images = [bitmap(), bitmap()]; late[0]!.resolve(images[0]!); late[1]!.resolve(images[1]!);
     await pending;
-    expect(image.close).toHaveBeenCalledTimes(1);
+    expect(loader).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(images[1]!.close).toHaveBeenCalled());
+    for (const [index, image] of images.entries()) expect(image.close, `bitmap ${index}`).toHaveBeenCalledTimes(1);
     expect(resource.textureDisposer).toBeUndefined();
     expect(notify).not.toHaveBeenCalled(); expect(warn).not.toHaveBeenCalled();
   });

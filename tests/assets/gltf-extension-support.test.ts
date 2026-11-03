@@ -72,17 +72,19 @@ describe("glTF extension support matrix", () => {
   });
 
   it("records parse, runtime and render capability separately without promoting parse-only features", () => {
+    // 5.0: the draft material extensions are rendered by the PBR paths and
+    // accepted when required, but stay "limited" (no reference-image fidelity claim).
     for (const name of ["KHR_materials_diffuse_roughness", "EXT_materials_bump"]) {
       expect(getGLTFExtensionSupport(name)).toMatchObject({
         family: "material",
         status: "parsed-with-limits",
         parseSupport: "supported",
-        runtimeSupport: "unsupported",
-        renderSupport: "unsupported",
-        requiredAccepted: false,
-        knownLimits: [expect.stringContaining("Draft extension")]
+        runtimeSupport: "limited",
+        renderSupport: "limited",
+        requiredAccepted: true,
+        knownLimits: [expect.stringContaining("Draft extension, accepted when required")]
       });
-      expect(GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES).not.toContain(name);
+      expect(GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES).toContain(name);
       expect(GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES).not.toContain(name);
     }
     expect(getGLTFExtensionSupport("KHR_materials_transmission")).toMatchObject({
@@ -203,7 +205,7 @@ describe("glTF extension support matrix", () => {
     expect(asset.materials[1]?.bump).toEqual({ factor: 2.5, texture: { texture: 1, image: 1, texCoord: 1 } });
     expect(asset.toJSON().materials[1]?.diffuseRoughness).toEqual(asset.materials[1]?.diffuseRoughness);
     expect(asset.toJSON().materials[1]?.bump).toEqual(asset.materials[1]?.bump);
-    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_materials_bump", "KHR_materials_diffuse_roughness"]);
+    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual([]);
 
     const report = inspectGLTFAsset(asset);
     const material = report.materials[1];
@@ -214,10 +216,10 @@ describe("glTF extension support matrix", () => {
     ]);
     expect(material?.extensions).toEqual(["KHR_materials_diffuse_roughness", "EXT_materials_bump"]);
     expect(material?.extensionSupport).toEqual([
-      expect.objectContaining({ name: "KHR_materials_diffuse_roughness", parseSupport: "supported", runtimeSupport: "unsupported", renderSupport: "unsupported" }),
-      expect.objectContaining({ name: "EXT_materials_bump", parseSupport: "supported", runtimeSupport: "unsupported", renderSupport: "unsupported" })
+      expect.objectContaining({ name: "KHR_materials_diffuse_roughness", parseSupport: "supported", runtimeSupport: "limited", renderSupport: "limited" }),
+      expect.objectContaining({ name: "EXT_materials_bump", parseSupport: "supported", runtimeSupport: "limited", renderSupport: "limited" })
     ]);
-    expect(report.warnings.filter(({ code }) => code === "GLTF_UNSUPPORTED_MATERIAL_EXTENSION")).toHaveLength(2);
+    expect(report.warnings.filter(({ code }) => code === "GLTF_UNSUPPORTED_MATERIAL_EXTENSION")).toHaveLength(0);
     expect(report.warnings.map(({ code }) => code)).not.toEqual(expect.arrayContaining([
       "ASSET_VIEWER_MULTI_UV_RENDER_ACTIVE", "ASSET_VIEWER_MULTI_UV_RENDER_FALLBACK"
     ]));
@@ -238,15 +240,20 @@ describe("glTF extension support matrix", () => {
       .toEqual([[0, 0], [1, 100]]);
   });
 
-  it.each(["KHR_materials_diffuse_roughness", "EXT_materials_bump"])(
-    "rejects %s when required until its renderer is supported",
-    async (name) => {
+  it.each([
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessFactor: 0.6 }, "diffuseRoughness", { factor: 0.6, texture: undefined }],
+    ["EXT_materials_bump", { bumpFactor: 3 }, "bump", { factor: 3, texture: undefined }]
+  ] as const)(
+    "accepts %s when required and keeps its values for the rendering paths",
+    async (name, extension, field, expected) => {
       const document = {
         asset: { version: "2.0" }, extensionsUsed: [name], extensionsRequired: [name],
-        materials: [{ extensions: { [name]: {} } }], scenes: [{ nodes: [] }], scene: 0
+        materials: [{ extensions: { [name]: extension } }], scenes: [{ nodes: [] }], scene: 0
       };
-      await expect(new GLTFLoader().load({ url: dataGLTF(document), type: "gltf" }, new LoadContext()))
-        .rejects.toThrow(`Unsupported required glTF extensions: ${name}`);
+      const asset = await new GLTFLoader().load({ url: dataGLTF(document), type: "gltf" }, new LoadContext());
+      expect(asset.materials[0]?.[field]).toEqual(expected);
+      expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual([]);
+      expect(asset.loaderDiagnostics.extensionSupport.unsupportedRequired).toEqual([]);
     }
   );
 

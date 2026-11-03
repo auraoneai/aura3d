@@ -342,8 +342,12 @@ export function assertFramePivotSupported(
     pivoted ||= hasNonzeroPivot(transform.pivot);
   }
   if (!pivoted) return false;
-  if (node.lookAt !== undefined || parented?.hasLookAt || prospectiveTransform?.hasLookAt || transforms?.some((transform) => transform.lookAt !== undefined)) {
-    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted render transforms cannot use lookAt.");
+  // A node's own pivot composes with its own lookAt in the C-06 model matrix
+  // (the pivot point stays fixed while -Z faces the target). The legacy matrix,
+  // live parented look-at and pivoted instance batches have no such composition.
+  if ((node.lookAt !== undefined && (legacyMatrix || transforms !== undefined)) || parented?.hasLookAt || prospectiveTransform?.hasLookAt ||
+      transforms?.some((transform) => transform.lookAt !== undefined)) {
+    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: legacy, live-parented or instanced pivoted render transforms cannot use lookAt.");
   }
   // A synchronous subtree transaction runs before its new runtime handles are
   // installed. Defer only checks that require those handles; acquisition and

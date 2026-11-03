@@ -2,7 +2,7 @@
 // "Storm-washed sky plateau"). The look table is art/look.ts, the effect pack art/vfx.ts; the audit record
 // (direction.audit.json beside this file) is written by tests/unit/kid-goku-beyond-the-clouds-port/art-direction.test.ts,
 // which audits a mirror of the mounted scene built from the look table.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { CUMULUS_LOOK, CUMULUS_PALETTE } from "./look";
 
 const STORM = CUMULUS_LOOK[0];

@@ -200,6 +200,8 @@ export interface RuntimeCompiledSceneInternals {
   primitiveEntries: readonly unknown[];
   /** Successfully acquired splat assets, including runtime additions. */
   readonly loadedSplatAssetIds?: readonly string[];
+  /** Per acquired splat cloud: GPU (`gpuSort: true`) or CPU sort, with any fallback reason. */
+  readonly splatSortStatus?: readonly { readonly assetId: string; readonly status: import("@aura3d/rendering").GaussianSplatGpuSortStatus }[];
   /** Successfully acquired scalar volumes, including runtime additions. */
   readonly loadedScalarVolumeAssetIds?: readonly string[];
   readonly hasOwnedScalarVolumes?: boolean;

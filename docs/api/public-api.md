@@ -2121,6 +2121,11 @@ Source checks: `tests/unit/parity/instancing.test.ts` and
 surfaces.mirror({ name?, size?, resolution?, tint?, position?, runtime? })
   // horizontal Reflector plane at position[1]; captures via the renderer's
   // planar-reflection target
+surfaces.glass({ name?, size?, position?, resolution?, thickness?, roughness?,
+                 absorption?, tint?, runtime? })
+  // vertical Refractor pane (XY plane); self-captures the scene behind it
+  // through an off-axis frustum fitted to the pane, Beer-Lambert tinted by
+  // thickness and blurred by roughness (GlassRefractionCapture)
 cameras.cube({ name?, resolution?, near?, far?, updateEvery?, position?,
                runtime? })
   // cube-camera node; rendered via Renderer.renderProbeFace once per
@@ -2185,6 +2190,12 @@ geometry.wireframe(source: AuraCustomGeometrySpec)
   // three's WireframeGeometry → a "lines"-topology spec
 geometry.merge(specs: readonly AuraCustomGeometrySpec[])
   // BufferGeometryUtils.mergeGeometries over specs
+geometry.splitGroups(source: AuraCustomGeometrySpec)
+  // one spec per geometry-group material slot (shared vertices, slot indices)
+geometry.multiMaterial(source, materials, options?)
+  // three's Mesh(geometry, materials[]): a group of custom primitives, one per
+  // used slot, so each group (e.g. MarchingCubes material slots) draws with
+  // materials[materialIndex]
 ```
 
 **Scatter planning and static merge (4.1.0, root exports, pure TypeScript).** Deterministic placement and baking

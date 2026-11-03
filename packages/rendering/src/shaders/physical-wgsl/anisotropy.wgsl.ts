@@ -1,95 +1,83 @@
 /**
- * WGSL twin of a3d_prd04_anisotropy (PRD-04 §8.12): same `a3d_` names,
- * identical math (r185 lights_physical_fragment.glsl.js:131-158,
- * lights_physical_pars_fragment.glsl.js:102-119,176-197,
- * envmap_physical_pars_fragment.glsl.js:38-56).
+ * WGSL companion of Aura's `a3d_prd04_anisotropy` chunk
+ * (shaders/physical/anisotropy.glsl.ts), kept operation-for-operation equal to
+ * it and written from the published model:
+ *
+ * - KHR_materials_anisotropy (Khronos glTF 2.0 extension): strength s and a
+ *   tangent-space direction; texture RG holds a direction in [-1, 1] that is
+ *   rotated by the factor direction, B scales the strength; the tangent alpha
+ *   is alphaT = mix(alphaB, 1, s^2) with alphaB = roughness^2.
+ * - Anisotropic GGX distribution in slope form
+ *   D = 1 / (pi aT aB (hT^2 / aT^2 + hB^2 / aB^2 + hN^2)^2)
+ *   (Heitz, "Understanding the Masking-Shadowing Function in Microfacet-Based
+ *   BRDFs", JCGT 3(2) 2014, eq. 85; Burley 2012, Appendix B.2).
+ * - Height-correlated anisotropic Smith visibility
+ *   V = 0.5 / (N.L |(aT v.T, aB v.B, N.V)| + N.V |(aT l.T, aB l.B, N.L)|)
+ *   (Heitz 2014, eq. 99 with the anisotropic Lambda of eq. 86).
+ * - Environment lookups bend the normal toward the view vector projected into
+ *   the plane orthogonal to the bitangent, by (1 - s (1 - roughness))^4 (an
+ *   Aura heuristic for stretched reflections, not an exact integral).
+ *
+ * Requires `brdf` (PI, pow2, F_Schlick) and `a3d_prd04_bsdf_lobes_common`.
  */
 const wgsl = /* wgsl */ `
-// Anisotropic visibility — Filament model (r185
-// V_GGX_SmithCorrelated_Anisotropic, lights_physical_pars_fragment.glsl.js:102-108).
-fn a3dPrd04VGGXAnisotropic(alphaT: f32, alphaB: f32, dotTV: f32, dotBV: f32, dotTL: f32, dotBL: f32, dotNV: f32, dotNL: f32) -> f32 {
-	let gv = dotNL * length(vec3f(alphaT * dotTV, alphaB * dotBV, dotNV));
-	let gl = dotNV * length(vec3f(alphaT * dotTL, alphaB * dotBL, dotNL));
-	return 0.5 / max(gv + gl, EPSILON);
+fn a3dPrd04VGGXAnisotropic(alphaT: f32, alphaB: f32, tv: f32, bv: f32,
+  tl: f32, bl: f32, nv: f32, nl: f32) -> f32 {
+  let projectedView = vec3f(alphaT * tv, alphaB * bv, nv);
+  let projectedLight = vec3f(alphaT * tl, alphaB * bl, nl);
+  return 0.5 / max(nl * length(projectedView) + nv * length(projectedLight), 1e-6);
 }
 
-// Anisotropic GGX distribution (r185 D_GGX_Anisotropic,
-// lights_physical_pars_fragment.glsl.js:110-119).
-fn a3dPrd04DGGXAnisotropic(alphaT: f32, alphaB: f32, dotNH: f32, dotTH: f32, dotBH: f32) -> f32 {
-	let a2 = alphaT * alphaB;
-	let v = vec3f(alphaB * dotTH, alphaT * dotBH, a2 * dotNH);
-	let v2 = dot(v, v);
-	let w2 = a2 / v2;
-
-	return RECIPROCAL_PI * a2 * (w2 * w2);
+fn a3dPrd04DGGXAnisotropic(alphaT: f32, alphaB: f32, nh: f32, th: f32, bh: f32) -> f32 {
+  let at = max(alphaT, 1e-4);
+  let ab = max(alphaB, 1e-4);
+  let slope = pow2(th / at) + pow2(bh / ab) + nh * nh;
+  return 1.0 / max(PI * at * ab * slope * slope, 1e-12);
 }
 
-// Direction/frame resolution (r185 lights_physical_fragment.glsl.js:131-158).
-// anisoTex = anisotropyMap texel (.rg polar dir, .b strength).
-fn a3dPrd04AnisotropyInit(lobes: ptr<function, A3DPrd04Lobes>, anisotropyVector: vec2f, anisoTex: vec4f, useAnisoTex: bool, tangent: vec3f, bitangent: vec3f, roughness: f32) {
-	var anisotropyV: vec2f;
-	if (useAnisoTex) {
-		let anisotropyMat = mat2x2f(
-			vec2f(anisotropyVector.x, anisotropyVector.y),
-			vec2f(-anisotropyVector.y, anisotropyVector.x)
-		);
-		let anisotropyPolar = anisoTex.rgb;
-		anisotropyV = anisotropyMat * normalize(2.0 * anisotropyPolar.rg - vec2f(1.0)) * anisotropyPolar.b;
-	} else {
-		anisotropyV = anisotropyVector;
-	}
-
-	(*lobes).anisotropy = length(anisotropyV);
-
-	if ((*lobes).anisotropy == 0.0) {
-		anisotropyV = vec2f(1.0, 0.0);
-	} else {
-		anisotropyV /= (*lobes).anisotropy;
-		(*lobes).anisotropy = saturate((*lobes).anisotropy);
-	}
-
-	// Roughness along the anisotropy bitangent is the material roughness, while
-	// the tangent roughness increases with anisotropy.
-	(*lobes).alphaT = mix(pow2(roughness), 1.0, pow2((*lobes).anisotropy));
-
-	(*lobes).anisotropyT = tangent * anisotropyV.x + bitangent * anisotropyV.y;
-	(*lobes).anisotropyB = bitangent * anisotropyV.x - tangent * anisotropyV.y;
+fn a3dPrd04AnisotropyInit(lobes: ptr<function, A3DPrd04Lobes>, factor: vec2f, texel: vec4f,
+  useTexture: bool, tangent: vec3f, bitangent: vec3f, roughness: f32) {
+  var direction = factor;
+  if (useTexture) {
+    var mapped = texel.rg * 2.0 - 1.0;
+    let magnitude = length(mapped);
+    mapped = select(vec2f(1.0, 0.0), mapped / max(magnitude, 1e-6), magnitude > 1e-6);
+    direction = vec2f(factor.x * mapped.x - factor.y * mapped.y,
+                      factor.y * mapped.x + factor.x * mapped.y) * texel.b;
+  }
+  let strength = length(direction);
+  let axis = select(vec2f(1.0, 0.0), direction / max(strength, 1e-6), strength > 1e-6);
+  (*lobes).anisotropy = saturate(strength);
+  (*lobes).alphaT = mix(pow2(clamp(roughness, 0.0, 1.0)), 1.0, pow2((*lobes).anisotropy));
+  (*lobes).anisotropyT = tangent * axis.x + bitangent * axis.y;
+  (*lobes).anisotropyB = bitangent * axis.x - tangent * axis.y;
 }
 
-// Direct anisotropic specular (r185 BRDF_GGX USE_ANISOTROPY arm,
-// lights_physical_pars_fragment.glsl.js:176-197).
-fn a3dPrd04AnisotropyDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, f0: vec3f, f90: f32, roughness: f32, lobes: A3DPrd04Lobes) -> vec3f {
-	let alpha = pow2(roughness);
-
-	let halfDir = normalize(lightDir + viewDir);
-
-	let dotNL = saturate(dot(normal, lightDir));
-	let dotNV = saturate(dot(normal, viewDir));
-	let dotNH = saturate(dot(normal, halfDir));
-	let dotVH = saturate(dot(viewDir, halfDir));
-
-	let F = F_Schlick(f0, f90, dotVH);
-
-	let dotTL = dot(lobes.anisotropyT, lightDir);
-	let dotTV = dot(lobes.anisotropyT, viewDir);
-	let dotTH = dot(lobes.anisotropyT, halfDir);
-	let dotBL = dot(lobes.anisotropyB, lightDir);
-	let dotBV = dot(lobes.anisotropyB, viewDir);
-	let dotBH = dot(lobes.anisotropyB, halfDir);
-
-	let V = a3dPrd04VGGXAnisotropic(lobes.alphaT, alpha, dotTV, dotBV, dotTL, dotBL, dotNV, dotNL);
-
-	let D = a3dPrd04DGGXAnisotropic(lobes.alphaT, alpha, dotNH, dotTH, dotBH);
-
-	return F * (V * D);
+fn a3dPrd04AnisotropyDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, f0: vec3f,
+  f90: f32, roughness: f32, lobes: A3DPrd04Lobes) -> vec3f {
+  let nl = saturate(dot(normal, lightDir));
+  let nv = saturate(dot(normal, viewDir));
+  if (nl <= 0.0 || nv <= 0.0) {
+    return vec3f(0.0);
+  }
+  let h = a3dPrd04HalfVector(lightDir, viewDir, normal);
+  let alphaB = max(roughness * roughness, 1e-4);
+  let d = a3dPrd04DGGXAnisotropic(lobes.alphaT, alphaB, saturate(dot(normal, h)),
+    dot(lobes.anisotropyT, h), dot(lobes.anisotropyB, h));
+  let vis = a3dPrd04VGGXAnisotropic(lobes.alphaT, alphaB, dot(lobes.anisotropyT, viewDir),
+    dot(lobes.anisotropyB, viewDir), dot(lobes.anisotropyT, lightDir),
+    dot(lobes.anisotropyB, lightDir), nv, nl);
+  return F_Schlick(f0, f90, dot(viewDir, h)) * (d * vis);
 }
 
-// IBL bent normal (r185 getIBLAnisotropyRadiance,
-// envmap_physical_pars_fragment.glsl.js:38-56).
 fn a3dPrd04AnisotropyBentNormal(viewDir: vec3f, normal: vec3f, roughness: f32, bitangent: vec3f, anisotropy: f32) -> vec3f {
-	var bentNormal = cross(bitangent, viewDir);
-	bentNormal = normalize(cross(bentNormal, bitangent));
-	return normalize(mix(bentNormal, normal, pow2(pow2(1.0 - anisotropy * (1.0 - roughness)))));
+  let projected = viewDir - bitangent * dot(viewDir, bitangent);
+  let lengthSquared = dot(projected, projected);
+  let bent = select(normal, projected * inverseSqrt(max(lengthSquared, 1e-8)), lengthSquared > 1e-8);
+  let blend = pow(1.0 - saturate(anisotropy) * (1.0 - saturate(roughness)), 4.0);
+  let result = mix(bent, normal, blend);
+  let resultLength = dot(result, result);
+  return select(normal, result * inverseSqrt(max(resultLength, 1e-8)), resultLength > 1e-8);
 }
 `;
 

@@ -1,6 +1,6 @@
 // examples/ninja-runner-port/art/direction.ts — GU47 WP-30 art direction (PRD §3.2, NR-21).
 // Fantasy: a woodblock-print gauntlet whose time of day moves with distance, from golden afternoon to sunset afterglow.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-ninja-runner-port",

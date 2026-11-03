@@ -26,7 +26,7 @@ describe("ExternalParity physical material matrix", () => {
     ]);
   });
 
-  it("classifies materials and reports bounded extension diagnostics", () => {
+  it("classifies materials and reports supported extension diagnostics", () => {
     const matrix = analyzeExternalParityMaterialMatrix();
     const chrome = matrix.find((entry) => entry.descriptor.id === "chrome")!;
     const glass = matrix.find((entry) => entry.descriptor.id === "glass-transmission")!;
@@ -38,8 +38,9 @@ describe("ExternalParity physical material matrix", () => {
     expect(glass.reflectanceClass).toBe("transparent");
     expect(glass.requiresTransmissionPass).toBe(true);
     expect(glass.requiresAlphaSorting).toBe(true);
-    expect(glass.warnings.join(" ")).toContain("Transmission is bounded");
-    expect(fabric.extensionDiagnostics.some((entry) => entry.extension === "sheen" && entry.support === "bounded")).toBe(true);
+    // S5-WP04-01: transmission and sheen are supported lobes, so they add no bound warning.
+    expect(glass.warnings).toEqual([]);
+    expect(fabric.extensionDiagnostics.some((entry) => entry.extension === "sheen" && entry.support === "supported")).toBe(true);
     expect(emissive.reflectanceClass).toBe("emissive");
   });
 
@@ -57,9 +58,9 @@ describe("ExternalParity physical material matrix", () => {
     const diagnostics = createExternalParityMaterialExtensionDiagnostics(["clearcoat", "emissive-strength", "transmission", "iridescence"]);
 
     expect(diagnostics.find((entry) => entry.extension === "emissive-strength")?.support).toBe("supported");
-    expect(diagnostics.find((entry) => entry.extension === "clearcoat")?.support).toBe("bounded");
-    expect(diagnostics.find((entry) => entry.extension === "transmission")?.diagnostic).toContain("refraction parity is not claimed");
-    expect(diagnostics.find((entry) => entry.extension === "iridescence")?.diagnostic).toContain("spectral accuracy is not claimed");
+    expect(diagnostics.find((entry) => entry.extension === "clearcoat")?.support).toBe("supported");
+    expect(diagnostics.find((entry) => entry.extension === "transmission")?.diagnostic).toContain("Caustics and multi-bounce refraction are not modeled");
+    expect(diagnostics.find((entry) => entry.extension === "iridescence")?.diagnostic).toContain("full spectral rendering is not claimed");
   });
 
   it("sorts alpha items with blended surfaces back-to-front", () => {

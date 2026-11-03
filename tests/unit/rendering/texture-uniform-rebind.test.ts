@@ -18,6 +18,8 @@ function setup() {
   const uploads: { unit: number; texture: unknown }[] = [];
   const host = {
     counters: { uniformLocationLookupCount: 0 },
+    // WebGL2DeviceHost.stateCache: the binder subscribes to cache invalidation.
+    stateCache: { onInvalidate: () => {} },
     gl: { getUniformLocation: (_p: unknown, name: string) => ({ name }), uniform1f() {}, uniform1i() {} },
     samplers: {
       uploadTextureUniform: (_loc: unknown, value: { texture: unknown }, unit: number) => uploads.push({ unit, texture: value.texture })

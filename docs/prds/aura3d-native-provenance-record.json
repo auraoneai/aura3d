@@ -175,7 +175,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -193,7 +193,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -217,7 +217,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -235,7 +235,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -253,7 +253,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -271,7 +271,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -289,7 +289,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -307,7 +307,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -325,7 +325,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -343,7 +343,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -361,7 +361,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -379,7 +379,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -397,7 +397,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -415,7 +415,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -433,7 +433,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares every compat class (all 14, 451 method cases) against tests/support/independent-math-reference.mjs, an independently authored textbook/spec reference (CSS Color 4 for Color; no compat or other-engine import); the three.js-generated method goldens were removed from tests/fixtures/migrate-three/goldens.json (S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -442,6 +442,171 @@
         "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/bsdf_lobes_common.wgsl.ts": {
+    "sha256": "ec9ebfbd300e21f34576348d6773eab417a93faee702b29138ad3f0465c45866",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/bsdf_lobes_common.glsl.ts (operation-for-operation), from published equations cited in the header: Burley 2012 alpha=r^2; Karis 2013 split sum; Kulla & Conty 2017 missing-energy term; 1/21 cosine-weighted Schlick average. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 24.6% containment, longest shared run 85 tokens = the shared A3DPrd04Lobes struct declaration (interface contract with the GLSL chunk).",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/clearcoat.wgsl.ts": {
+    "sha256": "8ccb1231395cf6a3c8a46d4475747ad4515a36f5d10c7f82b8acce364b4b32f4",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/clearcoat.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_clearcoat layering and fixed 0.04 F0; Walter et al. 2007 GGX; Heitz 2014 eq. 99 height-correlated Smith; Schlick 1994. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 16.6% containment, longest shared run 17 tokens = the a3dPrd04ClearcoatInit/ComposeClearcoat public signatures.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/sheen.wgsl.ts": {
+    "sha256": "70b7789f0fbbacbc74c091c9e5619c28aa10e82d2a73098454102161ee80505f",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/sheen.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_sheen albedo scaling; Estevez & Kulla 2017 eq. 2 Charlie D; Neubelt & Pettineo 2013 V; Aura's own preintegrated albedo table (sheenAlbedoLut.ts). The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 14.4% containment, longest shared run 19 tokens = public function signatures.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/anisotropy.wgsl.ts": {
+    "sha256": "3287e93ca7cfa5e1baf360904e1fb14370ed21bb68a7f740343f1214601e6377",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/anisotropy.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_anisotropy direction/strength and alphaT = mix(alphaB, 1, s^2); Heitz 2014 eqs. 85-86, 99. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 16.0% containment, longest shared run 40 tokens = the a3dPrd04AnisotropyInit/AnisotropyDirect public signatures.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/specular_ior.wgsl.ts": {
+    "sha256": "04643389e0bd67d211e3c68884e7ea7e54289650ab16785ffe129b8cdcf0a4d5",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/specular_ior.glsl.ts (operation-for-operation), from published equations cited in the header: normal-incidence Fresnel F0 = ((n_t - n_i)/(n_t + n_i))^2 and inverse; KHR_materials_ior / KHR_materials_specular. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 10.0% containment, longest shared run 19 tokens = public function signatures.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/alpha_a2c.wgsl.ts": {
+    "sha256": "b76b3366303946f0bd543959f949841d4ece00d5c90f2b554213d610bc0d61db",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/alpha_a2c.glsl.ts (operation-for-operation), from published equations cited in the header: glTF 2.0 alphaMode MASK; one-derivative-wide coverage ramp. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 42.0% containment, longest shared run 40 tokens = the a3dPrd04AlphaTest signature and its one-line glTF MASK discard.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/uv_transform.wgsl.ts": {
+    "sha256": "13e522fd17eab35bef555dc01ad91b8d9e510e37ad4856efd716dbbac250175a",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/uv_transform.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_texture_transform affine M * (u, v, 1). The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 38.1% containment, longest shared run 33 tokens = the a3dPrd04UvTransform/UvSelect signatures and the uv-set select.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/emissive_strength.wgsl.ts": {
+    "sha256": "63b00d8dfdbcf3e135eae406d181495325d00fc05f0708345872a88de7b1c06d",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/emissive_strength.glsl.ts (operation-for-operation), from published equations cited in the header: glTF 2.0 emission x KHR_materials_emissive_strength. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 2.4% containment, longest shared run 8 tokens = the function signature.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/unlit.wgsl.ts": {
+    "sha256": "b944f2b7083d273d21e2f07499f6c24184a5af03d36e1524c57d8141a8885d36",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/unlit.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_unlit. The previous twin's attributed per-line references were removed with the code they described.",
+      "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 12.5% containment, longest shared run 8 tokens = the identity function signature.",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical-wgsl/index.ts": {
+    "sha256": "d8d6abd2d805b57fa22860916a23a7cf2c3a24cc45b8fcb03be18bb2bee8fa0c",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Barrel of the PRD-04 WGSL companions; header rewritten 2026-11-02 to describe the Aura-authored companions and the native-brdf test shim (no external implementation referenced).",
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+    ]
+  },
+  "packages/rendering/src/shaders/physical/sheenAlbedoLut.ts": {
+    "sha256": "13445db4bb62dab345e6f84bc04d5b406db9fea2f0c7e66c38db1be84624a318",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Moved verbatim 2026-11-02 out of shaders/physical/sheen.glsl.ts so the GLSL chunk and its WGSL companion share one table without an import cycle. The data is Aura's own preintegration of the Charlie x Neubelt sheen BRDF (8192 Hammersley points per cell, documented in the file).",
+      "Tests: tests/unit/rendering/native-physical-numeric-harness.test.ts (table read vs the independent hemisphere integral within 0.5% at the case samples)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "embedded-data",
+        "disposition": "independent-implementation",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-04 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Aura-generated sheen directional-albedo preintegration (16 x 16, roughness x N.V); not copied from any engine."
+      }
+    ]
+  },
+  "packages/rendering/src/shaders/physical/lobe_calls.glsl.ts": {
+    "sha256": "069391eb8da776f24320b0f299804e8856f333aa48cf913fff7cae672d186d20",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Aura-authored pars/call splice chunks. 2026-11-02: the remaining comment citations of another engine's composition order were replaced by the Khronos KHR_materials_* layer definitions they implement; no shader code changed in that edit.",
+      "Tests: tests/qr/prd04/unit/prd04-chunks.test.ts, tests/qr/prd04/unit/wgsl-twins.test.ts."
+    ]
+  },
+  "packages/rendering/src/environment/probeBuild.ts": {
+    "sha256": "0aa4f7be4c20abd87a721459cfd0f1d3eea4582bcb4c779d8c3cc1494832d01f",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "2026-11-02: NEUTRAL_FLOOR_SH9 regenerated from Aura's independent studio (RoomEnvironmentScene.ts) by tools/environments/bake-neutral.ts; NEUTRAL_ROOM_EXPOSURE = deriveNeutralRoomExposure() keeps the 4.x neutral mean radiance (NEUTRAL_FLOOR_RADIANCE); the legacy directional room and factory.neutral() use the same exposure-scaled room. The earlier SH data of the attributed room is gone. The embedded copy neutralEmbedded.ts was regenerated from the same bake with tools/environments/embed-neutral.mjs; it is not listed here because the scanner expands its 1,054 base64 lines into separate virtual entries, and its bytes are bound by NEUTRAL_SPECULAR_SOURCE_SHA256 / NEUTRAL_SPECULAR_SHA256 and tests/unit/environment-embedded/neutral-embedded.test.ts.",
+      "Tests: tests/unit/environment-embedded/neutral-embedded.test.ts (exposure, SH9 and mip-0 texels equal the generator), tests/unit/environment-first-frame/uniform-floor.test.ts, tests/unit/contracts/impl/prd02-env-factory.test.ts, tests/unit/contracts/impl/prd02-neutral-room-legacy.test.ts."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "disposition": "false-positive",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-04 lane, 2026-11-02 (owner countersign pending)",
+        "note": "'derived from the face basis' describes Aura's own cube-face basis, not an external source."
+      }
+    ]
+  },
+  "tools/environments/bake-neutral.ts": {
+    "sha256": "b6a6d705828fe56990028df8afccc97a4e06d6ad7f611af586cc544fffb744df",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-04 (S5-WP04-05)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Authored 2026-11-02: deterministic generator for the neutral environment (room raster, CPU GGX prefilter, SH9 projection, minimal KTX2 RGB9E5 container as read by Rgb9e5Cube.ts); `--check` verifies the shipped bytes.",
+      "Tests: tests/unit/environment-embedded/neutral-embedded.test.ts."
     ]
   }
 }

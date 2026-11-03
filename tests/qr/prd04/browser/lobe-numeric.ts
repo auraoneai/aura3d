@@ -1,16 +1,22 @@
 /**
  * lobe-numeric.ts — PRD-04 P3-4 (U-BSDF-PARITY browser half): for every case
- * in fixtures/bsdf/r185-golden.json, build a fragment shader that calls the
- * corresponding `a3d_prd04_*` chunk function over the golden arg grid, render
- * it into an RGBA32F buffer on a real GPU context, and read the values back.
+ * in INDEPENDENT_BSDF_CASES (oracles/independent-bsdf-goldens.ts), build a
+ * fragment shader that calls the corresponding `a3d_prd04_*` chunk function
+ * over the case's arg grid, render it into an RGBA32F buffer on a real GPU
+ * context, and read the values back.
  *
- * The Playwright spec compares the returned grid against the golden within
- * ≤1e-3 (2e-3 absolute floor for the DFG-LUT cases — half-float filtering,
- * same bound as the CPU oracle test).
+ * Expected values (S5-WP29-05) are computed here, on the page, by
+ * `independentExpected` — independently derived from the cited publications
+ * and specifications in binary64; no value is produced by running another
+ * engine's GLSL. Table-backed cases sample the same 16x16 split-sum table the
+ * shader reads (bilinearRG over DFG_LUT_R185), exactly as the CPU oracle test
+ * does. Bound: <=1e-3 relative or absolute (2e-3 absolute floor for the
+ * table-backed cases — half-float hardware filtering of that table).
  */
 import { PRD04_SHADER_CHUNKS } from "/packages/rendering/src/shaders/physical/index.js";
 import { BRDF_R185_SHIM_CHUNK } from "/tests/qr/prd04/shims/brdf_r185.glsl.js";
 import { DFG_LUT_R185, DFG_LUT_SIZE } from "/tests/qr/prd04/oracles/dfg-lut-r185.js";
+import { INDEPENDENT_BSDF_CASES, bilinearRG, independentExpected, type IndependentCase } from "/tests/qr/prd04/oracles/independent-bsdf-goldens.js";
 import type { ShaderChunk } from "/packages/rendering/src/contracts/program.js";
 
 declare global {
@@ -19,7 +25,7 @@ declare global {
 			status: "running" | "ready" | "error";
 			error?: string;
 			renderer?: string;
-			golden?: { id: string; file: string; runId: number | null };
+			expected?: { source: string };
 			cases?: {
 				fn: string;
 				total: number;
@@ -41,14 +47,35 @@ declare global {
 	}
 }
 
+/** A case grid plus its expected values (null where the derivation is non-finite). */
 interface GoldenCase {
 	fn: string;
 	desc: string;
 	out: 1 | 3;
-	argorder: string[];
-	axes: Record<string, number[]>;
-	fixed: Record<string, number | number[]>;
+	argorder: readonly string[];
+	axes: Readonly<Record<string, readonly number[]>>;
+	fixed: Readonly<Record<string, number | readonly number[]>>;
 	values: (number | null)[];
+}
+
+/** Same split-sum table sampler as tests/qr/prd04/unit/r185-oracle.test.ts. */
+const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT_R185, DFG_LUT_SIZE, roughness, nv);
+
+/** Expected grid for one case, enumerated argorder[0]-fastest like the shader's decode. */
+function expectedValues(c: IndependentCase): (number | null)[] {
+	const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
+	const values: (number | null)[] = [];
+	for (let idx = 0; idx < total; idx++) {
+		const args: Record<string, number> = {};
+		let stride = 1;
+		for (const name of c.argorder) {
+			const axis = c.axes[name]!;
+			args[name] = axis[Math.floor(idx / stride) % axis.length]!;
+			stride *= axis.length;
+		}
+		for (const v of independentExpected(c, args, tableLookup)) values.push(Number.isFinite(v) ? v : null);
+	}
+	return values;
 }
 
 const report: NonNullable<Window["__A3D_PRD04_LOBE_NUMERIC__"]> = { status: "running", cases: [] };
@@ -268,8 +295,8 @@ function runCase(gl: WebGL2RenderingContext, c: GoldenCase, dfgTex: WebGLTexture
 	for (const [name, value] of Object.entries(c.fixed)) {
 		const loc = gl.getUniformLocation(prog, `u_f_${name}`);
 		if (!loc) continue;
-		if (Array.isArray(value)) gl.uniform3fv(loc, value);
-		else gl.uniform1f(loc, value);
+		if (Array.isArray(value)) gl.uniform3fv(loc, value as number[]);
+		else gl.uniform1f(loc, value as number);
 	}
 	gl.viewport(0, 0, width, height);
 	gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -311,28 +338,11 @@ async function main(): Promise<void> {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	// Golden per provider/GPU (§0.6: never compare across providers): the
-	// manifest maps an unmasked-renderer regex to the golden generated on that
-	// class of device by generate-r185-golden.spec.ts (or the python/llvmpipe
-	// script). No match = no valid oracle on this runner, which is an error,
-	// never a fallback to another device's golden.
+	// Expected values: independently derived (binary64), device-independent.
 	const dbg = gl.getExtension("WEBGL_debug_renderer_info");
-	const renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "unmasked";
-	const manifest = (await (await fetch("/tests/qr/prd04/fixtures/bsdf/r185-goldens.json")).json()) as {
-		goldens: { id: string; rendererMatch: string; file: string; runId?: number | null }[];
-	};
-	const selected = manifest.goldens.find((g) => new RegExp(g.rendererMatch).test(renderer));
-	report.renderer = renderer;
-	if (!selected) {
-		report.status = "error";
-		report.error =
-			`no r185 golden matches renderer "${renderer}" in fixtures/bsdf/r185-goldens.json ` +
-			`(known: ${manifest.goldens.map((g) => `${g.id}=/${g.rendererMatch}/`).join(", ")}). ` +
-			"Generate one on this runner class with generate-r185-golden.spec.ts and commit it from that run.";
-		return;
-	}
-	report.golden = { id: selected.id, file: selected.file, runId: selected.runId ?? null };
-	const golden = (await (await fetch(`/tests/qr/prd04/fixtures/bsdf/${selected.file}`)).json()) as { cases: GoldenCase[] };
+	report.renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "unmasked";
+	report.expected = { source: "tests/qr/prd04/oracles/independent-bsdf-goldens.ts" };
+	const golden = { cases: INDEPENDENT_BSDF_CASES.map((c): GoldenCase => ({ ...c, values: expectedValues(c) })) };
 	for (const c of golden.cases) {
 		const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
 		const entry = { fn: c.fn, total, out: c.out, maxAbs: 0, maxRel: 0, values: [] as (number | null)[], failures: [] as { idx: number; abs: number; rel: number; args?: Record<string, number> }[], log: "" };
@@ -347,7 +357,7 @@ async function main(): Promise<void> {
 		for (let i = 0; i < total * c.out; i++) {
 			const got = result[i];
 			const expected = c.values[i];
-			if (expected === null) continue; // non-finite golden cell — spec asserts parity separately
+			if (expected === null) continue; // non-finite derivation (e.g. roughness 0 in the Charlie NDF) — not compared
 			if (got === null) {
 				entry.failures.push({ idx: i, abs: Infinity, rel: Infinity, args: decodeArgs(c, i) });
 				continue;
@@ -362,13 +372,13 @@ async function main(): Promise<void> {
 	}
 
 	// 04-S5 §15.4 perturbed control: sheenDirect with sheenColor x0.012 must
-	// FAIL against the unperturbed golden — proves the harness discriminates
+	// FAIL against the unperturbed expectation — proves the harness discriminates
 	// a real deviation instead of vacuously passing every grid.
 	{
 		const goldenCase = golden.cases.find((x) => x.fn === "sheenDirect")!;
 		const controlCase: GoldenCase = {
 			...goldenCase,
-			fixed: { ...goldenCase.fixed, sheenColor: (goldenCase.fixed.sheenColor as number[]).map((v) => v * 0.012) }
+			fixed: { ...goldenCase.fixed, sheenColor: (goldenCase.fixed.sheenColor as readonly number[]).map((v) => v * 0.012) }
 		};
 		const result = runCase(gl, controlCase, dfgTex);
 		const control = {

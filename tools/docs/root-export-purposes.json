@@ -45,6 +45,7 @@
   "physics": "Physics worlds, bodies and colliders (`world`, `worldFromScene`, `body`, `collider`, shapes).",
   "raycast": "Cast a world ray, or an NDC point through a camera, against scene query targets.",
   "raycastFirst": "Nearest-hit form of `raycast`.",
+  "bindPointerInteractions": "Route canvas pointer events to `interactions.pointer({ target })` nodes: a targeted interaction fires only when its node is the nearest hit. Returns a disposer.",
   "createFrameLoop": "Create a frame loop with callbacks and snapshots.",
   "createFixedStepLoop": "Fixed-step simulation loop: variable frame time in, fixed steps out, with catch-up clamp and a manual mode for tests.",
   "fixedStepLoop": "Alias of `createFixedStepLoop`.",

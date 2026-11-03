@@ -134,9 +134,8 @@ function statePasses(state: MaterialStudioState, id: string): boolean {
     reflectance.has("dielectric") &&
     reflectance.has("transparent") &&
     reflectance.has("emissive") &&
-    bounded.includes("clearcoat") &&
-    bounded.includes("transmission") &&
-    bounded.includes("sheen") &&
+    // S5-WP04-01: clearcoat, transmission and sheen are supported lobes.
+    bounded.length === 0 &&
     state.hdrIbl === true &&
     state.colorManagement === "linear-input-srgb-output" &&
     Number(state.drawCalls ?? 0) >= 12 &&

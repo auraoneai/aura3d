@@ -923,11 +923,11 @@ describe("depth geometry transforms", () => {
     } finally { geometry.dispose(); device.dispose(); }
   });
 
-  it.each(["sprite", "fat-line", "points"] as const)("rejects active clipping for %s before allocating or submitting depth geometry", (kind) => {
+  it.each(["sprite", "fat-line"] as const)("rejects active clipping for %s without its raster camera before allocating or submitting depth geometry", (kind) => {
     const geometry = kind === "fat-line"
       ? Geometry.screenSpaceLineSegments([{ start: [0, 0, 0], end: [1, 0, 0] }])
-      : kind === "points" ? new Geometry(new VertexBuffer(VertexFormat.P3, 1), null, "points") : Geometry.triangle();
-    const shadowGeometry = kind === "points" ? Geometry.triangle() : undefined;
+      : Geometry.triangle();
+    const shadowGeometry: Geometry | undefined = undefined;
     const ordinaryGeometry = Geometry.triangle();
     const base = kind === "fat-line" ? new ScreenSpaceLineMaterial({ width: 7 }) : new UnlitMaterial({ pointSize: 7 });
     const material = new MaterialInstance(base);
@@ -949,20 +949,46 @@ describe("depth geometry transforms", () => {
               ...(source === "callback" ? { materialClippingFor: () => local } : {})
             }).execute({ device, width: 8, height: 8 });
           } catch (error) { failure = error; }
-          expect(failure).toMatchObject({ code: "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED" });
+          expect(failure).toMatchObject({ code: "DEPTH_CLIPPING_RASTER_CAMERA_REQUIRED" });
         }
       }
       expect(device.getDiagnostics().buffers).toBe(buffersBefore);
       expect(device.drawCommands).toHaveLength(0);
       expect(() => new DepthPass({ checkedSubmission: true, clippingPass: "depth", casters: [{ geometry, shadowGeometry, material }],
         globalClipping: { ...global, clipShadows: false } }).execute({ device, width: 8, height: 8 }))
-        .toThrow(/Clipping is unavailable/);
+        .toThrow(/requires the raster camera that drew it/);
       // A group that has not opted into shadow clipping does not activate the guard.
       new DepthPass({ checkedSubmission: true, clippingPass: "shadow", casters: [{ geometry, shadowGeometry, material }],
         globalClipping: { ...global, clipShadows: false } }).execute({ device, width: 8, height: 8 });
       expect(device.drawCommands).toHaveLength(1);
       device.endFrame();
-    } finally { geometry.dispose(); shadowGeometry?.dispose(); ordinaryGeometry.dispose(); base.dispose(); device.dispose(); }
+    } finally { geometry.dispose(); ordinaryGeometry.dispose(); base.dispose(); device.dispose(); }
+  });
+
+  it("clips point depth by source centres instead of the shadow proxy", () => {
+    const vertices = new VertexBuffer(VertexFormat.P3, 2);
+    vertices.setAttribute(0, "position", [-1, 0, 0]);
+    vertices.setAttribute(1, "position", [1, 0, 0]);
+    const geometry = new Geometry(vertices, null, "points");
+    const shadowGeometry = Geometry.triangle();
+    const base = new UnlitMaterial({ pointSize: 7 });
+    const device = checkedMock();
+    const global = { planes: [[1, 0, 0, 0] as const], clipShadows: true };
+    try {
+      device.beginFrame(8, 8);
+      const buffersBefore = device.getDiagnostics().buffers;
+      new DepthPass({ checkedSubmission: true, clippingPass: "shadow", globalClipping: global,
+        casters: [{ geometry, shadowGeometry, material: base }] }).execute({ device, width: 8, height: 8 });
+      expect(device.drawCommands).toHaveLength(1);
+      expect(device.drawCommands[0]).toMatchObject({ topology: "points", indexCount: 1 });
+      // The transient retained-point geometry is released after the draw.
+      expect(device.getDiagnostics().buffers).toBe(buffersBefore);
+      // Without an active shadow group the coarse proxy remains the caster.
+      new DepthPass({ checkedSubmission: true, clippingPass: "shadow", globalClipping: { ...global, clipShadows: false },
+        casters: [{ geometry, shadowGeometry, material: base }] }).execute({ device, width: 8, height: 8 });
+      expect(device.drawCommands[1]!.topology).toBe("triangles");
+      device.endFrame();
+    } finally { geometry.dispose(); shadowGeometry.dispose(); base.dispose(); device.dispose(); }
   });
 
   it("rejects unhandled packed multi-draw markers while keeping ordinary instanced casters", () => {

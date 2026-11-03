@@ -43,7 +43,11 @@ interface GpuScopeAggregate {
 type PendingGpuScope =
   | { readonly token: RendererGpuTimingToken; readonly kind: "frame"; readonly sample: MutableFrameStatsSample }
   | { readonly token: RendererGpuTimingToken; readonly kind: "scope"; readonly aggregate: GpuScopeAggregate }
-  | { readonly token: RendererGpuTimingToken; readonly kind: "discard" };
+  | { readonly token: RendererGpuTimingToken; readonly kind: "discard" }
+  | { readonly token: RendererGpuTimingToken; readonly kind: "segment"; readonly settle: (durationMs: number | null) => void };
+
+/** GPU result state of a sample returned by `end()`/`endTracked()`. */
+export type FrameStatsGpuStatus = "unavailable" | "pending" | "measured" | "discarded";
 
 // A driver or custom backend may never return a result, or may discard a query
 // without reporting its token. Do not retain frame samples indefinitely.
@@ -68,6 +72,7 @@ export class FrameStats implements FrameStatsLike {
   private frameGeneration = 0;
   private frameIdentity: object | null = null;
   private requestedTrackedIdentity: object | null = null;
+  private readonly gpuStatus = new WeakMap<object, FrameStatsGpuStatus>();
 
   constructor(capacity = 240, gpu?: RendererGpuTimingBackend) {
     this.ring = new Array<MutableFrameStatsSample | undefined>(Math.max(1, Math.floor(capacity)));
@@ -141,6 +146,39 @@ export class FrameStats implements FrameStatsLike {
     this.drainGpu();
   }
 
+  /** True when a scoped GPU timing backend measures this device. */
+  get gpuTimingSupported(): boolean {
+    return this.gpu !== null;
+  }
+
+  /** Whether a returned sample's `gpuMs` is still pending, measured or discarded. */
+  gpuSampleStatus(sample: object): FrameStatsGpuStatus {
+    return this.gpuStatus.get(sample) ?? "unavailable";
+  }
+
+  /**
+   * Start a GPU range outside any tracked frame (whole-frame timing of work
+   * between views). The caller must end it before the next `begin()` so a
+   * TIME_ELAPSED backend never has two queries open. `null` when unsupported.
+   */
+  beginSegment(name: string): RendererGpuTimingToken | null {
+    return this.tryBeginScope(name);
+  }
+
+  /** End a segment; `settle` receives its duration, or `null` when discarded. */
+  endSegment(token: RendererGpuTimingToken, settle: (durationMs: number | null) => void): boolean {
+    if (!this.gpu) return false;
+    const pending: PendingGpuScope = { token, kind: "segment", settle };
+    this.enqueueGpu(pending);
+    try {
+      this.gpu.endScope(token);
+      return true;
+    } catch {
+      this.removePendingGpu(pending);
+      return false;
+    }
+  }
+
   /** Poll delayed GPU results without changing the active frame. */
   pollGpuResults(): void {
     this.drainGpu(true);
@@ -186,15 +224,18 @@ export class FrameStats implements FrameStatsLike {
       this.enqueueGpu({ token: scope.token, kind: "scope", aggregate: aggregates.get(scope.name)! });
     }
     this.pushSample(sample);
+    if (this.gpu && !frameToken) this.gpuStatus.set(sample, "discarded");
     if (this.gpu && frameToken) {
       // Register before calling the backend so a reentrant poll cannot consume
       // a result before it has a sample to attach to.
       const pending: PendingGpuScope = { token: frameToken, kind: "frame", sample };
+      this.gpuStatus.set(sample, "pending");
       this.enqueueGpu(pending);
       try {
         this.gpu.endScope(frameToken);
       } catch {
         this.removePendingGpu(pending);
+        this.gpuStatus.set(sample, "discarded");
         sample.gpuMs = null;
         // GPU clock vanished mid-frame; the sample stays cpu-only.
       }
@@ -327,6 +368,11 @@ export class FrameStats implements FrameStatsLike {
     const valid = typeof value === "number" && Number.isFinite(value) && value >= 0;
     if (pending.kind === "frame") {
       if (valid) pending.sample.gpuMs = value;
+      this.gpuStatus.set(pending.sample, valid ? "measured" : "discarded");
+      return;
+    }
+    if (pending.kind === "segment") {
+      try { pending.settle(valid ? value : null); } catch { /* Diagnostics must not fail rendering. */ }
       return;
     }
     if (pending.kind !== "scope") return;

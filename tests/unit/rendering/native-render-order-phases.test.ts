@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
+import type { RenderItem } from "../../../packages/rendering/src/ForwardPass";
 import type { DrawCommand, MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
@@ -20,7 +21,7 @@ beforeAll(() => {
 
 const flags = createTrustedQrFlags(Object.fromEntries(["A3D_QR_CORE", "A3D_QR_CORE_OUTPUT", "A3D_QR_CORE_GENERATOR", "A3D_QR_MATERIALS", "A3D_QR_MATERIALS_TRANSMISSION"].map((name) => [name, true])));
 
-async function frame(items: (geometry: Geometry, m: { opaque: UnlitMaterial; glass: PBRMaterial; blend: UnlitMaterial }) => readonly object[], asynchronous: boolean) {
+async function frame(items: (geometry: Geometry, m: { opaque: UnlitMaterial; glass: PBRMaterial; blend: UnlitMaterial }) => readonly RenderItem[], asynchronous: boolean) {
   const renderer = await Renderer.create({ backend: "mock", width: 1, height: 1, qrFlags: flags });
   const device = renderer.device as MockRenderDevice & { drawTransmissionCapture(command: DrawCommand): void };
   device.drawTransmissionCapture = (command) => device.draw(command);
@@ -79,5 +80,37 @@ describe("renderOrder across split renderer phases", () => {
       { geometry, material: m.opaque, label: "opaque", renderOrder: 1 },
       { geometry, material: m.glass, label: "glass", renderOrder: 2 }
     ], false)).rejects.toMatchObject({ code: "RENDER_ORDER_PHASE_CONFLICT" });
+  });
+});
+
+describe("weighted transparency with renderer-driven transmission", () => {
+  it.each([false, true])("keeps the sorted path after a real transmission capture and reports a stable code (async=%s)", async (asynchronous) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 1, height: 1, qrFlags: flags });
+    const device = renderer.device as MockRenderDevice & { drawTransmissionCapture(command: DrawCommand): void };
+    device.drawTransmissionCapture = (command) => device.draw(command);
+    Object.defineProperty(device.info, "capabilities", { configurable: true,
+      value: [...device.info.capabilities!, "hdr-render-targets", "float-blending"] });
+    const unregister = registerFrameContributor(transmissionFrameContributor);
+    const geometry = Geometry.box();
+    const opaque = new UnlitMaterial({ name: "opaque" });
+    const glass = new PBRMaterial({ transmissionFactor: 0.8 });
+    const blend = new UnlitMaterial({ name: "blend", color: [1, 0.2, 0.1, 0.5], renderState: { blend: true, blendMode: "alpha", depthWrite: false } });
+    try {
+      const source = { cameraPolicy: "identity" as const, transparencyMode: "weighted" as const,
+        postprocess: { sampleCount: 1, targetFormat: "rgba8" as const },
+        renderItems: [{ geometry, material: opaque, label: "opaque" }, { geometry, material: glass, label: "glass" }, { geometry, material: blend, label: "blend" }] };
+      if (asynchronous) await renderer.renderAsync({ source, frameId: 1 });
+      else renderer.render({ source, frameId: 1 });
+      const labels = device.drawCommands.map((command) => command.label);
+      const copy = labels.indexOf("prd04-transmission-scene-color-copy");
+      expect(copy).toBeGreaterThan(labels.indexOf("opaque"));
+      expect(labels.indexOf("glass")).toBeGreaterThan(copy);
+      expect(labels.indexOf("blend")).toBeGreaterThan(copy);
+      expect(labels).not.toContain("weighted-transparency-composite");
+      expect(device.drawCommands.some((command) => command.uniforms?.has("u_a3dOpaqueDepth"))).toBe(false);
+      expect(renderer.transparencyDiagnostics).toMatchObject({ mode: "sorted", code: "WEIGHTED_TRANSPARENCY_TRANSMISSION_SORTED" });
+    } finally {
+      unregister(); renderer.dispose(); geometry.dispose(); opaque.dispose(); glass.dispose(); blend.dispose();
+    }
   });
 });

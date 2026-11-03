@@ -5,6 +5,8 @@ import { WebGL2Device } from "../../../packages/rendering/src/WebGL2Device";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { texture } from "../../../packages/engine/src/agent-api/nodes/texture";
 import { createRenderDevice } from "../../../packages/rendering/src";
+import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
+import type { RenderDevice, RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { createProofWebGPU } from "./webgpu-rtt-mock";
 
 describe("texture dimensions, formats and independent mip updates", () => {
@@ -271,11 +273,142 @@ describe("WebGPU layered render targets", () => {
       expect(target.colorTexture.disposed).toBe(true);
       await (target as typeof target & { whenDisposed(): Promise<void> }).whenDisposed();
       expect(mock.textures.filter((texture) => texture.destroyed)).toHaveLength(2);
-      let refusal: unknown;
-      try { device.createRenderTarget({ width: 2, height: 2, dimension: "3d", layers: 2, depth: false }); } catch (error) { refusal = error; }
-      expect(refusal).toMatchObject({ code: "UNSUPPORTED_RENDER_TARGET_FEATURE" });
     } finally {
       device.dispose();
+    }
+  });
+});
+
+type RecordedPass = { readonly colorAttachments: readonly { readonly view: unknown; readonly depthSlice?: number }[]; readonly depthStencilAttachment?: { readonly view: unknown } };
+
+/** Proof mock that records texture/view descriptors, pipelines and passes; color-less passes get a recording stub. */
+async function recordingWebGPU() {
+  const mock = createProofWebGPU();
+  const native = mock.native as unknown as Record<string, (descriptor?: Record<string, unknown>) => Record<string, unknown>>;
+  const textures: Record<string, unknown>[] = [], views: Record<string, unknown>[] = [], pipelines: Record<string, unknown>[] = [], passes: RecordedPass[] = [];
+  const createTexture = native.createTexture!.bind(native);
+  native.createTexture = (descriptor) => {
+    textures.push(descriptor!);
+    const texture = createTexture(descriptor) as { createView(view?: Record<string, unknown>): unknown };
+    const plain = texture.createView.bind(texture);
+    texture.createView = (view?: Record<string, unknown>) => { views.push(view ?? {}); return plain(); };
+    return texture as unknown as Record<string, unknown>;
+  };
+  const createPipeline = native.createRenderPipeline!.bind(native);
+  native.createRenderPipeline = (descriptor) => { pipelines.push(descriptor!); return createPipeline(descriptor); };
+  const createEncoder = native.createCommandEncoder!.bind(native);
+  native.createCommandEncoder = (descriptor) => {
+    const encoder = createEncoder(descriptor) as { beginRenderPass(pass: RecordedPass): unknown };
+    const begin = encoder.beginRenderPass.bind(encoder);
+    encoder.beginRenderPass = (pass) => {
+      passes.push(pass);
+      if (pass.colorAttachments.length) return begin(pass);
+      const noop = (): void => {};
+      return { setPipeline: noop, setVertexBuffer: noop, setBindGroup: noop, setViewport: noop, setScissorRect: noop, setBlendConstant: noop, setStencilReference: noop, draw: noop, end: noop };
+    };
+    return encoder as unknown as Record<string, unknown>;
+  };
+  const device = await createRenderDevice({ backend: "webgpu", webgpu: mock.webgpu });
+  return { mock, device, textures, views, pipelines, passes };
+}
+
+function drawPortableTriangle(device: RenderDevice, target: RenderTarget): void {
+  const shader = device.createShaderProgram({
+    label: "slice-shader", marker: "@aura3d-shader:wp05-slice",
+    vertex: "// @aura3d-shader:wp05-slice\nin vec3 position;\nvoid main() { gl_Position = vec4(position, 1.0); }",
+    fragment: "// @aura3d-shader:wp05-slice\nuniform vec4 u_color;\nout vec4 outColor;\nvoid main() { outColor = u_color; }",
+    portableBindings: [{ name: "u_color", kind: "vec4", required: true }],
+    webgpu: {
+      vertex: "/* @aura3d-bindings */\n@vertex fn vs_main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> { return vec4<f32>(position, 1.0); }",
+      fragment: "/* @aura3d-bindings */\n@fragment fn fs_main() -> @location(0) vec4<f32> { return aura.u_color; }"
+    }
+  });
+  const vertices = new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]);
+  const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
+  device.setRenderTarget(target);
+  device.beginFrame(target.width, target.height);
+  device.draw({ label: "slice-draw", topology: "triangles", vertexBuffer: buffer, vertexFormat: VertexFormat.P3, vertexCount: 3, shader,
+    renderState: { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" },
+    uniforms: new Map([["u_color", [1, 0, 0, 1]]]) });
+  device.endFrame();
+  device.setRenderTarget(null);
+  buffer.dispose();
+  shader.dispose();
+}
+
+describe("WebGPU 3d and depth-only render targets", () => {
+  it("renders each 3d slice through the full volume view with a per-pass depthSlice and retires the volume once", async () => {
+    const f = await recordingWebGPU();
+    try {
+      const volume = f.device.createRenderTarget({ width: 2, height: 2, dimension: "3d", layers: 3, depth: false, label: "volume" });
+      expect(f.textures).toHaveLength(1);
+      expect(f.textures[0]).toMatchObject({ size: [2, 2, 3], dimension: "3d" });
+      expect(f.views).toContainEqual({ dimension: "3d", baseMipLevel: 0, mipLevelCount: 1 });
+      expect(volume.colorTexture).toMatchObject({ dimension: "3d", depth: 3 });
+      expect(volume.layerTargets).toHaveLength(3);
+      expect(getRenderAttachmentIdentity(volume.layerTargets![2]!)).toMatchObject({ layer: 2, aspect: "color" });
+      for (const [slice, layer] of volume.layerTargets!.entries()) {
+        f.device.setRenderTarget(layer);
+        f.device.beginFrame(2, 2);
+        f.device.clear([slice / 2, 0, 0, 1]);
+        f.device.endFrame();
+        f.device.setRenderTarget(null);
+      }
+      drawPortableTriangle(f.device, volume.layerTargets![1]!);
+      const slices = f.passes.map((pass) => pass.colorAttachments[0]?.depthSlice);
+      expect(slices).toEqual([0, 1, 2, 1]);
+      expect(f.passes.every((pass) => pass.colorAttachments[0]!.view === f.passes[0]!.colorAttachments[0]!.view)).toBe(true);
+      await expect(f.device.readRenderTarget!({ target: volume.layerTargets![1]! })).rejects.toMatchObject({ code: "NATIVE_READBACK_TARGET_UNSUPPORTED" });
+
+      volume.layerTargets![0]!.dispose();
+      expect(f.mock.textures.some((texture) => texture.destroyed)).toBe(false);
+      volume.dispose();
+      expect(volume.layerTargets!.every((layer) => layer.disposed)).toBe(true);
+      await (volume as typeof volume & { whenDisposed(): Promise<void> }).whenDisposed();
+      expect(f.mock.textures.filter((texture) => texture.destroyed)).toHaveLength(1);
+    } finally {
+      f.device.dispose();
+    }
+  });
+
+  it("renders depth-only targets with no color attachment or color target and refuses color operations", async () => {
+    const f = await recordingWebGPU();
+    try {
+      const shadow = f.device.createRenderTarget({ width: 4, height: 4, depthOnly: true, label: "shadow" });
+      expect(f.textures).toHaveLength(1);
+      expect(String(f.textures[0]!.format)).toMatch(/^depth/);
+      expect(shadow.depthOnly).toBe(true);
+      expect(shadow.depthTexture).toMatchObject({ format: "depth24" });
+      expect(() => getRenderAttachmentIdentity(shadow)).toThrow(/no live color attachment/);
+      drawPortableTriangle(f.device, shadow);
+      expect(f.passes.length).toBeGreaterThan(0);
+      for (const pass of f.passes) {
+        expect(pass.colorAttachments).toEqual([]);
+        expect(pass.depthStencilAttachment).toBeDefined();
+      }
+      expect(f.pipelines).toHaveLength(1);
+      expect((f.pipelines[0]!.fragment as { targets: unknown[] }).targets).toEqual([]);
+      expect(f.pipelines[0]!.depthStencil).toBeDefined();
+      expect(f.mock.textures.every((texture) => texture.label !== "shadow")).toBe(true);
+
+      await expect(f.device.readRenderTarget!({ target: shadow })).rejects.toMatchObject({ code: "INVALID_RENDER_ATTACHMENT" });
+      expect(() => f.device.writeRenderTargetPixels!(shadow, new Uint8Array(64))).toThrow(expect.objectContaining({ code: "RENDER_TARGET_DEPTH_ONLY" }));
+      f.device.setRenderTarget(shadow);
+      f.device.beginFrame(4, 4);
+      await expect(f.device.readPixelsAsync!(0, 0, 1, 1)).rejects.toMatchObject({ code: "RENDER_TARGET_DEPTH_ONLY" });
+      f.device.endFrame();
+      f.device.setRenderTarget(null);
+
+      const cube = f.device.createRenderTarget({ width: 2, height: 2, dimension: "cube", depthOnly: true, label: "point-shadow" });
+      expect(cube.layerTargets).toHaveLength(6);
+      expect(f.textures.at(-1)).toMatchObject({ size: [2, 2, 6] });
+      shadow.dispose();
+      cube.dispose();
+      await (shadow as typeof shadow & { whenDisposed(): Promise<void> }).whenDisposed();
+      await (cube as typeof cube & { whenDisposed(): Promise<void> }).whenDisposed();
+      expect(f.mock.textures.every((texture) => texture.destroyed)).toBe(true);
+    } finally {
+      f.device.dispose();
     }
   });
 });

@@ -3,9 +3,10 @@
  *
  * These inputs are chosen for the domains documented by the clean reference
  * modules. Every category has both an interior sample and a supported boundary
- * sample. Neither the inputs nor the CPU outputs establish native-renderer
- * mapping, comparison tolerances, GPU behavior, or compatibility with any
- * historical implementation. Those decisions remain explicitly unresolved.
+ * sample. The inventory itself does not choose a renderer function or a
+ * tolerance: native-physical-numeric-harness.ts maps each sample to a
+ * production shader function with an explicit f32 tolerance, or records a
+ * documented model-difference contract, and owns the conformance gate.
  *
  * Physical models and numerical integrations coexist with material heuristics:
  * `model` records that distinction rather than treating a shared category name
@@ -72,8 +73,9 @@ export interface PhysicalCaseSample {
 export interface PhysicalCase {
   readonly category: PhysicalCategory;
   readonly model: PhysicalModel;
-  readonly rendererMapping: "unresolved";
-  readonly tolerance: "unresolved";
+  /** Mapping and tolerance are assigned per sample by native-physical-numeric-harness.ts. */
+  readonly rendererMapping: "per-sample-in-harness";
+  readonly tolerance: "per-sample-in-harness";
   readonly samples: readonly PhysicalCaseSample[];
 }
 
@@ -93,8 +95,8 @@ function defineCase<Category extends PhysicalCategory, Args extends unknown[], O
   return {
     category,
     model,
-    rendererMapping: "unresolved" as const,
-    tolerance: "unresolved" as const,
+    rendererMapping: "per-sample-in-harness" as const,
+    tolerance: "per-sample-in-harness" as const,
     samples: inputs.map(({ id, kind, input }) => ({
       id,
       kind,

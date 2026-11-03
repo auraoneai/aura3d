@@ -41,6 +41,8 @@ export function clearPostSkipped(reason: string, token?: PostDiagnosticToken): v
  * registry instead of the legacy page-wide channel.
  */
 export function postSkippedReasons(canvas?: object, token?: PostDiagnosticToken): readonly string[] {
+  // The native 5.0 form passes the frame token alone; an issued token is never a canvas.
+  if (token === undefined && postDiagnostics.isToken(canvas)) return [...(postDiagnostics.snapshotToken(canvas)?.skipped ?? [])];
   const base = token ? postDiagnostics.snapshotToken(token)?.skipped ?? [] : [...postSkippedReasonsSet];
   const bloom = canvas ? selectiveBloomByCanvas.get(canvas) : latestSelectiveBloomReason;
   return bloom ? [...base, bloom] : [...base];

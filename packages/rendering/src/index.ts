@@ -1190,7 +1190,7 @@ export type {
 } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { GaussianSplatRenderer, gaussianSphericalHarmonicBasis, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS, GAUSSIAN_SPLAT_SHADER } from "./GaussianSplatRenderer.js";
-export type { GaussianSplatCloud, GaussianSplatDrawInput, GaussianSplatFrame, GaussianSplatPreparedFrame, GaussianSplatRenderOptions, GaussianSplatTransparentRun } from "./GaussianSplatRenderer.js";
+export type { GaussianSplatCloud, GaussianSplatDrawInput, GaussianSplatFrame, GaussianSplatGpuSortStatus, GaussianSplatPreparedFrame, GaussianSplatRenderOptions, GaussianSplatTransparentRun } from "./GaussianSplatRenderer.js";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
 export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererRect, RendererView, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";

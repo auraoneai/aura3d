@@ -963,6 +963,56 @@ describe("decoder registry retry and disposal", () => {
   });
 });
 
+describe("bounded decoder disposal (never-settling initializers)", () => {
+  const capabilities = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false } as const;
+
+  it("a never-settling Draco factory cannot hang registry disposal; a late module is released and dispose can complete", async () => {
+    const { createAssetDecoderRegistry, AssetDecoderDisposeTimeout } = await import("../../../packages/assets/src/AssetDecoderRegistry");
+    let complete: ((value: unknown) => void) | undefined;
+    const lateDispose = vi.fn();
+    vi.stubGlobal("DracoDecoderModule", () => new Promise((resolve) => { complete = resolve; }));
+    vi.stubGlobal("document", {
+      createElement: () => ({ remove: vi.fn() }),
+      head: { appendChild: (script: { onload: () => void }) => queueMicrotask(() => script.onload()) }
+    });
+    const registry = createAssetDecoderRegistry({ basePath: "/never/", capabilities, maxTextureSize: 64, workerCount: 1, disposeTimeoutMs: 25 });
+    const loading = registry.require(["draco"]);
+    const rejected = expect(loading).rejects.toBeInstanceOf(AssetDecoderUnavailable);
+    await vi.waitFor(() => expect(complete).toBeTypeOf("function"));
+    const firstDisposal = registry.disposeAsync();
+    await expect(firstDisposal).rejects.toBeInstanceOf(AssetDecoderDisposeTimeout);
+    await expect(firstDisposal).rejects.toMatchObject({ code: "ASSET_DECODER_DISPOSE_TIMEOUT", pending: expect.any(Number) });
+    await rejected;
+    expect(registry.diagnostics()).toMatchObject({ disposal: "timed-out", loaded: [] });
+    expect(registry.diagnostics().pendingOperations).toBeGreaterThan(0);
+    await expect(registry.require(["draco"])).rejects.toBeInstanceOf(AssetDecoderUnavailable);
+    // The abandoned factory finally settles: it is released, never installed.
+    complete!({ dispose: lateDispose });
+    await vi.waitFor(() => expect(lateDispose).toHaveBeenCalledOnce());
+    await expect(registry.disposeAsync()).resolves.toBeUndefined();
+    expect(registry.diagnostics()).toMatchObject({ disposal: "disposed", pendingOperations: 0, loaded: [] });
+  });
+
+  it("rejects a non-positive disposal bound", async () => {
+    const { createAssetDecoderRegistry } = await import("../../../packages/assets/src/AssetDecoderRegistry");
+    expect(() => createAssetDecoderRegistry({ basePath: "/x/", capabilities, maxTextureSize: 64, workerCount: 1, disposeTimeoutMs: 0 })).toThrow(RangeError);
+    expect(() => createAssetDecoderRegistry({ basePath: "/x/", capabilities, maxTextureSize: 64, workerCount: 1, disposeTimeoutMs: Number.NaN })).toThrow(RangeError);
+  });
+
+  it("KTX2 pool disposal is bounded when a codec fetch ignores abort, and terminates its workers", async () => {
+    const { AssetDecoderDisposeTimeout } = await import("../../../packages/assets/src/decoderLoad");
+    vi.stubGlobal("Worker", class { terminate() {} postMessage() {} addEventListener() {} removeEventListener() {} });
+    vi.stubGlobal("fetch", () => new Promise(() => {}));
+    const pool = createKTX2TranscodeWorkerPool("/aura-decoders/basis/", 1, { initializeTimeoutMs: 60_000, disposeTimeoutMs: 25 });
+    const job = pool.transcode({ bytes: new Uint8Array([1]), transcoderFormat: 13 });
+    const jobRejected = expect(job).rejects.toBeInstanceOf(Error);
+    const disposal = pool.disposeAsync();
+    await expect(disposal).rejects.toBeInstanceOf(AssetDecoderDisposeTimeout);
+    await jobRejected;
+    await expect(pool.transcode({ bytes: new Uint8Array([2]), transcoderFormat: 13 })).rejects.toThrow(/disposed/);
+  });
+});
+
 describe("independently generated real KTX2 bytes", () => {
   it("decodes the recorded red ETC1S sample through the real Basis codec", async () => {
     const { readFileSync } = await import("node:fs");

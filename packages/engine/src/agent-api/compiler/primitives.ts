@@ -49,8 +49,10 @@ export function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inherited
     pivoted ||= hasNonzeroPivot(transform.pivot);
   }
   if (!pivoted) return;
-  if (node.lookAt !== undefined || node.instances?.some((transform) => transform.lookAt !== undefined)) {
-    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted primitive transforms cannot use lookAt.");
+  // An own pivot composes with an own lookAt in the model matrix; pivoted
+  // instance batches have no per-instance look-at composition.
+  if ((node.lookAt !== undefined && node.instances !== undefined) || node.instances?.some((transform) => transform.lookAt !== undefined)) {
+    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted primitive instances cannot use lookAt.");
   }
   if (node.lod?.levels.length || lodMarkerOf(node)) {
     throw new Error("PIVOT_UNSUPPORTED_LOD: pivoted primitives cannot use distance LOD.");

@@ -7,12 +7,15 @@ export type ObjectColor = readonly [number, number, number];
 
 type GeometryBuilder = ReturnType<typeof geometry.custom>;
 
-// The renderer supplies an OpenGL-style projection to custom materials. WebGPU
-// uses a 0..1 depth clip range, so convert the homogeneous z coordinate here.
+// The renderer supplies an OpenGL-style projection to custom materials, except
+// in reversed-depth WebGPU frames, which hand programs a native zero-to-one
+// projection and set the a3dZeroToOneProjection pipeline override. WebGPU uses
+// a 0..1 depth clip range, so convert the homogeneous z coordinate otherwise.
 const OBJECT_CLIP_WGSL = `
+override a3dZeroToOneProjection: bool = false;
 fn objectClip(position: vec3<f32>) -> vec4<f32> {
   let clip = aura.u_modelViewProjection * vec4<f32>(position, 1.0);
-  return vec4<f32>(clip.xy, (clip.z + clip.w) * 0.5, clip.w);
+  return vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);
 }
 `;
 

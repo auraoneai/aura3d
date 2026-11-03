@@ -51,13 +51,13 @@ describe("prd04 lobe chunks (PRD-04 P1-1)", () => {
 		}
 	});
 
-	it("every chunk file carries an r185 provenance header", () => {
+	it("every chunk file carries a provenance header", () => {
 		const files = readdirSync(chunkDir).filter((f) => f.endsWith(".glsl.ts"));
 		expect(files.length).toBeGreaterThanOrEqual(15);
 		for (const f of files) {
 			const head = readFileSync(join(chunkDir, f), "utf8").slice(0, 1600);
-			// Chunks that port r185 math cite the source file (+lines); lane-
-			// original chunks (debug_view) cite the PRD section instead.
+			// Aura-authored chunks cite their PRD-04 section next to the
+			// published equations they implement.
 			expect(head, `${f} header`).toMatch(/three|\.glsl\.js|L\d+|PRD-04/);
 		}
 	});

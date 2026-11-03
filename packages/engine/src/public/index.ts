@@ -22,6 +22,8 @@ export type { AuraWorldTextOptions, FontAsset, FontAssetMetadata, FontLoadOption
 export { SPATIAL_DOM_LABEL_CAPABILITY } from "../agent-api/index.js";
 export type { AuraDynamicHelper, AuraDynamicHelperOptions } from "../agent-api/index.js";
 export { bindOrbitPointer, createOrbitRig } from "../agent-api/index.js";
+export { bindPointerInteractions } from "../agent-api/index.js";
+export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "../agent-api/index.js";
 export type { AuraOrbitRig, OrbitRigOptions } from "../agent-api/camera/rigs/orbit.js";
 // QA and replay kit (docs/api/qa-kit.md).
 export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";

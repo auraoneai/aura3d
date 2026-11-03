@@ -18,6 +18,10 @@ for (const backend of ["webgl2", "webgpu"] as const) {
           load("/packages/rendering/src/RenderPipeline.ts"), load("/packages/rendering/src/program/ProgramGenerator.ts"),
           load("/packages/rendering/src/program/ProgramFeatures.ts")
         ]);
+        const [rendererModule, geometryModule, pbrModule, unlitModule] = await Promise.all([
+          load("/packages/rendering/src/Renderer.ts"), load("/packages/rendering/src/Geometry.ts"),
+          load("/packages/rendering/src/PBRMaterial.ts"), load("/packages/rendering/src/UnlitMaterial.ts")
+        ]);
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
         const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
         if (selectedBackend === "webgpu" && !gpu) return { unsupported: "WebGPU adapter unavailable" };
@@ -134,21 +138,40 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
           const rightRect = { x: 16, y: 0, width: 16, height: 32 };
           await render(false, false, false, "left", { ...leftRect, scissor: leftRect }, [layers[0]!]);
           const split = await render(false, false, false, "right", { ...rightRect, scissor: rightRect }, [layers[1]!], false);
+          // A genuinely multisampled scene target: the weighted pass must take
+          // the sorted path for it, never resolve or sample its depth.
           let sortedFallback = "";
-          pass.execute({ viewId: "fallback", width: 32, height: 32, sceneTarget: scene, opaqueDepth: scene.depthTexture,
-            depthConvention: "standard", sampleCount: 4, maxFragmentsPerPixel: 2, support: { floatBlend: true, depthTexture: true, shaderVariants: true }, items: layers,
-            drawWeighted() { throw new Error("MSAA must not use weighted targets"); }, drawSorted(_items: unknown, reason: string) { sortedFallback = reason; } });
+          const msaa = device.createRenderTarget({ width: 32, height: 32, format: "rgba8", depth: "texture", sampleCount: 4 });
+          try {
+            if ((msaa.sampleCount ?? 1) !== 4) throw new Error(`expected a 4x multisampled target, got ${msaa.sampleCount}`);
+            pass.execute({ viewId: "fallback", width: 32, height: 32, sceneTarget: msaa, opaqueDepth: msaa.depthTexture,
+              depthConvention: "standard", sampleCount: msaa.sampleCount, maxFragmentsPerPixel: 2, support: { floatBlend: true, depthTexture: true, shaderVariants: true }, items: layers,
+              drawWeighted() { throw new Error("MSAA must not use weighted targets"); }, drawSorted(_items: unknown, reason: string) { sortedFallback = reason; } });
+          } finally { msaa.dispose(); }
+          // Renderer-driven transmission: a weighted request whose frame contains
+          // a refractive material keeps the sorted path after the real capture.
+          const transmissionCanvas = document.createElement("canvas");
+          transmissionCanvas.width = transmissionCanvas.height = 8;
+          const renderer = await rendererModule.Renderer.create({ canvas: transmissionCanvas, width: 8, height: 8, backend: selectedBackend });
+          const box = geometryModule.Geometry.box();
+          const glass = new pbrModule.PBRMaterial({ transmissionFactor: 0.8 });
+          const veil = new unlitModule.UnlitMaterial({ color: [1, 0.2, 0.1, 0.5], renderState: { blend: true, blendMode: "alpha", depthWrite: false } });
           let transmissionFallback = "";
-          pass.execute({ viewId: "fallback", width: 32, height: 32, sceneTarget: scene, opaqueDepth: scene.depthTexture,
-            depthConvention: "standard", sampleCount: 1, maxFragmentsPerPixel: 2, support: { floatBlend: true, depthTexture: true, shaderVariants: true }, items: layers,
-            ineligibleReason: "refractive transmission requires sorted rendering",
-            drawWeighted() { throw new Error("transmission must not use weighted targets"); }, drawSorted(_items: unknown, reason: string) { transmissionFallback = reason; } });
+          let transmissionCode = "";
+          try {
+            await renderer.renderAsync({ source: { cameraPolicy: "identity", transparencyMode: "weighted", postprocess: { sampleCount: 1 },
+              renderItems: [{ geometry: box, material: glass }, { geometry: box, material: veil }] }, frameId: 1 });
+            const diagnostics = renderer.transparencyDiagnostics;
+            if (diagnostics?.mode !== "sorted") throw new Error(`transmission frame used ${diagnostics?.mode ?? "no"} transparency`);
+            transmissionFallback = diagnostics.reason ?? "";
+            transmissionCode = diagnostics.code ?? "";
+          } finally { renderer.dispose(); box.dispose(); glass.dispose(); veil.dispose(); }
           const sample = (pixels: number[], x: number, y: number) => pixels.slice((y * 32 + x) * 4, (y * 32 + x) * 4 + 4);
           const left = sample(forward.pixels, 8, 16), right = sample(forward.pixels, 24, 16);
           const result = { unsupported: "", left, right, reverseLeft: sample(reverse.pixels, 8, 16), reverseRight: sample(reverse.pixels, 24, 16),
             premulLeft: sample(premul.pixels, 8, 16), premulRight: sample(premul.pixels, 24, 16), clearLeft: sample(unobstructed.pixels, 8, 16),
             splitLeft: sample(split.pixels, 8, 16), splitRight: sample(split.pixels, 24, 16),
-            isolatedViews: forward.accumulation !== unobstructed.accumulation, sortedFallback, transmissionFallback };
+            isolatedViews: forward.accumulation !== unobstructed.accumulation, sortedFallback, transmissionFallback, transmissionCode };
           pass.dispose();
           return { ...result, retired: forward.accumulation.disposed && forward.revealage.disposed && unobstructed.accumulation.disposed, sceneAlive: !scene.disposed };
         } finally {
@@ -183,6 +206,7 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
       expect(result.splitRight![2]).toBeGreaterThan(80);
       expect(result.sortedFallback).toMatch(/multisampled/);
       expect(result.transmissionFallback).toMatch(/transmission/);
+      expect(result.transmissionCode).toBe("WEIGHTED_TRANSPARENCY_TRANSMISSION_SORTED");
       expect(result.isolatedViews && result.retired && result.sceneAlive).toBe(true);
     } finally {
       await server.close();

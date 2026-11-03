@@ -1,6 +1,7 @@
 /**
- * Deferred WebGPU compute probe for independent shader candidates. This is not
- * the Aura renderer, a frame capture, or pixel evidence. The corresponding
+ * Deferred WebGPU compute probe for the production physical shader functions
+ * (the WGSL attached to the renderer's PRD-04 lobe chunks). It is function-level
+ * GPU evidence, not a frame capture or pixel evidence. The corresponding
  * acceptance spec must not run before the global source-complete gate.
  */
 import { NATIVE_DFG_LUT_SIZE } from "../oracles/native-dfg-lut";
@@ -8,6 +9,7 @@ import {
   buildNativePhysicalComputeWgsl,
   createNativePhysicalNumericPlan,
   describeNativePhysicalReadback,
+  evaluateNativePhysicalConformance,
   nativeDfgRgba16f,
 } from "../oracles/native-physical-numeric-harness";
 
@@ -75,7 +77,7 @@ async function run(): Promise<unknown> {
   let lut: NumericTexture | undefined;
   try {
     const source = buildNativePhysicalComputeWgsl(plan);
-    const shader = device.createShaderModule({ label: "independent physical numerical candidates", code: source });
+    const shader = device.createShaderModule({ label: "production physical shader functions", code: source });
     const compilation = await shader.getCompilationInfo?.();
     const errors = compilation?.messages.filter((message) => message.type === "error") ?? [];
     if (errors.length) throw new Error(`WGSL compilation: ${errors.map((error) => error.message).join("; ")}`);
@@ -117,10 +119,11 @@ async function run(): Promise<unknown> {
     const values = new Float32Array(readback.getMappedRange()).slice();
     readback.unmap();
 
-    const { measurements, negativeControl } = describeNativePhysicalReadback(plan, values);
+    const report = describeNativePhysicalReadback(plan, values);
+    const { measurements, negativeControl } = report;
     return {
       status: "completed",
-      evidence: "independent shader candidates in a WebGPU compute pass; no renderer or pixel evidence",
+      evidence: "production physical shader functions in a WebGPU compute pass; function-level, no frame or pixel evidence",
       adapter: adapter.info ? {
         vendor: adapter.info.vendor ?? null,
         architecture: adapter.info.architecture ?? null,
@@ -132,14 +135,7 @@ async function run(): Promise<unknown> {
       measurements,
       unmapped: plan.unmapped,
       negativeControl,
-      conformance: {
-        status: "incomplete",
-        reasons: [
-          "The shader candidates are not connected to the Aura renderer.",
-          "Mapped-sample GPU tolerances and numerical approximation budgets are unresolved.",
-          "Unmapped models and different horizon conventions require independent shader integration or an explicit supported-model contract.",
-        ],
-      },
+      conformance: evaluateNativePhysicalConformance(plan, report),
     };
   } finally {
     output?.destroy();

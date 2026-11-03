@@ -1,22 +1,20 @@
 /**
- * WGSL twin of a3d_prd04_uv_transform (PRD-04 §8.10/§8.12): same `a3d_`
- * names, identical math. §8.12: per-slot `mat3x3<f32>` in a material uniform
- * struct is the caller-side contract; the transform itself is the same
- * T·R·S affine application.
+ * WGSL companion of Aura's `a3d_prd04_uv_transform` chunk
+ * (shaders/physical/uv_transform.glsl.ts), kept operation-for-operation equal
+ * to it. KHR_texture_transform applies the affine point transform
+ * T * R * S to the texture coordinate set named by `texCoord`; the caller
+ * supplies that product as a column-major 3x3 matrix (per-slot `mat3x3f` in
+ * the material uniform struct), so uv' = M * (u, v, 1).
  */
 const wgsl = /* wgsl */ `
-// Apply a KHR_texture_transform matrix to the requested UV set.
-// m is the CPU-computed T·R·S affine (column-major, z=1 point transform).
-// texCoord selects uv0 or uv1 exactly like r185 getUvChannel.
-fn a3dPrd04UvTransform(m: mat3x3f, texCoord: i32, uv0: vec2f, uv1: vec2f) -> vec2f {
-	let uv = select(uv0, uv1, texCoord == 1);
-	return (m * vec3f(uv, 1.0)).xy;
+fn a3dPrd04UvSelect(texCoord: i32, uv0: vec2f, uv1: vec2f) -> vec2f {
+  return select(uv0, uv1, texCoord == 1);
 }
 
-// Identity-transform fast path: uvN untransformed when the caller already
-// knows the transform is identity.
-fn a3dPrd04UvSelect(texCoord: i32, uv0: vec2f, uv1: vec2f) -> vec2f {
-	return select(uv0, uv1, texCoord == 1);
+fn a3dPrd04UvTransform(transform: mat3x3f, texCoord: i32, uv0: vec2f, uv1: vec2f) -> vec2f {
+  let uv = a3dPrd04UvSelect(texCoord, uv0, uv1);
+  let transformed = transform[0] * uv.x + transform[1] * uv.y + transform[2];
+  return transformed.xy;
 }
 `;
 

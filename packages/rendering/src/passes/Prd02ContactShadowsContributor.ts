@@ -25,6 +25,7 @@ import { registerBenchmarkNonSceneContributor } from "../renderer/FrameGraph";
 import { MaterialInstance } from "../MaterialInstance";
 import { PortableShaderMaterial } from "../PortableShaderMaterial";
 import { UnlitMaterial } from "../UnlitMaterial";
+import { renderStateHasExtendedCommandFields } from "../Material";
 import { PBRMaterial } from "../PBRMaterial";
 import { TexturedPBRMaterial } from "../TexturedPBRMaterial";
 import { InstancedPBRMaterial } from "../InstancedPBRMaterial";
@@ -195,7 +196,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): void {
     if (base) {
       const state = base.renderState;
       if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite || (state.depthCompareV2 ?? state.depthCompare) !== "less-equal"
-        || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null) fail(item, "a material depth or blend state");
+        || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null || renderStateHasExtendedCommandFields(state)) fail(item, "a material depth or blend state");
       const cutoff = material!.getParameter("u_alphaCutoff");
       if (typeof cutoff === "number" && cutoff > 0) fail(item, "alpha-tested coverage");
       if (material!.getParameter("u_spriteMode") === 1 || material!.getParameter("u_roundPoints") === 1) fail(item, "sprite or point coverage");

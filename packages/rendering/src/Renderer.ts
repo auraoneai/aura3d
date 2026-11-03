@@ -49,13 +49,14 @@ import {
   FrameInspectionTiming, bindFrameInspectionView, closeFrameInspectionView,
   type InspectionGpuTimingSnapshot, type InspectionTimingCapture
 } from "./quality/FrameInspectionTiming";
+import { frameStatsForDevice, gpuTimingUnavailableReason } from "./quality/DeviceProbe";
 import { RenderPipeline } from "./RenderPipeline";
 import { ShaderModule } from "./ShaderModule";
 import { VertexBuffer } from "./VertexBuffer";
 import { VertexFormat } from "./VertexFormat";
 import { BloomPass, FXAAPass, ToneMappingPass, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels, type BloomOptions, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthTextureBinding, type DepthOfFieldOptions, type FXAAOptions, type FilmGrainOptions, type FusedLdrPostProcessPass, type FusedLdrPostProcessScratch, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, type VolumetricLightOptions } from "./PostProcessPass";
 import { bindRendererSsrProjection, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics, type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessPlanDiagnostics, type RendererPostprocessPlanOptions, type RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
-import type { ShaderLibrary } from "./ShaderLibraryCore";
+import { DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
@@ -70,6 +71,7 @@ import { QUALITY_TIERS } from "./contracts/quality";
 import { prd11LiveQualityTier, type LiveQualityTierSource } from "./quality/liveTier";
 import { MaterialInstance } from "./MaterialInstance";
 import { UnlitMaterial } from "./UnlitMaterial";
+import { renderStateHasExtendedCommandFields } from "./Material";
 import { linearizeWebGPUDepthSample, type WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import { nativeDofVertexColorSupported, validateWebGPUDepthOfFieldOptions } from "./post/WebGPUDepthOfField";
 import type { DofOptions } from "./post/PostGraph";
@@ -89,7 +91,7 @@ import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -118,6 +120,8 @@ import type { RenderPass, RenderPassContext } from "./RenderPass";
 import type { MeshletPipeline } from "./webgpu/MeshletPipeline";
 import type { VisibilityBufferPipeline } from "./webgpu/VisibilityBufferPipeline";
 import { assertWarmupActive, waitForWarmup } from "./webgpu/NativePipelineWarmup";
+import { forwardPipelineWarmRequests } from "./webgpu/ForwardPipelineWarmup";
+import type { WebGPUDevice } from "./WebGPUDevice";
 import type { GaussianSplatRenderer } from "./GaussianSplatRenderer";
 
 // A device passed to more than one Renderer remains live until its last owner
@@ -464,8 +468,10 @@ export interface RendererFrameInspection {
   readonly diagnostics: RenderDeviceDiagnostics;
   /** Whole render call on the CPU, from inspection begin to finish. */
   readonly cpuTimeMs: number | null;
-  /** Whole-frame GPU duration; null until a backend measures the full render call. */
+  /** Whole-frame GPU duration (sum of consecutive view and non-view query ranges); null while pending, discarded or unsupported. */
   readonly gpuTimeMs: number | null;
+  /** Why `gpuTimeMs` is null (unsupported extension, pending, disjoint discard). */
+  readonly gpuTimeReason?: string;
   /** Measured per-view intervals; these do not cover the entire render call. */
   readonly gpuViewTiming?: InspectionGpuTimingSnapshot | null;
   /** False until direct, graph, post and backend-specific phases are fully observed. */
@@ -856,9 +862,12 @@ export class Renderer {
   private readonly ownedQrFlags: QrFlags | undefined;
   private readonly graph = new RenderGraph();
   private weightedTransparency?: WeightedTransparency;
-  private lastTransparency: { readonly mode: "weighted" | "sorted" | "failed"; readonly reason?: string } | null = null;
-  /** The most recent explicit weighted request; a declined group reports sorted. */
-  get transparencyDiagnostics(): Readonly<{ readonly mode: "weighted" | "sorted" | "failed"; readonly reason?: string }> | null {
+  private lastTransparency: { readonly mode: "weighted" | "sorted" | "failed"; readonly code?: string; readonly reason?: string } | null = null;
+  /**
+   * The most recent explicit weighted request; a declined group reports sorted.
+   * WebGPU, multi-view and multisampled frames report a stable `code`.
+   */
+  get transparencyDiagnostics(): Readonly<{ readonly mode: "weighted" | "sorted" | "failed"; readonly code?: string; readonly reason?: string }> | null {
     return this.lastTransparency;
   }
   private readonly frameTrace = new PostStageTrace();
@@ -1305,7 +1314,7 @@ export class Renderer {
       const frameContext = hooks?.frameContext(collected.items);
       if (frameContext) producePrd07RendererContext(prd07View, frameContext);
       this.warmOutputSrgb = this.frameOutputsSrgb(source);
-      await waitForWarmup(this.warmGeneratedPrograms(
+      const warmed = await waitForWarmup(this.warmGeneratedPrograms(
         collected.items,
         collectRenderLights(source),
         withRendererQrFlags(this.device, () => collectEnvironmentLighting(source)),
@@ -1320,6 +1329,11 @@ export class Renderer {
         signal
       ), [signal]);
       if (operation) assertPrd07RendererOperation(operation);
+      // WP-03: direct-to-canvas forward draws have a target identity known
+      // before the frame; build their native pipelines now (no presentation).
+      if (warmed && !views && this.warmOutputSrgb && this.drawingPathOptions.mode === "forward" && collectRenderTarget(source) === undefined) {
+        await this.warmForwardPipelinesForPrecompile(collected.items, warmed, generation, signal);
+      }
       } finally { endPrd07RendererView(prd07View); }
     }
     assertWarmupActive([signal]);
@@ -1970,7 +1984,8 @@ export class Renderer {
     this.lastInspectionTiming = null;
     const frameNumber = this.submittedFrames + 1;
     const session = this.frameTrace.beginFrame(frameNumber);
-    this.inspectionTimingByTrace.set(session, this.inspectionTiming.begin(frameNumber));
+    this.inspectionTimingByTrace.set(session, this.inspectionTiming.begin(frameNumber,
+      frameStatsForDevice(this.device), gpuTimingUnavailableReason(this.device)));
     this.activeFrameTrace = session;
     this.inspectionStartByTrace.set(session, inspectionNow());
     return session;
@@ -2041,14 +2056,14 @@ export class Renderer {
   /** Actual measured graph passes from the latest frame; unobserved phases are marked partial. */
   getFrameInspection(): RendererFrameInspection | null {
     if (!this.lastFrameInspection) return null;
-    return { ...this.lastFrameInspection,
-      gpuViewTiming: this.lastInspectionTiming ? this.inspectionTiming.snapshot(this.lastInspectionTiming) : null };
+    return withWholeFrameGpu(this.lastFrameInspection,
+      this.lastInspectionTiming ? this.inspectionTiming.snapshot(this.lastInspectionTiming) : null);
   }
 
   /** Bounded inspection history, including delayed, explicitly partial view GPU timings. */
   getFrameInspectionHistory(): readonly RendererFrameInspection[] {
     const timings = this.inspectionTiming.snapshots(this.inspectionHistory.map((entry) => entry.timing));
-    return this.inspectionHistory.map((entry, index) => ({ ...entry.inspection, gpuViewTiming: timings[index] ?? null }));
+    return this.inspectionHistory.map((entry, index) => withWholeFrameGpu(entry.inspection, timings[index] ?? null));
   }
 
   private executeInspectedGraph(): void {
@@ -2420,6 +2435,21 @@ export class Renderer {
 
   private abortPrecompiles(reason: Error): void {
     for (const controller of this.precompileControllers) controller.abort(reason);
+  }
+
+  private async warmForwardPipelinesForPrecompile(
+    items: readonly RenderItem[],
+    warmed: { readonly input: WarmupInput; readonly perItem: ReadonlyMap<RenderItem, readonly Partial<ProgramFeatures>[]>; readonly tier: AuraQualityTier; readonly cache: ReturnType<typeof rendererProgramCache> },
+    generation: number | undefined,
+    signal: AbortSignal
+  ): Promise<void> {
+    const native = this.device as RenderDevice & { warmRenderPipelines?: WebGPUDevice["warmRenderPipelines"] };
+    if (this.device.kind !== "webgpu" || typeof native.warmRenderPipelines !== "function") return;
+    const requests = forwardPipelineWarmRequests(items, warmed.perItem, warmed.input, warmed.tier, warmed.cache, { width: this.width, height: this.height });
+    if (requests.length === 0) return;
+    assertWarmupActive([signal]);
+    if (this.device.contextLost || this.device.generation !== generation) throw new RenderDeviceError("Device changed during precompile", "DEVICE_LOST");
+    await native.warmRenderPipelines.call(this.device, requests, { signal });
   }
 
   /**
@@ -3463,9 +3493,28 @@ export class Renderer {
     items: readonly RenderItem[], target: RenderTarget | undefined,
     shared: ForwardPassOptions, blocked: boolean
   ): RenderPass | undefined {
+    if (source instanceof Scene || isIterable(source) || source.transparencyMode !== "weighted") return undefined;
+    // Explicit, stable refusals for the unsupported device/view families: the
+    // whole group keeps exact sorted transparency and reports why.
+    const decline = (code: string, reason: string): undefined => {
+      this.lastTransparency = { mode: "sorted", code, reason };
+      return undefined;
+    };
+    if (this.device.kind === "webgpu") {
+      return decline("WEIGHTED_TRANSPARENCY_WEBGPU_UNSUPPORTED", "WebGPU frames use sorted transparency; native weighted WGSL programs are not integrated.");
+    }
+    if (this.renderingViews) {
+      return decline("WEIGHTED_TRANSPARENCY_MULTIVIEW_UNSUPPORTED", "Multi-view frames use sorted transparency; weighted targets are single-view.");
+    }
+    if (splitForwardItems(items, shared.cameraPosition).transmission.length > 0) {
+      return decline("WEIGHTED_TRANSPARENCY_TRANSMISSION_SORTED", "Refractive transmission keeps exact sorted transparency after the renderer's transmission capture.");
+    }
+    if (target && (target.sampleCount ?? 1) !== 1) {
+      return decline("WEIGHTED_TRANSPARENCY_MSAA_UNSUPPORTED", "Multisampled frames use sorted transparency; weighted composition reads single-sample opaque depth.");
+    }
     // Weighted transparency is integrated for standard depth only; reversed
     // and logarithmic frames keep exact sorted transparency.
-    if (source instanceof Scene || isIterable(source) || source.transparencyMode !== "weighted" || blocked
+    if (blocked
       || (this.device.getDepthConvention?.()?.mode ?? "standard") !== "standard"
       || (this.device.kind !== "webgl2" && this.device.kind !== "mock")
       || !this.device.info.capabilities?.includes("float-blending") || !target || target.disposed
@@ -3841,7 +3890,7 @@ export class Renderer {
           ].filter((item) => item.castShadow !== false)
         : items.filter((item) => item.castShadow !== false);
       assertBatchClippingResolver(clippingFrame.hasMaterialResolver, items, unsnapshottedShadowCasters);
-      clippingFrame.setCameraViewMatrix(forwardCamera.view);
+      clippingFrame.setCameraViewMatrix(forwardCamera.view, forwardRasterProjection(forwardCamera));
       items = items.map(clippingFrame.snapshot);
       const shadowCasterItems = unsnapshottedShadowCasters.map(clippingFrame.snapshot);
       if (!explicitShadowMap && shadowOptions && shadowOptions.enabled !== false) {
@@ -4048,13 +4097,13 @@ export class Renderer {
         const opaqueColorResource = qrOutput ? "aura.scene.color.opaque" : "color";
         let captureReads: string[];
         if (directTransmission && directCaptureTarget) {
-          if (!this.directTransmissionReplaySafe(split.opaque, transmissionFlags) || frameHooks.hasExtraSceneGeometry()) throw new RenderDeviceError("Direct transmission cannot replay these opaque draws or contributor passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
-          if (this.activeRasterViewport || split.opaque.some(item => item.onBeforeRender)) {
+          if (!this.directTransmissionReplaySafe(phaseOrder.opaque, transmissionFlags) || frameHooks.hasExtraSceneGeometry()) throw new RenderDeviceError("Direct transmission cannot replay these opaque draws or contributor passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
+          if (this.activeRasterViewport || phaseOrder.opaque.some(item => item.onBeforeRender)) {
             throw new RenderDeviceError("Direct transmission cannot replay viewport or per-draw callbacks", "TRANSMISSION_REPLAY_UNSUPPORTED");
           }
           this.graph.addPass(this.directTransmissionPrepass(directCaptureTarget, shared, environmentBackground, rasterViewProjection, contactReads));
           const opaque = new ForwardPass({ ...shared, framePass: { name: "prd01.opaque", reads: ["prd04.transmission.color", ...contactReads], writes: [opaqueColorResource] } });
-          this.graph.addPass(this.checkedDirectReplayPass(opaque, split.opaque));
+          this.graph.addPass(this.checkedDirectReplayPass(opaque, phaseOrder.opaque));
           frameHooks.addPasses(this.graph, "after-opaque", items);
           if (frameHooks.hasPasses("background") || frameHooks.hasPasses("after-opaque")) {
             throw new RenderDeviceError("Direct transmission cannot replay contributor color passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
@@ -4102,11 +4151,11 @@ export class Renderer {
           captureReads = writes.includes("prd04.transmission.color") ? ["prd04.transmission.color"] : [];
         }
         let lastColorResource = opaqueColorResource;
-        if (split.transmission.length > 0) {
+        if (phaseOrder.transmission.length > 0) {
           lastColorResource = "aura.scene.color.transmission";
           this.graph.addPass(new ForwardPass({
             ...shared,
-            items: split.transmission,
+            items: phaseOrder.transmission,
             framePass: { name: "prd01.transmission", reads: [opaqueColorResource, ...captureReads], writes: [lastColorResource] }
           }));
         }
@@ -4114,7 +4163,7 @@ export class Renderer {
         const { ctx: contributorCtx, queues } = frameHooks.transparentQueues(items);
         const volumeRuns = this.scalarVolumeRuns(scalarVolumes, source, resolvedCamera, scalarVolumeCameraPosition, scalarVolumeGeneration);
         const transparentQueues = [...queues, ...volumeRuns];
-        const splatRuns = this.gaussianSplatRuns(gaussianSplats, source, resolvedCamera, postprocess, qrOutput, phaseOrder.transparent, transparentQueues);
+        const splatRuns = this.gaussianSplatRuns(gaussianSplats, source, resolvedCamera, postprocess, qrOutput, phaseOrder.transparent.filter(entry => Number.isFinite(entry.sortDepth)), transparentQueues);
         assertForwardPhaseOrder(phaseOrder, frameHooks, contributorFlags, queues, [...transparentQueues, ...splatRuns]);
         this.graph.addPass(weightedPass ?? new InterleavedTransparentPass({ ...shared, items: [] }, phaseOrder.transparent, [...transparentQueues, ...splatRuns], contributorCtx,
           [lastColorResource, ...captureReads, ...(scalarVolumes.length ? ["aura.scene.depth.copy"] : [])]));
@@ -4711,7 +4760,7 @@ export class Renderer {
           ].filter((item) => item.castShadow !== false)
         : items.filter((item) => item.castShadow !== false);
       assertBatchClippingResolver(clippingFrame.hasMaterialResolver, items, unsnapshottedShadowCasters);
-      clippingFrame.setCameraViewMatrix(forwardCamera.view);
+      clippingFrame.setCameraViewMatrix(forwardCamera.view, forwardRasterProjection(forwardCamera));
       items = items.map(clippingFrame.snapshot);
       const shadowCasterItems = unsnapshottedShadowCasters.map(clippingFrame.snapshot);
       if (!explicitShadowMap && shadowOptions && shadowOptions.enabled !== false) {
@@ -4906,13 +4955,13 @@ export class Renderer {
         const opaqueColorResource = qrOutput ? "aura.scene.color.opaque" : "color";
         let captureReads: string[];
         if (directTransmission && directCaptureTarget) {
-          if (!this.directTransmissionReplaySafe(split.opaque, transmissionFlags) || frameHooks.hasExtraSceneGeometry()) throw new RenderDeviceError("Direct transmission cannot replay these opaque draws or contributor passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
-          if (this.activeRasterViewport || split.opaque.some(item => item.onBeforeRender)) {
+          if (!this.directTransmissionReplaySafe(phaseOrder.opaque, transmissionFlags) || frameHooks.hasExtraSceneGeometry()) throw new RenderDeviceError("Direct transmission cannot replay these opaque draws or contributor passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
+          if (this.activeRasterViewport || phaseOrder.opaque.some(item => item.onBeforeRender)) {
             throw new RenderDeviceError("Direct transmission cannot replay viewport or per-draw callbacks", "TRANSMISSION_REPLAY_UNSUPPORTED");
           }
           this.graph.addPass(this.directTransmissionPrepass(directCaptureTarget, shared, environmentBackground, rasterViewProjection, contactReads));
           const opaque = new ForwardPass({ ...shared, framePass: { name: "prd01.opaque", reads: ["prd04.transmission.color", ...contactReads], writes: [opaqueColorResource] } });
-          this.graph.addPass(this.checkedDirectReplayPass(opaque, split.opaque));
+          this.graph.addPass(this.checkedDirectReplayPass(opaque, phaseOrder.opaque));
           frameHooks.addPasses(this.graph, "after-opaque", items);
           if (frameHooks.hasPasses("background") || frameHooks.hasPasses("after-opaque")) {
             throw new RenderDeviceError("Direct transmission cannot replay contributor color passes", "TRANSMISSION_REPLAY_UNSUPPORTED");
@@ -4959,11 +5008,11 @@ export class Renderer {
           captureReads = writes.includes("prd04.transmission.color") ? ["prd04.transmission.color"] : [];
         }
         let lastColorResource = opaqueColorResource;
-        if (split.transmission.length > 0) {
+        if (phaseOrder.transmission.length > 0) {
           lastColorResource = "aura.scene.color.transmission";
           this.graph.addPass(new ForwardPass({
             ...shared,
-            items: split.transmission,
+            items: phaseOrder.transmission,
             framePass: { name: "prd01.transmission", reads: [opaqueColorResource, ...captureReads], writes: [lastColorResource] }
           }));
         }
@@ -4971,7 +5020,7 @@ export class Renderer {
         const { ctx: contributorCtx, queues } = frameHooks.transparentQueues(items);
         const volumeRuns = this.scalarVolumeRuns(scalarVolumes, source, resolvedCamera, scalarVolumeCameraPosition, scalarVolumeGeneration);
         const transparentQueues = [...queues, ...volumeRuns];
-        const splatRuns = this.gaussianSplatRuns(gaussianSplats, source, resolvedCamera, postprocess, qrOutput, phaseOrder.transparent, transparentQueues);
+        const splatRuns = this.gaussianSplatRuns(gaussianSplats, source, resolvedCamera, postprocess, qrOutput, phaseOrder.transparent.filter(entry => Number.isFinite(entry.sortDepth)), transparentQueues);
         assertForwardPhaseOrder(phaseOrder, frameHooks, contributorFlags, queues, [...transparentQueues, ...splatRuns]);
         this.graph.addPass(weightedPass ?? new InterleavedTransparentPass({ ...shared, items: [] }, phaseOrder.transparent, [...transparentQueues, ...splatRuns], contributorCtx,
           [lastColorResource, ...captureReads, ...(scalarVolumes.length ? ["aura.scene.depth.copy"] : [])]));
@@ -5214,7 +5263,8 @@ export class Renderer {
     shadowOptions?: RendererShadowOptions,
     prewarmClipping = false,
     frameContext?: FrameContributorContext,
-    nativeDepthCoverage = false
+    nativeDepthCoverage = false,
+    perItem?: Map<RenderItem, Partial<ProgramFeatures>[]>
   ): WarmupInput {
     const ctx = { flags, tier: QUALITY_TIERS[tier] };
     // T0-05: one record per (material revision, selected feature bits) — the
@@ -5257,6 +5307,7 @@ export class Renderer {
       const variants = prewarmClipping || itemMayClip(item)
         ? [record, { ...record, features: { ...record.features, "a3d.clipping": true } }]
         : [record];
+      perItem?.set(item, variants);
       for (const variant of variants) {
         const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${variant.vertexColors ? 1 : 0}:${variant.alphaMode ?? "opaque"}:${JSON.stringify(Object.entries(variant.features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
         if (!records.has(key)) records.set(key, variant);
@@ -5300,12 +5351,13 @@ export class Renderer {
     frameContext?: FrameContributorContext,
     nativeDepthCoverage = false,
     signal?: AbortSignal
-  ): Promise<void> {
+  ): Promise<{ readonly input: WarmupInput; readonly perItem: ReadonlyMap<RenderItem, readonly Partial<ProgramFeatures>[]>; readonly tier: AuraQualityTier; readonly cache: ReturnType<typeof rendererProgramCache> } | undefined> {
     const flags = rendererQrFlags(this.device);
-    if (!qrGeneratedProgramsOn(flags)) return;
+    if (!qrGeneratedProgramsOn(flags)) return undefined;
     const tier: AuraQualityTier = this.qualityTierName ?? prd11LiveQualityTier(flags)?.tier ?? "high";
     const cache = rendererProgramCache(this.device, flags);
-    const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier, shadowOptions, prewarmClipping, frameContext, nativeDepthCoverage);
+    const perItem = new Map<RenderItem, Partial<ProgramFeatures>[]>();
+    const input = this.collectWarmupInput(items, lights, environmentLighting, environmentFog, shadowMap, cameraViewProjection, flags, tier, shadowOptions, prewarmClipping, frameContext, nativeDepthCoverage, perItem);
     if (input.materials.length > 0) {
       const warmup = (this.programWarmup ??= new ProgramWarmup(cache));
       await warmup.warm(input, tier);
@@ -5314,6 +5366,7 @@ export class Renderer {
     // T0-06: the ready barrier for `programsCompiledSinceReady` — compiles
     // completing after the first warm count as steady-state leaks.
     cache.markReady?.();
+    return { input, perItem, tier, cache };
   }
 
   /**
@@ -6229,7 +6282,8 @@ function assertNativeDofItems(items: readonly RenderItem[], flags: QrFlags): voi
       || !state.depthTest || !state.depthWrite || state.depthCompare !== "less-equal"
       || (state.depthCompareV2 !== undefined && state.depthCompareV2 !== "less-equal")
       || state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque")
-      || state.alphaToCoverage || state.scissor || state.polygonOffset || state.stencil || !state.colorWrite.every(Boolean)) {
+      || state.alphaToCoverage || state.scissor || state.polygonOffset || state.stencil || !state.colorWrite.every(Boolean)
+      || renderStateHasExtendedCommandFields(state)) {
       throw new RenderDeviceError("Native depth of field requires bounded opaque color and matching color/depth writes", "NATIVE_DOF_SCENE_UNSUPPORTED", { label: item.label });
     }
   }
@@ -6276,6 +6330,12 @@ function resolveForwardCameraMatrices(camera: {
   // A shader-only pair can deliberately describe a custom material camera.
   // Do not silently promote an inconsistent pair to the generated frame.
   return { view: camera.viewMatrix, projection: camera.projectionMatrix, consistent: false };
+}
+
+/** The projection of a consistent forward raster camera; an identity-policy frame rasterizes with identity matrices. */
+function forwardRasterProjection(camera: ReturnType<typeof resolveForwardCameraMatrices>): Mat4 | undefined {
+  if (!camera.consistent) return undefined;
+  return camera.projection ?? (camera.view === undefined ? identityMat4() : undefined);
 }
 
 function assertSpriteFrameCamera(items: readonly RenderItem[], consistent: boolean,
@@ -6410,7 +6470,8 @@ function createFrameClippingSnapshot(source: RenderSource | Iterable<RenderItem>
   readonly hasMaterialResolver: boolean;
   readonly snapshot: (item: RenderItem) => RenderItem;
   readonly assertShadow: (item: RenderItem) => void;
-  readonly setCameraViewMatrix: (matrix: Float32Array | readonly number[] | undefined) => void;
+  /** The projection is recorded only when it composes the frame's raster matrix. */
+  readonly setCameraViewMatrix: (matrix: Float32Array | readonly number[] | undefined, projection?: Float32Array | readonly number[]) => void;
   readonly hasActiveGlobal: () => boolean;
 } {
   const options = source instanceof Scene || isIterable(source) ? undefined : source;
@@ -6418,6 +6479,7 @@ function createFrameClippingSnapshot(source: RenderSource | Iterable<RenderItem>
   const materialFor = options?.materialClippingFor;
   const planeLimit = options?.clippingPlaneLimit;
   let cameraViewMatrix: Float32Array | readonly number[] | undefined;
+  let cameraProjectionMatrix: Float32Array | readonly number[] | undefined;
   const items = new WeakMap<RenderItem, RenderItem>();
   const globals = new WeakMap<object, ClippingGroupInput>();
   const materials = new WeakMap<object, ClippingGroupInput>();
@@ -6448,7 +6510,13 @@ function createFrameClippingSnapshot(source: RenderSource | Iterable<RenderItem>
       primitive: item.geometry.topology === "lines" ? "line" : item.geometry.topology === "points" ? "point" : "mesh",
       maxPlanes: planeLimit });
     assertForwardClippingSupported(item, binding, { flags: rendererQrFlags(device), cameraViewMatrix, shaderLibrary });
-    const fields = { ...item, ...(global ? { globalClipping: global } : {}), ...(material ? { materialClipping: material } : {}) };
+    // Clipped camera-facing geometry records the raster camera that expanded
+    // it, so depth and shadow passes reproduce the same clipped shape.
+    const rasterView = cameraViewMatrix ?? (cameraProjectionMatrix ? identityMat4() : undefined);
+    const cameraFacing = binding.groups.length > 0 && rasterView && cameraProjectionMatrix
+      && (base?.shaderKey === DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME || item.material?.getParameter("u_spriteMode") === 1);
+    const fields = { ...item, ...(global ? { globalClipping: global } : {}), ...(material ? { materialClipping: material } : {}),
+      ...(cameraFacing ? { clippingRasterCamera: Object.freeze({ viewMatrix: Float32Array.from(rasterView!), projectionMatrix: Float32Array.from(cameraProjectionMatrix!) }) } : {}) };
     const result = isEnginePackedBatchItem(item) ? createEnginePackedBatchItem(fields)
       : isEngineBatchInstanceItem(item) ? createEngineBatchInstanceItem(fields) : fields;
     // The map is fallback provenance only; its presence never authorizes an
@@ -6460,7 +6528,7 @@ function createFrameClippingSnapshot(source: RenderSource | Iterable<RenderItem>
     return result;
   };
   return { mayClip: sourceGlobal != null || materialFor != null, hasMaterialResolver: materialFor != null, snapshot: snapshotItem,
-    setCameraViewMatrix: matrix => { cameraViewMatrix = matrix; },
+    setCameraViewMatrix: (matrix, projection) => { cameraViewMatrix = matrix; cameraProjectionMatrix = projection; },
     assertShadow: item => assertDepthClippingSupported(item, createClippingBinding({
       global: item.globalClipping, material: item.materialClipping, backend: device.kind, pass: "shadow", maxPlanes: planeLimit
     }), device),
@@ -6470,13 +6538,25 @@ function createFrameClippingSnapshot(source: RenderSource | Iterable<RenderItem>
 type ForwardPhaseSplit = ReturnType<typeof splitForwardItems>;
 
 interface ForwardPhaseOrder {
+  /** Drawn before the opaque depth copy and the transmission capture. */
   readonly opaque: readonly RenderItem[];
+  /** Drawn by the dedicated transmission pass; empty when merged into the transparent queue. */
+  readonly transmission: readonly RenderItem[];
+  /** Drawn after the capture by the interleaved pass, sorted by renderOrder. */
   readonly transparent: ForwardPhaseSplit["transparent"];
   readonly latestPriorOrder: number;
   readonly promoted: boolean;
+  /** Opaque or transmissive items moved after the capture to honor renderOrder. */
+  readonly demoted: boolean;
 }
 
-/** Preserve explicit order without moving opaque depth past its consumers. */
+/**
+ * Preserve explicit order across the split frame phases without moving opaque
+ * depth past its consumers. Opaque items ordered after the first transmissive
+ * item are drawn after the capture (they are absent from the refraction
+ * backdrop, exactly as later draws are), and transmissive items interleave
+ * with later-phase items in one renderOrder-sorted queue when orders overlap.
+ */
 function planForwardPhaseOrder(
   items: readonly RenderItem[], split: ForwardPhaseSplit, transmissionRequested: boolean
 ): ForwardPhaseOrder {
@@ -6485,20 +6565,18 @@ function planForwardPhaseOrder(
     if (!Number.isFinite(value)) throw new RangeError("Render queue item renderOrder must be finite.");
     return value;
   };
-  let latestOpaque = -Infinity;
   let earliestTransmission = Infinity;
   let latestTransmission = -Infinity;
-  let earliestTransparent = Infinity;
-  for (const item of split.opaque) latestOpaque = Math.max(latestOpaque, order(item));
   for (const item of split.transmission) {
     const value = order(item);
     earliestTransmission = Math.min(earliestTransmission, value);
     latestTransmission = Math.max(latestTransmission, value);
   }
-  for (const { item } of split.transparent) earliestTransparent = Math.min(earliestTransparent, order(item));
-  if (latestOpaque > earliestTransmission || latestTransmission > earliestTransparent) {
-    throw new RenderDeviceError("renderOrder crosses the transmission capture phase", "RENDER_ORDER_PHASE_CONFLICT");
-  }
+  // Opaque items ordered after the first transmissive draw cannot precede the capture.
+  const preOpaque = split.opaque.filter((item) => order(item) <= earliestTransmission);
+  const lateOpaque = split.opaque.filter((item) => order(item) > earliestTransmission);
+  let latestOpaque = -Infinity;
+  for (const item of preOpaque) latestOpaque = Math.max(latestOpaque, order(item));
 
   const early = split.transparent.filter(({ item }) => order(item) < latestOpaque);
   if (early.length && (transmissionRequested || split.transmission.length)) {
@@ -6510,16 +6588,40 @@ function planForwardPhaseOrder(
       throw new RenderDeviceError("Early transparent draws must not write the opaque depth snapshot", "RENDER_ORDER_PHASE_CONFLICT");
     }
   }
-  if (!early.length) {
-    return { opaque: split.opaque, transparent: split.transparent, latestPriorOrder: Math.max(latestOpaque, latestTransmission), promoted: false };
+  if (early.length) {
+    const preOpaqueItems = new Set([...split.opaque, ...early.map(({ item }) => item)]);
+    return {
+      // Retain submission order for equal sort keys; ForwardPass does the sort.
+      opaque: items.filter((item) => preOpaqueItems.has(item)),
+      transmission: split.transmission,
+      transparent: split.transparent.filter(({ item }) => order(item) >= latestOpaque),
+      latestPriorOrder: latestOpaque,
+      promoted: true,
+      demoted: false
+    };
   }
-  const preOpaqueItems = new Set([...split.opaque, ...early.map(({ item }) => item)]);
+  const later = [...lateOpaque.map(order), ...split.transparent.map(({ item }) => order(item))];
+  const interleave = later.some((value) => value < latestTransmission);
+  if (!lateOpaque.length && !interleave) {
+    return { opaque: split.opaque, transmission: split.transmission, transparent: split.transparent,
+      latestPriorOrder: Math.max(latestOpaque, latestTransmission), promoted: false, demoted: false };
+  }
+  // One renderOrder-sorted post-capture queue. Opaque and transmissive
+  // entries precede blended entries of the same order (bucket rank) and
+  // contributor queue items of that order (infinite sort depth).
+  const entries = [
+    ...lateOpaque.map((item) => ({ entry: { item, sortDepth: Number.POSITIVE_INFINITY, blendRank: 0 }, rank: 0 })),
+    ...(interleave ? split.transmission.map((item) => ({ entry: { item, sortDepth: Number.POSITIVE_INFINITY, blendRank: 0 }, rank: 1 })) : []),
+    ...split.transparent.map((entry) => ({ entry, rank: 2 }))
+  ].map(({ entry, rank }, index) => ({ entry, rank, index, order: order(entry.item) }));
+  entries.sort((left, right) => (left.order - right.order) || (left.rank - right.rank) || (left.index - right.index));
   return {
-    // Retain submission order for equal sort keys; ForwardPass does the sort.
-    opaque: items.filter((item) => preOpaqueItems.has(item)),
-    transparent: split.transparent.filter(({ item }) => order(item) >= latestOpaque),
-    latestPriorOrder: latestOpaque,
-    promoted: true
+    opaque: preOpaque,
+    transmission: interleave ? [] : split.transmission,
+    transparent: entries.map(({ entry }) => entry),
+    latestPriorOrder: interleave ? latestOpaque : Math.max(latestOpaque, latestTransmission),
+    promoted: false,
+    demoted: true
   };
 }
 
@@ -6533,6 +6635,11 @@ function assertForwardPhaseOrder(
   if (plan.promoted && (hooks.hasPasses("after-opaque") || hooks.hasPasses("transmission") || contributorQueues.length > 0
     || frameContributors(flags).some((contributor) => contributor.phases.includes("transparent") && contributor.passes))) {
     throw new RenderDeviceError("renderOrder conflicts with an opaque-only contributor phase", "RENDER_ORDER_PHASE_CONFLICT");
+  }
+  // Opaque-phase consumers (depth copies, AO, contributor passes) would miss
+  // demoted opaque geometry; refuse rather than silently drop it from them.
+  if (plan.demoted && plan.transparent.some(({ item }) => { const bucket = forwardItemBucket(item); return bucket === "opaque" || bucket === "mask"; }) && hooks.hasPasses("after-opaque")) {
+    throw new RenderDeviceError("renderOrder moves opaque geometry past an opaque-phase consumer", "RENDER_ORDER_PHASE_CONFLICT");
   }
   for (const queue of queues) {
     const order = queue.renderOrder ?? 0;
@@ -7439,6 +7546,14 @@ function deferredWetnessScene(scene: NativeDrawingScene, wetness: WetnessUniform
       return { ...material, baseColor: [wet.albedo[0], wet.albedo[1], wet.albedo[2], a], roughness: wet.roughness };
     })
   };
+}
+
+/** Whole-frame GPU results settle frames later; read them from the live timing snapshot. */
+function withWholeFrameGpu(inspection: RendererFrameInspection, timing: InspectionGpuTimingSnapshot | null): RendererFrameInspection {
+  const { gpuTimeReason: _previous, ...rest } = inspection;
+  const gpuTimeMs = timing?.wholeFrameGpuTimeMs ?? null;
+  const reason = gpuTimeMs === null ? timing?.wholeFrameGpuReason ?? "GPU frame timing unavailable" : undefined;
+  return { ...rest, gpuTimeMs, ...(reason ? { gpuTimeReason: reason } : {}), gpuViewTiming: timing };
 }
 
 function inspectionNow(): number | null {

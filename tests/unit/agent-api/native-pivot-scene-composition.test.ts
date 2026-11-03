@@ -6,7 +6,7 @@ import {
   parentTransformOf,
   worldTransformOf
 } from "../../../packages/engine/src/agent-api/compiler/sceneGraph.js";
-import { createModelMatrixCache, localMatrixOf } from "../../../packages/engine/src/agent-api/sceneGraph.js";
+import { composeWorldMatrixWithLookAt, createModelMatrixCache, localMatrixOf } from "../../../packages/engine/src/agent-api/sceneGraph.js";
 import { captureFlattenSceneNodes, createModelMatrix, flattenSceneNodes } from "../../../packages/engine/src/agent-api/sceneMath.js";
 import type { AuraGroupNode, AuraModelNode, AuraPrimitiveNode, AuraVec3 } from "../../../packages/engine/src/agent-api/nodes/types.js";
 
@@ -133,8 +133,35 @@ describe("pivoted scene graph matrices", () => {
 
     const legacyNode = box({ pivot: [1, 0, 0], quaternion: [0, 0, 0, 1] });
     expect(() => createModelMatrix(legacyNode, bounds, false)).toThrow(/PIVOT_UNSUPPORTED_LEGACY_ROTATION/);
-    expect(() => createModelMatrixV2(box({ pivot: [1, 0, 0], lookAt: [0, 0, 1] }), bounds, false, 0, target)).toThrow(/PIVOT_UNSUPPORTED_LOOK_AT/);
+    expect(() => createModelMatrix(box({ pivot: [1, 0, 0], lookAt: [0, 0, 1] }), bounds, false)).toThrow(/PIVOT_UNSUPPORTED_LOOK_AT/);
+    expect(() => createModelMatrixV2(box({ pivot: [1, 0, 0], lookAt: [0, Number.NaN, 1] }), bounds, false, 0, target)).toThrow(/LOOK_AT_INVALID/);
     expect(Array.from(target)).toEqual(Array(16).fill(37));
+  });
+
+  it("composes an own pivot with lookAt: the pivot point stays fixed while -Z faces the target", () => {
+    const lookAt: [number, number, number] = [4, 0, 10];
+    const node = box({ position: [3, 0, 0], pivot: [1, 0, 0], rotation: [0.3, 0.2, 0.1], scale: 2, lookAt });
+    const matrix = createModelMatrixV2(node, bounds, false);
+    // position + pivot is the drawn pivot point regardless of the look rotation.
+    expectPoint(point(matrix, [1, 0, 0]), [4, 0, 0]);
+    // Local -Z (scaled by 2) faces +Z, toward the target; the look rotation replaces `rotation`.
+    const origin = point(matrix, [0, 0, 0]);
+    const forward = point(matrix, [0, 0, -1]).map((value, axis) => value - origin[axis]!);
+    expectPoint(forward, [0, 0, 2]);
+    expectPoint(origin, [6, 0, 0]);
+    // The runtime world cache composes the same pivot-fixed look-at transform.
+    const world = composeWorldMatrixWithLookAt(null, node, new Float32Array(16));
+    Array.from(world).forEach((value, index) => expect(matrix[index]).toBeCloseTo(value, 5));
+    // A cached matrix is recomposed when the target moves.
+    const cache = createModelMatrixCache((value, boxBounds, normalize, time) => createModelMatrixV2(value, boxBounds, normalize, time));
+    cache.modelMatrix(node, bounds, false);
+    lookAt[0] = 14;
+    lookAt[2] = 0;
+    const moved = cache.modelMatrix(node, bounds, false);
+    expect(cache.composed).toBe(2);
+    expectPoint(point(moved, [1, 0, 0]), [4, 0, 0]);
+    const turned = point(moved, [0, 0, -1]).map((value, axis) => value - point(moved, [0, 0, 0])[axis]!);
+    expectPoint(turned, [2, 0, 0]);
   });
 
   it("rejects legacy pivot hierarchies before group observers but leaves capture available", () => {

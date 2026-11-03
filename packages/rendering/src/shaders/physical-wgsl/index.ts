@@ -1,18 +1,20 @@
 /**
- * WGSL twins of the PRD-04 physical-lobe chunks (PRD-04 §8.12, P6-1).
+ * WGSL companions of the PRD-04 physical-lobe chunks (PRD-04 §8.12, P6-1).
  *
  * One module per `shaders/physical/*.glsl.ts` chunk, exporting the WGSL body
- * string that the chunk attaches as `ShaderChunk.wgsl`. The twins keep the
- * same `a3d_` names and identical math; differences are WGSL-structural only
- * (`ptr<function>` for out params, `texture_2d`+`sampler` split bindings,
- * `textureSampleLevel` LOD, `dpdx`/`dpdy` derivatives, `mat3x3f` per-slot
- * transforms in material uniform structs).
+ * string that the chunk attaches as `ShaderChunk.wgsl`. Each companion keeps
+ * the chunk's `a3d` function names and performs the same operations as the
+ * Aura-authored GLSL; differences are WGSL-structural only (`ptr<function>`
+ * for out params, `select` for conditional values, `dpdx`/`dpdy`
+ * derivatives, `mat3x3f` per-slot transforms). WGSL has no overloading, so
+ * the shared half-vector and multiscatter helpers are `a3dPrd04HalfVector`
+ * and `a3dPrd04Multiscatter` in the common companion.
  *
- * Dependencies mirror the GLSL `requires` graph: `brdf` shim helpers
- * (`pow2`, `pow2v`, `F_Schlick`, `Schlick_to_F0`, `V_GGX_SmithCorrelated`,
- * `D_GGX`, `a3dDFG`, `max3`, `PI`, `RECIPROCAL_PI`, `EPSILON`) are provided by
- * the PRD-11 brdf WGSL twin when C-29 lands — until then the test shim
- * (`tests/qr/prd04/shims/brdf_r185.wgsl.ts`) resolves them for validation.
+ * Dependencies mirror the GLSL `requires` graph: the `brdf` helpers (`pow2`,
+ * `pow2v`, `F_Schlick`, `V_GGX_SmithCorrelated`, `D_GGX`, `a3dDFG`, `max3`,
+ * `PI`, `RECIPROCAL_PI`, `EPSILON`) come from the host program; the test
+ * shim `tests/qr/prd04/shims/native-brdf.wgsl.ts` provides them for
+ * standalone validation.
  */
 import A3D_PRD04_BSDF_LOBES_COMMON_WGSL from "./bsdf_lobes_common.wgsl.js";
 import A3D_PRD04_SPECULAR_IOR_WGSL from "./specular_ior.wgsl.js";

@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the emissive strength material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/emissive_strength.wgsl.ts) mirrors it.
+ * Equations: glTF 2.0 emission x KHR_materials_emissive_strength (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/emissive_strength.wgsl.js";

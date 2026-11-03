@@ -1,7 +1,9 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
-import type { AuraPrimitiveOptions } from "./types.js";
+import type { AuraGroupNode, AuraPrimitiveOptions } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { group } from "./groups.js";
 import {
   applyAuraGeometryMatrix4,
   auraGeometryToNonIndexed,
@@ -116,8 +118,79 @@ export const geometry = lazyNamespace(() => ({
   /** threejs-parity SG-05 (L2-05): `geometry.toNonIndexed` — BufferGeometry.toNonIndexed, one vertex per index in index order. */
   toNonIndexed: (source: AuraCustomGeometrySpec): AuraCustomGeometrySpec => auraGeometryToNonIndexed(source),
   /** threejs-parity SG-05 (L2-05): `geometry.merge` — BufferGeometryUtils.mergeGeometries over specs. */
-  merge: (specs: readonly AuraCustomGeometrySpec[]): AuraCustomGeometrySpec => mergeAuraGeometries(specs)
+  merge: (specs: readonly AuraCustomGeometrySpec[]): AuraCustomGeometrySpec => mergeAuraGeometries(specs),
+  /**
+   * Split a grouped geometry (three's `geometry.groups`) into one spec per
+   * material slot, ascending by `materialIndex`. Each slot keeps the shared
+   * vertex attributes and only the index ranges of its groups.
+   */
+  splitGroups: (source: AuraCustomGeometrySpec): readonly { readonly materialIndex: number; readonly geometry: AuraCustomGeometrySpec }[] =>
+    splitAuraGeometryGroups(source),
+  /**
+   * three's `new Mesh(geometry, [materialA, materialB, ...])`: each geometry
+   * group is drawn with `materials[group.materialIndex]` (for example the
+   * per-sample material slots of a `@aura3d/addons` MarchingCubes
+   * isosurface). Lowered to a transform group holding one ordinary custom
+   * primitive per used slot, so every slot is a separate material in the
+   * normal scene draw path.
+   */
+  multiMaterial: (
+    source: AuraCustomGeometrySpec,
+    materials: readonly NonNullable<AuraPrimitiveOptions["material"]>[],
+    options: Omit<AuraPrimitiveOptions, "geometry" | "material" | "instances" | "instanceColors" | "lod"> = {}
+  ): AuraNodeBuilder<AuraGroupNode> => {
+    if (materials.length === 0) throw new Error("Aura3D geometry.multiMaterial requires at least one material.");
+    const slots = splitAuraGeometryGroups(source);
+    for (const slot of slots) {
+      if (materials[slot.materialIndex] === undefined) {
+        throw new RangeError(`Aura3D geometry.multiMaterial: group materialIndex ${slot.materialIndex} has no material (received ${materials.length}).`);
+      }
+    }
+    const { name, position, pivot, rotation, scale, lookAt, quaternion, rotationOrder, physics: _physics, ...shared } = options;
+    if (_physics !== undefined) throw new Error("Aura3D geometry.multiMaterial cannot attach physics to a multi-material group; add a separate collider node.");
+    const base = name ?? "multi-material";
+    const children = slots.map((slot) => primitive("custom", {
+      ...shared,
+      name: `${base} material ${slot.materialIndex}`,
+      material: materials[slot.materialIndex],
+      geometry: defineAuraCustomGeometry(slot.geometry)
+    }));
+    const builder = group(base, children, {
+      ...(position ? { position } : {}),
+      ...(pivot ? { pivot } : {}),
+      ...(rotation ? { rotation } : {}),
+      ...(scale !== undefined ? { scale } : {}),
+      ...(lookAt ? { lookAt } : {})
+    });
+    if (quaternion === undefined && rotationOrder === undefined) return builder;
+    return new AuraNodeBuilder<AuraGroupNode>({ ...builder.toJSON(), ...(quaternion ? { quaternion } : {}), ...(rotationOrder ? { rotationOrder } : {}) });
+  }
 } as const));
+
+function splitAuraGeometryGroups(source: AuraCustomGeometrySpec): readonly { readonly materialIndex: number; readonly geometry: AuraCustomGeometrySpec }[] {
+  if (!source.groups?.length) throw new Error("Aura3D geometry.splitGroups requires geometry groups.");
+  if (source.drawRange) throw new Error("Aura3D geometry.splitGroups cannot combine groups with a drawRange; remove the drawRange first.");
+  const normalized = normalizeGeometryAttributes(source);
+  const indexCount = normalized.indices ? normalized.indices.length : normalized.vertexCount;
+  const bySlot = new Map<number, number[]>();
+  for (const [index, group] of source.groups.entries()) {
+    const materialIndex = group.materialIndex ?? 0;
+    if (!Number.isInteger(group.start) || !Number.isInteger(group.count) || group.start < 0 || group.count < 0 ||
+        group.start + group.count > indexCount || !Number.isInteger(materialIndex) || materialIndex < 0) {
+      throw new RangeError(`Aura3D geometry.splitGroups: groups[${index}] must be an integer range inside the index stream with a non-negative material index.`);
+    }
+    let list = bySlot.get(materialIndex);
+    if (!list) bySlot.set(materialIndex, list = []);
+    for (let offset = group.start; offset < group.start + group.count; offset += 1) {
+      list.push(normalized.indices ? normalized.indices[offset]! : offset);
+    }
+  }
+  const { groups: _groups, bounds: _bounds, ...attributes } = source;
+  return [...bySlot.entries()].sort(([a], [b]) => a - b).map(([materialIndex, indices]) => ({
+    materialIndex,
+    geometry: { ...attributes, indices: normalized.vertexCount > 65535 ? Uint32Array.from(indices) : Uint16Array.from(indices) }
+  }));
+}
 
 function assertTriangleGeometry(source: AuraCustomGeometrySpec, operation: string, supportsGroups = false): void {
   if (source.topology !== undefined && source.topology !== "triangles") {

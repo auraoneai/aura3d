@@ -65,8 +65,7 @@ export class ExternalParityPhysicalMaterial {
     const requiresAlphaSorting = this.descriptor.alphaMode === "blend" || requiresTransmissionPass;
     const warnings = [
       ...extensionDiagnostics.filter((entry) => entry.support !== "supported").map((entry) => `${entry.extension}: ${entry.diagnostic}`),
-      ...(this.descriptor.metallic > 0.8 && this.descriptor.roughness < 0.2 ? [] : []),
-      ...(requiresTransmissionPass ? ["Transmission is bounded and must be compared against Three.js before release claims."] : [])
+      ...(this.descriptor.metallic > 0.8 && this.descriptor.roughness < 0.2 ? [] : [])
     ];
     return {
       descriptor: this.descriptor,

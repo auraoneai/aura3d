@@ -4,6 +4,7 @@
  * Unsupported axes fail before compilation instead of silently changing a draw.
  * Texture and AuraFrame ownership stays with the selected WebGPUDevice.
  */
+import { ALPHA_TO_COVERAGE_FEATURE, GENERATED_ALPHA_TO_COVERAGE_WGSL, generatedAlphaToCoverage } from "./GeneratedAlphaToCoverage";
 import { RenderDeviceError, type UniformValue } from "../RenderDevice";
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program";
 import { A3D_SHEEN_ALBEDO_LUT } from "../shaders/physical/sheen.glsl";
@@ -22,6 +23,8 @@ import { PRD07_WETNESS_WGSL } from "../atmosphere/shaders/wetness.wgsl";
 import { isTextureBinding } from "../TextureBinding";
 import { PACKED_LOOP_PHYSICAL_WGSL } from "./PackedLoopPhysical.wgsl";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
+import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./ProjectionClip";
+import { AUTHORED_TANGENT_WGSL } from "../materials/authoredTangent";
 
 export interface GeneratedPbrDescriptor {
   readonly features: ProgramFeatures;
@@ -129,6 +132,8 @@ export interface GeneratedPbrProgram {
   readonly writesDepthCoverage: boolean;
   /** Writes ln(d / near) / ln(far / near) as @builtin(frag_depth) (logarithmic frames). */
   readonly logarithmicDepth: boolean;
+  /** MASK coverage is written to output alpha for pipeline alpha-to-coverage instead of a hard discard. */
+  readonly alphaToCoverage: boolean;
   readonly jointKinds: readonly ("float" | "uint" | "sint" | null)[];
   /** Alpha 2..3 stores the indirect-radiance fraction for the AO post stage. */
   readonly requiresFloatColorAttachment: boolean;
@@ -232,7 +237,7 @@ function canonicalLobe(name: string): string {
 /** Reject unimplemented program axes and contradictory producer metadata. */
 type LobeMapSlot = "specular" | "specularColor" | "sheenColor" | "sheenRoughness" | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal" | "iridescence" | "iridescenceThickness" | "anisotropy" | "transmission" | "volumeThickness" | "diffuseTransmission" | "diffuseTransmissionColor";
 type LobeMaps = Partial<Record<LobeMapSlot, 0 | 1>>;
-function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
+function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: boolean; normalMap: boolean; diffuseMap: boolean; bumpMap: boolean; metalRoughMap: boolean; occlusionMap: boolean; emissiveMap: boolean; lobeMaps: LobeMaps; uv0: boolean; uv1: boolean; ibl: boolean; sampled: "none" | "cube" | "equirect"; procedural: boolean; localProbe: boolean; volume: boolean; advanced: "none" | "probe" | "voxel" | "lightmap"; lightmapUv: 0 | 1; lightmapAdd: boolean; directBound: number; sheen: boolean; coat: boolean; iridescence: boolean; anisotropy: boolean; transmission: boolean; diffuseTransmission: boolean; materialVolume: boolean; dispersion: boolean; tangent: boolean; fraction: boolean; outputSrgb: boolean; wetness: boolean; alphaToCoverage: boolean; skinning: 4 | 8 | null; morph: GeneratedPbrMorph | null; jointKinds: readonly ("float" | "uint" | "sint" | null)[] } {
   const f = descriptor.features;
   if (!f || f.pass !== "forward" || f.lighting !== "lit") unsupported("pass", "anything except forward lit materials");
   const depthCoverageIssue = depthCoverageUnsupportedReason(f);
@@ -260,10 +265,10 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const active = new Map<string, string | number | boolean>();
   for (const item of descriptor.activeFeatures) {
     if (active.has(item.id)) unsupported("activeFeatures", `duplicate contributor ${item.id}`);
-    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness"].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
+    if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness", ALPHA_TO_COVERAGE_FEATURE].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
     active.set(item.id, item.value);
   }
-  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
+  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", ALPHA_TO_COVERAGE_FEATURE, DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !structural.has(name)) unsupported(`features.${name}`, `feature ${name}`);
     if ((name === "prd02.localProbe" || name === "prd02.irradianceVolume" || name === "prd04.geometryTangent" || name === "a3d.output.srgb" || name === "a3d.clipping" || name === "a3d.packedLoopColor" || name === "a3d.independentPhysicalPreview" || name === "a3d.photometricProfile" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name} feature`);
@@ -344,14 +349,11 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const transmission = extensionIds.has("transmission");
   const diffuseTransmission = extensionIds.has("diffuse-transmission");
   const materialVolume = extensionIds.has("volume"), dispersion = extensionIds.has("dispersion");
-  // A source-only opt-in while independent WGSL and layered combinations await
-  // compiler/GPU evidence. The ProgramFeatures record is part of the cache key.
-  if (f.features["a3d.independentPhysicalPreview"] === true && anisotropy && (sheen || iridescence || transmission || diffuseTransmission)) {
-    unsupported("features.a3d.independentPhysicalPreview", "anisotropy with sheen, iridescence or transmission in the independent preview");
-  }
-  if (f.features["a3d.independentPhysicalPreview"] === true && sheen && (coat || anisotropy || iridescence || transmission || diffuseTransmission)) {
-    unsupported("features.a3d.independentPhysicalPreview", "sheen with another material lobe in the independent preview");
-  }
+  // The independent preview is an opt-in source variant (part of the cache
+  // key). It composes every lobe combination the default path accepts: lobe
+  // deltas over the substrate are scaled by the preview sheen's albedo
+  // compensation, and the sheen's indirect term uses the same diffuse
+  // irradiance as the substrate (see createGeneratedPbrProgram).
   const pointShadow = f.features["a3d.legacyPointShadow"] === true;
   const spotShadow = f.features["a3d.legacySpotShadow"] === true;
   if ((f.features["a3d.legacyPointShadow"] !== undefined && !pointShadow) || (pointShadow && !f.lights.point)
@@ -367,6 +369,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   const ibl = active.has("prd02.ibl");
   const fraction = active.has("prd03.indirectFraction");
   const outputSrgb = f.features["a3d.output.srgb"] === true;
+  const alphaToCoverage = generatedAlphaToCoverage(active, f, writesDepthCoverage || (fraction && f.alphaMode !== "blend"), unsupported);
   const localProbe = f.features["prd02.localProbe"] === true;
   const volume = f.features["prd02.irradianceVolume"] === true;
   const probe = f.features["a3d.nativeProbeGrid"], voxel = f.features["a3d.nativeVoxelIndirect"], lightmap = f.features["a3d.nativeBakedLightmap"];
@@ -397,10 +400,6 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (ibl && f.environment !== "pmrem-cube") unsupported("environment", `environment ${f.environment} with the probe path`);
   if (!["none", "pmrem-cube", "equirect"].includes(f.environment)) unsupported("environment", `environment ${String(f.environment)}`);
   const sampled = ibl || f.environment === "none" ? "none" : f.environment === "pmrem-cube" ? "cube" : "equirect";
-  if (f.features["a3d.independentPhysicalPreview"] === true && sheen &&
-      (ibl || sampled !== "none" || procedural || localProbe || volume || advanced !== "none")) {
-    unsupported("features.a3d.independentPhysicalPreview", "sheen with nonuniform environment, probe, volume or lightmap in the independent preview");
-  }
   const expected: Readonly<Record<string, boolean>> = {
     A3D_GENERATED_PROGRAM: true, A3D_LIT: true, A3D_NEED_NORMAL: true,
     VERTEX_COLORS: f.vertexColors, FLAT_SHADING: f.flatShading, DIFFUSE_BURLEY: f.diffuseModel === "burley",
@@ -421,6 +420,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
     A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
+    A3D_PRD04_ALPHA_TO_COVERAGE: alphaToCoverage, ALPHA_TO_COVERAGE: alphaToCoverage,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,
     ALPHA_MASK: f.alphaMode === "mask", ALPHA_BLEND: f.alphaMode === "blend",
     LIGHT_HEMISPHERE: procedural, LIGHTS_CLUSTERED: f.lights.clustered, A3D_ENV_SAMPLE: f.environment !== "none", ENVMAP_TYPE_CUBE_UV: f.environment === "pmrem-cube", ENVMAP_TYPE_EQUIRECT: f.environment === "equirect",
@@ -459,7 +459,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
   if (f.shadows.cascades && descriptor.defines.NUM_SHADOW_CASCADES !== f.shadows.cascades) unsupported("defines.NUM_SHADOW_CASCADES", "inconsistent shadow cascade metadata");
   if (f.shadows.localShadows && descriptor.defines.NUM_LOCAL_SHADOWS !== f.shadows.localShadows) unsupported("defines.NUM_LOCAL_SHADOWS", "inconsistent local shadow metadata");
   if (fraction && f.alphaMode !== "blend" && outputSrgb) unsupported("features.a3d.output.srgb", "indirect-fraction tags on a direct presentation output");
-  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, diffuseTransmission, materialVolume, dispersion, tangent, fraction, outputSrgb, wetness, skinning, morph, jointKinds };
+  return { baseMap, normalMap, diffuseMap, bumpMap, metalRoughMap, occlusionMap, emissiveMap, lobeMaps, uv0, uv1, ibl, sampled, procedural, localProbe, volume, advanced, lightmapUv: lightmapUv === 1 ? 1 : 0, lightmapAdd: lightmap === "add-indirect", directBound, sheen, coat, iridescence, anisotropy, transmission, diffuseTransmission, materialVolume, dispersion, tangent, fraction, outputSrgb, wetness, alphaToCoverage, skinning, morph, jointKinds };
 }
 
 
@@ -956,8 +956,8 @@ fn generatedMorphFetch(vertex: u32, target: i32, attribute: i32) -> vec3f {
   let y = index / width; let x = index - y * width;
   return textureLoad(u_morphTextureTexture, vec2i(x, y), target, 0).xyz;
 }` : "";
-  const vertex = `${MATERIAL_STRUCT}\n${FRAME_STRUCT}\n${skinningWgsl}\n${morphWgsl}
-struct VertexOutput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
+  const vertex = `${MATERIAL_STRUCT}\n${FRAME_STRUCT}\n${ZERO_TO_ONE_PROJECTION_WGSL}\n${skinningWgsl}\n${morphWgsl}
+struct VertexOutput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   let a = transform[0].xyz; let b = transform[1].xyz; let c = transform[2].xyz;
   let crossBC = cross(b, c); let det = dot(a, crossBC);
@@ -993,7 +993,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   let localTransform = instanceMatrix * material.geometry;
   let world = material.model * localTransform * vec4f(deformedPosition, 1.0);
   let clip = frame.viewProjection * world;
-  output.position = vec4f(clip.xy, clip.z * 0.5 + clip.w * 0.5, clip.w);
+  output.position = vec4f(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);
   output.worldPosition = world.xyz;
   ${clipping ? "output.clipLocal = (material.geometry * vec4f(deformedPosition, 1.0)).xyz;" : ""}
   output.normal = generatedWorldNormal(deformedNormal, localTransform);
@@ -1001,7 +1001,7 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   ${f.vertexColors ? "output.color = color;" : ""}
   ${f.instancing?.color ? "output.instanceColor = instanceColor;" : ""}
   ${instanceVolume ? "let volumeWorld = material.model * localTransform; output.volume0 = volumeWorld[0].xyz; output.volume1 = volumeWorld[1].xyz; output.volume2 = volumeWorld[2].xyz;" : ""}
-  ${mode.anisotropy ? mode.tangent ? `let tangentMatrix = material.model * localTransform;
+  ${mode.anisotropy || mode.tangent ? mode.tangent ? `let tangentMatrix = material.model * localTransform;
   let tangentWorld = (tangentMatrix * vec4f(deformedTangent.xyz, 0.0)).xyz;
   let tangentDet = determinant(mat3x3f(tangentMatrix[0].xyz, tangentMatrix[1].xyz, tangentMatrix[2].xyz));
   output.tangent = vec4f(0.0);
@@ -1009,6 +1009,22 @@ fn generatedWorldNormal(normal: vec3f, transform: mat4x4f) -> vec3f {
   return output;
 }`;
   const normal = f.doubleSided ? "select(-interpolatedNormal, interpolatedNormal, frontFacing)" : "interpolatedNormal";
+  // WP-04: authored TANGENT frames negate on back faces (materials/authoredTangent.ts).
+  const faceDirection = f.doubleSided ? "select(-1.0, 1.0, frontFacing)" : "1.0";
+  // Preview sheen layers over everything beneath it: per-light lobe deltas use
+  // the symmetric per-light compensation, view-only terms the view compensation.
+  const previewSheen = mode.sheen && independentPhysicalPreview;
+  const sheenSubstrate = previewSheen ? " * sheenDirectCompensation" : "";
+  const sheenView = previewSheen ? " * sheenViewCompensation" : "";
+  // Diffuse irradiance E (diffuse = E * albedo / pi) reaching the surface, so
+  // the preview sheen sees the same environment, probe, volume or lightmap
+  // lighting as the substrate instead of the uniform ambient term alone.
+  const sheenIrradiance = mode.ibl ? "irradiance + material.ambientIrradiance.rgb * A3D_PHYSICAL_PI + hemi"
+    : mode.sampled !== "none" || mode.procedural ? "material.ambient.rgb * material.ambient.a + irradiance"
+    : mode.localProbe || (mode.volume || mode.advanced === "probe" || mode.advanced === "voxel") ? "material.ambient.rgb * material.ambient.a + localIrradiance"
+    : "material.ambient.rgb * material.ambient.a";
+  const authoredFrame = mode.tangent ? `let authoredTangentPresent = dot(input.tangent.xyz, input.tangent.xyz) > 0.0;
+  let authoredFrame = a3dAuthoredTangentFrame(geometryNormal, input.tangent, ${faceDirection});` : "";
   const uv = (slot: "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive" | "diffuseRoughness" | "bump") => f.maps[slot]?.uvSet === 1 ? "input.uv1" : "input.uv";
   const lobeUv = (slot: LobeMapSlot) => mode.lobeMaps[slot] === 1 ? "input.uv1" : "input.uv";
   const fraction = mode.fraction && f.alphaMode !== "blend";
@@ -1064,6 +1080,7 @@ ${independentPhysicalPreview && (mode.coat || mode.anisotropy) ? A3D_PRD04_BSDF_
 ${mode.coat ? independentPhysicalPreview ? A3D_PRD04_CLEARCOAT_WGSL : CLEARCOAT_WGSL : ""}
 ${mode.iridescence ? IRIDESCENCE_EVAL_WGSL : ""}
 ${mode.anisotropy ? independentPhysicalPreview ? A3D_PRD04_ANISOTROPY_WGSL : ANISOTROPY_WGSL : ""}
+${mode.tangent ? AUTHORED_TANGENT_WGSL : ""}
 ${mode.ibl || mode.sampled === "cube" ? ROTATE_Y_WGSL : ""}
 ${mode.ibl ? PROBE_WGSL : ""}
 ${mode.procedural && !mode.ibl ? PROCEDURAL_WGSL : ""}
@@ -1077,7 +1094,7 @@ ${clipping ? CLIPPING_WGSL : ""}
 ${logDepth ? LOG_DEPTH_WGSL : ""}
 ${mode.uv0 || mode.uv1 ? MAP_UV_WGSL : ""}
 ${mode.outputSrgb ? OUTPUT_WGSL : ""}
-struct FragmentInput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
+struct FragmentInput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy || mode.tangent ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) color: vec4f, @location(1) depthCoverage: vec4f, };" : ""}
 ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location(0) color: vec4f, @builtin(frag_depth) depth: f32, };" : ""}
 @fragment fn fs_main(input: FragmentInput, @builtin(front_facing) frontFacing: bool) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : logDepth ? "GeneratedLogDepthOutput" : "@location(0) vec4f"} {
@@ -1087,6 +1104,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let view = normalize(frame.cameraPositionNear.xyz - input.worldPosition);
   ${f.specularAntialiasing ? "let grad = max(abs(dpdx(geometryNormal)), abs(dpdy(geometryNormal))); let aa = max(grad.x, max(grad.y, grad.z));" : "let aa = 0.0;"}
   ${mode.coat ? "let coatNormalDx = dpdx(geometryNormal); let coatNormalDy = dpdy(geometryNormal); let coatGeometryRoughness = min(sqrt(max(dot(coatNormalDx, coatNormalDx), dot(coatNormalDy, coatNormalDy))), 1.0);" : ""}
+  ${authoredFrame}
   ${mode.normalMap ? `let normalUv = generatedMapUv(${uv("normal")}, material.normalUv, material.normalControls.x);
   let normalTexel = textureSample(u_normalMapTexture, u_normalMapSampler, normalUv).xyz * 2.0 - vec3f(1.0);
   let positionDx = dpdx(input.worldPosition); let positionDy = dpdy(input.worldPosition);
@@ -1096,7 +1114,8 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   if (uvDeterminant != 0.0 && dot(tangent, tangent) > 0.0 && dot(bitangent, bitangent) > 0.0) {
     let mapped = normalize(tangent) * normalTexel.x * material.normalControls.y + normalize(bitangent) * normalTexel.y * material.normalControls.y + geometryNormal * normalTexel.z;
     if (dot(mapped, mapped) > 0.000000000001) { n = normalize(mapped); }
-  }` : ""}
+  }
+  ${mode.tangent ? "if (authoredTangentPresent) { n = a3dAuthoredMapNormal(authoredFrame, normalTexel, material.normalControls.y); }" : ""}` : ""}
   ${mode.bumpMap ? `let bumpUv = generatedMapUv(${uv("bump")}, material.bumpUv, material.mapControls.z);
   let height = textureSample(u_bumpTextureTexture, u_bumpTextureSampler, bumpUv).r * material.mapControls.w * clamp(material.detailControls.y, 0.0, 1.0);
   let dx = dpdx(input.worldPosition); let dy = dpdy(input.worldPosition); let dhdx = dpdx(height); let dhdy = dpdy(height);
@@ -1132,7 +1151,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let anPositionDx = dpdx(input.worldPosition); let anPositionDy = dpdy(input.worldPosition);
   let anUvDx = dpdx(anisotropyUv); let anUvDy = dpdy(anisotropyUv); let anUvDet = anUvDx.x * anUvDy.y - anUvDx.y * anUvDy.x;` : ""}
   let ${mode.wetness ? "dryBase" : "base"} = material.baseColor${f.vertexColors ? " * input.color" : ""}${mode.baseMap ? ` * textureSample(u_baseColorMapTexture, u_baseColorMapSampler, generatedMapUv(${uv("baseColor")}, material.baseUv, material.mapControls.x))` : ""}${f.instancing?.color ? " * input.instanceColor" : ""}${packedLoopColor ? " * vec4f(1.0, 1.0, 1.0, material.packedLoopColor.a)" : ""};
-  ${f.alphaMode === "mask" ? `if (${mode.wetness ? "dryBase" : "base"}.a < material.controls.x) { discard; }` : ""}
+  ${mode.alphaToCoverage ? GENERATED_ALPHA_TO_COVERAGE_WGSL(`${mode.wetness ? "dryBase" : "base"}.a`, "material.controls.x") : f.alphaMode === "mask" ? `if (${mode.wetness ? "dryBase" : "base"}.a < material.controls.x) { discard; }` : ""}
   ${mode.wetness ? "let base = vec4f(a3dWetAlbedo(max(dryBase.rgb, vec3f(0.0)), 1.0), dryBase.a);" : ""}
   let metallic = material.surface.x${mode.metalRoughMap ? " * metalRoughSample.x" : ""};
   let ${mode.wetness ? "dryRoughness" : "roughness"} = clamp(material.surface.y${mode.metalRoughMap ? " * metalRoughSample.y" : ""} + aa, 0.0525, 1.0);
@@ -1153,7 +1172,8 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let sheenViewCosine = dot(n, view);
   let sheenViewWeight = select(0.0, a3dFastSheenShape(sheenViewCosine, sheenExponent, sheenOffset), sheenViewCosine > 0.0);
   let sheenNormalization = a3dFastSheenNormalization(sheenExponent, sheenOffset);
-  let sheenIntensity = max(sheenColor.x, max(sheenColor.y, sheenColor.z));` : ""}` : ""}
+  let sheenIntensity = max(sheenColor.x, max(sheenColor.y, sheenColor.z));
+  let sheenViewCompensation = a3dFastSheenCompensation(sheenViewWeight, 0.0, sheenIntensity);` : ""}` : ""}
   ${mode.coat ? `let coatFactor = clamp(material.coat.x${mode.lobeMaps.clearcoat !== undefined ? " * coatSample" : ""}, 0.0, 1.0);
   let coatRoughness = clamp(max(material.coat.y${mode.lobeMaps.clearcoatRoughness !== undefined ? " * coatRoughnessSample" : ""}, 0.0525) + coatGeometryRoughness, 0.0525, 1.0);
   var coatNormal = geometryNormal;
@@ -1165,7 +1185,8 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
       let mapped = normalize(tangent) * coatNormalTexel.x * material.coat.z + normalize(bitangent) * coatNormalTexel.y * material.coat.z + geometryNormal * coatNormalTexel.z;
       if (dot(mapped, mapped) > 0.000000000001) { coatNormal = normalize(mapped); }
     }
-  }` : ""}` : ""}
+  }
+  ${mode.tangent ? "if (authoredTangentPresent) { coatNormal = a3dAuthoredMapNormal(authoredFrame, coatNormalTexel, material.coat.z); }" : ""}` : ""}` : ""}
   ${mode.iridescence ? `var iridescenceStrength = clamp(material.iridescence.x${mode.lobeMaps.iridescence !== undefined ? " * iridescenceSample" : ""}, 0.0, 1.0);
   let iridescenceThickness = mix(material.iridescence.z, material.iridescence.w, ${mode.lobeMaps.iridescenceThickness !== undefined ? "clamp(iridescenceThicknessSample, 0.0, 1.0)" : "1.0"});
   if (iridescenceThickness <= 0.0) { iridescenceStrength = 0.0; }
@@ -1184,14 +1205,8 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     irFilmF0 = clamp((irFilmFresnel - vec3f(grazing)) / (1.0 - grazing), vec3f(0.0), vec3f(1.0));
   }` : ""}
   ${mode.anisotropy ? `var anTangent = vec3f(0.0); var anBitangent = vec3f(0.0);
-  if (dot(input.tangent.xyz, input.tangent.xyz) > 0.0) {
-    let raw = input.tangent.xyz - geometryNormal * dot(geometryNormal, input.tangent.xyz);
-    let fallbackAxis = select(vec3f(0.0, 1.0, 0.0), vec3f(0.0, 0.0, 1.0), abs(geometryNormal.z) < 0.9);
-    anTangent = normalize(cross(fallbackAxis, geometryNormal));
-    if (dot(raw, raw) > 0.000000000001) { anTangent = normalize(raw); }
-    anBitangent = cross(geometryNormal, anTangent) * select(1.0, -1.0, input.tangent.w < 0.0);
-  }
-  ${mode.lobeMaps.anisotropy !== undefined ? `if (abs(anUvDet) > 0.00000001) {
+  ${mode.tangent ? `if (authoredTangentPresent) { anTangent = authoredFrame[0]; anBitangent = authoredFrame[1]; }` : ""}
+  ${mode.lobeMaps.anisotropy !== undefined ? `if (${mode.tangent ? "!authoredTangentPresent && " : ""}abs(anUvDet) > 0.00000001) {
     var tangent = (anPositionDx * anUvDy.y - anPositionDy * anUvDx.y) / anUvDet;
     var bitangent = (anPositionDy * anUvDx.x - anPositionDx * anUvDy.x) / anUvDet;
     tangent -= n * dot(tangent, n); bitangent -= n * dot(bitangent, n);
@@ -1299,7 +1314,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     if (backNl > 0.0 && frontNv > 0.0) {
       let f90 = clamp(pbr.specularIntensity, 0.0, 1.0);
       let available = vec3f(1.0) - clamp(max(a3dPhysicalFresnel(diffuseF0, f90, frontNv), a3dPhysicalFresnel(diffuseF0, f90, backNl)), vec3f(0.0), vec3f(1.0));
-      diffuseTransmissionDirect += max(light.radiance, vec3f(0.0)) * backNl * diffuseTransmissionWeight * diffuseTransmissionColor * available / A3D_PHYSICAL_PI;
+      diffuseTransmissionDirect += max(light.radiance, vec3f(0.0)) * backNl * diffuseTransmissionWeight * diffuseTransmissionColor * available / A3D_PHYSICAL_PI${sheenView};
     }` : ""}
     ${mode.iridescence ? `if (iridescenceStrength > 0.0) {
       let irNl = clamp(dot(n, light.direction), 0.0, 1.0); let halfSum = light.direction + view; var halfVector = n;
@@ -1307,7 +1322,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
       let irFresnel = a3dPhysicalFresnel(irBaseF0, irF90, dot(view, halfVector));
       let irMixed = mix(irFresnel, irFilmFresnel, iridescenceStrength); let irAlpha = roughness * roughness;
       let irGgx = a3dPhysicalVisibility(irAlpha, irNl, irNdotV) * a3dPhysicalDggx(irAlpha, dot(n, halfVector));
-      directSpecular += light.radiance * irNl * (irMixed - irFresnel) * irGgx;
+      directSpecular += light.radiance * irNl * (irMixed - irFresnel) * irGgx${sheenSubstrate};
     }` : ""}
     ${mode.anisotropy ? independentPhysicalPreview ? `
     let anNl = clamp(dot(n, light.direction), 0.0, 1.0); let anNv = clamp(dot(n, view), 0.0, 1.0);
@@ -1318,7 +1333,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
       let anHalf = normalize(anHalfSum); let anAlphaB = roughness * roughness;
       let isotropic = a3dPhysicalFresnel(anF0, anF90, dot(view, anHalf)) * a3dPhysicalDggx(anAlphaB, dot(n, anHalf)) * a3dPhysicalVisibility(anAlphaB, anNl, anNv);
       let anisotropic = a3dPrd04AnisotropyDirect(light.direction, view, n, anF0, anF90, roughness, anLobes);
-      directSpecular += max(light.radiance, vec3f(0.0)) * anNl * (anisotropic - isotropic);
+      directSpecular += max(light.radiance, vec3f(0.0)) * anNl * (anisotropic - isotropic)${sheenSubstrate};
     }` : `if (anStrength > 0.0) {
       let anNl = clamp(dot(n, light.direction), 0.0, 1.0); let anNv = clamp(dot(n, view), 0.0, 1.0);
       let anHalfSum = light.direction + view; var anHalf = n;
@@ -1401,9 +1416,12 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let anSingle = clamp(anF0 * anCoefficients.x + vec3f(anF90 * anCoefficients.y), vec3f(0.0), vec3f(1.0));
   indirectSpecular += (max(anBentRadiance, vec3f(0.0)) - max(anIsoRadiance, vec3f(0.0))) * anSingle;` : ""}
   ${mode.sheen ? independentPhysicalPreview ? `
-  // This preview accepts uniform ambient irradiance only. Occlusion is
-  // applied to the sheen irradiance just as it is to the substrate.
-  let sheenAmbient = max(material.ambient.rgb * material.ambient.a, vec3f(0.0))${mode.occlusionMap ? " * occlusion" : ""};
+  // The exact albedo holds for uniform lighting; nonuniform sources use the
+  // substrate's cosine-weighted irradiance E as the uniform equivalent.
+  // Occlusion is applied to the sheen irradiance just as it is to the substrate.
+  ${mode.advanced === "lightmap" ? `let sheenBaked = baked.rgb * material.advancedIntensity.x;
+  let sheenEnvironment = ${mode.lightmapAdd ? `${sheenIrradiance} + sheenBaked * baked.a` : `mix(${sheenIrradiance}, sheenBaked, baked.a)`};` : ""}
+  let sheenAmbient = max(${mode.advanced === "lightmap" ? "sheenEnvironment" : sheenIrradiance}, vec3f(0.0))${mode.occlusionMap ? " * occlusion" : ""};
   let sheenIndirectCompensation = a3dFastSheenCompensation(sheenViewWeight, 0.0, sheenIntensity);
   directSpecular += sheenDirect;
   indirectDiffuse *= sheenIndirectCompensation; indirectSpecular *= sheenIndirectCompensation;
@@ -1436,7 +1454,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let transF90 = mix(clamp(pbr.specularIntensity, 0.0, 1.0), 1.0, clamp(metallic, 0.0, 1.0));
   let transDfg = textureSampleLevel(u_dfgLutTexture, u_dfgLutSampler, vec2f(roughness, clamp(dot(n, view), 0.0, 1.0)), 0.0).rg;
   let transReflectance = clamp(transF0 * transDfg.x + vec3f(transF90 * transDfg.y), vec3f(0.0), vec3f(1.0));
-  let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene;
+  let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene${sheenView};
   indirectDiffuse = mix(directDiffuse + indirectDiffuse, transmitted, clamp(material.transmission.x${mode.lobeMaps.transmission !== undefined ? " * transmissionSample" : ""}, 0.0, 1.0));
   directDiffuse = vec3f(0.0);` : ""}
   let ${f.fog === "none" ? "color" : "unfoggedColor"} = max(directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a${mode.emissiveMap ? " * emissiveSample" : ""}, vec3f(0.0));
@@ -1445,7 +1463,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
   let fogDistance = fogDensity * fogDepth;
   let fogAmount = clamp(1.0 - exp(-fogDistance * fogDistance), 0.0, 1.0);`}
   let color = mix(unfoggedColor, material.fogColor.rgb, fogAmount);` : ""}
-  ${fraction ? "let luma = vec3f(0.2126, 0.7152, 0.0722); let alpha = 2.0 + clamp(dot(indirectDiffuse + indirectSpecular, luma) / max(dot(color, luma), 0.0001), 0.0, 1.0);" : `let alpha = ${f.alphaMode === "blend" ? "base.a" : "1.0"};`}
+  ${fraction ? "let luma = vec3f(0.2126, 0.7152, 0.0722); let alpha = 2.0 + clamp(dot(indirectDiffuse + indirectSpecular, luma) / max(dot(color, luma), 0.0001), 0.0, 1.0);" : `let alpha = ${f.alphaMode === "blend" ? "base.a" : mode.alphaToCoverage ? "a3dCoverage" : "1.0"};`}
   ${clipping ? "if (!generatedClipRetains(input.worldPosition, input.clipLocal)) { discard; }" : ""}
   ${writesDepthCoverage
     ? `return GeneratedDepthCoverageOutput(vec4f(color, alpha), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
@@ -1463,7 +1481,7 @@ ${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location
     morph: mode.morph, transmission: mode.transmission, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
     pointShadow, spotShadow,
     diffuseTransmission: mode.diffuseTransmission, diffuseTransmissionMap: mode.lobeMaps.diffuseTransmission !== undefined, diffuseTransmissionColorMap: mode.lobeMaps.diffuseTransmissionColor !== undefined,
-    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, writesDepthCoverage, logarithmicDepth: logDepth, // validateDescriptor has rejected volumetric fog.
+    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, writesDepthCoverage, logarithmicDepth: logDepth, alphaToCoverage: mode.alphaToCoverage, // validateDescriptor has rejected volumetric fog.
     materialVolume: mode.materialVolume, thicknessMap: mode.lobeMaps.volumeThickness !== undefined, dispersion: mode.dispersion, jointKinds: mode.jointKinds,
     requiresFloatColorAttachment: fraction
   });

@@ -90,13 +90,24 @@ describe("independent physical preview in the generated WebGPU program", () => {
     expect(fragment).toContain("indirectSpecular = indirectSpecular * coatBase + coatIndirect * coatFactor;");
   });
 
-  it("fails closed on unproven preview anisotropy layer combinations", () => {
+  it("composes preview anisotropy with every other layered lobe (S5-WP04-01)", () => {
     const features = { [preview]: true, "prd04.tangentFrame": true };
-    for (const other of ["sheen", "iridescence", "transmission", "diffuse-transmission"]) {
+    const otherTerms: Record<string, readonly string[]> = {
+      sheen: ["a3dFastSheenDirect(sheenViewWeight, sheenLightWeight, sheenNormalization)",
+        "directSpecular += max(light.radiance, vec3f(0.0)) * anNl * (anisotropic - isotropic) * sheenDirectCompensation;"],
+      iridescence: ["a3dPrd04EvalIridescence(", "directSpecular += light.radiance * irNl * (irMixed - irFresnel) * irGgx;"],
+      transmission: ["generatedTransmissionSample(input.worldPosition, n, view, roughness, pbr.ior, thickness, volumeLinear)"],
+      "diffuse-transmission": ["diffuseTransmissionDirect += max(light.radiance, vec3f(0.0)) * backNl"]
+    };
+    for (const [other, terms] of Object.entries(otherTerms)) {
       const extension = { lobe: other, maps: [], bits: {} };
       // Transmission also requires its normal captured-target contract.
       const combined = { ...features, ...(other === "transmission" ? { "prd04.transmissionTarget": true } : {}) };
-      expect(() => generate({ extensions: [anisotropy, extension], features: combined })).toThrow(/independent preview/);
+      const fragment = generate({ extensions: [anisotropy, extension], features: combined }).program.fragment;
+      expect(fragment).toContain(A3D_PRD04_ANISOTROPY_WGSL);
+      expect(fragment).toContain("a3dPrd04AnisotropyInit(&anLobes, anVector, vec4f(1.0), false, anFrameT, anFrameB, roughness);");
+      expect(fragment).toContain("a3dPrd04AnisotropyDirect(light.direction, view, n, anF0, anF90, roughness, anLobes)");
+      for (const term of terms) expect(fragment, `${other}: ${term}`).toContain(term);
     }
     expect(() => generate({ extensions: [anisotropy, clearcoat], features })).not.toThrow();
   });
@@ -131,30 +142,50 @@ describe("independent physical preview in the generated WebGPU program", () => {
     expect(regular.program.fragment).not.toContain("fn a3dFastSheenDirect(");
   });
 
-  it("rejects preview sheen with other layered lobes while retaining default support", () => {
-    for (const other of ["clearcoat", "iridescence", "transmission", "diffuse-transmission"]) {
+  it("composes preview sheen over every other layered lobe while retaining default support (S5-WP04-01)", () => {
+    const otherTerms: Record<string, readonly string[]> = {
+      // Coat layers over the sheen-compensated substrate.
+      clearcoat: ["coatDirect += max(light.radiance, vec3f(0.0)) * a3dPrd04ClearcoatDirect(light.direction, view, coatNormal, coatRoughness);",
+        "directSpecular = directSpecular * coatBase + coatDirect * coatFactor;"],
+      // Substrate specular deltas use the same symmetric per-light compensation as the substrate.
+      iridescence: ["directSpecular += light.radiance * irNl * (irMixed - irFresnel) * irGgx * sheenDirectCompensation;"],
+      // View-only terms beneath the sheen use the view-side compensation.
+      transmission: ["let transmitted = (vec3f(1.0) - transReflectance) * diffuseColor * transmittedScene * sheenViewCompensation;"],
+      "diffuse-transmission": ["diffuseTransmissionWeight * diffuseTransmissionColor * available / A3D_PHYSICAL_PI * sheenViewCompensation;"]
+    };
+    for (const [other, terms] of Object.entries(otherTerms)) {
       const extension = { lobe: other, maps: [], bits: {} };
       const activeFeatures: Record<string, boolean> = other === "transmission" ? { "prd04.transmissionTarget": true } : {};
-      expect(() => generate({ extensions: [sheen, extension], features: { ...activeFeatures, [preview]: true } })).toThrow(/independent preview/);
+      const fragment = generate({ extensions: [sheen, extension], features: { ...activeFeatures, [preview]: true } }).program.fragment;
+      expect(fragment).toContain(A3D_PRD04_SHEEN_FAST_WGSL);
+      expect(fragment).toContain("let sheenViewCompensation = a3dFastSheenCompensation(sheenViewWeight, 0.0, sheenIntensity);");
+      expect(fragment).toContain("directSpecular += sheenDirect;");
+      for (const term of terms) expect(fragment, `${other}: ${term}`).toContain(term);
       expect(() => generate({ extensions: [sheen, extension], features: activeFeatures })).not.toThrow();
     }
   });
 
-  it("rejects every unsupported nonuniform indirect source by descriptor metadata", () => {
-    const cases: Partial<ProgramFeatures>[] = [
-      { environment: "pmrem-cube", features: { [preview]: true } },
-      { environment: "equirect", features: { [preview]: true } },
-      { environment: "pmrem-cube", features: { [preview]: true, "prd02.ibl": true } },
-      { lights: { ...lights, hemisphere: true }, features: { [preview]: true } },
-      { features: { [preview]: true, "prd02.localProbe": true } },
-      { features: { [preview]: true, "prd02.irradianceVolume": true } },
-      { features: { [preview]: true, "a3d.nativeProbeGrid": true } },
-      { features: { [preview]: true, "a3d.nativeVoxelIndirect": true } },
-      { features: { [preview]: true, "a3d.nativeBakedLightmap": "replace-diffuse", "a3d.nativeLightmapUv": 0 } },
-      { features: { [preview]: true, "a3d.nativeBakedLightmap": "add-indirect", "a3d.nativeLightmapUv": 1 } },
+  it("feeds every nonuniform indirect source into the preview sheen irradiance (S5-WP04-01)", () => {
+    const ambient = "material.ambient.rgb * material.ambient.a";
+    const cases: [Partial<ProgramFeatures>, string][] = [
+      [{ environment: "pmrem-cube", features: { [preview]: true } }, `let sheenAmbient = max(${ambient} + irradiance, vec3f(0.0));`],
+      [{ environment: "equirect", features: { [preview]: true } }, `let sheenAmbient = max(${ambient} + irradiance, vec3f(0.0));`],
+      [{ environment: "pmrem-cube", features: { [preview]: true, "prd02.ibl": true } },
+        "let sheenAmbient = max(irradiance + material.ambientIrradiance.rgb * A3D_PHYSICAL_PI + hemi, vec3f(0.0));"],
+      [{ lights: { ...lights, hemisphere: true }, features: { [preview]: true } }, `let sheenAmbient = max(${ambient} + irradiance, vec3f(0.0));`],
+      [{ features: { [preview]: true, "prd02.localProbe": true } }, `let sheenAmbient = max(${ambient} + localIrradiance, vec3f(0.0));`],
+      [{ features: { [preview]: true, "prd02.irradianceVolume": true } }, `let sheenAmbient = max(${ambient} + localIrradiance, vec3f(0.0));`],
+      [{ features: { [preview]: true, "a3d.nativeProbeGrid": true } }, `let sheenAmbient = max(${ambient} + localIrradiance, vec3f(0.0));`],
+      [{ features: { [preview]: true, "a3d.nativeVoxelIndirect": true } }, `let sheenAmbient = max(${ambient} + localIrradiance, vec3f(0.0));`],
+      [{ features: { [preview]: true, "a3d.nativeBakedLightmap": "replace-diffuse", "a3d.nativeLightmapUv": 0 } },
+        `let sheenEnvironment = mix(${ambient}, sheenBaked, baked.a);`],
+      [{ features: { [preview]: true, "a3d.nativeBakedLightmap": "add-indirect", "a3d.nativeLightmapUv": 1 } },
+        `let sheenEnvironment = ${ambient} + sheenBaked * baked.a;`],
     ];
-    for (const options of cases) {
-      expect(() => generate({ ...options, extensions: [sheen] })).toThrow(/independent preview/);
+    for (const [options, expected] of cases) {
+      const fragment = generate({ ...options, extensions: [sheen] }).program.fragment;
+      expect(fragment).toContain(expected);
+      expect(fragment).toContain("indirectSpecular += sheenAmbient * sheenColor * (a3dFastSheenAlbedo(sheenViewWeight) / A3D_PHYSICAL_PI);");
     }
   });
 
@@ -176,6 +207,12 @@ describe("independent physical preview in the generated WebGPU program", () => {
         lights: { ...lights, clustered: true, rect: 1 } }).program,
       generate({ extensions: [clearcoat, { lobe: "iridescence", maps: [], bits: {} }], features: { [preview]: true } }).program,
       generate({ extensions: [sheen], features: { [preview]: true }, maps: { occlusion: { uvSet: 0, transform: false } } }).program,
+      generate({ extensions: [anisotropy, sheen, clearcoat, { lobe: "iridescence", maps: [], bits: {} }], features: anisoFeatures }).program,
+      generate({ extensions: [anisotropy, { lobe: "transmission", maps: [], bits: {} }],
+        features: { ...anisoFeatures, "prd04.transmissionTarget": true } }).program,
+      generate({ extensions: [sheen, { lobe: "diffuse-transmission", maps: [], bits: {} }], features: { [preview]: true } }).program,
+      generate({ extensions: [sheen], features: { [preview]: true, "prd02.ibl": true }, environment: "pmrem-cube" }).program,
+      generate({ extensions: [sheen], features: { [preview]: true, "a3d.nativeBakedLightmap": "replace-diffuse", "a3d.nativeLightmapUv": 0 } }).program,
     ];
     const directory = mkdtempSync(join(tmpdir(), "a3d-independent-generated-pbr-"));
     try {

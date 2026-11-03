@@ -19,7 +19,7 @@ import { resourceDisposalInProgress, resourceDisposalPending } from "../Resource
 import type { Texture } from "../Texture.js";
 import { compileShaderGraph, type ShaderGraphBinding, type ShaderGraphCompileResult, type ShaderGraphDocument, type ShaderGraphValueType } from "../program/ShaderGraphCompiler.js";
 import { deriveUniformDataLayout, writeUniformData, type UniformBlockLayout } from "../program/UniformLayout.js";
-import { assertWarmupActive, enqueueNativePipelineWarmup } from "../webgpu/NativePipelineWarmup.js";
+import { assertWarmupActive, enqueueNativePipelineWarmup, warmNativePipelineVariants } from "../webgpu/NativePipelineWarmup.js";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "../webgpu/ShaderDataLayout.js";
 
 const DEFAULT_LIMITS = {
@@ -519,6 +519,8 @@ export class ComputeContext {
   private warmupLossObserverInstalled = false;
   private removeWarmupLossObserver: (() => void) | undefined;
   private nativeDeviceLost = false;
+  /** WP-03 warmed variants by layout/variant identity; scoped to this context's device generation. */
+  private readonly warmedVariants = new Map<string, ComputePipeline>();
 
   constructor(readonly device: ComputeGPUDeviceLike, private readonly renderOwner?: ComputeRenderOwner) {
     for (const method of ["createShaderModule", "createComputePipeline", "createBuffer", "createBindGroup", "createCommandEncoder"] as const) {
@@ -583,6 +585,55 @@ export class ComputeContext {
     }, signals);
     assertWarmupActive(signals);
     return this.publishPipeline(prepared, native, signals);
+  }
+
+  /**
+   * WP-03 coordinated variant warmup: compile every variant without encoding
+   * or submitting GPU work, through the same per-device compile slot render
+   * warmup uses. Variants are keyed by WGSL, entry point, workgroup size and
+   * binding layout; a live warmed variant is returned again instead of being
+   * recompiled. Cancellation stops further compiles and rejects with the
+   * signal's reason (variants published before it stay cached). Device loss,
+   * context disposal or a retired render-owner generation rejects with
+   * `compute-disposed`; this context's variants are never reachable from a new
+   * device generation.
+   */
+  async warmPipelineVariants(variants: readonly ComputePipelineSpec[], options: { readonly signal?: AbortSignal } = {}): Promise<readonly ComputePipeline[]> {
+    const signals = [this.warmupLifetime.signal, options.signal];
+    assertWarmupActive(signals);
+    this.assertLive();
+    if (!Array.isArray(variants)) throw invalid("warmPipelineVariants needs an array of pipeline specs");
+    this.observeWarmupLoss();
+    const prepared = variants.map((spec) => {
+      const entry = this.preparePipeline(spec);
+      return { entry, key: computeVariantKey(entry) };
+    });
+    const compile = this.device.createComputePipelineAsync;
+    await warmNativePipelineVariants<{ getBindGroupLayout(index: number): unknown }>(this.device, prepared.map(({ entry, key }) => ({
+      key,
+      isCached: () => this.warmedVariant(key) !== undefined,
+      create: () => {
+        const descriptor = this.nativePipelineDescriptor(entry);
+        this.assertLive();
+        assertWarmupActive(signals);
+        return typeof compile === "function" ? compile.call(this.device, descriptor) : this.device.createComputePipeline(descriptor);
+      },
+      publish: (native) => { this.warmedVariants.set(key, this.publishPipeline(entry, native, signals)); }
+    })), { signals, assertCurrent: () => this.assertLive(), speculative: false });
+    return prepared.map(({ key }) => {
+      const pipeline = this.warmedVariant(key);
+      if (!pipeline) throw new ComputeError("compute-disposed", "warmed compute variant was retired before warmup completed");
+      return pipeline;
+    });
+  }
+
+  private warmedVariant(key: string): ComputePipeline | undefined {
+    const pipeline = this.warmedVariants.get(key);
+    if (pipeline && (pipeline.disposed || !this.pipelines.has(pipeline))) {
+      this.warmedVariants.delete(key);
+      return undefined;
+    }
+    return pipeline;
   }
 
   /** Validate and snapshot the exact same descriptor for sync and async creation. */
@@ -1189,7 +1240,11 @@ export class ComputeContext {
     if (!this.pipelines.has(pipeline)) throw invalid("compute pipeline was not created by this compute context");
   }
   /** @internal */
-  forgetPipeline(pipeline: ComputePipeline): void { this.pipelines.delete(pipeline); this.notifyCleanupComplete(); }
+  forgetPipeline(pipeline: ComputePipeline): void {
+    this.pipelines.delete(pipeline);
+    for (const [key, warmed] of this.warmedVariants) if (warmed === pipeline) this.warmedVariants.delete(key);
+    this.notifyCleanupComplete();
+  }
   /** @internal */
   forgetSampler(sampler: ComputeSampler): void { this.samplers.delete(sampler); this.notifyCleanupComplete(); }
 
@@ -1527,6 +1582,14 @@ function textureFromBinding(value: unknown): Texture | null {
 
 function nativeTextureFormat(format: string): string {
   return ({ rgba8: "rgba8unorm", rgba16f: "rgba16float", rgba32f: "rgba32float", r32f: "r32float", depth24: "depth24plus-stencil8" } as Readonly<Record<string, string>>)[format] ?? format;
+}
+
+/** Variant identity: everything that changes the compiled native pipeline or its layout. */
+function computeVariantKey(prepared: PreparedComputePipeline): string {
+  const bindings = [...prepared.bindings]
+    .map((binding) => JSON.stringify(Object.entries(binding).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))))
+    .sort();
+  return JSON.stringify([prepared.wgsl, prepared.entryPoint, prepared.workgroupSize, bindings]);
 }
 
 export function createComputeContext(device: ComputeGPUDeviceLike, renderOwner?: ComputeRenderOwner): ComputeContext {

@@ -1,6 +1,6 @@
 // examples/heatsink-port/art/direction.ts — GU47 WP-29 (G19) art direction for Ion Circuit (heatsink-port).
 // Fantasy: an anti-gravity drone race along an obsidian causeway through an alien blue-hour canyon.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "heatsink-port",

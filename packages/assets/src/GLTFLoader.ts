@@ -362,7 +362,7 @@ interface GLTFLight {
 }
 
 export interface GLTFJson {
-  readonly asset?: { readonly version?: string };
+  readonly asset?: { readonly version?: string; readonly minVersion?: string; readonly generator?: string; readonly copyright?: string; readonly extras?: unknown };
   readonly extensionsUsed?: readonly string[];
   readonly extensionsRequired?: readonly string[];
   readonly buffers?: readonly GLTFBuffer[];
@@ -614,6 +614,8 @@ export interface GLTFAsset {
   readonly skinBindingForNode?: (nodeIndex: number) =>
     Readonly<Pick<GLTFSkinBindingProvenance, "meshIndex" | "skinIndex">> | undefined;
   readonly loaderDiagnostics: GLTFLoaderDiagnostics;
+  /** Source document `asset` provenance; absent for structural assets from other adapters. */
+  readonly documentMetadata?: GLTFDocumentMetadata;
   readonly images: readonly GLTFImageAsset[];
   readonly textures: readonly GLTFTextureAsset[];
   readonly materials: readonly GLTFMaterialAsset[];
@@ -722,6 +724,16 @@ export interface GLTFMaterialAsset {
   readonly alphaMode: "OPAQUE" | "MASK" | "BLEND";
   readonly alphaCutoff: number;
   readonly doubleSided: boolean;
+}
+
+/** The source glTF document's `asset` object, captured at load time. */
+export interface GLTFDocumentMetadata {
+  readonly version?: string;
+  readonly minVersion?: string;
+  readonly generator?: string;
+  readonly copyright?: string;
+  /** JSON extras as parsed from the document; consumers must treat it as untrusted data. */
+  readonly extras?: unknown;
 }
 
 export interface GLTFMaterialVariantAsset {
@@ -1025,6 +1037,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     const textures = createTextureAssets(json);
     const materials = createMaterialAssets(json, textures);
     const materialVariants = createMaterialVariantAssets(json);
+    const documentMetadata = createDocumentMetadata(json);
     const scenes = createSceneAssets(json);
     const defaultScene = resolveDefaultSceneIndex(json);
     const cameras = createCameraAssets(json);
@@ -1183,6 +1196,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       skinBindingForNode: (nodeIndex) =>
         Number.isSafeInteger(nodeIndex) && nodeIndex >= 0 ? skinBindingsByNode[nodeIndex] : undefined,
       loaderDiagnostics,
+      ...(documentMetadata ? { documentMetadata } : {}),
       images,
       textures,
       materials,
@@ -1921,8 +1935,7 @@ async function admitImageAssets(images: readonly GLTFImageAsset[], request: Asse
   if (!request.integrity) return images;
   return Promise.all(images.map(async (image) => {
     if (!image.uri || image.uri.startsWith("data:")) return image;
-    if (request.url.startsWith("data:") && !/^[a-z][a-z0-9+.-]*:/i.test(image.uri)) throw new Error("Relative glTF image URI cannot be resolved from a data URL asset");
-    const url = new URL(image.uri, resolveAbsoluteDocumentUrl(request.url)).toString();
+    const url = resolveGltfDependencyUri(image.uri, request.url, "glTF image");
     const options = context.requestOptionsFor(image.uri);
     const data = await fetchGltfBytesShared(url, "buffer", { ...options, url, signal: request.signal, onProgress: request.onProgress }, (status) => `glTF image request failed with ${status}`);
     return { ...image, data };
@@ -1930,6 +1943,9 @@ async function admitImageAssets(images: readonly GLTFImageAsset[], request: Asse
 }
 
 function validateImageMimeType(image: GLTFImage, index: number, avifEnabled: boolean, webpEnabled: boolean, basisuEnabled: boolean): void {
+  if (image.uri !== undefined && (typeof image.uri !== "string" || image.uri.trim() === "")) {
+    throw new Error(`glTF image ${index} uri must be a non-empty string`);
+  }
   if (image.mimeType !== undefined && !isSupportedImageMimeType(image.mimeType, avifEnabled, webpEnabled, basisuEnabled)) {
     throw new Error(`glTF image ${index} mimeType must be ${supportedImageMimeTypeMessage(avifEnabled, webpEnabled, basisuEnabled)}`);
   }
@@ -2095,6 +2111,25 @@ function createMaterialAssets(
       doubleSided: material.doubleSided ?? false
     };
   });
+}
+
+function createDocumentMetadata(json: GLTFJson): GLTFDocumentMetadata | undefined {
+  const source = json.asset;
+  if (!source || typeof source !== "object") return undefined;
+  const text = (value: unknown): string | undefined => typeof value === "string" ? value : undefined;
+  const metadata: GLTFDocumentMetadata = {
+    ...(text(source.version) === undefined ? {} : { version: source.version }),
+    ...(text(source.minVersion) === undefined ? {} : { minVersion: source.minVersion }),
+    ...(text(source.generator) === undefined ? {} : { generator: source.generator }),
+    ...(text(source.copyright) === undefined ? {} : { copyright: source.copyright }),
+    ...(source.extras === undefined ? {} : { extras: structuredCloneJson(source.extras) })
+  };
+  return Object.keys(metadata).length ? Object.freeze(metadata) : undefined;
+}
+
+function structuredCloneJson(value: unknown): unknown {
+  // Parsed JSON is already acyclic plain data; detach it from the document.
+  try { return JSON.parse(JSON.stringify(value)) as unknown; } catch { return undefined; }
 }
 
 function createMaterialVariantAssets(json: GLTFJson): readonly GLTFMaterialVariantAsset[] {
@@ -4028,11 +4063,11 @@ async function loadBuffer(
     return validateLoadedBufferLength(index, buffer, decodeBufferDataUri(index, buffer.uri));
   }
 
+  const url = resolveGltfDependencyUri(buffer.uri, document.url, `glTF buffer ${index}`);
   if (typeof fetch !== "function") {
     throw new Error("GLTFLoader requires fetch for external buffers");
   }
 
-  const url = new URL(buffer.uri, resolveAbsoluteDocumentUrl(document.url)).toString();
   const options = context.requestOptionsFor(buffer.uri);
   const { integrity: _integrity, expectedUrl: _expectedUrl, ...withoutDocumentIntegrity } = request;
   const bytes = await fetchGltfBytesShared(url, "buffer", { ...withoutDocumentIntegrity, ...options, url }, (status) => `glTF buffer request failed with ${status}`);
@@ -4064,6 +4099,40 @@ function validateBufferDescriptor(index: number, buffer: GLTFBuffer): void {
   if (!Number.isInteger(buffer.byteLength) || buffer.byteLength < 0) {
     throw new Error(`glTF buffer ${index} byteLength must be a non-negative integer`);
   }
+  if (buffer.uri !== undefined && typeof buffer.uri !== "string") {
+    throw new Error(`glTF buffer ${index} uri must be a string`);
+  }
+}
+
+const GLTF_NETWORK_SCHEMES = new Set(["http:", "https:"]);
+
+/**
+ * Resolve a non-data glTF dependency URI against its document. Unparsable
+ * references, relative references from a data-URL document, and schemes other
+ * than http(s) (plus `file:` from a `file:` document and caller-minted `blob:`
+ * URLs) are refused before any transport, with messages that never echo the
+ * URI text.
+ */
+export function resolveGltfDependencyUri(uri: string, documentUrl: string, label: string): string {
+  if (typeof uri !== "string" || uri.trim() === "") throw new Error(`${label} uri must be a non-empty string`);
+  const absolute = /^[a-z][a-z0-9+.-]*:/i.test(uri.trim());
+  if (!absolute && documentUrl.startsWith("data:")) {
+    throw new Error(`${label} relative uri cannot be resolved from a data URL document`);
+  }
+  let resolved: URL;
+  let base: string;
+  try {
+    base = resolveAbsoluteDocumentUrl(documentUrl);
+    resolved = new URL(uri, base);
+  } catch {
+    throw new Error(`${label} uri is not a valid URI reference`);
+  }
+  const baseScheme = new URL(base).protocol;
+  const allowed = GLTF_NETWORK_SCHEMES.has(resolved.protocol) ||
+    (resolved.protocol === "file:" && baseScheme === "file:") ||
+    (resolved.protocol === "blob:" && absolute);
+  if (!allowed) throw new Error(`${label} uri scheme ${resolved.protocol} is not allowed`);
+  return resolved.toString();
 }
 
 function decodeBufferDataUri(index: number, uri: string): ArrayBuffer {
@@ -4260,7 +4329,7 @@ async function readResponseBytes(
 
   while (true) {
     if (request.signal?.aborted) {
-      throw request.signal.reason instanceof Error ? request.signal.reason : new Error(`glTF request aborted for ${url}`);
+      throw request.signal.reason instanceof Error ? request.signal.reason : new Error(`glTF request aborted for ${redactAssetUrl(url)}`);
     }
     const { done, value } = await reader.read();
     if (done) break;
@@ -4286,8 +4355,11 @@ function parseContentLength(value: string | null | undefined): number | undefine
 }
 
 function decodeDataUri(uri: string): ArrayBuffer {
-  const [header = "", payload = ""] = uri.split(",", 2);
-  if (header.endsWith(";base64")) {
+  const separator = uri.indexOf(",");
+  if (separator < 0) throw new Error("Invalid data URI: missing comma separator");
+  const header = uri.slice(0, separator);
+  const payload = uri.slice(separator + 1);
+  if (header.toLowerCase().endsWith(";base64")) {
     let binary: string;
     try {
       binary = atob(payload);
@@ -4300,7 +4372,11 @@ function decodeDataUri(uri: string): ArrayBuffer {
     }
     return bytes.buffer;
   }
-  return new TextEncoder().encode(decodeURIComponent(payload)).buffer;
+  try {
+    return new TextEncoder().encode(decodeURIComponent(payload)).buffer;
+  } catch {
+    throw new Error("Invalid data URI payload: malformed percent-encoding");
+  }
 }
 
 const GLB_MAGIC = 0x46546c67;
@@ -4332,6 +4408,7 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
   let binaryChunk: ArrayBuffer | undefined;
   let jsonChunkBytes = 0;
 
+  let chunkIndex = 0;
   while (offset < data.byteLength) {
     if (offset + 8 > data.byteLength) {
       throw new Error("Malformed GLB chunk header");
@@ -4344,16 +4421,28 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
       throw new Error("Malformed GLB chunk length");
     }
 
-    const chunk = data.slice(chunkStart, chunkEnd);
+    // GLB 2.0: exactly one JSON chunk, first; at most one BIN chunk, second;
+    // chunks of unknown type are skipped.
+    if (chunkIndex === 0 && chunkType !== GLB_CHUNK_JSON) {
+      throw new Error("GLB first chunk must be the JSON chunk");
+    }
     if (chunkType === GLB_CHUNK_JSON) {
-      const text = new TextDecoder().decode(chunk).replace(/[\u0000\s]+$/u, "");
-      json = JSON.parse(text) as GLTFJson;
+      if (chunkIndex !== 0) throw new Error("GLB must contain exactly one JSON chunk");
+      const text = new TextDecoder().decode(data.slice(chunkStart, chunkEnd)).replace(/[\u0000\s]+$/u, "");
+      try {
+        json = JSON.parse(text) as GLTFJson;
+      } catch (cause) {
+        throw new Error("Invalid GLB JSON chunk", { cause });
+      }
+      if (!json || typeof json !== "object" || Array.isArray(json)) throw new Error("Invalid GLB JSON chunk");
       jsonChunkBytes = chunkLength;
     } else if (chunkType === GLB_CHUNK_BIN) {
-      binaryChunk = chunk;
+      if (chunkIndex !== 1) throw new Error("GLB BIN chunk must directly follow the JSON chunk and appear once");
+      binaryChunk = data.slice(chunkStart, chunkEnd);
     }
 
     offset = chunkEnd;
+    chunkIndex += 1;
   }
 
   if (!json) {

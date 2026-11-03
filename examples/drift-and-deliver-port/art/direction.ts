@@ -2,7 +2,7 @@
 // A pastel hillside port town just after summer rain; the 3:00 shift runs the sun down from golden light to sunset to
 // blue hour. Look table: ../phases.ts (PHASES). VFX pack: ../fx.ts. Identity sheet:
 // evidence/game-upgrades-47/drift-and-deliver-port/identity.md.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "drift-and-deliver-port",

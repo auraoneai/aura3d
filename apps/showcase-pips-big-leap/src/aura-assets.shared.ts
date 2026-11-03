@@ -1259,6 +1259,7 @@ export const sharedAssets: AuraAssetMap<PipsSharedAssetDefinitions> = defineAura
     format: "glb",
     url: "/aura-assets/helperChar.30ed390a.glb",
     hash: "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a",
+    integrity: { version: 1, digest: "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a", dependencies: { "Textures/texture-b.png": "sha256-c614148428fbf63ab701ab95e2ebe0b6103ea0e2e6212c986d8931899bad7692" }, requireDependencies: true },
     bounds: [
       1.6,
       2.7,
@@ -3437,6 +3438,7 @@ export const sharedAssets: AuraAssetMap<PipsSharedAssetDefinitions> = defineAura
     format: "glb",
     url: "/aura-assets/showcaseSidekickRunner.8ee5dae1.glb",
     hash: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+    integrity: { version: 1, digest: "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616", dependencies: { "Textures/texture-a.png": "sha256-257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a" }, requireDependencies: true },
     bounds: [
       8,
       9,

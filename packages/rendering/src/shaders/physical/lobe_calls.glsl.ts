@@ -1,7 +1,7 @@
 /**
  * PRD-04 pars/call split for the generated-program path (T0-05 / 04-LOBES,
- * PRD-04 §8, P3-2/P3-3; three r185 lights_physical_fragment.glsl.js and
- * meshphysical.glsl.js composition order).
+ * PRD-04 §8, P3-2/P3-3; layer order of the Khronos KHR_materials_*
+ * extension specifications).
  *
  * The fifteen `a3d_prd04_*` chunks in this directory are *declaration*
  * chunks: functions, structs and guarded uniforms. The C-02 generator emits
@@ -23,10 +23,11 @@
  *   - per light (C-03 `chunks.direct`, spliced inside BOTH the bucketed and
  *     the clustered light loops): clearcoat and sheen accumulate their direct
  *     lobes; iridescence mixes the single-scatter Fresnel toward the thin
- *     film; anisotropy swaps isotropic for anisotropic GGX (r185 BRDF_GGX);
+ *     film; anisotropy swaps isotropic for anisotropic GGX (KHR_materials_anisotropy);
  *   - ibl: iridescence thin-film multiscatter and the anisotropy bent normal
  *     replace the base env specular (order 5), then sheen (20) and clearcoat
- *     (30) compose over the final accumulators (r185 meshphysical.glsl.js);
+ *     (30) compose over the final accumulators (KHR_materials_sheen and
+ *     KHR_materials_clearcoat layering);
  *   - lobe textures use independently selected UV sets and transforms;
  *     clearcoat normal maps perturb the coat's own shading normal;
  *   - transmission/volume/dispersion: screen-space refraction replaces the
@@ -36,6 +37,7 @@
  *     u_specularColorFactor, u_emissiveStrength; the calls only record state.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import { AUTHORED_TANGENT_GLSL } from "../../materials/authoredTangent";
 
 function chunk(name: string, glsl: string, requires: readonly string[], stage: ShaderChunk["stage"] = "fragment"): ShaderChunk {
 	return { name, owner: "prd04", glsl, stage, requires };
@@ -158,7 +160,7 @@ export const A3D_PRD04_SPECULAR_IOR_CALL = chunk("a3d_prd04_specular_ior_call", 
 }`, ["a3d_prd04_specular_ior_pars"]);
 
 // ── clearcoat ────────────────────────────────────────────────────────────────
-// Textures (r185 clearcoat_pars / lights_physical_fragment): `.x` of the coat
+// Textures (KHR_materials_clearcoat): `.x` of the coat
 // map scales the factor, `.y` of the coat-roughness map scales roughness.
 // The per-light coat term accumulates in `a3dPrd04CoatDirect` (direct call,
 // every light incl. clustered); the ibl call composes coat over the base.
@@ -207,6 +209,11 @@ export const A3D_PRD04_CLEARCOAT_CALL = chunk("a3d_prd04_clearcoat_call", /* gls
 	vec3 a3dCoatNormal = geometryNormal;
 #ifdef A3D_LOBE_CLEARCOAT_NORMAL_MAP
 	a3dCoatNormal = a3dPrd04CoatNormal( v_worldPosition, geometryNormal, A3D_LOBE_UV_CLEARCOAT_NORMAL );
+#ifdef A3D_PRD04_TANGENT_FRAME
+	// Sampled outside the branch (implicit LOD); the authored frame wins.
+	vec3 a3dCoatTexel = texture( u_clearcoatNormalTexture, A3D_LOBE_UV_CLEARCOAT_NORMAL ).xyz * 2.0 - 1.0;
+	if ( a3dPrd04TangentAuthored ) a3dCoatNormal = a3dAuthoredMapNormal( mat3( a3dPrd04TangentT, a3dPrd04TangentB, geometryNormal ), a3dCoatTexel, u_clearcoatNormalScale );
+#endif
 #endif
 	a3dPrd04ClearcoatInit( a3dLobes, u_clearcoatFactor, u_clearcoatRoughnessFactor, a3dCcTex, a3dCcRoughTex, a3dCoatNormal, a3dPrd04GeometryRoughness( geometryNormal ) );
 }`, ["a3d_prd04_clearcoat_pars"]);
@@ -231,7 +238,7 @@ export const A3D_PRD04_CLEARCOAT_IBL_CALL = chunk("a3d_prd04_clearcoat_ibl_call"
 }`, ["a3d_prd04_clearcoat_pars"]);
 
 // ── sheen ────────────────────────────────────────────────────────────────────
-// Textures: sheen colour map `.rgb`, sheen roughness map `.a` (r185).
+// Textures: sheen colour map `.rgb`, sheen roughness map `.a` (KHR_materials_sheen).
 
 export const A3D_PRD04_SHEEN_PARS = chunk("a3d_prd04_sheen_pars", /* glsl */ `
 uniform vec3 u_sheenColorFactor;
@@ -276,8 +283,8 @@ export const A3D_PRD04_SHEEN_IBL_CALL = chunk("a3d_prd04_sheen_ibl_call", /* gls
 }`, ["a3d_prd04_sheen_pars"]);
 
 // ── iridescence ──────────────────────────────────────────────────────────────
-// Textures: iridescence map `.r`, thickness map `.g` (r185). Energy (r185
-// BRDF_GGX + computeMultiscatteringIridescence): per light the single-scatter
+// Textures: iridescence map `.r`, thickness map `.g` (KHR_materials_iridescence).
+// Energy (thin-film Fresnel in the single- and multiple-scatter terms): per light the single-scatter
 // Fresnel is mixed toward the thin-film Fresnel (delta over the base GGX the
 // default loop already added); the ibl call replaces the base env specular
 // with the thin-film multiscatter. Runs before sheen/clearcoat (order 5).
@@ -325,17 +332,17 @@ if ( a3dLobes.iridescence > 0.0 ) {
 	vec3 a3dIrSingle = vec3( 0.0 );
 	vec3 a3dIrMulti = vec3( 0.0 );
 	a3dPrd04ComputeMultiscatteringIridescence( N, V, material.specularColorBlended, material.specularF90, a3dLobes.iridescence, a3dLobes.iridescenceF0, material.roughness, a3dIrSingle, a3dIrMulti );
-	// r185 RE_IndirectSpecular_Physical: radiance * single + multi * irradiance / PI
+	// Split-sum indirect specular: radiance * single + multi * irradiance / PI
 	// (a3dEnvIrradiance comes from the default indirect body, same #ifdef).
 	indirectSpecular += a3dIrEnv * a3dIrSingle + a3dIrMulti * ( a3dLobeIrradiance * RECIPROCAL_PI ) - a3dIndirectSpecular( a3dIrEnv, a3dLobeIrradiance, V, N, material );
 }
 #endif`, ["a3d_prd04_iridescence_pars"]);
 
 // ── anisotropy ───────────────────────────────────────────────────────────────
-// Texture: anisotropy map `.rgb` (direction rg, strength b; r185). Needs the
+// Texture: anisotropy map `.rgb` (direction rg, strength b; KHR_materials_anisotropy). Needs the
 // prd04.tangentFrame feature (A3D_PRD04_TANGENT_FRAME) for T/B. Energy: per
 // light the isotropic single-scatter GGX is swapped for the anisotropic GGX
-// (r185 BRDF_GGX USE_ANISOTROPY); the ibl call reflects through the bent normal.
+// (KHR_materials_anisotropy); the ibl call reflects through the bent normal.
 
 export const A3D_PRD04_ANISOTROPY_PARS = chunk("a3d_prd04_anisotropy_pars", /* glsl */ `
 uniform float u_anisotropyStrength;
@@ -351,11 +358,13 @@ export const A3D_PRD04_ANISOTROPY_CALL = chunk("a3d_prd04_anisotropy_call", /* g
 	// Recover the basis from the selected, transformed anisotropy UV when
 	// available. It also handles geometry without an authored tangent.
 #ifdef A3D_LOBE_ANISOTROPY_MAP
+	// An authored TANGENT always defines the anisotropy frame; the transformed
+	// anisotropy-UV derivative frame is only the fallback without one.
 	vec2 a3dAnUv = A3D_LOBE_UV_ANISOTROPY;
 	vec3 a3dAnDx = dFdx( v_worldPosition ), a3dAnDy = dFdy( v_worldPosition );
 	vec2 a3dAnUx = dFdx( a3dAnUv ), a3dAnUy = dFdy( a3dAnUv );
 	float a3dAnDet = a3dAnUx.x * a3dAnUy.y - a3dAnUx.y * a3dAnUy.x;
-	if ( abs( a3dAnDet ) > 1e-8 ) {
+	if ( !a3dPrd04TangentAuthored && abs( a3dAnDet ) > 1e-8 ) {
 		vec3 tangent = ( a3dAnDx * a3dAnUy.y - a3dAnDy * a3dAnUx.y ) / a3dAnDet;
 		vec3 bitangent = ( a3dAnDy * a3dAnUx.x - a3dAnDx * a3dAnUy.x ) / a3dAnDet;
 		tangent -= N * dot( tangent, N );
@@ -447,7 +456,7 @@ export const A3D_PRD04_TRANSMISSION_CALL = chunk("a3d_prd04_transmission_call", 
 #endif
 }`, ["a3d_prd04_transmission_pars"]);
 
-// r185 transmission_fragment.glsl.js: totalDiffuse = mix( totalDiffuse,
+// KHR_materials_transmission: totalDiffuse = mix( totalDiffuse,
 // transmitted.rgb, transmission ). Needs the opaque-scene target
 // (prd04.transmissionTarget feature → A3D_TRANSMISSION).
 export const A3D_PRD04_TRANSMISSION_IBL_CALL = chunk("a3d_prd04_transmission_ibl_call", /* glsl */ `#ifdef A3D_TRANSMISSION
@@ -481,7 +490,7 @@ export const A3D_PRD04_DISPERSION_CALL = chunk("a3d_prd04_dispersion_call", /* g
 
 export const A3D_PRD04_EMISSIVE_STRENGTH_CALL = chunk("a3d_prd04_emissive_strength_call", /* glsl */ `{
 	// KHR_materials_emissive_strength: the base emissive path already applies
-	// u_emissiveColor * u_emissiveStrength (r185 emissivemap_fragment.glsl.js).
+	// u_emissiveColor * u_emissiveStrength (KHR_materials_emissive_strength).
 }`, ["a3d_prd04_emissive_strength"]);
 
 export const A3D_PRD04_UNLIT_CALL = chunk("a3d_prd04_unlit_call", /* glsl */ `{
@@ -499,6 +508,9 @@ out vec4 v_prd04Tangent;
 in vec4 v_prd04Tangent;
 vec3 a3dPrd04TangentT = vec3( 0.0 );
 vec3 a3dPrd04TangentB = vec3( 0.0 );
+// True when T/B come from the authored TANGENT attribute (WP-04 identity).
+bool a3dPrd04TangentAuthored = false;
+${AUTHORED_TANGENT_GLSL}
 #endif
 `, ["a3d_prd04_tangent_frame"], "both");
 
@@ -511,9 +523,11 @@ if ( determinant( a3dTangentTransform ) < 0.0 ) v_prd04Tangent.w *= -1.0;`, ["a3
 
 /** fragment:normal — re-orthogonalized T/B for lobes (anisotropy) and debug views. */
 export const A3D_PRD04_TANGENT_FRAME_CALL = chunk("a3d_prd04_tangent_frame_call", /* glsl */ `if ( dot( v_prd04Tangent.xyz, v_prd04Tangent.xyz ) > 0.0 ) {
-	mat3 a3dPrd04Tbn = a3dPrd04TangentFrame( geometryNormal, v_prd04Tangent, 1.0 );
+	// Authored frame: B = sign(w) * cross(N, T), back faces negate the frame.
+	mat3 a3dPrd04Tbn = a3dAuthoredTangentFrame( geometryNormal, v_prd04Tangent, a3dPrd04FaceDirection() );
 	a3dPrd04TangentT = a3dPrd04Tbn[ 0 ];
 	a3dPrd04TangentB = a3dPrd04Tbn[ 1 ];
+	a3dPrd04TangentAuthored = true;
 }`, ["a3d_prd04_tangent_frame_state"]);
 
 /** fragment:alpha — MASK + alpha-to-coverage (ALPHA_TO_COVERAGE skips the hard cutoff). */
@@ -561,7 +575,7 @@ export const A3D_PRD04_DEBUG_VIEW_CALL = chunk("a3d_prd04_debug_view_call", /* g
 
 /** Every pars/call chunk above, registered with the fifteen declaration chunks. */
 // ── rim (#88, R-14-14 §8.10) ────────────────────────────────────────────────
-// Lane-original (no r185 counterpart): a view-dependent Fresnel-style rim added
+// Lane-original: a view-dependent Fresnel-style rim added
 // to the emissive term, so it survives tone mapping like other emission and is
 // not attenuated by the coat/sheen energy terms. Lit programs only (N, V).
 

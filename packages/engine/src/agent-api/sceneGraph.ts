@@ -460,7 +460,7 @@ export interface AuraStaticModelMatrixCache {
 
 type MatrixNode = AuraModelNode | AuraPrimitiveNode | AuraEffectNode;
 
-const MODEL_FP_LEN = 27;
+const MODEL_FP_LEN = 31;
 
 function fillModelFingerprint(out: Float64Array, node: MatrixNode, bounds: AuraModelBounds, normalizeToUnit: boolean): void {
   const position = node.position ?? [0, 0, 0];
@@ -496,6 +496,11 @@ function fillModelFingerprint(out: Float64Array, node: MatrixNode, bounds: AuraM
   out[24] = quaternion?.[1] ?? 0;
   out[25] = quaternion?.[2] ?? 0;
   out[26] = quaternion?.[3] ?? 0;
+  const lookAt = node.lookAt;
+  out[27] = lookAt === undefined ? 0 : 1;
+  out[28] = lookAt?.[0] ?? 0;
+  out[29] = lookAt?.[1] ?? 0;
+  out[30] = lookAt?.[2] ?? 0;
 }
 
 interface ModelMatrixEntry {

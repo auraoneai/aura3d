@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { RenderCommandState } from "../../../packages/rendering/src/RenderDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
+import { VertexBuffer } from "../../../packages/rendering/src/VertexBuffer";
+import { WebGL2DrawCallBinder } from "../../../packages/rendering/src/webgl2/MultiDraw";
 import {
   applyNativeRenderDynamicState,
   resolveNativeRenderState,
@@ -367,5 +369,55 @@ describe("native WebGPU vertex layouts", () => {
     expect(() => resolveNativeVertexLayouts(three16)).toThrow(/FORMAT_UNSUPPORTED/);
     const instanced = new VertexFormat([{ semantic: "position", components: 3, offset: 0 }, { semantic: "custom:instance", components: 4, offset: 0, bufferSlot: 1, shaderLocation: 1 }], 12, [{ slot: 1, stride: 16, stepMode: "instance", divisor: 2 }]);
     expect(() => resolveNativeVertexLayouts(instanced)).toThrow(/DIVISOR_UNSUPPORTED/);
+  });
+});
+
+describe("integer shader-input pixel specification", () => {
+  // Fixture shader (tests/browser/native-render-state.spec.ts "integer*"): a
+  // `uint` instance input indexes a palette; any float conversion of the
+  // stored value (normalized or not) selects a different entry or fails.
+  const palette: readonly (readonly number[])[] = [[255, 0, 255, 255], [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255]];
+  const shade = (paletteId: number): readonly number[] => Number.isInteger(paletteId) && paletteId >= 0 && paletteId < 4 ? palette[paletteId]! : [255, 255, 255, 255];
+  const integerFormat = new VertexFormat([
+    { semantic: "position", components: 3, offset: 0, shaderLocation: 0 },
+    { semantic: "custom:paletteId", shaderName: "a_paletteId", components: 1, offset: 0, type: "uint32", integer: true, bufferSlot: 1, shaderLocation: 1 }
+  ], 12, [{ slot: 1, stride: 4, stepMode: "instance" }]);
+  const ids = new VertexBuffer(integerFormat, 2, 1);
+  ids.setAttribute(0, "custom:paletteId", [2]);
+  ids.setAttribute(1, "custom:paletteId", [3]);
+  const fetchInteger = (bytes: ArrayBuffer, stride: number, offset: number, glType: "UNSIGNED_INT" | "uint32", instance: number): number =>
+    new DataView(bytes).getUint32(instance * stride + offset, true);
+
+  it("binds WebGL2 integer inputs with vertexAttribIPointer and shades each instance from the raw integer", () => {
+    const integerPointers: unknown[][] = [];
+    const floatPointers: unknown[][] = [];
+    const divisors: unknown[][] = [];
+    const gl = {
+      ARRAY_BUFFER: 0x8892, FLOAT: 0x1406, UNSIGNED_INT: 0x1405,
+      getExtension: () => null, bindBuffer() {}, enableVertexAttribArray() {},
+      vertexAttribDivisor: (...args: unknown[]) => divisors.push(args),
+      vertexAttribIPointer: (...args: unknown[]) => integerPointers.push(args),
+      vertexAttribPointer: (...args: unknown[]) => floatPointers.push(args)
+    };
+    const binder = new WebGL2DrawCallBinder({ gl, maxVertexAttributes: 16,
+      stateCache: { onInvalidate() {}, bindBuffer: (_target: number, _handle: unknown, bind: () => void) => bind() } } as never);
+    const shader = { reflection: { attributes: new Map([["a_position", 0], ["position", 0], ["a_paletteId", 1]]) } };
+    binder.bindVertexFormat(shader as never, integerFormat, new Map(integerFormat.streams.map((stream) => [stream.slot, { handle: `slot-${stream.slot}` }])) as never);
+    expect(integerPointers).toEqual([[1, 1, gl.UNSIGNED_INT, 4, 0]]);
+    expect(floatPointers.some((args) => args[0] === 1)).toBe(false);
+    expect(divisors).toContainEqual([1, 1]);
+    const [, , , stride, offset] = integerPointers[0] as [number, number, number, number, number];
+    const pixels = [0, 1].map((instance) => shade(fetchInteger(ids.data, stride, offset, "UNSIGNED_INT", instance)));
+    expect(pixels).toEqual([[0, 255, 0, 255], [0, 0, 255, 255]]);
+    // The same bytes through a float (non-I) pointer would be 2.8e-45 / 4.2e-45, not a palette index.
+    expect(shade(new DataView(ids.data).getFloat32(0, true))).toEqual([255, 255, 255, 255]);
+  });
+
+  it("emits a WebGPU uint32 instance layout whose fetched values shade the same pixels", () => {
+    const layouts = resolveNativeVertexLayouts(integerFormat);
+    expect(layouts[1]).toEqual({ arrayStride: 4, stepMode: "instance", attributes: [{ shaderLocation: 1, offset: 0, format: "uint32" }] });
+    const attribute = layouts[1]!.attributes[0]!;
+    const pixels = [0, 1].map((instance) => shade(fetchInteger(ids.data, layouts[1]!.arrayStride, attribute.offset, "uint32", instance)));
+    expect(pixels).toEqual([[0, 255, 0, 255], [0, 0, 255, 255]]);
   });
 });

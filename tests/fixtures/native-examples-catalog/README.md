@@ -155,6 +155,12 @@ establish the dolly animation or the timings in the authored path.
 The instancing entry checks the visible color gradient; it does not establish
 the instance count, a single draw call, dynamic updates or performance.
 
+Each capability project is an untouched `mini-game` create-aura3d scaffold
+(its manifest, configs, `index.html` with a full-page `#app`, and typed assets)
+plus only `src/scenario.ts` and the replaced `src/main.ts` scene module; the
+`tools/agent-examples/index.ts` digest was updated for that change, which keeps
+the full-page canvas these regions assume.
+
 The bounds-query harness invokes `queryNativeScenarioBounds` after mounting and
 publishes a validated subject hit as `window.__AURA_EXAMPLE_BOUNDS_HIT__`
 before readiness. Missing, non-finite, wrong-target, and off-ray results fail

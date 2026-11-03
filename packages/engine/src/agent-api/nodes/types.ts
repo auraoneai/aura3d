@@ -869,6 +869,7 @@ export type AuraSceneNode =
   | import("./gaussianSplat.js").AuraGaussianSplatNode
   | import("./scalarVolume.js").AuraScalarVolumeNode
   | import("./surfaces.js").AuraMirrorSurfaceNode
+  | import("./surfaces.js").AuraGlassSurfaceNode
   // threejs-parity AD-15 (P2): lens flare, compiled per frame by `compiler/lensFlare.ts`.
   | import("./lensFlare.js").AuraLensFlareNode;
 
@@ -1368,9 +1369,24 @@ export interface AuraBackendSelectionDiagnostics {
   readonly deviceLost: boolean;
 }
 
+/**
+ * Whole-frame timing of one inspected render call. `gpuMs` is the sum of
+ * consecutive non-overlapping timer-query ranges (views plus non-view work);
+ * it is null with `gpuReason` when unsupported, pending or discarded.
+ */
+export interface AuraRendererFrameTiming {
+  readonly frameNumber: number;
+  readonly cpuMs: number | null;
+  readonly gpuMs: number | null;
+  readonly gpuReason?: string;
+  readonly views: readonly { readonly viewId: string | number; readonly gpuMs: number | null }[];
+}
+
 export interface AuraRendererDiagnosticReport {
   readonly kind: "aura-renderer-diagnostics";
   readonly backendSelection?: AuraBackendSelectionDiagnostics;
+  /** Latest whole-frame CPU/GPU timing from the mounted renderer's inspector. */
+  readonly frameTiming?: AuraRendererFrameTiming;
   /**
    * Negotiated production root-camera depth; this is not pixel-backed
    * evidence. A mounted runtime reports the renderer's active frame convention
@@ -1774,6 +1790,7 @@ export interface AuraRendererRuntimeObservation {
   readonly outputColorSpace?: AuraRendererDiagnosticReport["outputColorSpace"];
   /** The renderer's active frame depth convention (clip range, storage and precision). */
   readonly depth?: import("@aura3d/rendering").DepthConvention;
+  readonly frameTiming?: AuraRendererFrameTiming;
   readonly postprocess: {
     readonly renderPass: boolean;
     readonly outputPass: boolean;

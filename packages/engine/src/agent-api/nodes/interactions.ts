@@ -55,6 +55,11 @@ const interaction = (builder: string, options: unknown, valid: readonly string[]
 
 export const interactions = {
   orbit,
+  /**
+   * Declares pointer input for the scene. With `target` (a node name or runtime id) pointer events are routed only
+   * when that node is the nearest hit under the pointer; without it every pointer sample is routed. Events are
+   * delivered by `bindPointerInteractions(app, listener)`.
+   */
   pointer: (options: { readonly target?: string } = {}): InteractionBuilder =>
     new AuraNodeBuilder({
       kind: "interaction",

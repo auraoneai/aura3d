@@ -8,6 +8,7 @@
  * channels follow the Khronos glTF material extension.
  *
  * WGSL companion provenance is tracked separately in physical-wgsl/.
+ * (PRD-04 §8.12)
  */
 import type { ShaderChunk } from "../../contracts/program";
 import A3D_PRD04_IRIDESCENCE_WGSL from "../physical-wgsl/iridescence.wgsl.js";

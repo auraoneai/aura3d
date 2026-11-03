@@ -72,6 +72,10 @@ test.describe("native draw-state pixels", () => {
       near("instanceLeftAfterUpdate", red);
       near("instanceRightAfterUpdate", green);
       near("instanceBackground", black);
+      // Unconverted integer shader input (uint32 instance stream -> uint palette index).
+      near("integerLeft", green);
+      near("integerRight", [0, 0, 255, 255]);
+      near("integerBackground", black);
     });
   }
 });
@@ -152,6 +156,45 @@ struct Output { @builtin(position) position: vec4<f32>, @location(0) color: vec4
         fragment: `// native-state-instances
 @fragment fn main(@location(0) color: vec4<f32>) -> @location(0) vec4<f32> { return color; }` }
     });
+    // An integer instance stream read as `uint` (WebGL2 vertexAttribIPointer,
+    // WebGPU `uint32`): a float conversion would select the wrong palette entry.
+    const integerFormat = new VertexFormat([
+      { semantic: "position", components: 3, offset: 0, shaderLocation: 0 },
+      { semantic: "custom:paletteId", shaderName: "a_paletteId", components: 1, offset: 0, type: "uint32", integer: true, bufferSlot: 1, shaderLocation: 1 }
+    ], 12, [{ slot: 1, stride: 4, stepMode: "instance" }]);
+    const integerShader = new rendering.ShaderModule({ label: "native-state-integer", marker: "native-state-integer",
+      vertex: `#version 300 es
+// native-state-integer
+layout(location=0) in vec3 a_position;
+layout(location=1) in uint a_paletteId;
+flat out uint paletteId;
+void main() { gl_Position=vec4(a_position.xy+vec2(gl_InstanceID==0?-0.5:0.5,0.0),0.0,1.0); paletteId=a_paletteId; }`,
+      fragment: `#version 300 es
+// native-state-integer
+precision highp float;
+flat in uint paletteId;
+out vec4 outColor;
+void main() {
+  vec4 palette[4]=vec4[4](vec4(1,0,1,1),vec4(1,0,0,1),vec4(0,1,0,1),vec4(0,0,1,1));
+  outColor=paletteId<4u?palette[paletteId]:vec4(1,1,1,1);
+}`,
+      webgpu: { vertex: `// native-state-integer
+struct Output { @builtin(position) position: vec4<f32>, @location(0) @interpolate(flat) paletteId: u32 };
+@vertex fn main(@builtin(instance_index) instance: u32, @location(0) position: vec3<f32>, @location(1) paletteId: u32) -> Output {
+ var out: Output; out.position=vec4<f32>(position.xy+vec2<f32>(select(0.5,-0.5,instance==0u),0.0),0.5,1.0); out.paletteId=paletteId; return out;
+}`,
+        fragment: `// native-state-integer
+@fragment fn main(@location(0) @interpolate(flat) paletteId: u32) -> @location(0) vec4<f32> {
+ var palette=array<vec4<f32>,4>(vec4<f32>(1.0,0.0,1.0,1.0),vec4<f32>(1.0,0.0,0.0,1.0),vec4<f32>(0.0,1.0,0.0,1.0),vec4<f32>(0.0,0.0,1.0,1.0));
+ if (paletteId<4u) { return palette[paletteId]; }
+ return vec4<f32>(1.0);
+}` }
+    });
+    const integerTriangle = new VertexBuffer(integerFormat, 3);
+    [[-0.2, -0.3, 0], [0.2, -0.3, 0], [0, 0.3, 0]].forEach((value, i) => integerTriangle.setAttribute(i, "position", value));
+    const paletteIds = new VertexBuffer(integerFormat, 2, 1);
+    paletteIds.setAttribute(0, "custom:paletteId", [2]);
+    paletteIds.setAttribute(1, "custom:paletteId", [3]);
     const triangle = new VertexBuffer(VertexFormat.P3, 3);
     [[-1, -1, 0], [3, -1, 0], [-1, 3, 0]].forEach((value, i) => triangle.setAttribute(i, "position", value));
     const smallTriangle = new VertexBuffer(instanceFormat, 3);
@@ -219,6 +262,13 @@ struct Output { @builtin(position) position: vec4<f32>, @location(0) color: vec4
       target(); drawInstances(); await read("instanceLeft", 16, 32); await read("instanceRight", 48, 32); await read("instanceBackground", 32, 32);
       instances.setAttribute(1, "custom:instanceColor", [0, 255, 0, 255]);
       target(); drawInstances(); await read("instanceLeftAfterUpdate", 16, 32); await read("instanceRightAfterUpdate", 48, 32);
+      const integerPipeline = new rendering.RenderPipeline({ shader: integerShader.compile(device), vertexFormat: integerFormat,
+        requiredAttributes: [], renderState: { depthTest: false, depthWrite: false, cullMode: "none" } });
+      pipelines.push(integerPipeline);
+      target();
+      device.draw(integerPipeline.createDrawCommand({ vertexBuffer: integerTriangle.upload(device),
+        vertexBuffers: [integerTriangle.upload(device), paletteIds.upload(device)], vertexCount: 3, instanceCount: 2 }));
+      await read("integerLeft", 16, 32); await read("integerRight", 48, 32); await read("integerBackground", 32, 32);
       device.endFrame();
       frameActive = false;
       const diagnostics = device.getDiagnostics();
@@ -229,6 +279,7 @@ struct Output { @builtin(position) position: vec4<f32>, @location(0) color: vec4
       if (frameActive) device.endFrame();
       for (const pipeline of pipelines) pipeline.dispose();
       solid.dispose(); instanced.dispose(); triangle.dispose(); smallTriangle.dispose(); instances.dispose();
+      integerShader.dispose(); integerTriangle.dispose(); paletteIds.dispose();
       for (const item of targets) item.dispose();
       device.dispose(); canvas.remove();
       if (result) result.disposed = device.disposed && targets.every((item) => item.disposed) && !canvas.isConnected;

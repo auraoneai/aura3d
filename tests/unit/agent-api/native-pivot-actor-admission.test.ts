@@ -7,6 +7,7 @@ import { CompiledSceneImpl, type MountSceneCompileContext } from "../../../packa
 import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
 import { createProductionRuntimeSceneRenderer } from "../../../packages/engine/src/agent-api/compiler/renderer";
 import { flattenAuraSceneNodes } from "../../../packages/engine/src/agent-api/compiler/sceneGraph";
+import { assertFramePivotSupported } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import { groups } from "../../../packages/engine/src/agent-api/nodes/groups";
 import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
@@ -50,7 +51,7 @@ afterEach(() => { vi.restoreAllMocks(); });
 
 describe("pivoted model admission before actor publication", () => {
   it.each([
-    ["lookAt", { pivot: [1, 0, 0], lookAt: [0, 0, 0] }, /PIVOT_UNSUPPORTED_LOOK_AT/],
+    ["lookAt on the legacy model matrix", { pivot: [1, 0, 0], lookAt: [0, 0, 0] }, /PIVOT_UNSUPPORTED_LOOK_AT/],
     ["model LOD", { pivot: [1, 0, 0], lod: true }, /PIVOT_UNSUPPORTED_LOD/],
     ["instance LOD", { instances: [{ pivot: [1, 0, 0] }], instanceLod: { levels: [] } }, /PIVOT_UNSUPPORTED_LOD/],
     ["invalid pivot", { pivot: [1, Number.NaN, 0] }, /PIVOT_INVALID/]
@@ -61,6 +62,14 @@ describe("pivoted model admission before actor publication", () => {
     await expect(createProductionRuntimeSceneRenderer(canvas(), value, undefined, undefined, legacyFlags)).rejects.toThrow(failure as RegExp);
     expect(createActor).not.toHaveBeenCalled();
     expect(createRenderer).not.toHaveBeenCalled();
+  });
+
+  it("admits an own pivot with lookAt on the C-06 model matrix and keeps legacy/instanced rejections", () => {
+    const aimed = modelNode("aimed", { pivot: [1, 0, 0], lookAt: [0, 0, 5] });
+    expect(assertFramePivotSupported(aimed, undefined, false)).toBe(true);
+    expect(() => assertFramePivotSupported(aimed, undefined, true)).toThrow(/PIVOT_UNSUPPORTED_LOOK_AT/);
+    expect(() => assertFramePivotSupported(modelNode("batch", { lookAt: [0, 0, 5], instances: [{ pivot: [1, 0, 0] }] }), undefined, false))
+      .toThrow(/PIVOT_UNSUPPORTED_LOOK_AT/);
   });
 
   it("rejects an inherited pivot on an LOD-tagged model before loading", async () => {

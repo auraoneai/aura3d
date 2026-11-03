@@ -4,10 +4,11 @@ import { VertexBuffer } from "./VertexBuffer";
 import { IndexBuffer } from "./IndexBuffer";
 import { type CollectedLight } from "./LightCollector";
 import { LightUniforms, type LocalShadowedLight, type PackedLightsWithSelection, type PackedLightUniforms } from "./LightUniforms";
-import { Material, type RenderState } from "./Material";
+import { Material, renderStateHasExtendedCommandFields, type RenderState } from "./Material";
 import { isFlatUniformValue, MaterialBinding, MaterialBindingError } from "./MaterialBinding";
+import { flattenPortableDataUniform } from "./webgl2/UniformDataFlatten";
 import { MaterialInstance } from "./MaterialInstance";
-import { PortableShaderMaterial } from "./PortableShaderMaterial";
+import { PortableShaderMaterial, type PortableShaderUniformDescriptor } from "./PortableShaderMaterial";
 import { DepthPreviewMaterial } from "./DepthPreviewMaterial";
 import { PBRMaterial } from "./PBRMaterial";
 import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
@@ -287,7 +288,7 @@ function staticUnlitMaterialSafe(material: UnlitMaterial): boolean {
   const state = material.renderState;
   if (!replayBuiltinObject(state, Object.prototype) || state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque")
     || !state.depthTest || !state.depthWrite || state.depthCompare !== "less-equal" || state.cullMode !== "back"
-    || state.scissor || state.stencil || state.polygonOffset || state.alphaToCoverage
+    || state.scissor || state.stencil || state.polygonOffset || state.alphaToCoverage || renderStateHasExtendedCommandFields(state)
     || !Array.isArray(state.colorWrite) || !replayBuiltinObject(state.colorWrite, Array.prototype)
     || state.colorWrite.length !== 4 || state.colorWrite.some((value) => value !== true)) return false;
   const parameters: unknown = Object.getOwnPropertyDescriptor(material, "parameters")?.value;
@@ -618,7 +619,7 @@ function selectiveDrawDecline(item: RenderItem): string | null {
   if (item.onBeforeRender || item.skinning || item.morphTargets || item.morphWeights ||
       item.instanceTransforms || item.instanceAttributes || (item as RenderItem & { multiDraw?: unknown }).multiDraw) return "draw-producer";
   const state = material.renderState;
-  if (blendStateIsTransparent(state) || state.alphaToCoverage || !stockArrayMatches(state.colorWrite, [true, true, true, true]) ||
+  if (blendStateIsTransparent(state) || state.alphaToCoverage || renderStateHasExtendedCommandFields(state) || !stockArrayMatches(state.colorWrite, [true, true, true, true]) ||
       isTransmissionRenderItem(item)) return "transparent-or-transmission";
   return null;
 }
@@ -1036,17 +1037,22 @@ export class ForwardPass extends BaseRenderPass {
     try {
       for (const item of this.options.items) {
         const material = item.material;
-        if (!(material instanceof UnlitMaterial) || Object.getPrototypeOf(material) !== UnlitMaterial.prototype || material.disposed
+        // Generated unlit and lit (PBR) alpha surfaces: the GLSL generator
+        // emits the opaque-depth test and weighted outputs for both models.
+        if (!(material instanceof UnlitMaterial || material instanceof PBRMaterial)) return false;
+        const prototype = Object.getPrototypeOf(material);
+        const lit = prototype === PBRMaterial.prototype;
+        if ((prototype !== UnlitMaterial.prototype && !lit) || material.disposed
           || item.geometry.topology !== "triangles" || item.geometryMatrix || item.instanceTransforms
           || item.instanceAttributes?.length || item.instanceColors || (item.instanceCount !== undefined && item.instanceCount !== 1)
           || item.skinning || item.morphTargets?.length || item.morphWeights?.length || item.geometry.morphTargets?.length
           || item.globalClipping || item.materialClipping || item.cameraFade !== undefined || item.lodFade !== undefined
           || material.requiredAttributes.includes("a_color") || material.getParameter("u_pointMap") !== undefined
-          || material.getParameter("u_spriteMode") === 1 || material.getParameter("u_alphaCutoff") !== 0
+          || material.getParameter("u_spriteMode") === 1 || (material.getParameter("u_alphaCutoff") ?? 0) !== 0
           || weightedTransparencyIneligibility(material.renderState, { renderOrder: item.renderOrder, depthConvention: "standard" })
           || (material.renderState.blendMode !== undefined && material.renderState.blendMode !== "alpha")) return false;
         const features = this.programFeaturesFor(material, device, item);
-        if (features.alphaMode !== "blend" || features.lighting !== "unlit" || features.fog !== "none"
+        if (features.alphaMode !== "blend" || features.lighting !== (lit ? "lit" : "unlit") || features.fog !== "none"
           || features.skinning || features.morph || features.instancing || features.drawId || features.backgroundCoverage
           || Object.values(features.maps).some((value) => value !== undefined) || features.extensions.length
           || Object.keys(features.features).some((key) => key !== PROGRAM_TRANSPARENCY_FEATURE)) return false;
@@ -1890,7 +1896,10 @@ export class ForwardPass extends BaseRenderPass {
     if (!generated) for (const [name, value] of binding.uniforms) {
       const descriptor = baseMaterial instanceof PortableShaderMaterial
         ? baseMaterial.uniformSchema.find((uniform) => uniform.name === name) : undefined;
-      if (descriptor?.kind === "data" || !isFlatUniformValue(value)) {
+      if (descriptor?.kind === "data" && device.kind === "webgl2") {
+        // S5-WP05-03: WebGL2 binds a data uniform as its GL leaf uniforms.
+        for (const [leaf, leafValue] of flattenPortableDataUniform(descriptor as PortableShaderUniformDescriptor, value, baseMaterial.name)) uniforms.set(leaf, leafValue);
+      } else if (descriptor?.kind === "data" || !isFlatUniformValue(value)) {
         if (!descriptor || device.kind !== "webgpu" || !device.drawPortable) {
           throw new RenderDeviceError("Structured material uniforms require portable WebGPU submission", "PORTABLE_UNIFORM_BACKEND_UNSUPPORTED", { material: baseMaterial.name, uniform: name });
         }
@@ -2045,7 +2054,9 @@ export class ForwardPass extends BaseRenderPass {
         applyGraphCascadeUniforms(this.options, item, device, shader, uniforms);
       }
       if (baseMaterial.graphMaterial && shader.reflection.uniforms.has("u_a3dClipRange")) {
-        uniforms.set("u_a3dClipRange", this.options.projectionClipRange === "zero-to-one" ? 1 : 0);
+        // The frame camera's convention names its projection range (zero-to-one
+        // for a reversed WebGPU frame rebuilt for native clip depth).
+        uniforms.set("u_a3dClipRange", (this.options.projectionClipRange ?? this.options.frameContext?.camera?.depth?.clipRange) === "zero-to-one" ? 1 : 0);
       }
       // `instanceColor` reads white unless this instanced draw carries per-instance colours.
       if (shader.reflection.uniforms.has("u_a3dInstanceColors")) {
@@ -3797,7 +3808,8 @@ function validateContactShadowReceiver(material: Material, index: number, scope:
   const depthCompare = frameDepth?.mode === "reversed" ? "greater-equal" : "less-equal";
   if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite
     || remapDepthCompare(state.depthCompareV2 ?? state.depthCompare, frameDepth) !== depthCompare
-    || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null) {
+    || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null
+    || renderStateHasExtendedCommandFields(state)) {
     throw new RenderDeviceError("Contact shadows require an opaque receiver matching the camera depth prepass", "CONTACT_SHADOW_RECEIVER_DEPTH_UNSUPPORTED", { material: material.name });
   }
   if (material instanceof PortableShaderMaterial && material.graphMaterial && !material.graphSourcesPristine) {

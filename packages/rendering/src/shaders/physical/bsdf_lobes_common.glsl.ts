@@ -1,6 +1,7 @@
 /**
  * Common state and bounded helpers for Aura's layered material operations.
- * The companion in physical-wgsl/ retains its prior attribution.
+ * Its WGSL companion (physical-wgsl/bsdf_lobes_common.wgsl.ts) mirrors it.
+ * Equations: Karis 2013 split sum; Kulla & Conty 2017 energy compensation (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/bsdf_lobes_common.wgsl.js";

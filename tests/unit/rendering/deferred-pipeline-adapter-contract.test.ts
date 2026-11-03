@@ -272,16 +272,26 @@ describe("native drawing resource lifetime", () => {
     expect(() => new DeferredPipeline(mock.device, { outputFormat: "rgba16float" }).render({ ...frame(), physical, light })).toThrow(/physical materials/);
   });
 
-  it("releases only transient allocations when the owner rejects submission", () => {
+  it("releases only transient allocations, after the fence, when the owner rejects submission", async () => {
     const mock = mockDevice();
+    let finish!: () => void;
+    const fence = new Promise<void>((resolve) => { finish = resolve; });
+    mock.device.queue.onSubmittedWorkDone.mockImplementation(() => fence);
     const pipeline = new DeferredPipeline(mock.device, { outputFormat: "rgba16float" });
     const colorView = { destroy: vi.fn() }, depthAttachmentView = { destroy: vi.fn() }, depthSampleView = { destroy: vi.fn() };
     const shared = { colorView, depthAttachmentView, depthSampleView, colorFormat: "rgba16float", depthFormat: "depth24plus-stencil8", width: 1, height: 1, sampleCount: 1, loadOp: "clear" as const, clearColor: [0, 0, 0, 1] as const, depthClearValue: 1, stencilClearValue: 0, submit: () => { throw new Error("stale lease"); } };
     expect(() => pipeline.render({ ...frame(), surface: { view: colorView, width: 1, height: 1 }, deferredAttachments: shared })).toThrow(/stale lease/);
     expect(mock.resources.length).toBeGreaterThan(0);
+    // A throwing owner submit does not prove nothing was enqueued: transient
+    // allocations stay pending until the queue fence, then are destroyed once.
+    expect(mock.resources.every((resource) => resource.destroy.mock.calls.length === 0)).toBe(true);
+    finish();
+    await settle();
     expect(mock.resources.every((resource) => resource.destroy.mock.calls.length === 1)).toBe(true);
     for (const borrowed of [colorView, depthAttachmentView, depthSampleView]) expect(borrowed.destroy).not.toHaveBeenCalled();
     pipeline.dispose();
+    await settle();
+    expect(mock.resources.every((resource) => resource.destroy.mock.calls.length === 1)).toBe(true);
   });
 
   it("does not silently shade physical materials as Lambert in other native paths", () => {

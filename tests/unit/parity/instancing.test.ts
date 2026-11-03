@@ -29,6 +29,9 @@ import {
   instanceTransformsExtension
 } from "../../../packages/engine/src/agent-api/nodes/game/instanceTransforms";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
+import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
+import { Renderer } from "../../../packages/rendering/src/Renderer";
 import type { AuraBatchedNode } from "../../../packages/engine/src/agent-api/nodes/types";
 import "../../../packages/engine/src/agent-api/nodes/batched";
 
@@ -55,6 +58,30 @@ function compileCtx(options: "all" | "none" | (string & {}) = "all") {
     strict: false,
     degrade: () => undefined
   } as never;
+}
+
+/**
+ * A real WebGL2 renderer over an in-memory GL context exposing the multi-draw
+ * extension and fence APIs: the capable renderer the packed route requires.
+ */
+async function combinedRenderer(): Promise<Renderer> {
+  const constants: Record<string, number> = { NO_ERROR: 0, SYNC_GPU_COMMANDS_COMPLETE: 0x9117, ALREADY_SIGNALED: 0x911a,
+    TIMEOUT_EXPIRED: 0x911b, CONDITION_SATISFIED: 0x911c, WAIT_FAILED: 0x911d };
+  const values: Record<string, unknown> = { ...constants, getError: () => 0, getParameter: () => 4096, isContextLost: () => false,
+    getExtension: (name: string) => name === "WEBGL_multi_draw" ? { multiDrawElementsInstancedWEBGL() {} } : null,
+    fenceSync: () => ({}), flush() {}, clientWaitSync: () => constants.ALREADY_SIGNALED, deleteSync() {} };
+  const gl = new Proxy(values, { get(target, key) {
+    if (typeof key === "string" && key in target) return target[key];
+    if (typeof key === "string" && /^[A-Z0-9_]+$/.test(key)) return 0x10000;
+    return () => undefined;
+  } });
+  const canvas = { width: 64, height: 64, getContext: () => gl, addEventListener() {}, removeEventListener() {} } as unknown as HTMLCanvasElement;
+  return Renderer.create({ backend: "webgl2", canvas, width: 64, height: 64 });
+}
+
+/** A compiled-frame context: capable renderer plus the per-scene frame ownership signal compileScene sets. */
+function frameOwnedCtx(options: string, renderer: Renderer) {
+  return { ...(compileCtx(options) as object), renderer, auraBatchFrameOwnership: true } as never;
 }
 
 function collectOut() {
@@ -275,18 +302,28 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
     return { ...mesh.toJSON(), ...over };
   }
 
-  it("generated-programs on → packed multi-draw route with marker items", () => {
-    const node = authoredNode();
-    const out = collectOut();
-    batchedNodeHandler.compile(node as never, compileCtx("parity.batching,tiers.batching,core"), out as never);
-    const report = out.fields.get("parityBatched") as { mode: string; draws: number; instances: number };
-    expect(report.mode).toBe("multi-draw");
-    expect(report.instances).toBe(2);
-    // One item per live instance; each carries the shared draw-data texture.
-    expect(out.items).toHaveLength(2);
-    const markers = out.items.map((i) => (i as { multiDraw?: { mode: string; drawIndex: number } }).multiDraw);
-    expect(markers.map((m) => m?.mode)).toEqual(["multi-draw", "multi-draw"]);
-    expect(markers.map((m) => m?.drawIndex)).toEqual([0, 1]);
+  it("generated-programs on → packed multi-draw route with marker items", async () => {
+    const node = authoredNode({ runtime: { id: "parity-batch" } } as Partial<AuraBatchedNode>);
+    const flags = "parity.batching,tiers.batching,core";
+    const snapshot = scene().add(node as never).toJSON();
+    const registry = createAuraRuntimeNodeRegistry(snapshot, { flags: resolveQrFlags({ options: flags }) });
+    const renderer = await combinedRenderer();
+    try {
+      // A discarded compile-time contribution owns no frame lease: never packed.
+      const compiled = collectOut();
+      batchedNodeHandler.compile(node as never, frameOwnedCtx(flags, renderer), compiled as never);
+      expect((compiled.fields.get("parityBatched") as { fallbackReason?: string }).fallbackReason).toBe("runtime-node-unavailable");
+      const out = collectOut();
+      batchedNodeHandler.update!(node as never, registry.get("parity-batch"), frameOwnedCtx(flags, renderer), out as never, 0);
+      const report = out.fields.get("parityBatched") as { mode: string; draws: number; instances: number };
+      expect(report.mode).toBe("multi-draw");
+      expect(report.instances).toBe(2);
+      // One item per live instance; each carries the shared draw-data texture.
+      expect(out.items).toHaveLength(2);
+      const markers = out.items.map((i) => (i as { multiDraw?: { mode: string; drawIndex: number } }).multiDraw);
+      expect(markers.map((m) => m?.mode)).toEqual(["multi-draw", "multi-draw"]);
+      expect(markers.map((m) => m?.drawIndex)).toEqual([0, 1]);
+    } finally { renderer.dispose(); registry.dispose(); }
   });
 
   it("generated-programs off → honest instanced fallback (one item per geometry bucket)", () => {
@@ -307,17 +344,20 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
     }
   });
 
-  it("resolveBatchedMode honours the explicit mode override", () => {
+  it("resolveBatchedMode honours the explicit mode override", async () => {
     const mesh = batched.mesh({ maxInstances: 2, multiDraw: "loop" });
     mesh.addGeometry(boxGeometry());
     mesh.addGeometry(boxGeometry(1));
     const node = mesh.toJSON();
     const state = batchedStateForNode(node);
-    expect(resolveBatchedMode(state, node, compileCtx("parity.batching,tiers.batching,core")).mode).toBe("loop");
+    const renderer = await combinedRenderer();
+    try {
+      expect(resolveBatchedMode(state, node, frameOwnedCtx("parity.batching,tiers.batching,core", renderer)).mode).toBe("loop");
+    } finally { renderer.dispose(); }
     expect(resolveBatchedMode(state, node, compileCtx("none")).mode).toBe("instanced");
   });
 
-  it("without tiers.batching the packed route is never chosen (its marker items would draw nothing)", () => {
+  it("without tiers.batching the packed route is never chosen (its marker items would draw nothing)", async () => {
     const mesh = batched.mesh({ maxInstances: 2 });
     mesh.addGeometry(boxGeometry());
     mesh.addGeometry(boxGeometry(1));
@@ -326,7 +366,12 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
     const resolved = resolveBatchedMode(state, node, compileCtx("parity.batching,core"));
     expect(resolved.mode).toBe("instanced");
     expect(resolved.fallbackReason).toBe("tiers-batching-off");
-    expect(resolveBatchedMode(state, node, compileCtx("parity.batching,tiers.batching,core")).mode).toBe("multi-draw");
+    const renderer = await combinedRenderer();
+    try {
+      // Even a capable renderer with frame ownership stays instanced without the tier.
+      expect(resolveBatchedMode(state, node, frameOwnedCtx("parity.batching,core", renderer)).fallbackReason).toBe("tiers-batching-off");
+      expect(resolveBatchedMode(state, node, frameOwnedCtx("parity.batching,tiers.batching,core", renderer)).mode).toBe("multi-draw");
+    } finally { renderer.dispose(); }
   });
 
   it("authored (non-builder) batched nodes materialize state from declarative fields", () => {

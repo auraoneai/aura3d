@@ -1,7 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraAnimationSpec, AuraApp, AuraCustomMaterialSpec, AuraLayerMask, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraUniformValue, AuraVec3 } from "../nodes/types.js";
-import { composeTRSInto, decomposeMatrix, eulerToQuaternion, identityMat4Into, localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
+import { composeTRSInto, composeWorldMatrixWithLookAt, decomposeMatrix, eulerToQuaternion, identityMat4Into, localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
 import type { AuraQuat } from "../../contracts/sceneGraph.js";
 import type { AuraNodeBuilder } from "../nodes/builder.js";
 import { assertDepthPreviewTarget, assertDepthPreviewTargetTree } from "../nodes/depthPreviewTarget.js";
@@ -922,34 +922,61 @@ function assertRuntimePivotMutation(handle: AuraRuntimeNodeHandle, next: AuraVec
   assertValidPivot(node?.pivot);
   const previous = node?.pivot ?? [0, 0, 0];
   if (previous.every((value, index) => value === next[index])) return;
-  if (runtimeSubtreeHasPhysics(handle)) {
-    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing a physics node or ancestor pivot requires rebuilding its collider.");
+  if (runtimeSubtreeHasPhysics(handle) && !isRebuildablePivotPhysicsBody(handle)) {
+    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing an ancestor pivot of a physics body is not supported; only an unparented box body rebuilds its collider.");
   }
   if (hasNonzeroPivot(next)) {
+    // An unparented node's own pivot composes with its own lookAt (the pivot
+    // point stays fixed while -Z faces the target). Ancestor or descendant
+    // look-at would need a live parented look-at transform.
+    const parented = parityL7Parents.get(handle) !== undefined || runtimeParentedNodes.has(handle);
     for (let cursor: AuraRuntimeNodeHandle | undefined = handle; cursor; cursor = parityL7Parents.get(cursor)) {
       const current = runtimeParentedNodes.get(cursor)?.localNode ?? parityL7NodeSpecs.get(cursor);
-      if (current && "lookAt" in current && current.lookAt !== undefined) throw new RangeError("PIVOT_LOOK_AT_UNSUPPORTED: pivoted look-at transforms are not supported.");
+      if (!current || !("lookAt" in current) || current.lookAt === undefined) continue;
+      const ownComposable = cursor === handle && !parented && current.kind !== "group" &&
+        !("instances" in current && current.instances !== undefined);
+      if (!ownComposable) throw new RangeError("PIVOT_LOOK_AT_UNSUPPORTED: pivoted look-at is supported only on an unparented node's own transform.");
     }
-    if (runtimeSubtreeMatches(handle, authoredSubtreeHasLookAt)) {
-      throw new RangeError("PIVOT_LOOK_AT_UNSUPPORTED: pivoted look-at transforms are not supported.");
+    if (runtimeHandleSubtree(handle).some((entry) => entry !== handle && runtimeSubtreeMatches(entry, authoredSubtreeHasLookAt)) ||
+        (node && "instances" in node && node.instances?.some((instance) => instance.lookAt !== undefined))) {
+      throw new RangeError("PIVOT_LOOK_AT_UNSUPPORTED: pivoted look-at is supported only on an unparented node's own transform.");
     }
   }
 }
 
+/**
+ * An unparented primitive box body (no instances or look-at, no other physics
+ * in its subtree) has a complete pivoted collider contract: the app and
+ * preview physics rebuild its collider before the next step when its pivot,
+ * scale, size or geometry changes.
+ */
+function isRebuildablePivotPhysicsBody(handle: AuraRuntimeNodeHandle): boolean {
+  const node = runtimeParentedNodes.get(handle)?.localNode ?? parityL7NodeSpecs.get(handle);
+  if (!node || node.kind !== "primitive" || node.primitive !== "box" || !node.physics) return false;
+  if (parityL7Parents.get(handle) || runtimeParentedNodes.has(handle)) return false;
+  if (node.instances !== undefined || node.lookAt !== undefined) return false;
+  return runtimeHandleSubtree(handle).every((entry) => entry === handle || !runtimeSubtreeHasPhysics(entry));
+}
+
+/** Scale edits rebuild a pivoted collider; a mirrored or singular box has no rigid mapping. */
 function assertPivotedPhysicsScaleMutation(handle: AuraRuntimeNodeHandle, next: number | AuraVec3): void {
   const node = runtimeParentedNodes.get(handle)?.localNode ?? parityL7NodeSpecs.get(handle);
   if (!node || (node.kind !== "primitive" && node.kind !== "model") || !node.physics || !hasNonzeroPivot(node.pivot)) return;
-  const before = vecScale(node.scale);
-  const after = vecScale(next);
-  if (!before.every((value, index) => value === after[index])) {
-    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing a pivoted body's scale requires rebuilding its collider.");
+  if (!vecScale(next).every((value) => Number.isFinite(value) && value > 0)) {
+    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: a pivoted body's collider requires a finite, positive scale.");
   }
 }
 
-function assertNoPivotedPhysicsGeometryMutation(handle: AuraRuntimeNodeHandle): void {
+/**
+ * Partial position uploads bypass the node's geometry declaration, so the
+ * collider cannot observe them; `setGeometry` replaces the declaration and the
+ * collider is rebuilt from its bounds before the next physics step.
+ */
+function assertNoPivotedPhysicsPositionUpdate(handle: AuraRuntimeNodeHandle, attribute: string): void {
+  if (attribute !== "position" && attribute !== "positions") return;
   const node = runtimeParentedNodes.get(handle)?.localNode ?? parityL7NodeSpecs.get(handle);
   if (node && (node.kind === "primitive" || node.kind === "model") && node.physics && hasNonzeroPivot(node.pivot)) {
-    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing pivoted physics geometry or animation requires rebuilding its collider and mapping.");
+    throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: partial position updates cannot rebuild a pivoted collider; call setGeometry() instead.");
   }
 }
 
@@ -1457,8 +1484,12 @@ const parityL7WorldMatrix = (handle: AuraRuntimeNodeHandle, out: Float32Array): 
   const node = parityL7NodeSpecs.get(handle);
   if (!node) return identityMat4Into(out);
   if (runtimeParentedNodes.has(handle)) assertParentedLookAtSupported(handle);
-  const local = localMatrixOf(runtimeParentedNodes.get(handle)?.localNode ?? node, new Float32Array(16));
+  const localNode = runtimeParentedNodes.get(handle)?.localNode ?? node;
   const parent = parityL7Parents.get(handle);
+  // An unparented model/primitive's own lookAt is drawn by the C-06 model
+  // matrix; queries and bounds use the same pivot-fixed look rotation.
+  const ownLookAt = !parent && (node.kind === "model" || node.kind === "primitive") && "lookAt" in localNode && localNode.lookAt !== undefined;
+  const local = ownLookAt ? composeWorldMatrixWithLookAt(null, localNode, new Float32Array(16)) : localMatrixOf(localNode, new Float32Array(16));
   if (!parent) out.set(local);
   else multiplyMat4Into(out, parityL7WorldMatrix(parent, new Float32Array(16)), local);
   if (node.kind === "gaussian-splat") {
@@ -1900,16 +1931,12 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     },
     play(clip, options = {}) {
       assertNoGeneratedInstanceLightMutation(handle);
-      assertNoPivotedPhysicsGeometryMutation(handle);
       node.animation = { ...options, clip };
       bumpVersion();
       return this;
     },
     setAnimation(animation) {
       assertNoGeneratedInstanceLightMutation(handle);
-      if (animation !== undefined) {
-        assertNoPivotedPhysicsGeometryMutation(handle);
-      }
       node.animation = animation;
       bumpVersion();
       return this;
@@ -2008,7 +2035,6 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     // `selectProductionPrimitiveResource` writes into the live VertexBuffer —
     // same vertex count ⇒ dirty-range upload only, no GPU realloc.
     setGeometry(spec: import("../nodes/types.js").AuraDynamicGeometrySpec): AuraRuntimeNodeHandle {
-      assertNoPivotedPhysicsGeometryMutation(handle);
       if (!spec || spec.positions === undefined || (spec.positions.length === 0 && node.kind !== "line")) {
         throw new AuraRuntimeError("missing-asset", "Aura3D setGeometry requires a non-empty positions array.");
       }
@@ -2037,7 +2063,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       return this;
     },
     updateAttribute(name: string, update: import("../nodes/types.js").AuraAttributeUpdate): AuraRuntimeNodeHandle {
-      assertNoPivotedPhysicsGeometryMutation(handle);
+      assertNoPivotedPhysicsPositionUpdate(handle, name);
       if (typeof name !== "string" || name.trim().length === 0) {
         throw new AuraRuntimeError("missing-asset", "Aura3D updateAttribute requires an attribute name.");
       }

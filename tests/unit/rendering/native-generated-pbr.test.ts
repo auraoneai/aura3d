@@ -437,7 +437,10 @@ describe("generated native PBR program contract", () => {
       expect(program.directLightBound).toBe(clustered ? 0 : 1);
       expect(program.fragment).toContain("0.28867513459");
       expect(program.fragment).toContain("(width * height * 0.25) * emitterCosine * cutoff / max(distanceToLight * distanceToLight, 0.01)");
-      expect(program.fragment).toContain("max(dot(emitterNormal, -light.direction), 0.0)");
+      // One-sided emitters clamp the emitter cosine; the packed two-sided bit
+      // (areaUp.w, shared with the GLSL path) is the only way to light the back.
+      expect(program.fragment).toContain("let facing = dot(emitterNormal, -light.direction);");
+      expect(program.fragment).toContain("select(max(facing, 0.0), abs(facing), areaUp.w > 0.5)");
       expect(program.fragment).toContain("select(1u, 4u, directionKind.w > 2.5)");
       expect(program.fragment).toContain("directDiffuse += directResult.diffuse; directSpecular += directResult.specular");
       expect(program.fragment).toContain("sheenDirect += light.radiance");

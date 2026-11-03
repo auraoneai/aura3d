@@ -14,6 +14,7 @@ import {
   type RenderResourceCopyOptions,
   type RenderResourceReadbackOptions,
   type RenderShaderProgram,
+  type PrimitiveTopology,
   type RenderTarget,
   type RenderTargetColorRegion,
   type RenderTargetDescriptor,
@@ -26,6 +27,7 @@ import {
   type UniformValue,
   getRenderAttachmentIdentity,
   validateRenderAttachmentAccess,
+  validateRenderTargetDescriptor,
   viewBytes,
   resolveGpuTargetOwner,
   spreadGpuTargetInventory
@@ -66,6 +68,7 @@ import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention, 
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
 import { deriveUniformDataLayout, emitWgslStruct, writeUniformData, type UniformBlockLayout } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts } from "./webgpu/NativeRenderState";
+import { warmNativePipelineVariants, type NativePipelineWarmupJob, type NativePipelineWarmupOutcome } from "./webgpu/NativePipelineWarmup";
 import { PostViewHistory, type PostHistoryLease } from "./post/PostGraph";
 import { WebGPUAutoExposure, normalizeWebGPUAutoExposure, type WebGPUExposureDraw, type WebGPUExposureResult } from "./post/WebGPUAutoExposure";
 import { createOutputWgsl } from "./output/ToneMappingOperators.wgsl";
@@ -85,6 +88,7 @@ import { WebGPUGaussianSplatColorAdapter, type WebGPUSplatRegion, type WebGPUSpl
 import type { GaussianSplatColorAdapter } from "./GaussianSplatColorComposite";
 import { acquireTextureBudgetLimit, applyTextureBudget, DEFAULT_TEXTURE_BUDGET_POLICY, releaseTextureBudget, reserveTextureBudget, retireTextureBudget, setTextureBudgetResidentBytes, textureBudgetReport, TextureBudgetExceededError, type TextureBudgetPolicy } from "./textures/TextureBudget";
 import { NativeRenderBundleCache, type NativeRenderBundleCommand } from "./production-runtime/NativeRenderBundleCache";
+import { ZERO_TO_ONE_PROJECTION_OVERRIDE, ZERO_TO_ONE_PROJECTION_WGSL, declaresZeroToOneProjectionOverride, rasterClipDepthWgsl } from "./webgpu/ProjectionClip";
 import { consumeRendererPostAccess } from "./renderer/FrameGraph";
 
 const BUFFER_USAGE = {
@@ -108,6 +112,7 @@ const TEXTURE_USAGE = {
   STORAGE_BINDING: 0x0008
 } as const;
 const DEPTH_TEXTURE_FORMAT = "depth24plus-stencil8";
+const FLOAT_DEPTH_STENCIL_FEATURE = "depth32float-stencil8";
 const NATIVE_MORPH_MAX_TARGETS = 4;
 const NATIVE_MORPH_MAX_VERTICES = 64;
 const NATIVE_MORPH_UNIFORM_FLOATS = 28 + NATIVE_MORPH_MAX_TARGETS * NATIVE_MORPH_MAX_VERTICES * 4;
@@ -251,6 +256,7 @@ export interface WebGPUDeviceLike {
   createBuffer(descriptor: WebGPUBufferDescriptorLike): WebGPUBufferLike;
   createShaderModule?(descriptor: { readonly label?: string; readonly code: string }): WebGPUShaderModuleLike;
   createRenderPipeline?(descriptor: WebGPURenderPipelineDescriptorLike): WebGPURenderPipelineLike;
+  createRenderPipelineAsync?(descriptor: WebGPURenderPipelineDescriptorLike): Promise<WebGPURenderPipelineLike>;
   createBindGroupLayout?(descriptor: WebGPUBindGroupLayoutDescriptorLike): unknown;
   createPipelineLayout?(descriptor: { readonly label?: string; readonly bindGroupLayouts: readonly unknown[] }): unknown;
   createBindGroup?(descriptor: WebGPUBindGroupDescriptorLike): WebGPUBindGroupLike;
@@ -350,6 +356,23 @@ export interface WebGPUCanvasConfigurationLike {
   readonly format: string;
   readonly alphaMode?: "opaque" | "premultiplied";
   readonly colorSpace?: "srgb" | "display-p3";
+}
+
+/**
+ * WP-03: one scene draw's pipeline identity, known before a frame: the
+ * program, its WP-05 vertex layout, WP-31 draw state (standard-depth sense;
+ * the device applies the WP-30 frame convention) and the target it will draw
+ * into. Legacy `instanceAttributes` streams are bound per draw and not warmed.
+ */
+export interface WebGPURenderPipelineWarmRequest {
+  readonly shader: RenderShaderProgram;
+  readonly vertexFormat?: VertexFormat;
+  readonly topology: PrimitiveTopology;
+  readonly renderState?: RenderCommandState;
+  /** Render target the draw writes; omitted or null means the canvas. */
+  readonly target?: RenderTarget | null;
+  /** Canvas frame size the draw will begin with (default: the current viewport). */
+  readonly canvasSize?: { readonly width: number; readonly height: number };
 }
 
 export interface WebGPURenderPipelineDescriptorLike {
@@ -501,6 +524,8 @@ export interface WebGPURenderPassDescriptorLike {
   };
   readonly colorAttachments: readonly {
     readonly view: unknown;
+    /** Required for a "3d" view: the depth slice this pass renders. */
+    readonly depthSlice?: number;
     readonly resolveTarget?: unknown;
     readonly clearValue?: readonly [number, number, number, number];
     readonly loadOp: "clear" | "load";
@@ -802,6 +827,8 @@ class WebGPUShaderProgram implements RenderShaderProgram {
   public nativeColorDefaultModule: unknown;
   public readonly atlasVertexModules = new Map<string, unknown>();
   public readonly skinningVertexModules = new Map<string, unknown>();
+  /** The vertex stage declares the `a3dZeroToOneProjection` pipeline override (zero-to-one reversed frames). */
+  public projectionOverride = false;
 
   constructor(
     public readonly id: number,
@@ -864,6 +891,11 @@ interface NativeDofFrameProof {
   serial: number;
 }
 
+/** Color-attachment subresource fields: a 3d target view renders exactly one depth slice per pass. */
+function nativeColorSlice(target: WebGPURenderTarget | null | undefined): { readonly depthSlice?: number } {
+  return target?.nativeDepthSlice === undefined ? {} : { depthSlice: target.nativeDepthSlice };
+}
+
 class WebGPURenderTarget implements RenderTarget {
   public disposed = false;
   private disposing = false;
@@ -885,6 +917,15 @@ class WebGPURenderTarget implements RenderTarget {
   public nativeDepthFormat: string = DEPTH_TEXTURE_FORMAT;
   /** "float" for depth32float and depth32float-stencil8 attachments. */
   public depthStorage?: DepthStorage;
+  /** Layered (cube / 2d-array / 3d) parents and their per-layer views. */
+  public dimension?: "2d" | "cube" | "2d-array" | "3d";
+  public layers?: number;
+  public layerTargets?: readonly RenderTarget[];
+  public attachmentLayer?: number;
+  /** 3d targets: the volume slice every color attachment of this target renders (pass `depthSlice`). */
+  public nativeDepthSlice?: number;
+  /** No color attachment: passes carry only the depth/stencil attachment. */
+  public depthOnly?: boolean;
   constructor(
     public readonly id: number,
     public readonly width: number,
@@ -909,7 +950,9 @@ class WebGPURenderTarget implements RenderTarget {
     private readonly onDisposalStateChange: (target: WebGPURenderTarget, active: boolean) => void,
     private readonly nativeRetirementPending: (texture: WebGPUTextureLike) => boolean,
     private readonly retryNativeRetirement: (texture: WebGPUTextureLike) => void,
-    private readonly nativeCleanupActive: (texture: WebGPUTextureLike) => boolean
+    private readonly nativeCleanupActive: (texture: WebGPUTextureLike) => boolean,
+    /** A per-layer view: it borrows the parent's native textures and attachments and never retires them. */
+    private readonly layerChild = false
   ) {
   }
 
@@ -936,6 +979,7 @@ class WebGPURenderTarget implements RenderTarget {
   }
 
   private nativeTextures(): (WebGPUTextureLike | null)[] {
+    if (this.layerChild) return [];
     return [this.nativeTexture, ...this.extraColors.flatMap(color => [color.native, color.multisampleNative]),
       this.nativeDepthTexture, this.nativeMultisampleTexture];
   }
@@ -975,7 +1019,7 @@ class WebGPURenderTarget implements RenderTarget {
         if (!texture || this.retiredNativeTextures.has(texture)) continue;
         try { this.retire(texture); this.retiredNativeTextures.add(texture); } catch (error) { failures.push(error); }
       }
-      const attachments = [this.colorTexture, ...this.extraColors.map(color => color.texture), this.depthTexture, this.multisampledDepthTexture];
+      const attachments = this.layerChild ? [] : [this.colorTexture, ...this.extraColors.map(color => color.texture), this.depthTexture, this.multisampledDepthTexture];
       for (const texture of attachments) {
         if (!texture || this.disposedAttachments.has(texture)) continue;
         try { texture.dispose(); this.disposedAttachments.add(texture); } catch (error) { failures.push(error); }
@@ -1399,6 +1443,8 @@ export class WebGPUDevice implements RenderDevice {
   private readonly nativeBudgetRetirement = new WeakMap<WebGPUTextureLike, () => void>();
   /** Actual resident decoded bytes, retained even when the CPU fallback is invalidated by an edit. */
   private readonly nativeCompressedFallbackBytes = new Map<Texture, number>();
+  /** Decoded fallback level data last written per texture, to detect a supplied replacement. */
+  private readonly nativeCompressedFallbackData = new Map<Texture, readonly ArrayBufferView[]>();
   private readonly nativeFallbackTextures = new Map<string, { readonly texture: WebGPUTextureLike; readonly view: unknown }>();
   /**
    * threejs-parity ST-03 (L4): `Texture.revision` recorded at the last native
@@ -1494,7 +1540,12 @@ export class WebGPUDevice implements RenderDevice {
       const limitOwner = options.device ?? adapter;
       const missingLimits = Object.entries(requiredLimits).filter(([name, value]) => (limitOwner.limits?.[name] ?? -1) < value).map(([name]) => name);
       if (missingLimits.length) throw new RenderDeviceError("Required WebGPU limits are unavailable", "WEBGPU_LIMITS_UNAVAILABLE", { missingLimits });
-      device = await requestDevice(adapter, options.device, requiredFeatures, requiredLimits);
+      // Reversed-Z frames need floating-point depth with a stencil aspect for
+      // renderer-owned scene targets; request it whenever the adapter offers
+      // it (an optional feature, never a creation requirement).
+      const requestedFeatures = !options.device && adapter.features?.has(FLOAT_DEPTH_STENCIL_FEATURE) && !requiredFeatures.includes(FLOAT_DEPTH_STENCIL_FEATURE)
+        ? [...requiredFeatures, FLOAT_DEPTH_STENCIL_FEATURE] : requiredFeatures;
+      device = await requestDevice(adapter, options.device, requestedFeatures, requiredLimits);
       if (device && typeof device === "object") {
         const managedOwner = managedNativeDevices.get(device);
         if ((managedOwner && managedOwner !== lease) || (lease && nativeDeviceOwners.get(device)?.size) ||
@@ -2229,7 +2280,15 @@ export class WebGPUDevice implements RenderDevice {
     if (existing) return existing;
     if (!buffer.disposed || buffer[resourceDisposalPending]) buffer.dispose();
     const handle = nativeBufferHandle(buffer);
-    const retired = this.resourceInterop.owns(handle) ? this.requestNativeRetirement(handle) : Promise.resolve();
+    const receipt = this.resourceInterop.owns(handle) ? this.requestNativeRetirement(handle) : Promise.resolve();
+    // A failed or unavailable fence is not a release: the lease (and this
+    // reservation) stays pending until genuine loss or owned-device
+    // destruction invalidates it. Destruction failures still reject.
+    const retired = receipt.catch((error: unknown) => {
+      if (!this.resourceInterop.owns(handle)) return undefined;
+      if (this.resourceInterop.hasUnfencedRetirement(handle)) return this.waitForNativePointInvalidation();
+      throw error;
+    });
     const destroyed = this.#pointBufferDestroyed.get(buffer);
     const completion = destroyed ? retired.then(() => destroyed() ? undefined : this.waitForNativePointInvalidation()) : retired;
     this.pointBufferRetirements.set(buffer, completion);
@@ -2569,15 +2628,17 @@ export class WebGPUDevice implements RenderDevice {
   getDepthConvention(): DepthConvention { return this.depthConvention; }
 
   /**
-   * WebGPU rasterizes zero-to-one, but generated and stock WGSL programs
-   * remap the renderer's minus-one-to-one projection in the vertex stage,
-   * which cancels the reversed-Z float gain; reversed frames therefore stay
-   * "reduced" until programs consume a native zero-to-one projection.
-   * depth32float is core; depth32float-stencil8 needs that device feature
-   * (pass it in `requiredFeatures`).
+   * WebGPU rasterizes zero-to-one. Standard and logarithmic frames hand their
+   * WGSL programs the renderer's minus-one-to-one projection, which the
+   * vertex stage remaps with (z + w) / 2. A reversed frame instead receives a
+   * native zero-to-one projection (`projectionClipRange: "zero-to-one"`), and
+   * every scene program that declares the `a3dZeroToOneProjection` override
+   * is specialized to pass clip z through unchanged, so the floating-point
+   * reversed-Z gain survives. depth32float is core; depth32float-stencil8 is
+   * requested when the adapter offers it (or pass it in `requiredFeatures`).
    */
   getDepthPrecisionSupport(): DepthPrecisionSupport {
-    return { standardClipRange: "zero-to-one", zeroToOneReversed: false, floatDepth: true,
+    return { standardClipRange: "zero-to-one", zeroToOneReversed: true, floatDepth: true,
       floatDepthStencil: this.device.features?.has("depth32float-stencil8") === true };
   }
 
@@ -2593,6 +2654,16 @@ export class WebGPUDevice implements RenderDevice {
     return { format: DEPTH_TEXTURE_FORMAT, storage: "fixed" };
   }
 
+  /**
+   * Pipeline-key suffix for a scene program specialized to a native
+   * zero-to-one projection: the active frame is reversed with
+   * `projectionClipRange: "zero-to-one"` and the vertex stage declares the
+   * `a3dZeroToOneProjection` override.
+   */
+  private zeroToOneProjectionKey(shader: WebGPUShaderProgram): "" | ":z01" {
+    return shader.projectionOverride && this.#depthConvention.mode === "reversed" && this.#depthConvention.projectionClipRange === "zero-to-one" ? ":z01" : "";
+  }
+
   /** Depth/stencil format of the attachment the next draw writes (canvas depth is fixed). */
   private activeDepthStencilFormat(): string {
     return (this.gaussianSplatBorrowedDepth ?? this.activeRenderTarget)?.nativeDepthFormat ?? DEPTH_TEXTURE_FORMAT;
@@ -2600,12 +2671,14 @@ export class WebGPUDevice implements RenderDevice {
 
   setDepthConvention(convention: DepthConvention): void {
     this.assertAlive();
-    // Generated WGSL programs remap the renderer's minus-one-to-one camera
-    // projection into WebGPU's zero-to-one clip space, which preserves the
-    // reversed ordering (near = 1, far = 0). In a logarithmic frame they
-    // write ln(d / near) / ln(far / near) as @builtin(frag_depth).
+    // Scene WGSL programs remap a minus-one-to-one camera projection into
+    // WebGPU's zero-to-one clip space, which preserves the reversed ordering
+    // (near = 1, far = 0). A reversed frame negotiated with a zero-to-one
+    // projection specializes them to skip that remap. In a logarithmic frame
+    // they write ln(d / near) / ln(far / near) as @builtin(frag_depth).
     const reversed = convention.mode === "reversed";
     if ((convention.mode !== "standard" && !reversed && convention.mode !== "logarithmic") || convention.clipRange !== "zero-to-one"
+      || (convention.projectionClipRange !== undefined && convention.projectionClipRange !== "minus-one-to-one" && !(reversed && convention.projectionClipRange === "zero-to-one"))
       || convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
       throw new RenderDeviceError("Depth convention is unsupported by the active WebGPU pipeline", "DEPTH_MODE_UNSUPPORTED", { mode: convention.mode });
     }
@@ -2832,6 +2905,7 @@ export class WebGPUDevice implements RenderDevice {
       nativeSources.generatedPbr,
       nativeSources.generatedUnlit
     );
+    shader.projectionOverride = declaresZeroToOneProjectionOverride(nativeSources.vertex);
     this.shaders.add(shader);
     this.#mrtShaders.set(shader, { pbr: nativeSources.generatedPbr, unlit: nativeSources.generatedUnlit,
       modules: [...modules], entryPoints: [...nativeSources.entryPoints], layout: nativeSources.uniformLayout,
@@ -2909,14 +2983,13 @@ export class WebGPUDevice implements RenderDevice {
       }
       descriptor = { ...descriptor, format, colorAttachments: undefined };
     }
-    if (
-      (descriptor.dimension !== undefined && descriptor.dimension !== "2d") ||
-      descriptor.layers !== undefined ||
-      descriptor.depthOnly === true ||
-      descriptor.depthCompare === true
-    ) {
-      throw new RenderDeviceError("WebGPU layered, depth-only and depth-compare render targets are not yet implemented", "UNSUPPORTED_RENDER_TARGET_FEATURE", {
-        label: descriptor.label
+    if (descriptor.depthCompare !== true && (descriptor.dimension === "cube" || descriptor.dimension === "2d-array" || descriptor.dimension === "3d" || descriptor.depthOnly === true)) {
+      return this.createLayeredRenderTarget(descriptor);
+    }
+    if ((descriptor.dimension !== undefined && descriptor.dimension !== "2d") || descriptor.layers !== undefined || descriptor.depthCompare === true) {
+      // Comparison targets need a native comparison-sampler binding path.
+      throw new RenderDeviceError("WebGPU depth-compare render targets are not yet implemented", "UNSUPPORTED_RENDER_TARGET_FEATURE", {
+        label: descriptor.label, dimension: descriptor.dimension ?? "2d"
       });
     }
     if (
@@ -3106,6 +3179,146 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   /** 2D MRT targets share dimensions, sample count, depth and one frame lifetime. */
+  /**
+   * Cube / 2d-array target: one native array texture (and depth array when
+   * depth is requested), sampled through a cube or 2d-array view. Each
+   * `layerTargets[i]` renders through a single-layer 2D view of the same
+   * texture; the parent renders layer zero, as on WebGL2. Children borrow the
+   * parent's leases: only the parent retires native textures, behind the
+   * retirement fence. Single-sample, single-mip, single color attachment.
+   * A 3d target is one color volume: every child shares the full 3d view and
+   * selects its slice through the pass attachment's `depthSlice`. A depth-only
+   * target (any dimension) has no color texture and renders depth alone.
+   */
+  private createLayeredRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
+    validateRenderTargetDescriptor(descriptor);
+    const dimension = (descriptor.dimension ?? "2d") as "2d" | "cube" | "2d-array" | "3d";
+    const depthOnly = descriptor.depthOnly === true, volume = dimension === "3d";
+    if ((descriptor.sampleCount ?? 1) !== 1 || (descriptor.mipLevelCount ?? 1) !== 1) {
+      throw new RenderDeviceError("WebGPU layered render targets must be single-sample with one mip", "UNSUPPORTED_RENDER_TARGET_FEATURE", { label: descriptor.label, dimension });
+    }
+    if (!this.device.createTexture) throw new RenderDeviceError("WebGPU layered render targets require native textures", "UNSUPPORTED_RENDER_TARGET_FEATURE", { label: descriptor.label });
+    const layerCount = dimension === "cube" ? 6 : descriptor.layers ?? 1;
+    const label = descriptor.label ?? "render-target";
+    const format = descriptor.format ?? "rgba8";
+    const hasDepth = descriptor.depth !== false;
+    const depthSelection = this.selectDepthFormat(descriptor);
+    const colorBytes = depthOnly ? 0 : descriptor.width * descriptor.height * bytesPerPixel(format) * layerCount;
+    const depthBytes = hasDepth ? descriptor.width * descriptor.height * 4 * layerCount : 0;
+    if (![colorBytes, depthBytes].every(Number.isSafeInteger)) throw new TextureBudgetExceededError("Render target exceeds safe texture byte accounting.");
+    const policy = this.options.textureBudgetPolicy;
+    const limit = policy?.maxBytes ?? policy?.textureBudgetBytes;
+    const releaseColor = reserveTextureBudget(colorBytes, limit, this);
+    let releaseDepth: () => void = () => {};
+    try { if (hasDepth) releaseDepth = reserveTextureBudget(depthBytes, limit, this); } catch (error) { releaseColor(); throw error; }
+    let nativeTexture: WebGPUTextureLike | null = null, nativeDepthTexture: WebGPUTextureLike | null = null;
+    let colorRegistered = false, depthRegistered = false;
+    try {
+      if (depthOnly) { releaseColor(); colorRegistered = true; } else {
+        nativeTexture = this.device.createTexture({
+          label, size: [descriptor.width, descriptor.height, layerCount], format: webgpuTextureFormat(format),
+          ...(volume ? { dimension: "3d" as const } : {}),
+          usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.COPY_SRC | TEXTURE_USAGE.COPY_DST | TEXTURE_USAGE.TEXTURE_BINDING
+        });
+        this.registerNativeCleanup(nativeTexture, [{ run: releaseColor }]);
+        colorRegistered = true;
+      }
+      if (hasDepth) {
+        nativeDepthTexture = this.device.createTexture({
+          label: `${label}-depth`, size: [descriptor.width, descriptor.height, layerCount], format: depthSelection.format,
+          usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.TEXTURE_BINDING
+        });
+        this.registerNativeCleanup(nativeDepthTexture, [{ run: releaseDepth }]);
+        depthRegistered = true;
+      } else releaseDepth();
+      const color = nativeTexture, depth = nativeDepthTexture;
+      const layerView = (texture: WebGPUTextureLike, layer: number): unknown =>
+        texture.createView({ dimension: "2d", baseArrayLayer: layer, arrayLayerCount: 1, baseMipLevel: 0, mipLevelCount: 1 });
+      // A 3d attachment view must be the whole one-mip volume; the pass picks the slice.
+      const volumeView = volume && color ? color.createView({ dimension: "3d", baseMipLevel: 0, mipLevelCount: 1 }) : null;
+      const colorView = (layer: number): unknown => !color ? null : volumeView ?? layerView(color, layer);
+      const sampledView = volumeView ?? color?.createView({ dimension }) ?? null;
+      const colorTexture = depthOnly
+        ? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension,
+          ...(dimension === "2d-array" ? { layers: layerCount } : {}), renderAttachment: true })
+        : new Texture({ width: descriptor.width, height: descriptor.height, format, label: descriptor.label ?? "render-target-color", dimension,
+          ...(dimension === "2d-array" ? { layers: layerCount } : volume ? { depth: layerCount } : {}), renderAttachment: true });
+      const depthTexture = hasDepth
+        ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${label}-depth`, dimension,
+          ...(dimension === "2d-array" ? { layers: layerCount } : {}), renderAttachment: true })
+        : undefined;
+      let children: WebGPURenderTarget[] = [];
+      let disposalAccounted = false;
+      const makeTarget = (layer: number, child: boolean): WebGPURenderTarget => new WebGPURenderTarget(
+        this.nextId++, descriptor.width, descriptor.height, child ? `${label}-layer-${layer}` : label,
+        colorTexture, depthTexture, undefined, color, colorView(layer), sampledView,
+        depth, depth ? layerView(depth, layer) : null, hasDepth, 1, null, null,
+        child ? () => {} : (texture) => this.retireNative(texture),
+        child
+          ? (disposed) => { this.renderTargets.delete(disposed); }
+          : (disposed) => {
+            this.renderTargets.delete(disposed);
+            this.pendingRenderTargetDisposals.delete(disposed);
+            for (const layerTarget of children) layerTarget.dispose();
+            if (!disposalAccounted) {
+              disposalAccounted = true;
+              this.disposedRenderTargets += 1;
+              this.disposedRenderTargetTextures += (depthOnly ? 0 : 1) + (disposed.depthTexture ? 1 : 0);
+            }
+          },
+        child ? () => {} : (failed, error) => {
+          this.renderTargets.add(failed);
+          if (this.disposed || this.deviceDisposing) this.pendingRenderTargetDisposals.add(failed);
+          this.rejectLateDisposalFailure(error);
+        },
+        child ? () => {} : (attempted) => { this.deviceTargetDisposalAttempts?.add(attempted); },
+        child ? () => {} : (owner, active) => { if (active) this.activeTargetDisposals.add(owner); else this.activeTargetDisposals.delete(owner); },
+        child ? () => false : resource => this.nativeRetirementPending(resource),
+        child ? () => {} : resource => this.retryFailedNativeRetirement(resource),
+        child ? () => false : resource => this.activeNativeCleanups.has(resource),
+        child
+      );
+      const target = makeTarget(0, false);
+      // A plain 2D depth-only target has no layers to address.
+      children = dimension === "2d" ? [] : Array.from({ length: layerCount }, (_, layer) => makeTarget(layer, true));
+      for (const owner of [target, ...children]) {
+        owner.dimension = dimension;
+        owner.nativeDepthFormat = depthSelection.format;
+        if (hasDepth && depthSelection.storage === "float") owner.depthStorage = "float";
+        if (depthOnly) owner.depthOnly = true;
+      }
+      if (volume) target.nativeDepthSlice = 0;
+      if (dimension !== "2d") {
+        target.layers = layerCount;
+        // WebGPU zero-initializes textures; each layer clears through its own view.
+        target.nativeNeedsClear = false;
+        children.forEach((child, layer) => {
+          child.layers = 1; child.attachmentLayer = layer;
+          if (volume) child.nativeDepthSlice = layer;
+        });
+        target.layerTargets = Object.freeze([...children]);
+      }
+      claimRenderTargetTextureOwner(colorTexture, this);
+      if (depthTexture) claimRenderTargetTextureOwner(depthTexture, this);
+      for (const child of children) this.renderTargets.add(child);
+      this.renderTargets.add(target);
+      nativeRetirementReceipts.set(target, resource => this.nativeRetirementReceipt(resource));
+      return target;
+    } catch (error) {
+      for (const { texture, registered, release } of [
+        { texture: nativeTexture, registered: colorRegistered, release: releaseColor },
+        { texture: nativeDepthTexture, registered: depthRegistered, release: releaseDepth }
+      ]) {
+        if (!texture) { if (!registered) release(); continue; }
+        if (!registered) this.retireUnregisteredNative(texture, release, true);
+        else {
+          try { if (this.resourceInterop.owns(texture)) this.retireNative(texture); } catch { /* Preserve the allocation error. */ }
+        }
+      }
+      throw error;
+    }
+  }
+
   private createMultipleColorRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
     const formats = descriptor.colorAttachments!.map((entry) => entry?.format);
     if (formats.some((format) => format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f")) {
@@ -3608,6 +3821,8 @@ export class WebGPUDevice implements RenderDevice {
     this.assertFrame();
     if (target) {
       const owned = this.requireRenderTarget(target);
+      this.assertColorRenderTarget(owned, "getNativeRenderSurface");
+      if (owned.nativeDepthSlice !== undefined) throw new RenderDeviceError("A 3d slice needs a pass depthSlice that a borrowed surface view cannot carry", "WEBGPU_SURFACE_3D_UNSUPPORTED", { label: owned.label });
       if (owned.nativeExtraColors.length) throw new RenderDeviceError("A single-view native surface cannot represent an MRT target", "WEBGPU_MRT_SURFACE_UNSUPPORTED");
       if (!owned.nativeView) throw new RenderDeviceError("Render target has no native surface", "WEBGPU_SURFACE_UNAVAILABLE");
       if (owned.sampleCount !== 1) throw new RenderDeviceError("Multisampled native surface requires an explicit resolve path", "WEBGPU_SURFACE_MULTISAMPLED");
@@ -3714,6 +3929,7 @@ export class WebGPUDevice implements RenderDevice {
     this.assertAlive();
     if (this.#nativeDofActive?.target === target) this.#nativeDofActive.phase = "invalid";
     const webgpuTarget = this.requireRenderTarget(target);
+    this.assertColorRenderTarget(webgpuTarget, "writeRenderTargetPixels");
     if (webgpuTarget.nativeExtraColors.length) throw new RenderDeviceError("MRT targets require an attachment-specific upload", "WEBGPU_MRT_UPLOAD_UNSUPPORTED");
     const expectedLength = webgpuTarget.width * webgpuTarget.height * 4;
     if (pixels.length !== expectedLength) {
@@ -3748,6 +3964,7 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("RGBA8 target presentation has no Display-P3 source encoding contract", "WEBGPU_P3_SOURCE_UNSUPPORTED");
     }
     const target = this.requireRenderTarget(source);
+    this.assertColorRenderTarget(target, "presentRenderTarget");
     if (target.colorTexture.format !== "rgba8") {
       throw new RenderDeviceError("WebGPU backbuffer presentation currently requires rgba8 source pixels", "PRESENT_FORMAT_UNSUPPORTED", {
         source: source.label,
@@ -3825,6 +4042,7 @@ export class WebGPUDevice implements RenderDevice {
 
   private submitNativeReadbackCopy(target: WebGPURenderTarget, x: number, y: number, width: number, height: number, bytesPerRow: number, label: string,
     texture: Texture = target.colorTexture, requireActive = true, signal?: AbortSignal): WebGPUBufferLike {
+    this.assertColorRenderTarget(target, "readback");
     const native = target.nativeColorFor(texture);
     if (!native) throw new RenderDeviceError("Native readback source is unavailable", "NATIVE_READBACK_TARGET_MISSING");
     const readback = this.device.createBuffer({ label, size: bytesPerRow * height, usage: BUFFER_USAGE.MAP_READ | BUFFER_USAGE.COPY_DST });
@@ -3847,7 +4065,8 @@ export class WebGPUDevice implements RenderDevice {
       assertCurrent();
       const copy = encoder.copyTextureToBuffer;
       if (!copy) throw new RenderDeviceError("WebGPU command encoder does not expose texture-to-buffer copy", "NATIVE_READBACK_UNSUPPORTED");
-      copy.call(encoder, { texture: native, origin: { x, y, z: 0 } }, { buffer: readback, bytesPerRow, rowsPerImage: height },
+      // A 3d slice target reads its own volume slice.
+      copy.call(encoder, { texture: native, origin: { x, y, z: target.nativeDepthSlice ?? 0 } }, { buffer: readback, bytesPerRow, rowsPerImage: height },
         { width, height, depthOrArrayLayers: 1 });
       assertCurrent();
       const command = encoder.finish();
@@ -3869,6 +4088,7 @@ export class WebGPUDevice implements RenderDevice {
       throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
     }
     const target = this.activeRenderTarget;
+    if (target) this.assertColorRenderTarget(target, "readPixelsAsync");
     if (!target || !target.nativeTexture) {
       throw new RenderDeviceError("Native WebGPU readback requires an active native render target", "NATIVE_READBACK_TARGET_MISSING", {
         x,
@@ -3935,6 +4155,7 @@ export class WebGPUDevice implements RenderDevice {
         x, y, width, height, renderTarget: null
       });
     }
+    this.assertColorRenderTarget(target, "readFloatPixelsAsync");
     return this.readNativeFloatTarget(target, x, y, width, height, attachment ?? 0, true);
   }
 
@@ -4361,6 +4582,7 @@ export class WebGPUDevice implements RenderDevice {
         trackingProof.phase = "invalid";
         throw new RenderDeviceError("Native depth-of-field scene clear changed before submission", "WEBGPU_DOF_FRAME_STALE");
       }
+      this.assertColorRenderTarget(target, "clearRenderTarget");
       const colors = [target.nativeTexture, ...target.nativeExtraColors.map((entry) => entry.native)];
       const views = [target.nativeMultisampleView ?? target.nativeView, ...target.nativeExtraColors.map((entry) => entry.multisampleView ?? entry.view)];
       const resolveViews = [target.nativeView, ...target.nativeExtraColors.map((entry) => entry.view)];
@@ -4374,7 +4596,7 @@ export class WebGPUDevice implements RenderDevice {
       if (target.nativeNeedsClear) throw new RenderDeviceError("Render-target initialization could not be submitted", "WEBGPU_TARGET_CLEAR_UNAVAILABLE");
       const encoder = this.device.createCommandEncoder({ label: `${target.label}-color-${attachment}-clear` });
       const pass = encoder.beginRenderPass({ label: `${target.label}-color-${attachment}-clear-pass`, colorAttachments: views.map((view, index) => ({
-        view, ...(target.sampleCount > 1 ? { resolveTarget: resolveViews[index] } : {}),
+        view, ...(index === 0 ? nativeColorSlice(target) : {}), ...(target.sampleCount > 1 ? { resolveTarget: resolveViews[index] } : {}),
         ...(index === attachment ? { clearValue: clearColor } : {}), loadOp: index === attachment ? "clear" as const : "load" as const, storeOp: "store" as const
       })) });
       pass.end();
@@ -6722,6 +6944,13 @@ export class WebGPUDevice implements RenderDevice {
     return target;
   }
 
+  /** Color reads, writes, surfaces and presentation have nothing to address on a depth-only target. */
+  private assertColorRenderTarget(target: WebGPURenderTarget, operation: string): void {
+    if (target.depthOnly) {
+      throw new RenderDeviceError("Depth-only render target has no color attachment", "RENDER_TARGET_DEPTH_ONLY", { targetId: target.id, label: target.label, operation });
+    }
+  }
+
   private validateGeneratedClusterPacket(uniforms: DrawCommand["uniforms"], rectLights: boolean): void {
     const dataBinding = uniformTextureBinding(uniforms, "u_clusterLightData");
     const indexBinding = uniformTextureBinding(uniforms, "u_clusterLightIndices");
@@ -6920,6 +7149,182 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
+  /**
+   * WP-03: create the native render pipelines matching draws would create,
+   * without encoding, submitting or presenting, and store them in the same
+   * per-shader cache the draw path reads, so a matching first draw is a cache
+   * hit. Prefers `createRenderPipelineAsync`. Identity includes target color
+   * and depth formats, sample count, vertex layout, draw state after the
+   * active depth convention and this device generation. Requests that cannot
+   * be resolved ahead of a frame, or whose speculative compile fails, are
+   * skipped (the draw keeps its own validation and errors). Cancellation stops
+   * further creation and rejects with the signal's reason; loss or disposal of
+   * this device generation rejects with `DEVICE_LOST` and nothing compiled for
+   * it is published.
+   */
+  async warmRenderPipelines(requests: readonly WebGPURenderPipelineWarmRequest[], options: { readonly signal?: AbortSignal } = {}): Promise<NativePipelineWarmupOutcome> {
+    this.assertAlive();
+    const lifetime = new AbortController();
+    const lost = new RenderDeviceError("Device lost during pipeline warmup", "DEVICE_LOST");
+    const assertCurrent = (): void => { if (this.disposed || this.contextLost) throw lost; };
+    const removeLossListener = this.onDeviceLost(() => lifetime.abort(lost));
+    try {
+      const jobs: NativePipelineWarmupJob<WebGPURenderPipelineLike>[] = [];
+      let unresolved = 0;
+      for (const request of requests) {
+        let job: NativePipelineWarmupJob<WebGPURenderPipelineLike> | null;
+        try { job = this.nativeRenderPipelineWarmJob(request); } catch { job = null; }
+        if (job) jobs.push(job); else unresolved += 1;
+      }
+      const outcome = await warmNativePipelineVariants(this.device, jobs, { signals: [lifetime.signal, options.signal], assertCurrent });
+      return { ...outcome, skipped: outcome.skipped + unresolved };
+    } finally {
+      removeLossListener();
+    }
+  }
+
+  private nativeRenderPipelineWarmJob(request: WebGPURenderPipelineWarmRequest): NativePipelineWarmupJob<WebGPURenderPipelineLike> | null {
+    const shader = this.requireShader(request.shader);
+    const create = this.device.createRenderPipeline;
+    if (!create || shader.generatedUnlit?.primitive === "points") return null;
+    // A portable layout with sampled textures or storage depends on per-draw bindings.
+    if (shader.nativeUniformLayout === "portable" && (shader.storageBindings || shader.portableBindings.some((binding) => isPortableTexture(binding.kind)))) return null;
+    if (shader.generatedUnlit && request.topology !== shader.generatedUnlit.primitive) return null;
+    const format = request.vertexFormat;
+    let jointKinds: readonly ("float" | "uint" | "sint")[] = [];
+    if (shader.generatedPbr && (shader.nativeUniformLayout === "generated-program-ambient-pbr" || shader.nativeUniformLayout === "generated-program-pbr")) {
+      const skinning = shader.generatedPbr.skinning ?? null;
+      const locations = skinning === 8 ? [5, 8] : skinning ? [5] : [];
+      const kinds: ("float" | "uint" | "sint")[] = [];
+      for (const location of locations) {
+        const attribute = format?.attributes.find(candidate => candidate.shaderLocation === location);
+        if (!attribute) return null;
+        kinds.push(!attribute.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint");
+      }
+      jointKinds = kinds;
+    }
+    const { variant, module: vertexModule } = this.nativeVertexModuleVariant(shader, format, jointKinds);
+    const fragmentModule = shader.modules[1] ?? vertexModule;
+    if (!vertexModule || !fragmentModule) return null;
+    const target = request.target ? this.requireRenderTarget(request.target) : null;
+    if (target?.disposed) return null;
+    const targetFormats = target
+      ? target.depthOnly ? [] : (target.colorTextures ?? [target.colorTexture]).map((texture) => webgpuTextureFormat(texture.format))
+      : [this.presentationFormat];
+    // beginFrame always (re)creates the canvas depth attachment.
+    const hasDepthStencil = target ? target.nativeDepthView !== null && target.nativeDepthView !== undefined : Boolean(this.canvasContext && this.device.createTexture);
+    const size = request.canvasSize;
+    const canvasGeneration = this.canvasTargetGeneration + (size && (size.width !== this.viewportWidth || size.height !== this.viewportHeight) ? 1 : 0);
+    const layouts: (WebGPUVertexBufferLayoutLike | null)[] = [];
+    for (const stream of format?.streams ?? []) {
+      if (stream.stepMode === "instance" && stream.divisor !== 1) return null;
+      const { attributes, stride } = nativeFormatStreamLayout(format!, stream);
+      while (layouts.length <= stream.slot) layouts.push(null);
+      layouts[stream.slot] = { arrayStride: stride, stepMode: stream.stepMode, attributes };
+    }
+    validateNativeVertexLayouts(layouts, this.device.limits);
+    const state: RenderCommandState = resolveDepthDrawState(request.renderState ?? { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" }, this.depthConvention);
+    if ((shader.generatedPbr || shader.generatedUnlit) && state.alphaToCoverage) return null;
+    const explicitLayout = this.generatedPbrDeformLayout(shader);
+    const resolvedState = resolveNativeRenderState({
+      state, topology: request.topology, colorFormats: targetFormats, depthStencilFormat: hasDepthStencil ? (target?.nativeDepthFormat ?? DEPTH_TEXTURE_FORMAT) : null,
+      sampleCount: target?.sampleCount ?? 1, targetWidth: target?.width ?? size?.width ?? Math.max(1, this.viewportWidth),
+      targetHeight: target?.height ?? size?.height ?? Math.max(1, this.viewportHeight),
+      deviceGeneration: this.generation, targetKey: target ? `target:${target.id}` : "canvas",
+      targetGeneration: target?.id ?? canvasGeneration,
+      shaderKey: `${shader.id}:${variant}${this.zeroToOneProjectionKey(shader)}:${shader.entryPoints.join(":")}`,
+      layoutKey: `${shader.nativeUniformLayout}:${explicitLayout?.key ?? "auto"}`,
+      vertexLayouts: layouts, vertexLimits: this.device.limits, colorLimits: this.device.limits, features: this.device.features
+    });
+    const key = resolvedState.pipelineKey;
+    return {
+      key,
+      isCached: () => shader.renderPipelines.has(key),
+      create: () => {
+        if (shader.disposed) throw new RenderDeviceError("Cannot warm a disposed shader", "DISPOSED_RESOURCE", { shaderId: shader.id });
+        const descriptor = this.nativeRenderPipelineDescriptor(shader, explicitLayout, vertexModule, fragmentModule, resolvedState);
+        const createAsync = this.device.createRenderPipelineAsync;
+        return typeof createAsync === "function" ? createAsync.call(this.device, descriptor) : create.call(this.device, descriptor);
+      },
+      publish: (pipeline) => {
+        if (shader.disposed) return;
+        shader.renderPipelines.set(key, pipeline);
+        this.nativeRenderPipelinesCreated += 1;
+      }
+    };
+  }
+
+  /** Native render-pipeline descriptor for a resolved state (shared by draw and pipeline warmup). */
+  private nativeRenderPipelineDescriptor(
+    shader: WebGPUShaderProgram,
+    explicitLayout: { readonly groups: readonly (readonly WebGPUBindGroupLayoutEntryLike[])[] } | null,
+    vertexModule: unknown,
+    fragmentModule: unknown,
+    resolvedState: ReturnType<typeof resolveNativeRenderState>
+  ): WebGPURenderPipelineDescriptorLike {
+    const layout = explicitLayout
+      ? this.device.createPipelineLayout!({ label: `${shader.label}-portable-pipeline-layout`, bindGroupLayouts: explicitLayout.groups.map((entries, group) => this.device.createBindGroupLayout!({ label: `${shader.label}-portable-bind-layout-${group}`, entries })) })
+      : "auto";
+    return {
+      label: `${shader.label}-pipeline`,
+      layout,
+      vertex: { module: vertexModule, entryPoint: shader.entryPoints[0], ...(resolvedState.vertexLayouts.length ? { buffers: resolvedState.vertexLayouts } : {}),
+        // Zero-to-one reversed frames specialize the program to pass clip z through.
+        ...(this.zeroToOneProjectionKey(shader) ? { constants: { [ZERO_TO_ONE_PROJECTION_OVERRIDE]: 1 } } : {}) },
+      fragment: {
+        module: fragmentModule,
+        entryPoint: shader.entryPoints[1],
+        targets: resolvedState.colorTargets.map((target) => {
+          if (!target) throw new RenderDeviceError("Native render target has an unused color slot", "WEBGPU_MRT_CONFIGURATION_UNSUPPORTED");
+          return target;
+        })
+      },
+      primitive: resolvedState.primitive,
+      multisample: resolvedState.multisample,
+      ...(resolvedState.depthStencil ? { depthStencil: resolvedState.depthStencil } : {})
+    };
+  }
+
+  /** Vertex module variant for a vertex layout (shared by draw and pipeline warmup). */
+  private nativeVertexModuleVariant(shader: WebGPUShaderProgram, vertexFormat: VertexFormat | undefined, jointKinds: readonly ("float" | "uint" | "sint")[]): { readonly variant: string; readonly module: unknown } {
+    // GL supplies an opaque white default for an absent vertex color. Native
+    // WGSL inputs must instead match the actual vertex buffer layout.
+    const useDefaultColor = shader.nativeColorDefaultVertex && !vertexFormat?.attributes.some(attribute => attribute.semantic === "color");
+    let vertexVariant = useDefaultColor ? "default-color" : "default";
+    if (useDefaultColor && !shader.nativeColorDefaultModule) {
+      shader.nativeColorDefaultModule = this.device.createShaderModule?.({ label: `${shader.label}-vertex-default-color`, code: shader.nativeColorDefaultVertex! });
+    }
+    let vertexModule = useDefaultColor ? shader.nativeColorDefaultModule : shader.modules[0];
+    if (shader.generatedPbr?.skinning && jointKinds.some(kind => kind !== "float")) {
+      const key = jointKinds.join(":");
+      vertexVariant = `skin:${key}`;
+      if (!shader.skinningVertexModules.has(key)) {
+        let source = shader.generatedPbr.vertex;
+        for (const [index, kind] of jointKinds.entries()) {
+          if (kind === "float") continue;
+          const name = index === 0 ? "joints" : "joints1", location = index === 0 ? 5 : 8;
+          source = source.replace(`@location(${location}) ${name}: vec4f`, `@location(${location}) ${name}: ${kind === "uint" ? "vec4u" : "vec4i"}`);
+        }
+        shader.skinningVertexModules.set(key, this.device.createShaderModule?.({ label: `${shader.label}-vertex-skin-${key}`, code: source }));
+      }
+      vertexModule = shader.skinningVertexModules.get(key);
+    }
+    if (shader.nativeAtlasVertex) {
+      const hasColor = vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 4) ?? false;
+      const hasUv1 = vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 7) ?? false;
+      const key = `${hasColor}:${hasUv1}`;
+      vertexVariant = `atlas:${key}`;
+      if (!shader.atlasVertexModules.has(key)) {
+        let source = shader.nativeAtlasVertex;
+        if (!hasColor) source = source.replace(", @location(4) color: vec4<f32>", "").replace("output.color = color;", "output.color = vec4<f32>(1.0);");
+        if (!hasUv1) source = source.replace(", @location(7) uv1: vec2<f32>", "").replace("output.uv1 = uv1;", "output.uv1 = vec2<f32>(0.0);");
+        shader.atlasVertexModules.set(key, this.device.createShaderModule?.({ label: `${shader.label}-atlas-vertex-${key}`, code: source }));
+      }
+      vertexModule = shader.atlasVertexModules.get(key);
+    }
+    return { variant: vertexVariant, module: vertexModule };
+  }
+
   private nativeVertexStreams(command: DrawCommand, shader: WebGPUShaderProgram): {
     layouts: (WebGPUVertexBufferLayoutLike | null)[];
     buffers: Map<number, WebGPUBufferLike>;
@@ -6935,21 +7340,10 @@ export class WebGPUDevice implements RenderDevice {
       if (stream.stepMode === "instance" && stream.divisor !== 1) throw new RenderDeviceError("WebGPU instance divisor must be one", "WEBGPU_VERTEX_DIVISOR_UNSUPPORTED", { slot: stream.slot, divisor: stream.divisor });
       const source = command.vertexBuffers?.[stream.slot] ?? (stream.slot === 0 ? command.vertexBuffer : undefined);
       if (!source) throw new RenderDeviceError("Vertex stream has no buffer", "WEBGPU_VERTEX_BUFFER_MISSING", { slot: stream.slot });
-      const members = format!.attributes.filter(attribute => attribute.bufferSlot === stream.slot);
-      const convert = members.some(needsNativeVertexConversion);
-      let attributes: WebGPUVertexAttributeLike[], stride: number;
-      if (convert) {
-        const plan = planNativeVertexConversion(members, stream.stride, vertexAttributeFormat, nativeVertexFormatSize);
-        plans.set(stream.slot, plan); stride = plan.arrayStride; attributes = [...plan.attributes];
+      const { attributes, stride, plan } = nativeFormatStreamLayout(format!, stream);
+      if (plan) {
+        plans.set(stream.slot, plan);
         sourceEnds.set(stream.slot, plan.sourceEnd); sourceStrides.set(stream.slot, stream.stride);
-      } else {
-        if (stream.stride % 4 !== 0) throw new RenderDeviceError("WebGPU vertex stride must be four-byte aligned", "WEBGPU_VERTEX_STRIDE_INVALID", { slot: stream.slot, stride: stream.stride });
-        attributes = members.map(attribute => {
-          const alignment = Math.min(4, attribute.byteLength);
-          if (attribute.offset % alignment !== 0) throw new RenderDeviceError("WebGPU vertex attribute offset is not aligned to its format", "WEBGPU_VERTEX_OFFSET_INVALID", { slot: stream.slot, offset: attribute.offset, alignment });
-          return { shaderLocation: attribute.shaderLocation, offset: attribute.offset, format: vertexAttributeFormat(attribute) };
-        });
-        stride = stream.stride;
       }
       for (const attribute of attributes) locations.add(attribute.shaderLocation);
       while (layouts.length <= stream.slot) layouts.push(null);
@@ -7276,7 +7670,7 @@ export class WebGPUDevice implements RenderDevice {
         [...(command.uniforms?.values() ?? [])].some(value => isTextureBinding(value) && value.texture !== null) ||
         resolvedState.colorTargets.some(target => target?.blend) ||
         args.pointCheck || args.p3Surface || args.generatedCoverage || this.#nativeDofActive ||
-        this.activeRenderTarget?.nativeExtraColors.length || this.gaussianSplatBorrowedDepth || this.forwardPassProfiler) {
+        this.activeRenderTarget?.nativeExtraColors.length || this.activeRenderTarget?.depthOnly || this.gaussianSplatBorrowedDepth || this.forwardPassProfiler) {
       return false;
     }
     // The admitted triangle template reads only this frame matrix. Refuse
@@ -7378,6 +7772,7 @@ export class WebGPUDevice implements RenderDevice {
         label: `${command.label ?? "draw"}-pass`,
         colorAttachments: [{
           view: nativeView,
+          ...nativeColorSlice(target),
           ...(sampleCount > 1 && resolveView ? { resolveTarget: resolveView } : {}),
           clearValue: target?.nativeClearColor ?? this.clearColor,
           loadOp: shouldClear ? "clear" : "load",
@@ -7522,8 +7917,10 @@ export class WebGPUDevice implements RenderDevice {
     assertMrtCurrent();
     const resolveView = this.activeRenderTarget?.nativeView ?? null;
     const p3Surface = !this.activeRenderTarget && this.activeColorSpace === "display-p3" ? this.verifiedP3CanvasTexture() : undefined;
-    const nativeView = this.activeRenderTarget?.nativeMultisampleView ?? resolveView ?? p3Surface?.view ?? this.currentCanvasView();
-    if (!nativeView || !command.shader) return;
+    // A depth-only target draws with no color attachment, never into the canvas.
+    const depthOnlyTarget = this.activeRenderTarget?.depthOnly === true;
+    const nativeView = depthOnlyTarget ? null : this.activeRenderTarget?.nativeMultisampleView ?? resolveView ?? p3Surface?.view ?? this.currentCanvasView();
+    if ((!nativeView && !depthOnlyTarget) || !command.shader) return;
     if (!hasNativeRenderPipeline(this.device)) {
       if (mrtTarget) throw new RenderDeviceError("MRT drawing requires native WebGPU pipeline submission", "WEBGPU_MRT_UNAVAILABLE");
       return;
@@ -7683,45 +8080,11 @@ export class WebGPUDevice implements RenderDevice {
       if (frameBuffer.byteLength < 304) throw new RenderDeviceError("AuraFrame uniform buffer is too small", "WEBGPU_FRAME_UNIFORM_REQUIRED", { byteLength: frameBuffer.byteLength });
       this.resourceInterop.assertUsable(nativeBufferHandle(frameBuffer));
     }
-    // GL supplies an opaque white default for an absent vertex color. Native
-    // WGSL inputs must instead match the actual vertex buffer layout.
-    const useDefaultColor = shader.nativeColorDefaultVertex && !command.vertexFormat?.attributes.some(attribute => attribute.semantic === "color");
-    let vertexVariant = useDefaultColor ? "default-color" : "default";
-    if (useDefaultColor && !shader.nativeColorDefaultModule) {
-      shader.nativeColorDefaultModule = this.device.createShaderModule?.({ label: `${shader.label}-vertex-default-color`, code: shader.nativeColorDefaultVertex! });
-    }
-    let vertexModule = useDefaultColor ? shader.nativeColorDefaultModule : shader.modules[0];
-    if (shader.generatedPbr?.skinning && jointKinds.some(kind => kind !== "float")) {
-      const key = jointKinds.join(":");
-      vertexVariant = `skin:${key}`;
-      if (!shader.skinningVertexModules.has(key)) {
-        let source = shader.generatedPbr.vertex;
-        for (const [index, kind] of jointKinds.entries()) {
-          if (kind === "float") continue;
-          const name = index === 0 ? "joints" : "joints1", location = index === 0 ? 5 : 8;
-          source = source.replace(`@location(${location}) ${name}: vec4f`, `@location(${location}) ${name}: ${kind === "uint" ? "vec4u" : "vec4i"}`);
-        }
-        shader.skinningVertexModules.set(key, this.device.createShaderModule?.({ label: `${shader.label}-vertex-skin-${key}`, code: source }));
-      }
-      vertexModule = shader.skinningVertexModules.get(key);
-    }
-    if (shader.nativeAtlasVertex) {
-      const hasColor = command.vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 4) ?? false;
-      const hasUv1 = command.vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 7) ?? false;
-      const key = `${hasColor}:${hasUv1}`;
-      vertexVariant = `atlas:${key}`;
-      if (!shader.atlasVertexModules.has(key)) {
-        let source = shader.nativeAtlasVertex;
-        if (!hasColor) source = source.replace(", @location(4) color: vec4<f32>", "").replace("output.color = color;", "output.color = vec4<f32>(1.0);");
-        if (!hasUv1) source = source.replace(", @location(7) uv1: vec2<f32>", "").replace("output.uv1 = uv1;", "output.uv1 = vec2<f32>(0.0);");
-        shader.atlasVertexModules.set(key, this.device.createShaderModule?.({ label: `${shader.label}-atlas-vertex-${key}`, code: source }));
-      }
-      vertexModule = shader.atlasVertexModules.get(key);
-    }
+    const { variant: vertexVariant, module: vertexModule } = this.nativeVertexModuleVariant(shader, command.vertexFormat, jointKinds);
     const fragmentModule = shader.modules[1] ?? vertexModule;
     if (!vertexModule || !fragmentModule) return;
     const targetFormats = this.activeRenderTarget
-      ? (this.activeRenderTarget.colorTextures ?? [this.activeRenderTarget.colorTexture]).map((texture) => webgpuTextureFormat(texture.format))
+      ? this.activeRenderTarget.depthOnly ? [] : (this.activeRenderTarget.colorTextures ?? [this.activeRenderTarget.colorTexture]).map((texture) => webgpuTextureFormat(texture.format))
       : [this.presentationFormat];
     const targetFormat = targetFormats[0]!;
     if (shader.generatedPbr) {
@@ -7738,8 +8101,10 @@ export class WebGPUDevice implements RenderDevice {
     const depthView = this.gaussianSplatBorrowedDepth?.nativeDepthView ?? (this.activeRenderTarget ? this.activeRenderTarget.nativeDepthView : this.canvasDepthView);
     // Standard-sense states follow the renderer-selected frame convention.
     const state: RenderCommandState = resolveDepthDrawState(command.renderState ?? { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" }, this.depthConvention);
-    if ((shader.generatedPbr || shader.generatedUnlit) && state.alphaToCoverage) {
-      throw new RenderDeviceError("Generated material alpha-to-coverage is not supported", "WEBGPU_GENERATED_PBR_ALPHA_TO_COVERAGE_UNSUPPORTED");
+    // Generated programs support alpha-to-coverage only when their MASK
+    // variant writes coverage to output alpha (`prd04.alphaToCoverage`).
+    if ((shader.generatedPbr || shader.generatedUnlit) && state.alphaToCoverage && (shader.generatedPbr ?? shader.generatedUnlit)!.alphaToCoverage !== true) {
+      throw new RenderDeviceError("Generated material alpha-to-coverage requires a MASK program variant that writes coverage", "WEBGPU_GENERATED_PBR_ALPHA_TO_COVERAGE_UNSUPPORTED");
     }
     const sampleCount = this.activeRenderTarget?.sampleCount ?? 1;
     // Attach depth even for an initial depth-disabled draw: its clear must not
@@ -7751,7 +8116,7 @@ export class WebGPUDevice implements RenderDevice {
       sampleCount, targetWidth: this.activeRenderTarget?.width ?? this.viewportWidth, targetHeight: this.activeRenderTarget?.height ?? this.viewportHeight,
       deviceGeneration: this.generation, targetKey: this.activeRenderTarget ? `target:${this.activeRenderTarget.id}` : "canvas",
       targetGeneration: this.activeRenderTarget?.id ?? this.canvasTargetGeneration,
-      shaderKey: `${shader.id}:${vertexVariant}:${shader.entryPoints.join(":")}`,
+      shaderKey: `${shader.id}:${vertexVariant}${this.zeroToOneProjectionKey(shader)}:${shader.entryPoints.join(":")}`,
       layoutKey: `${shader.nativeUniformLayout}:${explicitLayout?.key ?? "auto"}`,
       vertexLayouts: streams.layouts, vertexLimits: this.device.limits, colorLimits: this.device.limits, features: this.device.features
     });
@@ -7772,25 +8137,7 @@ export class WebGPUDevice implements RenderDevice {
     const pipelineKey = resolvedState.pipelineKey;
     let pipeline = pointCheck ? undefined : shader.renderPipelines.get(pipelineKey);
     if (!pipeline) {
-      const layout = explicitLayout
-        ? this.device.createPipelineLayout!({ label: `${shader.label}-portable-pipeline-layout`, bindGroupLayouts: explicitLayout.groups.map((entries, group) => this.device.createBindGroupLayout!({ label: `${shader.label}-portable-bind-layout-${group}`, entries })) })
-        : "auto";
-      pipeline = this.device.createRenderPipeline({
-        label: `${shader.label}-pipeline`,
-        layout,
-        vertex: { module: vertexModule, entryPoint: shader.entryPoints[0], ...(resolvedState.vertexLayouts.length ? { buffers: resolvedState.vertexLayouts } : {}) },
-        fragment: {
-          module: fragmentModule,
-          entryPoint: shader.entryPoints[1],
-          targets: resolvedState.colorTargets.map((target) => {
-            if (!target) throw new RenderDeviceError("Native render target has an unused color slot", "WEBGPU_MRT_CONFIGURATION_UNSUPPORTED");
-            return target;
-          })
-        },
-        primitive: resolvedState.primitive,
-        multisample: resolvedState.multisample,
-        ...(resolvedState.depthStencil ? { depthStencil: resolvedState.depthStencil } : {})
-      });
+      pipeline = this.device.createRenderPipeline(this.nativeRenderPipelineDescriptor(shader, explicitLayout, vertexModule, fragmentModule, resolvedState));
       this.nativeRenderPipelinesCreated += 1;
       if (!pointCheck) shader.renderPipelines.set(pipelineKey, pipeline);
     }
@@ -8189,13 +8536,14 @@ export class WebGPUDevice implements RenderDevice {
       const pass = encoder.beginRenderPass({
         label: `${command.label ?? "draw"}-pass`,
         ...(passTimer?.timestampWrites ? { timestampWrites: passTimer.timestampWrites } : {}),
-        colorAttachments: [{
+        colorAttachments: [...(nativeView ? [{
           view: nativeView,
+          ...nativeColorSlice(this.activeRenderTarget),
           ...(sampleCount > 1 && resolveView ? { resolveTarget: resolveView } : {}),
           clearValue: this.activeRenderTarget?.nativeClearColor ?? this.clearColor,
-          loadOp: shouldClear ? "clear" : "load",
+          loadOp: shouldClear ? "clear" as const : "load" as const,
           storeOp: "store" as const
-        }, ...(this.activeRenderTarget?.nativeExtraColors.map((color) => ({
+        }] : []), ...(this.activeRenderTarget?.nativeExtraColors.map((color) => ({
           view: color.multisampleView ?? color.view, ...(color.multisampleView ? { resolveTarget: color.view } : {}), clearValue: this.activeRenderTarget!.nativeClearColor,
           loadOp: shouldClear ? "clear" as const : "load" as const, storeOp: "store" as const
         })) ?? [])],
@@ -8351,7 +8699,8 @@ export class WebGPUDevice implements RenderDevice {
   private flushNativeRenderTargetClear(target: WebGPURenderTarget): void {
     this.requireRenderTarget(target);
     const drawView = target.nativeMultisampleView ?? target.nativeView;
-    if (!target.nativeNeedsClear || !drawView || !this.device.createCommandEncoder) return;
+    // A depth-only target clears through its depth attachment alone.
+    if (!target.nativeNeedsClear || (!drawView && !(target.depthOnly && target.nativeDepthView)) || !this.device.createCommandEncoder) return;
     const clearColor = [...target.nativeClearColor] as [number, number, number, number];
     const proof = this.#nativeDofActive?.phase === "recording" && this.#nativeDofActive.target === target ? this.#nativeDofActive : undefined;
     const assertCurrent = (): void => {
@@ -8368,13 +8717,14 @@ export class WebGPUDevice implements RenderDevice {
     assertCurrent();
     const pass = encoder.beginRenderPass({
       label: `${target.label}-native-clear-pass`,
-      colorAttachments: [{
+      colorAttachments: [...(drawView ? [{
         view: drawView,
+        ...nativeColorSlice(target),
         ...(target.sampleCount > 1 && target.nativeView ? { resolveTarget: target.nativeView } : {}),
         clearValue: clearColor,
-        loadOp: "clear",
+        loadOp: "clear" as const,
         storeOp: "store" as const
-      }, ...target.nativeExtraColors.map((color) => ({ view: color.multisampleView ?? color.view,
+      }] : []), ...target.nativeExtraColors.map((color) => ({ view: color.multisampleView ?? color.view,
         ...(color.multisampleView ? { resolveTarget: color.view } : {}), clearValue: clearColor,
         loadOp: "clear" as const, storeOp: "store" as const }))],
       ...(target.nativeDepthView
@@ -8772,7 +9122,10 @@ export class WebGPUDevice implements RenderDevice {
         assertSourceCurrent();
         this.nativeSampledTextures.set(texture, resource);
         this.nativeBudgetedTextures.set(texture, budgeted);
-        if (fallback) this.nativeCompressedFallbackBytes.set(texture, residentBytes);
+        if (fallback) {
+          this.nativeCompressedFallbackBytes.set(texture, residentBytes);
+          this.nativeCompressedFallbackData.set(texture, budgeted.fallbackTextureLevels.map((level) => level.data));
+        }
         this.nativeSampledTextureSizes.set(texture, actualSize);
         this.nativeSampledTextureLayouts.set(texture, layout);
         this.nativeSampledTextureRevisions.set(texture, texture.revision);
@@ -8793,6 +9146,7 @@ export class WebGPUDevice implements RenderDevice {
         this.nativeSampledTextures.delete(texture);
         this.nativeBudgetedTextures.delete(texture);
         this.nativeCompressedFallbackBytes.delete(texture);
+        this.nativeCompressedFallbackData.delete(texture);
         this.nativeSampledTextureSizes.delete(texture);
         this.nativeSampledTextureLayouts.delete(texture);
         this.nativeSampledTextureRevisions.delete(texture);
@@ -9010,8 +9364,16 @@ export class WebGPUDevice implements RenderDevice {
       if (texture.fallbackTextureLevels.length === 0) {
         throw new RenderDeviceError("Updating compressed texture fallback requires replacement data", "WEBGPU_TEXTURE_FALLBACK_UPDATE_UNSUPPORTED", { format: texture.format });
       }
-      // Metadata-only changes leave the decoded pixels and native allocation intact.
       this.validateNativeCompressedFallback(texture);
+      // Metadata-only changes leave the decoded pixels and native allocation
+      // intact. A replacement supplied after a compressed content edit has
+      // the same extent and is written into the existing allocation.
+      const levels = texture.fallbackTextureLevels;
+      const written = this.nativeCompressedFallbackData.get(texture);
+      if (!written || written.length !== levels.length || levels.some((level, index) => level.data !== written[index])) {
+        this.writeNativeTextureLevels(texture, nativeTexture, levels, "rgba8", assertCurrent);
+        this.nativeCompressedFallbackData.set(texture, levels.map((level) => level.data));
+      }
       return true;
     }
     const dataMipPlan = planNativeDataMipmaps(texture);
@@ -9035,6 +9397,7 @@ export class WebGPUDevice implements RenderDevice {
       this.nativeSampledTextures.delete(texture);
       this.nativeBudgetedTextures.delete(texture);
       this.nativeCompressedFallbackBytes.delete(texture);
+      this.nativeCompressedFallbackData.delete(texture);
       this.nativeSampledTextureRevisions.delete(texture);
       this.nativeSampledTextureGeneratedMips.delete(texture);
       this.nativeSubresourceRevisions.delete(texture);
@@ -10220,13 +10583,14 @@ function createNativeShaderSources(sources: ShaderSources): {
 };
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;`;
   const vertex = `// ${sources.marker}
+${ZERO_TO_ONE_PROJECTION_WGSL}
 ${drawUniforms}
 ${vertexOutput}
 @vertex
 fn ${vertexEntry}(@location(0) position: vec3<f32>${colorParameter}) -> VertexOutput {
   var output: VertexOutput;
   let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
-  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
+  output.position = vec4<f32>(clipPosition.x, clipPosition.y, ${rasterClipDepthWgsl("clipPosition")}, clipPosition.w);
   ${colorInput ? `output.color = ${colorInput[2] === "3" ? "vec4<f32>(vertexColor, 1.0)" : "vertexColor"};` : ""}
   return output;
 }
@@ -10296,11 +10660,12 @@ struct AuraFrame {
   cameraPositionNear: vec4<f32>, resolutionFarTime: vec4<f32>, exposureFlags: vec4<f32>,
 };
 @group(1) @binding(0) var<uniform> frame: AuraFrame;
+${ZERO_TO_ONE_PROJECTION_WGSL}
 struct GeneratedVertexOutput { @builtin(position) position: vec4<f32>, @location(0) uv: vec2<f32>, };
 @vertex fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(2) uv: vec2<f32>) -> GeneratedVertexOutput {
   var output: GeneratedVertexOutput;
   let clip = frame.viewProjection * material.model * material.geometry * vec4<f32>(position, 1.0);
-  output.position = vec4<f32>(clip.x, clip.y, clip.z * 0.5 + clip.w * 0.5, clip.w);
+  output.position = vec4<f32>(clip.x, clip.y, ${rasterClipDepthWgsl("clip")}, clip.w);
   output.uv = uv;
   return output;
 }`,
@@ -10671,8 +11036,9 @@ function nativeUniformStruct(): string {
 
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;
 
+${ZERO_TO_ONE_PROJECTION_WGSL}
 fn a3dWebGPUClipPosition(clipPosition: vec4<f32>) -> vec4<f32> {
-  return vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
+  return vec4<f32>(clipPosition.x, clipPosition.y, ${rasterClipDepthWgsl("clipPosition")}, clipPosition.w);
 }
 `;
 }
@@ -11108,6 +11474,7 @@ struct VertexOutput {
   @builtin(position) position: vec4<f32>,
 };
 
+${ZERO_TO_ONE_PROJECTION_WGSL}
 @vertex
 fn ${vertexEntry}(@location(0) position: vec3<f32>, @builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
   var output: VertexOutput;
@@ -11118,7 +11485,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @builtin(vertex_index) verte
     }
   }
   let clip = u_morph.modelViewProjection * vec4<f32>(position + delta, 1.0);
-  output.position = vec4<f32>(clip.xy, clip.z * 0.5 + clip.w * 0.5, clip.w);
+  output.position = vec4<f32>(clip.xy, ${rasterClipDepthWgsl("clip")}, clip.w);
   return output;
 }
 `,
@@ -11138,6 +11505,26 @@ function inferWGSLVertexEntryPoint(source: string): string | undefined {
 
 function inferWGSLFragmentEntryPoint(source: string): string | undefined {
   return /@fragment\s+fn\s+([A-Za-z_]\w*)/.exec(source)?.[1];
+}
+
+/** Native layout of one declared vertex stream (shared by draw and pipeline warmup). */
+function nativeFormatStreamLayout(format: VertexFormat, stream: VertexFormat["streams"][number]): {
+  readonly attributes: WebGPUVertexAttributeLike[];
+  readonly stride: number;
+  readonly plan?: NativeVertexConversionPlan;
+} {
+  const members = format.attributes.filter(attribute => attribute.bufferSlot === stream.slot);
+  if (members.some(needsNativeVertexConversion)) {
+    const plan = planNativeVertexConversion(members, stream.stride, vertexAttributeFormat, nativeVertexFormatSize);
+    return { attributes: [...plan.attributes], stride: plan.arrayStride, plan };
+  }
+  if (stream.stride % 4 !== 0) throw new RenderDeviceError("WebGPU vertex stride must be four-byte aligned", "WEBGPU_VERTEX_STRIDE_INVALID", { slot: stream.slot, stride: stream.stride });
+  const attributes = members.map(attribute => {
+    const alignment = Math.min(4, attribute.byteLength);
+    if (attribute.offset % alignment !== 0) throw new RenderDeviceError("WebGPU vertex attribute offset is not aligned to its format", "WEBGPU_VERTEX_OFFSET_INVALID", { slot: stream.slot, offset: attribute.offset, alignment });
+    return { shaderLocation: attribute.shaderLocation, offset: attribute.offset, format: vertexAttributeFormat(attribute) };
+  });
+  return { attributes, stride: stream.stride };
 }
 
 function nativeVertexFormatSize(format: string): number {

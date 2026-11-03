@@ -6,7 +6,7 @@
 // GLTFRenderResources.ts imports `decodeImageInBrowser` back for the default
 // `options.imageDecoder` path; the type edge back is import-type only.
 
-import { fetchGltfBytesShared, gltfImageRequestOptions, gltfImageRequestProgress, type GLTFAsset, type GLTFImageAsset } from "../GLTFLoader";
+import { fetchGltfBytesShared, gltfImageRequestOptions, gltfImageRequestProgress, resolveGltfDependencyUri, type GLTFAsset, type GLTFImageAsset } from "../GLTFLoader";
 import { MAX_KTX2_INPUT_BYTES, ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
 import { MAX_BROWSER_IMAGE_BYTES, assertBrowserImageDimensions, inspectBrowserImageDimensions } from "../BrowserImageDimensions";
 import { AssetSizeError, verifyAssetBytes } from "../LoaderFetch";
@@ -198,11 +198,8 @@ export function isKTX2BasisImage(image: GLTFImageAsset): boolean {
 }
 
 export function resolveImageUrl(assetUrl: string, imageUri: string): string {
-  if (/^(?:data:|blob:|https?:|file:)/i.test(imageUri)) return imageUri;
-  if (assetUrl.startsWith("data:")) {
-    throw new Error(`Relative glTF image uri ${imageUri} cannot be resolved from a data URL asset`);
-  }
-  return new URL(imageUri, resolveAbsoluteAssetBase(assetUrl)).toString();
+  if (/^(?:data:|blob:|https?:)/i.test(imageUri)) return imageUri;
+  return resolveGltfDependencyUri(imageUri, assetUrl, "glTF image");
 }
 
 /**

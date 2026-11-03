@@ -489,10 +489,13 @@ describe("GaussianSplatRenderer", () => {
   });
 
   it("rejects a depth convention changed after preparation before drawing", () => {
-    class ChangingDepthDevice extends MockRenderDevice { depthConvention = { mode: "standard" }; }
-    const device = new ChangingDepthDevice(), renderer = new GaussianSplatRenderer(device, cloud([[0, 0, 0]]));
+    // The mock device reports its convention through getDepthConvention();
+    // change it through the device contract, not a shadow field.
+    const device = new MockRenderDevice(), renderer = new GaussianSplatRenderer(device, cloud([[0, 0, 0]]));
+    expect(device.getDepthConvention().mode).toBe("standard");
     const frame = renderer.prepare({ viewMatrix: identity, projectionMatrix: identity, viewport: [50, 50] });
-    device.depthConvention = { mode: "reversed" }; device.beginFrame(50, 50);
+    device.setDepthConvention({ requestedMode: "reversed", mode: "reversed", clipRange: "minus-one-to-one", clearValue: 0, compare: "greater-equal", biasSign: -1 });
+    device.beginFrame(50, 50);
     expect(() => renderer.submitPrepared(frame, 0, 1)).toThrow(/reversed depth/);
     expect(device.drawCommands).toHaveLength(0);
     device.endFrame(); renderer.dispose(); device.dispose();

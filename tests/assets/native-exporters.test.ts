@@ -321,8 +321,8 @@ describe("native interchange exporters", () => {
     const input = await loader.load({ url }, new LoadContext());
     const snapshot = sceneFromGLTFAsset(input);
     // Prove the snapshot owns nested material, transform and sampler values.
-    (input.materials[0]!.diffuseTransmission!.colorFactor as number[])[0] = 0;
-    (input.materials[0]!.baseColorTexture!.transform!.offset as number[])[0] = 99;
+    (input.materials[0]!.diffuseTransmission!.colorFactor as unknown as number[])[0] = 0;
+    (input.materials[0]!.baseColorTexture!.transform!.offset as unknown as number[])[0] = 99;
     (input.textures[1]!.samplerDescriptor as { magFilter: string }).magFilter = "nearest";
     const result = exportGLTF(snapshot, { binary: true });
     const doc = readGLB(bytes(result.data)).json;
@@ -604,7 +604,7 @@ describe("native interchange exporters", () => {
     const color = input.slice(); color[dfd + 13] = 1; color[dfd + 14] = 2;
     const linear = input.slice(); linear[dfd + 13] = 0; linear[dfd + 14] = 1;
     const globalData = Number(new DataView(color.buffer).getBigUint64(64, true));
-    const run = (data: Uint8Array, material = { ...source.materials![0]!, baseColorTexture: "map.ktx2" }) => exportGLTF({
+    const run = (data: Uint8Array, material: NonNullable<typeof source.materials>[number] = { ...source.materials![0]!, baseColorTexture: "map.ktx2" }) => exportGLTF({
       ...source, materials: [material], dependencies: [{ name: "map.ktx2", mimeType: "image/ktx2", data }]
     }, { binary: true });
     const mutate = (at: number, value: number) => { const copy = color.slice(); new DataView(copy.buffer).setUint32(at, value, true); return copy; };

@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Matrix4 } from "@aura3d/math";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
@@ -31,6 +31,7 @@ import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
 import { WebGL2Device } from "../../../packages/rendering/src/WebGL2Device";
+import type { WebGPUDeviceLike, WebGPULike } from "../../../packages/rendering/src/WebGPUDevice";
 import { createRenderDevice } from "../../../packages/rendering/src";
 import { normalizeProgramFeatures, PROGRAM_LOG_DEPTH_FEATURE } from "../../../packages/rendering/src/program/ProgramFeatures";
 import { generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
@@ -308,7 +309,7 @@ describe("WebGPU float depth formats (mock device)", () => {
     Object.defineProperty(mock.native, "features", { configurable: true, value: features });
     try {
       const depthFormat = () => mock.textures.at(-1)!.format;
-      expect(device.getDepthPrecisionSupport?.()).toEqual({ standardClipRange: "zero-to-one", zeroToOneReversed: false, floatDepth: true, floatDepthStencil: false });
+      expect(device.getDepthPrecisionSupport?.()).toEqual({ standardClipRange: "zero-to-one", zeroToOneReversed: true, floatDepth: true, floatDepthStencil: false });
       const fixed = device.createRenderTarget({ width: 4, height: 4, depth: "texture" });
       expect(depthFormat()).toBe("depth24plus-stencil8");
       expect(fixed.depthStorage).toBeUndefined();
@@ -323,9 +324,14 @@ describe("WebGPU float depth formats (mock device)", () => {
       const stencil = device.createRenderTarget({ width: 4, height: 4, depth: "texture", depthPrecision: "float" });
       expect(depthFormat()).toBe("depth32float-stencil8");
       expect(stencil.depthStorage).toBe("float");
-      // WebGPU programs remap the projection in-shader: precision stays reduced.
-      expect(applyFrameDepthConvention(device, "reversed")).toMatchObject({ clipRange: "zero-to-one", precision: "reduced" });
-      expect(device.getDepthConvention?.()?.precisionReason).toMatch(/WebGPU programs remap/);
+      // Reversed frames hand WGSL programs a native zero-to-one projection
+      // (no in-shader remap) and float depth with a stencil aspect is available.
+      expect(applyFrameDepthConvention(device, "reversed")).toMatchObject({ clipRange: "zero-to-one", projectionClipRange: "zero-to-one", precision: "full", depthStorage: "float" });
+      expect(recordFrameDepthStorage(device, "fixed")).toMatchObject({ projectionClipRange: "zero-to-one", precision: "reduced" });
+      expect(device.getDepthConvention?.()?.precisionReason).toMatch(/fixed point/);
+      // Standard passes inside the frame return to minus-one-to-one projections.
+      expect(withStandardDeviceDepth(device, () => device.getDepthConvention?.())?.projectionClipRange).toBeUndefined();
+      expect(() => device.setDepthConvention?.({ ...negotiateDepthConvention({}, { clipRange: "zero-to-one", reversed: false, logarithmic: false }), projectionClipRange: "zero-to-one" })).toThrow(/unsupported/);
       // Logarithmic frames are accepted now that generated WGSL writes frag_depth.
       expect(applyFrameDepthConvention(device, "logarithmic", { near, far, kind: "perspective" })).toMatchObject({ mode: "logarithmic", clipRange: "zero-to-one" });
       for (const target of [fixed, fallback, depthOnly, stencil]) target.dispose();
@@ -426,5 +432,103 @@ describe("legacy impostor fragment depth follows the frame convention", () => {
     const window = ((projection[10]! * -distance + projection[14]!) / (projection[11]! * -distance + projection[15]!) + 1) / 2;
     expect(frameDepth(2, window, 0)).toBeCloseTo(Math.log(distance / near) / Math.log(far / near), 6);
     expect(frameDepth(2, window, offset)).toBeLessThan(frameDepth(2, window, 0));
+  });
+});
+
+/** f32 evaluation of the WGSL raster depth `select(z * 0.5 + w * 0.5, z, a3dZeroToOneProjection) / w`. */
+function wgslRasterDepth(projection: ArrayLike<number>, distance: number, zeroToOneOverride: boolean): number {
+  const f = Math.fround;
+  const z = f(-distance);
+  const clipZ = f(f(f(projection[10]!) * z) + f(projection[14]!));
+  const clipW = f(f(f(projection[11]!) * z) + f(projection[15]!));
+  const rasterZ = zeroToOneOverride ? clipZ : f(f(clipZ * 0.5) + f(clipW * 0.5));
+  return f(rasterZ / clipW);
+}
+
+describe("WebGPU reversed Z with a native zero-to-one projection", () => {
+  it("specializes every generated scene program through the a3dZeroToOneProjection override", () => {
+    for (const lighting of ["lit", "unlit"] as const) {
+      const generated = wgslProgram(lighting, false);
+      const program = lighting === "lit" ? createGeneratedPbrProgram(generated.descriptor!) : createGeneratedUnlitProgram(generated.descriptor!);
+      expect(program.vertex).toContain("override a3dZeroToOneProjection: bool = false;");
+      expect(program.vertex).toContain("select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection)");
+      expect(program.vertex).not.toMatch(/\(clip\.z \+ clip\.w\) \* 0\.5|vec4f\(clip\.xy, clip\.z \* 0\.5 \+ clip\.w \* 0\.5/);
+    }
+  });
+
+  it("keeps the float32 reversed-Z gain only when the override passes clip z through (CPU reference)", () => {
+    const { projectionCamera, projectionMetadata } = production("reversed");
+    const reversed = createRootCameraProjection(projectionCamera, 1);
+    const zeroToOne = zeroToOneReversedProjection(reversed, projectionMetadata);
+    const surfaces = Array.from({ length: 40 }, (_, index) => 1_000 + index * 200.37);
+    const exact = (d: number) => near * (far - d) / ((far - near) * d);
+    const maxError = (encode: (distance: number) => number) => Math.max(...surfaces.map((d) => Math.abs(encode(d) - exact(d))));
+    // Reversed frame: zero-to-one projection with the override set, into depth32float.
+    const native = maxError((d) => float32(wgslRasterDepth(zeroToOne, d, true)));
+    expect(native).toBeLessThan(1e-10);
+    // The previous WebGPU path (minus-one-to-one projection remapped in WGSL) and
+    // a fixed-point attachment both lose two or more orders of magnitude.
+    expect(maxError((d) => float32(wgslRasterDepth(reversed, d, false)))).toBeGreaterThan(100 * native);
+    expect(maxError((d) => fixed24(wgslRasterDepth(zeroToOne, d, true)))).toBeGreaterThan(100 * native);
+    // Far surfaces 1 cm apart keep strictly decreasing reversed depth on the native path.
+    const far1cm = Array.from({ length: 200 }, (_, index) => float32(wgslRasterDepth(zeroToOne, 8_000 + index * 0.01, true)));
+    for (let index = 1; index < far1cm.length; index++) expect(far1cm[index]!).toBeLessThan(far1cm[index - 1]!);
+    // Standard frames keep the remap: a minus-one-to-one projection still maps near -> 0, far -> 1.
+    const standard = createRootCameraProjection(production("standard").projectionCamera, 1);
+    expect(wgslRasterDepth(standard, near, false)).toBeCloseTo(0, 5);
+    expect(wgslRasterDepth(standard, far, false)).toBeCloseTo(1, 5);
+  });
+
+  it("renders a reversed WebGPU frame with the specialized pipeline, float depth and a full precision report", async () => {
+    const pipelines: Array<Record<string, any>> = [];
+    const textures: Array<Record<string, unknown>> = [];
+    const native = {
+      features: new Set(["depth32float-stencil8"]),
+      queue: { submit() {}, writeBuffer() {}, onSubmittedWorkDone: async () => {} },
+      createBuffer: () => ({ destroy() {} }),
+      createTexture: (descriptor: Record<string, unknown>) => { textures.push(descriptor); return { createView: () => ({}), destroy() {} }; },
+      createSampler: () => ({}),
+      createShaderModule: (descriptor: object) => descriptor,
+      createBindGroupLayout: (descriptor: object) => descriptor,
+      createPipelineLayout: (descriptor: object) => descriptor,
+      createRenderPipeline: (descriptor: Record<string, any>) => { pipelines.push(descriptor); return { getBindGroupLayout: (index: number) => ({ index }) }; },
+      createBindGroup: (descriptor: object) => descriptor,
+      createCommandEncoder: () => ({ beginRenderPass: () => ({ setPipeline() {}, setBindGroup() {}, setVertexBuffer() {}, setIndexBuffer() {},
+        setViewport() {}, setScissorRect() {}, setBlendConstant() {}, setStencilReference() {}, draw() {}, drawIndexed() {}, end() {} }),
+        copyTextureToTexture() {}, copyBufferToBuffer() {}, finish: () => ({}) }),
+      destroy() {}
+    };
+    const requestDevice = vi.fn(async () => native as unknown as WebGPUDeviceLike);
+    const webgpu = { requestAdapter: async () => ({ features: new Set(["depth32float-stencil8"]), requestDevice }) } as unknown as WebGPULike;
+    const renderer = await Renderer.create({ backend: "webgpu", webgpu, width: 8, height: 8, qrFlags: resolveQrFlags({ options: { A3D_QR_CORE: true } }) });
+    // The optional float depth-stencil feature is requested when the adapter offers it.
+    expect(requestDevice).toHaveBeenCalledWith(expect.objectContaining({ requiredFeatures: ["depth32float-stencil8"] }));
+    const geometry = Geometry.triangle();
+    const material = new UnlitMaterial();
+    const target = renderer.device.createRenderTarget({ width: 8, height: 8, format: "rgba8", depth: "texture", depthPrecision: "float" });
+    try {
+      expect(target.depthStorage).toBe("float");
+      const { projectionCamera, projectionMetadata, depthConvention } = production("reversed");
+      const projection = createRootCameraProjection(projectionCamera, 1) as unknown as Mat4;
+      const camera = { viewProjectionMatrix: projection, viewMatrix: identityMat4(), projectionMatrix: projection, projectionMetadata, depthConvention };
+      const source = { renderItems: [{ geometry, material, label: "reversed" }], renderTarget: target, cameraPolicy: "require" as const, frustumCulling: false, shadow: { enabled: false } };
+      renderer.render(source, camera);
+      expect(renderer.getDepthConvention()).toMatchObject({ mode: "reversed", clipRange: "zero-to-one", projectionClipRange: "zero-to-one", precision: "full", depthStorage: "float" });
+      const reversedScene = pipelines.filter((pipeline) => pipeline.depthStencil?.depthCompare === "greater-equal");
+      expect(reversedScene.length).toBeGreaterThan(0);
+      for (const pipeline of reversedScene) {
+        expect(pipeline.vertex.constants).toEqual({ a3dZeroToOneProjection: 1 });
+        expect(pipeline.vertex.module.code).toContain("override a3dZeroToOneProjection: bool = false;");
+      }
+      expect(textures.some((texture) => texture.format === "depth32float-stencil8")).toBe(true);
+
+      pipelines.length = 0;
+      renderer.render({ ...source, cameraPolicy: "identity" as const });
+      expect(renderer.getDepthConvention()).toMatchObject({ mode: "standard" });
+      expect(renderer.getDepthConvention()?.projectionClipRange).toBeUndefined();
+      const standardScene = pipelines.filter((pipeline) => pipeline.depthStencil?.depthCompare === "less-equal");
+      expect(standardScene.length).toBeGreaterThan(0);
+      for (const pipeline of standardScene) expect(pipeline.vertex.constants).toBeUndefined();
+    } finally { target.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); }
   });
 });

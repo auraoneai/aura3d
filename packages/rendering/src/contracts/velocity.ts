@@ -47,31 +47,26 @@ export interface TemporalHistoryLike {
 /** A renderer-owned history or a view-specific reset adapter. */
 export type TemporalResetTarget = Pick<TemporalHistoryLike, "reset">;
 
-let temporalHistoryImpl: TemporalHistoryLike | null = null;
 // Ownership metadata only: no camera, model, or frame history is shared here.
-const temporalHistoryOwnership = new WeakMap<object, "compatibility" | "scoped">();
+// 5.0 removed the module-global compatibility history and its unscoped reset:
+// every history belongs to a renderer, device or view owner.
+const temporalHistoryOwnership = new WeakSet<object>();
 
-/** @internal Claim a fresh history so the legacy reset seam cannot select it. */
+/** @internal Claim a fresh history so it cannot be issued to a second owner. */
 export function claimScopedTemporalHistory(history: TemporalHistoryLike): boolean {
   if (temporalHistoryOwnership.has(history)) return false;
-  temporalHistoryOwnership.set(history, "scoped");
+  temporalHistoryOwnership.add(history);
   return true;
 }
 
-/** Registers the shared compatibility history used by an unscoped reset. */
-export function setTemporalHistoryImpl(history: TemporalHistoryLike | null): void {
-  if (history && temporalHistoryOwnership.get(history) === "scoped") {
-    throw new Error("A scoped temporal history cannot be registered for unscoped reset");
-  }
-  if (history) temporalHistoryOwnership.set(history, "compatibility");
-  temporalHistoryImpl = history;
-}
-
 /**
- * Reset an explicit owner or view adapter. With no target, only the shared
- * compatibility history is reset; no renderer or view is selected implicitly.
+ * Reset an explicit owner or view adapter. There is no implicit default
+ * target: a missing target is a programming error, never a global reset.
  */
-export function resetTemporalHistory(reason: TemporalResetReason, target?: TemporalResetTarget): void {
-  (target ?? temporalHistoryImpl)?.reset(reason);
+export function resetTemporalHistory(reason: TemporalResetReason, target: TemporalResetTarget): void {
+  if (target === null || typeof target !== "object" && typeof target !== "function" || typeof target.reset !== "function") {
+    throw new TypeError("resetTemporalHistory requires an explicit renderer, device or view history target");
+  }
+  target.reset(reason);
 }
 // AuraApp.cutCamera(): void  (via C-38; PRD 08's app.camera.cut() calls it)

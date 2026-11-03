@@ -1,6 +1,7 @@
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
-import type { BlendMode, DepthCompare as DepthCompareV2 } from "./contracts/blend";
+import { validateRenderCommandState, type BlendMode, type DepthCompare as DepthCompareV2 } from "./contracts/blend";
+import type { RenderCommandState, RenderColorAttachmentState } from "./RenderDevice";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import { defaultProgramFeatures } from "./program/MaterialFeatures";
 
@@ -20,6 +21,13 @@ export interface ScissorRect {
 export interface PolygonOffsetState {
   readonly factor: number;
   readonly units: number;
+  /**
+   * Maximum absolute depth offset (0 = unclamped). WebGPU applies it as the
+   * pipeline `depthBiasClamp`; WebGL2 applies it with
+   * `EXT_polygon_offset_clamp` and refuses it with `UNSUPPORTED_RENDER_STATE`
+   * when the extension is unavailable.
+   */
+  readonly clamp?: number;
 }
 
 export interface StencilState {
@@ -50,6 +58,34 @@ export interface RenderState {
   readonly scissor?: ScissorRect | null;
   readonly polygonOffset?: PolygonOffsetState | null;
   readonly stencil?: StencilState | null;
+  /** Front-face winding used with `cullMode` (default counter-clockwise). */
+  readonly frontFace?: "ccw" | "cw";
+  /**
+   * Multisample coverage mask. WebGPU applies any 32-bit mask; WebGL2 can only
+   * express all-samples or no-samples and refuses other masks with
+   * `UNSUPPORTED_RENDER_STATE`.
+   */
+  readonly sampleMask?: number;
+  /** Constant color for `constant` / `one-minus-constant` blend factors. */
+  readonly blendConstant?: readonly [number, number, number, number];
+  /** Opt in to depth writes for a blended material (otherwise rejected). */
+  readonly blendedDepthWrite?: "allow";
+  /**
+   * Per-color-attachment overrides for multiple render targets; omitted
+   * entries inherit `colorWrite` and `blendMode`. WebGL2 applies them with
+   * `OES_draw_buffers_indexed` and refuses them without it.
+   */
+  readonly colorAttachments?: readonly (RenderColorAttachmentState | undefined)[];
+}
+
+/** True when a state uses command-state fields beyond the base material set. */
+export function renderStateHasExtendedCommandFields(state: Partial<RenderState>): boolean {
+  return (state.frontFace !== undefined && state.frontFace !== "ccw")
+    || (state.sampleMask !== undefined && state.sampleMask !== 0xffffffff)
+    || (state.blendConstant !== undefined && state.blendConstant.some((value) => value !== 0))
+    || state.blendedDepthWrite !== undefined
+    || (state.colorAttachments !== undefined && state.colorAttachments.length > 0)
+    || ((state.polygonOffset?.clamp ?? 0) !== 0);
 }
 
 export type MaterialUniformKind = "any" | "float" | "i32" | "u32" | "bool" | "vec2" | "vec3" | "vec4" | "mat4" | "data" | "texture2d" | "texture3d" | "depth2d" | "textureCube";
@@ -226,7 +262,17 @@ function validateShaderVariant(variant: string | undefined): string | undefined 
 
 export function validateRenderState(state: RenderState): RenderState {
   const blends = state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque");
-  if (blends && state.depthWrite) {
+  // Extended command-state fields share the device contract's validation.
+  validateRenderCommandState({
+    depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal",
+    ...(state.frontFace !== undefined ? { frontFace: state.frontFace } : {}),
+    ...(state.sampleMask !== undefined ? { sampleMask: state.sampleMask } : {}),
+    ...(state.blendConstant !== undefined ? { blendConstant: state.blendConstant } : {}),
+    ...(state.blendedDepthWrite !== undefined ? { blendedDepthWrite: state.blendedDepthWrite } : {}),
+    ...(state.colorAttachments !== undefined ? { colorAttachments: state.colorAttachments } : {}),
+    ...(state.polygonOffset ? { polygonOffset: state.polygonOffset } : {})
+  } satisfies RenderCommandState);
+  if (blends && state.depthWrite && state.blendedDepthWrite !== "allow") {
     throw new Error("Transparent blended materials must disable depthWrite");
   }
   if (state.scissor) {

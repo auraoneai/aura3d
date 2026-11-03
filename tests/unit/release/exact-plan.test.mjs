@@ -9,13 +9,26 @@ import { loadValidatedReleasePlan, inspectInstalledRelease } from '../../../tool
 import { packageAcceptanceDocument, recordBuild, validateRemoteBuildEnvironment } from '../../../tools/release/package-acceptance.mjs';
 import { sourceIdentity } from '../../../tools/release/source-identity.mjs';
 import { buildReleaseArtifactManifest } from '../../../tools/release/build-artifact-manifest.mjs';
+import { RELEASE_INVENTORIES, publicPackageNames } from '../../../tools/release/release-inventory.mjs';
 const hash=(data,kind='sha256',encoding='hex')=>createHash(kind).update(data).digest(encoding);
+// Release planning is inventory-driven (tools/release/release-inventory.mjs):
+// the fixture uses the real package names of the version's inventory, with
+// @aura3d/engine first. A short fixture drops names; a long one adds names
+// from other inventories, so the inventory check must name both.
+function inventoryFixtureNames(version,count){
+ const expected=publicPackageNames(version),names=['@aura3d/engine',...expected.filter(n=>n!=='@aura3d/engine')];
+ // @aura3d/addons selects the native inventory itself, so it is never an extra here.
+ const extras=[...new Set(Object.values(RELEASE_INVENTORIES).flat())].filter(n=>!expected.includes(n)&&n!=='@aura3d/addons').sort();
+ return count<=names.length?names.slice(0,count):[...names,...extras.slice(0,count-names.length)];
+}
 function fixture(version='3.0.1', count=29) {
  const root=mkdtempSync(join(tmpdir(),'aura-exact-plan-')); const write=(p,data)=>{mkdirSync(join(root,p,'..'),{recursive:true});writeFileSync(join(root,p),data);};
  write('tools/release/publish-all.mjs',readFileSync(resolve('tools/release/publish-all.mjs')));
  write('tools/release/source-identity.mjs',readFileSync(resolve('tools/release/source-identity.mjs')));
  write('tools/release/release-inventory.mjs',readFileSync(resolve('tools/release/release-inventory.mjs')));
- const packages=Array.from({length:count},(_,i)=>({name:i?'@aura3d/p'+i:'@aura3d/engine',version,path:i?`packages/p${i}`:'.'}));
+ write('tools/release/exact-release-plan.mjs',readFileSync(resolve('tools/release/exact-release-plan.mjs')));
+ const names=inventoryFixtureNames(version,count);assert.equal(names.length,count);
+ const packages=names.map((name,i)=>({name,version,path:i?`packages/p${i}`:'.'}));
  for(const p of packages)write(`${p.path}/package.json`,JSON.stringify({name:p.name,version:p.version}));
  write('pnpm-lock.yaml','lockfileVersion: 9.0\n');
  execFileSync('git',['init','-q'],{cwd:root});execFileSync('git',['add','.'],{cwd:root});execFileSync('git',['-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','fixture'],{cwd:root});
@@ -24,10 +37,11 @@ function fixture(version='3.0.1', count=29) {
  return {root,plan,run:(args)=>spawnSync(process.execPath,['tools/release/publish-all.mjs',...args],{cwd:root,encoding:'utf8'}),cleanup:()=>rmSync(root,{recursive:true,force:true})};
 }
 test('exact plan reuses all29archives and leaves original plan immutable',()=>{const f=fixture();try{const before=readFileSync(join(f.root,'tests/reports/release-tarballs/release-plan.json'),'utf8');const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.equal(r.status,0,r.stderr);assert.equal(readFileSync(join(f.root,'tests/reports/release-tarballs/release-plan.json'),'utf8'),before);}finally{f.cleanup();}});
-test('tampered archive fails before publication and before any repack',()=>{const f=fixture();try{writeFileSync(join(f.root,f.plan.packages[28].tarball),'tampered');const r=f.run(['--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);assert.match(r.stderr,/Archive changed/);}finally{f.cleanup();}});
+test('tampered archive fails before publication and before any repack',()=>{const f=fixture();try{writeFileSync(join(f.root,f.plan.packages[28].tarball),'tampered');const r=f.run(['--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);// The shared exact-plan loader rejects the changed archive before any publish or pack step.
+assert.match(r.stderr,new RegExp(`Exact archive mismatch ${f.plan.packages[28].name.replace('/','\\/')}\\n`));assert.doesNotMatch(r.stdout+r.stderr,/npm (?:publish|pack)/);}finally{f.cleanup();}});
 test('publishing without validated plan fails closed',()=>{const f=fixture();try{const r=f.run([]);assert.notEqual(r.status,0);assert.match(r.stderr,/Publication requires --from-plan/);}finally{f.cleanup();}});
 
-test('dirty source invalidates exact plan even with identicalHEAD andlock',()=>{const f=fixture();try{writeFileSync(join(f.root,'packages/p1/package.json'),JSON.stringify({name:'@aura3d/p1',version:'3.0.1',description:'changed'}));const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);assert.match(r.stderr,/source fingerprint mismatch/);}finally{f.cleanup();}});
+test('dirty source invalidates exact plan even with identicalHEAD andlock',()=>{const f=fixture();try{writeFileSync(join(f.root,'packages/p1/package.json'),JSON.stringify({...JSON.parse(readFileSync(join(f.root,'packages/p1/package.json'),'utf8')),description:'changed'}));const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);assert.match(r.stderr,/Exact release source mismatch/);}finally{f.cleanup();}});
 
 test('generated release artifact manifest preserves exact release identity',()=>{const f=fixture();try{const before=sourceIdentity(f.root);const manifest=buildReleaseArtifactManifest(f.root,'tests/reports/release-tarballs/release-plan.json');assert.equal(manifest.version,'3.0.1');assert.equal(manifest.artifacts.length,29);assert.deepEqual(manifest.source,before);assert.equal(manifest.releasePlan.sha256,hash(readFileSync(join(f.root,'tests/reports/release-tarballs/release-plan.json'))));assert.deepEqual(manifest.artifacts.map(a=>a.sha256),f.plan.packages.map(a=>a.sha256));mkdirSync(join(f.root,'docs/project'),{recursive:true});writeFileSync(join(f.root,'docs/project/release-artifacts.json'),JSON.stringify(manifest));assert.deepEqual(sourceIdentity(f.root),before);assert.doesNotThrow(()=>loadValidatedReleasePlan(f.root,'tests/reports/release-tarballs/release-plan.json'));}finally{f.cleanup();}});
 
@@ -46,7 +60,15 @@ test('exact shared loader verifies candidate and observed npm installed integrit
 // Fixture archives are already materialized; pack-only/from-plan validates without packing or publishing.
 test('lean 4.0 candidate validates exactly 24 existing archives without publication',()=>{const f=fixture('4.0.0',24);try{assert.equal(loadValidatedReleasePlan(f.root,'tests/reports/release-tarballs/release-plan.json').packages.length,24);const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.equal(r.status,0,r.stderr);}finally{f.cleanup();}});
 for(const [version,count,expected] of [['3.0.1',24,29],['4.0.0',29,24]]) {
- test(`rejects ${version} inventory of ${count}; requires ${expected}`,()=>{const f=fixture(version,count);try{assert.throws(()=>loadValidatedReleasePlan(f.root,'tests/reports/release-tarballs/release-plan.json'),new RegExp(`requires ${expected} public packages`));const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);assert.match(r.stderr,new RegExp(`Expected exactly ${expected}`));}finally{f.cleanup();}});
+ test(`rejects ${version} inventory of ${count}; requires ${expected}`,()=>{const f=fixture(version,count);try{
+  assert.equal(publicPackageNames(version).length,expected);
+  const names=f.plan.packages.map(p=>p.name),required=publicPackageNames(version);
+  const missing=required.filter(n=>!names.includes(n)),unexpected=names.filter(n=>!required.includes(n)).sort();
+  assert.equal(missing.length+unexpected.length,Math.abs(count-expected));
+  const message=new RegExp(`Release package inventory mismatch: missing \\[${missing.join(', ')}\\]; unexpected \\[${unexpected.join(', ')}\\]`);
+  assert.throws(()=>loadValidatedReleasePlan(f.root,'tests/reports/release-tarballs/release-plan.json'),message);
+  const r=f.run(['--pack-only','--from-plan','tests/reports/release-tarballs/release-plan.json']);assert.notEqual(r.status,0);assert.match(r.stderr,message);
+ }finally{f.cleanup();}});
 }
 
 test('lean preparation checks 24 manifests without changing the candidate or selecting a release',()=>{const f=fixture('4.0.0',24);try{
@@ -55,6 +77,8 @@ test('lean preparation checks 24 manifests without changing the candidate or sel
  write('packages/create-aura3d/src/index.ts','export const CREATE_AURA3D_TEMPLATES = ["minimal"] as const;\n');
  write('packages/create-aura3d/templates/minimal/package.json',JSON.stringify({dependencies:{'@aura3d/engine':'4.0.0'}},null,2)+'\n');
  write('marketing/package.json',JSON.stringify({dependencies:{'@aura3d/engine':'4.0.0'}},null,2)+'\n');
+ // prepare-version also versions the private engine-runtime workspace manifest.
+ write('packages/engine/package.json',JSON.stringify({name:'@aura3d/engine-runtime',version:'4.0.0',private:true},null,2)+'\n');
  // Format the source fixture once so --check must be a true no-op.
  for(let i=0;i<24;i++){const path=i?`packages/p${i}/package.json`:'package.json';write(path,JSON.stringify(JSON.parse(readFileSync(join(f.root,path),'utf8')),null,2)+'\n');}
  const before=readFileSync(join(f.root,'package.json'),'utf8');

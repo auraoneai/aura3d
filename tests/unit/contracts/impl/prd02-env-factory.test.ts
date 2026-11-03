@@ -13,6 +13,7 @@ import {
   Prd02EnvironmentProbeFactory
 } from "../../../../packages/rendering/src/environment/EnvironmentProbeFactory";
 import {
+  NEUTRAL_ROOM_EXPOSURE,
   cubeFaceViewProjection,
   sh9ToTexture
 } from "../../../../packages/rendering/src/environment/probeBuild";
@@ -53,7 +54,7 @@ describe("C-09 Prd02EnvironmentProbeFactory", () => {
       expect(face.mipLevels[0]!.data).toBeInstanceOf(Uint16Array);
     }
     expect(probe.sh9).toHaveLength(27);
-    // RoomEnvironmentScene panels reach radiance 100 — the SH L0 band and the
+    // RoomEnvironmentScene panels reach radiance 64 (x NEUTRAL_ROOM_EXPOSURE) — the SH L0 band and the
     // baked mip-0 half-floats must both carry the HDR range.
     expect(probe.sh9[0]).toBeGreaterThan(0.5);
     const half = (bits: number) => {
@@ -64,7 +65,9 @@ describe("C-09 Prd02EnvironmentProbeFactory", () => {
     for (const face of probe.specularCube.cubeFaces) {
       for (const bits of face.mipLevels[0]!.data as Uint16Array) max = Math.max(max, half(bits));
     }
-    expect(max).toBeGreaterThanOrEqual(50); // room panels reach radiance 100
+    // Brightest panel (radiance 64) at the neutral exposure: still HDR, well above 1.
+    expect(max).toBeCloseTo(64 * NEUTRAL_ROOM_EXPOSURE, 1);
+    expect(max).toBeGreaterThan(16);
     probe.dispose();
   });
 
@@ -194,11 +197,11 @@ describe("EnvironmentCache", () => {
     expect(probe.faceSize).toBe(256);
     expect(probe.mipCount).toBe(1); // single constant level — the GGX chain yields 5
     // Floor carries the baked room-neutral SH9 verbatim → diffuse parity before/after upgrade
-    // (point-lit r185 room, re-baked for #1141 / 02-S2).
+    // (Aura's independent studio, tools/environments/bake-neutral.ts).
     expect(probe.sh9).toHaveLength(27);
-    expect(probe.sh9[0]).toBeCloseTo(3.7560017, 6);
-    expect(probe.sh9[1]).toBeCloseTo(3.7560017, 6);
-    expect(probe.sh9[2]).toBeCloseTo(3.7560017, 6);
-    expect(probe.sh9[3]).toBeCloseTo(-1.7286245, 6);
+    expect(probe.sh9[0]).toBeCloseTo(3.7563810, 6);
+    expect(probe.sh9[1]).toBeCloseTo(3.7563810, 6);
+    expect(probe.sh9[2]).toBeCloseTo(3.7563810, 6);
+    expect(probe.sh9[3]).toBeCloseTo(-4.4228210, 6);
   });
 });

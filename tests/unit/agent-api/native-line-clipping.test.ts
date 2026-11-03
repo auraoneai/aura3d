@@ -329,7 +329,7 @@ describe("line, point and sprite clipping propagation", () => {
     } finally { compiled.dispose(); }
   });
 
-  it("submits rotated sprite clipping on the generated forward path while rejecting shadow depth", () => {
+  it("submits rotated sprite clipping on the generated forward path and re-expands it for depth", () => {
     const global = clipping.global({ planes: [[1, 0, 0, -3]] });
     const local = clipping.material({ planes: [[0, 1, 0, -0.5]], space: "local", clipShadows: true });
     const texture = new Texture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 128]), colorSpace: "srgb" });
@@ -385,10 +385,33 @@ describe("line, point and sprite clipping propagation", () => {
       expect(Array.from(frame.slice(16, 32))).toEqual(projection.map(Math.fround));
 
       for (const clippingPass of ["depth", "shadow"] as const) {
+        // Depth must expand the billboard from the raster camera that drew it.
         expect(() => new DepthPass({ casters: [compiled.item], clippingPass }).execute({ device, width: 800, height: 400 }))
-          .toThrowError(expect.objectContaining({ code: "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED" }));
+          .toThrowError(expect.objectContaining({ code: "DEPTH_CLIPPING_RASTER_CAMERA_REQUIRED" }));
       }
       expect(device.drawCommands).toHaveLength(1);
+      const rasterCamera = { viewMatrix: view, projectionMatrix: projection };
+      let corners: number[][] = [];
+      const forwardDraw = device.draw.bind(device);
+      device.draw = (command) => {
+        const bytes = device.readBuffer(command.vertexBuffer);
+        const floats = new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4);
+        corners = Array.from({ length: floats.length / 3 }, (_, i) => Array.from(floats.slice(i * 3, i * 3 + 3)));
+        forwardDraw(command);
+      };
+      new DepthPass({ casters: [{ ...compiled.item, clippingRasterCamera: rasterCamera }], clippingPass: "depth", globalClipping: global,
+        viewProjectionMatrix: multiplyMatrices(projection, view) }).execute({ device, width: 800, height: 400 });
+      expect(device.drawCommands).toHaveLength(2);
+      const depth = device.drawCommands[1]!;
+      expect(depth.uniforms!.get("u_a3dClipGroupCount")).toBe(2);
+      expect(Array.from(depth.uniforms!.get("u_a3dClipGroups") as Float32Array)).toEqual([0, 1, 0, 0, 1, 1, 0, 1]);
+      // The depth corners are the forward billboard's object-space corners.
+      const model = depth.uniforms!.get("u_a3dClipModel") as ArrayLike<number>;
+      for (const expectedCorner of expected) {
+        const match = corners.find((corner) => corner.every((value, i) => Math.abs(value - expectedCorner.local[i]!) < 1e-4));
+        expect(match).toBeDefined();
+        transform(new Float32Array(model), match as unknown as [number, number, number]).forEach((value, i) => expect(value).toBeCloseTo(expectedCorner.world[i]!, 4));
+      }
     } finally { compiled.dispose(); texture.dispose(); device.dispose(); }
   });
 
@@ -503,7 +526,7 @@ describe("line, point and sprite clipping propagation", () => {
     } finally { removeHook(); compiled.dispose(); device.dispose(); }
   });
 
-  it.each([false, true])("renders clipped sprites through the renderer without shadow-depth work (async=%s)", async asynchronous => {
+  it.each([false, true])("renders clipped sprites through the renderer and their clipped shadow depth (async=%s)", async asynchronous => {
     const local = clipping.material({ planes: [[1, 0, 0, 0]], space: "local" });
     const global = clipping.global({ planes: [[0, 1, 0, -0.2]] });
     const compiled = compile(sprites.sprite({ center: [0.1, 0.8], spriteRotation: 0.4, material: { clipping: local } }).toJSON());
@@ -517,22 +540,22 @@ describe("line, point and sprite clipping propagation", () => {
       expect(device.drawCommands).toHaveLength(1);
       expect(device.drawCommands[0]!.uniforms!.get("u_a3dClipGroupCount")).toBe(2);
 
-      // Shadow clipping must fail before any draw until the shadow shader can
-      // project the same camera-facing billboard into the light's view.
+      // Shadow clipping re-expands the same camera-facing billboard from the
+      // frame's raster camera and clips it in the light's depth pass.
       local.update({ clipShadows: true });
       const sun = new DirectionalLight("sprite-shadow");
       sun.castsShadow = true;
       const shadowSource = { ...source, shadow: { light: sun, size: 8, lightMatrix: identityMat4() } };
-      if (asynchronous) {
-        await expect(renderer.renderAsync({ source: shadowSource })).rejects.toThrowError(
-          expect.objectContaining({ code: "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED" })
-        );
-      } else {
-        expect(() => renderer.render({ source: shadowSource })).toThrowError(
-          expect.objectContaining({ code: "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED" })
-        );
-      }
-      expect(device.drawCommands).toHaveLength(0);
+      if (asynchronous) await renderer.renderAsync({ source: shadowSource });
+      else renderer.render({ source: shadowSource });
+      const isDepth = (command: (typeof device.drawCommands)[number]) => /depth/.test(command.shader?.label ?? "");
+      const forward = device.drawCommands.filter((command) => !isDepth(command));
+      const shadow = device.drawCommands.filter(isDepth);
+      expect(forward).toHaveLength(1);
+      expect(shadow).toHaveLength(1);
+      // Only the shadow-opted local group applies to the light pass.
+      expect(shadow[0]!.uniforms!.get("u_a3dClipGroupCount")).toBe(1);
+      expect(shadow[0]!.renderState?.depthWrite).toBe(true);
     } finally { renderer.dispose(); compiled.dispose(); }
   });
 

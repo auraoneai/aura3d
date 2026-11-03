@@ -63,3 +63,47 @@ export function looksLikeWasmBinary(buffer: ArrayBuffer): boolean {
   const bytes = new Uint8Array(buffer);
   return bytes[0] === 0x00 && bytes[1] === 0x61 && bytes[2] === 0x73 && bytes[3] === 0x6d;
 }
+
+/** Default bound on draining decoder initialization/cleanup during disposal. */
+export const DECODER_DISPOSE_TIMEOUT_MS = 10_000;
+
+/**
+ * Disposal could not observe every initializer or cleanup settle within its
+ * bound (for example a Basis/Draco factory whose promise never settles). The
+ * owner is already cancelled and unusable; late values are still released when
+ * they arrive, and calling dispose again re-drains what is left.
+ */
+export class AssetDecoderDisposeTimeout extends Error {
+  readonly code = "ASSET_DECODER_DISPOSE_TIMEOUT" as const;
+  readonly pending: number;
+  readonly timeoutMs: number;
+  constructor(owner: string, pending: number, timeoutMs: number) {
+    super(`${owner} disposal timed out after ${timeoutMs}ms with ${pending} unsettled decoder operation(s)`);
+    this.name = "AssetDecoderDisposeTimeout";
+    this.pending = pending;
+    this.timeoutMs = timeoutMs;
+  }
+}
+
+/** Validate an optional positive millisecond bound. */
+export function decoderTimeoutMs(value: number | undefined, fallback: number, label: string): number {
+  if (value === undefined) return fallback;
+  if (!Number.isFinite(value) || value <= 0) throw new RangeError(`${label} must be a positive finite number of milliseconds`);
+  return value;
+}
+
+/**
+ * Await tracked work (which must never reject) until the set is empty or the
+ * deadline passes. Returns how many operations were still unsettled.
+ */
+export async function drainWithDeadline(pending: ReadonlySet<Promise<unknown>>, ms: number): Promise<number> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let expired = false;
+  const deadline = new Promise<void>((resolve) => { timer = setTimeout(() => { expired = true; resolve(); }, ms); });
+  try {
+    while (pending.size && !expired) await Promise.race([Promise.all([...pending]), deadline]);
+  } finally {
+    clearTimeout(timer);
+  }
+  return pending.size;
+}

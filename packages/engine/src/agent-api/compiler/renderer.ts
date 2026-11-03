@@ -10,7 +10,7 @@ import { AuraClipGroup } from "../nodes/clipping.js";
 import { getMaterialClipping, getSceneClipping } from "../nodes/scene.js";
 import { primitive } from "../nodes/primitives.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
-import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
+import { createRendererDiagnosticReport, rendererFrameTimingFromInspection } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
 import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
@@ -1134,6 +1134,7 @@ export async function createProductionRuntimeSceneRenderer(
           backend: "production-runtime",
           outputColorSpace: deviceLost ? "unknown" : readActiveOutputColorSpace(productionRenderer.device, () => webGL2Context(canvas)),
           ...(!deviceLost && productionRenderer.getDepthConvention?.() ? { depth: productionRenderer.getDepthConvention()! } : {}),
+          ...frameTimingObservation(productionRenderer),
           postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
           shadow: {
             ...shadowObservation,
@@ -1915,4 +1916,14 @@ export function explicitMountQualityTier(rendererOptions?: AuraCreateAppRenderer
 export function outputClearColor(snapshot: Pick<AuraSceneSnapshot, "background" | "backgroundToneMapped">): readonly [number, number, number, number] {
   const [red, green, blue] = colorToLinearRgba(snapshot.background);
   return [red, green, blue, snapshot.backgroundToneMapped === false ? 0 : 1];
+}
+
+/** Whole-frame CPU/GPU timing from the renderer inspector; diagnostics never throw for it. */
+function frameTimingObservation(renderer: Renderer): { readonly frameTiming?: NonNullable<ReturnType<typeof rendererFrameTimingFromInspection>> } {
+  try {
+    const frameTiming = rendererFrameTimingFromInspection(renderer.getFrameInspectionHistory?.());
+    return frameTiming ? { frameTiming } : {};
+  } catch {
+    return {};
+  }
 }

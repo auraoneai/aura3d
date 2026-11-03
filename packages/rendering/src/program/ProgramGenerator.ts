@@ -1058,6 +1058,13 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     body.push("#endif");
     if (f.maps.normal) {
       body.push(`  vec3 N = a3dTangentNormal(v_worldPosition, geometryNormal, ${uvExpr(f, "normal")});`);
+      // WP-04 authored-tangent identity: with a TANGENT attribute the map is
+      // applied in the authored frame (materials/authoredTangent.ts); the
+      // derivative frame above remains the fallback for untangented geometry.
+      body.push("#ifdef A3D_PRD04_TANGENT_FRAME");
+      body.push(`  vec3 a3dNormalTexel = texture(u_normalMap, ${uvExpr(f, "normal")}).xyz * 2.0 - 1.0;`);
+      body.push("  if (dot(v_prd04Tangent.xyz, v_prd04Tangent.xyz) > 0.0) N = a3dAuthoredMapNormal(a3dAuthoredTangentFrame(geometryNormal, v_prd04Tangent, a3dPrd04FaceDirection()), a3dNormalTexel, u_normalScale);");
+      body.push("#endif");
     } else {
       body.push("  vec3 N = geometryNormal;");
     }

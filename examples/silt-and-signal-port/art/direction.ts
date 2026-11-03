@@ -1,6 +1,6 @@
 // examples/silt-and-signal-port/art/direction.ts — GU47 WP-34 (G24) art direction (PRD §3.2 item 1).
 // Duneglide: a hand-inked gouache travel poster; seven chapters are seven hours of one long day.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { SILT_PALETTE } from "./look";
 
 export default defineArtDirection({

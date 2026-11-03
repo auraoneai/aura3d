@@ -9,7 +9,7 @@ import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { Material } from "../../../packages/rendering/src/Material";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
-import { createLeanCoreShaderLibrary, DEFAULT_DEPTH_SHADER_NAME } from "../../../packages/rendering/src/ShaderLibraryCore";
+import { createLeanCoreShaderLibrary, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_UNLIT_SHADER_NAME } from "../../../packages/rendering/src/ShaderLibraryCore";
 import { precompilePrd02DepthVariants, prd02DepthProgram, prd02DepthVariantDefines, prd02DepthWgsl, registerPrd02DepthShader } from "../../../packages/rendering/src/shadows/Prd02DepthShaderLibrary";
 import type { ShadowCasterVariantKey } from "../../../packages/rendering/src/contracts/shadows";
 import {
@@ -355,9 +355,16 @@ describe("depth and shadow clipping submissions", () => {
   it("selects an alpha-test depth shader even without a custom variant resolver", () => {
     const device = new MockRenderDevice();
     const geometry = Geometry.triangle();
-    const material = new Material({ shaderKey: "probe", parameters: { u_alphaCutoff: 0.4 } });
+    // Masked depth must reproduce the forward program's alpha, so it runs for
+    // the stock forward shaders; an unknown legacy program fails closed.
+    const material = new Material({ shaderKey: DEFAULT_UNLIT_SHADER_NAME, parameters: { u_alphaCutoff: 0.4 } });
+    const unknown = new Material({ shaderKey: "probe", parameters: { u_alphaCutoff: 0.4 } });
     device.beginFrame(8, 8);
+    expect(() => new DepthPass({ casters: [{ geometry, material: unknown }] }).execute({ device, width: 8, height: 8 }))
+      .toThrow(expect.objectContaining({ code: "DEPTH_ALPHA_FORWARD_PROGRAM_UNSUPPORTED" }));
+    expect(device.drawCommands).toHaveLength(0);
     new DepthPass({ casters: [{ geometry, material }] }).execute({ device, width: 8, height: 8 });
+    expect(device.drawCommands).toHaveLength(1);
     const draw = device.drawCommands[0]!;
     expect(draw.shader?.reflection.uniforms.has("u_alphaCutoff")).toBe(true);
     expect(draw.uniforms?.get("u_alphaCutoff")).toBe(0.4);

@@ -1,6 +1,6 @@
 // examples/strange-orbit-port/art/direction.ts — GU47 WP-25 (lane g15) art direction for Craterline GP.
 // Look table: ./look.ts. VFX preset pack: ./vfx.ts. Identity sheet: evidence/game-upgrades-47/strange-orbit-port/identity.md.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const SHEET = "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md";
 

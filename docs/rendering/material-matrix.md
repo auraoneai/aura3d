@@ -91,3 +91,37 @@ materials actually present in the mounted scene.
 - LOSS: the capture pair carries the disclosed material-response delta; the
   matrix still records PARTIAL 15 / GAP 4 (controls→N2/F1, objects→B4/D3,
   render-bundles→J2, lights→Q1.6/B5) — none of those rows are claimed here.
+
+## Physical lobe support matrix (5.0)
+
+`EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT`
+(`packages/rendering/src/materials/MaterialExtensions.ts`, mirrored by the
+engine's `PHYSICAL_EXTENSION_MATRIX`) lists clearcoat, sheen, specular,
+transmission, volume, IOR, anisotropy, iridescence, emissive strength, texture
+transform and multi-UV as `supported` in the generated WebGL2 and WebGPU
+programs. Each lobe map has its own texture transform and UV0/UV1 selection;
+colour maps (sheen colour, specular colour, diffuse-transmission colour) are
+sRGB and all other lobe maps are linear data. The diagnostic text keeps the
+non-claims: no caustics or multi-bounce refraction, no in-volume scattering,
+no full spectral iridescence, no inter-layer coat scattering.
+`analyzeMaterialExtensionCombination` still reports per-draw limits (missing
+UV channels, texture-binding limits, missing transmission backdrop and the
+experimental WebGPU backend).
+
+**Authored tangents.** When geometry carries a `TANGENT` attribute, the base
+normal map, the clearcoat normal map and anisotropy use the authored frame in
+both backends: `T` is the tangent made orthogonal to the interpolated normal,
+`B = sign(w) * cross(N, T)`, and back faces of double-sided materials use the
+negated frame. The UV-derivative frame is used only for geometry without
+tangents. The reference construction is `authoredTangentFrame` in
+`packages/rendering/src/materials/authoredTangent.ts`.
+
+**Independent WebGPU preview** (`a3d.independentPhysicalPreview`). The preview
+accepts every lobe combination the default WebGPU program accepts. When preview
+sheen is combined with other lobes, the iridescence and anisotropy per-light
+terms use the sheen's per-light compensation, and transmission and diffuse
+transmission use its view-side compensation. Clearcoat layers over the result.
+The sheen's indirect term uses the same diffuse irradiance as the substrate:
+uniform ambient, environment, hemisphere, local probe, irradiance volume,
+probe grid, voxel or baked lightmap. For non-uniform lighting this is the
+uniform-environment equivalent of the cosine-weighted irradiance.

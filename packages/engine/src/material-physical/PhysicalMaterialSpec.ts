@@ -42,14 +42,14 @@ export interface PhysicalExtensionMatrixEntry {
  * which imports BOTH tables and asserts state equality per extension.
  */
 export const PHYSICAL_EXTENSION_MATRIX: readonly PhysicalExtensionMatrixEntry[] = [
-  { extension: "clearcoat", support: "bounded", diagnostic: "Clearcoat factor and roughness are modeled; layered multiple scattering remains bounded." },
-  { extension: "sheen", support: "bounded", diagnostic: "Sheen color/roughness intent is modeled for fabric review; exact renderer parity requires visual comparison." },
-  { extension: "specular", support: "bounded", diagnostic: "Specular factor/color are modeled for material diagnostics and matrix proof." },
-  { extension: "transmission", support: "bounded", diagnostic: "Transmission is approximated by the bounded transmission pass; refraction parity is not claimed." },
-  { extension: "volume", support: "bounded", diagnostic: "Volume thickness/attenuation are tracked for diagnostics; full volumetric caustics are not claimed." },
-  { extension: "ior", support: "bounded", diagnostic: "IOR is tracked and used by bounded Fresnel/transmission response." },
-  { extension: "anisotropy", support: "bounded", diagnostic: "Anisotropy uses the aspect-ratio anisotropic-GGX NDF in both primitive (procedural frame) and textured (authored-TBN) paths; same-scene rotation response is browser-proven (tests/browser/anisotropic-rotation-q1.spec.ts, tests/reports/anisotropic-rotation-q1/aniso-rotation.json). Full authored-tangent identity stays bounded." },
-  { extension: "iridescence", support: "bounded", diagnostic: "Iridescence factors are tracked for diagnostics; spectral accuracy is not claimed." }
+  { extension: "clearcoat", support: "supported", diagnostic: "Clearcoat factor, roughness and coat normal maps (linear data, per-slot texture transform and UV set, authored TANGENT frame when present) layer over the base with a Fresnel energy split in WebGL2 and WebGPU; inter-layer multiple scattering is not modeled." },
+  { extension: "sheen", support: "supported", diagnostic: "Sheen color (sRGB) and roughness (linear) maps with per-slot texture transforms and UV sets layer over the substrate with albedo compensation in WebGL2 and WebGPU, including the independent WebGPU preview under environment, probe, volume and lightmap lighting; visual parity with other renderers is not claimed." },
+  { extension: "specular", support: "supported", diagnostic: "Specular factor (linear alpha) and specular color (sRGB) maps with per-slot texture transforms and UV sets drive dielectric F0/F90 in WebGL2 and WebGPU." },
+  { extension: "transmission", support: "supported", diagnostic: "Transmission refracts the captured scene color with roughness- and IOR-selected mip blur; the transmission map (linear red, per-slot transform and UV set) scales it in WebGL2 and WebGPU. Caustics and multi-bounce refraction are not modeled." },
+  { extension: "volume", support: "supported", diagnostic: "Volume thickness (linear green map, per-slot transform and UV set) and Beer-Lambert attenuation shape transmission in WebGL2 and WebGPU; volumetric caustics and in-volume scattering are not modeled." },
+  { extension: "ior", support: "supported", diagnostic: "IOR drives the dielectric Fresnel, transmission refraction and dispersion bands in WebGL2 and WebGPU." },
+  { extension: "anisotropy", support: "supported", diagnostic: "Anisotropy uses the aspect-ratio anisotropic-GGX NDF; the anisotropy map (linear RG direction, B strength, per-slot transform and UV set) rotates within the authored TANGENT frame (T Gram-Schmidt against the normal, B = sign(w) * cross(N, T), negated on back faces) whenever geometry carries tangents, otherwise within the UV-derivative frame, in WebGL2 and WebGPU." },
+  { extension: "iridescence", support: "supported", diagnostic: "Thin-film iridescence (factor and thickness maps, linear, per-slot transform and UV set) modulates direct and environment Fresnel in WebGL2 and WebGPU; full spectral rendering is not claimed." }
 ];
 
 export interface PhysicalMaterialSpecOptions {

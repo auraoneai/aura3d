@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the uv transform material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/uv_transform.wgsl.ts) mirrors it.
+ * Equations: KHR_texture_transform affine T * R * S (PRD-04 §8.10).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/uv_transform.wgsl.js";

@@ -11,11 +11,13 @@ export interface InspectedFramePass {
   readonly status?: "completed" | "failed";
 }
 
-/** An actual view-scoped GPU interval, not a pass or a whole-frame duration. */
+/** Actual view-scoped GPU intervals plus the frame total built from consecutive non-overlapping ranges. */
 export interface InspectedGpuViewTiming {
   readonly frameNumber: number;
   readonly coverage: "view-collect-through-after-output";
-  readonly wholeFrameGpuTimeMs: null;
+  readonly wholeFrameGpuTimeMs: number | null;
+  readonly wholeFrameGpuStatus?: "unavailable" | "pending" | "measured" | "discarded";
+  readonly wholeFrameGpuReason?: string;
   readonly closed: boolean;
   readonly truncated: boolean;
   readonly views: readonly { readonly viewId: string | number; readonly gpuTimeMs: number | null }[];
@@ -28,6 +30,8 @@ export interface FrameInspectionCapture {
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly cpuTimeMs: number | null;
   readonly gpuTimeMs: number | null;
+  /** Why the whole-frame `gpuTimeMs` is null (unsupported, pending, disjoint discard). */
+  readonly gpuTimeReason?: string;
   /** Delayed, partial-view measurements; they must not be promoted to frame or pass times. */
   readonly gpuViewTiming?: InspectedGpuViewTiming | null;
   /** False when a direct or backend-specific phase could not be observed. */
@@ -48,6 +52,7 @@ export interface FrameInspectionSnapshot {
   readonly passes: readonly InspectedFramePass[];
   readonly cpuTimeMs: number | null;
   readonly gpuTimeMs: number | null;
+  readonly gpuTimeReason?: string;
   readonly gpuViewTiming: InspectedGpuViewTiming | null;
   /** Recent measured captures, kept separate from the current frame because queries settle later. */
   readonly recentGpuViewTimings: readonly InspectedGpuViewTiming[];
@@ -136,6 +141,8 @@ export class FrameInspector {
         })),
         cpuTimeMs: duration(frame?.cpuTimeMs),
         gpuTimeMs: duration(frame?.gpuTimeMs),
+        ...(duration(frame?.gpuTimeMs) === null && typeof frame?.gpuTimeReason === "string"
+          ? { gpuTimeReason: redact(frame.gpuTimeReason).slice(0, 256) } : {}),
         gpuViewTiming,
         recentGpuViewTimings,
         drawCalls: count(diagnostics.drawCalls),
@@ -170,7 +177,8 @@ export class FrameInspector {
 function viewTiming(frame: FrameInspectionCapture | null | undefined): InspectedGpuViewTiming | null {
   const timing = frame?.gpuViewTiming;
   if (!timing || count(frame?.frameNumber) === null || timing.frameNumber !== frame?.frameNumber
-    || timing.coverage !== "view-collect-through-after-output" || timing.wholeFrameGpuTimeMs !== null
+    || timing.coverage !== "view-collect-through-after-output"
+    || (timing.wholeFrameGpuTimeMs !== null && duration(timing.wholeFrameGpuTimeMs) === null)
     || timing.closed !== true || typeof timing.truncated !== "boolean" || !Array.isArray(timing.views)) return null;
   const views: { viewId: string | number; gpuTimeMs: number | null }[] = [];
   for (const view of timing.views) {
@@ -181,7 +189,9 @@ function viewTiming(frame: FrameInspectionCapture | null | undefined): Inspected
   return {
     frameNumber: timing.frameNumber,
     coverage: timing.coverage,
-    wholeFrameGpuTimeMs: null,
+    wholeFrameGpuTimeMs: duration(timing.wholeFrameGpuTimeMs),
+    ...(timing.wholeFrameGpuStatus ? { wholeFrameGpuStatus: timing.wholeFrameGpuStatus } : {}),
+    ...(typeof timing.wholeFrameGpuReason === "string" ? { wholeFrameGpuReason: redact(timing.wholeFrameGpuReason).slice(0, 256) } : {}),
     closed: true,
     truncated: timing.truncated,
     views

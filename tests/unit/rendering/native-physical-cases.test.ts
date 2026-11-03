@@ -113,8 +113,8 @@ describe("independent physical CPU case inventory", () => {
     expect(PHYSICAL_CASES.map(({ category }) => category).sort()).toEqual([...expectedCategories].sort());
 
     for (const entry of PHYSICAL_CASES) {
-      expect(entry.rendererMapping, entry.category).toBe("unresolved");
-      expect(entry.tolerance, entry.category).toBe("unresolved");
+      expect(entry.rendererMapping, entry.category).toBe("per-sample-in-harness");
+      expect(entry.tolerance, entry.category).toBe("per-sample-in-harness");
       expect(entry.model, entry.category).toBe(materialHeuristics.includes(entry.category)
         ? "heuristic"
         : entry.category === "anisotropyAlphaT" ? "material-convention"

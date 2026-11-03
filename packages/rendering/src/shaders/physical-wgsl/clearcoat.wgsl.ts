@@ -1,54 +1,50 @@
 /**
- * WGSL twin of a3d_prd04_clearcoat (PRD-04 §8.12): same `a3d_` names,
- * identical math (r185 lights_physical_fragment.glsl.js:56-80,
- * lights_physical_pars_fragment.glsl.js:126-149, meshphysical.glsl.js:205-212).
+ * WGSL companion of Aura's `a3d_prd04_clearcoat` chunk
+ * (shaders/physical/clearcoat.glsl.ts), kept operation-for-operation equal to
+ * it and written from the published model:
+ *
+ * - KHR_materials_clearcoat (Khronos glTF 2.0 extension): coat factor from the
+ *   R channel, coat roughness from the G channel, a fixed 1.5 index of
+ *   refraction (F0 = ((1.5 - 1) / (1.5 + 1))^2 = 0.04) and the layering
+ *   f = f_base * (1 - coat * F_coat(N_c . V)) + coat * f_coat.
+ * - Coat lobe: GGX distribution D (Walter et al., "Microfacet Models for
+ *   Refraction through Rough Surfaces", EGSR 2007, eq. 33), height-correlated
+ *   Smith visibility V = G2 / (4 N.L N.V) (Heitz, JCGT 3(2) 2014, eq. 99) and
+ *   Schlick's Fresnel with F90 = 1 (Schlick 1994), i.e. f = F * D * V.
+ * - Indirect coat: the split-sum environment response at F0 0.04 / F90 1.
+ *
+ * Requires `brdf` (F_Schlick, D_GGX, V_GGX_SmithCorrelated) and
+ * `a3d_prd04_bsdf_lobes_common` (struct, roughness, half vector, split sum).
  */
 const wgsl = /* wgsl */ `
-// Factor resolution (r185 lights_physical_fragment.glsl.js:56-80).
-fn a3dPrd04ClearcoatInit(lobes: ptr<function, A3DPrd04Lobes>, clearcoatFactor: f32, clearcoatRoughnessFactor: f32, clearcoatTex: vec4f, roughnessTex: vec4f, clearcoatNormal: vec3f, geometryRoughness: f32) {
-	var clearcoat = clearcoatFactor * clearcoatTex.x;
-	var clearcoatRoughness = clearcoatRoughnessFactor * roughnessTex.y;
-
-	clearcoat = saturate(clearcoat); // Burley clearcoat model
-
-	(*lobes).clearcoat = clearcoat;
-	(*lobes).clearcoatRoughness = a3dPrd04ResolveRoughness(clearcoatRoughness, geometryRoughness);
-	(*lobes).clearcoatNormal = clearcoatNormal;
+fn a3dPrd04ClearcoatInit(lobes: ptr<function, A3DPrd04Lobes>, factor: f32, roughness: f32,
+  factorTex: vec4f, roughnessTex: vec4f, normal: vec3f, geometryRoughness: f32) {
+  (*lobes).clearcoat = clamp(factor * factorTex.r, 0.0, 1.0);
+  (*lobes).clearcoatRoughness = a3dPrd04ResolveRoughness(roughness * roughnessTex.g, geometryRoughness);
+  (*lobes).clearcoatNormal = normal;
 }
 
-// Direct GGX lobe at F0 0.04 / F90 1.0 (r185 BRDF_GGX_Clearcoat,
-// lights_physical_pars_fragment.glsl.js:126-149).
-fn a3dPrd04ClearcoatDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, clearcoatRoughness: f32) -> vec3f {
-	let alpha = pow2(clearcoatRoughness); // UE4's roughness
-
-	let halfDir = normalize(lightDir + viewDir);
-
-	let dotNL = saturate(dot(normal, lightDir));
-	let dotNV = saturate(dot(normal, viewDir));
-	let dotNH = saturate(dot(normal, halfDir));
-	let dotVH = saturate(dot(viewDir, halfDir));
-
-	let F = F_Schlick(vec3f(0.04), 1.0, dotVH);
-
-	let V = V_GGX_SmithCorrelated(alpha, dotNL, dotNV);
-
-	let D = D_GGX(alpha, dotNH);
-
-	return F * (V * D);
+fn a3dPrd04ClearcoatDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, roughness: f32) -> vec3f {
+  let nl = saturate(dot(normal, lightDir));
+  let nv = saturate(dot(normal, viewDir));
+  if (nl <= 0.0 || nv <= 0.0) {
+    return vec3f(0.0);
+  }
+  let h = a3dPrd04HalfVector(lightDir, viewDir, normal);
+  let alpha = max(roughness * roughness, 1e-4);
+  return F_Schlick(vec3f(0.04), 1.0, dot(viewDir, h))
+    * D_GGX(alpha, dot(normal, h)) * V_GGX_SmithCorrelated(alpha, nl, nv);
 }
 
-// Indirect: clearcoatRadiance * EnvironmentBRDF( Ncc, V, 0.04, 1.0, ccR )
-// (r185 lights_physical_pars_fragment.glsl.js:581-585).
-fn a3dPrd04ClearcoatIndirect(normal: vec3f, viewDir: vec3f, clearcoatRoughness: f32, clearcoatRadiance: vec3f) -> vec3f {
-	return clearcoatRadiance * a3dPrd04EnvironmentBRDF(normal, viewDir, vec3f(0.04), 1.0, clearcoatRoughness);
+fn a3dPrd04ClearcoatIndirect(normal: vec3f, viewDir: vec3f, roughness: f32, radiance: vec3f) -> vec3f {
+  return radiance * a3dPrd04EnvironmentBRDF(normal, viewDir, vec3f(0.04), 1.0, roughness);
 }
 
-// Layering composition (r185 meshphysical.glsl.js:205-212).
-fn a3dPrd04ComposeClearcoat(outgoing: vec3f, clearcoat: f32, clearcoatNormal: vec3f, viewDir: vec3f, clearcoatDirect: vec3f, clearcoatIndirect: vec3f) -> vec3f {
-	let dotNVcc = saturate(dot(clearcoatNormal, viewDir));
-	let Fcc = F_Schlick(vec3f(0.04), 1.0, dotNVcc);
-
-	return outgoing * (1.0 - clearcoat * Fcc) + (clearcoatDirect + clearcoatIndirect) * clearcoat;
+fn a3dPrd04ComposeClearcoat(outgoing: vec3f, coat: f32, normal: vec3f, viewDir: vec3f,
+  direct: vec3f, indirect: vec3f) -> vec3f {
+  let weight = saturate(coat);
+  let reflected = F_Schlick(vec3f(0.04), 1.0, dot(normal, viewDir));
+  return outgoing * (vec3f(1.0) - weight * reflected) + (direct + indirect) * weight;
 }
 `;
 

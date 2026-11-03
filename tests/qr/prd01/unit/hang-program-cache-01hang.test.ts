@@ -60,11 +60,13 @@ describe("01-HANG: the real C-02 cache is in the lane harness's static graph", (
   it("the production harness build (code-split) reaches ProgramCache from the entry chunk without import()", async () => {
     const outDir = mkdtempSync(join(tmpdir(), "qr-01hang-"));
     try {
-      // The real lane harness build (tests/qr/prd01/harness/vite.config.ts):
-      // its dynamic tool imports and prd06's `import("@aura3d/rendering")`
-      // are what code-split the rendering lanes out of the entry graph.
+      // The lane harness's Aura3D half (fixtures/hang-01-harness: same build
+      // settings, the aura prd01 scenes statically, the engine-only harness
+      // tools dynamically; no comparison engine): its dynamic tool imports
+      // and prd06's `import("@aura3d/rendering")` are what code-split the
+      // rendering lanes out of the entry graph.
       const output = (await build({
-        configFile: resolve(repoRoot, "tests/qr/prd01/harness/vite.config.ts"),
+        configFile: resolve(repoRoot, "tests/qr/prd01/unit/fixtures/hang-01-harness/vite.config.ts"),
         logLevel: "silent",
         build: { write: false, outDir, emptyOutDir: false }
       })) as Rollup.RollupOutput | Rollup.RollupOutput[];
@@ -72,6 +74,10 @@ describe("01-HANG: the real C-02 cache is in the lane harness's static graph", (
       const entry = Object.values(bundle).find((o): o is Rollup.OutputChunk => o.type === "chunk" && o.isEntry)!;
       expect(entry).toBeTruthy();
       const closure = staticClosure(bundle, entry);
+      // The fixture must reproduce the code-split condition: lazy chunks exist
+      // outside the entry's static graph.
+      const lazy = Object.values(bundle).filter((o): o is Rollup.OutputChunk => o.type === "chunk" && !closure.includes(o));
+      expect(lazy.length).toBeGreaterThan(0);
       // `program-compile-failed` is the real ProgramCache's C-36 code (the stub has none).
       const holders = Object.values(bundle).filter((o): o is Rollup.OutputChunk => o.type === "chunk" && o.code.includes('"program-compile-failed"'));
       expect(holders.length).toBeGreaterThan(0);

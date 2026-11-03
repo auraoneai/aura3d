@@ -675,7 +675,16 @@ export async function createGLTFRenderResources(
         const decoder = decodeBaseOptions.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, { ...decodeOptionsForImage(imageIndex), request: effectiveRequest, signal: textureSignal }));
         let decodeImage = image;
         const externalUri = image.uri && !image.uri.startsWith("data:") ? image.uri : undefined;
-        if (decodeBaseOptions.imageDecoder && (effectiveRequest?.maxBytes !== undefined || (externalUri && effectiveRequest?.integrity))) {
+        // An external URI the loader can resolve is always read through the
+        // document's request contract (origins, credentials, headers, size,
+        // integrity), so a custom decoder never performs an unpoliced fetch.
+        // Only a URI the loader cannot resolve (a decoder-private scheme) is
+        // handed over as-is, and never when integrity is required.
+        let resolvableExternal = false;
+        if (externalUri && decodeBaseOptions.imageDecoder && !image.data) {
+          try { resolveImageUrl(asset.url, externalUri); resolvableExternal = true; } catch { /* Decoder-private URI. */ }
+        }
+        if (decodeBaseOptions.imageDecoder && (effectiveRequest?.maxBytes !== undefined || resolvableExternal || (externalUri && effectiveRequest?.integrity))) {
           // Give custom decoders a bounded snapshot when a byte policy applies,
           // and never hand them unverified external bytes.
           const data = await readImageBytes(asset, image, { signal: textureSignal, request: effectiveRequest });

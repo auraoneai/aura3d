@@ -163,6 +163,44 @@ describe("root Gaussian splat compilation", () => {
     compiled.dispose(); device.dispose();
   });
 
+  it("routes opt-in gpuSort to the native sorter and reports the CPU fallback reason", async () => {
+    expect(() => gaussianSplat(asset(binary()), { gpuSort: "yes" as unknown as boolean })).toThrow(/gpuSort must be boolean/);
+    const bytes = binary(); vi.stubGlobal("crypto", webcrypto); vi.stubGlobal("fetch", vi.fn(async () => response(bytes)));
+    const flush = async (): Promise<void> => { for (let i = 0; i < 20; i += 1) await Promise.resolve(); };
+    const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    const input = { viewMatrix: identity, projectionMatrix: identity, modelMatrix: identity, viewport: [200, 100] as const, cameraPosition: [0, 0, 2] as const };
+    const snapshot = scene().add(gaussianSplat(asset(bytes), { gpuSort: true })).toJSON() as AuraSceneSnapshot;
+    const plain = scene().add(gaussianSplat(asset(bytes))).toJSON() as AuraSceneSnapshot;
+
+    // WebGL2/mock devices: requested, CPU sort, explicit reason.
+    const mockDevice = new MockRenderDevice();
+    const onMock = await compileScene(snapshot, context(mockDevice, createAuraRuntimeNodeRegistry(snapshot)));
+    await flush();
+    const mockRenderer = draws(onMock.source)[0]!.renderer;
+    expect(mockRenderer.prepare(input).sortFallbackReason).toMatch(/requires WebGPU/);
+    expect(asRuntimeImpl(onMock)!.splatSortStatus).toEqual([{ assetId: "cloud", status: { requested: true, lastBackend: "cpu", fallbackReason: expect.stringMatching(/requires WebGPU.*mock/) } }]);
+    onMock.dispose(); mockDevice.dispose();
+
+    // A WebGPU device whose native device cannot compile the sorter falls back with the sorter's reason.
+    const gpuDevice = new MockRenderDevice();
+    Object.defineProperty(gpuDevice, "kind", { value: "webgpu" });
+    Object.defineProperty(gpuDevice, "nativeGpuDevice", { value: { queue: {} } });
+    const onGpu = await compileScene(snapshot, context(gpuDevice, createAuraRuntimeNodeRegistry(snapshot)));
+    // The sorter module loads lazily; wait for its rejection to settle.
+    await vi.waitFor(() => expect(asRuntimeImpl(onGpu)!.splatSortStatus[0]!.status.fallbackReason).toBeTruthy());
+    const status = asRuntimeImpl(onGpu)!.splatSortStatus[0]!.status;
+    expect(status.requested).toBe(true);
+    expect(status.fallbackReason).toMatch(/GPU sorting requires native device\.createShaderModule/);
+    expect(draws(onGpu.source)[0]!.renderer.prepare(input).sortBackend).toBe("cpu");
+    onGpu.dispose(); gpuDevice.dispose();
+
+    // Without the option nothing is requested.
+    const plainDevice = new MockRenderDevice();
+    const onPlain = await compileScene(plain, context(plainDevice, createAuraRuntimeNodeRegistry(plain)));
+    expect(asRuntimeImpl(onPlain)!.splatSortStatus).toEqual([{ assetId: "cloud", status: { requested: false, lastBackend: null } }]);
+    onPlain.dispose(); plainDevice.dispose();
+  });
+
   it("keeps identical authored nodes isolated across two compiled apps", async () => {
     const bytes = binary(); vi.stubGlobal("crypto", webcrypto); vi.stubGlobal("fetch", vi.fn(async () => response(bytes)));
     const snapshot = scene().add(gaussianSplat(asset(bytes)).runtime({ id: "cloud" })).toJSON() as AuraSceneSnapshot;

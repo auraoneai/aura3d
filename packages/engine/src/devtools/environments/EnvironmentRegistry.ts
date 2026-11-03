@@ -147,10 +147,10 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     sh9Url: "/aura-environments/indoor.sh9.f32",
     manifestUrl: "/aura-environments/indoor.manifest.json",
     license: "CC0",
-    sourceFile: "RoomEnvironmentScene.ts (r185 neutral room port)",
+    sourceFile: "RoomEnvironmentScene.ts (Aura3D independent studio; byte copy of neutral, tools/environments/bake-neutral.ts)",
     sha256: {
-      specular: "a862e519defc6dcd93d66ebd98fc0fba4c67cffa7e9181e9e4c1f2dd88187ca3",
-      sh9: "7d4625b73b8c04a00c52c5379c3b9bb9944b026a938eb0ba3e029947aff8914f"
+      specular: "66522fdb9f1180dbcf0ab72df782456c832cb35b23ba938fe2473a55c3dce671",
+      sh9: "cec96c9c857f6e78de45364e31cb6e58fab70fc3866fd8bc0ef6c8a0fb3647ea"
     },
     tags: ["neutral", "stand-in"]
   },
@@ -160,10 +160,10 @@ export const AURA_ENVIRONMENT_PRESETS: readonly AuraEnvironmentPresetEntry[] = [
     sh9Url: "/aura-environments/neutral.sh9.f32",
     manifestUrl: "/aura-environments/neutral.manifest.json",
     license: "CC0",
-    sourceFile: "RoomEnvironmentScene.ts (r185 neutral room port — the C-09 runtime floor, T0-25)",
+    sourceFile: "RoomEnvironmentScene.ts (Aura3D independent studio, tools/environments/bake-neutral.ts — the C-09 runtime floor, T0-25)",
     sha256: {
-      specular: "a862e519defc6dcd93d66ebd98fc0fba4c67cffa7e9181e9e4c1f2dd88187ca3",
-      sh9: "7d4625b73b8c04a00c52c5379c3b9bb9944b026a938eb0ba3e029947aff8914f"
+      specular: "66522fdb9f1180dbcf0ab72df782456c832cb35b23ba938fe2473a55c3dce671",
+      sh9: "cec96c9c857f6e78de45364e31cb6e58fab70fc3866fd8bc0ef6c8a0fb3647ea"
     },
     tags: ["neutral", "stand-in"]
   }

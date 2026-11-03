@@ -163,11 +163,12 @@ describe("renderer frame clipping", () => {
     const sun = new DirectionalLight("point-shadow-preflight"); sun.castsShadow = true;
     const globalClipping = { planes: [[1, 0, 0, 0] as const], clipShadows: true };
     const source = { cameraPolicy: "identity" as const, globalClipping,
-      renderItems: [{ geometry, material }, { geometry: points, material }],
+      // Clipped points are supported in depth; instanced clipped points are not.
+      renderItems: [{ geometry, material }, { geometry: points, material, instanceTransforms: identityMat4() }],
       shadow: { light: sun, size: 8, lightMatrix: identityMat4() } };
     try {
-      if (asynchronous) await expect(renderer.renderAsync({ source })).rejects.toThrow(/point.*depth geometry/i);
-      else expect(() => renderer.render({ source })).toThrow(/point.*depth geometry/i);
+      if (asynchronous) await expect(renderer.renderAsync({ source })).rejects.toThrow(/clipped point depth does not support instancing/i);
+      else expect(() => renderer.render({ source })).toThrow(/clipped point depth does not support instancing/i);
       expect(device.drawCommands).toHaveLength(0);
     } finally { renderer.dispose(); geometry.dispose(); points.dispose(); material.dispose(); }
   });

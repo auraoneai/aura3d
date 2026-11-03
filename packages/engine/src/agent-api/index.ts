@@ -286,6 +286,8 @@ export { group, distanceLod, groups, findGroupNode } from "./nodes/groups.js";
 export { helpers } from "./nodes/helpers.js";
 export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { interactions } from "./nodes/interactions.js";
+export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
+export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
@@ -465,7 +467,7 @@ export type {
 export type { AuraCubeCameraNode, AuraCubeCameraOptions } from "./nodes/cameras.js";
 export type { ChaseOptions, ChaseRig, ChasePose, ChaseTarget, ChaseOffset, ChaseLag, ChaseFovKick, ChaseShake, ChaseVec3 } from "./nodes/chaseCamera.js";
 export { surfaces } from "./nodes/surfaces.js";
-export type { AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.js";
+export type { AuraGlassOptions, AuraGlassSurfaceNode, AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.js";
 // threejs-parity AD-15 (P2): `lights.lensFlare` option/node types.
 export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, AuraLensFlareOptions } from "./nodes/lensFlare.js";
 export { instances } from "./nodes/instances.js";

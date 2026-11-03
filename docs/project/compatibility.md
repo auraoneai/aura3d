@@ -18,6 +18,7 @@ test, browser or launch profile.
 | Area | Current status |
 |---|---|
 | Node package tooling | `pnpm@11.1.3` in `package.json` |
+| Node.js runtime | `engines.node` `>=22.12.0` (synchronous `require(esm)` for the CommonJS math bridge). The packed ESM/CommonJS consumer (`tests/integration/native-capability-consumer.test.ts`) reports Node 22, 24 and 26 as executed or explicitly unavailable in `node-support-matrix.json`; `A3D_NODE_MATRIX` names extra executables. |
 | TypeScript packages | First-party workspace packages under `packages/` |
 | Browser dev server | Vite route registry from repo root |
 | WebGL2 | Primary renderer backend for most browser routes; availability and results depend on the browser and device. |

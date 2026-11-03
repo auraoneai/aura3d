@@ -31,7 +31,12 @@ export type AuraPostPassOrder = "before-bloom" | "after-bloom" | "before-tonemap
 /**
  * Custom pass inputs are borrowed for the duration of the pass. `color` is
  * the immediately preceding pass, `depth` is linear view depth, and
- * `velocity` is the current-to-previous screen-space motion. `reactive` is
+ * `velocity` is the current-to-previous screen-space motion. `normal`
+ * (`u_normal`) holds unit view-space surface normals in `.xyz` that the
+ * engine reconstructs once per view and frame from that view's depth under
+ * its active depth convention, with surface coverage in `.w` (0 on cleared
+ * pixels). It is available at the WebGL2 HDR anchors (`after-depth` through
+ * `before-tonemap`) when a camera is active. `reactive` is
  * the red channel of a caller-supplied render-resolution mask: zero allows
  * temporal history and one requests its rejection. WebGL2 HDR passes may
  * sample it as `u_reactive`; the caller must populate a live, single-sample,
@@ -39,12 +44,13 @@ export type AuraPostPassOrder = "before-bloom" | "after-bloom" | "before-tonemap
  * the pass (including deferred passes). The WebGL device must have an active
  * frame. The engine validates its attachment and device but cannot prove that
  * its pixels came from this view or frame. The display tail and WebGPU custom
- * passes do not currently provide this input. Depth, velocity and reactive
- * must be produced for the current view; unavailable inputs cause a
- * `POSTPROCESS_INPUT_UNAVAILABLE:<pass>:<input>` diagnostic rather than a
- * fabricated texture. Backend-specific inputs must be explicitly supported.
+ * passes do not currently provide `normal` or `reactive`. Depth, velocity,
+ * normal and reactive must be produced for the current view; unavailable
+ * inputs cause a `POSTPROCESS_INPUT_UNAVAILABLE:<pass>:<input>` diagnostic
+ * rather than a fabricated texture. Backend-specific inputs must be
+ * explicitly supported.
  */
-export type AuraPostPassInput = "color" | "depth" | "velocity" | "reactive";
+export type AuraPostPassInput = "color" | "depth" | "velocity" | "normal" | "reactive";
 /**
  * Passes run at `insertAt` in ascending `order`, preserving registration
  * order for equal or absent keys. They render into a graph-owned target and

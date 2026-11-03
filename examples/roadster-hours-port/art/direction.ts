@@ -1,6 +1,6 @@
 // examples/roadster-hours-port/art/direction.ts — GU47 WP-32 (RH47-18) art direction for Saltwind Highway.
 // Fantasy: a wind-scoured maritime road trip, three hours of one day on an Atlantic coast highway.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const vehicle = (assetKey: string, maxTriangles = 8000) =>
   ({ role: "vehicle" as const, assetKey, maxTriangles, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const });

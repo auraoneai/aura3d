@@ -61,6 +61,7 @@ import { DISPLAY_GRADE_GLSL } from "./shaders/displayGrade.glsl.js";
 import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_GLSL, FINALIZE_P3_GLSL } from "./shaders/finalize.glsl.js";
 import { vignetteColorRgb } from "./vignetteColor.js";
 import { VELOCITY_DILATE_GLSL } from "./shaders/velocityDilate.glsl.js";
+import { NORMAL_FROM_DEPTH_GLSL } from "./shaders/normalReconstruct.glsl.js";
 import { TAA_RESOLVE_GLSL, TAA_UPSCALE_GLSL } from "./shaders/taa.glsl.js";
 import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_GLSL } from "./shaders/dof.glsl.js";
 import { MB_NEIGHBOR_GLSL, MB_RECONSTRUCT_GLSL, MB_TILE_MAX_GLSL } from "./shaders/motionBlur.glsl.js";
@@ -711,17 +712,19 @@ function bloomMipsTag(bloom: unknown): string {
  * §6.12: a custom pass's `fragment.glsl` is appended after the engine
  * prelude (version, precision, the `v_uv` input, `outColor`, and the
  * built-in uniforms `u_color`, `u_depthLinear`, `u_velocity`, `u_texelSize`,
- * `u_time`, and (when requested) `u_reactive`). The pass declares only its
+ * `u_time`, and (when requested) `u_reactive` and `u_normal`). `u_normal`
+ * holds unit view-space normals reconstructed from this frame's linear depth
+ * in `.xyz` and surface coverage in `.w` (0 on cleared pixels). The pass declares only its
  * own uniforms + a `main()`; it must NOT redeclare the built-ins, `#version`,
  * or `precision`.
  */
-export function customPassFragmentSource(glsl: string, reactive = false): string {
+export function customPassFragmentSource(glsl: string, reactive = false, normal = false): string {
   return `#version 300 es
 precision highp float;
 uniform sampler2D u_color;
 uniform sampler2D u_depthLinear;
 uniform sampler2D u_velocity;
-${reactive ? "uniform highp sampler2D u_reactive;\n" : ""}uniform vec2 u_texelSize;
+${reactive ? "uniform highp sampler2D u_reactive;\n" : ""}${normal ? "uniform highp sampler2D u_normal;\n" : ""}uniform vec2 u_texelSize;
 uniform float u_time;
 in vec2 v_uv;
 out vec4 outColor;
@@ -929,6 +932,8 @@ function assertExpectedDepthInput(host: WebGL2DeviceHost, input: ExpectedDepthIn
 
 interface CustomPassAuxiliary {
   readonly linZ?: RenderTarget | null;
+  /** View-space normals reconstructed from `linZ` for this view and frame. */
+  readonly normal?: RenderTarget | null;
   readonly velocity?: RenderTarget | null;
   readonly reactive?: CustomReactiveInput;
 }
@@ -974,13 +979,14 @@ function runCustomPassOnTexture(
   if (!pass.fragment?.glsl?.trim()) throw new Error(`POSTPROCESS_SHADER_UNAVAILABLE:${pass.id}:webgl2`);
   for (const required of pass.inputs) {
     if ((required === "depth" && !aux.linZ) || (required === "velocity" && !aux.velocity)
-        || required === "normal" || (required === "reactive" && !aux.reactive)) {
+        || (required === "normal" && !aux.normal) || (required === "reactive" && !aux.reactive)) {
       throw new Error(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:${required}`);
     }
   }
   const wantsDepth = pass.inputs.includes("depth");
   const wantsVelocity = pass.inputs.includes("velocity");
   const wantsReactive = pass.inputs.includes("reactive");
+  const wantsNormal = pass.inputs.includes("normal");
   if (wantsReactive) assertCustomReactiveInput(host, aux.reactive, pass.id);
   recordPostStage(`custom:${pass.id}@${pass.insertAt}`, bag?.diagnosticToken);
   const lease = scratch.acquire({
@@ -995,18 +1001,21 @@ function runCustomPassOnTexture(
     if (wantsReactive) assertCustomReactiveInput(host, aux.reactive, pass.id, target);
     // A pass name may be released and later registered with different source,
     // including by another renderer sharing this host. Never reuse its old program.
-    const prog = program(state, gl, `${wantsReactive ? "custom-reactive" : "custom"}:${pass.id}:${pass.fragment.glsl}`, customPassFragmentSource(pass.fragment.glsl, wantsReactive));
+    const prog = program(state, gl, `${wantsReactive ? "custom-reactive" : "custom"}${wantsNormal ? "-normal" : ""}:${pass.id}:${pass.fragment.glsl}`, customPassFragmentSource(pass.fragment.glsl, wantsReactive, wantsNormal));
     const textures: WebGLTexture[] = [
       input.colorHandle,
       wantsDepth && aux.linZ ? asGlTarget(aux.linZ).colorHandle : state.blankTex,
       wantsVelocity && aux.velocity ? asGlTarget(aux.velocity).colorHandle : state.blankTex
     ];
     if (wantsReactive) textures.push(aux.reactive!.handle);
+    const normalUnit = textures.length;
+    if (wantsNormal) textures.push(asGlTarget(aux.normal!).colorHandle);
     draw(host, state, prog, asGlTarget(target), textures, (g) => {
       g.uniform1i(g.getUniformLocation(prog, "u_color"), 0);
       g.uniform1i(g.getUniformLocation(prog, "u_depthLinear"), 1);
       g.uniform1i(g.getUniformLocation(prog, "u_velocity"), 2);
       if (wantsReactive) g.uniform1i(g.getUniformLocation(prog, "u_reactive"), 3);
+      if (wantsNormal) g.uniform1i(g.getUniformLocation(prog, "u_normal"), normalUnit);
       g.uniform2f(g.getUniformLocation(prog, "u_texelSize"), 1 / input.width, 1 / input.height);
       g.uniform1f(g.getUniformLocation(prog, "u_time"), frame.timeSeconds);
       const declared = pass.uniforms?.(frame);
@@ -1281,7 +1290,7 @@ export function runV2HdrStages(
   // Velocity dilation always samples current linear depth, including when a
   // custom pass is the only consumer of velocity.
   const needsLinZ = needsVelocity || wantsAo || wantsGodRays || wantsDof || wantsSsr
-    || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
+    || hdrCustoms.some((pass) => pass.inputs.includes("depth") || pass.inputs.includes("normal"));
   if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsSsr && !wantsAutoExposure && !wantsGrade && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
 
   // The depth/velocity and resolve passes may write before the first custom
@@ -1427,7 +1436,21 @@ export function runV2HdrStages(
     assertExpectedDepth();
   }
 
-  const customAux: CustomPassAuxiliary = { linZ: linZFull, velocity: dilatedVelocity, reactive: customReactive };
+  // Normal input: reconstructed once per view and frame from the convention-
+  // decoded linear depth, only when an HDR custom pass declares it.
+  let normalLease: PostTargetLease | null = null;
+  if (linZFull && camera && hdrCustoms.some((pass) => pass.inputs.includes("normal"))) {
+    recordStage("S1N:normal-from-depth");
+    normalLease = scratch.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const normalProg = program(state, gl, "normal-from-depth", NORMAL_FROM_DEPTH_GLSL);
+    const normalInvProj = depthSettings.projectionMatrixInverse ?? Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4));
+    draw(host, state, normalProg, asGlTarget(normalLease.target), [asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(normalProg, "u_linearDepth"), 0);
+      g.uniformMatrix4fv(g.getUniformLocation(normalProg, "u_invProjMatrix"), false, normalInvProj);
+      g.uniform1i(g.getUniformLocation(normalProg, "u_ortho"), ortho ? 1 : 0);
+    }, expectedDepth ? () => assertExpectedDepth([normalLease!.target]) : undefined);
+  }
+  const customAux: CustomPassAuxiliary = { linZ: linZFull, normal: normalLease?.target ?? null, velocity: dilatedVelocity, reactive: customReactive };
   let hdr = source;
   let hdrLease: PostTargetLease | undefined;
   const replaceHdr = (target: RenderTarget, lease?: PostTargetLease): void => {
@@ -1890,6 +1913,7 @@ export function runV2HdrStages(
     const deferredAux = customAux;
     const releaseLinZ = linZLease;
     const releaseVelocity = velocityLease;
+    const releaseNormal = normalLease;
     const deferredScratch = new PostScratchScope(state.pool);
     let held: PostTargetLease | null = null;
     let released = false;
@@ -1900,7 +1924,7 @@ export function runV2HdrStages(
       released = true;
       held = null;
       const errors: unknown[] = [];
-      for (const release of [() => deferredScratch.releaseAll(), () => releaseVelocity?.release(), () => releaseLinZ?.release()]) {
+      for (const release of [() => deferredScratch.releaseAll(), () => releaseVelocity?.release(), () => releaseNormal?.release(), () => releaseLinZ?.release()]) {
         try { release(); } catch (error) { errors.push(error); }
       }
       if (errors.length === 1) throw errors[0];
@@ -1971,6 +1995,7 @@ export function runV2HdrStages(
   state.timeSeconds += temporal?.v2?.frameTime ?? 1 / 60;
   if (!afterBloom) {
     scratch.release(velocityLease);
+    scratch.release(normalLease);
     scratch.release(linZLease);
   }
   scratch.release(minmaxLease);
@@ -1989,7 +2014,7 @@ export function runV2HdrStages(
   // Keep only actual output and deferred handles through the handoff. Borrowed
   // source and temporal-history targets have no scratch lease.
   const finalHdrLease = hdrLease as PostTargetLease | undefined;
-  scratch.releaseExcept([finalHdrLease, ...(afterBloom ? [linZLease, velocityLease] : [])]);
+  scratch.releaseExcept([finalHdrLease, ...(afterBloom ? [linZLease, velocityLease, normalLease] : [])]);
   let outputLease: PostTargetLease | undefined;
   if (finalHdrLease) {
     if (options?.retainOutputLease) outputLease = scratch.take(finalHdrLease);
@@ -2001,6 +2026,7 @@ export function runV2HdrStages(
   if (afterBloom) {
     if (linZLease) scratch.take(linZLease);
     if (velocityLease) scratch.take(velocityLease);
+    if (normalLease) scratch.take(normalLease);
   }
   scratch.releaseAll();
   assertExpectedDepth([source, hdr]);

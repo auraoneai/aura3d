@@ -61,6 +61,16 @@ export interface GaussianSplatPreparedFrame extends GaussianSplatFrame {
   readonly sortFallbackReason?: string;
 }
 
+/** Where the opt-in GPU ordering of synchronous `prepare` frames stands. */
+export interface GaussianSplatGpuSortStatus {
+  /** True after `enableGpuSort`. */
+  readonly requested: boolean;
+  /** Sort that produced the most recent `prepare` frame. */
+  readonly lastBackend: "cpu" | "gpu" | null;
+  /** Why the GPU path is unavailable (non-WebGPU device, sorter creation or sort failure); CPU sorting is used. */
+  readonly fallbackReason?: string;
+}
+
 export interface GaussianSplatPrepareOptions {
   /** Bounded native GPU sorter and its WebGPU device; omitted means CPU sort. */
   readonly gpuSort?: GaussianSplatGpuSort;
@@ -325,6 +335,12 @@ export class GaussianSplatRenderer {
   private readonly prepared = new WeakMap<GaussianSplatPreparedFrame, PreparedSplatData>();
   private scratch = new Float32Array(0);
   private disposed = false;
+  private gpuSortRequested = false;
+  private gpuSort: GaussianSplatGpuSort | null = null;
+  private gpuSortFailure: string | undefined;
+  private gpuSortInFlight = false;
+  private gpuSortReady: { readonly key: string; readonly order: Uint32Array } | undefined;
+  private lastSortBackend: "cpu" | "gpu" | null = null;
 
   constructor(private readonly device: RenderDevice, private readonly data: GaussianSplatCloud, options: GaussianSplatRenderOptions = {}) {
     const maxSplats = options.maxSplats ?? GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS, maxGpuBytes = options.maxGpuBytes ?? GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES;
@@ -389,10 +405,36 @@ export class GaussianSplatRenderer {
   /** Identity check for integrating the renderer into an existing device-owned frame. */
   belongsToDevice(device: RenderDevice): boolean { return this.device === device; }
 
+  /**
+   * Opt into GPU ordering for synchronous `prepare` frames. Sorting on the GPU
+   * is asynchronous, so a frame reuses a GPU order only when that order was
+   * computed for exactly the same view, projection, model, camera and viewport
+   * (and covers the same visible set); any other frame is CPU-sorted and, if
+   * no GPU sort is in flight, schedules one for its inputs. A rejected source
+   * or any GPU sort failure keeps the CPU sort for the rest of this renderer's
+   * life and is reported in `sortFallbackReason` and `gpuSortStatus`. The
+   * caller owns the sorter.
+   */
+  enableGpuSort(source: GaussianSplatGpuSort | Promise<GaussianSplatGpuSort>): void {
+    this.ensureAvailable();
+    if (this.gpuSortRequested) throw new Error("GPU splat sort is already enabled");
+    this.gpuSortRequested = true;
+    Promise.resolve(source).then(
+      (gpu) => { if (!this.disposed && this.gpuSortFailure === undefined) this.gpuSort = gpu; },
+      (error) => { this.gpuSortFailure ??= gpuSortReason(error); }
+    );
+  }
+
+  get gpuSortStatus(): GaussianSplatGpuSortStatus {
+    return { requested: this.gpuSortRequested, lastBackend: this.lastSortBackend,
+      ...(this.gpuSortFailure === undefined ? {} : { fallbackReason: this.gpuSortFailure }) };
+  }
+
   /** Reproject and sort without submitting. Each call owns a separate frame-local snapshot. */
   prepare(input: GaussianSplatDrawInput): GaussianSplatPreparedFrame {
     const projection = this.project(input);
     const sorted = projection.order.subarray(0, projection.visible);
+    if (this.gpuSortRequested) return this.prepareWithGpuOrder(input, projection, sorted);
     const { distances } = projection;
     sorted.sort((a, b) => distances[b]! - distances[a]! || a - b);
     return this.finishPrepared(projection, sorted, "cpu");
@@ -424,6 +466,32 @@ export class GaussianSplatRenderer {
     const { distances } = projection;
     visible.sort((a, b) => distances[b]! - distances[a]! || a - b);
     return this.finishPrepared(projection, visible, "cpu");
+  }
+
+  private prepareWithGpuOrder(input: GaussianSplatDrawInput, projection: SplatProjection, sorted: Uint32Array): GaussianSplatPreparedFrame {
+    const gpu = this.gpuSort;
+    const key = gpu && sorted.length > 1 ? gpuOrderKey(input, projection) : undefined;
+    const ready = this.gpuSortReady;
+    if (key !== undefined && ready?.key === key && sameVisibleSet(ready.order, sorted, this.data.count)) {
+      sorted.set(ready.order);
+      this.lastSortBackend = "gpu";
+      return this.finishPrepared(projection, sorted, "gpu");
+    }
+    if (gpu && key !== undefined && !this.gpuSortInFlight && this.gpuSortFailure === undefined) {
+      this.gpuSortInFlight = true;
+      sortGaussianSplatOrderOnGpu(gpu, projection.distances, sorted.slice()).then(
+        (order) => { if (this.gpuSort === gpu && !this.disposed) this.gpuSortReady = { key, order }; },
+        (error) => {
+          this.gpuSortFailure ??= gpuSortReason(error);
+          this.gpuSort = null;
+          this.gpuSortReady = undefined;
+        }
+      ).finally(() => { this.gpuSortInFlight = false; });
+    }
+    const { distances } = projection;
+    sorted.sort((a, b) => distances[b]! - distances[a]! || a - b);
+    this.lastSortBackend = "cpu";
+    return this.finishPrepared(projection, sorted, "cpu", this.gpuSortFailure);
   }
 
   private finishPrepared(projectionState: SplatProjection, sorted: Uint32Array, sortBackend: "cpu" | "gpu", sortFallbackReason?: string): GaussianSplatPreparedFrame {
@@ -654,7 +722,30 @@ export class GaussianSplatRenderer {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.gpuSort = null;
+    this.gpuSortReady = undefined;
     this.scratch = new Float32Array(0);
     this.program.dispose(); this.instances.dispose(); this.quad.dispose();
   }
+}
+
+function gpuSortReason(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** Exact frame inputs that determine the visible set and every camera distance. */
+function gpuOrderKey(input: GaussianSplatDrawInput, projection: SplatProjection): string {
+  return JSON.stringify([projection.view, projection.projection, Array.from(input.modelMatrix ?? IDENTITY), projection.camera, projection.width, projection.height]);
+}
+
+/** True when `order` is a permutation of exactly the indices in `visible`. */
+function sameVisibleSet(order: Uint32Array, visible: Uint32Array, count: number): boolean {
+  if (order.length !== visible.length) return false;
+  const seen = new Uint8Array(count);
+  for (const index of visible) seen[index] = 1;
+  for (const index of order) {
+    if (index >= count || seen[index] !== 1) return false;
+    seen[index] = 2;
+  }
+  return true;
 }

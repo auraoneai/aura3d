@@ -1,45 +1,51 @@
 /**
- * WGSL twin of a3d_prd04_specular_ior (PRD-04 §8.12): same `a3d_` names,
- * identical math (r185 iridescence_fragment.glsl.js:14-33 +
- * lights_physical_fragment.glsl.js:14-54). `pow2`/`pow2v`/`mix` come from the
- * brdf twin shim; `pow2v` is the vec3 overload (WGSL has no overloading).
+ * WGSL companion of Aura's `a3d_prd04_specular_ior` chunk
+ * (shaders/physical/specular_ior.glsl.ts), kept operation-for-operation equal
+ * to it and written from the published definitions:
+ *
+ * - Normal-incidence Fresnel reflectance between media of index n_t and n_i,
+ *   F0 = ((n_t - n_i) / (n_t + n_i))^2, and its inverse for n_i = 1,
+ *   n = (1 + sqrt(F0)) / (1 - sqrt(F0)) (Fresnel equations at normal
+ *   incidence; KHR_materials_ior).
+ * - KHR_materials_specular: specular color factor x texture RGB and specular
+ *   factor x texture A, dielectric F0 = min(F0(ior) * specularColor, 1) * s,
+ *   F90 = s, both blended toward the metal response by metalness.
+ *
+ * Requires `brdf` and `a3d_prd04_bsdf_lobes_common` like the GLSL chunk.
  */
 const wgsl = /* wgsl */ `
-// IOR <-> F0 conversion (r185 iridescence_fragment.glsl.js:14-33).
-fn a3dPrd04IorToF0(transmittedIor: vec3f, incidentIor: f32) -> vec3f {
-	return pow2v((transmittedIor - vec3f(incidentIor)) / (transmittedIor + vec3f(incidentIor)));
+fn a3dPrd04IorToF0(transmitted: vec3f, incident: f32) -> vec3f {
+  let ratio = (transmitted - vec3f(incident)) / max(transmitted + vec3f(incident), vec3f(1e-6));
+  return ratio * ratio;
 }
 
-fn a3dPrd04IorToF0f(transmittedIor: f32, incidentIor: f32) -> f32 {
-	return pow2((transmittedIor - incidentIor) / (transmittedIor + incidentIor));
+fn a3dPrd04IorToF0f(transmitted: f32, incident: f32) -> f32 {
+  let ratio = (transmitted - incident) / max(transmitted + incident, 1e-6);
+  return ratio * ratio;
 }
 
-fn a3dPrd04F0ToIor(fresnel0: vec3f) -> vec3f {
-	let sqrtF0 = sqrt(fresnel0);
-	return (vec3f(1.0) + sqrtF0) / (vec3f(1.0) - sqrtF0);
+fn a3dPrd04F0ToIor(f0: vec3f) -> vec3f {
+  let root = sqrt(clamp(f0, vec3f(0.0), vec3f(0.9999)));
+  return (vec3f(1.0) + root) / (vec3f(1.0) - root);
 }
 
-// Resolve specular texture factors (r185 lights_physical_fragment.glsl.js:20-33).
-// Returns specularColorFactor * texel.rgb; *outSpecIntensity =
-// specularIntensity * texel.a.
-fn a3dPrd04SpecIorFactors(specularColorFactor: vec3f, specularIntensityFactor: f32, specularColorTexel: vec3f, specularIntensityTexel: f32, outSpecIntensity: ptr<function, f32>) -> vec3f {
-	*outSpecIntensity = specularIntensityFactor * specularIntensityTexel;
-	return specularColorFactor * specularColorTexel;
+fn a3dPrd04SpecIorFactors(colorFactor: vec3f, strengthFactor: f32,
+  colorTexel: vec3f, strengthTexel: f32, outSpecIntensity: ptr<function, f32>) -> vec3f {
+  *outSpecIntensity = clamp(strengthFactor * strengthTexel, 0.0, 1.0);
+  return clamp(colorFactor * colorTexel, vec3f(0.0), vec3f(1.0));
 }
 
-// Dielectric specularColor from ior (r185 lights_physical_fragment.glsl.js:45).
-fn a3dPrd04SpecIorSpecularColor(ior: f32, specularColorFactor: vec3f, specularIntensity: f32) -> vec3f {
-	return min(a3dPrd04IorToF0(vec3f(ior), 1.0) * specularColorFactor, vec3f(1.0)) * specularIntensity;
+fn a3dPrd04SpecIorSpecularColor(ior: f32, colorFactor: vec3f, intensity: f32) -> vec3f {
+  return clamp(a3dPrd04IorToF0(vec3f(max(ior, 1e-4)), 1.0) * colorFactor, vec3f(0.0), vec3f(1.0))
+    * clamp(intensity, 0.0, 1.0);
 }
 
-// specularF90 = mix( specularIntensity, 1, metalness ) (r185 :35).
-fn a3dPrd04SpecIorSpecularF90(specularIntensity: f32, metallic: f32) -> f32 {
-	return mix(specularIntensity, 1.0, metallic);
+fn a3dPrd04SpecIorSpecularF90(intensity: f32, metallic: f32) -> f32 {
+  return mix(clamp(intensity, 0.0, 1.0), 1.0, clamp(metallic, 0.0, 1.0));
 }
 
-// specularColorBlended = mix( specularColor, diffuseColor, metalness ) (r185 :46, :51).
-fn a3dPrd04SpecIorSpecularColorBlended(specularColor: vec3f, diffuseColor: vec3f, metallic: f32) -> vec3f {
-	return mix(specularColor, diffuseColor, metallic);
+fn a3dPrd04SpecIorSpecularColorBlended(specular: vec3f, base: vec3f, metallic: f32) -> vec3f {
+  return mix(specular, base, clamp(metallic, 0.0, 1.0));
 }
 `;
 

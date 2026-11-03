@@ -8,7 +8,7 @@ function sameDepthConvention(a: DepthConvention | undefined, b: DepthConvention)
     && a.biasSign === b.biasSign && a.logRange?.near === b.logRange?.near && a.logRange?.far === b.logRange?.far && a.logRange?.kind === b.logRange?.kind
     // A standard frame has nothing to refine; devices without a settable
     // convention keep accepting it.
-    && (b.mode === "standard" || (a.precision === b.precision && a.depthStorage === b.depthStorage));
+    && (b.mode === "standard" || (a.precision === b.precision && a.depthStorage === b.depthStorage && a.projectionClipRange === b.projectionClipRange));
 }
 
 /** Clip range of a standard frame on this device (shadow, probe and mirror passes use it too). */
@@ -75,7 +75,8 @@ export function applyFrameDepthConvention(
         ? "WebGPU programs remap the minus-one-to-one projection in the vertex stage"
         : device.kind === "webgl2" ? "EXT_clip_control is unavailable"
           : "the device does not rasterize a zero-to-one reversed projection" } : {}) }),
-    ...(mode !== "standard" ? { depthStorage: storage } : {})
+    ...(mode !== "standard" ? { depthStorage: storage } : {}),
+    ...(zeroToOne ? { projectionClipRange: "zero-to-one" as const } : {})
   });
   if (!sameDepthConvention(active, next)) {
     if (!device.setDepthConvention) {

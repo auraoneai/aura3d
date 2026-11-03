@@ -637,7 +637,7 @@ test.describe("packed React adapter hydration and lifecycle", () => {
       const server = await serve(consumer);
       await page.addInitScript(() => {
         const original = HTMLCanvasElement.prototype.getContext;
-        HTMLCanvasElement.prototype.getContext = function(type: string, ...args: unknown[]) {
+        HTMLCanvasElement.prototype.getContext = function(this: HTMLCanvasElement, type: string, ...args: unknown[]) {
           if (type === "webgl2") return null;
           return (original as (...values: unknown[]) => RenderingContext | null).call(this, type, ...args);
         } as typeof HTMLCanvasElement.prototype.getContext;
@@ -663,7 +663,7 @@ test.describe("packed React adapter hydration and lifecycle", () => {
       const server = await serve(consumer);
       await page.addInitScript(() => {
         const original = HTMLCanvasElement.prototype.getContext;
-        HTMLCanvasElement.prototype.getContext = function(type: string, ...args: unknown[]) {
+        HTMLCanvasElement.prototype.getContext = function(this: HTMLCanvasElement, type: string, ...args: unknown[]) {
           if (type === "webgl2") return null;
           return (original as (...values: unknown[]) => RenderingContext | null).call(this, type, ...args);
         } as typeof HTMLCanvasElement.prototype.getContext;

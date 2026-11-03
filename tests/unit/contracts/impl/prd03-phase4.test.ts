@@ -167,7 +167,9 @@ describe("PRD-03 Phase 4 — prd03.velocity chunk + feature", () => {
     // GU47 WP-7: A3D_QR_POST_VELOCITY_MRT is default-on, so the off case is explicit.
     expect(velocityFeature.select(selectInput(resolveQrFlags({ options: { A3D_QR_POST: true, A3D_QR_POST_VELOCITY_MRT: false } })))).toBeUndefined();
     expect(velocityFeature.select({ ...selectInput(mrtOn), pass: "depth" as never })).toBeUndefined();
-    expect(velocityFeature.defines("velocity")).toEqual({ [VELOCITY_MRT.define]: true });
+    // A3D_VELOCITY enables the deform chunks' previous-pose inputs.
+    expect(velocityFeature.defines("velocity")).toEqual({ [VELOCITY_MRT.define]: true, A3D_VELOCITY: true });
+    expect(velocityFeature.defines("velocity-instanced")).toEqual({ [VELOCITY_MRT.define]: true, A3D_VELOCITY: true, A3D_VELOCITY_PREVIOUS_INSTANCE: true });
   });
 
   it("ChunkHarness composes all four chunk stages into one program", () => {

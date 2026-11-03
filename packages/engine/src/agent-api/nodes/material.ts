@@ -260,6 +260,9 @@ void main() {
 }`;
 
 const NORMAL_VERTEX_WGSL = `
+// Reversed-depth WebGPU frames pass a native zero-to-one projection and set
+// this pipeline override; other frames pass a minus-one-to-one projection.
+override a3dZeroToOneProjection: bool = false;
 struct NormalPreviewVertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) normal: vec3<f32>,
@@ -284,7 +287,7 @@ struct NormalPreviewVertexOutput {
     output.normal = mat3x3<f32>(c0, c1, c2) * worldNormal * select(-1.0, 1.0, viewDet > 0.0);
   }
   let clip = aura.u_projectionMatrix * eye;
-  output.position = vec4<f32>(clip.xy, clip.z * 0.5 + clip.w * 0.5, clip.w);
+  output.position = vec4<f32>(clip.xy, select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection), clip.w);
   return output;
 }`;
 

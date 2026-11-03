@@ -12,13 +12,16 @@ import { scene } from "../../../packages/engine/src/agent-api/nodes/scene.js";
 import type { AuraAssetRef, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot, AuraVec3 } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import type { PhysicsWorldAccess, PhysicsWorldConstructor } from "../../../packages/engine/src/agent-api/physics/PhysicsWorldAccess.js";
 import { RigidBody, type RigidBodyDescriptor } from "../../../packages/physics/src/RigidBody.js";
+import { createModelMatrixV2 } from "../../../packages/engine/src/agent-api/compiler/sceneGraph.js";
 
 /** Source-only world: deterministic bodies without a solver, browser, or GPU. */
 class TestWorld {
   readonly fixedDelta = 1 / 60;
   readonly records = new Map<number, RigidBody>();
   readonly colliderOwners = new Set<number>();
+  readonly colliderRecords = new Map<number, { readonly id: number; readonly bodyId: number; readonly shape: { readonly kind: string; readonly halfExtents?: readonly number[] } }>();
   nextId = 1;
+  nextColliderId = 1;
   stepCalls = 0;
   disposed = false;
   constructor(_options: unknown = {}) {}
@@ -27,14 +30,27 @@ class TestWorld {
     this.records.set(body.id, body);
     return body;
   }
-  createCollider(body: RigidBody): { readonly id: number; readonly bodyId: number } {
+  createCollider(body: RigidBody, descriptor: { readonly shape: { readonly kind: string; readonly halfExtents?: readonly number[] } }): { readonly id: number; readonly bodyId: number } {
     this.colliderOwners.add(body.id);
-    return { id: body.id, bodyId: body.id };
+    const record = { id: this.nextColliderId++, bodyId: body.id, shape: descriptor.shape };
+    this.colliderRecords.set(record.id, record);
+    return record;
   }
-  removeRigidBody(id: number): void { this.records.delete(id); this.colliderOwners.delete(id); }
+  removeCollider(id: number): void { this.colliderRecords.delete(id); }
+  removeRigidBody(id: number): void {
+    this.records.delete(id);
+    this.colliderOwners.delete(id);
+    for (const [colliderId, record] of this.colliderRecords) if (record.bodyId === id) this.colliderRecords.delete(colliderId);
+  }
   getBody(id: number): RigidBody | undefined { return this.records.get(id); }
   bodies(): RigidBody[] { return [...this.records.values()]; }
-  colliders(): [] { return []; }
+  colliders() { return [...this.colliderRecords.values()]; }
+  /** Half extents of the single collider attached to a body. */
+  boxOf(body: RigidBody): readonly number[] {
+    const owned = [...this.colliderRecords.values()].filter((record) => record.bodyId === body.id);
+    expect(owned).toHaveLength(1);
+    return owned[0]!.shape.halfExtents!;
+  }
   step(): [] { this.stepCalls += 1; return []; }
   snapshot() {
     return { backend: { active: "test" }, stats: { bodies: this.records.size, colliders: this.colliderOwners.size, steps: this.stepCalls }, contacts: [] };
@@ -98,7 +114,7 @@ describe("pivoted runtime physics", () => {
     } finally { app.dispose(); }
   });
 
-  it("synchronizes preview kinematic and dynamic pivoted boxes and rejects collider changes before a step", () => {
+  it("synchronizes preview kinematic and dynamic pivoted boxes and rebuilds a changed collider before the step", () => {
     const { access, worlds } = worldsAndAccess();
     const kinematic = pivotedBox("kinematic") as AuraPrimitiveNode & { position: AuraVec3; scale: AuraVec3; rotation: AuraVec3 };
     (kinematic as { physics: AuraPrimitiveNode["physics"] }).physics = { type: "kinematic" };
@@ -114,10 +130,13 @@ describe("pivoted runtime physics", () => {
       close(kinematicBody!.position, [8, 0, 0]);
       close(dynamic.position, [7, 4, 0]);
       close(dynamic.rotation, [0, 0, Math.PI]);
-      const before = worlds[0]!.stepCalls;
+      close(worlds[0]!.boxOf(kinematicBody!), [1, 0.5, 0.5]);
       kinematic.scale = [3, 1, 1];
-      expect(() => runtime.step(1 / 60)).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(worlds[0]!.stepCalls).toBe(before);
+      runtime.step(1 / 60);
+      // T([5,0,0]) T(pivot) Rz(pi) S([3,1,1]) T(-pivot): the geometry origin is [9,0,0].
+      close(worlds[0]!.boxOf(kinematicBody!), [1.5, 0.5, 0.5]);
+      close(kinematicBody!.position, [9, 0, 0]);
+      close(worlds[0]!.boxOf(dynamicBody!), [1, 0.5, 0.5]);
     } finally { runtime.dispose(); }
   });
 
@@ -147,8 +166,12 @@ describe("pivoted runtime physics", () => {
       close(node.rotation, [0, 0, Math.PI]);
       const before = worlds[0]!.stepCalls;
       node.scale = [3, 1, 1];
-      expect(() => world.step(1 / 60)).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(worlds[0]!.stepCalls).toBe(before);
+      world.step(1 / 60);
+      expect(worlds[0]!.stepCalls).toBe(before + 1);
+      // The body is reseated at the rescaled geometry origin and maps back to the same authored position.
+      close(worlds[0]!.boxOf(body), [1.5, 0.5, 0.5]);
+      close(body.position, [11, 4, 0]);
+      close(node.position, [7, 4, 0]);
     } finally { world.dispose(); }
   });
 
@@ -207,7 +230,7 @@ describe("pivoted runtime physics", () => {
     } finally { app.dispose(); }
   });
 
-  it("leaves a pivoted body and its parent unchanged when live attachment or collider edits fail", () => {
+  it("leaves a pivoted body and its parent unchanged when live attachment fails", () => {
     const { access } = worldsAndAccess();
     const parent = group("parent").runtime({ id: "parent" }).toJSON();
     const app = mount(access, snapshot([parent, pivotedBox()]));
@@ -215,13 +238,84 @@ describe("pivoted runtime physics", () => {
       const handle = app.nodes.require("box");
       const before = handle.snapshot();
       expect(() => app.nodes.require("parent").attach(handle)).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(() => handle.setPivot(2, 0, 0)).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(() => handle.setTransform({ position: [99, 0, 0], scale: 3 })).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(() => handle.play("turntable")).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
-      expect(() => handle.setGeometry!({ positions: [0, 0, 0] })).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
       expect(handle.position).toEqual(before.position);
       expect(handle.scale).toEqual(before.scale);
       expect(handle.pivot).toEqual(before.pivot);
+    } finally { app.dispose(); }
+  });
+
+  it("rebuilds a bound pivoted body's collider after pivot, scale and geometry edits", () => {
+    const { access, worlds } = worldsAndAccess();
+    const app = mount(access, snapshot([pivotedBox()]));
+    try {
+      const world = worlds[0]!;
+      const body = world.bodies()[0]!;
+      const handle = app.nodes.require("box");
+      close(world.boxOf(body), [1, 0.5, 0.5]);
+
+      handle.setPivot(2, 0, 0);
+      app.physics.step(1 / 60);
+      // [3,0,0] + pivot - Rz(pi/2) S pivot = [5,0,0] - [0,4,0].
+      close(body.position, [5, -4, 0]);
+      close(world.boxOf(body), [1, 0.5, 0.5]);
+      close(handle.position, [3, 0, 0]);
+      close(handle.pivot, [2, 0, 0]);
+
+      handle.setTransform({ scale: 3 });
+      app.physics.step(1 / 60);
+      close(world.boxOf(body), [1.5, 1.5, 1.5]);
+      close(body.position, [5, -6, 0]);
+      close(handle.position, [3, 0, 0]);
+
+      // Custom geometry: the collider is its scaled bounds, centred on the bounds centre.
+      handle.setGeometry!({ positions: [0, 0, 0, 1, 0, 0, 0, 2, 0], indices: [0, 1, 2] });
+      app.physics.step(1 / 60);
+      close(world.boxOf(body), [1.5, 3, 0.02]);
+      // Geometry origin [5,-6,0] plus Rz(pi/2) * [1.5,3,0].
+      close(body.position, [2, -4.5, 0]);
+      close(handle.position, [3, 0, 0]);
+      close(app.physics.bodies.require("box").position(), [2, -4.5, 0]);
+
+      // Partial position uploads bypass the declaration; non-position attributes stay live.
+      expect(() => handle.updateAttribute!("position", { array: [0, 0, 0] })).toThrow(/PIVOT_PHYSICS_UNSUPPORTED/);
+      expect(world.colliders()).toHaveLength(1);
+    } finally { app.dispose(); }
+  });
+
+  it("rebuilds the collider when a pivot is first added to an unpivoted root body", () => {
+    const { access, worlds } = worldsAndAccess();
+    const app = mount(access, snapshot([physicsBox("plain", { rotation: [0, 0, Math.PI / 2] })]));
+    try {
+      const body = worlds[0]!.bodies()[0]!;
+      close(body.position, [0, 0, 0]);
+      app.nodes.require("plain").setPivot(1, 0, 0);
+      app.physics.step(1 / 60);
+      // pivot - Rz(pi/2) pivot = [1,0,0] - [0,1,0].
+      close(body.position, [1, -1, 0]);
+      close(app.nodes.require("plain").position, [0, 0, 0]);
+      close(worlds[0]!.boxOf(body), [0.5, 0.5, 0.5]);
+    } finally { app.dispose(); }
+  });
+
+  it("drives a pivoted kinematic collider from the drawn transform animation", () => {
+    const { access, worlds } = worldsAndAccess();
+    const node = { ...pivotedBox("spinner"), physics: { type: "kinematic" as const } };
+    const app = mount(access, snapshot([node]));
+    try {
+      const handle = app.nodes.require("spinner");
+      handle.play("turntable", { speed: 1 });
+      app.advance(1.25);
+      app.physics.step(1 / 60);
+      const body = worlds[0]!.bodies()[0]!;
+      // The renderer's own model matrix at the same time: its translation is the box centre.
+      const drawn = createModelMatrixV2(handle.snapshot() as unknown as AuraPrimitiveNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 1.25);
+      close(body.position, [drawn[12]!, drawn[13]!, drawn[14]!]);
+      expect(body.position[2]).not.toBeCloseTo(0, 3);
+      const q = body.rotation;
+      // Body x axis (rotated by q) matches the drawn basis column 0 divided by its scale (2).
+      const [x, y, z, w] = q;
+      const axis = [1 - 2 * (y * y + z * z), 2 * (x * y + z * w), 2 * (x * z - y * w)];
+      close(axis, [drawn[0]! / 2, drawn[1]! / 2, drawn[2]! / 2]);
     } finally { app.dispose(); }
   });
 
@@ -253,6 +347,22 @@ describe("pivoted runtime physics", () => {
       expect(before?.[0]?.quaternion).toEqual([0, 0, 0, 1]);
       expect(() => handle.setInstances([{ pivot: [1, 0, 0] }, { lookAt: [0, 0, 1] }])).toThrow(/INSTANCE_PIVOT_LOOK_AT_UNSUPPORTED/);
       expect(handle.snapshot().instances).toEqual(before);
+    } finally { app.dispose(); }
+  });
+
+  it("composes a live pivot with an unparented node's own lookAt and rejects inherited look-at", () => {
+    const { access } = worldsAndAccess();
+    const aimed = { ...primitives.box({ name: "aim" }).runtime({ id: "aim" }).toJSON(), position: [3, 0, 0] as AuraVec3, lookAt: [4, 0, 10] as AuraVec3 };
+    const parent = group("looking-parent", [primitives.box({ name: "child" }).runtime({ id: "child" })], { lookAt: [0, 0, 5] }).runtime({ id: "looking-parent" }).toJSON();
+    const app = mount(access, snapshot([aimed, parent]));
+    try {
+      const handle = app.nodes.require("aim");
+      handle.setPivot(1, 0, 0);
+      expect(handle.pivot).toEqual([1, 0, 0]);
+      // Pivot point [4,0,0] stays fixed; facing +Z is a half turn about Y, so the origin is [4,0,0] - R*[1,0,0].
+      close(handle.getWorldPosition!(), [5, 0, 0]);
+      expect(() => app.nodes.require("child").setPivot(1, 0, 0)).toThrow(/PIVOT_LOOK_AT_UNSUPPORTED/);
+      expect(app.nodes.require("child").pivot).toEqual([0, 0, 0]);
     } finally { app.dispose(); }
   });
 

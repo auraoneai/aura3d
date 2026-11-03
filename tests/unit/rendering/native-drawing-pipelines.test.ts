@@ -140,7 +140,7 @@ describe("native drawing paths", () => {
     expect(mock.passes[0]!.draws).toEqual([[9, 1, 0]]);
   });
 
-  it("cleans partial allocations on failure, then creates correctly resized attachments", () => {
+  it("cleans partial allocations on failure, then creates correctly resized attachments", async () => {
     const mock = device();
     const createTexture = mock.native.createTexture;
     let calls = 0;
@@ -148,6 +148,15 @@ describe("native drawing paths", () => {
     const pipeline = new DeferredPipeline(mock.native, { outputFormat: "rgba8unorm" });
     expect(() => pipeline.render(frame())).toThrowError(/allocation failed/);
     expect(mock.native.queue.submit).not.toHaveBeenCalled();
+    // Never-referenced attachments are destroyed at once; uploaded buffers may
+    // still be read by the queued writes and stay pending until the fence.
+    const textures = mock.resources.filter(resource => "format" in resource.descriptor);
+    const uploaded = mock.resources.filter(resource => !("format" in resource.descriptor));
+    expect(textures.length).toBeGreaterThan(0);
+    expect(textures.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
+    expect(uploaded.length).toBeGreaterThan(0);
+    expect(uploaded.every(resource => resource.destroy.mock.calls.length === 0)).toBe(true);
+    mock.finish(); await Promise.resolve(); await Promise.resolve();
     expect(mock.resources.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
     mock.native.createTexture = createTexture;
     const resized = { ...frame(), surface: { view: {}, width: 19, height: 11 } };
@@ -157,11 +166,17 @@ describe("native drawing paths", () => {
     for (const texture of liveTextures) expect(texture.descriptor.size).toEqual([19, 11, 1]);
   });
 
-  it("destroys allocations once when queue submission fails", () => {
+  it("destroys allocations once, after the fence, when queue submission fails", async () => {
     const mock = device();
     mock.native.queue.submit.mockImplementationOnce(() => { throw new Error("device lost"); });
     const pipeline = new VisibilityBufferPipeline(mock.native, { outputFormat: "rgba8unorm" });
     expect(() => pipeline.render(frame())).toThrowError(/device lost/);
+    // A throwing submit does not prove nothing was enqueued: every handle waits for the fence.
+    expect(mock.resources.length).toBeGreaterThan(0);
+    expect(mock.resources.every(resource => resource.destroy.mock.calls.length === 0)).toBe(true);
+    mock.finish(); await Promise.resolve(); await Promise.resolve();
+    expect(mock.resources.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
+    pipeline.dispose(); await Promise.resolve();
     expect(mock.resources.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
   });
 

@@ -34,6 +34,12 @@ interface PostViewState {
  */
 export class PostDiagnosticsStore {
   private readonly scopes = new WeakMap<object, Map<PostDiagnosticViewId, PostViewState>>();
+  private readonly issued = new WeakSet<object>();
+
+  /** True only for a token this store issued (live or superseded), never for a canvas or forged object. */
+  isToken(value: unknown): value is PostDiagnosticToken {
+    return typeof value === "object" && value !== null && this.issued.has(value);
+  }
 
   begin(scopeId: object, viewId: PostDiagnosticViewId, frameId: number): PostDiagnosticToken {
     if (!scopeId || typeof scopeId !== "object") throw new RangeError("POST_DIAGNOSTICS_SCOPE_INVALID");
@@ -45,6 +51,7 @@ export class PostDiagnosticsStore {
     const previous = views.get(viewId);
     if (previous?.token.frameId === frameId) return previous.token;
     const token: PostDiagnosticToken = Object.freeze({ scopeId, viewId, frameId });
+    this.issued.add(token);
     if (previous) {
       previous.token = token;
       previous.stagesRan = [];

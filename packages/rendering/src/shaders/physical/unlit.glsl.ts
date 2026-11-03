@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the unlit material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/unlit.wgsl.ts) mirrors it.
+ * Equations: KHR_materials_unlit (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/unlit.wgsl.js";

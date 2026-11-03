@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the specular ior material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/specular_ior.wgsl.ts) mirrors it.
+ * Equations: Fresnel at normal incidence; KHR_materials_ior and KHR_materials_specular (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/specular_ior.wgsl.js";

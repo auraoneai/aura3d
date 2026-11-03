@@ -10,6 +10,20 @@ import { WebGL2Buffer, WebGL2ShaderProgram } from "../WebGL2Device";
 import type { WebGL2DeviceHost } from "./DeviceHost";
 import { planWebGLBatchMvpPair, type WebGLBatchSubmissionState } from "./BatchExecutionCapability";
 import { inspectStaticBatchUnlitProgram, STATIC_BATCH_UNLIT_LABEL } from "./StaticBatchUnlitShader";
+
+/** `OES_draw_buffers_indexed`: per-draw-buffer blend and color mask. */
+interface WebGLDrawBuffersIndexedExtension {
+  enableiOES(target: GLenum, index: GLuint): void;
+  disableiOES(target: GLenum, index: GLuint): void;
+  blendEquationSeparateiOES(buffer: GLuint, modeRGB: GLenum, modeAlpha: GLenum): void;
+  blendFuncSeparateiOES(buffer: GLuint, srcRGB: GLenum, dstRGB: GLenum, srcAlpha: GLenum, dstAlpha: GLenum): void;
+  colorMaskiOES(buffer: GLuint, r: GLboolean, g: GLboolean, b: GLboolean, a: GLboolean): void;
+}
+
+/** `EXT_polygon_offset_clamp`. */
+interface WebGLPolygonOffsetClampExtension {
+  polygonOffsetClampEXT(factor: GLfloat, units: GLfloat, clamp: GLfloat): void;
+}
 import {
   inspectStaticGeneratedUnlitPairProgram,
   STATIC_GENERATED_UNLIT_PAIR_LABEL,
@@ -265,6 +279,7 @@ export class WebGL2DrawCallBinder {
     this.host.stateCache.onInvalidate?.(() => {
       this.frontFace = undefined;
       this.blendConstant = undefined;
+      this.polygonOffsetClamp = undefined;
     });
   }
 
@@ -272,6 +287,11 @@ export class WebGL2DrawCallBinder {
 
   private frontFace: "ccw" | "cw" | undefined;
   private blendConstant: readonly [number, number, number, number] | undefined;
+  /** Last clamp issued through EXT_polygon_offset_clamp (undefined = unknown). */
+  private polygonOffsetClamp: number | undefined;
+  /** `OES_draw_buffers_indexed` / `EXT_polygon_offset_clamp`, queried lazily (`undefined` = not queried). */
+  private drawBuffersIndexedExt: WebGLDrawBuffersIndexedExtension | null | undefined;
+  private polygonOffsetClampExt: WebGLPolygonOffsetClampExtension | null | undefined;
 
   uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
 
@@ -314,6 +334,9 @@ export class WebGL2DrawCallBinder {
     this.uniformValueCache = new WeakMap();
     this.frontFace = undefined;
     this.blendConstant = undefined;
+    this.polygonOffsetClamp = undefined;
+    this.drawBuffersIndexedExt = undefined;
+    this.polygonOffsetClampExt = undefined;
     this.invalidateMultiDrawExtension();
     this.multiDrawExtension();
   }
@@ -1437,8 +1460,10 @@ export class WebGL2DrawCallBinder {
     // WebGL2 exposes sampleCoverage, not arbitrary sample-mask bits; it cannot
     // faithfully represent any partial mask. Never silently ignore one.
     if (mask !== 0xffffffff) throw new RenderDeviceError("WebGL2 cannot represent an arbitrary sample mask", "UNSUPPORTED_RENDER_STATE", { sampleMask: mask });
-    const offsetClamp = (renderState.polygonOffset as { readonly clamp?: number } | null | undefined)?.clamp ?? 0;
-    if (offsetClamp !== 0) throw new RenderDeviceError("WebGL2 cannot represent a nonzero polygon offset clamp", "UNSUPPORTED_RENDER_STATE", { clamp: offsetClamp });
+    const offsetClamp = renderState.polygonOffset?.clamp ?? 0;
+    const clampExtension = offsetClamp !== 0 || this.polygonOffsetClamp !== 0 ? this.polygonOffsetClampExtension() : null;
+    // EXT_polygon_offset_clamp applies a clamp; without it, never silently drop one.
+    if (offsetClamp !== 0 && !clampExtension) throw new RenderDeviceError("WebGL2 cannot represent a nonzero polygon offset clamp without EXT_polygon_offset_clamp", "UNSUPPORTED_RENDER_STATE", { clamp: offsetClamp });
     if (typeof this.host.gl.frontFace !== "function" && winding !== "ccw") throw new RenderDeviceError("Front-face winding is unavailable", "UNSUPPORTED_RENDER_STATE");
     if (typeof this.host.gl.blendColor !== "function" && blendConstant.some((channel) => channel !== 0)) throw new RenderDeviceError("Blend constant is unavailable", "UNSUPPORTED_RENDER_STATE");
     if (this.frontFace !== winding && typeof this.host.gl.frontFace === "function") {
@@ -1483,6 +1508,13 @@ export class WebGL2DrawCallBinder {
     if (renderState.polygonOffset) {
       this.host.stateCache.setEnabled(this.host.gl.POLYGON_OFFSET_FILL, true, () => this.host.gl.enable(this.host.gl.POLYGON_OFFSET_FILL));
       this.host.stateCache.polygonOffset(renderState.polygonOffset.factor, renderState.polygonOffset.units, () => this.host.gl.polygonOffset(renderState.polygonOffset!.factor, renderState.polygonOffset!.units));
+      // The clamp call also sets factor/units, so the cached pair stays exact.
+      if (clampExtension && this.polygonOffsetClamp !== offsetClamp) {
+        clampExtension.polygonOffsetClampEXT(renderState.polygonOffset.factor, renderState.polygonOffset.units, offsetClamp);
+        this.polygonOffsetClamp = offsetClamp;
+      } else if (!clampExtension) {
+        this.polygonOffsetClamp = 0;
+      }
     } else {
       this.host.stateCache.setEnabled(this.host.gl.POLYGON_OFFSET_FILL, false, () => this.host.gl.disable(this.host.gl.POLYGON_OFFSET_FILL));
     }
@@ -1535,6 +1567,59 @@ export class WebGL2DrawCallBinder {
     } else {
       this.host.stateCache.setEnabled(this.host.gl.BLEND, false, () => this.host.gl.disable(this.host.gl.BLEND));
     }
+    if (hasAttachmentRenderOverrides(renderState)) this.applyIndexedAttachmentState(renderState);
+  }
+
+  /**
+   * Per-attachment color mask and blend through OES_draw_buffers_indexed.
+   * Entries inherit the draw's global mask/blend; afterwards the cache forgets
+   * its global mask/blend shadows so the next draw reissues them for all buffers.
+   */
+  private applyIndexedAttachmentState(renderState: NonNullable<DrawCommand["renderState"]>): void {
+    const ext = this.drawBuffersIndexedExtension();
+    if (!ext) throw new RenderDeviceError("WebGL2 cannot apply independent color attachment state without OES_draw_buffers_indexed", "UNSUPPORTED_RENDER_STATE");
+    const gl = this.host.gl;
+    const target = this.host.activeRenderTarget;
+    const count = target?.depthOnly ? 0 : target ? (target.colorTextures?.length ?? 1) : 1;
+    const globalMask = renderState.colorWrite ?? [true, true, true, true] as const;
+    try {
+      for (let index = 0; index < count; index += 1) {
+        const entry = renderState.colorAttachments?.[index];
+        const mask = entry?.colorWrite ?? globalMask;
+        ext.colorMaskiOES(index, mask[0], mask[1], mask[2], mask[3]);
+        const resolved = resolveBlendMode(entry?.blendMode !== undefined ? { blend: false, blendMode: entry.blendMode } : renderState);
+        if (resolved === "opaque") {
+          ext.disableiOES(gl.BLEND, index);
+          continue;
+        }
+        ext.enableiOES(gl.BLEND, index);
+        ext.blendEquationSeparateiOES(index, this.blendEquationEnum(resolved.color.equation), this.blendEquationEnum(resolved.alpha.equation));
+        ext.blendFuncSeparateiOES(index, this.blendFactorEnum(resolved.color.src), this.blendFactorEnum(resolved.color.dst),
+          this.blendFactorEnum(resolved.alpha.src), this.blendFactorEnum(resolved.alpha.dst));
+      }
+    } finally {
+      this.host.stateCache.forgetColorAttachmentState(gl.BLEND);
+    }
+  }
+
+  private drawBuffersIndexedExtension(): WebGLDrawBuffersIndexedExtension | null {
+    if (this.drawBuffersIndexedExt === undefined) {
+      const gl = this.host.gl as WebGL2RenderingContext & { getExtension?: (name: string) => unknown };
+      const ext = typeof gl?.getExtension === "function" ? gl.getExtension("OES_draw_buffers_indexed") as WebGLDrawBuffersIndexedExtension | null : null;
+      this.drawBuffersIndexedExt = ext && typeof ext.colorMaskiOES === "function" && typeof ext.enableiOES === "function"
+        && typeof ext.disableiOES === "function" && typeof ext.blendEquationSeparateiOES === "function"
+        && typeof ext.blendFuncSeparateiOES === "function" ? ext : null;
+    }
+    return this.drawBuffersIndexedExt;
+  }
+
+  private polygonOffsetClampExtension(): WebGLPolygonOffsetClampExtension | null {
+    if (this.polygonOffsetClampExt === undefined) {
+      const gl = this.host.gl as WebGL2RenderingContext & { getExtension?: (name: string) => unknown };
+      const ext = typeof gl?.getExtension === "function" ? gl.getExtension("EXT_polygon_offset_clamp") as WebGLPolygonOffsetClampExtension | null : null;
+      this.polygonOffsetClampExt = ext && typeof ext.polygonOffsetClampEXT === "function" ? ext : null;
+    }
+    return this.polygonOffsetClampExt;
   }
 
   depthCompareEnum(compare: string): GLenum {
@@ -1675,11 +1760,11 @@ export class WebGL2DrawCallBinder {
     const target = this.host.activeRenderTarget;
     const count = target?.depthOnly ? 0 : target ? (target.colorTextures?.length ?? 1) : 1;
     validateRenderCommandState(state, count);
-    // The core WebGL2 state API applies these settings globally. Until an
-    // indexed-state extension is explicitly supported, do not silently draw
+    // The core WebGL2 state API applies these settings globally; independent
+    // per-attachment state needs OES_draw_buffers_indexed. Never silently draw
     // with different state than the caller requested.
-    if (hasAttachmentRenderOverrides(state)) {
-      throw new RenderDeviceError("WebGL2 cannot apply independent color attachment state", "UNSUPPORTED_RENDER_STATE");
+    if (hasAttachmentRenderOverrides(state) && !this.drawBuffersIndexedExtension()) {
+      throw new RenderDeviceError("WebGL2 cannot apply independent color attachment state without OES_draw_buffers_indexed", "UNSUPPORTED_RENDER_STATE");
     }
   }
 

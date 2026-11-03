@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/heatsink-port/art/direction.ts",
-  "sourceSha256": "7ed55b4149a71944f6ccd15e0e09eaa2cb92f40b38864bc06e2cf9ba886b3952",
+  "sourceSha256": "aff248210005f381e2147db19833538b1b49c04e735a965153479b958ad4d7b0",
   "id": "heatsink-port",
   "genre": "racing",
   "signatureEffect": "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",

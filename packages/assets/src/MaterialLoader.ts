@@ -1,4 +1,4 @@
-import { mergeAssetRequestOptions, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
+import { mergeAssetRequestOptions, redactAssetUrl, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
 import { fetchBytes } from "./LoaderFetch";
 import {
@@ -37,7 +37,7 @@ export class MaterialLoader implements AssetLoader<MaterialDescriptorAsset> {
     context.throwIfAborted(request.url);
     const parsed = JSON.parse(new TextDecoder().decode(bytes)) as Partial<MaterialDescriptorAsset>;
     if (parsed.model !== "unlit" && parsed.model !== "pbr") {
-      throw new Error(`Unsupported material model for ${request.url}`);
+      throw new Error(`Unsupported material model for ${redactAssetUrl(request.url)}`);
     }
 
     const descriptor = {
@@ -105,7 +105,7 @@ function toPBRMaterialOptions(descriptor: Pick<MaterialDescriptorAsset, "name" |
 function parseProperties(value: unknown, url: string): Readonly<Record<string, unknown>> {
   if (value === undefined) return {};
   if (!isRecord(value) || Array.isArray(value)) {
-    throw new Error(`Material properties for ${url} must be an object`);
+    throw new Error(`Material properties for ${redactAssetUrl(url)} must be an object`);
   }
   return value;
 }

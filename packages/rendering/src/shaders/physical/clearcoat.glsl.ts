@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the clearcoat material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/clearcoat.wgsl.ts) mirrors it.
+ * Equations: KHR_materials_clearcoat; Walter et al. 2007 GGX; Heitz 2014 Smith (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/clearcoat.wgsl.js";

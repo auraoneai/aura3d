@@ -15,6 +15,7 @@ import { composeTRSInto, localMatrixOf } from "../sceneGraph.js";
 import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 import { parentTransformOf, worldTransformOf } from "../compiler/sceneGraph.js";
 import { round } from "../GameRuntimeCore.js";
+import { normalizeGeometryAttributes, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 
 type AuraPhysicsBodyOptions = RigidBodyDescriptor & {
   readonly shape?: PhysicsShape;
@@ -24,10 +25,13 @@ type AuraPhysicsBodyOptions = RigidBodyDescriptor & {
 };
 
 /**
- * Physics bodies are centred on the rendered geometry origin. Pivoted
- * hierarchies, fitted models and instanced/custom shapes need additional
- * collider and parent-motion contracts; reject them before allocating a world.
- * A single root box has a complete rigid mapping in both renderer paths.
+ * Physics bodies are centred on the rendered geometry (or custom-geometry
+ * bounds) centre. Pivoted hierarchies, fitted models, instances and look-at
+ * need additional collider and parent-motion contracts; reject them before
+ * allocating a world. A single root box — including one with custom geometry
+ * or a transform animation — has a complete rigid mapping in both renderer
+ * paths, and its collider is rebuilt when its pivot, scale, size or geometry
+ * changes (see {@link pivotPhysicsColliderSync}).
  */
 export function assertScenePhysicsPivotSupport(nodes: readonly AuraSceneNode[]): void {
   assertValidPivotTree(nodes);
@@ -57,14 +61,14 @@ export function assertScenePhysicsPivotSupport(nodes: readonly AuraSceneNode[]):
       (!manualBox || (finiteVector(manualHalfSize) && halfSize.every((value, axis) =>
         Math.abs(value - manualHalfSize[axis]!) <= Math.max(1e-7, Math.abs(value) * 1e-6))));
     const supported = !parented && !ancestorPivot && ownPivot && node.kind === "primitive" && node.primitive === "box" &&
-      node.geometry === undefined && node.instances === undefined && node.animation === undefined && node.lookAt === undefined &&
+      (node.geometry === undefined || pivotedGeometryBounds(node) !== undefined) && node.instances === undefined && node.lookAt === undefined &&
       node.quaternion === undefined && (node.rotationOrder === undefined || node.rotationOrder === "ZYX") &&
       (node.physics.shape === undefined || node.physics.shape === "box") &&
       finiteVector(scale) && scale.every((value) => value > 0) && finiteVector(position) && finiteVector(rotation) &&
       finiteVector(size) && size.every((value) => value > 0) && matchingCollider &&
       parentTransformOf(node) === undefined && worldTransformOf(node) === undefined;
     if (!supported) {
-      throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: pivoted physics supports only an unparented, finite, positive-scale box without animation, instances, or custom geometry.");
+      throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: pivoted physics supports only an unparented, finite, positive-scale box without instances or look-at.");
     }
     // Overflow must be detected before any world or body is allocated.
     nodePhysicsPosition(node);
@@ -73,25 +77,114 @@ export function assertScenePhysicsPivotSupport(nodes: readonly AuraSceneNode[]):
   for (const node of nodes) visit(node, false, false);
 }
 
-/** Freeze the collider-relevant pivot and scale for a supported body. */
-export function fixedPivotPhysicsGuard(node: AuraModelNode | AuraPrimitiveNode): (() => void) | undefined {
-  if (!hasNonzeroPivot(node.pivot)) return undefined;
-  const pivot = [...node.pivot!] as AuraVec3;
-  const scale = [...scaleToVec3(node.scale)] as AuraVec3;
-  const size = node.kind === "primitive" ? [...primitiveSize(node)] as AuraVec3 : undefined;
+type PivotColliderWorld = Pick<PhysicsWorld, "createCollider" | "removeCollider" | "colliders">;
+
+/** Result of replacing a pivoted body's collider. */
+export interface PivotPhysicsColliderRebuild {
+  /** Collider centre in the body frame (custom-geometry bounds centre), if any. */
+  readonly offset: AuraVec3 | undefined;
+  /** Whether the node carries a nonzero pivot after the rebuild. */
+  readonly pivoted: boolean;
+}
+
+/**
+ * Stage-then-commit collider synchronization for a root primitive body that is
+ * (or becomes) pivoted. `prepare` validates the current node against the
+ * supported pivoted-physics contract and, when the pivot, scale, size or custom
+ * geometry differ from the collider that was built, returns a commit that
+ * replaces the body's colliders and reseats the body at the drawn geometry
+ * centre. Nothing is mutated until every staged commit is known to succeed.
+ * Nodes that were never pivoted keep the unpivoted semantics (no rebuild).
+ * Changing the physics declaration itself still requires a scene rebuild.
+ */
+export function pivotPhysicsColliderSync(node: AuraModelNode | AuraPrimitiveNode):
+  ((world: PivotColliderWorld, body: RigidBody) => (() => PivotPhysicsColliderRebuild) | undefined) | undefined {
+  if (node.kind !== "primitive" && !hasNonzeroPivot(node.pivot)) return undefined;
   const physics = node.physics;
   const bodyType = physics?.type;
-  return () => {
-    assertScenePhysicsPivotSupport([node]);
-    const currentScale = scaleToVec3(node.scale);
-    const currentSize = node.kind === "primitive" ? primitiveSize(node) : undefined;
-    if (!node.pivot || node.pivot.some((value, axis) => value !== pivot[axis]) ||
-        currentScale.some((value, axis) => value !== scale[axis]) ||
-        !size || !currentSize || currentSize.some((value, axis) => value !== size[axis]) ||
-        node.physics !== physics || node.physics?.type !== bodyType) {
-      throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing a pivoted body's pivot, scale, size, or declaration requires rebuilding its collider.");
+  let built = pivotColliderKey(node);
+  return (world, body) => {
+    const pivoted = hasNonzeroPivot(node.pivot);
+    if (!pivoted && !built.pivoted) return undefined;
+    if (node.physics !== physics || node.physics?.type !== bodyType) {
+      throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: changing a pivoted body's physics declaration requires rebuilding the scene.");
     }
+    if (pivoted) assertScenePhysicsPivotSupport([node]);
+    const next = pivotColliderKey(node);
+    if (samePivotColliderKey(next, built)) return undefined;
+    const spec = node.physics!;
+    const shape = resolveNodePhysicsShape(node, spec);
+    const offset = resolveNodePhysicsOffset(node);
+    const position = nodePhysicsPosition(node, offset);
+    return () => {
+      for (const collider of world.colliders()) if (collider.bodyId === body.id) world.removeCollider(collider.id);
+      world.createCollider(body, {
+        shape,
+        ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
+        material: { friction: spec.friction ?? 0.5, restitution: spec.restitution ?? 0 }
+      });
+      body.setPosition(position);
+      built = next;
+      return { offset, pivoted };
+    };
   };
+}
+
+interface PivotColliderKey {
+  readonly pivoted: boolean;
+  readonly values: readonly number[];
+  readonly geometry: unknown;
+}
+
+function pivotColliderKey(node: AuraModelNode | AuraPrimitiveNode): PivotColliderKey {
+  const pivot = node.pivot ?? [0, 0, 0];
+  const size = node.kind === "primitive" ? primitiveSize(node) : [1, 1, 1];
+  return {
+    pivoted: hasNonzeroPivot(node.pivot),
+    values: [...pivot, ...scaleToVec3(node.scale), ...size],
+    geometry: node.kind === "primitive" ? node.geometry : undefined
+  };
+}
+
+function samePivotColliderKey(a: PivotColliderKey, b: PivotColliderKey): boolean {
+  return a.pivoted === b.pivoted && a.geometry === b.geometry && a.values.every((value, index) => Object.is(value, b.values[index]));
+}
+
+/**
+ * Bounds of a pivoted primitive's custom geometry in the node's scaled frame
+ * (positions ⊙ size ⊙ scale), used as its box collider when no explicit
+ * physics shape is declared. Undefined when the geometry is absent or invalid.
+ */
+function pivotedGeometryBounds(node: AuraModelNode | AuraPrimitiveNode): { readonly halfExtents: AuraVec3; readonly centre: AuraVec3 } | undefined {
+  if (node.kind !== "primitive" || node.geometry === undefined || !hasNonzeroPivot(node.pivot)) return undefined;
+  let positions: ArrayLike<number>;
+  try {
+    positions = normalizeGeometryAttributes(node.geometry as AuraCustomGeometrySpec).positions;
+  } catch {
+    return undefined;
+  }
+  if (positions.length < 3) return undefined;
+  const size = primitiveSize(node);
+  const scale = scaleToVec3(node.scale);
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (let index = 0; index + 2 < positions.length; index += 3) {
+    for (let axis = 0; axis < 3; axis += 1) {
+      const value = positions[index + axis]! * size[axis]! * scale[axis]!;
+      if (!Number.isFinite(value)) return undefined;
+      if (value < min[axis]!) min[axis] = value;
+      if (value > max[axis]!) max[axis] = value;
+    }
+  }
+  return {
+    halfExtents: [0, 1, 2].map((axis) => Math.max(0.02, (max[axis]! - min[axis]!) * 0.5)) as unknown as AuraVec3,
+    centre: [0, 1, 2].map((axis) => (max[axis]! + min[axis]!) * 0.5) as unknown as AuraVec3
+  };
+}
+
+function usesPivotedGeometryCollider(node: AuraModelNode | AuraPrimitiveNode): boolean {
+  const spec = node.physics;
+  return node.kind === "primitive" && spec !== undefined && spec.shape === undefined && spec.halfExtents === undefined &&
+    spec.radius === undefined && spec.halfHeight === undefined && pivotedGeometryBounds(node) !== undefined;
 }
 
 /**
@@ -139,7 +232,9 @@ export function nodePhysicsPosition(node: AuraModelNode | AuraPrimitiveNode, mod
     throw error;
   }
   if (!matrix.every(Number.isFinite)) throw new RangeError("PIVOT_PHYSICS_UNSUPPORTED: pivoted pose is not finite.");
-  return [matrix[12]!, matrix[13]!, matrix[14]!];
+  const origin: AuraVec3 = [matrix[12]!, matrix[13]!, matrix[14]!];
+  const offset = modelOffset ?? resolveNodePhysicsOffset(node);
+  return offset ? offsetPhysicsPosition(origin, nodeRotationQuaternion(node), offset, 1) : origin;
 }
 
 /** Recover authored translation from a rigid body's geometry-centred pose. */
@@ -149,6 +244,9 @@ export function nodePositionFromPhysics(node: AuraModelNode | AuraPrimitiveNode,
     return offset ? offsetPhysicsPosition(position, rotation, offset, -1) : [position[0], position[1], position[2]];
   }
   const pivot = node.pivot!;
+  const offset = modelOffset ?? resolveNodePhysicsOffset(node);
+  // The body sits at the collider centre; recover the geometry origin first.
+  if (offset) position = offsetPhysicsPosition(position, rotation, offset, -1);
   const matrix = composeTRSInto(new Float32Array(16), [0, 0, 0], rotation, scaleToVec3(node.scale));
   const result: AuraVec3 = [
     position[0] - pivot[0] + matrix[0]! * pivot[0] + matrix[4]! * pivot[1] + matrix[8]! * pivot[2],
@@ -238,7 +336,7 @@ function copyPhysicsDescriptor<T>(value: T): T {
 function createPhysicsWorldController(
   descriptor: PhysicsWorldDescriptor,
   World: PhysicsWorldConstructor,
-  beforeSimulation?: () => void
+  beforeSimulationHook?: (colliders: PivotColliderWorld) => void
 ): AuraPhysicsWorldController {
   const worldDescriptor = copyPhysicsDescriptor(descriptor);
   let world = new World(worldDescriptor);
@@ -280,6 +378,17 @@ function createPhysicsWorldController(
   // This stable view keeps bridge ownership intact when reset swaps the solver.
   const bridgeWorld = { getBody: (id: number) => bodyRecords.find((entry) => entry.id === id)?.live };
 
+  // Collider replacement keeps reset() records in step with the live world.
+  const colliderOwner: PivotColliderWorld = {
+    colliders: () => world.colliders(),
+    removeCollider: (id) => {
+      world.removeCollider(id);
+      const index = colliderRecords.findIndex((record) => record.id === id);
+      if (index >= 0) colliderRecords.splice(index, 1);
+    },
+    createCollider: (body, descriptor) => controller.createCollider(body, descriptor)
+  };
+  const beforeSimulation = beforeSimulationHook ? () => beforeSimulationHook(colliderOwner) : undefined;
   const controller: AuraPhysicsWorldController = {
     kind: "aura-physics-world",
     createBody(options: AuraPhysicsBodyOptions = {}) {
@@ -577,11 +686,21 @@ function createPhysicsWorldFromScene(
     if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) return [];
     // Validate before allocating the solver, including the offset and pose.
     if (usesModelBoundsCollider(node)) nodePhysicsPosition(node);
-    return [fixedPivotPhysicsGuard(node), fixedModelBoundsPhysicsGuard(node)].filter((guard): guard is () => void => guard !== undefined);
+    const guard = fixedModelBoundsPhysicsGuard(node);
+    return guard ? [guard] : [];
   });
-  const controller = createPhysicsWorldController(descriptor, World, () => { for (const guard of guards) guard(); });
+  const colliderSyncs: Array<{ readonly body: RigidBody; readonly prepare: NonNullable<ReturnType<typeof pivotPhysicsColliderSync>> }> = [];
+  const controller = createPhysicsWorldController(descriptor, World, (colliders) => {
+    for (const guard of guards) guard();
+    // Stage every replacement before mutating any collider.
+    const commits = colliderSyncs.flatMap(({ body, prepare }) => { const commit = prepare(colliders, body); return commit ? [commit] : []; });
+    for (const commit of commits) commit();
+  });
   try {
-    populatePhysicsWorldFromScene(controller, nodes);
+    for (const { node, body } of populatePhysicsWorldFromScene(controller, nodes)) {
+      const prepare = pivotPhysicsColliderSync(node);
+      if (prepare) colliderSyncs.push({ body, prepare });
+    }
     return controller;
   } catch (error) {
     controller.dispose();
@@ -654,7 +773,8 @@ export interface AuraRuntimeScenePhysics {
   dispose(): void;
 }
 
-function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, nodes: readonly AuraSceneNode[]): void {
+function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, nodes: readonly AuraSceneNode[]): Array<{ readonly node: AuraModelNode | AuraPrimitiveNode; readonly body: RigidBody }> {
+  const created: Array<{ readonly node: AuraModelNode | AuraPrimitiveNode; readonly body: RigidBody }> = [];
   for (const node of nodes) {
     if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) continue;
     const body = controller.createBody({
@@ -671,23 +791,27 @@ function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, n
         restitution: node.physics.restitution ?? 0
       }
     });
+    created.push({ node, body });
     if (node.physics.type !== "static") {
       controller.bindNode(body, scenePhysicsNodeAdapter(node), node.physics.type === "kinematic" ? "kinematic" : "dynamic");
     }
   }
+  return created;
 }
 
 function scenePhysicsNodeAdapter(node: AuraModelNode | AuraPrimitiveNode): ScenePhysicsNode {
   let pendingPosition: AuraVec3 | undefined;
-  const modelOffset = resolveNodePhysicsOffset(node);
+  const initialOffset = resolveNodePhysicsOffset(node);
+  // A primitive's custom-geometry collider centre follows a collider rebuild.
+  const offsetOf = (): AuraVec3 | undefined => node.kind === "primitive" ? resolveNodePhysicsOffset(node) : initialOffset;
   return {
-    getWorldPosition: () => nodePhysicsPosition(node, modelOffset),
+    getWorldPosition: () => nodePhysicsPosition(node, offsetOf()),
     getWorldQuaternion: () => {
       const nodeWithPhysicsRotation = node as { physicsRotation?: readonly [number, number, number, number] };
       return nodeWithPhysicsRotation.physicsRotation ?? nodeRotationQuaternion(node);
     },
     setWorldPosition: (position) => {
-      if (hasNonzeroPivot(node.pivot) || modelOffset) {
+      if (hasNonzeroPivot(node.pivot) || offsetOf()) {
         // The bridge publishes position before rotation; wait for both so the
         // pivot compensation uses the same interpolated rigid-body pose.
         pendingPosition = [position[0], position[1], position[2]];
@@ -697,7 +821,7 @@ function scenePhysicsNodeAdapter(node: AuraModelNode | AuraPrimitiveNode): Scene
     },
     setWorldQuaternion: (rotation) => {
       if (pendingPosition) {
-        (node as { position?: AuraVec3 }).position = nodePositionFromPhysics(node, pendingPosition, rotation, modelOffset);
+        (node as { position?: AuraVec3 }).position = nodePositionFromPhysics(node, pendingPosition, rotation, offsetOf());
         pendingPosition = undefined;
       }
       (node as { physicsRotation?: readonly [number, number, number, number] }).physicsRotation = [rotation[0], rotation[1], rotation[2], rotation[3]];
@@ -750,9 +874,9 @@ function createRuntimeScenePhysicsForWorld(
   const bindings: Array<{
     readonly node: AuraModelNode | AuraPrimitiveNode;
     readonly body: RigidBody;
-    readonly checkPivot?: () => void;
+    readonly syncCollider?: NonNullable<ReturnType<typeof pivotPhysicsColliderSync>>;
     readonly checkModel?: () => void;
-    readonly modelOffset?: AuraVec3;
+    modelOffset?: AuraVec3;
     object?: {
       position?: { set(x: number, y: number, z: number): void };
       quaternion?: { set(x: number, y: number, z: number, w: number): void };
@@ -781,9 +905,9 @@ function createRuntimeScenePhysicsForWorld(
         restitution: spec.restitution ?? 0
       }
     });
-    const checkPivot = fixedPivotPhysicsGuard(node);
+    const syncCollider = pivotPhysicsColliderSync(node);
     const checkModel = fixedModelBoundsPhysicsGuard(node);
-    bindings.push({ node, body, ...(checkPivot ? { checkPivot } : {}), ...(checkModel ? { checkModel } : {}), ...(modelOffset ? { modelOffset } : {}) });
+    bindings.push({ node, body, ...(syncCollider ? { syncCollider } : {}), ...(checkModel ? { checkModel } : {}), ...(modelOffset ? { modelOffset } : {}) });
   }
 
   const writeSummary = () => {
@@ -811,13 +935,20 @@ function createRuntimeScenePhysicsForWorld(
     step(deltaSeconds) {
       if (disposed) throw new Error("Runtime scene physics has been disposed.");
       if (!Number.isFinite(deltaSeconds) || deltaSeconds < 0) throw new Error("Runtime physics delta must be finite and non-negative.");
+      const colliderCommits: Array<() => void> = [];
       for (const binding of bindings) {
-        binding.checkPivot?.();
+        const commit = binding.syncCollider?.(world, binding.body);
+        if (commit) colliderCommits.push(() => {
+          const { offset } = commit();
+          if (offset) binding.modelOffset = offset; else delete binding.modelOffset;
+        });
         binding.checkModel?.();
         if (binding.modelOffset && binding.body.type !== "static" && parentTransformOf(binding.node)) {
           throw new RangeError("MODEL_COLLIDER_UNSUPPORTED_PARENT: preview physics cannot synchronize a moving bounds collider through a parent.");
         }
       }
+      // Every replacement was validated above; rebuild the changed colliders.
+      for (const commit of colliderCommits) commit();
       for (const binding of bindings) {
         if (binding.body.type !== "kinematic") continue;
         binding.body.setPosition(nodePhysicsPosition(binding.node, binding.modelOffset));
@@ -1102,6 +1233,10 @@ function modelBoundsCollider(node: AuraModelNode): { readonly shape: ReturnType<
 
 /** Centre relative to the node origin, in the rigid body's scaled local frame. */
 export function resolveNodePhysicsOffset(node: AuraModelNode | AuraPrimitiveNode): AuraVec3 | undefined {
+  if (usesPivotedGeometryCollider(node)) {
+    const centre = pivotedGeometryBounds(node)!.centre;
+    return centre.some((value) => value !== 0) ? centre : undefined;
+  }
   return usesModelBoundsCollider(node) ? modelBoundsCollider(node).offset : undefined;
 }
 
@@ -1146,6 +1281,10 @@ export function resolveNodePhysicsShape(node: AuraModelNode | AuraPrimitiveNode,
     throw new RangeError("MODEL_COLLIDER_INVALID_SHAPE: explicit shape dimensions cannot be null.");
   }
   if (typeof spec.shape === "object" || spec.halfExtents || spec.radius || spec.halfHeight || spec.shape) return resolveAgentPhysicsShape(spec);
+  if (usesPivotedGeometryCollider(node)) {
+    const [x, y, z] = pivotedGeometryBounds(node)!.halfExtents;
+    return PhysicsShapeFactory.box(x, y, z);
+  }
   if (node.kind === "primitive") {
     const size = primitiveSize(node);
     const scale = scaleToVec3(node.scale);

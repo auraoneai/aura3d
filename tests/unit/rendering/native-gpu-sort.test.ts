@@ -428,9 +428,45 @@ describe("native GPU stable index sort", () => {
     await Promise.resolve();
     expect(f.allocations.filter((buffer) => buffer.label.startsWith("aura3d-splat-sort")).every((buffer) => buffer.destroy.mock.calls.length === 1)).toBe(true);
 
+    // Synchronous frames (the engine's `gpuSort: true`): CPU order until a GPU
+    // order for the exact same inputs is ready, then the GPU order.
+    const flush = async (): Promise<void> => { for (let i = 0; i < 20; i += 1) await Promise.resolve(); };
+    const routed = new GaussianSplatRenderer(device, data);
+    routed.enableGpuSort(Promise.resolve({ device: orderDevice, sorter }));
+    await flush();
+    const first = routed.prepare(input);
+    expect(first.sortBackend).toBe("cpu");
+    expect(first.sortFallbackReason).toBeUndefined();
+    await flush();
+    const reused = routed.prepare(input);
+    expect(reused.sortBackend).toBe("gpu");
+    expect([...reused.order]).toEqual([...cpu.order]);
+    expect(routed.gpuSortStatus).toEqual({ requested: true, lastBackend: "gpu" });
+    const moved = routed.prepare({ ...input, cameraPosition: [0, 0, 3] });
+    expect(moved.sortBackend).toBe("cpu");
+    expect([...moved.order]).toEqual([...cpu.order]);
+    const unavailable = new GaussianSplatRenderer(device, data);
+    unavailable.enableGpuSort(Promise.reject(new Error("GPU splat sort requires WebGPU; using the CPU sort on mock")));
+    await flush();
+    const cpuOnly = unavailable.prepare(input);
+    expect(cpuOnly.sortBackend).toBe("cpu");
+    expect(cpuOnly.sortFallbackReason).toMatch(/requires WebGPU/);
+    expect(unavailable.gpuSortStatus).toMatchObject({ requested: true, lastBackend: "cpu", fallbackReason: expect.stringMatching(/requires WebGPU/) });
+    routed.dispose(); unavailable.dispose();
+
     const failedFence = Promise.reject(new Error("fence failed"));
     failedFence.catch(() => undefined);
     f.setFence(failedFence);
+    const failing = new GaussianSplatRenderer(device, data);
+    failing.enableGpuSort({ device: orderDevice, sorter });
+    await flush();
+    expect(failing.prepare(input).sortBackend).toBe("cpu");
+    await flush();
+    const afterFailure = failing.prepare(input);
+    expect(afterFailure.sortBackend).toBe("cpu");
+    expect(afterFailure.sortFallbackReason).toMatch(/fence/);
+    expect([...afterFailure.order]).toEqual([...cpu.order]);
+    failing.dispose();
     const fallback = await renderer.prepareAsync(input, { gpuSort: { device: orderDevice, sorter } });
     expect(fallback.sortBackend).toBe("cpu");
     expect(fallback.sortFallbackReason).toMatch(/fence/);

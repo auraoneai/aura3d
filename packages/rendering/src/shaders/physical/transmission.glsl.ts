@@ -2,6 +2,7 @@
  * Aura screen-space transmission. A caller-provided opaque-color mip chain is
  * sampled at the refracted exit point; out-of-frame samples use sampler wrap.
  * The separately maintained WGSL companion has its own provenance.
+ * Equations: KHR_materials_transmission screen-space refraction (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/transmission.wgsl.js";

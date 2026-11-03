@@ -1,6 +1,6 @@
 import { webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AssetLoadError, AssetManager, type AssetLoader } from "../../packages/assets/src";
+import { AssetCache, AssetCacheKeyError, AssetHandle, AssetLoadError, AssetManager, type AssetLoader } from "../../packages/assets/src";
 
 beforeEach(() => { vi.stubGlobal("crypto", webcrypto); });
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -166,5 +166,53 @@ describe("asset cache scale behavior", () => {
 
     expect(loads).toBe(1);
     expect(manager.cache.snapshot()).toMatchObject({ cachedEntries: 0, inFlightEntries: 0, totalEntries: 0 });
+  });
+});
+
+describe("raw AssetCache effective-context keys", () => {
+  const makeHandle = (handleUrl: string) => new AssetHandle({ id: "raw", url: handleUrl, type: "mock", value: {} });
+  const url = "https://assets.example.test/private/model.glb";
+
+  it("rejects caller-chosen keys without echoing them", () => {
+    const cache = new AssetCache();
+    const raw = `${url}?token=secret-signature`;
+    const handle = makeHandle(raw);
+    let thrown: unknown;
+    try { cache.set(raw, handle); } catch (error) { thrown = error; }
+    expect(thrown).toBeInstanceOf(AssetCacheKeyError);
+    expect((thrown as AssetCacheKeyError).code).toBe("ASSET_CACHE_KEY_UNISSUED");
+    expect(String((thrown as Error).message)).not.toContain("secret-signature");
+    expect(() => cache.get(raw)).toThrow(AssetCacheKeyError);
+    expect(() => cache.setInFlight(raw, Promise.resolve(handle))).toThrow(AssetCacheKeyError);
+    expect(cache.has(raw)).toBe(false);
+    expect(cache.snapshot().totalEntries).toBe(0);
+  });
+
+  it("partitions one URL by effective request context and shares only an identical reusable context", async () => {
+    const cache = new AssetCache();
+    const tokenA = await cache.keyFor(url, { credentials: "omit", headers: { authorization: "Bearer token-a" } });
+    const tokenAAgain = await cache.keyFor(url, { credentials: "omit", headers: { authorization: "Bearer token-a" } });
+    const tokenB = await cache.keyFor(url, { credentials: "omit", headers: { authorization: "Bearer token-b" } });
+    const generation2 = await cache.keyFor(url, { credentials: "include", securityContext: "generation-2" });
+    const ambientOne = await cache.keyFor(url, { credentials: "include" });
+    const ambientTwo = await cache.keyFor(url, { credentials: "include" });
+    expect(tokenAAgain).toBe(tokenA);
+    expect(new Set([tokenA, tokenB, generation2, ambientOne, ambientTwo]).size).toBe(5);
+    for (const key of [tokenA, tokenB, generation2, ambientOne]) expect(key).not.toMatch(/token-|generation-2|example\.test/);
+
+    const handle = makeHandle(url);
+    cache.set(tokenA, handle);
+    expect(cache.get(tokenAAgain)).toBe(handle);
+    expect(cache.get(tokenB)).toBeUndefined();
+    expect(cache.get(generation2)).toBeUndefined();
+    expect(JSON.stringify(cache.snapshot())).not.toMatch(/token-|Bearer/);
+  });
+
+  it("forgets unshared keys once their entry is gone so they cannot be replayed", async () => {
+    const cache = new AssetCache();
+    const ambient = await cache.keyFor(url, { credentials: "include" });
+    cache.set(ambient, makeHandle(url));
+    expect(cache.delete(ambient)).toBe(true);
+    expect(() => cache.set(ambient, makeHandle(url))).toThrow(AssetCacheKeyError);
   });
 });

@@ -183,6 +183,20 @@ function splatRequest(node: AuraGaussianSplatNode, ctx: MountSceneCompileContext
   };
 }
 
+/**
+ * Opt-in (`gpuSort: true`) native sorter shared by a node's clouds. Rejects on
+ * non-WebGPU devices or when the sorter cannot compile; each cloud renderer
+ * then keeps its CPU sort and reports the reason in `gpuSortStatus`.
+ */
+async function createSplatGpuSort(device: RenderDevice, maxItems: number): Promise<import("@aura3d/rendering/webgpu").GaussianSplatGpuSort> {
+  if (device.kind !== "webgpu") throw new Error(`GPU splat sort requires WebGPU; using the CPU sort on ${device.kind}`);
+  const native = (device as RenderDevice & { readonly nativeGpuDevice?: unknown }).nativeGpuDevice;
+  if (!native) throw new Error("GPU splat sort requires the native WebGPU device; using the CPU sort");
+  const { createNativeGpuSort } = await import("@aura3d/rendering/webgpu");
+  const sorter = await createNativeGpuSort(native, { maxItems });
+  return { device: native as import("@aura3d/rendering/webgpu").GaussianSplatGpuOrderDevice, sorter };
+}
+
 /** Each distinct cloud owns one GPU renderer, shared by all its glTF instances. */
 function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileContext): SplatLease {
   const controller = new AbortController();
@@ -193,6 +207,7 @@ function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileCon
   let clouds: SplatLease["clouds"] = [];
   let acquired = false;
   let disposed = false;
+  let gpuSort: ReturnType<typeof createSplatGpuSort> | undefined;
   const ready = (async () => {
     validateGaussianSplatTransformOptions(node);
     const request = splatRequest(node, ctx, controller.signal);
@@ -229,8 +244,14 @@ function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileCon
         created.push({ data, renderer });
         if (controller.signal.aborted || disposed) throw controller.signal.reason ?? new Error("Splat load cancelled");
       }
+      if (node.gpuSort === true) {
+        gpuSort = createSplatGpuSort(device, Math.max(2, ...created.map(({ data }) => data.count)));
+        for (const { renderer } of created) renderer.enableGpuSort(gpuSort);
+      }
     } catch (error) {
       for (const cloud of created) { try { cloud.renderer.dispose(); } catch { /* Preserve the acquisition failure. */ } }
+      gpuSort?.then((gpu) => gpu.sorter.dispose(), () => undefined).catch(() => undefined);
+      gpuSort = undefined;
       throw error;
     }
     clouds = created;
@@ -252,6 +273,9 @@ function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileCon
       for (const cloud of owned) {
         try { cloud.renderer.dispose(); } catch (error) { failure ??= error; }
       }
+      // The sorter outlives the renderers only until its in-flight sorts settle.
+      gpuSort?.then((gpu) => gpu.sorter.dispose(), () => undefined).catch(() => undefined);
+      gpuSort = undefined;
       if (failure !== undefined) throw failure;
     }
   };
@@ -939,6 +963,11 @@ export class CompiledSceneImpl implements CompiledScene {
   readonly splatLeases = new Map<AuraGaussianSplatNode, SplatLease>();
   get loadedSplatAssetIds(): readonly string[] {
     return [...new Set([...this.splatLeases.values()].filter((lease) => lease.acquired).map((lease) => lease.node.asset.id))];
+  }
+  /** Per acquired cloud: whether its sort runs on the GPU (`gpuSort: true`) or why it fell back to the CPU. */
+  get splatSortStatus(): readonly { readonly assetId: string; readonly status: import("@aura3d/rendering").GaussianSplatGpuSortStatus }[] {
+    return [...this.splatLeases.values()].filter((lease) => lease.acquired)
+      .flatMap((lease) => lease.clouds.map(({ renderer }) => ({ assetId: lease.node.asset.id, status: renderer.gpuSortStatus })));
   }
   private readonly splatFailures = new Map<AuraGaussianSplatNode, string>();
   /** Volume assets and native renderers are owned per compiled node. */

@@ -1,24 +1,25 @@
 /**
- * WGSL twin of a3d_prd04_alpha_a2c (PRD-04 §8.10/§8.12): same `a3d_` names,
- * identical math (r185 alphatest_fragment.glsl.js:5-13).
+ * WGSL companion of Aura's `a3d_prd04_alpha_a2c` chunk
+ * (shaders/physical/alpha_a2c.glsl.ts), kept operation-for-operation equal to
+ * it. glTF 2.0 `alphaMode: "MASK"` renders a fragment opaque when
+ * alpha >= alphaCutoff and discards it otherwise (glTF 2.0 specification,
+ * 3.9.4 "Alpha Coverage"). With multisample alpha-to-coverage the hard step
+ * is replaced by a linear ramp one screen-space alpha derivative wide,
+ * centred on the cutoff, so the coverage mask antialiases the edge.
  */
 const wgsl = /* wgsl */ `
-// MASK without coverage: hard cutoff discard (r185 USE_ALPHATEST arm,
-// alphatest_fragment.glsl.js:9-13).
 fn a3dPrd04AlphaTest(alpha: f32, cutoff: f32) {
-	if (alpha < cutoff) {
-		discard;
-	}
+  if (alpha < cutoff) {
+    discard;
+  }
 }
 
-// MASK + alpha-to-coverage: screen-space derivative smoothing around the
-// cutoff, then discard fully-covered-out texels (r185 ALPHA_TO_COVERAGE arm,
-// alphatest_fragment.glsl.js:5-7).
 fn a3dPrd04AlphaToCoverage(alpha: ptr<function, f32>, cutoff: f32) {
-	*alpha = smoothstep(cutoff, cutoff + fwidth(*alpha), *alpha);
-	if (*alpha == 0.0) {
-		discard;
-	}
+  let width = max(fwidth(*alpha), 1e-6);
+  *alpha = clamp((*alpha - cutoff) / width + 0.5, 0.0, 1.0);
+  if (*alpha <= 0.0) {
+    discard;
+  }
 }
 `;
 

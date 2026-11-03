@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the tangent frame material operation.
  * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Equations: per-pixel tangent frame from UV derivatives (PRD-04 §8.12).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/tangent_frame.wgsl.js";

@@ -3,7 +3,8 @@
  * Source and browser checks are deliberately separate. This program never starts a browser.
  * Existing consumers are copied without changing their files; an isolated parent manifest maps
  * their declared Aura3D workspace dependencies to the exact candidate archives. The parent
- * manifest and every generated capability-example harness are retained as explicit harness work.
+ * manifest and every capability example's added source files are retained as explicit harness work;
+ * a capability project is otherwise an untouched create-aura3d scaffold.
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -17,7 +18,7 @@ import { assertIndependentNpmConsumer, assertIndependentNpmGraph, inspectIndepen
 import type { NpmAdmissionInput } from "../release/portable-npm-lock.mjs";
 import { verifyArchiveAdmission, verifyArchiveAdmissionBatch } from "../release/archive-admission.mjs";
 import type { ArchiveAdmissionReceipt, SourceEvidenceReference } from "../release/archive-admission.mjs";
-import { copyTemplateHdris, TEMPLATE_HDRI_DIR } from "../../packages/create-aura3d/src/template-hdri";
+import { createA3DProject } from "../../packages/create-aura3d/src/index";
 import { extractPackedArchive } from "../docs-codeblocks/index";
 
 export interface ExampleCatalogEntry {
@@ -507,25 +508,26 @@ function copyProject(source: string, target: string): void {
   } });
 }
 
-function makeCapabilityProject(root: string, project: string, id: string): string[] {
-  mkdirSync(resolve(project, "src"), { recursive: true });
-  cpSync(resolve(root, "examples/native-capabilities/index.ts"), resolve(project, "src/scenario.ts"));
-  const template = resolve(root, "packages/create-aura3d/templates/mini-game");
-  cpSync(resolve(template, "src/aura-assets.ts"), resolve(project, "src/aura-assets.ts"));
-  cpSync(resolve(template, "aura.assets.json"), resolve(project, "aura.assets.json"));
-  const assetManifest = readJson(resolve(template, "aura.assets.json"));
+/** create-aura3d template that every capability project is scaffolded from (it ships the admitted barbarian). */
+export const CAPABILITY_SCAFFOLD_TEMPLATE = "mini-game" as const;
+/** The only project files a capability project adds or replaces; everything else is the untouched scaffold. */
+export const CAPABILITY_PROJECT_FILES = Object.freeze(["src/main.ts", "src/scenario.ts"] as const);
+
+/**
+ * Scaffold an untouched create-aura3d project, then add only the capability
+ * source: the scenario module and the scene module the scaffold's own
+ * index.html imports. Manifest, configs, index.html, typed assets and public
+ * files are exactly the scaffold's output.
+ */
+export function makeCapabilityProject(root: string, project: string, id: string): string[] {
+  const scaffold = createA3DProject({ targetDir: project, template: CAPABILITY_SCAFFOLD_TEMPLATE, rootDir: resolve(root, "packages/create-aura3d") });
+  if (scaffold.missingAssets.length) throw new Error(`Capability scaffold lacks template assets: ${scaffold.missingAssets.map((entry) => entry.path).join(", ")}`);
+  if (!/<script type="module" src="\.\/src\/main\.ts"><\/script>/.test(readFileSync(resolve(project, "index.html"), "utf8"))) throw new Error("Capability scaffold entry must import src/main.ts");
+  const assetManifest = readJson(resolve(project, "aura.assets.json"));
   const asset = assetManifest.assets?.find((item: any) => item.id === "kaykitBarbarian");
   if (!asset || asset.license !== "CC0" || !asset.animations?.includes("Idle") || !/^sha256-[a-f0-9]{64}$/i.test(asset.hash)) throw new Error("Capability asset requires admitted CC0 provenance and an inspected Idle clip");
-  const assetPath = resolve(template, "public/aura-assets/kaykit-barbarian.glb");
-  if (`sha256-${hash(readFileSync(assetPath))}` !== asset.hash) throw new Error("Capability asset bytes differ from the admitted asset hash");
-  mkdirSync(resolve(project, "public/aura-assets"), { recursive: true });
-  cpSync(assetPath, resolve(project, "public/aura-assets/kaykit-barbarian.glb"));
-  const rootManifest = readJson(resolve(root, "package.json"));
-  const vite = rootManifest.devDependencies?.vite, typescript = rootManifest.devDependencies?.typescript;
-  if (!vite || !typescript) throw new Error("Source manifest must declare Vite and TypeScript for scenario harnesses");
-  writeFileSync(resolve(project, "package.json"), `${JSON.stringify({ name: `aura3d-native-example-${id}`, private: true, type: "module", scripts: { build: "tsc --noEmit && vite build" }, dependencies: { "@aura3d/assets": "workspace:*", "@aura3d/engine": "workspace:*" }, devDependencies: { typescript, vite } }, null, 2)}\n`);
-  writeFileSync(resolve(project, "tsconfig.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "Bundler", lib: ["ES2022", "DOM"], strict: true, skipLibCheck: true, noEmit: true }, include: ["src"] }, null, 2)}\n`);
-  writeFileSync(resolve(project, "index.html"), '<!doctype html><html><head><meta charset="utf-8"></head><body><div id="app"></div><script type="module" src="/src/main.ts"></script></body></html>\n');
+  if (`sha256-${hash(readFileSync(resolve(project, "public/aura-assets/kaykit-barbarian.glb")))}` !== asset.hash) throw new Error("Capability asset bytes differ from the admitted asset hash");
+  cpSync(resolve(root, "examples/native-capabilities/index.ts"), resolve(project, "src/scenario.ts"));
   writeFileSync(resolve(project, "src/main.ts"), `import { assets } from "./aura-assets";
 import { mountNativeCapabilityScenario, queryNativeScenarioBounds } from "./scenario";
 const scenarioId: string = ${JSON.stringify(id)};
@@ -550,8 +552,7 @@ void mountNativeCapabilityScenario(${JSON.stringify(id)}, { target: "#app", asse
   document.body.dataset.aura3dReady = "true";
 }).catch(error => { document.body.dataset.aura3dError = String(error); throw error; });
 `);
-  const hdris = copyTemplateHdris(resolve(root, "packages/create-aura3d", TEMPLATE_HDRI_DIR), project);
-  return ["package.json", "tsconfig.json", "index.html", "src/main.ts", "src/scenario.ts", "src/aura-assets.ts", "aura.assets.json", "public/aura-assets", ...hdris];
+  return [...CAPABILITY_PROJECT_FILES];
 }
 
 function standaloneHarness(root: string, wrapper: string, project: string, entry: ExampleCatalogEntry): { manifest: any; files: string[]; outputEntry: string } {

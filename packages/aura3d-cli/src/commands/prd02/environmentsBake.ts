@@ -4,7 +4,9 @@
  * (workers/cpuPrefilter.ts — no average blend), projects SH9, and writes
  * `<out>/<name>.{specular.ktx2, sh9.f32, manifest.json}`.
  *
- * Day-0 sources: `room` (the r185 neutral-room scene). Later phases add
+ * Day-0 sources: `room` (Aura's independent studio, RoomEnvironmentScene.ts;
+ * the shipped `neutral` preset comes from tools/environments/bake-neutral.ts,
+ * which applies NEUTRAL_ROOM_EXPOSURE). Later phases add
  * `.hdr`/`.ktx2` inputs through the same path.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";

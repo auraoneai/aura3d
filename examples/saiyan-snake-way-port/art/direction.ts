@@ -1,6 +1,6 @@
 // examples/saiyan-snake-way-port/art/direction.ts: C-35 art direction for serpentine-sky-run-port (GU47 WP-27).
 // Fantasy: a mythic dusk pilgrimage along the back of a sky serpent, one evening told as an eight-stage colour script.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { SERPENT_PALETTE } from "./colorScript";
 
 export default defineArtDirection({

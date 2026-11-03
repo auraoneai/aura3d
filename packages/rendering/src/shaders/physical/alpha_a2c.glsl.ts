@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the alpha a2c material operation.
- * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Its WGSL companion (physical-wgsl/alpha_a2c.wgsl.ts) mirrors it.
+ * Equations: glTF 2.0 alphaMode MASK / alphaCutoff (PRD-04 §8.10).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/alpha_a2c.wgsl.js";

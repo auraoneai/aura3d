@@ -214,7 +214,14 @@ describe("WP-21 particle cleanup retries", () => {
       expect(particleDisposal).toHaveBeenCalledOnce();
       expect(peer.state!.posTarget).toBe(peerTarget);
 
-      lifecycle.dispose();
+      // Strict retirement: the particle targets were cleared on the queue, so
+      // the retry closes the failed target but stays pending until the fence.
+      const retry = leaves(caught(() => lifecycle.dispose()));
+      expect(retry.length).toBeGreaterThan(0);
+      expect(retry.every(error => error instanceof Error && /cleanup is in progress/.test(error.message))).toBe(true);
+      expect(lifecycle.disposed).toBe(false);
+      expect(target.disposed).toBe(true);
+      await new Promise(resolve => setTimeout(resolve, 0));
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
       expect(target.disposed).toBe(true);
@@ -226,6 +233,9 @@ describe("WP-21 particle cleanup retries", () => {
       targetDisposal.mockRestore();
       particleDisposal.mockRestore();
       if (!target.disposed) target.dispose();
+      // Queue-cleared particle targets complete only after their retirement fence.
+      for (const close of [() => sim.dispose(), () => peer.dispose()]) { try { close(); } catch { /* Retried after the fence. */ } }
+      await new Promise(resolve => setTimeout(resolve, 0));
       sim.dispose();
       lifecycle.dispose();
       device.dispose();

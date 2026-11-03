@@ -108,7 +108,7 @@ describe("native line materials and compiler", () => {
       const fragment = modules.find((code) => code.includes("fn fs_main"))!;
       expect(vertex).toContain("@location(14) otherColor");
       expect(vertex).toContain("nearStart = start.z + start.w");
-      expect(vertex).toContain("(clip.z + clip.w) * 0.5");
+      expect(vertex).toContain("select(clip.z * 0.5 + clip.w * 0.5, clip.z, a3dZeroToOneProjection)");
       expect(fragment).toContain("aura.u_lineDashOffset");
       expect(fragment).toContain("aura.u_baseColor * color");
       expect(shader.portableBindings?.map((binding) => binding.name)).toContain("u_projectionMatrix");

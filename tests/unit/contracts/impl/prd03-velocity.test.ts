@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
-import { velocityHistorySlot, VelocityHistory } from "@aura3d/rendering";
-import { resetTemporalHistory, type TemporalHistoryLike } from "@aura3d/rendering/contracts";
+import { createScopedVelocityHistory, velocityHistorySlot, VelocityHistory } from "@aura3d/rendering";
+import { resetTemporalHistory } from "@aura3d/rendering/contracts";
 import { bindVelocityUniforms } from "@aura3d/rendering";
 
 const flagsOn = () => resolveQrFlags({ options: ["post"] });
@@ -63,21 +63,28 @@ describe("C-14 velocityHistorySlot (impl: prd03)", () => {
     expect(out.previous).toEqual(out.unjittered);
   });
 
-  it("the contract reset seam reaches the registered impl", () => {
-    const real = velocityHistorySlot.get(flagsOn()).history as TemporalHistoryLike;
+  it("the contract reset seam reaches only its explicit scoped target", () => {
+    const real = createScopedVelocityHistory(flagsOn());
+    const other = createScopedVelocityHistory(flagsOn());
+    const moved = identity();
+    moved[12] = 3;
     real.prepare(identity(), [0, 0]);
-    resetTemporalHistory("resize");
+    other.prepare(identity(), [0, 0]);
+    other.commit?.();
+    resetTemporalHistory("resize", real);
     const out = real.prepare(identity(), [0, 0]);
     expect(out.previous).toEqual(out.unjittered);
+    expect(other.prepare(moved, [0, 0]).previous).toEqual(identity());
+    expect(() => resetTemporalHistory("resize", undefined as never)).toThrow(/explicit renderer, device or view/);
+    expect("history" in velocityHistorySlot.get(flagsOn())).toBe(false);
   });
 
   it("uniform binder writes previous matrices only after a prepared frame", () => {
     const uniforms = new Map<string, unknown>();
     const item = { modelMatrix: identity() } as Parameters<NonNullable<typeof bindVelocityUniforms>>[0];
-    resetTemporalHistory("scene-swap");
     bindVelocityUniforms?.(item, uniforms as never);
     expect(uniforms.size).toBe(0);
-    const real = velocityHistorySlot.get(flagsOn()).history as VelocityHistory;
+    const real = createScopedVelocityHistory(flagsOn()) as VelocityHistory;
     real.prepare(identity(), [0, 0]);
     bindVelocityUniforms?.(real.prepareItem(item, true), uniforms as never);
     expect(uniforms.has("u_previousViewProjection")).toBe(true);

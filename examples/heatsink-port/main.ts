@@ -8,7 +8,7 @@
  * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { expandSegments, parseInputScript } from "../../tools/crayon-capture/heatsink-lib";
+import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
 import { CFG } from "./config";

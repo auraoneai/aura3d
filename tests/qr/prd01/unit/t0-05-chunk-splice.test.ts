@@ -219,19 +219,28 @@ describe("T0-05 review fixes (#877)", () => {
   });
 
   it("the transmission feature binds the captured opaque-scene target", async () => {
-    const { setCapturedTransmissionTarget } = await import("../../../../packages/rendering/src/forward/transmissionTargetStore");
+    // 5.0 contract: the capture is frame-owned (published on the frame
+    // blackboard for one device/scope/view/frame), not a module-global slot.
+    const { publishCapturedTransmissionTarget, releaseTransmissionFrame } = await import("../../../../packages/rendering/src/forward/transmissionTargetStore");
     const { bindShaderFeatureUniforms } = await import("../../../../packages/rendering/src/program/FeatureSelect");
-    const texture = { id: "captured" } as never;
-    setCapturedTransmissionTarget({ texture, width: 640, height: 360 });
-    try {
-      const uniforms = new Map<string, unknown>();
-      const item = { material: { getParameter: () => undefined } } as never;
-      bindShaderFeatureUniforms({ "prd04.transmissionTarget": true }, CORE_MATERIALS, item, (k, v) => uniforms.set(k, v));
-      expect((uniforms.get("a3d_prd04_transmissionSampler") as { texture?: unknown } | undefined)?.texture).toBe(texture);
-      expect(Array.from(uniforms.get("a3d_prd04_transmissionSamplerSize") as Float32Array)).toEqual([640, 360]);
-    } finally {
-      setCapturedTransmissionTarget(undefined);
-    }
+    const { Texture } = await import("../../../../packages/rendering/src/Texture");
+    const mipCount = Math.floor(Math.log2(640)) + 1;
+    const texture = new Texture({ width: 640, height: 360, format: "rgba16f", renderAttachment: true, mipLevelCount: mipCount });
+    const target = { id: 1, label: "capture", width: 640, height: 360, colorTexture: texture, sampleCount: 1, disposed: false, dispose() {} } as never;
+    const device = { kind: "mock", disposed: false, contextLost: false, generation: 1 };
+    const frame = { device, postScopeId: {}, viewId: "view", frameIndex: 1, blackboard: new Map<string, unknown>() } as never;
+    const item = { material: { getParameter: () => undefined } } as never;
+    const uniforms = new Map<string, unknown>();
+    publishCapturedTransmissionTarget(frame, target, mipCount);
+    bindShaderFeatureUniforms({ "prd04.transmissionTarget": true }, CORE_MATERIALS, item, (k, v) => uniforms.set(k, v), frame);
+    expect((uniforms.get("a3d_prd04_transmissionSampler") as { texture?: unknown } | undefined)?.texture).toBe(texture);
+    expect(Array.from(uniforms.get("a3d_prd04_transmissionSamplerSize") as Float32Array)).toEqual([640, 360]);
+    // No frame, or a released frame, never falls back to a stale capture.
+    expect(() => bindShaderFeatureUniforms({ "prd04.transmissionTarget": true }, CORE_MATERIALS, item, () => {}))
+      .toThrow(/transmission capture is unavailable/);
+    releaseTransmissionFrame(frame);
+    expect(() => bindShaderFeatureUniforms({ "prd04.transmissionTarget": true }, CORE_MATERIALS, item, () => {}, frame))
+      .toThrow(/transmission capture is unavailable/);
   });
 
   it("features whose body-hook chunks are not call chunks are not selected on the generated path", async () => {

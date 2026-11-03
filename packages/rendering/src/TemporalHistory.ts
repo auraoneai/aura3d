@@ -1,4 +1,5 @@
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { ZERO_TO_ONE_PROJECTION_WGSL, rasterClipDepthWgsl } from "./webgpu/ProjectionClip";
 import { ForwardPass, type RenderItem } from "./ForwardPass";
 import { Material } from "./Material";
 import { MaterialInstance } from "./MaterialInstance";
@@ -1748,13 +1749,16 @@ export class TemporalHistory {
     const unsupported = new Set<string>(options.expectedPreviousDepth === "velocity-alpha" ? [] : ["previous-depth-approximation"]);
     state.renderItems = items.map(item => {
       const base = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
-      // The built-in MRT feature currently reprojects the current deformed
-      // shape through the previous rigid transform. Only an independently
-      // populated external motion surface can claim deformation coverage.
-      const rigidApproximation = !options.velocity || options.velocityMrtWritable;
+      // Camera-only velocity cannot represent deformation. The built-in MRT
+      // feature reprojects the previous pose (previous bone palette, morph
+      // weights and per-instance matrices from the scoped VelocityHistory);
+      // eight-influence instanced skins have no attribute slots left for
+      // previous instance matrices and stay reactive.
+      const rigidApproximation = !options.velocity;
+      const mrtInstanceSlots = !options.velocityMrtWritable || !item.skinning?.extraInfluences;
       if (rigidApproximation && item.skinning) unsupported.add("skinning-motion");
       if (rigidApproximation && item.morphTargets?.length) unsupported.add("morph-motion");
-      if (rigidApproximation && item.instanceTransforms?.length) unsupported.add("instance-motion");
+      if ((rigidApproximation || !mrtInstanceSlots) && item.instanceTransforms?.length) unsupported.add("instance-motion");
       if (!options.reactive && (item.writesReactive || base?.renderState.blend)) unsupported.add("transparent-reactive");
       const unjittered = Float32Array.from(item.modelViewProjectionMatrix
         ?? multiplyMat4(Array.from(vp) as Mat4, Array.from(item.modelMatrix ?? identityMat4()) as Mat4));
@@ -1959,8 +1963,9 @@ void main(){ vec3 c=v_current.xyz/max(v_current.w,0.00001)*0.5+0.5; vec3 p=v_pre
   webgpu: {
     vertex: `// AURA_TEMPORAL_VELOCITY
 /* @aura3d-bindings */
+${ZERO_TO_ONE_PROJECTION_WGSL}
 struct Out { @builtin(position) position: vec4<f32>, @location(0) current: vec4<f32>, @location(1) previous: vec4<f32> };
-@vertex fn main(@location(0) position: vec3<f32>) -> Out { var out: Out; out.current=aura.u_unjitteredViewProjection*vec4<f32>(position,1); out.previous=aura.u_previousViewProjection*vec4<f32>(position,1); let clip=aura.u_modelViewProjection*vec4<f32>(position,1); out.position=vec4<f32>(clip.xy,(clip.z+clip.w)*0.5,clip.w); return out; }`,
+@vertex fn main(@location(0) position: vec3<f32>) -> Out { var out: Out; out.current=aura.u_unjitteredViewProjection*vec4<f32>(position,1); out.previous=aura.u_previousViewProjection*vec4<f32>(position,1); let clip=aura.u_modelViewProjection*vec4<f32>(position,1); out.position=vec4<f32>(clip.xy,${rasterClipDepthWgsl("clip")},clip.w); return out; }`,
     fragment: `// AURA_TEMPORAL_VELOCITY
 /* @aura3d-bindings */
 @fragment fn main(@location(0) current: vec4<f32>, @location(1) previous: vec4<f32>) -> @location(0) vec4<f32> { let c=current.xyz/max(current.w,0.00001)*0.5+0.5; let p=previous.xyz/max(previous.w,0.00001)*0.5+0.5; return vec4<f32>(clamp((c.xy-p.xy)*vec2<f32>(1,-1),vec2<f32>(-.25),vec2<f32>(.25)),c.z,p.z); }`

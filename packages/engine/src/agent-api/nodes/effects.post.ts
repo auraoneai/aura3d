@@ -357,8 +357,8 @@ export const postEffectBuilders = {
     }
     const inputs = options.inputs ?? ["color"];
     for (const input of inputs) {
-      if (!["color", "depth", "velocity", "reactive"].includes(input)) {
-        throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass input ${String(input)} is not color|depth|velocity|reactive`);
+      if (!["color", "depth", "velocity", "normal", "reactive"].includes(input)) {
+        throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass input ${String(input)} is not color|depth|velocity|normal|reactive`);
       }
     }
     return {
@@ -385,8 +385,12 @@ export interface AuraShaderPassOptions {
   readonly fragment?: { readonly glsl?: string; readonly wgsl?: string };
   /** Numeric pass uniforms, bound by name at draw time. */
   readonly uniforms?: Readonly<Record<string, number | readonly number[]>>;
-  /** `reactive` borrows a caller-populated current-frame mask on WebGL2 HDR paths. */
-  readonly inputs?: readonly ("color" | "depth" | "velocity" | "reactive")[];
+  /**
+   * `normal` samples view-space normals reconstructed from this frame's depth
+   * (`u_normal`, WebGL2 HDR anchors); `reactive` borrows a caller-populated
+   * current-frame mask on WebGL2 HDR paths.
+   */
+  readonly inputs?: readonly ("color" | "depth" | "velocity" | "normal" | "reactive")[];
   /** v2 anchor — defaults from a named `order` slot when omitted. */
   readonly insertAt?: PostInsertAt;
   readonly order?: AuraPostPassOrder;

@@ -1,6 +1,7 @@
 /**
  * Aura implementation of the volume material operation.
  * Its WGSL companion is tracked separately in physical-wgsl/.
+ * Equations: KHR_materials_volume Beer-Lambert attenuation (PRD-04 §8).
  */
 import type { ShaderChunk } from "../../contracts/program";
 import WGSL from "../physical-wgsl/volume.wgsl.js";

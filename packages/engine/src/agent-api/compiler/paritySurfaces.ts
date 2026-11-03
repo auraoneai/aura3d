@@ -19,17 +19,17 @@
  */
 
 import type { Renderer, RenderItem, RenderSource, RendererView, TextureBinding } from "@aura3d/rendering";
-import { CubeCameraReflectionCapture, Geometry, PlanarReflectionCapture, TexturedUnlitMaterial, createReflectionProbe } from "@aura3d/rendering";
+import { CubeCameraReflectionCapture, Geometry, GlassRefractionCapture, PlanarReflectionCapture, TexturedUnlitMaterial, createReflectionProbe } from "@aura3d/rendering";
 import type { AuraCameraSpec, AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { cameraFollowTargetIdentity, resolveCameraFrame, sampleCameraFrame, type SmoothedCameraFrame } from "./camera.js";
 import { productionCameraProjectionMetadata, resolveProductionCameraDepth, standardDepthCamera } from "./cameraDepth.js";
 import { createCameraProjection } from "../RootRuntimeSupport.js";
-import { invertMat4, lookAtMat4, multiplyMat4, type Mat4 } from "@aura3d/scene/math";
+import { frustumMat4, invertMat4, lookAtMat4, multiplyMat4, type Mat4 } from "@aura3d/scene/math";
 import { computeStereoEyes } from "../stereoMath.js";
 import { isAuraCameraArrayNode, isAuraCameraStereoNode, isAuraCubeCameraNode, type AuraCameraArrayNode, type AuraCameraStereoNode, type AuraCubeCameraNode } from "../nodes/cameras.js";
-import { isAuraMirrorSurfaceNode, type AuraMirrorSurfaceNode } from "../nodes/surfaces.js";
+import { isAuraGlassSurfaceNode, isAuraMirrorSurfaceNode, type AuraGlassSurfaceNode, type AuraMirrorSurfaceNode } from "../nodes/surfaces.js";
 
 export interface ProductionParitySurfaces {
   /**
@@ -60,6 +60,41 @@ export interface ProductionParitySurfaces {
 interface MirrorState {
   readonly node: AuraMirrorSurfaceNode;
   readonly capture: PlanarReflectionCapture;
+}
+
+interface GlassState {
+  readonly capture: GlassRefractionCapture;
+  readonly resolution: number;
+  readonly absorption: number;
+}
+
+/**
+ * Off-axis view-projection through a pane in the XY plane (Kooima generalized
+ * perspective): the frustum's near rectangle is exactly the pane as seen from
+ * `eye`, so the capture's u/v axes run along the visible face's u/v. The
+ * returned `facing` is +1 when the viewer is on the +Z side.
+ */
+export function glassPaneViewProjection(
+  eye: readonly [number, number, number],
+  centre: readonly [number, number, number],
+  size: readonly [number, number],
+  far = 1000
+): { readonly viewProjection: Float32Array; readonly facing: 1 | -1 } | undefined {
+  const offset = eye[2] - centre[2];
+  if (!Number.isFinite(offset) || Math.abs(offset) < 1e-4) return undefined;
+  const facing: 1 | -1 = offset > 0 ? 1 : -1;
+  // Screen basis as seen from the viewer: normal toward the eye, up = +Y.
+  const vr: readonly [number, number, number] = [facing, 0, 0];
+  const halfW = size[0] / 2, halfH = size[1] / 2;
+  const distance = Math.abs(offset);
+  const near = Math.min(0.05, distance * 0.5);
+  const scale = near / distance;
+  const dx = centre[0] - eye[0], dy = centre[1] - eye[1];
+  const left = (dx * vr[0] - halfW) * scale, right = (dx * vr[0] + halfW) * scale;
+  const bottom = (dy - halfH) * scale, top = (dy + halfH) * scale;
+  const projection = frustumMat4(left, right, bottom, top, near, Math.max(far, distance + 1));
+  const view = lookAtMat4([eye[0], eye[1], eye[2]], [eye[0], eye[1], eye[2] - facing], [0, 1, 0]);
+  return { viewProjection: Float32Array.from(multiplyMat4(projection, view)), facing };
 }
 
 interface CubeCameraState {
@@ -138,6 +173,8 @@ export function createProductionParitySurfaces(
   warn: (message: string) => void
 ): ProductionParitySurfaces {
   const mirrors = new Map<string, MirrorState>();
+  const glasses = new Map<string, GlassState>();
+  const glassKey = (node: AuraGlassSurfaceNode): string => node.runtime?.id ?? node.name ?? "glass";
   const cubeCameras = new Map<string, CubeCameraState>();
   const cubeBindings = new Map<string, TextureBinding>();
   // A mount owns its own view history. Effective camera specs are rebuilt on
@@ -267,6 +304,7 @@ export function createProductionParitySurfaces(
       if (disposed) return source;
       const flattened = groups.flatten(snapshot.nodes);
       const mirrorNodes = flattened.filter(isAuraMirrorSurfaceNode);
+      const glassNodes = flattened.filter(isAuraGlassSurfaceNode);
       const cubeNodes = flattened.filter(isAuraCubeCameraNode);
       if (source.views !== undefined && flattened.some((node) => isAuraCameraArrayNode(node) || isAuraCameraStereoNode(node))) {
         throw new RangeError("CAMERA_VIEWS_SOURCE_CONFLICT: authored camera groups cannot replace existing source views");
@@ -278,7 +316,7 @@ export function createProductionParitySurfaces(
         preparedViews.commit();
         return prepared;
       };
-      if (mirrorNodes.length === 0 && cubeNodes.length === 0) return withViews(source);
+      if (mirrorNodes.length === 0 && cubeNodes.length === 0 && glassNodes.length === 0) return withViews(source);
 
       const baseItems = (): readonly RenderItem[] => [
         ...(source.collectRenderItems?.() ?? source.renderItems ?? [])
@@ -380,6 +418,70 @@ export function createProductionParitySurfaces(
         }
       }
 
+      // Refractor glass: each pane self-captures the scene behind it from the
+      // viewer (off-axis frustum fitted to the pane), excluding every surface
+      // item appended this frame, then draws the tinted/blurred background.
+      for (const node of glassNodes) {
+        const key = glassKey(node);
+        let state = glasses.get(key);
+        if (state && (state.resolution !== node.resolution || state.absorption !== node.absorption)) {
+          state.capture.dispose();
+          glasses.delete(key);
+          state = undefined;
+        }
+        if (!state) {
+          state = {
+            capture: new GlassRefractionCapture(renderer.device, { resolution: node.resolution, absorption: node.absorption, label: `${key}-glass` }),
+            resolution: node.resolution,
+            absorption: node.absorption
+          };
+          glasses.set(key, state);
+        }
+        const id = node.runtime?.id;
+        const handle = id ? runtimeNodes?.get(id) : undefined;
+        const position = (handle?.position ?? node.position ?? [0, 0, 0]) as readonly [number, number, number];
+        const pane = glassPaneViewProjection([eye[0], eye[1], eye[2]], position, node.size);
+        if (!pane) {
+          warn(`glass "${key}" skipped: the camera lies in the pane plane`);
+          continue;
+        }
+        try {
+          const result = state.capture.capture((renderTarget) => {
+            renderer.render(
+              {
+                renderItems: baseItems(),
+                renderTarget,
+                cameraPolicy: "require",
+                cameraPosition: [eye[0], eye[1], eye[2]],
+                environmentLighting: source.environmentLighting,
+                environmentFog: source.environmentFog,
+                frustumCulling: source.frustumCulling
+              },
+              { viewProjectionMatrix: pane.viewProjection }
+            );
+          }, { thickness: node.thickness, roughness: node.roughness });
+          const tint = node.tint !== undefined ? colorToLinearRgba(node.tint) : undefined;
+          extraItems.push({
+            geometry: Geometry.texturedCube(1),
+            material: new TexturedUnlitMaterial({
+              name: `${key} refractor glass`,
+              texture: result.texture,
+              ...(tint ? { color: tint } : {})
+            }),
+            modelMatrix: new Float32Array([
+              node.size[0], 0, 0, 0,
+              0, node.size[1], 0, 0,
+              0, 0, 0.02, 0,
+              position[0], position[1], position[2], 1
+            ]),
+            includeInAutoFrame: false,
+            label: `${key} glass sampling its self-captured thickness-tinted refraction r${result.revision}`
+          });
+        } catch (error) {
+          warn(`glass "${key}" capture failed (${error instanceof Error ? error.message : String(error)})`);
+        }
+      }
+
       if (extraItems.length === 0 && cubeBindings.size === 0) return withViews(source);
       const bindings = cubeBindings;
       return withViews({
@@ -404,6 +506,8 @@ export function createProductionParitySurfaces(
       disposed = true;
       viewSmoothingHistory.clear();
       for (const state of mirrors.values()) state.capture.dispose();
+      for (const state of glasses.values()) state.capture.dispose();
+      glasses.clear();
       for (const state of cubeCameras.values()) state.capture.dispose();
       mirrors.clear();
       cubeCameras.clear();

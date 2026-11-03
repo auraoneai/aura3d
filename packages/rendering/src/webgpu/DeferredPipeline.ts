@@ -1,6 +1,7 @@
 import { RenderDeviceError } from "../RenderDevice";
 import type { RenderItem } from "../contracts/renderItem";
 import { PBRMaterial } from "../PBRMaterial";
+import { renderStateHasExtendedCommandFields } from "../Material";
 import { isTextureBinding } from "../TextureBinding";
 import { DFG_LUT_RG16F, DFG_LUT_SIZE } from "../program/DFGLutData";
 import { deferredProbeWgsl, packDeferredProbe, type DeferredProbeInput } from "./DeferredProbe";
@@ -314,7 +315,7 @@ export function nativeDrawingSceneFromRenderItems(items: readonly RenderItem[], 
       const state = base.renderState;
       const extended = state as typeof state & { readonly frontFace?: "ccw" | "cw"; readonly sampleMask?: number; readonly blendConstant?: readonly number[]; readonly blendedDepthWrite?: "allow" };
       if ((extended.frontFace !== undefined && extended.frontFace !== "ccw") || (extended.sampleMask !== undefined && extended.sampleMask !== 0xffffffff) || extended.blendConstant || extended.blendedDepthWrite) fail(`${field}.material.renderState`, "extended draw state requires the forward renderer");
-      if (state.blend || (state.blendMode && state.blendMode !== "opaque") || !state.depthTest || !state.depthWrite || state.depthCompare !== "less-equal" || (state.depthCompareV2 && state.depthCompareV2 !== "less-equal") || state.stencil || state.polygonOffset || state.scissor || state.alphaToCoverage || state.colorWrite.some(value => !value) || state.cullMode !== "back") fail(`${field}.material.renderState`, "requires the forward renderer");
+      if (state.blend || (state.blendMode && state.blendMode !== "opaque") || !state.depthTest || !state.depthWrite || state.depthCompare !== "less-equal" || (state.depthCompareV2 && state.depthCompareV2 !== "less-equal") || state.stencil || state.polygonOffset || state.scissor || state.alphaToCoverage || renderStateHasExtendedCommandFields(state) || state.colorWrite.some(value => !value) || state.cullMode !== "back") fail(`${field}.material.renderState`, "requires the forward renderer");
       if (base.requiredAttributes.includes("a_color")) fail(`${field}.material.vertexColors`, "requires the forward renderer");
       for (const [name, value] of material!.getParameters()) if (isTextureBinding(value) && value.texture) fail(`${field}.material.${name}`, "texture bindings require the forward renderer");
       if ((material!.getParameter("u_alphaCutoff") as number | undefined ?? 0) !== 0 || (material!.getParameter("u_spriteMode") as number | undefined ?? 0) !== 0 || (material!.getParameter("u_roundPoints") as number | undefined ?? 0) !== 0 || (material!.getParameter("u_instanceCount") as number | undefined ?? 0) !== 0) fail(`${field}.material`, "alpha masks, sprites, round points and material-driven instances require the forward renderer");

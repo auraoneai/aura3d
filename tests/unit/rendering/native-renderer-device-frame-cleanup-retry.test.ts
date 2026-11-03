@@ -474,10 +474,11 @@ describe("renderer device disposal ownership", () => {
     }
   });
 
-  it("retries an actual WebGPU device's native destroy without repeating completed buffer cleanup", async () => {
+  it("retains an actual WebGPU device's failed native destroy until confirmed loss without repeating completed buffer cleanup", async () => {
     const failure = new Error("native WebGPU destroy failed");
+    let lose!: (info: { reason: string; message: string }) => void;
     const native = {
-      lost: new Promise<{ reason: string; message: string }>(() => {}),
+      lost: new Promise<{ reason: string; message: string }>(resolve => { lose = resolve; }),
       features: new Set<string>(),
       queue: {
         writeBuffer() {}, writeTexture() {}, submit() {}, onSubmittedWorkDone: () => Promise.resolve()
@@ -499,7 +500,7 @@ describe("renderer device disposal ownership", () => {
     const adapter = { requestDevice: async () => native as unknown as WebGPUDeviceLike };
     const device = await WebGPUDevice.create({ adapter });
     const owner = makeRenderer(device), buffer = device.createBuffer("vertex", 16);
-    const bufferDispose = vi.spyOn(buffer, "dispose"), deviceDispose = vi.spyOn(device, "dispose");
+    const bufferDispose = vi.spyOn(buffer, "dispose");
     try {
       const first = caught(() => owner.dispose());
       expect(leaves(first)).toContain(failure);
@@ -507,15 +508,22 @@ describe("renderer device disposal ownership", () => {
       expect(device[resourceDisposalPending]).toBe(true);
       expect(native.destroy).toHaveBeenCalledTimes(1);
       expect(bufferDispose).toHaveBeenCalledTimes(1);
-      owner.dispose();
+      // A throwing injected destroy may already have acted: an explicit retry
+      // reports it and stays pending rather than repeating it.
+      expect(leaves(caught(() => owner.dispose()))).toContain(failure);
+      for (let index = 0; index < 5; index += 1) await Promise.resolve();
+      expect(leaves(caught(() => owner.dispose()))).toContain(failure);
+      expect(native.destroy).toHaveBeenCalledTimes(1);
+      expect(device[resourceDisposalPending]).toBe(true);
+      // Confirmed loss discharges the destroy; the next retry completes.
+      lose({ reason: "destroyed", message: "confirmed" });
       for (let index = 0; index < 5; index += 1) await Promise.resolve();
       owner.dispose();
-      expect(native.destroy).toHaveBeenCalledTimes(2);
+      expect(native.destroy).toHaveBeenCalledTimes(1);
       expect(bufferDispose).toHaveBeenCalledTimes(1);
-      expect(deviceDispose).toHaveBeenCalledTimes(2);
       expect(device[resourceDisposalPending]).toBe(false);
     } finally {
-      bufferDispose.mockRestore(); deviceDispose.mockRestore(); owner.dispose(); device.dispose();
+      bufferDispose.mockRestore(); try { owner.dispose(); } catch { /* Reported above. */ } try { device.dispose(); } catch { /* Reported above. */ }
     }
   });
 });
