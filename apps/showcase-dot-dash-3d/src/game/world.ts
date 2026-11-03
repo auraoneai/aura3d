@@ -16,7 +16,7 @@ import type { FruitKind } from "./grid.js";
 import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
-  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, SENTRY_BODY, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_HAZE, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
+  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_HAZE, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
   LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
@@ -73,22 +73,6 @@ function courierPod(name: string) {
     castShadow: true,
     receiveShadow: true,
     materialOverrides: [{ rim: { ...COURIER_POD.rim }, emissive: COURIER_POD.emissive, emissiveIntensity: COURIER_POD.emissiveIntensity, envMapIntensity: 1.4, clearcoat: 0.6, clearcoatRoughness: 0.2 }]
-  }).runtime(game.runtimeNode(name));
-}
-
-/** Wave 1 (post-4.7.9) DD47-A2: a Meshy sentry body (Hunter beetle, Skittish spider), rim-tinted in its GHOST_TINT. */
-const SENTRY_MODELS = { blitz: assets.dotdashSentryBeetle, dim: assets.dotdashSentrySpider } as const;
-type ModelSentry = keyof typeof SENTRY_MODELS;
-const isModelSentry = (id: GhostId): id is ModelSentry => id in SENTRY_MODELS;
-function sentryBody(id: ModelSentry, name: string) {
-  const s = SENTRY_BODY[id].scale;
-  return model(SENTRY_MODELS[id], {
-    name,
-    scaleMode: "world",
-    scale: [s, s, s],
-    castShadow: true,
-    receiveShadow: true,
-    materialOverrides: [{ rim: { color: GHOST_TINT[id], ...SENTRY_BODY.rim }, envMapIntensity: 1.2 }]
   }).runtime(game.runtimeNode(name));
 }
 
@@ -170,11 +154,10 @@ const CAP = {
   glow: 120,
   hero: 2,       // courier faceted shell (+ wrap echo)
   halo: 2,       // courier spinning ring
-  // sentry silhouettes: cube (Ambusher) and ring (Drifter), + wrap echo each; the Hunter and the Skittish are Meshy
-  // bodies (DD47-A2) and shY carries their status lenses (2 bodies + 2 echoes)
+  shC: 2,        // sentry silhouettes: cone, cube, ring, saucer (+ wrap echo each)
   shB: 2,
   shT: 2,
-  shY: 4,
+  shY: 2,
   trophy: 12     // perimeter gems on pedestals + the cache gem
 } as const;
 
@@ -398,9 +381,10 @@ export function buildScene(): unknown {
     instances.box({ name: "glow", size: [1, 1, 1], material: glowMat, instanceColorTarget: "both", transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
     instances.polyhedron({ name: "courier-shell", params: { variant: "octahedron" }, size: [1, 1, 1], material: shellMat, transforms: pad(CAP.hero), castShadow: true }).runtime(game.runtimeNode("pool-hero")),
     instances.torus({ name: "courier-halo", size: [1, 1, 1], material: haloMat, transforms: pad(CAP.halo), castShadow: false }).runtime(game.runtimeNode("pool-halo")),
+    instances.cone({ name: "sentry-hunter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shC), castShadow: true }).runtime(game.runtimeNode("pool-shC")),
     instances.box({ name: "sentry-ambusher", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shB), castShadow: true }).runtime(game.runtimeNode("pool-shB")),
     instances.torus({ name: "sentry-drifter", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shT), castShadow: true }).runtime(game.runtimeNode("pool-shT")),
-    instances.cylinder({ name: "sentry-status-lenses", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shY), castShadow: false }).runtime(game.runtimeNode("pool-shY")),
+    instances.cylinder({ name: "sentry-skittish", size: [1, 1, 1], material: sentryMat, transforms: pad(CAP.shY), castShadow: true }).runtime(game.runtimeNode("pool-shY")),
     instances.polyhedron({ name: "gems", params: { variant: "icosahedron" }, size: [1, 1, 1], material: gemMat, instanceColorTarget: "both", transforms: pad(CAP.trophy), castShadow: true }).runtime(game.runtimeNode("pool-trophy")),
 
     // courier core: a small bright sphere (also the trail anchor); shell, halo, sentries and gems are instanced pools above
@@ -413,11 +397,6 @@ export function buildScene(): unknown {
     // Phase 4 (4.7.2) DD47-A1: the Meshy courier pod under the core (and its wrap echo), driven in syncWorld.
     courierPod("courier-pod").position(wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)),
     courierPod("courier-pod-echo").position(0, -999, 0),
-    // Wave 1 (post-4.7.9) DD47-A2: the Hunter and Skittish Meshy bodies (and their wrap echoes), driven in syncWorld.
-    sentryBody("blitz", "sentry-body-blitz").position(0, -999, 0),
-    sentryBody("blitz", "sentry-body-blitz-echo").position(0, -999, 0),
-    sentryBody("dim", "sentry-body-dim").position(0, -999, 0),
-    sentryBody("dim", "sentry-body-dim-echo").position(0, -999, 0),
 
     // ghost house door slab + school beacon (both are light sources in the fiction: a gate LED bar and a beam)
     primitives.box({ name: "door", size: [1.02, 0.5, 0.12], material: material.pbr({ color: "#ffd9a0", emissive: "#ffb23e", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.78, practical: true }) })
@@ -893,8 +872,7 @@ export function syncVisuals(dt: number): void {
       }
     }
 
-    // sentries — one silhouette each (beetle, cube, ring, spider); colour carries identity and the surge state
-    const bodyShown = new Set<string>();
+    // sentries — one silhouette each (cone, cube, ring, saucer); colour carries identity and the surge state
     for (const g of st.ghosts) {
       const gp = normGhostPos(g);
       const wob = Math.sin(st.time * 7 + g.px) * 0.04 * (calmMotion ? REDUCED_AMPLITUDE : 1);
@@ -910,41 +888,18 @@ export function syncVisuals(dt: number): void {
       // DD47-AN1: retain the per-sentry rotation styles at full motion, but
       // replace continuous spins with a small bounded sway on reduced motion.
       const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : st.time * speed;
-      const place = (x: number, z: number, echo: boolean): void => {
+      const place = (x: number, z: number): void => {
         const y = 0.42 + wob;
-        if (isModelSentry(g.id)) {
-          // DD47-A2: the Meshy body faces its travel direction, stands on the board and bobs half as much as the
-          // primitives did; the status lens on its back carries the identity / surge colour.
-          const b = SENTRY_BODY[g.id];
-          const sk = b.scale * k;
-          const by = -0.02 + b.lift * sk + wob * 0.5;
-          const name = `sentry-body-${g.id}${echo ? "-echo" : ""}`;
-          const body = nodes.get(name);
-          if (body) {
-            body.setVisible(true);
-            body.setPosition(x, by, z);
-            body.setRotation(0, yaw, 0);
-            body.setScale(sk);
-            bodyShown.add(name);
-          }
-          inst("shY", x, by + (b.top / 2) * sk, z, SENTRY_BODY.led.size * k, SENTRY_BODY.led.height, SENTRY_BODY.led.size * k, col, yaw);
-          return;
-        }
         switch (g.id) {
+          case "blitz": inst("shC", x, y + 0.08, z, 0.62 * k, 0.9 * k, 0.62 * k, col, yaw); break;
           case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, turn(2.2)); break;
           case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, turn(3.1)); break;
+          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, turn(1.4)); break;
         }
       };
-      place(wx(gp.x), wz(gp.y), false);
+      place(wx(gp.x), wz(gp.y));
       const gx = echoOffset(m, gp.x, gp.y);
-      if (gx) place(wx(gx.x), wz(gx.y), true);
-    }
-    for (const id of Object.keys(SENTRY_MODELS)) {
-      for (const name of [`sentry-body-${id}`, `sentry-body-${id}-echo`]) {
-        if (bodyShown.has(name)) continue;
-        const body = nodes.get(name);
-        if (body) { body.setVisible(false); body.setPosition(0, -999, 0); }
-      }
+      if (gx) place(wx(gx.x), wz(gx.y));
     }
 
     // cache gem (bonus) — an icosahedron in the kind's colour

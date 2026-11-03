@@ -98,22 +98,6 @@ export const COURIER_POD = {
   emissiveIntensity: 0.22
 } as const;
 
-/**
- * Wave 1 (post-4.7.9) sentry bodies (DD47-A2, WP-36 Meshy keys `dotdashSentryBeetle`, `dotdashSentrySpider`, both
- * simplified to 7.6k triangles): the beetle is the Hunter (was a cone, 0.62 x 0.9 x 0.62), the spider the Skittish
- * (was a saucer, 0.8 x 0.26 x 0.8). Presentation only: they move, collide and turn exactly like the old sentries.
- * Both GLBs have their pivot at the bounds centre, so `lift` (half height in model units) stands them on the board top
- * (-0.02). At `scale` 0.4 the beetle is 0.64 x 0.58 x 0.76 and the spider 0.75 x 0.49 x 0.61, inside one tile and the
- * 0.8 footprint of the old sentries. The identity colour (GHOST_TINT) is a rim over the dark Meshy textures; the surge
- * state (slate, white strobe) shows on a small status lens on the back (`led`, the old instanced sentry pool).
- */
-export const SENTRY_BODY = {
-  blitz: { scale: 0.4, lift: 0.73, top: 1.459 },
-  dim: { scale: 0.4, lift: 0.618, top: 1.229 },
-  rim: { power: 2.2, intensity: 1.1 },
-  led: { size: 0.22, height: 0.04 }
-} as const;
-
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
 /**
  * Phase 3 (4.7.1) lamp haze: a thin height-bound volumetric inscatter lit from the lamp and a faint cone mesh along the
