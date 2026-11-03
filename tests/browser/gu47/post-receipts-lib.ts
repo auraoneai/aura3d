@@ -35,6 +35,12 @@ export async function openPostReceipts(browser: Browser): Promise<PostReceiptSes
   const consoleProblems: string[] = [];
   page.on("pageerror", (error) => consoleProblems.push(`pageerror: ${error.message}`));
   page.on("console", (message) => { if (message.type() === "error") consoleProblems.push(`console.error: ${message.text()}`); });
+  // Browser WebGL validation messages (any level) name the call that failed; a RenderDeviceError only carries the GL code.
+  const glMessages: string[] = [];
+  page.on("console", (message) => {
+    const text = message.text();
+    if (glMessages.length < 40 && /GL_|WebGL|INVALID_|framebuffer|draw buffer|fragment shader/i.test(text)) glMessages.push(`[${message.type()}] ${text.slice(0, 320)}`);
+  });
   await page.goto(`${server.origin}${HARNESS}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean((window as unknown as HarnessWindow).__GU47_POST_RECEIPTS__), undefined, { timeout: 60_000 });
   const rawRenderer = await page.evaluate(() => {
@@ -46,7 +52,13 @@ export async function openPostReceipts(browser: Browser): Promise<PostReceiptSes
     page,
     renderer: receiptRenderer(rawRenderer),
     consoleProblems,
-    render: (id) => page.evaluate((variant) => (window as unknown as HarnessWindow).__GU47_POST_RECEIPTS__!.render(variant), id),
+    render: async (id) => {
+      try {
+        return await page.evaluate((variant) => (window as unknown as HarnessWindow).__GU47_POST_RECEIPTS__!.render(variant), id);
+      } finally {
+        if (glMessages.length > 0) console.log(`[gl-diag] ${id} ${JSON.stringify(glMessages.splice(0))}`);
+      }
+    },
     compare: (a, b, rect) => page.evaluate(([first, second, region]) =>
       (window as unknown as HarnessWindow).__GU47_POST_RECEIPTS__!.compare(first!, second!, region as Rect | undefined), [a, b, rect] as const),
     save(capability, frame) {

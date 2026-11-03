@@ -1,0 +1,17 @@
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/aura-assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/aura-assets/*.glb
+  Content-Type: model/gltf-binary
+
+/hdri/*.hdr
+  Content-Type: application/octet-stream
+
+/apps/aura-clash-showcase/aura-assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/showcase/aura-clash/aura-assets/*
+  Cache-Control: public, max-age=31536000, immutable
