@@ -142,41 +142,8 @@ const MODELS = defineModelAssets({
   hero: model("hero", [1.6, 2.7, 0.8], { animations: HERO_CLIPS.map((c) => c.name), animationClips: HERO_CLIPS.map((c) => c.name) })
 }, { license: "CC0-1.0", queryParam: null }).refs;
 
-/**
- * GU47 WP-36 DG-A3 (wave 1, post-4.7.9): Meshy retexture of hoverboard.glb in sandstone and bronze, admitted with
- * `aura3d assets import-meshy --prefix silt-and-signal-port --name duneHoverboardJade --profile vehicle`. Not a pure
- * retexture: Meshy re-normalised the mesh (position hash changed, bounds 2.0 x 0.384 x 1.183 vs 1.9 x 0.365 x 1.124,
- * the same shape x1.053), so world.ts scales it back to the old footprint. Route-local: the file lives in
- * apps/showcase-silt-and-signal-port/public/aura-assets and ships through copyRouteLocalAuraAssets; the URL stays
- * root-relative (an absolute `new URL(..., import.meta.url)` model is `unsafe-url` and blocks the whole scene).
- */
-const DUNE_HOVERBOARD_FILE = "silt_and_signal_port_duneHoverboardJade.95526b63.glb";
-const MESHY_RETEXTURE_LICENSE = "Meshy generated asset (paid API, plan terms at generation time)";
-
 export const assets = defineAuraAssets({
   ...MODELS,
-  silt_and_signal_port_duneHoverboardJade: {
-    type: "model",
-    format: "glb",
-    url: `/aura-assets/${DUNE_HOVERBOARD_FILE}`,
-    hash: "sha256-95526b63e7f57992795ee91d5d6b087bfa1bcd379345952b10817895a9bed9ed",
-    bounds: [2, 0.384, 1.183],
-    sizeBytes: 3156812,
-    metadata: {
-      license: MESHY_RETEXTURE_LICENSE,
-      sourcePath: `public/aura-assets/${DUNE_HOVERBOARD_FILE}`,
-      outputPath: `public/aura-assets/${DUNE_HOVERBOARD_FILE}`,
-      provenance: {
-        sourcePath: `public/aura-assets/${DUNE_HOVERBOARD_FILE}`,
-        outputPath: `public/aura-assets/${DUNE_HOVERBOARD_FILE}`,
-        license: MESHY_RETEXTURE_LICENSE,
-        licenseUrl: "https://www.meshy.ai/terms",
-        sourceFamily: "meshy",
-        meshyTaskId: "01a19912-861e-7068-a060-360905736bc2",
-        retrievedAt: "2026-11-01T21:45:26.239Z"
-      }
-    }
-  },
   grassColor: tex("grass", "Color"),
   grassNormal: tex("grass", "NormalGL"),
   grassRough: tex("grass", "Roughness"),

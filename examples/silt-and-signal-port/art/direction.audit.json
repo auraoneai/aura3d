@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/silt-and-signal-port/art/direction.ts",
-  "sourceSha256": "98170ddfd6fe68cdd759b5560f66759b1db4918e37297538e7d7e9321c604f9f",
+  "sourceSha256": "ddd12590e66827228d7e47f505b3497a41e7e5a69471eec5fdcc9700e94ae18b",
   "id": "showcase-silt-and-signal-port",
   "genre": "flight",
   "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
@@ -89,7 +89,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "silt_and_signal_port_duneHoverboardJade",
+        "assetKey": "hoverboard",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -485,14 +485,6 @@
       {
         "role": "vehicle",
         "assetKey": "hoverboard",
-        "maxTriangles": 30000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "vehicle",
-        "assetKey": "silt_and_signal_port_duneHoverboardJade",
         "maxTriangles": 30000,
         "minTriangles": 2000,
         "textureSet": "BC+N",

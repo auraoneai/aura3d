@@ -373,8 +373,6 @@ const BOARD_SCALE = 1.15;
 const BOARD_DROP = 1.25;
 const DECK_TOP = 0.18 * BOARD_SCALE;
 const BOARD_YAW = Math.PI / 2;
-/** duneHoverboardJade is hoverboard.glb re-normalised by Meshy to a 2.0 m length: this factor restores the 1.9 m footprint. */
-const DUNE_BOARD_FIT = 1.9 / 2;
 const RIDER_HEIGHT = 2.1;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
@@ -667,12 +665,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       : primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) })
     ).runtime({ id: `thruster-${side}` }));
   }
-  // GU47 WP-36 DG-A3 (wave 1): the inked look rides the Meshy sandstone-and-bronze board; it is the old mesh re-normalised
-  // to 2.0 m (x1.053), so it is scaled back to the 1.9 m footprint (same deck top). `?look=original` keeps hoverboard.glb.
-  builder.add((inked
-    ? model(assets.silt_and_signal_port_duneHoverboardJade, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE * DUNE_BOARD_FIT, castShadow: true })
-    : model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true })
-  ).runtime({ id: "board" }));
+  builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
   builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
   // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
   // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
