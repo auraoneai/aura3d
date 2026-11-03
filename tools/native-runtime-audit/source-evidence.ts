@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, readdirSync, readlinkSync, realpathSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync, realpathSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { DEFAULT_PROHIBITED_PACKAGES, readPackagePayload } from "./dependency-graph.js";
 
@@ -195,7 +195,9 @@ export function collectSourceEvidence(root: string, options: SourceEvidenceOptio
   const seen = new Set<string>();
   const scannedSoundPacks = new Set<string>();
   const checkedSymlinkAliases: { path: string; target: string; scannedAs: string }[] = [];
-  const paths = options.paths ?? ["packages", "src", "workers"];
+  // Default roots are skipped when absent (a staged candidate has no untracked `workers/`
+  // directory); explicitly requested paths still fail if missing.
+  const paths = options.paths ?? ["packages", "src", "workers"].filter((path) => existsSync(resolve(base, path)));
   if (paths.length === 0 && !(options.payloads?.length)) throw new Error("Source audit requires at least one source path or payload");
   const report = inspectSourceEntries(entries(), options);
   return { ...report, workspaceRoots: paths.map((path) => display(base, resolve(base, path))), checkedSymlinkAliases };

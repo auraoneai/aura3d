@@ -7,7 +7,8 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { devNull, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
+import { emptyNpmConfigs } from "../release/npm-empty-config.mjs";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { withNpmTransport } from "../release/npm-transport.mjs";
@@ -462,7 +463,7 @@ export async function restorePortableConsumerProject(root: string, project: Nati
     const allowed = new Set(["PATH", "TMPDIR", "LANG", "LC_ALL", "TZ", "CI", "SYSTEMROOT", "WINDIR"]);
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key)));
     execFileSync("npm", ["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier",
-      "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull], {
+      "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig], {
       cwd: destination, env, stdio: "pipe", encoding: "utf8", maxBuffer: 32 * 1024 * 1024
     });
     assertInstalledArchiveSet(destination, verified.lock, verified.archives, verified.readArchive, verified.admission);
@@ -826,7 +827,7 @@ async function runSource(root: string, runId: string, plan: ExactReleasePlan): P
             !readPortableFile(directory, item.resolved.slice(5).replace(/^\.\//, ""), MAX_PORTABLE_ARCHIVE).equals(project.readBytes(item.path))) {
           throw new Error("Portable local archive changed before installation");
         }
-        run(project.id, "install", "npm", ["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull], directory);
+        run(project.id, "install", "npm", ["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig], directory);
         assertInstalledArchiveSet(directory, project.lock, project.archives, project.readBytes, project.admission);
       } finally { rmSync(cache, { recursive: true, force: true }); }
     };
@@ -928,7 +929,7 @@ export function packedConsumerEnvironment(cache: string, home: string): NodeJS.P
   const allowed = new Set(["PATH", "TMPDIR", "LANG", "LC_ALL", "TZ", "CI", "SYSTEMROOT", "WINDIR",
     "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy"]);
   return { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key))),
-    HOME: home, USERPROFILE: home, npm_config_cache: cache, npm_config_userconfig: devNull, npm_config_globalconfig: devNull,
+    HOME: home, USERPROFILE: home, npm_config_cache: cache, npm_config_userconfig: emptyNpmConfigs().userconfig, npm_config_globalconfig: emptyNpmConfigs().globalconfig,
     npm_config_audit: "false", npm_config_fund: "false", npm_config_update_notifier: "false",
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1", PUPPETEER_SKIP_DOWNLOAD: "1" };
 }
@@ -1090,7 +1091,7 @@ export async function runPackedSource(root: string, runId: string, plan: ExactRe
     checks.push(check);
     if (check.status !== "passed") throw new Error(`Packed consumer ${project}:${id} failed (log ${logPath})`);
   };
-  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull];
+  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig];
   try {
     const launcherDir = resolve(scratch, "launcher");
     mkdirSync(launcherDir);
@@ -1211,7 +1212,7 @@ export async function restorePackedConsumerProject(root: string, project: Native
     if (hashConsumerProject(destination) !== project.projectSha256) throw new Error(`Packed restore inputs differ: ${project.template}`);
     const cache = resolve(work, "cache"), home = resolve(work, "home");
     mkdirSync(cache); mkdirSync(home);
-    const result = runner("npm", ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull],
+    const result = runner("npm", ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig],
       destination, packedConsumerEnvironment(cache, home));
     if (result.status !== 0) throw new Error(`Packed restore install failed for ${project.template}: ${redactText(result.output).slice(-4000)}`);
     if (fileHash(resolve(destination, "package.json")) !== project.manifestSha256 || fileHash(resolve(destination, "package-lock.json")) !== project.lockfileSha256 ||

@@ -8,7 +8,8 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
-import { devNull, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
+import { emptyNpmConfigs } from "../release/npm-empty-config.mjs";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { verifyArchiveAdmission, verifyPnpmArchiveAdmission, type ArchiveAdmissionReceipt } from "../release/archive-admission.mjs";
@@ -972,7 +973,7 @@ export async function restoreMatrixProject(root: string, report: MatrixReport, c
       const local = item.resolved.slice(5).replace(/^\.\//, "");
       must(matrixFile(destination, local, MAX_MATRIX_ARCHIVE).equals(prepared.readArchive(item.path)), "Matrix local archive changed");
     }
-    const install = [...commands(cell).install, "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull];
+    const install = [...commands(cell).install, "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig];
     const installed = runCommand(install, destination, prepared.permit);
     must(installed.exitCode === 0, `Locked consumer restore failed for ${cell.id}: ${installed.output}`);
     must(hashConsumerProject(destination) === project.projectSha256 && fileHash(join(destination, project.lockfile)) === project.lockfileSha256, `Restore changed source inputs or lock: ${cell.id}`);
