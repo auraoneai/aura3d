@@ -22,7 +22,7 @@ const canonical = (value: unknown): string => value === null || typeof value !==
     : `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical((value as Record<string, unknown>)[k])}`).join(',')}}`;
 const sha512 = (data: Buffer) => `sha512-${createHash('sha512').update(data).digest('base64')}`;
 const SHARDS = 2;
-const ALL_STAGES = ['static', 'suites', 'packed-a', 'packed-b', ...Array.from({ length: SHARDS }, (_, i) => `unit-${i + 1}-of-${SHARDS}`)];
+const ALL_STAGES = ['static', 'suites', 'packed-a', 'packed-b', 'packed-c', ...Array.from({ length: SHARDS }, (_, i) => `unit-${i + 1}-of-${SHARDS}`)];
 const stageIds = (stage: string) => (stage.startsWith('unit-') ? [stage] : (STAGE_COMMANDS as Readonly<Record<string, readonly string[]>>)[stage]);
 
 const scopeHeader = '| ID | Task | Label | Remaining work |\n| --- | --- | --- | --- |\n';
@@ -77,24 +77,30 @@ function fixture() {
   const planSha256 = hash(`${JSON.stringify(plan, null, 2)}\n`);
 
   type RunOptions = { stages?: string[]; failing?: string[]; commit?: string; fullPass?: boolean; artifacts?: boolean; consumers?: boolean; dropStageReport?: string[];
-    consumerPlanSha256?: string; packedBPlan?: Record<string, unknown> };
-  /** packed-b consumer reports (clean-install, matrix, packed examples) through the real stage (job) -> verify/extract (Mac) round trip. */
-  const retainConsumers = (dir: string, runId: string, consumerPlanSha256 = planSha256) => {
+    consumerPlanSha256?: string; examplesPlanSha256?: string; packedPlans?: Record<string, Record<string, unknown>> };
+  /**
+   * Retained bundles through the real stage (job) -> verify/extract (Mac) round trip: packed-b `consumers`
+   * (clean-install, matrix) or packed-c `examples` (packed example report + projects).
+   */
+  const retainBundle = (dir: string, runId: string, kind: 'consumers' | 'examples', planSha = planSha256) => {
     const job = mkdtempSync(join(tmpdir(), 'aura3d-source5-job-'));
     roots.push(job);
     const jobPut = (path: string, text: string) => { mkdirSync(dirname(join(job, path)), { recursive: true }); writeFileSync(join(job, path), text); };
-    // Each report names the plan it ran against at its in-job path (packed-b's NATIVE_REPORT_DIR).
-    const candidate = { path: `tests/reports/native-5/${runId}/candidate-plan.json`, sha256: consumerPlanSha256 };
-    jobPut(`tests/reports/native-consumers/${runId}/source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', candidate })}\n`);
-    jobPut(`tests/reports/native-consumers/${runId}/matrix-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', matrix: true, candidate })}\n`);
-    jobPut(`tests/reports/native-examples-catalog/${runId}/examples-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', install: 'packed-v1', runId, pass: true, candidatePlan: candidate.path, candidateSha256: candidate.sha256 })}\n`);
-    jobPut(`tests/reports/native-examples-catalog/${runId}/projects/starter-example-camera-path/package.json`, '{"name":"aura3d-example-install-wrapper"}\n');
-    jobPut(`tests/reports/native-consumers/${runId}/projects/react-import/package.json`, '{"name":"react-import"}\n');
-    jobPut(`tests/reports/native-consumer-matrix/${runId}/projects/npm-react19-peer-present/package.json`, '{"name":"cell"}\n');
-    jobPut(`tests/reports/native-consumer-matrix/${runId}/logs/npm-react19-peer-present-install.log`, 'installed\n');
-    const upload = join(job, 'upload/consumers');
-    stageConsumers({ root: job, runId, outDir: upload, chunkBytes: 512 });
-    const result = verifyDownloadedConsumers({ dir: upload, dest: join(root, dir, 'artifacts/consumers'), root, runId });
+    // Each report names the plan it ran against at its in-job path (the stage's NATIVE_REPORT_DIR).
+    const candidate = { path: `tests/reports/native-5/${runId}/candidate-plan.json`, sha256: planSha };
+    if (kind === 'consumers') {
+      jobPut(`tests/reports/native-consumers/${runId}/source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', candidate })}\n`);
+      jobPut(`tests/reports/native-consumers/${runId}/matrix-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', matrix: true, candidate })}\n`);
+      jobPut(`tests/reports/native-consumers/${runId}/projects/react-import/package.json`, '{"name":"react-import"}\n');
+      jobPut(`tests/reports/native-consumer-matrix/${runId}/projects/npm-react19-peer-present/package.json`, '{"name":"cell"}\n');
+      jobPut(`tests/reports/native-consumer-matrix/${runId}/logs/npm-react19-peer-present-install.log`, 'installed\n');
+    } else {
+      jobPut(`tests/reports/native-examples-catalog/${runId}/examples-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', install: 'packed-v1', runId, pass: true, candidatePlan: candidate.path, candidateSha256: candidate.sha256 })}\n`);
+      jobPut(`tests/reports/native-examples-catalog/${runId}/projects/starter-example-camera-path/package.json`, '{"name":"aura3d-example-install-wrapper"}\n');
+    }
+    const upload = join(job, `upload/${kind}`);
+    stageConsumers({ root: job, runId, outDir: upload, kind, chunkBytes: 512 });
+    const result = verifyDownloadedConsumers({ dir: upload, dest: join(root, dir, `artifacts/${kind}`), root, runId, kind });
     expect(result.problems).toEqual([]);
     return result;
   };
@@ -109,7 +115,7 @@ function fixture() {
       put(`${dir}/acr-run-${stage}.log`, `log for ${stage}\n`);
       if (!options.dropStageReport?.includes(stage)) {
         putJson(`${dir}/stage-${stage}.json`, { schema: 'aura3d.source5-report/1', runId, releaseKind: 'major', finishedUtc: '2026-11-02T00:00:00.000Z',
-          candidatePlan: stage === 'packed-b' && options.packedBPlan ? options.packedBPlan : stage.startsWith('packed-') ? plan : null, commands: rows, passed: rows.filter(r => r.exitCode === 0).map(r => r.id),
+          candidatePlan: options.packedPlans?.[stage] ?? (stage.startsWith('packed-') ? plan : null), commands: rows, passed: rows.filter(r => r.exitCode === 0).map(r => r.id),
           failed: rows.filter(r => r.exitCode !== 0).map(r => r.id), stage, deferredToAcceptance: evidence, browserAcceptance: 'not-run', generatedApiReference: null });
       }
       commands.push(...rows.map(row => ({ stage, ...row })));
@@ -123,8 +129,10 @@ function fixture() {
         archives: tarballs.map(t => ({ name: t.name, version: '5.0.0', planTarball: `tests/reports/release-tarballs/${t.file}`, localPath: `${dir}/artifacts/tarballs/${t.file}`,
           sha256: put(`${dir}/artifacts/tarballs/${t.file}`, t.data).sha256, size: t.data.length, verified: true })), reports: [], problems: [] };
     }
-    const consumers = stages.includes('packed-b') && options.consumers !== false ? retainConsumers(dir, runId, options.consumerPlanSha256) : null;
+    const consumers = stages.includes('packed-b') && options.consumers !== false ? retainBundle(dir, runId, 'consumers', options.consumerPlanSha256) : null;
     if (consumers) artifacts = { ...(artifacts as object ?? {}), consumers };
+    const examples = stages.includes('packed-c') && options.consumers !== false ? retainBundle(dir, runId, 'examples', options.examplesPlanSha256) : null;
+    if (examples) artifacts = { ...(artifacts as object ?? {}), examples };
     putJson(`${dir}/source-report.json`, {
       schema: 'aura3d.source5-report/2',
       candidate: { commit: runCommit, sourceManifestSha256: manifestRef?.sha256 ?? 'reused-image', lockfileSha256: full ? lockfileSha256 : 'reused-image' },
@@ -169,13 +177,16 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     const consumerBase = `${full}/artifacts/consumers/tests/reports`;
     expect(record.sourceConsumerReport).toEqual({ path: `${consumerBase}/native-consumers/full/source.json`, jobPath: 'tests/reports/native-consumers/full/source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
     expect(record.matrixSourceReport.path).toBe(`${consumerBase}/native-consumers/full/matrix-source.json`);
-    expect(record.examplesSourceReport).toEqual({ path: `${consumerBase}/native-examples-catalog/full/examples-source.json`, jobPath: 'tests/reports/native-examples-catalog/full/examples-source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
+    expect(record.examplesSourceReport).toEqual({ path: `${full}/artifacts/examples/tests/reports/native-examples-catalog/full/examples-source.json`, jobPath: 'tests/reports/native-examples-catalog/full/examples-source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
     expect(record.consumerReports.files).toHaveLength(7);
-    expect(record.consumerReports.files.every((file: { path: string; jobPath: string }) => file.path === `${full}/artifacts/consumers/${file.jobPath}`)).toBe(true);
+    expect(record.consumerReports.examples).toEqual({ runId: 'full', index: { path: `${full}/artifacts/examples/consumer-index.json`, sha256: expect.stringMatching(/^[a-f0-9]{64}$/) } });
+    expect(record.consumerReports.files.every((file: { path: string; jobPath: string }) => file.path === `${full}/artifacts/${file.jobPath.includes('native-examples-catalog') ? 'examples' : 'consumers'}/${file.jobPath}`)).toBe(true);
+    expect(reports.checks.find(check => check.id === 'clean-install')?.commands.map(c => `${c.stage}:${c.id}`)).toEqual(['packed-b:clean-install', 'packed-c:examples-source']);
+    expect(reports.checks.find(check => check.id === 'build')?.commands.map(c => c.stage)).toEqual(['packed-a', 'packed-b', 'packed-c']);
     // In-job identities: the reports' plan path (bytes = the retained packed-a plan) and the plan's archive paths.
     expect(record.candidatePlan).toEqual({ path: `${full}/artifacts/candidate-plan.json`, sha256: f.planSha256, jobPath: 'tests/reports/native-5/full/candidate-plan.json' });
     expect(record.archives.map((a: { jobPath: string }) => a.jobPath)).toEqual(f.tarballs.map(t => `tests/reports/release-tarballs/${t.file}`));
-    expect(record.inputs).toEqual(expect.arrayContaining([`${full}/artifacts/consumers/consumer-index.json`, record.sourceConsumerReport.path, record.examplesSourceReport.path,
+    expect(record.inputs).toEqual(expect.arrayContaining([`${full}/artifacts/consumers/consumer-index.json`, `${full}/artifacts/examples/consumer-index.json`, record.sourceConsumerReport.path, record.examplesSourceReport.path,
       `${consumerBase}/native-consumer-matrix/full/logs/npm-react19-peer-present-install.log`]));
     for (const sourceReport of [record.matrixSourceReport.path, record.matrixSourceReport.jobPath, record.examplesSourceReport.jobPath]) {
       expect(validateAcceptanceGate({ root: f.root, gatePath: 'tests/reports/native-capabilities/code-complete-go.json', sourceReport }).status).toBe('CODE_COMPLETE_GO');
@@ -204,19 +215,27 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(() => f.build([f.makeRun('nopackb', { stages: ALL_STAGES.filter(s => s !== 'packed-b') })])).toThrow(/stage packed-b never ran[\s\S]*check clean-install: no result/);
     expect(() => f.build([f.makeRun('noreport', { dropStageReport: ['suites'] })])).toThrow(/stage suites: no stage report/);
     expect(() => f.build([f.makeRun('noartifacts', { artifacts: false })])).toThrow(/no retained artifacts/);
-    expect(() => f.build([f.makeRun('noconsumers', { consumers: false })])).toThrow(/no retained consumer reports \(artifacts\.consumers\)/);
+    expect(() => f.build([f.makeRun('noconsumers', { consumers: false })])).toThrow(/no retained consumers reports \(artifacts\.consumers\)[\s\S]*no retained examples reports \(artifacts\.examples\)/);
     const tampered = f.makeRun('tampered');
     f.put(`${tampered}/artifacts/consumers/tests/reports/native-consumers/tampered/source.json`, '{}\n');
     expect(() => f.build([tampered])).toThrow(/native-consumers\/tampered\/source\.json does not match the consumer index[\s\S]*retained sourceConsumerReport/);
-    // A packed-b rerun with consumer reports supersedes a full pass whose packed-b retained none.
+    // packed-b and packed-c reruns with retained reports supersede a full pass whose packed stages retained none;
+    // the packed-c report names its own run's plan path (bound by SHA-256), the plan's jobPath is packed-b's.
     const noConsumers = f.makeRun('full-noconsumers', { consumers: false });
     const packedB = f.makeRun('packedb-rerun', { stages: ['packed-b'], fullPass: false });
-    const superseded = f.build([noConsumers, packedB]).reports;
+    expect(() => f.build([noConsumers, packedB])).toThrow(/full-noconsumers: source-report\.json has no retained examples reports/);
+    const packedC = f.makeRun('packedc-rerun', { stages: ['packed-c'], fullPass: false });
+    const superseded = f.build([noConsumers, packedB, packedC]).reports;
     expect(superseded.consumerReports.runId).toBe('packedb-rerun');
+    expect(superseded.consumerReports.examples.runId).toBe('packedc-rerun');
     expect(superseded.candidatePlan.jobPath).toBe('tests/reports/native-5/packedb-rerun/candidate-plan.json');
-    // Consumer reports produced against another plan, and packed stages whose plans are not byte-identical.
-    expect(() => f.build([f.makeRun('otherplan', { consumerPlanSha256: 'b'.repeat(64) })])).toThrow(/consumer reports were produced against plan tests\/reports\/native-5\/otherplan\/candidate-plan\.json/);
-    expect(() => f.build([f.makeRun('unpinned', { packedBPlan: { ...f.plan, generatedAt: '2026-11-02T00:00:01.000Z' } })])).toThrow(/candidate plans differ between packed-a and packed-b \(plan time not pinned/);
+    // Reports produced against another plan, and packed stages whose plans are not byte-identical.
+    expect(() => f.build([f.makeRun('otherplan', { consumerPlanSha256: 'b'.repeat(64) })])).toThrow(/consumers reports were produced against plan tests\/reports\/native-5\/otherplan\/candidate-plan\.json/);
+    expect(() => f.build([f.makeRun('otherplanc', { examplesPlanSha256: 'b'.repeat(64) })])).toThrow(/examples reports were produced against plan/);
+    const laterPlan = { ...f.plan, generatedAt: '2026-11-02T00:00:01.000Z' };
+    expect(() => f.build([f.makeRun('unpinned', { packedPlans: { 'packed-b': laterPlan } })])).toThrow(/candidate plans differ between packed-a and packed-b \(plan time not pinned/);
+    expect(() => f.build([f.makeRun('unpinnedc', { packedPlans: { 'packed-c': laterPlan } })])).toThrow(/candidate plans differ between packed-a and packed-c \(plan time not pinned/);
+    expect(() => f.build([f.makeRun('nopackc', { stages: ALL_STAGES.filter(stage => stage !== 'packed-c') })])).toThrow(/stage packed-c never ran[\s\S]*check clean-install: no result for packed-c:examples-source/);
     const good = f.makeRun('good');
     const later = f.makeRun('later', { stages: ['static'], failing: ['static:typecheck'], fullPass: false });
     expect(() => f.build([good, later])).toThrow(/check typecheck: FAILED static:typecheck exit 1 \(run later\)/);

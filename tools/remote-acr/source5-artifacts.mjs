@@ -14,9 +14,11 @@
 // writes the result merged into source-report.json as `artifacts`.
 //
 // packed-b (command `consumers-upload`): `stage-consumers <run-id> <out-dir>`
-// packs its consumer source reports and the files they reference; on the Mac
-// `verify-consumers` re-hashes and extracts them into <run>/artifacts/consumers/
-// (recorded as `artifacts.consumers`). See the consumer section below.
+// packs its consumer source reports and the files they reference; packed-c
+// (command `examples-upload`): `stage-examples` packs the packed example source
+// report and its retained projects. On the Mac `verify-consumers` /
+// `verify-examples` re-hash and extract them into <run>/artifacts/consumers/ and
+// <run>/artifacts/examples/ (recorded as `artifacts.consumers` / `artifacts.examples`).
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
@@ -139,16 +141,18 @@ export function verifyDownloadedArtifacts({ dir, root = process.cwd(), expected 
   return result;
 }
 
-// ---- packed-b consumer reports ------------------------------------------------
-// packed-b retains its clean-install, consumer-matrix and packed example source
-// reports with the projects, logs, builds and dependency archives they reference
-// (the acceptance consumer phase re-validates and restores from those exact
-// files). In the image, `stage-consumers` packs the three run directories into
+// ---- packed-b consumer reports / packed-c example reports -----------------------
+// Two bundle kinds, same format. `consumers` (packed-b): the clean-install and
+// consumer-matrix source reports with the projects, logs and dependency archives
+// they reference. `examples` (packed-c): the packed example source report with
+// its retained wrappers, builds and logs. The acceptance consumer phase
+// re-validates and restores from those exact files. In the image,
+// `stage-consumers` / `stage-examples` pack the kind's run directories into
 // <= CONSUMER_CHUNK_BYTES chunks plus `consumer-index.json` (per-file SHA-256,
 // offsets); source5-run.sh uploads one chunk per upload-artifacts.mjs call, so
-// each call stays under its 512 MiB limit. On the Mac,
-// `verify-consumers` re-hashes every chunk and file and extracts the files under
-// their job paths into <run>/artifacts/consumers/.
+// each call stays under its 512 MiB limit. On the Mac, `verify-consumers` /
+// `verify-examples` re-hash every chunk and file and extract the files under
+// their job paths into <run>/artifacts/consumers/ or <run>/artifacts/examples/.
 export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
 export const CONSUMER_INDEX_NAME = 'consumer-index.json';
 export const CONSUMER_CHUNK_BYTES = 128 * 1024 * 1024;
@@ -157,26 +161,28 @@ export const CONSUMER_MAX_BYTES = 3 * 1024 * 1024 * 1024;
 export const CONSUMER_MAX_FILES = 50000;
 const RUN_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
 const CHUNK_NAME = /^bundle-\d{3}\.bin$/;
-/** Job repository-relative directories packed-b writes for one run. */
-export const consumerRoots = runId => [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`, `tests/reports/native-examples-catalog/${runId}`];
-/** The three packed-b source reports the gate binds (field name -> job path). */
-export const consumerReportPaths = runId => ({
-  sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`,
-  matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json`,
-  examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json`
-});
+export const BUNDLE_KINDS = Object.freeze(['consumers', 'examples']);
+const kindOf = kind => { if (!BUNDLE_KINDS.includes(kind)) throw new Error(`unknown consumer bundle kind ${kind}`); return kind; };
+/** Job repository-relative directories one bundle kind retains for a run (consumers: packed-b, examples: packed-c). */
+export const consumerRoots = (runId, kind = 'consumers') => (kindOf(kind) === 'examples'
+  ? [`tests/reports/native-examples-catalog/${runId}`]
+  : [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`]);
+/** The source reports a bundle kind carries and the gate binds (field name -> job path). */
+export const consumerReportPaths = (runId, kind = 'consumers') => (kindOf(kind) === 'examples'
+  ? { examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json` }
+  : { sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`, matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json` });
 
-const safeJobPath = (path, runId) => typeof path === 'string' && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
+const safeJobPath = (path, runId, kind) => typeof path === 'string' && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
   && path.split('/').every(part => part && part !== '.' && part !== '..')
-  && consumerRoots(runId).some(root => path.startsWith(`${root}/`));
+  && consumerRoots(runId, kind).some(root => path.startsWith(`${root}/`));
 
-/** In-image: pack the packed-b consumer run directories into chunks + index under `outDir`. */
-export function stageConsumers({ root, runId, outDir, chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
+/** In-image: pack one bundle kind's run directories into chunks + index under `outDir`. */
+export function stageConsumers({ root, runId, outDir, kind = 'consumers', chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
   if (!RUN_ID.test(runId ?? '')) throw new Error('invalid run id');
-  const reports = consumerReportPaths(runId);
+  const reports = consumerReportPaths(runId, kind);
   for (const [field, path] of Object.entries(reports)) if (!regularFile(join(root, path))) throw new Error(`${field} was not produced: ${path}`);
   const files = [];
-  for (const dir of consumerRoots(runId)) {
+  for (const dir of consumerRoots(runId, kind)) {
     const absolute = join(root, dir);
     let stat;
     try { stat = lstatSync(absolute); } catch { throw new Error(`consumer report directory missing: ${dir}`); }
@@ -208,7 +214,7 @@ export function stageConsumers({ root, runId, outDir, chunkBytes = CONSUMER_CHUN
   closeChunk();
   const byPath = new Map(entries.map(entry => [entry.path, entry]));
   const index = {
-    schema: CONSUMERS_SCHEMA, runId, roots: consumerRoots(runId),
+    schema: CONSUMERS_SCHEMA, kind, runId, roots: consumerRoots(runId, kind),
     reports: Object.fromEntries(Object.entries(reports).map(([field, path]) => [field, { path, sha256: byPath.get(path).sha256 }])),
     chunks, files: entries, totalBytes: total
   };
@@ -234,15 +240,16 @@ function listEntries(root, dir) {
  * indexed file to `dest/<job path>` (plus `dest/consumer-index.json`). Returns
  * the record merged into source-report.json as `artifacts.consumers`.
  */
-export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId }) {
+export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId, kind = 'consumers' }) {
   const problems = [], rel = path => relative(root, path).split(sep).join('/');
-  const result = { schema: CONSUMERS_SCHEMA, ok: false, runId, dir: rel(dest), index: null,
-    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null,
+  kindOf(kind);
+  const result = { schema: CONSUMERS_SCHEMA, kind, ok: false, runId, dir: rel(dest), index: null,
+    ...Object.fromEntries(Object.keys(consumerReportPaths('x', kind)).map(field => [field, null])),
     files: 0, bytes: 0, problems };
   if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
   let indexBytes, index;
   try { indexBytes = readFileSync(join(dir, CONSUMER_INDEX_NAME)); index = JSON.parse(indexBytes); } catch { problems.push(`${CONSUMER_INDEX_NAME} missing or unreadable`); return result; }
-  if (index?.schema !== CONSUMERS_SCHEMA || index.runId !== runId || !Array.isArray(index.chunks) || !Array.isArray(index.files)) { problems.push('consumer index has an unknown schema or another run id'); return result; }
+  if (index?.schema !== CONSUMERS_SCHEMA || index.kind !== kind || index.runId !== runId || !Array.isArray(index.chunks) || !Array.isArray(index.files)) { problems.push('consumer index has an unknown schema, another kind or another run id'); return result; }
   if (existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
   const chunks = new Map();
   for (const chunk of index.chunks) {
@@ -257,7 +264,7 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
   if (problems.length) return result;
   const seen = new Set(), extracted = [];
   for (const file of index.files) {
-    if (!safeJobPath(file?.path, runId) || seen.has(file.path)) { problems.push(`unsafe or duplicate consumer path ${JSON.stringify(file?.path)}`); continue; }
+    if (!safeJobPath(file?.path, runId, kind) || seen.has(file.path)) { problems.push(`unsafe or duplicate consumer path ${JSON.stringify(file?.path)}`); continue; }
     seen.add(file.path);
     const bytes = chunks.get(file.chunk);
     if (!bytes || !Number.isSafeInteger(file.offset) || !Number.isSafeInteger(file.size) || file.offset < 0 || file.size < 0 || file.offset + file.size > bytes.length) { problems.push(`consumer file is outside its chunk: ${file.path}`); continue; }
@@ -265,7 +272,7 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
     if (sha256(data) !== file.sha256) { problems.push(`consumer file bytes differ from the index: ${file.path}`); continue; }
     extracted.push({ path: file.path, data });
   }
-  for (const [field, path] of Object.entries(consumerReportPaths(runId))) {
+  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind))) {
     const entry = index.files.find(file => file?.path === path);
     if (!entry || index.reports?.[field]?.path !== path || index.reports[field].sha256 !== entry.sha256) problems.push(`${field} is not retained: ${path}`);
   }
@@ -278,7 +285,7 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
   }
   writeFileSync(join(dest, CONSUMER_INDEX_NAME), indexBytes, { flag: 'wx' });
   result.index = { localPath: rel(join(dest, CONSUMER_INDEX_NAME)), sha256: sha256(indexBytes) };
-  for (const [field, path] of Object.entries(consumerReportPaths(runId))) {
+  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind))) {
     result[field] = { localPath: rel(join(dest, path)), jobPath: path, sha256: index.reports[field].sha256 };
   }
   result.files = extracted.length;
@@ -304,19 +311,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       console.log(`   artifacts  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.archives.filter(a => a.verified).length}/${result.archives.length} archives)`);
       for (const p of result.problems) console.log(`   artifact problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
-    } else if (command === 'stage-consumers' && args.length === 2) {
-      const [runId, outDir] = args;
-      const index = stageConsumers({ root: process.cwd(), runId, outDir });
-      console.log(`[consumers] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
-    } else if (command === 'verify-consumers' && args.length === 5) {
-      const [dir, dest, root, runId, outJson] = args;
-      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId });
+    } else if ((command === 'stage-consumers' || command === 'stage-examples') && args.length === 2) {
+      const [runId, outDir] = args, kind = command === 'stage-examples' ? 'examples' : 'consumers';
+      const index = stageConsumers({ root: process.cwd(), runId, outDir, kind });
+      console.log(`[${kind}] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
+    } else if ((command === 'verify-consumers' || command === 'verify-examples') && args.length === 5) {
+      const [dir, dest, root, runId, outJson] = args, kind = command === 'verify-examples' ? 'examples' : 'consumers';
+      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId, kind });
       writeFileSync(outJson, `${JSON.stringify(result, null, 2)}\n`);
-      console.log(`   consumers  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
-      for (const p of result.problems) console.log(`   consumer problem: ${p}`);
+      console.log(`   ${kind.padEnd(10)} : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
+      for (const p of result.problems) console.log(`   ${kind} problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
     } else {
-      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers <run-id> <out-dir> | verify-consumers <download-dir> <dest-dir> <repo-root> <run-id> <out-json>');
+      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers|stage-examples <run-id> <out-dir> | verify-consumers|verify-examples <download-dir> <dest-dir> <repo-root> <run-id> <out-json>');
     }
   } catch (error) {
     console.error(`[artifacts] ${error.message}`);

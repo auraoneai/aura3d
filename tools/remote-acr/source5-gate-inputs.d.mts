@@ -18,7 +18,7 @@ export interface Source5Archive { name: string; version: string; tarball: string
 export interface Source5ConsumerReportRef { path: string; jobPath: string; sha256: string }
 export interface Source5ConsumerReports {
   runId: string; index: Source5FileRef; sourceConsumerReport: Source5ConsumerReportRef; matrixSourceReport: Source5ConsumerReportRef;
-  examplesSourceReport: Source5ConsumerReportRef; files: Source5ConsumerReportRef[];
+  examplesSourceReport: Source5ConsumerReportRef; examples: { runId: string; index: Source5FileRef }; files: Source5ConsumerReportRef[];
 }
 export interface Source5OutcomeCompletion { id: string; basis: 'done-marker' | 'verified-checks'; checks?: string[]; requiresDone?: string[] }
 export interface Source5GateInputs {
@@ -33,7 +33,7 @@ export interface Source5GateInputs {
 }
 export interface ScopeLike { rows: Array<{ id: string; remaining: string }>; required: string[] }
 
-export const STAGE_COMMANDS: Readonly<Record<'static' | 'suites' | 'packed-a' | 'packed-b', readonly string[]>>;
+export const STAGE_COMMANDS: Readonly<Record<'static' | 'suites' | 'packed-a' | 'packed-b' | 'packed-c', readonly string[]>>;
 export const EXPECTED_CHECKS: readonly Source5ExpectedCheck[];
 export const VERIFY_ONLY_ROWS: Readonly<Record<string, Source5VerifyOnlyRow>>;
 export function stageCommandIds(stage: string): readonly string[] | null;

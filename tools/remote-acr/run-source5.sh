@@ -12,13 +12,16 @@
 # to source5/<run>/artifacts/, which are downloaded into <run>/artifacts/ and
 # re-hashed against the plan (tools/remote-acr/source5-artifacts.mjs). packed-b
 # gets the same SAS (same values file) and uploads its consumer source reports
-# (clean-install source.json, matrix-source.json, packed examples-source.json)
+# (clean-install source.json, matrix-source.json)
 # with every file under their run directories to source5/<run>/consumers/ (one
 # upload per <= 128 MiB chunk); they are downloaded, re-hashed and
 # extracted under <run>/artifacts/consumers/<job path> and recorded as
-# `artifacts.consumers` (source5-artifacts.mjs verify-consumers).
-# Both packed stages get PLAN_GENERATED_AT (the commit's UTC committer time) so
-# their candidate plans are byte-identical (the adapter refuses otherwise).
+# `artifacts.consumers` (source5-artifacts.mjs verify-consumers). packed-c (same
+# SAS, started only with >= 2100 s left) packs again, runs examples-source and
+# uploads tests/reports/native-examples-catalog/<run>/ to source5/<run>/examples/,
+# extracted under <run>/artifacts/examples/ as `artifacts.examples`.
+# All three packed stages get PLAN_GENERATED_AT (the commit's UTC committer time)
+# so their candidate plans are byte-identical (the adapter refuses otherwise).
 # Usage: RUN_ID=native-5-source-001 tools/remote-acr/run-source5.sh
 #        STAGES="static suites" ... to run a subset (rerun of affected checks).
 set -euo pipefail
@@ -33,12 +36,13 @@ RUN_ID="${RUN_ID:-native-5-source-$(date -u +%Y%m%dT%H%M%SZ)}"
 KEEP_IMAGE="${KEEP_IMAGE:-0}"
 RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
 UNIT_SHARDS="${UNIT_SHARDS:-6}"
-DEFAULT_STAGES="static suites packed-a packed-b"
+DEFAULT_STAGES="packed-a packed-b packed-c static suites"
 for i in $(seq 1 "$UNIT_SHARDS"); do DEFAULT_STAGES="$DEFAULT_STAGES unit-$i-of-$UNIT_SHARDS"; done
 STAGES="${STAGES:-$DEFAULT_STAGES}"
-# packed-a and packed-b upload with the run's single SAS, so they start first
-# (packed-a, then packed-b), well inside the SAS lifetime.
-WANT_ARTIFACTS=0; WANT_CONSUMERS=0
+# packed-a, packed-b and packed-c upload with the run's single SAS, so they are
+# queued first (packed-a, packed-b, packed-c), well inside the SAS lifetime.
+WANT_ARTIFACTS=0; WANT_CONSUMERS=0; WANT_EXAMPLES=0
+case " $STAGES " in *" packed-c "*) STAGES="packed-c $(printf '%s\n' $STAGES | { grep -vx packed-c || true; } | tr '\n' ' ')"; STAGES="${STAGES% }"; WANT_EXAMPLES=1;; esac
 case " $STAGES " in *" packed-b "*) STAGES="packed-b $(printf '%s\n' $STAGES | { grep -vx packed-b || true; } | tr '\n' ' ')"; STAGES="${STAGES% }"; WANT_CONSUMERS=1;; esac
 case " $STAGES " in *" packed-a "*) STAGES="packed-a $(printf '%s\n' $STAGES | { grep -vx packed-a || true; } | tr '\n' ' ')"; STAGES="${STAGES% }"; WANT_ARTIFACTS=1;; esac
 SAS_TTL_MINUTES="${SAS_TTL_MINUTES:-120}"
@@ -118,7 +122,7 @@ tail -15 "$OUT_DIR/acr-build.log"
 [ "$BUILD_RC" = 0 ] || { echo "FATAL: build failed ($OUT_DIR/acr-build.log)" >&2; exit 3; }
 fi
 
-if [ "$WANT_ARTIFACTS" = 1 ] || [ "$WANT_CONSUMERS" = 1 ]; then
+if [ "$WANT_ARTIFACTS" = 1 ] || [ "$WANT_CONSUMERS" = 1 ] || [ "$WANT_EXAMPLES" = 1 ]; then
   # One SAS per launcher run, minted after the build so the packed stages (queued first) start at once.
   sas_transport_open "$SAS_TTL_MINUTES" tools/remote-acr/task.source5.yaml || { echo 'FATAL: artifact transport unavailable; the packed stages cannot return their archives and consumer reports' >&2; exit 3; }
 fi
@@ -128,7 +132,7 @@ run_stage() {
   local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
   local common=(--timeout 1800 --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
     --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" --set "PLAN_GENERATED_AT=$PLAN_GENERATED_AT")
-  if [ "$stage" = packed-a ] || [ "$stage" = packed-b ]; then
+  if [ "$stage" = packed-a ] || [ "$stage" = packed-b ] || [ "$stage" = packed-c ]; then
     # The upload must finish before the SAS expires.
     if [ "$(sas_seconds_left)" -lt 2100 ]; then
       echo "$stage not started: SAS has $(sas_seconds_left)s left (< 2100s)" > "$log"; rc=97
@@ -154,7 +158,9 @@ wait
 
 ARTIFACTS_JSON="$OUT_DIR/artifacts-verification.json"
 CONSUMERS_JSON="$OUT_DIR/consumers-verification.json"
+EXAMPLES_JSON="$OUT_DIR/examples-verification.json"
 [ "$WANT_CONSUMERS" = 1 ] && sas_redact_file "$OUT_DIR/acr-run-packed-b.log"
+[ "$WANT_EXAMPLES" = 1 ] && sas_redact_file "$OUT_DIR/acr-run-packed-c.log"
 if [ "$WANT_ARTIFACTS" = 1 ]; then
   sas_redact_file "$OUT_DIR/acr-run-packed-a.log"
   echo "== downloading source5/$RUN_ID/artifacts"
@@ -172,24 +178,29 @@ if [ "$WANT_ARTIFACTS" = 1 ]; then
   # Verified before the consumer files land under artifacts/consumers/.
   node tools/remote-acr/source5-artifacts.mjs verify "$OUT_DIR/artifacts" "$REPO_ROOT" "$COMMIT" "$LOCK_SHA" "$INPUT_DIGEST" "$ARTIFACTS_JSON" || true
 fi
-if [ "$WANT_CONSUMERS" = 1 ]; then
-  echo "== downloading source5/$RUN_ID/consumers"
-  DL="$OUT_DIR/.consumers-download"
-  rm -rf "$DL" "$OUT_DIR/artifacts/consumers"; mkdir -p "$DL"
+# packed-b consumer bundle (consumers) and packed-c example bundle (examples): download,
+# re-hash and extract under <run>/artifacts/<kind>/<job path> (source5-artifacts.mjs verify-<kind>).
+download_bundle() {
+  local kind="$1" json="$2" dl="$OUT_DIR/.$1-download"
+  echo "== downloading source5/$RUN_ID/$kind"
+  rm -rf "$dl" "$OUT_DIR/artifacts/$kind"; mkdir -p "$dl"
   if AZURE_STORAGE_KEY="$A3D_SAS_KEY" "$AZ_WRAPPER" storage blob download-batch --source "$A3D_SAS_CONTAINER" \
-      --account-name "$A3D_SAS_STORAGE_ACCOUNT" --auth-mode key --pattern "source5/$RUN_ID/consumers/*" \
-      --destination "$DL" -o none --only-show-errors > "$OUT_DIR/consumers-download.log" 2>&1 \
-      && [ -d "$DL/source5/$RUN_ID/consumers" ]; then :; else
-    echo "   consumer download failed ($OUT_DIR/consumers-download.log)"; mkdir -p "$DL/source5/$RUN_ID/consumers"
+      --account-name "$A3D_SAS_STORAGE_ACCOUNT" --auth-mode key --pattern "source5/$RUN_ID/$kind/*" \
+      --destination "$dl" -o none --only-show-errors > "$OUT_DIR/$kind-download.log" 2>&1 \
+      && [ -d "$dl/source5/$RUN_ID/$kind" ]; then :; else
+    echo "   $kind download failed ($OUT_DIR/$kind-download.log)"; mkdir -p "$dl/source5/$RUN_ID/$kind"
   fi
-  node tools/remote-acr/source5-artifacts.mjs verify-consumers "$DL/source5/$RUN_ID/consumers" "$OUT_DIR/artifacts/consumers" \
-    "$REPO_ROOT" "$RUN_ID" "$CONSUMERS_JSON" || true
-  rm -rf "$DL"
-fi
+  node tools/remote-acr/source5-artifacts.mjs "verify-$kind" "$dl/source5/$RUN_ID/$kind" "$OUT_DIR/artifacts/$kind" \
+    "$REPO_ROOT" "$RUN_ID" "$json" || true
+  rm -rf "$dl"
+}
+[ "$WANT_CONSUMERS" = 1 ] && download_bundle consumers "$CONSUMERS_JSON"
+[ "$WANT_EXAMPLES" = 1 ] && download_bundle examples "$EXAMPLES_JSON"
 sas_transport_close
 
 COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" INPUT_DIGEST="$INPUT_DIGEST" OUT="$OUT_DIR" STAGES="$STAGES" \
-  WANT_ARTIFACTS="$WANT_ARTIFACTS" ARTIFACTS_JSON="$ARTIFACTS_JSON" WANT_CONSUMERS="$WANT_CONSUMERS" CONSUMERS_JSON="$CONSUMERS_JSON" node -e '
+  WANT_ARTIFACTS="$WANT_ARTIFACTS" ARTIFACTS_JSON="$ARTIFACTS_JSON" WANT_CONSUMERS="$WANT_CONSUMERS" CONSUMERS_JSON="$CONSUMERS_JSON" \
+  WANT_EXAMPLES="$WANT_EXAMPLES" EXAMPLES_JSON="$EXAMPLES_JSON" node -e '
   const fs = require("fs");
   const out = process.env.OUT;
   const stages = process.env.STAGES.split(/\s+/).filter(Boolean);
@@ -211,11 +222,12 @@ COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" 
     try { artifacts = JSON.parse(fs.readFileSync(process.env.ARTIFACTS_JSON, "utf8")); } catch { artifacts = { ok: false, problems: ["artifact verification did not run"] }; }
     if (!artifacts.ok) problems.push(...(artifacts.problems || []).map((p) => `artifacts: ${p}`));
   }
-  if (process.env.WANT_CONSUMERS === "1") {
-    let consumers;
-    try { consumers = JSON.parse(fs.readFileSync(process.env.CONSUMERS_JSON, "utf8")); } catch { consumers = { ok: false, problems: ["consumer verification did not run"] }; }
-    if (!consumers.ok) problems.push(...(consumers.problems || []).map((p) => `consumers: ${p}`));
-    artifacts = { ...(artifacts || {}), consumers };
+  for (const [kind, flag, file] of [["consumers", "WANT_CONSUMERS", "CONSUMERS_JSON"], ["examples", "WANT_EXAMPLES", "EXAMPLES_JSON"]]) {
+    if (process.env[flag] !== "1") continue;
+    let bundle;
+    try { bundle = JSON.parse(fs.readFileSync(process.env[file], "utf8")); } catch { bundle = { ok: false, problems: [`${kind} verification did not run`] }; }
+    if (!bundle.ok) problems.push(...(bundle.problems || []).map((p) => `${kind}: ${p}`));
+    artifacts = { ...(artifacts || {}), [kind]: bundle };
   }
   const known = (v) => (v && v !== "-" && v !== "reused-image" ? v : null);
   const report = {
@@ -230,9 +242,10 @@ COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" 
     passed: commands.filter((c) => c.exitCode === 0).map((c) => c.id),
     failed: commands.filter((c) => c.exitCode !== 0).map((c) => c.id),
     problems,
-    candidatePlan: plans["packed-a"] || plans["packed-b"] || null,
-    // Downloaded tested archives (tools/remote-acr/source5-artifacts.mjs verify; packed-a) and
-    // `artifacts.consumers` (verify-consumers; packed-b); null when neither packed stage ran.
+    candidatePlan: plans["packed-a"] || plans["packed-b"] || plans["packed-c"] || null,
+    // Downloaded tested archives (tools/remote-acr/source5-artifacts.mjs verify; packed-a),
+    // `artifacts.consumers` (verify-consumers; packed-b) and `artifacts.examples` (verify-examples;
+    // packed-c); null when no packed stage ran.
     artifacts,
     browserAcceptance: "not-run"
   };

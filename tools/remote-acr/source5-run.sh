@@ -6,7 +6,9 @@
 # packed-a also uploads the tested plan, archives and packed reports to
 # source5/<run>/artifacts/ in the run container (artifacts-upload below), and
 # packed-b uploads its consumer source reports with the projects, logs and
-# archives they reference to source5/<run>/consumers/ (consumers-upload); the
+# archives they reference to source5/<run>/consumers/ (consumers-upload), and
+# packed-c its packed example report and projects to source5/<run>/examples/
+# (examples-upload); the
 # container SAS arrives only as AURA3D_ARTIFACTS_SAS from the launcher's 0600
 # --values file and is handed to upload-artifacts.mjs alone.
 set -uo pipefail
@@ -31,7 +33,7 @@ run() {
   started=$(date +%s)
   echo "::: SOURCE5_BEGIN ${id} :: $*"
   # Only the upload commands see the SAS (as SOURCE5_SAS, never in the command text).
-  if [ "$id" = artifacts-upload ] || [ "$id" = consumers-upload ]; then
+  if [ "$id" = artifacts-upload ] || [ "$id" = consumers-upload ] || [ "$id" = examples-upload ]; then
     SOURCE5_SAS="$A3D_ARTIFACT_SAS" timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
   else
     timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
@@ -44,10 +46,10 @@ run() {
 }
 
 # Stages (each ACR run executes one stage; <= 30 min each per the ACR policy).
-# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b
+# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b | packed-c
 STAGE="${SOURCE5_STAGE:?SOURCE5_STAGE required}"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=6144}"
-# Both packed stages pack the same commit; the launcher's pinned plan time
+# All three packed stages pack the same commit; the launcher's pinned plan time
 # (frozen commit's UTC committer time) makes their plans byte-identical.
 case "${A3D_PLAN_GENERATED_AT:-}" in none) unset A3D_PLAN_GENERATED_AT;; *) [ -z "${A3D_PLAN_GENERATED_AT:-}" ] || export A3D_PLAN_GENERATED_AT;; esac
 pack_candidate() {
@@ -109,17 +111,24 @@ case "$STAGE" in
     run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
     run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
     run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+    run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
+    # Consumer source reports (clean-install source.json, matrix-source.json) and
+    # every file under their run directories back to the Mac, so the gate can bind
+    # them for the acceptance consumer phase. One upload per <= 128 MiB chunk keeps
+    # each upload-artifacts.mjs call under its 512 MiB limit. A staging or upload
+    # failure fails this command and therefore the stage.
+    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    ;;
+  packed-c)
+    pack_candidate
     # Every catalog example installed from the packed candidate (A3D_RELEASE_PLAN
     # archives, lock pinned to the plan's SHA-512 integrity) and built; no custody
-    # lock input (decision record item 1). Gate check: clean-install.
+    # lock input (decision record item 1). Its own stage so packed-b keeps its
+    # 1800 s budget. Gate check: clean-install.
     run examples-source      'pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts --phase source --packed --run-id "$NATIVE_RUN_ID" --candidate-plan "$A3D_RELEASE_PLAN"'
-    run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
-    # Consumer source reports (clean-install source.json, matrix-source.json,
-    # examples-source.json) and every file under their run directories back to the
-    # Mac, so the gate can bind them for the acceptance consumer phase. One upload
-    # per <= 128 MiB chunk keeps each upload-artifacts.mjs call under its 512 MiB
-    # limit. A staging or upload failure fails this command and therefore the stage.
-    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    # The example report, retained wrappers, builds and logs back to the Mac
+    # (source5/<run>/examples/), one upload per <= 128 MiB chunk.
+    run examples-upload      'rm -rf /tmp/source5-examples && mkdir -p /tmp/source5-examples && node tools/remote-acr/source5-artifacts.mjs stage-examples "$NATIVE_RUN_ID" /tmp/source5-examples/examples; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-examples/examples/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "examples/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
   *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
 esac

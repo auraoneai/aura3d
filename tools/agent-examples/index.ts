@@ -1318,7 +1318,8 @@ export function packedExampleReportErrors(root: string, report: any, candidatePl
   if (!plan) return ["Missing validated candidate plan"];
   const planBytes = readFileSync(resolve(root, candidatePlanPath));
   if (report?.schema !== "aura3d.native-consumers/1" || report.phase !== "source" || report.install !== PACKED_EXAMPLES_INSTALL || report.browser !== "not-run" ||
-      report.candidateSha256 !== hash(planBytes) || report.candidatePlan !== portable(relative(root, resolve(root, candidatePlanPath))) ||
+      // Bound by SHA-256: packed-c may have run in another source run than the plan path acceptance uses.
+      report.candidateSha256 !== hash(planBytes) || typeof report.candidatePlan !== "string" || !report.candidatePlan ||
       JSON.stringify(report.source) !== JSON.stringify(plan.source) || JSON.stringify(report.packages) !== JSON.stringify(plan.packages) ||
       report.lockfileSha256 !== plan.source.lockfileSha256) return ["Packed example source report is malformed or for another candidate"];
   if (!Array.isArray(report.cases) || !Array.isArray(report.projects) || typeof report.runId !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(report.runId)) return ["Packed example source report lacks cases or projects"];

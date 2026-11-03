@@ -167,7 +167,7 @@ describe('source5 tested-archive retrieval', () => {
 
 describe('source5 packed-b consumer report retention (stage-consumers -> verify-consumers)', () => {
   const RUN = 'run-1';
-  /** The packed-b job tree: the three consumer run directories with reports, projects, logs and a binary archive. */
+  /** The packed job tree: packed-b's two consumer run directories (reports, projects, logs, a binary archive) and packed-c's example run directory. */
   function job() {
     const root = temp('job');
     put(root, `tests/reports/native-consumers/${RUN}/source.json`, '{"phase":"source","status":"pass"}\n');
@@ -188,23 +188,43 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
   };
   const mac = () => { const root = temp('mac'); return { root, dest: join(root, `tests/reports/native-5/${RUN}/artifacts/consumers`) }; };
 
-  it('round-trips every file of the three run directories, chunked, and records the three bound reports', () => {
+  it('round-trips every file of the two consumer run directories, chunked, and records the two bound reports', () => {
     const root = job();
     const { out, index } = upload(root, 400);
     expect(index.chunks.length).toBeGreaterThan(1);
     expect(index.files.map((f: { path: string }) => f.path)).not.toContain('tests/reports/native-consumers/other-run/source.json');
-    expect(index.files).toHaveLength(8);
-    expect(index.reports.examplesSourceReport.path).toBe(`tests/reports/native-examples-catalog/${RUN}/examples-source.json`);
+    expect(index.files).toHaveLength(6);
+    expect(index.kind).toBe('consumers');
+    expect(index.files.some((f: { path: string }) => f.path.includes('native-examples-catalog'))).toBe(false);
     const m = mac();
     const result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
     expect(result.problems).toEqual([]);
-    expect(result).toMatchObject({ ok: true, files: 8,
-      examplesSourceReport: { jobPath: `tests/reports/native-examples-catalog/${RUN}/examples-source.json`, sha256: sha256('{"phase":"source","install":"packed-v1"}\n') },
+    expect(result).toMatchObject({ ok: true, files: 6, kind: 'consumers',
       index: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/${CONSUMER_INDEX_NAME}` },
       sourceConsumerReport: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/tests/reports/native-consumers/${RUN}/source.json`,
         jobPath: `tests/reports/native-consumers/${RUN}/source.json`, sha256: sha256('{"phase":"source","status":"pass"}\n') },
       matrixSourceReport: { jobPath: `tests/reports/native-consumers/${RUN}/matrix-source.json` } });
     for (const file of index.files) expect(sha256(readFileSync(join(m.dest, file.path)))).toBe(file.sha256);
+  });
+
+  it('round-trips packed-c\'s example bundle (its own kind and extraction directory) and refuses a bundle of the other kind', () => {
+    const root = job();
+    const out = join(temp('upload'), 'examples');
+    const index = stageConsumers({ root, runId: RUN, outDir: out, kind: 'examples' });
+    expect(index).toMatchObject({ kind: 'examples', roots: [`tests/reports/native-examples-catalog/${RUN}`] });
+    expect(index.files.map((f: { path: string }) => f.path)).toEqual([`tests/reports/native-examples-catalog/${RUN}/examples-source.json`,
+      `tests/reports/native-examples-catalog/${RUN}/projects/starter-example-camera-path/package.json`]);
+    const macRoot = temp('mac'), dest = join(macRoot, `tests/reports/native-5/${RUN}/artifacts/examples`);
+    expect(verifyDownloadedConsumers({ dir: out, dest: join(macRoot, 'wrong'), root: macRoot, runId: RUN }).problems).toEqual(['consumer index has an unknown schema, another kind or another run id']);
+    const result = verifyDownloadedConsumers({ dir: out, dest, root: macRoot, runId: RUN, kind: 'examples' });
+    expect(result.problems).toEqual([]);
+    expect(result).toMatchObject({ ok: true, kind: 'examples', files: 2,
+      examplesSourceReport: { localPath: `tests/reports/native-5/${RUN}/artifacts/examples/tests/reports/native-examples-catalog/${RUN}/examples-source.json`,
+        jobPath: `tests/reports/native-examples-catalog/${RUN}/examples-source.json`, sha256: sha256('{"phase":"source","install":"packed-v1"}\n') } });
+    expect(result).not.toHaveProperty('sourceConsumerReport');
+    rmSync(join(root, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`));
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'e'), kind: 'examples' })).toThrow(/examplesSourceReport was not produced/);
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'e'), kind: 'other' })).toThrow(/unknown consumer bundle kind/);
   });
 
   it('refuses tampered, missing or extra chunks, another run id and a non-empty destination', () => {
@@ -226,7 +246,7 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     expect(result.problems).toEqual(expect.arrayContaining(['chunk not downloaded: bundle-000.bin', 'unexpected downloaded file: stray.bin']));
 
     ({ out } = upload(root));
-    expect(verifyDownloadedConsumers({ dir: out, dest: mac().dest, root: m.root, runId: 'run-2' }).problems).toEqual(['consumer index has an unknown schema or another run id']);
+    expect(verifyDownloadedConsumers({ dir: out, dest: mac().dest, root: m.root, runId: 'run-2' }).problems).toEqual(['consumer index has an unknown schema, another kind or another run id']);
     m = mac();
     put(m.dest, 'leftover.txt', 'x');
     expect(verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN }).problems[0]).toMatch(/not empty/);
@@ -253,9 +273,6 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     let root = job();
     rmSync(join(root, `tests/reports/native-consumers/${RUN}/matrix-source.json`));
     expect(() => upload(root)).toThrow(/matrixSourceReport was not produced/);
-    root = job();
-    rmSync(join(root, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`));
-    expect(() => upload(root)).toThrow(/examplesSourceReport was not produced/);
     root = job();
     rmSync(join(root, `tests/reports/native-consumer-matrix/${RUN}`), { recursive: true });
     expect(() => upload(root)).toThrow(/consumer report directory missing/);

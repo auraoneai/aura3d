@@ -1022,7 +1022,7 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
 // 5.0 decision record item 1: the ACR source5 pass replaces the custody runner.
 // Its gate inputs (tools/remote-acr/source5-gate-inputs.mjs) are re-derived from
 // the retained run files; the custody handoff and portable-input checks do not
-// apply. The packed-b consumer reports and every file they reference are
+// apply. The packed-b consumer reports, packed-c example reports and every file they reference are
 // retained by the launcher and re-hashed here (they become gate inputs). Manifest bytes, the freeze-commit proof
 // and exact scope completion are checked exactly as on the custody path.
 function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports, ledgerRef, ledger, manifest, reports, proof, omitted }) {
@@ -1043,7 +1043,7 @@ function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports
     ...(ledgerRef ? { ledger: ledgerRef, ledgerRole: 'historical-reference', roadmap: ledger.roadmap ?? null } : {}),
     sourceRunner: 'acr-source5', freezeCommit: proof.commit, testedOrigin: manifest.origin, sourceInputDigest: manifest.inputDigest, lockfileSha256: manifest.lockfileSha256,
     runId: reports.runId, sourceRuns: v.stageSources, releaseKind: v.releaseKind, candidatePlan: v.candidatePlan, archives: v.archives, archiveBinding: v.archiveBinding,
-    // packed-b's consumer source reports (clean-install, matrix, packed examples), retained and re-hashed;
+    // packed-b's consumer source reports (clean-install, matrix) and packed-c's example report, retained and re-hashed;
     // `jobPath` is the in-job path acceptance stages them at (and the candidate plan / archives likewise).
     sourceConsumerReport: v.consumerReports.sourceConsumerReport, matrixSourceReport: v.consumerReports.matrixSourceReport, examplesSourceReport: v.consumerReports.examplesSourceReport,
     consumerReports: v.consumerReports,

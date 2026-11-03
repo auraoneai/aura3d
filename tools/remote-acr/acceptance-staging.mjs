@@ -137,7 +137,7 @@ function isFile(path) {
 }
 
 // ---- source5 in-job layout -----------------------------------------------------
-// A source5 gate binds the retained candidate plan, archives and packed-b consumer
+// A source5 gate binds the retained candidate plan, archives and packed-b/packed-c consumer
 // files at their host paths (under tests/reports/native-5/<run>/artifacts/) and
 // records, for each, the in-job path the source jobs wrote and the reports name
 // (`jobPath`). The consumer tools in the acceptance job check those paths (plan
