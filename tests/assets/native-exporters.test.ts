@@ -21,6 +21,7 @@ import { GLTFLoader } from "../../packages/assets/src/GLTFLoader";
 import { LoadContext } from "../../packages/assets/src/LoadContext";
 import { createDracoDecoder, type GLTFDracoDecoderModule } from "../../packages/assets/src/GLTFCompressionDecoders";
 import { transcodeKTX2BasisTexture } from "../../packages/assets/src/KTX2BasisTextureTranscoder";
+import { parseIndependentUSDA, readIndependentGLTF, readIndependentUSDZ, transformPoint, usdWorldMatrix } from "../support/independent-interchange-readers";
 
 const decoder = new TextDecoder();
 // Independently generated 1x1 red RGBA PNG (Aura3D test fixture, CC0-1.0),
@@ -111,6 +112,14 @@ describe("native interchange exporters", () => {
     const live = input.createScene();
     live.findByName("Part")[0]!.transform.setPosition(0.35, 0, 0);
     const result = exportGLTF(sceneFromGLTFAsset(input, live), { binary: true });
+    // Verify the exported semantics with the independent spec reader first;
+    // the Aura reload below is an additional consumer check, not the oracle.
+    const independent = readIndependentGLTF(bytes(result.data));
+    const independentPart = independent.findNode("Part");
+    expect(independent.nodes[independentPart.parent!]!.name).toBe("Parent");
+    expect(independentPart.world[12]).toBeCloseTo(0.35);
+    expect(independent.meshes[independentPart.mesh!]!.primitives[0]!.attributes.POSITION!.values).toEqual([[0, 0, 0], [1, 0, 0], [0, 1, 0]]);
+    expect(independent.materials[independent.meshes[independentPart.mesh!]!.primitives[0]!.material!]!.pbrMetallicRoughness.baseColorFactor[1]).toBeCloseTo(0.8);
     const output = await loader.load({ url: dataURL(result.data) }, new LoadContext());
     const reloaded = output.createScene();
     reloaded.updateWorldTransforms();
@@ -970,6 +979,15 @@ describe("USDZ and optional geometry encoding", () => {
     expect(stage).toContain("primvars:skel:jointWeights");
     expect(stage).toContain('def BlendShape "Shape_0"');
     expect(codes(output.warnings)).not.toContain("USDZ_SKIN_UNSUPPORTED");
+    // Stage semantics through the independent USDA reader, not text matching.
+    const parsed = parseIndependentUSDA(decoder.decode(readIndependentUSDZ(bytes(output.data))[0]!.data));
+    const mesh = parsed.allPrims().find((prim) => prim.typeName === "Mesh")!;
+    const points = (mesh.properties.get("points")!.value as number[][]);
+    const world = points.map((point) => transformPoint(usdWorldMatrix(mesh, 0), point));
+    [[6, 5, 6], [2, 5, 6], [4, 8, 6]].forEach((expected, i) => expected.forEach((value, j) => expect(world[i]![j]).toBeCloseTo(value)));
+    expect(mesh.properties.get("faceVertexIndices")!.value).toEqual([0, 1, 2]);
+    const bound = parsed.prim((mesh.properties.get("material:binding")!.value as { path: string }).path);
+    expect(bound.typeName).toBe("Material");
   });
 
   it("retains selectable USD animation clips and reports interpolation approximations", () => {

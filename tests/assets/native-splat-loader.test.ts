@@ -116,9 +116,11 @@ describe("native Gaussian splat imports", () => {
       expect(result.sphericalHarmonics![perChannel * 3 - 1]).toBeCloseTo((perChannel * 3 - 1) / 10);
     }
   });
-  it("recognizes compressed PLY without pretending its undocumented packed payload is native", async () => {
+  it("decodes compressed PLY with the bundled codec and still routes to an explicit override", async () => {
     const compressed = compressedPlyDeclaration();
-    await expect(parseGaussianSplat(compressed, "ply")).rejects.toThrow(/compressed PLY.*registered compressedPly decoder/);
+    const builtIn = await parseGaussianSplat(compressed, "ply");
+    expect(builtIn.count).toBe(1); expect(builtIn.metadata.extras).toMatchObject({ compression: "chunk-quantized" });
+    expect([...builtIn.positions]).toEqual([0, 0, 0]); expect([...builtIn.scales]).toEqual([1, 1, 1]); expect(builtIn.opacities[0]).toBe(0);
     const ordinary = await parseGaussianSplat(ply("le"), "ply");
     const codec = vi.fn(async (_bytes: Uint8Array) => ordinary);
     const decoded = await parseGaussianSplat(compressed, "ply", { codecs: { compressedPly: codec } });
@@ -591,8 +593,8 @@ describe("native Gaussian splat imports", () => {
     const inFlight = new AbortController(); const pending = parseGaussianSplat(spz(3), "spz", { signal: inFlight.signal }); inFlight.abort();
     await expect(pending).rejects.toThrow();
   });
-  it("enforces codec ownership and fails explicitly when KSPLAT support is absent", async () => {
-    await expect(parseGaussianSplat(Uint8Array.of(0), "ksplat")).rejects.toThrow(/registered decoder/);
+  it("enforces codec ownership and rejects truncated KSPLAT input with the bundled codec", async () => {
+    await expect(parseGaussianSplat(Uint8Array.of(0), "ksplat")).rejects.toThrow(/KSPLAT_TRUNCATED/);
     const input = await parseGaussianSplat(splat(), "splat");
     const value: GaussianSplatData = { ...input, metadata: { ...input.metadata, format: "ksplat" } };
     const result = await parseGaussianSplat(Uint8Array.of(1), "ksplat", { codecs: { ksplat: () => value } });
@@ -686,5 +688,172 @@ describe("native Gaussian splat imports", () => {
     const loader = new GaussianSplatLoader({ maxPoints: 3 });
     expect((await loader.parse(splat(), "splat")).count).toBe(2);
     await expect(loader.parse(gltf(true).bytes, "gltf")).rejects.toThrow(/resolveUri/);
+  });
+});
+
+// Independent encoders for the layouts documented in packages/assets/src/loaders/SplatCodecs.ts.
+interface AuthoredSplat { p: [number, number, number]; s: [number, number, number]; q: [number, number, number, number]; c: [number, number, number]; a: number; sh?: number[] }
+const unorm = (t: number, bits: number) => Math.max(0, Math.min(2 ** bits - 1, Math.floor(t * (2 ** bits - 1) + 0.5)));
+function toHalf(value: number): number {
+  if (value === 0) return 0;
+  const sign = value < 0 ? 0x8000 : 0; const v = Math.abs(value);
+  const exponent = Math.floor(Math.log2(v)); const mantissa = Math.round((v / 2 ** exponent - 1) * 1024);
+  return sign | ((exponent + 15) << 10) | (mantissa & 1023);
+}
+function encodeCompressedPly(points: AuthoredSplat[], options: { colorBounds?: boolean; degree?: 0 | 1 } = {}): Uint8Array {
+  const chunkCount = Math.ceil(points.length / 256), color = options.colorBounds ?? false, degree = options.degree ?? 0, rest = degree ? 9 : 0;
+  const chunkFields = ["min_x", "min_y", "min_z", "max_x", "max_y", "max_z", "min_scale_x", "min_scale_y", "min_scale_z", "max_scale_x", "max_scale_y", "max_scale_z", ...(color ? ["min_r", "min_g", "min_b", "max_r", "max_g", "max_b"] : [])];
+  const header = `ply\nformat binary_little_endian 1.0\nelement chunk ${chunkCount}\n${chunkFields.map((f) => `property float ${f}\n`).join("")}element vertex ${points.length}\n${["packed_position", "packed_rotation", "packed_scale", "packed_color"].map((f) => `property uint ${f}\n`).join("")}${rest ? `element sh ${points.length}\n${Array.from({ length: rest }, (_, i) => `property uchar f_rest_${i}\n`).join("")}` : ""}end_header\n`;
+  const h = new TextEncoder().encode(header);
+  const out = new Uint8Array(h.length + chunkCount * chunkFields.length * 4 + points.length * (16 + rest)); out.set(h);
+  const view = new DataView(out.buffer); let o = h.length;
+  const bounds: number[][] = [];
+  for (let c = 0; c < chunkCount; c++) {
+    const members = points.slice(c * 256, c * 256 + 256);
+    const lo = (f: (p: AuthoredSplat) => number) => Math.min(...members.map(f)), hi = (f: (p: AuthoredSplat) => number) => Math.max(...members.map(f));
+    const values = [0, 1, 2].map((j) => lo((p) => p.p[j]!)).concat([0, 1, 2].map((j) => hi((p) => p.p[j]!)), [0, 1, 2].map((j) => lo((p) => Math.log(p.s[j]!))), [0, 1, 2].map((j) => hi((p) => Math.log(p.s[j]!))),
+      color ? [0, 1, 2].map((j) => lo((p) => p.c[j]!)).concat([0, 1, 2].map((j) => hi((p) => p.c[j]!))) : []);
+    bounds.push(values); for (const v of values) { view.setFloat32(o, v, true); o += 4; }
+  }
+  const t = (v: number, a: number, b: number) => b > a ? (v - a) / (b - a) : 0;
+  points.forEach((p, i) => {
+    const b = bounds[i >> 8]!;
+    const pack = (v: number[], min: number) => (unorm(t(v[0]!, b[min]!, b[min + 3]!), 11) << 21 | unorm(t(v[1]!, b[min + 1]!, b[min + 4]!), 10) << 11 | unorm(t(v[2]!, b[min + 2]!, b[min + 5]!), 11)) >>> 0;
+    const largest = p.q.reduce((best, v, k) => Math.abs(v) > Math.abs(p.q[best]!) ? k : best, 0), sign = p.q[largest]! < 0 ? -1 : 1;
+    let rot = largest; for (let k = 0; k < 4; k++) if (k !== largest) rot = (rot << 10 | unorm(sign * p.q[k]! / Math.SQRT2 + 0.5, 10)) >>> 0;
+    const rgb = p.c.map((v, j) => unorm(color ? t(v, b[12 + j]!, b[15 + j]!) : v, 8));
+    view.setUint32(o, pack(p.p, 0), true); view.setUint32(o + 4, rot, true); view.setUint32(o + 8, pack(p.s.map(Math.log), 6), true);
+    view.setUint32(o + 12, (rgb[0]! << 24 | rgb[1]! << 16 | rgb[2]! << 8 | unorm(p.a, 8)) >>> 0, true); o += 16;
+  });
+  if (rest) points.forEach((p) => { for (let k = 0; k < rest; k++) out[o++] = unorm((p.sh?.[k] ?? 0) / 8 + 0.5, 8); });
+  return out;
+}
+function encodeKSplat(sections: AuthoredSplat[][], level: 0 | 1 | 2, degree: 0 | 1 = 0, bucketSize = 2): Uint8Array {
+  const shCount = degree ? 9 : 0, shBytes = level === 0 ? 4 : level === 1 ? 2 : 1, record = (level === 0 ? 44 : 24) + shCount * shBytes;
+  const range = 32767, block = 8, total = sections.reduce((n, s) => n + s.length, 0);
+  const layouts = sections.map((points) => {
+    const full = level ? Math.floor(points.length / bucketSize) : 0, partial = level && points.length % bucketSize ? 1 : 0, buckets = full + partial;
+    return { points, full, partial, buckets, size: partial * 4 + buckets * 12 * (level ? 1 : 0) + points.length * record };
+  });
+  const out = new Uint8Array(4096 + sections.length * 1024 + layouts.reduce((n, l) => n + l.size, 0)), view = new DataView(out.buffer);
+  out[0] = 0; out[1] = 1; view.setUint32(4, sections.length, true); view.setUint32(8, sections.length, true); view.setUint32(12, total, true); view.setUint32(16, total, true);
+  view.setUint16(20, level, true); view.setFloat32(36, -2, true); view.setFloat32(40, 2, true);
+  let o = 4096 + sections.length * 1024;
+  layouts.forEach((l, s) => {
+    const h = 4096 + s * 1024;
+    view.setUint32(h, l.points.length, true); view.setUint32(h + 4, l.points.length, true); view.setUint32(h + 8, bucketSize, true); view.setUint32(h + 12, l.buckets, true);
+    view.setFloat32(h + 16, block, true); view.setUint16(h + 20, level ? 12 : 0, true); view.setUint32(h + 24, range, true);
+    view.setUint32(h + 32, l.full, true); view.setUint32(h + 36, l.partial, true); view.setUint16(h + 40, degree, true);
+    if (l.partial) { view.setUint32(o, l.points.length % bucketSize, true); o += 4; }
+    const centres: number[][] = [];
+    for (let b = 0; b < l.buckets; b++) {
+      const members = l.points.slice(b * bucketSize, b * bucketSize + bucketSize);
+      const centre = [0, 1, 2].map((j) => members.reduce((n, p) => n + p.p[j]!, 0) / members.length);
+      centres.push(centre); centre.forEach((v) => { view.setFloat32(o, v, true); o += 4; });
+    }
+    l.points.forEach((p, j) => {
+      if (level === 0) {
+        [...p.p, ...p.s, p.q[3], p.q[0], p.q[1], p.q[2]].forEach((v, k) => view.setFloat32(o + k * 4, v, true));
+      } else {
+        const centre = centres[Math.floor(j / bucketSize)]!, factor = block / 2 / range;
+        p.p.forEach((v, k) => view.setUint16(o + k * 2, Math.round((v - centre[k]!) / factor + range), true));
+        [...p.s, p.q[3], p.q[0], p.q[1], p.q[2]].forEach((v, k) => view.setUint16(o + 6 + k * 2, toHalf(v), true));
+      }
+      const colour = o + (level === 0 ? 40 : 20);
+      p.c.forEach((v, k) => { out[colour + k] = Math.round(v * 255); }); out[colour + 3] = Math.round(p.a * 255);
+      for (let k = 0; k < shCount; k++) {
+        const v = p.sh?.[k] ?? 0, at = colour + 4 + k * shBytes;
+        if (level === 0) view.setFloat32(at, v, true); else if (level === 1) view.setUint16(at, toHalf(v), true); else out[at] = Math.round((v + 2) / 4 * 255);
+      }
+      o += record;
+    });
+  });
+  return out;
+}
+const authored: AuthoredSplat[] = [
+  { p: [1, 2, -3], s: [0.5, 1, 2], q: [0, 0, 0, 1], c: [0.25, 0.5, 0.75], a: 0.5, sh: [0.5, -0.25, 0, 0.125, 1, -1, 0.75, 0.25, -0.5] },
+  { p: [-1, 0.5, 0], s: [0.25, 0.25, 0.5], q: [Math.SQRT1_2, 0, 0, Math.SQRT1_2], c: [1, 0, 0.5], a: 1, sh: [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { p: [0.5, -1, 2], s: [1, 2, 0.5], q: [0.5, 0.5, -0.5, 0.5], c: [0, 1, 0.2], a: 0.2, sh: [1, 1, 1, -1, -1, -1, 0.5, 0.5, 0.5] }
+];
+function expectAuthored(result: GaussianSplatData, tolerance: { p: number; s: number; q: number; c: number }, sh?: number): void {
+  expect(result.count).toBe(authored.length);
+  authored.forEach((point, i) => {
+    for (let j = 0; j < 3; j++) {
+      expect(Math.abs(result.positions[i * 3 + j]! - point.p[j]!)).toBeLessThanOrEqual(tolerance.p);
+      expect(Math.abs(result.scales[i * 3 + j]! / point.s[j]! - 1)).toBeLessThanOrEqual(tolerance.s);
+      expect(Math.abs(result.colors[i * 3 + j]! - point.c[j]!)).toBeLessThanOrEqual(tolerance.c);
+    }
+    // q and -q are the same rotation.
+    const dot = Math.abs(point.q.reduce((n, v, k) => n + v * result.rotations[i * 4 + k]!, 0));
+    expect(1 - dot).toBeLessThanOrEqual(tolerance.q);
+    expect(Math.abs(result.opacities[i]! - point.a)).toBeLessThanOrEqual(0.003);
+    if (sh !== undefined) for (let k = 0; k < 9; k++) expect(Math.abs(result.sphericalHarmonics![i * 9 + k]! - point.sh![k]!)).toBeLessThanOrEqual(sh);
+  });
+}
+
+describe("bundled KSPLAT and compressed PLY codecs", () => {
+  it("decodes chunk-quantized PLY positions, log scales, smallest-three rotations, colours and SH", async () => {
+    const plain = await parseGaussianSplat(encodeCompressedPly(authored), "ply");
+    expectAuthored(plain, { p: 6 / 1023, s: 0.01, q: 2e-3, c: 0.003 });
+    const rich = await parseGaussianSplat(encodeCompressedPly(authored, { colorBounds: true, degree: 1 }), "ply");
+    expect(rich.shDegree).toBe(1);
+    // The encoder writes channel-major f_rest; decoded SH is coefficient-major RGB.
+    const channelMajor = authored.map((p) => [0, 1, 2].flatMap((k) => [0, 1, 2].map((j) => p.sh![j * 3 + k]!)));
+    expectAuthored(rich, { p: 6 / 1023, s: 0.01, q: 2e-3, c: 0.003 });
+    channelMajor.forEach((expected, i) => expected.forEach((v, k) => expect(Math.abs(rich.sphericalHarmonics![i * 9 + k]! - v)).toBeLessThanOrEqual(8 / 255)));
+  });
+  it("decodes multi-chunk compressed PLY and rejects hostile layouts with stable codes", async () => {
+    const many = Array.from({ length: 300 }, (_, i) => ({ ...authored[i % 3]!, p: [i / 10, -i / 20, i % 7] as [number, number, number] }));
+    const result = await parseGaussianSplat(encodeCompressedPly(many), "ply");
+    expect(result.count).toBe(300); expect(Math.abs(result.positions[299 * 3]! - 29.9)).toBeLessThan(0.05);
+    const valid = encodeCompressedPly(authored);
+    await expect(parseGaussianSplat(valid.subarray(0, valid.length - 1), "ply")).rejects.toThrow(/COMPRESSED_PLY_TRUNCATED/);
+    await expect(parseGaussianSplat(Uint8Array.from([...valid, 0]), "ply")).rejects.toThrow(/COMPRESSED_PLY_TRAILING_DATA/);
+    const text = new TextDecoder().decode(valid.subarray(0, valid.indexOf(10, new TextDecoder().decode(valid).indexOf("end_header")) + 1));
+    const swap = (from: string, to: string) => { const header = new TextEncoder().encode(text.replace(from, to)); const out = new Uint8Array(header.length + valid.length - text.length); out.set(header); out.set(valid.subarray(text.length), header.length); return out; };
+    await expect(parseGaussianSplat(swap("element chunk 1", "element chunk 2"), "ply")).rejects.toThrow(/COMPRESSED_PLY_CHUNK_COUNT/);
+    await expect(parseGaussianSplat(swap("binary_little_endian", "binary_big_endian"), "ply")).rejects.toThrow(/COMPRESSED_PLY_UNSUPPORTED_ENCODING/);
+    await expect(parseGaussianSplat(swap("property uint packed_color", "property int packed_color"), "ply")).rejects.toThrow(/COMPRESSED_PLY_PROPERTY_TYPE/);
+    await expect(parseGaussianSplat(valid, "ply", { maxPoints: 2 })).rejects.toThrow(/count/);
+  });
+  it.each([0, 1, 2] as const)("decodes KSPLAT compression level %i with buckets, sections and SH", async (level) => {
+    const bytes = encodeKSplat([authored.slice(0, 2), authored.slice(2)], level, 1, 2);
+    const result = await parseGaussianSplat(bytes, "ksplat");
+    expect(result.metadata).toMatchObject({ format: "ksplat", version: "0.1", extras: { compressionLevel: level } });
+    expect(result.shDegree).toBe(1);
+    expectAuthored(result, level === 0 ? { p: 1e-6, s: 1e-6, q: 1e-6, c: 0.003 } : { p: 2e-4, s: 1e-3, q: 2e-3, c: 0.003 }, level === 0 ? 1e-6 : level === 1 ? 1e-3 : 4 / 255);
+    const partial = await parseGaussianSplat(encodeKSplat([authored], level, 0, 2), "ksplat");
+    expectAuthored(partial, level === 0 ? { p: 1e-6, s: 1e-6, q: 1e-6, c: 0.003 } : { p: 2e-4, s: 1e-3, q: 2e-3, c: 0.003 });
+  });
+  it("rejects hostile KSPLAT headers, budgets and truncation", async () => {
+    const valid = encodeKSplat([authored], 1);
+    const edit = (fn: (view: DataView, bytes: Uint8Array) => void) => { const copy = new Uint8Array(valid); fn(new DataView(copy.buffer), copy); return copy; };
+    await expect(parseGaussianSplat(valid.subarray(0, valid.length - 1), "ksplat")).rejects.toThrow(/KSPLAT_TRUNCATED/);
+    await expect(parseGaussianSplat(Uint8Array.from([...valid, 0]), "ksplat")).rejects.toThrow(/KSPLAT_TRAILING_DATA/);
+    await expect(parseGaussianSplat(edit((_, b) => { b[1] = 2; }), "ksplat")).rejects.toThrow(/KSPLAT_UNSUPPORTED_VERSION/);
+    await expect(parseGaussianSplat(edit((v) => v.setUint16(20, 3, true)), "ksplat")).rejects.toThrow(/KSPLAT_UNSUPPORTED_COMPRESSION/);
+    await expect(parseGaussianSplat(edit((v) => v.setUint32(16, 4, true)), "ksplat")).rejects.toThrow(/KSPLAT_COUNT_MISMATCH/);
+    await expect(parseGaussianSplat(edit((v) => v.setUint32(4096 + 24, 0, true)), "ksplat")).rejects.toThrow(/KSPLAT_SECTION_LAYOUT/);
+    await expect(parseGaussianSplat(edit((v) => v.setUint16(4096 + 40, 4, true)), "ksplat")).rejects.toThrow(/KSPLAT_SH_DEGREE/);
+    await expect(parseGaussianSplat(valid, "ksplat", { maxPoints: 2 })).rejects.toThrow(/KSPLAT_POINT_LIMIT/);
+    await expect(parseGaussianSplat(valid, "ksplat", { maxDecodedBytes: 100 })).rejects.toThrow(/KSPLAT_DECODED_LIMIT/);
+    await expect(parseGaussianSplat(valid, "ksplat", { maxInputBytes: 100 })).rejects.toThrow(/input byte limit/);
+    const nan = edit((v) => v.setUint16(4096 + 1024 + 4 + 2 * 12 + 6, 0x7e00, true));
+    await expect(parseGaussianSplat(nan, "ksplat")).rejects.toThrow(/non-finite/);
+  });
+  it("loads KSPLAT and compressed PLY through the default integrated GaussianSplatLoader without codecs", async () => {
+    const ksplat = encodeKSplat([authored], 1), ply = encodeCompressedPly(authored);
+    vi.stubGlobal("fetch", vi.fn(async (url: string | URL | Request) => new Response(new Uint8Array(String(url).endsWith(".ksplat") ? ksplat : ply).buffer)));
+    try {
+      // compileScene constructs `new GaussianSplatLoader()` and calls load(url, options) exactly like this.
+      const loader = new GaussianSplatLoader();
+      const fromKsplat = await loader.load("https://example.test/cloud.ksplat", { format: "ksplat", maxPoints: 10 });
+      expectAuthored(fromKsplat, { p: 2e-4, s: 1e-3, q: 2e-3, c: 0.003 });
+      const fromPly = await loader.load("https://example.test/cloud.ply", { format: "ply" });
+      expectAuthored(fromPly, { p: 6 / 1023, s: 0.01, q: 2e-3, c: 0.003 });
+      const manager = new AssetManager(); manager.register(new GaussianSplatLoader());
+      const handle = await manager.load<GaussianSplatData>("https://example.test/cloud.ksplat", { type: "gaussian-splat" });
+      expect(handle.value.count).toBe(3); await handle.release(); expect(handle.status).toBe("disposed");
+    } finally { vi.unstubAllGlobals(); }
   });
 });

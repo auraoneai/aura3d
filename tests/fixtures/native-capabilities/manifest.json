@@ -1036,6 +1036,138 @@
         }
       },
       "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7Im1pbWVUeXBlIjoiaW1hZ2Uva3R4MiIsInVyaSI6ImRhdGE6aW1hZ2Uva3R4MjtiYXNlNjQscTB0VVdDQXlNTHNOQ2hvS0FBQUFBQUVBQUFBRUFBQUFCQUFBQUFBQUFBQUFBQUFBQVFBQUFBRUFBQUFCQUFBQWFBQUFBQ3dBQUFDVUFBQUFKQUFBQUxnQUFBQUFBQUFBZ3dBQUFBQUFBQUE3QVFBQUFBQUFBQUVBQUFBQUFBQUFBQUFBQUFBQUFBQXNBQUFBQUFBQUFBSUFLQUNqQVFFQUF3TUFBQUFBQUFBQUFBQUFBQUEvQUFBQUFBQUFBQUFBLy8vLy94OEFBQUJMVkZoM2NtbDBaWElBUW1GemFYTWdWVzVwZG1WeWMyRnNJREV1TVRZQUFBRUFBUUFyQUFBQUJRQUFBQ3NBQUFBQUFBQUFBQUFBQUFBQUFBQUJBQUFBQUFBQUFBQUFBQUFCd0FRQUFBQUFBQURDQXBnU01BQUFBQURDQ3VEWUE0QUpBQUFBQUFBQVJBQXdBUUFBQUFBQWdDQURCQUFBQUFBQXdVUUFBQUFBQUFEeVh5MEFtQUFBQUFBQUFFQUlBQk1BQWdBQUFBQ0lBY0FFQUFBQUFBQUFBZ2dBQUE9PSJ9XSwidGV4dHVyZXMiOlt7ImV4dGVuc2lvbnMiOnsiS0hSX3RleHR1cmVfYmFzaXN1Ijp7InNvdXJjZSI6MH19fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6InJlZCIsImRvdWJsZVNpZGVkIjp0cnVlLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JUZXh0dXJlIjp7ImluZGV4IjowfSwibWV0YWxsaWNGYWN0b3IiOjAsInJvdWdobmVzc0ZhY3RvciI6MX0sImVtaXNzaXZlRmFjdG9yIjpbMC4xLDAsMF19XSwibWVzaGVzIjpbeyJuYW1lIjoidHJpYW5nbGUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowLCJURVhDT09SRF8wIjoxfSwiaW5kaWNlcyI6MiwibWF0ZXJpYWwiOjB9XX1dLCJub2RlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwibWVzaCI6MH1dLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwic2NlbmUiOjAsImV4dGVuc2lvbnNVc2VkIjpbIktIUl90ZXh0dXJlX2Jhc2lzdSJdLCJleHRlbnNpb25zUmVxdWlyZWQiOlsiS0hSX3RleHR1cmVfYmFzaXN1Il19"
+    },
+    {
+      "id": "triangle-glb-draco",
+      "format": "glb",
+      "formatVersion": "2.0 KHR_draco_mesh_compression",
+      "mediaType": "model/gltf-binary",
+      "path": "/native-conformance/compressed/triangle-draco.glb",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public glTF and KHR_draco_mesh_compression specifications; the payload was encoded once from that authored triangle with the draco3d 1.5.7 codec library (no other engine or its fixtures)."
+      },
+      "byteLength": 908,
+      "sha256": "8dd93ebca8e7e9503c40bec399e530fff23d8e8241484af1cf0512c85b7bb092",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [
+        "KHR_draco_mesh_compression"
+      ],
+      "extensionsRequired": [
+        "KHR_draco_mesh_compression"
+      ],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "decoder": "draco",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle"
+        }
+      },
+      "dataBase64": "Z2xURgIAAACMAwAAMAMAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UgZml4dHVyZSJ9LCJleHRlbnNpb25zVXNlZCI6WyJLSFJfZHJhY29fbWVzaF9jb21wcmVzc2lvbiJdLCJleHRlbnNpb25zUmVxdWlyZWQiOlsiS0hSX2RyYWNvX21lc2hfY29tcHJlc3Npb24iXSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6NjF9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6NjF9XSwiYWNjZXNzb3JzIjpbeyJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzMiLCJtaW4iOlstMSwtMSwwXSwibWF4IjpbMSwxLDBdfSx7ImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yRmFjdG9yIjpbMSwwLDAsMV0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9fV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MH0sImluZGljZXMiOjEsIm1hdGVyaWFsIjowLCJleHRlbnNpb25zIjp7IktIUl9kcmFjb19tZXNoX2NvbXByZXNzaW9uIjp7ImJ1ZmZlclZpZXciOjAsImF0dHJpYnV0ZXMiOnsiUE9TSVRJT04iOjB9fX19XX1dLCJub2RlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwibWVzaCI6MH1dLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwic2NlbmUiOjB9ICBAAAAAQklOAERSQUNPAgIBAAAAAQMBAAECAQEACQMAAAAAAIC/AACAvwAAAAAAAIA/AACAvwAAAAAAAAAAAACAPwAAAAAAAAA="
+    },
+    {
+      "id": "triangle-glb-meshopt",
+      "format": "glb",
+      "formatVersion": "2.0 EXT_meshopt_compression",
+      "mediaType": "model/gltf-binary",
+      "path": "/native-conformance/compressed/triangle-meshopt.glb",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public glTF and EXT_meshopt_compression specifications; the payload was encoded once from that authored triangle with the meshoptimizer 1.2.0 codec library (no other engine or its fixtures)."
+      },
+      "byteLength": 1268,
+      "sha256": "d21a24db4fd8d733a3c10b007306518c83d1f6b46b2ed895a7814962c0009b89",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [
+        "EXT_meshopt_compression"
+      ],
+      "extensionsRequired": [
+        "EXT_meshopt_compression"
+      ],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "decoder": "meshopt",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle"
+        }
+      },
+      "dataBase64": "Z2xURgIAAAD0BAAAnAQAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UgZml4dHVyZSJ9LCJleHRlbnNpb25zVXNlZCI6WyJFWFRfbWVzaG9wdF9jb21wcmVzc2lvbiJdLCJleHRlbnNpb25zUmVxdWlyZWQiOlsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iXSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6NjB9LHsiYnl0ZUxlbmd0aCI6NDQsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiZmFsbGJhY2siOnRydWV9fX1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjoxLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwiYnl0ZVN0cmlkZSI6MTIsInRhcmdldCI6MzQ5NjIsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNywiYnl0ZVN0cmlkZSI6MTIsImNvdW50IjozLCJtb2RlIjoiQVRUUklCVVRFUyJ9fX0seyJidWZmZXIiOjEsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzLCJleHRlbnNpb25zIjp7IkVYVF9tZXNob3B0X2NvbXByZXNzaW9uIjp7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6NDAsImJ5dGVMZW5ndGgiOjE4LCJieXRlU3RyaWRlIjoyLCJjb3VudCI6MywibW9kZSI6IlRSSUFOR0xFUyJ9fX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50IjozLCJ0eXBlIjoiVkVDMyIsIm1pbiI6Wy0xLC0xLDBdLCJtYXgiOlsxLDEsMF19LHsiYnVmZmVyVmlldyI6MSwiY29tcG9uZW50VHlwZSI6NTEyMywiY291bnQiOjMsInR5cGUiOiJTQ0FMQVIifV0sIm1hdGVyaWFscyI6W3sibmFtZSI6InJlZCIsImRvdWJsZVNpZGVkIjp0cnVlLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlsxLDAsMCwxXSwibWV0YWxsaWNGYWN0b3IiOjAsInJvdWdobmVzc0ZhY3RvciI6MX19XSwibWVzaGVzIjpbeyJuYW1lIjoidHJpYW5nbGUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowfSwiaW5kaWNlcyI6MSwibWF0ZXJpYWwiOjB9XX1dLCJub2RlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwibWVzaCI6MH1dLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwic2NlbmUiOjB9ICAgPAAAAEJJTgCh+uqqAAD/AP99AAD/AAAAAAAAAAAAAACAvwAAgL8AAAAAAAAAAAAA4fAAdodWZ3iphmWJaJgBaQAAAAA="
     }
   ],
   "unverifiedFormats": [

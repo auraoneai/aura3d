@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { readIndependentGLTF, transformPoint } from "../support/independent-interchange-readers";
 
 test.describe("native interchange export", () => {
   let server: ExampleDevServer;
@@ -71,6 +72,7 @@ test.describe("native interchange export", () => {
             qualityPreset: "default", cameraPolicy: "identity", environmentLighting: { color: [1, 1, 1], intensity: 0.75 }
           }));
           return {
+            exportedBase64: outputBase64,
             warnings: result.warnings,
             dependencies: result.dependencies.length,
             parent: loadedPart.parent?.name,
@@ -92,6 +94,18 @@ test.describe("native interchange export", () => {
       }
     });
     expect(result.dependencies).toBe(0);
+    // The browser-produced GLB is verified with an independent spec reader in
+    // Node; the in-page Aura reload and render remain a separate consumer check.
+    const independent = readIndependentGLTF(Uint8Array.from(Buffer.from(result.exportedBase64, "base64")));
+    const independentPart = independent.findNode("Part");
+    expect(independent.nodes[independentPart.parent!]!.name).toBe("Parent");
+    expect(independentPart.world[12]).toBeCloseTo(0.35, 5);
+    const independentPrimitive = independent.meshes[independentPart.mesh!]!.primitives[0]!;
+    const worldPositions = independentPrimitive.attributes.POSITION!.values.map((point) => transformPoint(independentPart.world, point));
+    [[-0.35, -0.7, 0], [1.05, -0.7, 0], [0.35, 0.7, 0]].forEach((expected, i) => expected.forEach((value, j) => expect(worldPositions[i]![j]).toBeCloseTo(value, 5)));
+    const independentMaterial = independent.materials[independentPrimitive.material!]!;
+    expect(independentMaterial.name).toBe("Green");
+    expect(independentMaterial.pbrMetallicRoughness.baseColorFactor[1]).toBeCloseTo(0.8, 5);
     expect(result.parent).toBe("Parent");
     expect(result.translation[0]).toBeCloseTo(0.35, 5);
     expect(result.translation.slice(1)).toEqual([0, 0]);

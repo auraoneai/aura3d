@@ -20,7 +20,8 @@ import {
   DEFAULT_AURA_ASSET_MANIFEST,
   DEFAULT_AURA_ASSET_OUTPUT_DIR,
   DEFAULT_AURA_ASSET_PUBLIC_PATH,
-  DEFAULT_AURA_ASSET_TYPEGEN
+  DEFAULT_AURA_ASSET_TYPEGEN,
+  NATIVE_CATALOG_MODEL_FORMATS
 } from "./asset-constants.js";
 import {
   shouldScanSource,
@@ -382,6 +383,11 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   if (format === "pvr") throw new Error("Aura3D assets add failed: PVR texture inspection is asynchronous; use addAssetAsync or the assets add command.");
   if (format === "vox") throw new Error("Aura3D assets add failed: VOX model inspection is asynchronous; use addAssetAsync or the assets add command.");
   if (format === "nrrd" || format === "nhdr") throw new Error("Aura3D assets add failed: scalar-volume inspection is asynchronous; use addAssetAsync or the assets add command.");
+  // Without strict inspection the deprecated legacy path stays available and is
+  // recorded as legacy-unverified; parser admission for catalog formats is async.
+  if (NATIVE_CATALOG_MODEL_FORMATS.has(format) && options.modelInspection === "strict") {
+    throw new Error(`Aura3D assets add failed: strict bounded parser inspection is unavailable synchronously for .${format}; native-format admission is asynchronous, use addAssetAsync or the assets add command.`);
+  }
   if (format === "glb") {
     const projectDir = resolve(options.projectDir ?? process.cwd());
     const captured = captureGlbSource(projectDir, sourcePath);
@@ -520,6 +526,29 @@ export async function addAssetAsync(options: AddAssetOptions): Promise<AssetCliR
         nativeWarnings: volume.diagnostics.map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`) }
     }));
   }
+  if (NATIVE_CATALOG_MODEL_FORMATS.has(format)) {
+    if (options.type !== undefined && options.type !== "model") throw new Error(`Aura3D assets add failed: .${format} must use --type model.`);
+    // One bounded snapshot is admitted by the format's real parser (and glTF
+    // projection) under the shared catalog limits, then hashed and staged.
+    const bytes = readBoundedNativeFile(sourcePath);
+    const { admitNativeFormat } = await import("@aura3d/assets/importers");
+    let admitted: Awaited<ReturnType<typeof admitNativeFormat>>;
+    try {
+      admitted = await admitNativeFormat(bytes, format, { limits: { maxFileBytes: NATIVE_IMPORT_MAX_BYTES } });
+    } catch (error) {
+      // An explicit legacy request keeps the deprecated, unverified path.
+      if (options.modelInspection === "legacy") return addAsset(options);
+      throw new Error(`Aura3D assets add failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
+    const inspection = {
+      ...inspectAssetFile(sourcePath, format),
+      nativeWarnings: [
+        `${admitted.format} admitted by the bounded native parser: ${JSON.stringify(admitted.summary)}.`,
+        ...admitted.warnings
+      ]
+    };
+    return addAssetPrepared(options, { bytes, inspection, inspector: "native", dependencies: [] });
+  }
   if (format !== "3mf") return addAsset(options);
   const bytes = readBoundedNativeFile(sourcePath);
   const parsed = await parseModel3MF(bytes);
@@ -533,7 +562,7 @@ export async function addAssetAsync(options: AddAssetOptions): Promise<AssetCliR
 interface PreparedNativeAsset {
   readonly bytes: Buffer;
   readonly inspection: AssetInspection;
-  readonly inspector: "obj" | "ply" | "stl" | "3mf" | "pvr" | "vox" | "nrrd" | "glb";
+  readonly inspector: "obj" | "ply" | "stl" | "3mf" | "pvr" | "vox" | "nrrd" | "glb" | "native";
   readonly formatMetadata?: AuraCliAssetEntry["formatMetadata"];
   readonly dependencies: readonly { readonly uri: string; readonly path: string; readonly bytes: Buffer }[];
   readonly assertSourceUnchanged?: () => void;
@@ -693,7 +722,7 @@ function addAssetPrepared(options: AddAssetOptions, native?: PreparedNativeAsset
     ...(native?.formatMetadata ? { formatMetadata: native.formatMetadata } : {}),
     ...(type === "model" ? {
       modelInspection: native && native.inspector !== "pvr" && native.inspector !== "nrrd" && native.inspector !== "glb"
-        ? { version: 1 as const, status: "parser-inspected" as const, inspector: native.inspector, digest: `sha256-${hash}` }
+        ? { version: 1 as const, status: "parser-inspected" as const, inspector: (native.inspector === "native" ? format : native.inspector) as NonNullable<AuraCliAssetEntry["modelInspection"]>["inspector"], digest: `sha256-${hash}` }
         : { version: 1 as const, status: (format === "glb" || format === "gltf" ? "metadata-only" : "legacy-unverified") as "metadata-only" | "legacy-unverified" }
     } : {}),
     ...(native ? { integrity: {
@@ -5000,7 +5029,7 @@ function admitCubeLut(sourcePath: string, format: string): void {
 }
 
 function inferAssetType(format: string): AuraCliAssetType {
-  if (["glb", "gltf", "obj", "ply", "stl", "3mf", "vox"].includes(format)) return "model";
+  if (["glb", "gltf", "obj", "ply", "stl", "3mf", "vox"].includes(format) || NATIVE_CATALOG_MODEL_FORMATS.has(format)) return "model";
   if (["png", "jpg", "jpeg", "webp", "ktx2", "pvr"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
   if (["mp3", "wav", "ogg"].includes(format)) return "audio";

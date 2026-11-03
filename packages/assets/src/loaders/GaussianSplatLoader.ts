@@ -2,6 +2,7 @@ import { mergeAssetRequestOptions, redactAssetUrl, type AssetLoadRequest, type A
 import { fetchBytes, validateAssetUrlPolicy, verifyAssetBytes } from "../LoaderFetch";
 import { LoadContext } from "../LoadContext";
 import { decompressZstdFallback } from "./ZstdDecoder";
+import { decodeCompressedPly, decodeKSplat } from "./SplatCodecs";
 
 /**
  * Gaussian splat data import, independent of a rendering backend.
@@ -76,7 +77,11 @@ export interface GaussianSplatParseOptions {
   readonly gltfPrimitive?: number;
   /** glTF scene index; defaults to the document's default scene or scene 0. */
   readonly gltfScene?: number;
-  /** Explicit opt-in codec for KSPLAT, SPZ, or recognized compressed PLY. */
+  /**
+   * Optional override codecs. KSPLAT and chunk-quantized PLY are decoded by the
+   * bundled Aura3D codecs (see SplatCodecs.ts) when no override is supplied;
+   * SPZ uses the built-in reader unless an override is supplied.
+   */
   readonly codecs?: Partial<Record<"ksplat" | "spz" | "compressedPly", GaussianSplatCodec>>;
 }
 
@@ -175,7 +180,7 @@ type PlyElement = { readonly name: string; readonly count: number; readonly prop
 const PLY_TYPES: Readonly<Record<string, PlyScalar>> = { char: "char", int8: "char", uchar: "uchar", uint8: "uchar", short: "short", int16: "short", ushort: "ushort", uint16: "ushort", int: "int", int32: "int", uint: "uint", uint32: "uint", float: "float", float32: "float", double: "double", float64: "double" };
 const PLY_SIZE: Readonly<Record<PlyScalar, number>> = { char: 1, uchar: 1, short: 2, ushort: 2, int: 4, uint: 4, float: 4, double: 8 };
 class CompressedPlyUnsupportedError extends Error {
-  constructor(readonly declaredCount: number) { super("compressed PLY is unsupported without an explicitly registered compressedPly decoder"); }
+  constructor(readonly declaredCount: number) { super("compressed PLY is routed to the explicitly registered compressedPly decoder"); }
 }
 function plyType(name: string | undefined): PlyScalar { const t = name && PLY_TYPES[name]; if (!t) throw new Error(`unsupported PLY scalar type: ${name}`); return t; }
 function plyNumber(value: number, type: PlyScalar): number {
@@ -223,14 +228,12 @@ function parsePly(bytes: Uint8Array, options: GaussianSplatParseOptions): Gaussi
   const names = new Set(vertex.properties.map((p) => p.name));
   const required = ["x", "y", "z", "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2", "rot_3", "opacity", "f_dc_0", "f_dc_1", "f_dc_2"];
   if (required.some((name) => !names.has(name)) && elements.some((element) => element.name === "chunk") && ["packed_position", "packed_rotation", "packed_scale", "packed_color"].every((name) => names.has(name))) {
-    // The public overview describes 256-point chunks and field bit widths, but
-    // does not specify bit/component order, quaternion signs/ranges, scale or
-    // color quantization, or optional SH decoding. Recognize the published PLY
-    // header without guessing the missing wire rules.
-    // https://blog.playcanvas.com/compressing-gaussian-splats/
-    // https://github.com/nerfstudio-project/gsplat/issues/747
+    // Chunk-quantized PLY. The bundled decoder implements the exact layout
+    // documented in SplatCodecs.ts; an explicitly supplied codec overrides it.
     checkAllocation(vertex.count, 0, options);
-    throw new CompressedPlyUnsupportedError(vertex.count);
+    if (options.codecs?.compressedPly) throw new CompressedPlyUnsupportedError(vertex.count);
+    const decoded = decodeCompressedPly(bytes, headerEnd, format, elements, (count, degree) => allocate(count, degree, "ply", options), options.signal);
+    return validateGaussianSplat({ ...decoded, metadata: { format: "ply", version, colorSpace: options.defaultColorSpace ?? "srgb_rec709_display", extras: { encoding: format, compression: "chunk-quantized" } } }, options);
   }
   for (const name of required) if (!names.has(name)) throw new Error(`missing PLY splat property ${name}`);
   const rest = [...names].filter((n) => /^f_rest_\d+$/.test(n));
@@ -803,9 +806,6 @@ async function parseGltfPrimitive(doc: GltfDocument, buffers: readonly Uint8Arra
 
 async function decodeSplatWithCodec(bytes: Uint8Array, format: "spz" | "ksplat" | "compressedPly", options: GaussianSplatParseOptions): Promise<GaussianSplatData> {
   const codec = options.codecs?.[format];
-  // No independent KSPLAT wire specification was found for version/section
-  // headers, bucket indexing, quantization, quaternion and SH layouts. The
-  // known compression-level labels alone are insufficient to decode a file.
   if (!codec) throw new Error(`${format.toUpperCase()} requires an explicitly registered decoder`);
   const result = await codec(bytes, options); checkAbort(options.signal);
   if (result.metadata?.format !== (format === "compressedPly" ? "ply" : format)) throw new Error("splat codec returned mismatched format metadata");
@@ -843,6 +843,12 @@ export async function parseGaussianSplat(input: ArrayBuffer | Uint8Array, format
   if (format === "splat") return parseSplat(bytes, options);
   if (format === "gltf" || format === "glb") return parseGltf(bytes, format, options);
   if (format === "spz" && !options.codecs?.spz) return parseSpz(bytes, options);
+  if (format === "ksplat" && !options.codecs?.ksplat) {
+    const bound = limits(options);
+    const decoded = decodeKSplat(bytes, bound, (count, degree) => allocate(count, degree, "ksplat", options), options.signal);
+    checkAbort(options.signal);
+    return validateGaussianSplat({ ...decoded, metadata: { format: "ksplat", version: `${bytes[0]}.${bytes[1]}`, colorSpace: options.defaultColorSpace ?? "srgb_rec709_display", extras: { compressionLevel: new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint16(20, true) } } }, options);
+  }
   if (format === "spz" || format === "ksplat") return decodeSplatWithCodec(bytes, format, options);
   throw new Error(`unknown splat format: ${String(format)}`);
 }

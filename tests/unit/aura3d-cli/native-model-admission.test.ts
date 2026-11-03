@@ -229,3 +229,29 @@ describe("native model asset admission", () => {
     expect(manifest.assets[0]).toMatchObject({ type: "model", format: "3mf", hash: `sha256-${digest(bytes)}`, role: "prop", quality: "candidate", provenance: { license: "CC0-1.0", sourcePage: "https://example.test/model", author: "Artist" } });
   }, 30_000);
 });
+
+describe("WP-08 catalog model admission", () => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M0 0 L10 0 L10 10 Z" fill="#ff0000"/></svg>`;
+
+  it("admits a catalog model through its real bounded parser and records parser inspection", async () => {
+    const root = project();
+    writeFileSync(join(root, "assets/mark.svg"), svg);
+    expect(() => addAsset({ projectDir: root, file: "assets/mark.svg", name: "mark", modelInspection: "strict" })).toThrow(/asynchronous/);
+    expect(existsSync(join(root, "aura.assets.json"))).toBe(false);
+    const result = await addAssetAsync({ projectDir: root, file: "assets/mark.svg", name: "mark", license: "CC0-1.0" });
+    const entry = result.manifest.assets[0]!;
+    expect(entry).toMatchObject({ type: "model", format: "svg", hash: `sha256-${digest(svg)}`, modelInspection: { status: "parser-inspected", inspector: "svg", digest: `sha256-${digest(svg)}` } });
+    expect(readFileSync(join(root, entry.outputPath), "utf8")).toBe(svg);
+  });
+
+  it.each([
+    ["mark.svg", "<svg><path d='M 0 0 Q'/></svg>", /NATIVE_FORMAT_(?:MALFORMED|TRUNCATED)/],
+    ["scene.3dm", "3D Geometry File Format       ", /NATIVE_FORMAT_CODEC_REQUIRED/],
+    ["walk.md2", "IDP2", /NATIVE_FORMAT_/]
+  ] as const)("rejects %s with a stable diagnostic and writes nothing", async (name, contents, pattern) => {
+    const root = project();
+    writeFileSync(join(root, `assets/${name}`), contents);
+    await expect(addAssetAsync({ projectDir: root, file: `assets/${name}`, name: "bad" })).rejects.toThrow(pattern);
+    expect(existsSync(join(root, "aura.assets.json"))).toBe(false);
+  });
+});

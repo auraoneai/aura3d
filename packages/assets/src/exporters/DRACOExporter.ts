@@ -210,7 +210,7 @@ function warnUnsupportedProperties(primitive: AuraExportPrimitive, warnings: Aur
     descriptors += 1;
     check(attribute, ["values", "itemSize", "normalized"], path);
   };
-  check(primitive, ["attributes", "indices", "mode", "material", "targets"], "primitive");
+  check(primitive, ["attributes", "indices", "mode", "material", "targets", "variants"], "primitive");
   for (const [semantic, attribute] of Object.entries(primitive.attributes)) {
     if (truncated) break;
     checkAttribute(attribute, `attributes.${semantic}`);
@@ -309,6 +309,7 @@ export async function exportDRACO(primitive: AuraExportPrimitive, options: AuraD
     indices = undefined;
   }
   if (primitive.material !== undefined) warnings.push({ code: "DRACO_MATERIAL_OMITTED", path: "material", message: "Standalone Draco does not store material bindings." });
+  if (primitive.variants !== undefined && primitive.variants.length > 0) warnings.push({ code: "MATERIAL_VARIANTS_LOST", path: "variants", message: "Standalone Draco does not store material variant mappings." });
   if (primitive.targets && primitive.targets.length > 0) warnings.push({ code: "DRACO_MORPH_TARGETS_OMITTED", path: "targets", message: "Standalone Draco does not store morph targets." });
   if (mode === "triangles") warnings.push({ code: "DRACO_VERTEX_ORDER", message: "The codec may reorder vertices and faces or discard unused vertices; original buffer indices are not preserved." });
   for (const [kind, bits] of Object.entries(options.quantization ?? {})) {

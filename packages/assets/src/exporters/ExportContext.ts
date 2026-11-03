@@ -14,6 +14,20 @@ export interface AuraExportPrimitive {
   readonly mode?: "triangles" | "lines" | "points";
   readonly material?: number;
   readonly targets?: readonly Readonly<Record<string, AuraExportAttribute>>[];
+  /** KHR_materials_variants mappings: scene.materialVariants indices bound to a material. */
+  readonly variants?: readonly AuraExportMaterialVariantMapping[];
+}
+export interface AuraExportMaterialVariantMapping { readonly material: number; readonly variants: readonly number[] }
+/** Source document provenance retained from an admitted asset. */
+export interface AuraExportDocument {
+  /** The source document's generator; the writer records its own generator separately. */
+  readonly generator?: string;
+  readonly copyright?: string;
+  /** Source container version and minimum version, when declared. */
+  readonly version?: string;
+  readonly minVersion?: string;
+  /** Bounded JSON extras from the source document's asset object. */
+  readonly extras?: Readonly<Record<string, unknown>>;
 }
 export interface AuraExportMesh { readonly name?: string; readonly primitives: readonly AuraExportPrimitive[]; readonly weights?: readonly number[] }
 export interface AuraExportInstances {
@@ -247,6 +261,8 @@ export interface AuraExportScene {
   readonly materials?: readonly AuraExportMaterial[]; readonly cameras?: readonly AuraExportCamera[]; readonly lights?: readonly AuraExportLight[];
   readonly skins?: readonly AuraExportSkin[]; readonly animations?: readonly AuraExportAnimation[]; readonly dependencies?: readonly AuraExportDependency[];
   readonly metadata?: Readonly<Record<string, unknown>>; readonly sourceWarnings?: readonly AuraExportWarning[];
+  /** Source document provenance (glTF asset generator/copyright/version/extras). */ readonly document?: AuraExportDocument;
+  /** Material variant names in KHR_materials_variants order; primitives reference them by index. */ readonly materialVariants?: readonly string[];
   /** Length of a source unit in metres; absence means unknown. */ readonly metersPerUnit?: number;
   readonly upAxis?: "Y" | "Z"; readonly uvOrigin?: "top-left" | "bottom-left";
 }
@@ -286,6 +302,20 @@ export class ExportContext {
   }
 }
 
+/** Structured losses for source document provenance and material variants in a writer that cannot store them. */
+export function documentAndVariantLosses(scene: AuraExportScene, format: string): AuraExportWarning[] {
+  const warnings: AuraExportWarning[] = [];
+  const source = scene.document;
+  if (source && Object.values(source).some((value) => value !== undefined)) {
+    warnings.push({ code: "DOCUMENT_PROVENANCE_LOST", path: "document", message: `Source document provenance (generator, copyright, version, extras) is not stored by ${format}.` });
+  }
+  const mapped = (scene.meshes ?? []).some((mesh) => mesh.primitives?.some((primitive) => (primitive.variants?.length ?? 0) > 0));
+  if ((scene.materialVariants?.length ?? 0) > 0 || mapped) {
+    warnings.push({ code: "MATERIAL_VARIANTS_LOST", path: "materialVariants", message: `Material variants are not stored by ${format}; only each primitive's default material binding is written.` });
+  }
+  return warnings;
+}
+
 /** Report unexpected JS/JSON fields rather than silently discarding them.
  * Attribute semantic names are intentionally open and each writer reports
  * semantics it cannot represent. Arbitrary JSON is permitted inside metadata. */
@@ -300,14 +330,16 @@ export function findUnsupportedExportProperties(scene: AuraExportScene): AuraExp
     }
   };
   const attribute = (value: AuraExportAttribute | undefined, path: string): void => check(value, ["values", "itemSize", "normalized"], path);
-  check(scene, ["nodes", "roots", "meshes", "materials", "cameras", "lights", "skins", "animations", "dependencies", "metadata", "sourceWarnings", "metersPerUnit", "upAxis", "uvOrigin"], "scene");
+  check(scene, ["nodes", "roots", "meshes", "materials", "cameras", "lights", "skins", "animations", "dependencies", "metadata", "sourceWarnings", "metersPerUnit", "upAxis", "uvOrigin", "document", "materialVariants"], "scene");
+  // These are representable only in glTF; every other writer reports the loss explicitly.
+  warnings.push(...documentAndVariantLosses(scene, "this export format"));
   scene.nodes?.forEach((node, i) => check(node, ["name", "children", "matrix", "translation", "rotation", "scale", "mesh", "camera", "light", "skin", "weights", "metadata"], `nodes[${i}]`));
   scene.meshes?.forEach((mesh, i) => {
     const path = `meshes[${i}]`;
     check(mesh, ["name", "primitives", "weights"], path);
     mesh.primitives?.forEach((primitive, j) => {
       const p = `${path}.primitives[${j}]`;
-      check(primitive, ["attributes", "indices", "mode", "material", "targets"], p);
+      check(primitive, ["attributes", "indices", "mode", "material", "targets", "variants"], p);
       for (const [name, value] of Object.entries(primitive.attributes ?? {})) attribute(value, `${p}.attributes.${name}`);
       primitive.targets?.forEach((target, k) => { for (const [name, value] of Object.entries(target)) attribute(value, `${p}.targets[${k}].${name}`); });
     });
@@ -370,6 +402,11 @@ export function validateScene(scene: AuraExportScene, signal?: AbortSignal): voi
       for (const [name, value] of Object.entries(primitive.attributes)) checkAttribute(value, `${path}.${name}`, count, signal);
       for (const target of primitive.targets ?? []) for (const [name, value] of Object.entries(target)) checkAttribute(value, `${path}.targets.${name}`, count, signal);
       reference(primitive.material, scene.materials?.length ?? 0, `${path}.material`);
+      for (const [vi, mapping] of (primitive.variants ?? []).entries()) {
+        reference(mapping?.material, scene.materials?.length ?? 0, `${path}.variants[${vi}].material`);
+        if (mapping?.material === undefined || !Array.isArray(mapping.variants) || mapping.variants.length === 0) throw new TypeError(`${path}.variants[${vi}] needs a material and variant indices`);
+        for (const variant of mapping.variants) reference(variant, scene.materialVariants?.length ?? 0, `${path}.variants[${vi}].variants`);
+      }
       const mode = primitive.mode ?? "triangles"; if (!(mode === "triangles" || mode === "lines" || mode === "points")) throw new Error(`${path} has unsupported topology`);
       const length = primitive.indices?.length ?? count; if ((mode === "triangles" && length % 3) || (mode === "lines" && length % 2)) throw new RangeError(`${path} has incomplete ${mode}`);
       for (const index of primitive.indices ?? []) { if (index === undefined) throw new RangeError(`${path}.indices references an invalid index`); reference(index, count, `${path}.indices`); }
@@ -490,7 +527,39 @@ export function sceneFromGLTFAsset(asset: GLTFAsset, scene?: Scene): AuraExportS
   }
   const requiredPointerChannels: { channel: AuraExportPointerAnimationChannel; path: string; pointer: string }[] = [];
   warn("SOURCE_ATTRIBUTE_ENCODING_LOST", "meshes", "The runtime asset exposes decoded numeric attributes; original quantization and component encodings are unavailable.");
-  warn("SOURCE_DOCUMENT_METADATA_UNAVAILABLE", "metadata", "The loaded runtime asset does not expose the source document's asset-level metadata, license or provenance.");
+  // A loaded asset may have converted node pointer channels to core-shaped
+  // tracks; writers use this marker to report that origin is not provable.
+  warn("SOURCE_TRACK_ORIGIN_PARTIAL", "animations", "The runtime asset does not retain the source encoding of every core-shaped animation channel.");
+  const sourceDocument = asset.documentMetadata;
+  let exportDocument: AuraExportDocument | undefined;
+  if (!sourceDocument) warn("SOURCE_DOCUMENT_METADATA_UNAVAILABLE", "metadata", "The loaded runtime asset does not expose the source document's asset-level metadata, license or provenance.");
+  else {
+    let extras: Record<string, unknown> | undefined;
+    if (sourceDocument.extras !== undefined) {
+      try { extras = { ...copyMetadata(sourceDocument.extras as object) }; }
+      catch { warn("SOURCE_DOCUMENT_EXTRAS_LOST", "document.extras", "The source asset extras are not bounded JSON data and were omitted."); }
+    }
+    // An Aura3D export namespaces the original document provenance; recover it
+    // so export -> load -> export keeps the first source rather than nesting.
+    let generator = sourceDocument.generator;
+    let version = sourceDocument.version;
+    const nested = extras?.["aura3d:sourceDocument"];
+    if (extras && nested && typeof nested === "object" && !Array.isArray(nested)) {
+      const record = nested as Record<string, unknown>;
+      delete extras["aura3d:sourceDocument"];
+      if (typeof record.generator === "string") generator = record.generator;
+      if (typeof record.version === "string") version = record.version;
+      if (record.extras && typeof record.extras === "object" && !Array.isArray(record.extras)) extras = { ...extras, ...(record.extras as Record<string, unknown>) };
+      if (!Object.keys(extras).length) extras = undefined;
+    }
+    exportDocument = {
+      ...(generator === undefined ? {} : { generator }),
+      ...(sourceDocument.copyright === undefined ? {} : { copyright: sourceDocument.copyright }),
+      ...(version === undefined ? {} : { version }),
+      ...(sourceDocument.minVersion === undefined ? {} : { minVersion: sourceDocument.minVersion }),
+      ...(extras === undefined ? {} : { extras })
+    };
+  }
   const runtimeNodes: SceneNode[] = [];
   scene.root.traverse((node) => runtimeNodes.push(node));
   const nodeIndices = new Map(runtimeNodes.map((node, index) => [node, index]));
@@ -609,8 +678,20 @@ export function sceneFromGLTFAsset(asset: GLTFAsset, scene?: Scene): AuraExportS
     if (mesh.joints1?.length) attributes.JOINTS_1 = { values: Uint16Array.from(mesh.joints1.flatMap((row) => [...row])), itemSize: 4 };
     if (mesh.weights1?.length) attributes.WEIGHTS_1 = flatten(mesh.weights1, 4);
     const targets = mesh.morphTargets.map((target) => ({ ...(target.positions.length ? { POSITION: flatten(target.positions, 3) } : {}), ...(target.normals.length ? { NORMAL: flatten(target.normals, 3) } : {}), ...(target.tangents.length ? { TANGENT: flatten(target.tangents, 3) } : {}) }));
-    if (mesh.materialVariants.length) warn("MATERIAL_VARIANTS_LOST", `meshes[${mesh.name}]`, "Material variants are not represented in the interchange snapshot.");
-    return { attributes, ...(mesh.indices ? { indices: Uint32Array.from(mesh.indices) } : {}), mode: mesh.topology, ...(mesh.materialIndex === undefined ? {} : { material: mesh.materialIndex }), ...(targets.length ? { targets } : {}) };
+    // Group KHR_materials_variants mappings by material, preserving first-seen order.
+    const byMaterial = new Map<number, number[]>();
+    for (const mapping of mesh.materialVariants) {
+      if (!Number.isSafeInteger(mapping.variantIndex) || mapping.variantIndex < 0 || mapping.variantIndex >= asset.materialVariants.length ||
+          !Number.isSafeInteger(mapping.materialIndex) || mapping.materialIndex < 0 || mapping.materialIndex >= sourceMaterials.length) {
+        warn("MATERIAL_VARIANT_MAPPING_LOST", `meshes[${mesh.name}].materialVariants`, "A variant mapping does not resolve to a retained variant and material.");
+        continue;
+      }
+      const list = byMaterial.get(mapping.materialIndex) ?? [];
+      if (!list.includes(mapping.variantIndex)) list.push(mapping.variantIndex);
+      byMaterial.set(mapping.materialIndex, list);
+    }
+    const variants = [...byMaterial].map(([material, list]) => ({ material, variants: list }));
+    return { attributes, ...(mesh.indices ? { indices: Uint32Array.from(mesh.indices) } : {}), mode: mesh.topology, ...(mesh.materialIndex === undefined ? {} : { material: mesh.materialIndex }), ...(targets.length ? { targets } : {}), ...(variants.length ? { variants } : {}) };
   };
   const meshes: AuraExportMesh[] = asset.meshes.map((mesh) => ({ name: mesh.name, primitives: [primitives(mesh)], ...(mesh.morphWeights.length ? { weights: [...mesh.morphWeights] } : {}) }));
   const meshNames = new Map<string, number[]>();
@@ -929,7 +1010,9 @@ export function sceneFromGLTFAsset(asset: GLTFAsset, scene?: Scene): AuraExportS
     }
     return [{ name: animation.name, channels, ...(pointerChannels.length ? { pointerChannels } : {}) }];
   });
-  const snapshot: AuraExportScene = { nodes, roots: [0], meshes, materials, cameras, lights, skins, animations, dependencies, sourceWarnings, metersPerUnit: 1, upAxis: "Y", uvOrigin: "top-left" };
+  const materialVariants = asset.materialVariants.map((variant) => variant.name);
+  const snapshot: AuraExportScene = { nodes, roots: [0], meshes, materials, cameras, lights, skins, animations, dependencies, sourceWarnings, metersPerUnit: 1, upAxis: "Y", uvOrigin: "top-left",
+    ...(exportDocument ? { document: exportDocument } : {}), ...(materialVariants.length ? { materialVariants } : {}) };
   const contract: RequiredPointerSnapshotContract = {
     ...(requiredPointerLoss ? { loss: requiredPointerLoss } : {}),
     channels: requiredPointerChannels

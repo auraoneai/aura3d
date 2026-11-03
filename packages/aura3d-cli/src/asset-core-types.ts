@@ -352,7 +352,7 @@ export interface AuraCliAssetFormatMetadata {
 export interface AuraCliModelInspection {
   readonly version: 1;
   readonly status: "parser-inspected" | "metadata-only" | "legacy-unverified";
-  readonly inspector?: "obj" | "ply" | "stl" | "3mf" | "vox";
+  readonly inspector?: "obj" | "ply" | "stl" | "3mf" | "vox" | "fbx" | "usd" | "usda" | "usdz" | "dae" | "3dm" | "amf" | "3ds" | "wrl" | "vrml" | "ldr" | "mpd" | "kmz" | "pcd" | "pdb" | "vtk" | "xyz" | "gcode" | "gco" | "md2" | "svg";
   readonly digest?: string;
 }
 

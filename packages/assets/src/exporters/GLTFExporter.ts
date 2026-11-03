@@ -110,7 +110,27 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
   const finishWarnings = (): readonly Warning[] => diagnosticsTruncated
     ? [...warnings, { code: "DIAGNOSTICS_TRUNCATED", message: "Additional diagnostics or diagnostic text were omitted due to export limits." }]
     : warnings;
-  unknown(scene, ["nodes", "roots", "meshes", "materials", "cameras", "lights", "skins", "animations", "dependencies", "metadata", "sourceWarnings", "metersPerUnit", "upAxis", "uvOrigin"], "scene");
+  unknown(scene, ["nodes", "roots", "meshes", "materials", "cameras", "lights", "skins", "animations", "dependencies", "metadata", "sourceWarnings", "metersPerUnit", "upAxis", "uvOrigin", "document", "materialVariants"], "scene");
+  const sourceDocument = scene.document;
+  if (sourceDocument !== undefined) {
+    if (!sourceDocument || typeof sourceDocument !== "object" || Array.isArray(sourceDocument)) throw new Error("GLTF_INVALID_DOCUMENT: scene.document must be an object");
+    unknown(sourceDocument, ["generator", "copyright", "version", "minVersion", "extras"], "scene.document");
+    for (const key of ["generator", "copyright", "version", "minVersion"] as const) {
+      const value = sourceDocument[key];
+      if (value !== undefined && (typeof value !== "string" || value.length > 65536)) throw new Error(`GLTF_INVALID_DOCUMENT: scene.document.${key} must be a bounded string`);
+    }
+    if (sourceDocument.minVersion !== undefined && !/^2\.\d+$/.test(sourceDocument.minVersion)) throw new Error("GLTF_INVALID_DOCUMENT: scene.document.minVersion must be a glTF 2.x version");
+    validateMetadata(sourceDocument.extras, "scene.document.extras");
+  }
+  const variantNames = scene.materialVariants ?? [];
+  if (!Array.isArray(variantNames)) throw new Error("GLTF_INVALID_VARIANTS: scene.materialVariants must be an array");
+  const seenVariantNames = new Set<string>();
+  for (const [index, name] of variantNames.entries()) {
+    if (typeof name !== "string" || name.length === 0 || name.length > 65536) throw new Error(`GLTF_INVALID_VARIANTS: scene.materialVariants[${index}] must be a non-empty bounded string`);
+    if (seenVariantNames.has(name)) throw new Error(`GLTF_INVALID_VARIANTS: scene.materialVariants[${index}] duplicates ${boundedText(name)}`);
+    seenVariantNames.add(name);
+  }
+  let variantsReferenced = false;
   if (scene.metersPerUnit === undefined) warn("UNIT_CONVENTION_UNSPECIFIED", "scene.metersPerUnit", "glTF assumes metres; the source unit was not specified.");
   else if (!Number.isFinite(scene.metersPerUnit) || scene.metersPerUnit <= 0) throw new Error("GLTF_INVALID_CONVENTION: metersPerUnit must be positive and finite");
   if (scene.upAxis === undefined) warn("UP_AXIS_UNSPECIFIED", "scene.upAxis", "glTF assumes Y-up; the source up axis was not specified.");
@@ -154,7 +174,15 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
   const skins = scene.skins ?? [];
   const animations = scene.animations ?? [];
   const doc: JsonObject = {
-    asset: { version: "2.0", generator: "Aura3D", ...(scene.metadata === undefined ? {} : { extras: scene.metadata }) },
+    // The writer is the generator of this file. Source document provenance is
+    // retained verbatim (copyright as-is; source generator/version and extras
+    // under a namespaced extras key) so a later reader can recover it.
+    asset: {
+      version: "2.0", generator: "Aura3D",
+      ...(sourceDocument?.minVersion === undefined ? {} : { minVersion: sourceDocument.minVersion }),
+      ...(sourceDocument?.copyright === undefined ? {} : { copyright: sourceDocument.copyright }),
+      ...documentExtras(scene.metadata, sourceDocument)
+    },
     scene: 0,
     scenes: [scene.roots.length ? { nodes: [...scene.roots] } : {}]
   };
@@ -630,7 +658,7 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
     finiteArray(mesh.weights, undefined, `${path}.weights`);
     const primitives = mesh.primitives.map((primitive: ExportPrimitive, pi: number) => {
       const pp = `${path}.primitives[${pi}]`;
-      unknown(primitive, ["attributes", "indices", "mode", "material", "targets"], pp);
+      unknown(primitive, ["attributes", "indices", "mode", "material", "targets", "variants"], pp);
       if (!primitive.attributes || typeof primitive.attributes !== "object") throw new Error(`GLTF_INVALID_MESH: ${pp} needs attributes`);
       const positionDescriptor = Object.getOwnPropertyDescriptor(primitive.attributes, "POSITION");
       const position: AuraExportAttribute | undefined = positionDescriptor && "value" in positionDescriptor ? positionDescriptor.value : undefined;
@@ -732,8 +760,30 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
         }
         return result;
       }) : undefined;
+      let variantExtension: JsonObject | undefined;
+      if (primitive.variants !== undefined) {
+        if (!Array.isArray(primitive.variants)) throw new Error(`GLTF_INVALID_VARIANTS: ${pp}.variants must be an array`);
+        const assigned = new Set<number>();
+        const mappings = primitive.variants.map((mapping, mi) => {
+          const mp = `${pp}.variants[${mi}]`;
+          if (!mapping || typeof mapping !== "object") throw new Error(`GLTF_INVALID_VARIANTS: ${mp} must be an object`);
+          unknown(mapping, ["material", "variants"], mp);
+          reference(mapping.material, materials.length, `${mp}.material`);
+          if (mapping.material === undefined) throw new Error(`GLTF_INVALID_VARIANTS: ${mp}.material is required`);
+          if (!Array.isArray(mapping.variants) || mapping.variants.length === 0) throw new Error(`GLTF_INVALID_VARIANTS: ${mp}.variants must be a non-empty array`);
+          for (const variant of mapping.variants) {
+            reference(variant, variantNames.length, `${mp}.variants`);
+            // A variant selects one material per primitive (KHR_materials_variants).
+            if (assigned.has(variant)) throw new Error(`GLTF_INVALID_VARIANTS: ${mp} assigns variant ${variant} twice in one primitive`);
+            assigned.add(variant);
+          }
+          return { material: mapping.material, variants: [...mapping.variants] };
+        });
+        if (mappings.length) { variantExtension = { mappings }; variantsReferenced = true; }
+      }
       return { attributes: attrs, ...(indices === undefined ? {} : { indices }), mode: mode === "triangles" ? 4 : mode === "lines" ? 1 : 0,
-        ...(primitive.material === undefined ? {} : { material: primitive.material }), ...(targets === undefined ? {} : { targets }) };
+        ...(primitive.material === undefined ? {} : { material: primitive.material }), ...(targets === undefined ? {} : { targets }),
+        ...(variantExtension ? { extensions: { KHR_materials_variants: variantExtension } } : {}) };
     });
     const count = meshMorphTargetCount(mesh);
     if (mesh.primitives.some((p) => p.targets?.length && p.targets.length !== count)) throw new Error(`GLTF_INVALID_MORPH: ${path} primitives with targets must have the same number of targets`);
@@ -1162,7 +1212,7 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
   }
   if (requiredPointerCount) requiredExtensions.add("KHR_animation_pointer");
   if (animations.some((animation) => animation.channels.some((channel) => !hasVerifiedExportCoreChannelOrigin(channel)))
-    && warnings.some((warning) => warning.code === "SOURCE_DOCUMENT_METADATA_UNAVAILABLE")) {
+    && warnings.some((warning) => warning.code === "SOURCE_DOCUMENT_METADATA_UNAVAILABLE" || warning.code === "SOURCE_TRACK_ORIGIN_PARTIAL")) {
     // A loaded node pointer can already have been converted to a core-shaped
     // interchange channel, so no pointerChannels entry is left to inspect.
     warn("ANIMATION_POINTER_ORIGIN_UNAVAILABLE", "animations",
@@ -1189,6 +1239,12 @@ export function exportGLTF(scene: AuraExportScene, options: GLTFExportOptions = 
     doc.extensions = { KHR_lights_punctual: { lights: lightDocs } };
     usedExtensions.add("KHR_lights_punctual");
   }
+  if (variantNames.length) {
+    // Keep declared variants even when no primitive currently maps them: a
+    // variant switch to an unmapped name is valid and selects default materials.
+    doc.extensions = { ...(doc.extensions as JsonObject | undefined), KHR_materials_variants: { variants: variantNames.map((name) => ({ name })) } };
+    usedExtensions.add("KHR_materials_variants");
+  } else if (variantsReferenced) throw new Error("GLTF_INVALID_VARIANTS: primitive variant mappings require scene.materialVariants");
   if (usedExtensions.size) doc.extensionsUsed = [...usedExtensions].sort();
   if (requiredExtensions.size) doc.extensionsRequired = [...requiredExtensions].sort();
   if (views.length) doc.bufferViews = views;
@@ -1394,6 +1450,19 @@ function validateMetadata(value: unknown, path: string, ancestors = new Set<obje
     }
   }
   ancestors.delete(value);
+}
+/** Writer metadata stays in asset.extras; source provenance is namespaced so it never overwrites it. */
+function documentExtras(metadata: AuraExportScene["metadata"], source: AuraExportScene["document"]): { extras?: Record<string, unknown> } {
+  const provenance: Record<string, unknown> = {
+    ...(source?.generator === undefined ? {} : { generator: source.generator }),
+    ...(source?.version === undefined ? {} : { version: source.version }),
+    ...(source?.extras === undefined ? {} : { extras: source.extras })
+  };
+  if (metadata === undefined && !Object.keys(provenance).length) return {};
+  if (Object.keys(provenance).length && metadata !== undefined && Object.prototype.hasOwnProperty.call(metadata, "aura3d:sourceDocument")) {
+    throw new Error("GLTF_INVALID_PROPERTY: scene.metadata cannot use the reserved aura3d:sourceDocument key");
+  }
+  return { extras: { ...(metadata ?? {}), ...(Object.keys(provenance).length ? { "aura3d:sourceDocument": provenance } : {}) } };
 }
 function isKnownSemantic(semantic: string): boolean { return /^(POSITION|NORMAL|TANGENT|TEXCOORD_\d+|COLOR_\d+|JOINTS_\d+|WEIGHTS_\d+)$/.test(semantic); }
 function validateSemantic(semantic: string, attribute: AuraExportAttribute, vertexCount: number, path: string): void {

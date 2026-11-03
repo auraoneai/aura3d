@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { CATALOG_SCENE_FIXTURES } from "../fixtures/native-capabilities/catalog-scenes";
 
 /**
  * Post-CODE_COMPLETE_GO acceptance. The fixture bytes and expectations are
@@ -24,6 +25,7 @@ interface Fixture {
     readonly outcome: "render" | "reject" | "dependency" | "texture-failure";
     readonly errorPattern?: string;
     readonly unsupportedExtension?: string;
+    readonly decoder?: "draco" | "meshopt";
     readonly visual?: { readonly textureRGBA?: readonly number[] };
   };
 }
@@ -68,8 +70,22 @@ interface ProbeResult {
 const manifest = JSON.parse(readFileSync("tests/fixtures/native-capabilities/manifest.json", "utf8")) as Manifest;
 const fixtureById = new Map(manifest.fixtures.map((fixture) => [fixture.id, fixture]));
 const fixtureByPath = new Map(manifest.fixtures.map((fixture) => [fixture.path, fixture]));
+// Additional WP-08 catalog scene formats authored in catalog-scenes.ts; each
+// is rendered through createAuraApp + createNativeFormatRegistry like the
+// manifest fixtures, with its own digest-bound integrity record.
+const catalogFixtures: readonly Fixture[] = CATALOG_SCENE_FIXTURES.map((value) => {
+  const data = Buffer.from(value.source, "utf8");
+  return {
+    id: value.id, path: `/native-conformance/catalog/${value.id}.${value.format}`, format: value.format, formatVersion: "catalog-scene",
+    mediaType: value.mediaType, dataBase64: data.toString("base64"), byteLength: data.length,
+    sha256: createHash("sha256").update(data).digest("hex"), limits: { maxBytes: 65536 }, dependencies: [],
+    expected: { outcome: "render" }
+  };
+});
+for (const value of catalogFixtures) fixtureByPath.set(value.path, value);
 const routePrefix = "/native-conformance/";
 const requests: string[] = [];
+const decoderRequests: string[] = [];
 let browserVersion = "unavailable";
 
 function fixture(id: string): Fixture {
@@ -100,7 +116,7 @@ test.describe("independent native format maturity", () => {
     if (manifest.schema !== "aura3d.native-format-conformance/1" || manifest.version !== 1) {
       throw new Error("Unsupported native conformance manifest version");
     }
-    if (fixtureById.size !== manifest.fixtures.length || fixtureByPath.size !== manifest.fixtures.length) {
+    if (fixtureById.size !== manifest.fixtures.length || fixtureByPath.size !== manifest.fixtures.length + catalogFixtures.length) {
       throw new Error("Native conformance fixture IDs and paths must be unique");
     }
     for (const value of manifest.fixtures) {
@@ -119,6 +135,20 @@ test.describe("independent native format maturity", () => {
       contentType: "text/html",
       body: "<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>"
     }));
+    // The root app's decoder registry loads its vendored codecs from the
+    // default /aura-decoders/ base; serve exactly the packaged files.
+    await page.route(`${server.origin}/aura-decoders/**`, async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      const match = /^\/aura-decoders\/(draco|meshopt|basis)\/([\w.-]+)$/.exec(path);
+      const file = match ? `packages/assets/vendor/${match[1]}/${match[2]}` : undefined;
+      if (!file || !existsSync(file)) {
+        await route.fulfill({ status: 404, contentType: "text/plain", body: `missing decoder ${path}` });
+        return;
+      }
+      decoderRequests.push(path);
+      const contentType = file.endsWith(".wasm") ? "application/wasm" : "text/javascript";
+      await route.fulfill({ status: 200, contentType, headers: { "cache-control": "no-store" }, body: readFileSync(file) });
+    });
     await page.route(`${server.origin}${routePrefix}**`, async (route) => {
       const path = new URL(route.request().url()).pathname;
       requests.push(path);
@@ -146,6 +176,7 @@ test.describe("independent native format maturity", () => {
 
   test.beforeEach(() => {
     requests.length = 0;
+    decoderRequests.length = 0;
     overrides.clear();
   });
 
@@ -160,7 +191,7 @@ test.describe("independent native format maturity", () => {
     });
   });
 
-  for (const value of manifest.fixtures.filter((entry) => entry.expected.outcome === "render")) {
+  for (const value of [...manifest.fixtures.filter((entry) => entry.expected.outcome === "render"), ...catalogFixtures]) {
     test(`renders and disposes ${value.id} (${value.formatVersion}) through the root API`, async ({}, testInfo) => {
       const result = await probe(page, server.origin, value);
       await attachProbe(testInfo, value.id, value, result);
@@ -186,6 +217,8 @@ test.describe("independent native format maturity", () => {
       if (value.expected.unsupportedExtension) {
         expect(JSON.stringify(result.diagnostics)).toContain(value.expected.unsupportedExtension);
       }
+      // Claimed compressed variants must really go through their codec.
+      if (value.expected.decoder) expect(decoderRequests.some((path) => path.startsWith(`/aura-decoders/${value.expected.decoder}/`))).toBe(true);
       expectDisposed(result);
     });
   }
@@ -347,6 +380,10 @@ async function probe(page: Page, origin: string, value: Fixture): Promise<ProbeR
     let image: string | null = null;
     let resourcesBeforeDispose: Record<string, number> = {};
     try {
+      // Non-glTF fixtures (OBJ, PLY, STL, 3MF) use the public opt-in native
+      // registry; without it the root validator rejects them before loading.
+      const importers = await import(input.importersUrl);
+      const formatRegistry = importers.createNativeFormatRegistry();
       const assets = engine.defineAuraAssets({
         fixture: {
           type: "model",
@@ -363,6 +400,7 @@ async function probe(page: Page, origin: string, value: Fixture): Promise<ProbeR
         }
       });
       app = engine.createAuraApp(canvas, {
+        formatRegistry,
         strict: true,
         autoStart: false,
         resize: false,
@@ -429,6 +467,7 @@ async function probe(page: Page, origin: string, value: Fixture): Promise<ProbeR
       resourcesBeforeDispose, resourcesAfterDispose: counts(), image };
   }, {
     moduleUrl: `${origin}/packages/engine/src/public/index.ts`,
+    importersUrl: `${origin}/packages/assets/src/importers.ts`,
     path: value.path,
     format: value.format,
     sha256: value.sha256,

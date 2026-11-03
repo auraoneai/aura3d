@@ -8,6 +8,8 @@ import {
   Model3MFLoader, OBJLoader, PLYLoader, read3MFPackageEntries, STLLoader,
   transcodeKTX2BasisTexture, type GLTFAsset, type GLTFImageAsset
 } from "@aura3d/assets";
+import { createDracoDecoder, createMeshoptDecoder, type GLTFDracoDecoderModule, type GLTFMeshoptDecoderModule } from "@aura3d/assets";
+import { createNativeFormatRegistry } from "@aura3d/assets/importers";
 
 interface Fixture {
   id: string;
@@ -216,6 +218,50 @@ describe("independent native format conformance", () => {
       const loader = item.format === "ply" ? new PLYLoader() : item.format === "stl" ? new STLLoader() : new GLTFLoader();
       expect(item.expected.errorPattern).toBeTruthy();
       await expect(loader.load({ url: url(id), type: item.format }, new LoadContext())).rejects.toThrow(new RegExp(item.expected.errorPattern!, "i"));
+    }
+  );
+
+  it.each(["triangle-glb-draco", "triangle-glb-meshopt"])(
+    "%s decodes the claimed compressed variant with its injected codec, creates resources and disposes them", async (id) => {
+      stubFixtures();
+      const item = fixture(id);
+      expect(item.extensionsRequired).toHaveLength(1);
+      await expect(new GLTFLoader().load({ url: url(id) }, new LoadContext())).rejects.toThrow(/draco|meshopt/i);
+      let loader: GLTFLoader;
+      if (item.extensionsRequired[0] === "KHR_draco_mesh_compression") {
+        const specifier = "draco3d";
+        const imported = await import(specifier);
+        const factory = (imported.default ?? imported) as { createDecoderModule(): Promise<GLTFDracoDecoderModule> };
+        loader = new GLTFLoader({ dracoDecoder: createDracoDecoder(await factory.createDecoderModule()) });
+      } else {
+        const { MeshoptDecoder } = await import("meshoptimizer");
+        await MeshoptDecoder.ready;
+        loader = new GLTFLoader({ meshoptDecoder: createMeshoptDecoder(MeshoptDecoder as unknown as GLTFMeshoptDecoderModule) });
+      }
+      const asset = await loader.load({ url: url(id) }, new LoadContext());
+      assertTriangle(asset, item);
+      const resources = await createGLTFRenderResources(asset, { failOnMissingTexture: true });
+      expect(resources.geometryLibrary.size).toBeGreaterThan(0);
+      expect(resources.bounds.min).toEqual([-1, -1, 0]);
+      expect(resources.bounds.max).toEqual([1, 1, 0]);
+      resources.dispose();
+      loader.dispose(asset);
+      expect(asset.disposed).toBe(true);
+    }
+  );
+
+  it.each(["triangle-obj", "triangle-ply-le", "triangle-stl-binary", "triangle-3mf-stored"])(
+    "%s loads through the root app's native format registry lease and disposes it", async (id) => {
+      stubFixtures();
+      const item = fixture(id);
+      const registry = createNativeFormatRegistry();
+      const lease = await registry.load({ url: url(id), format: item.format }, new LoadContext(), { format: item.format });
+      assertTriangle(lease.asset as GLTFAsset, item);
+      const resources = await lease.createGLTFRenderResources();
+      expect(resources.renderableBindings.length).toBeGreaterThan(0);
+      await lease.dispose();
+      expect(lease.disposed).toBe(true);
+      expect((lease.asset as GLTFAsset).disposed).toBe(true);
     }
   );
 

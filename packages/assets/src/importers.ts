@@ -16,3 +16,4 @@ export * from "./loaders/ScientificFormatLoaders.js";
 export * from "./loaders/USDLoader.js";
 export * from "./loaders/VectorFormatLoaders.js";
 export * from "./loaders/VoxelFormatLoaders.js";
+export * from "./loaders/NativeFormatCatalog.js";

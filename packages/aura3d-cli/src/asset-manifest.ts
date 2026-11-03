@@ -5,6 +5,7 @@ import {
   DEFAULT_AURA_ASSET_OUTPUT_DIR,
   DEFAULT_AURA_ASSET_PUBLIC_PATH,
   DEFAULT_AURA_ASSET_TYPEGEN,
+  NATIVE_CATALOG_MODEL_FORMATS,
 } from "./asset-constants.js";
 import type {
   AuraCliAssetEntry,
@@ -168,7 +169,7 @@ function normalizeModelInspection(asset: AuraCliAssetEntry): AuraCliAssetEntry {
   if (record.status === "parser-inspected") {
     const inspector = record.inspector;
     const digest = normalizeSha256(record.digest);
-    if (typeof inspector !== "string" || !["obj", "ply", "stl", "3mf", "vox"].includes(inspector) || inspector !== asset.format || !digest || digest !== normalizeSha256(asset.hash ?? asset.sha256)) {
+    if (typeof inspector !== "string" || (!["obj", "ply", "stl", "3mf", "vox"].includes(inspector) && !NATIVE_CATALOG_MODEL_FORMATS.has(inspector)) || inspector !== asset.format || !digest || digest !== normalizeSha256(asset.hash ?? asset.sha256)) {
       throw new Error(`Asset "${asset.id}" has invalid or stale model parser inspection metadata.`);
     }
   } else if (record.inspector !== undefined || (record.digest !== undefined && !normalizeSha256(record.digest))) {

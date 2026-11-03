@@ -32,7 +32,10 @@ texture is CC0-1.0, with encoder details in its
 The manifest records coordinates as right-handed and Y-up in source units;
 glTF coordinates use metres.
 
-The initial conformance target covers these narrow combinations. `Expected`
+Non-glTF model rows load through `createNativeFormatRegistry()` from
+`@aura3d/assets/importers`, which the root maturity spec passes to
+`createAuraApp(canvas, { formatRegistry })`; the root app serves the vendored
+Draco/meshopt decoders from `/aura-decoders/`. The initial conformance target covers these narrow combinations. `Expected`
 describes the authored fixture, not a passing result; a target becomes
 source-tested only when its corresponding test passes for the current source.
 
@@ -45,6 +48,9 @@ source-tested only when its corresponding test passes for the current source.
 | PLY 1.0 | `triangle-ply-ascii`, `triangle-ply-le`, `triangle-ply-be` | ASCII, binary little-endian and binary big-endian triangles | Unverified |
 | STL | `triangle-stl-ascii`, `triangle-stl-binary` | ASCII and binary little-endian triangles | Unverified |
 | 3MF 1.0 | `triangle-3mf-stored` | Triangle in a stored ZIP package | Unverified |
+| GLB 2.0 + `KHR_draco_mesh_compression` (required) | `triangle-glb-draco` | Triangle encoded once with draco3d 1.5.7 sequential encoding; decodes losslessly to the authored positions through the injected/vendored Draco decoder | Unverified |
+| GLB 2.0 + `EXT_meshopt_compression` (required, fallback buffer stub) | `triangle-glb-meshopt` | Triangle with meshopt ATTRIBUTES and TRIANGLES bufferViews encoded with meshoptimizer 1.2.0; decodes to the authored positions through the meshopt decoder | Unverified |
+| SVG, VTK legacy, COLLADA 1.4.1, USDA 1.0, VRML 2.0, LDraw | `svg-triangle`, `vtk-triangle`, `dae-triangle`, `usda-triangle`, `vrml-triangle`, `ldraw-triangle` in [`catalog-scenes.ts`](../../tests/fixtures/native-capabilities/catalog-scenes.ts) | One authored triangle per format that must project to a +Z-facing, lower-edge-wide triangle after the format's axis/unit conversion | Unverified |
 
 The triangle positions are `(-1, -1, 0)`, `(1, -1, 0)` and `(0, 1, 0)`;
 the external PNG is an independently authored 1×1 RGBA image. See the

@@ -51,7 +51,7 @@ maintained in [`GLTFExtensionSupport.ts`](../../packages/assets/src/GLTFExtensio
 | Draco, Meshopt, KTX2/Basis in glTF | These extensions need the corresponding decoder/transcoder. `createAssetDecoderRegistry` loads `draco`, `meshopt` and `ktx2` on demand; texture target selection depends on device capabilities and can fall back to uncompressed RGBA. A disabled, missing or failed required decoder produces an error. Decoder presence is not a claim that every compressed file or target GPU is supported. |
 | OBJ/MTL | `OBJLoader` produces a glTF-shaped asset from faces, lines, points, positions, normals, texture coordinates and material groups. It accepts inline or referenced material definitions and maps a limited set of MTL scalar fields. Source tests cover the bounded primitive and vertex-color paths; smoothing and material texture maps are not established. Scene hierarchy, skinning and animation are not represented as general OBJ import. Inspect diagnostics and verify the result for the specific asset. |
 | OpenEXR | `EXRLoader` / `parseEXR` expose `half` or `float` output, `rgba`, `rg` or `r` layout, and a selected flat part, layer and tile level. Source tests cover uncompressed, RLE, ZIPS, ZIP, PIZ, PXR24, B44/B44A and DWAA/DWAB fixtures; scanlines including subsampled channels; and tiled, mipmap, ripmap and mixed multipart data. A separate bounded deep-data path covers scanline, tiled, multipart, mipmap and ripmap fixtures with uncompressed, RLE, ZIPS or ZIP data. Tiled and deep subsampling and HTJ2K remain unsupported. Reference-tool and compositing limits are described below; these tests do not establish packed-package or browser support. |
-| Gaussian splats | Source tests cover splat-specific PLY 1.0 in ASCII and both binary byte orders, 32-byte SPLAT records, SPZ v1–4, embedded glTF/GLB splat accessors and glTF accessors with externally resolved buffers. The draft compressed glTF path accepts an SPZ v2 payload. Source tests also cover multiple glTF splat primitives, scene transforms and repeated instances. Recognized packed PLY and KSPLAT require explicitly registered decoders; native decoding of those payloads is not implemented. Codec, coordinate, multiple-cloud and rendering limits are described below. |
+| Gaussian splats | Source tests cover splat-specific PLY 1.0 in ASCII and both binary byte orders, 32-byte SPLAT records, SPZ v1–4, embedded glTF/GLB splat accessors and glTF accessors with externally resolved buffers. The draft compressed glTF path accepts an SPZ v2 payload. Source tests also cover multiple glTF splat primitives, scene transforms and repeated instances. Chunk-quantized (packed) PLY and KSPLAT 0.1 (compression levels 0–2) are decoded by bundled Aura3D codecs on the default loader and scene-compiler path; an explicitly registered codec overrides them. Interoperability is limited to the documented layouts and has not been checked against third-party files. Codec, coordinate, multiple-cloud and rendering limits are described below. |
 | Ordinary web images | `ImageLoader` recognizes PNG, JPEG, WebP, GIF and AVIF URLs or image data URIs; actual decode depends on the browser's image capabilities. `TextureLoader` handles its declared PNG, JPEG, WebP and AVIF path and returns an sRGB descriptor. This does not imply every image encoding, animation or color profile is preserved. |
 | Radiance HDR | A bounded RGBE byte decoder exists in the asset source. The `HDRLoader` package export exposes a diagnostics-oriented compatibility loader; do not equate that loader's report with a general admitted HDR environment or root-rendering claim. |
 
@@ -284,11 +284,23 @@ installed-package or rendered-output evidence:
 - The splat source and its importer tests are in
   [`GaussianSplatLoader.ts`](../../packages/assets/src/loaders/GaussianSplatLoader.ts)
   and [`native-splat-loader.test.ts`](../../tests/assets/native-splat-loader.test.ts).
-  Ordinary PLY requires the expected splat vertex attributes. The loader
-  recognizes a packed PLY header and can pass its bytes to an explicitly
-  supplied `codecs.compressedPly` callback. It checks the declared count,
-  validates the returned single uninstanced cloud and copies its arrays; it
-  does not natively decode the packed payload. SPLAT has no higher-order
+  Ordinary PLY requires the expected splat vertex attributes. Chunk-quantized
+  PLY (`chunk` bounds, `packed_position`/`packed_rotation`/`packed_scale`/
+  `packed_color`, optional `sh` element) and KSPLAT 0.1 (compression levels
+  0–2, sectioned bucket layout) are decoded by the bundled, independently
+  authored codecs in [`SplatCodecs.ts`](../../packages/assets/src/loaders/SplatCodecs.ts),
+  whose source comments state the exact wire layout implemented. Both reject
+  other versions, encodings and layouts, truncation, trailing bytes, point and
+  decoded-byte budgets with stable `COMPRESSED_PLY_*` / `KSPLAT_*` codes, and
+  their output passes the same finite/opacity/rotation validation as other
+  splats. Because `GaussianSplatLoader` uses them by default, the public scene
+  compiler parses every named splat format without extra configuration. A
+  supplied `codecs.compressedPly` or `codecs.ksplat` callback overrides the
+  bundled codec; the loader checks the declared count, validates the returned
+  single uninstanced cloud and copies its arrays. Source tests use fixtures
+  written by independent in-test encoders; no third-party KSPLAT or packed PLY
+  file has been decoded, so interoperability beyond the documented layout is
+  unverified. SPLAT has no higher-order
   spherical harmonics. SPZ v1–3 uses gzip and requires compatible runtime
   decompression unless an SPZ codec is supplied. SPZ v4 can use a supplied
   Zstandard callback, a platform decoder or a bounded WebAssembly module-worker
@@ -339,6 +351,66 @@ physical-device acceptance for the EXR and splat paths remain pending. The
 source tests and mock-device results do not establish installed-package or
 physical-device support.
 
+## Per-format import matrix
+
+Source of truth: `NATIVE_FORMAT_CATALOG` in
+`packages/assets/src/loaders/NativeFormatCatalog.ts` (exported from
+`@aura3d/assets/importers`); `tests/assets/native-format-catalog.test.ts`
+checks that every catalog id has a row here. `createNativeFormatRegistry()`
+installs every `root model()` row into an app `FormatRegistry` (pass it as
+`createAuraApp(canvas, { formatRegistry })`); `admitNativeFormat(bytes,
+format)` runs the format's real bounded parser under one shared limit set
+(`maxFileBytes` 64 MiB, `maxExpandedBytes` 256 MiB, `maxPixels` 16 Mi,
+`maxDecodedBytes` 256 MiB, `maxElements` 4 M) and fails with one of the stable
+codes `NATIVE_FORMAT_UNKNOWN`, `NATIVE_FORMAT_FILE_LIMIT`,
+`NATIVE_FORMAT_ARCHIVE_LIMIT`, `NATIVE_FORMAT_PIXEL_LIMIT`,
+`NATIVE_FORMAT_ALLOCATION_LIMIT`, `NATIVE_FORMAT_CODEC_REQUIRED`,
+`NATIVE_FORMAT_TRUNCATED`, `NATIVE_FORMAT_UNSUPPORTED_VARIANT`,
+`NATIVE_FORMAT_DEPENDENCY_UNRESOLVED` or `NATIVE_FORMAT_MALFORMED` (the
+parser's own code is kept as `sourceCode`). Byte admission covers
+self-contained documents; external references must be admitted with their
+document. `supplied` codecs (3DM, JPEG XL, UltraHDR) are refused with
+`NATIVE_FORMAT_CODEC_REQUIRED` because Aura3D ships no decoder for them.
+Rows are source-level contracts; rendered and device evidence is tracked in
+[native format conformance](../assets/native-format-conformance.md).
+
+| Id | Extensions | Asset type | Codec | Versions / variants | Units | Coordinates | Dependencies | Known losses |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `obj` | .obj | model (root `model()`) | built-in | ASCII | unspecified (source units kept) | right-handed, +Y up by convention (not declared) | mtllib MTL files and their map_Kd/map_Ke/bump textures, resolved relative to the document | free-form curves/surfaces and unmapped MTL statements are reported, not converted |
+| `fbx` | .fbx | model (root `model()`) | built-in | ASCII and binary 7000-7999 | UnitScaleFactor (centimetres default) converted to metres | GlobalSettings axis system converted to glTF +Y up | embedded or relative texture files | NURBS, constraints, cameras/lights outside the mapped subset and layered textures are diagnosed |
+| `usd` | .usd, .usda, .usdz | model (root `model()`) | built-in | USDA 1.0; USDZ stored ZIP | metersPerUnit (default 0.01) converted to metres | upAxis Y or Z converted to glTF +Y up | USDZ archive members or relative asset paths | binary crate (usdc) layers, composition arcs and unsupported schemas are rejected or diagnosed |
+| `collada` | .dae | model (root `model()`) | built-in | 1.4.1; 1.5.0 | <unit meter> converted to metres | <up_axis> X/Y/Z converted to glTF +Y up | image library URIs relative to the document | physics, kinematics, effects outside common profile are diagnosed |
+| `model3mf` | .3mf | model (root `model()`) | built-in | 1.0 core (ZIP) | unit attribute (millimetre default) converted to metres | right-handed +Z up converted to glTF +Y up | package parts only; no external references | beam lattices, slices and production extensions are diagnosed |
+| `rhino` | .3dm | model (root `model()`) | supplied | archive version detected; decoding by supplied codec | model unit system converted to metres | +Z up converted to glTF +Y up | none (embedded) | Aura3D ships no 3DM decoder; without RhinoDecoder admission fails with NATIVE_FORMAT_CODEC_REQUIRED |
+| `amf` | .amf | model (root `model()`) | built-in | 1.1 (XML or ZIP) | unit attribute converted to metres | +Z up converted to glTF +Y up | ZIP-packed document only | curved triangles and textures are diagnosed |
+| `legacy3ds` | .3ds | model (root `model()`) | built-in | binary chunk 3 | unspecified (source units kept) | +Z up converted to glTF +Y up | texture names are reported, not fetched | keyframer animation and texture maps are diagnosed |
+| `vrml` | .wrl, .vrml | model (root `model()`) | built-in | 2.0 utf8 | metres | +Y up (glTF compatible) | Inline/ImageTexture URLs are reported | scripts, routes, sensors and PROTO are diagnosed |
+| `ldraw` | .ldr, .mpd, .dat | model (root `model()`) | built-in | 1.0.x line types 0-5 | LDU (0.4 mm) converted to metres | -Y up converted to glTF +Y up | sub-file references resolved relative to the document under dependency count/byte limits | conditional lines and BFC edge cases are diagnosed |
+| `kmz` | .kmz | model (root `model()`) | built-in | KML 2.2 ZIP | COLLADA unit converted to metres | COLLADA up axis converted; geographic placement is reported, not applied | archive-local COLLADA and PNG/JPEG textures | non-model KML features are ignored with diagnostics |
+| `ply` | .ply | model (root `model()`) | built-in | 1.0 ascii; 1.0 binary_little_endian; 1.0 binary_big_endian | unspecified (source units kept) | source axes kept | none | custom elements/properties are retained on the parsed record, not rendered |
+| `stl` | .stl | model (root `model()`) | built-in | ASCII; binary little-endian | unspecified (source units kept) | source axes kept | none | binary attribute byte counts and colour conventions are not interpreted |
+| `vox` | .vox | model (root `model()`) | built-in | 150; 200 | one voxel per unit | +Z up converted to glTF +Y up | none | one static frame is selected; materials beyond palette colour are diagnosed |
+| `pcd` | .pcd | model (root `model()`) | built-in | 0.7 ascii, binary, binary_compressed (LZF) | metres (PCL convention) | VIEWPOINT reported; points kept in sensor frame | none | fields other than x/y/z/rgb/normal remain on the typed record |
+| `pdb` | .pdb | model (root `model()`) | built-in | 3.3 fixed columns | angstrom | orthogonal Cartesian angstrom | none | bonds beyond CONECT and secondary structure are not rendered |
+| `vtk` | .vtk | model (root `model()`) | built-in | legacy 1.0-4.x ASCII/BINARY POLYDATA and UNSTRUCTURED_GRID | unspecified | source axes kept | none | volumetric cells require a volume renderer and are rejected |
+| `xyz` | .xyz | model (root `model()`) | built-in | whitespace columns | unspecified unless xyzUnits is supplied | source axes kept | none | extra columns remain on the typed record |
+| `gcode` | .gcode, .gco, .nc | model (root `model()`) | built-in | RS-274 G0-G3, G20/G21, G90/G91 | G21 millimetres or G20 inches | machine axes kept | none | tool changes and machine-specific codes are diagnosed |
+| `nrrd` | .nrrd, .nhdr | scalar-volume | built-in | NRRD0001-NRRD0005 raw/ascii/gzip | space units from the header | space directions/origin applied | detached data file for .nhdr | non-3D or vector volumes are rejected |
+| `bvh` | .bvh | animation | built-in | HIERARCHY/MOTION | unspecified; unitScale option | source axes kept | none | channels other than X/Y/Z position/rotation are rejected |
+| `md2` | .md2 | model (root `model()`) | built-in | 8 | unspecified (source units kept) | source axes kept | PCX skins (resolveSkins) | frames beyond 128 morph targets are rejected; normal table indices are replaced by generated normals |
+| `mdd` | .mdd | animation | built-in | big-endian point cache | unspecified | source axes kept | a mesh with identical vertex order | contains no topology; must be bound to a matching mesh |
+| `svg` | .svg | model (root `model()`) | built-in | 1.1 / 2 shapes and paths | user units | SVG y-down converted to glTF +Y up on the Z=0 plane | none (external references rejected) | text, gradients, filters, masks and clip paths are diagnosed |
+| `exr` | .exr | texture | built-in | 2.x scanline/tiled/multipart/deep; NONE/RLE/ZIPS/ZIP/PIZ/PXR24/B44/B44A/DWAA/DWAB (HTJ2K rejected) | scene-linear | top-left origin | none | deep data is composited for texture output |
+| `dds` | .dds | texture | built-in | DX9 FourCC; DX10 header | pixels | top-left origin | none | BC1-5 have CPU fallbacks; other block formats require declared GPU support |
+| `pvr` | .pvr | texture | built-in | PVR3 | pixels | orientation metadata reported | none | compressed payloads need declared GPU support |
+| `ktx1` | .ktx | texture | built-in | KTX 11 | pixels | KTXorientation reported | none | compressed payloads need declared GPU support |
+| `tga` | .tga | texture | built-in | 2.0 types 1-3, 9-11 | pixels | origin bit applied | none | extension area metadata ignored |
+| `tiff` | .tif, .tiff | texture | built-in | 6.0 baseline; none, PackBits, LZW, Deflate | pixels | Orientation tag applied | none | only the first page is decoded |
+| `jxl` | .jxl | texture | supplied | signature checked; decode by supplied codec | pixels | top-left origin | none | Aura3D ships no JPEG XL decoder; refused with NATIVE_FORMAT_CODEC_REQUIRED without codecs.jxl |
+| `ultrahdr` | .uhdr | texture | supplied | JPEG envelope checked; gain-map decode by supplied codec | scene-linear after gain map | top-left origin | none | Aura3D ships no gain-map decoder; refused with NATIVE_FORMAT_CODEC_REQUIRED without codecs.ultrahdr |
+| `3dl` | .3dl | lut | built-in | Autodesk/Lustre lattice, optional Mesh header | integer output range (outputMax or Mesh depth) | blue-fastest by default | none | non-cubic lattices are rejected |
+| `materialx` | .mtlx | material | built-in | 1.38; 1.39 | unitless | texture coordinates per node | xi:include documents and image files | unsupported nodes and shading models produce explicit diagnostics |
+
 ## Interchange export and loss
 
 The export catalog under development is glTF/GLB, OBJ, PLY, STL, USDZ,
@@ -382,6 +454,26 @@ source also provides `sceneFromGLTFAsset` to form interchange input from an
 asset and its edited scene with source-loss warnings; this adapter needs the
 same installed-path and round-trip verification. Scene serialization and mesh
 optimization are not substitutes for those interchange exporters.
+
+`sceneFromGLTFAsset` retains the source document's `asset` provenance
+(`generator`, `copyright`, `version`, `minVersion`, bounded JSON `extras`) as
+`scene.document`, and `KHR_materials_variants` as `scene.materialVariants`
+(variant names) plus per-primitive `variants` mappings
+(`{ material, variants: [variantIndex] }`). `exportGLTF` writes the variants
+extension back (declared in `extensionsUsed`, not required), keeps `copyright`
+and `minVersion` in `asset`, and records the source generator, version and
+extras under `asset.extras["aura3d:sourceDocument"]` while naming itself as the
+file's generator; re-importing an Aura3D export recovers the original source
+provenance rather than nesting it. OBJ, PLY, STL, USDZ and Draco cannot store
+these and report `DOCUMENT_PROVENANCE_LOST` / `MATERIAL_VARIANTS_LOST`.
+
+Exporter round trips are verified with readers authored independently in
+`tests/support/independent-interchange-readers.ts` (glTF/GLB accessors,
+hierarchy, skins, morphs and animation; complete PLY ASCII/little/big-endian;
+USDZ central directory, CRC and 64-byte alignment plus a USDA stage parser that
+composes xform ops and time samples). See
+`tests/unit/assets/native-exporter-independent-readers.test.ts`. These are
+source tests; installed-package and browser receipts remain separate.
 
 ## Request, integrity and resource boundaries
 
