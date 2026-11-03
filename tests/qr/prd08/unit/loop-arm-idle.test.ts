@@ -9,6 +9,10 @@
 import { describe, expect, it } from "vitest";
 import { createAuraCameraController } from "../../../../packages/engine/src/agent-api/camera/extension.js";
 import { createAuraFeelBus } from "../../../../packages/engine/src/agent-api/feel/extension.js";
+// S19 rig registry (CameraController.ts): each rigs/<name>.ts registers itself
+// on import so bundles shake unused rigs; the public entry (lanes/prd08.ts)
+// imports chase. A bare controller harness must import the rig it binds.
+import "../../../../packages/engine/src/agent-api/camera/rigs/chase.js";
 import type { AuraApp } from "../../../../packages/engine/src/agent-api/index.js";
 
 type FrameInfo = { readonly dt: number; readonly time: number };

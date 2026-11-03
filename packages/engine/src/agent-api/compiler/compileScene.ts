@@ -214,11 +214,11 @@ function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileCon
     const request = splatRequest(node, ctx, controller.signal);
     const device = (ctx.renderer as { readonly device?: RenderDevice } | undefined)?.device;
     if (!device || !["webgl2", "webgpu", "mock"].includes(device.kind)) throw new Error("Gaussian splats require a supported render device");
-    const [{ GaussianSplatLoader }, { GaussianSplatRenderer, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS }] = await Promise.all([import("@aura3d/assets"), import("@aura3d/rendering")]);
+    const [{ GaussianSplatLoader }, { GaussianSplatRenderer, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS }] = await Promise.all([import("@aura3d/assets/browser"), import("@aura3d/rendering")]);
     if (controller.signal.aborted) throw controller.signal.reason ?? new Error("Splat load cancelled");
     const loaded = await new GaussianSplatLoader().load(node.asset.url, {
       ...request,
-      format: node.asset.format.toLowerCase() as import("@aura3d/assets").GaussianSplatFormat,
+      format: node.asset.format.toLowerCase() as import("@aura3d/assets/browser").GaussianSplatFormat,
       ...(node.defaultColorSpace !== undefined ? { defaultColorSpace: node.defaultColorSpace } : {}),
       maxPoints: node.maxSplats ?? GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS
     });

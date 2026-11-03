@@ -87,5 +87,7 @@ describe("prd07 standalone shader programs", () => {
       }
     }
     expect(failures).toEqual([]);
-  });
+    // ~250 sequential glslangValidator spawns take ~5 s on an idle machine,
+    // over vitest's 5 s default; the budget is for process start-up only.
+  }, 60_000);
 });
