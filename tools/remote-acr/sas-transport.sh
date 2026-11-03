@@ -44,7 +44,7 @@ sas_transport_open() {
   chmod 700 "$A3D_SAS_DIR"
   local task
   for task in "$@"; do cp "$task" "$A3D_SAS_DIR/"; done
-  ( umask 077; printf "ARTIFACTS_SAS: '%s'\n" "https://${A3D_SAS_STORAGE_ACCOUNT}.blob.core.windows.net/${A3D_SAS_CONTAINER}?${token}" > "$A3D_SAS_DIR/$A3D_SAS_VALUES_FILE" )
+  ( umask 077; printf "ARTIFACTS_SAS: 'b64:%s'\n" "$(printf '%s' "https://${A3D_SAS_STORAGE_ACCOUNT}.blob.core.windows.net/${A3D_SAS_CONTAINER}?${token}" | base64 | tr -d '\n')" > "$A3D_SAS_DIR/$A3D_SAS_VALUES_FILE" )
   token=""
   echo "   transport  : legacy-sas ${A3D_SAS_STORAGE_ACCOUNT}/${A3D_SAS_CONTAINER} perms=${A3D_SAS_PERMISSIONS} expiry=${expiry} (value not shown)"
 }

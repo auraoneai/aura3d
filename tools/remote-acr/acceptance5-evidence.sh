@@ -14,6 +14,7 @@ cd /repo || exit 2
 export CI=1
 A3D_ARTIFACT_SAS="${AURA3D_ARTIFACTS_SAS:-}"
 unset AURA3D_ARTIFACTS_SAS
+case "$A3D_ARTIFACT_SAS" in b64:*) A3D_ARTIFACT_SAS="$(printf '%s' "${A3D_ARTIFACT_SAS#b64:}" | base64 -d)";; esac  # ACR passes docker args via /bin/sh; the SAS's '&' must not appear raw
 [ "$A3D_ARTIFACT_SAS" != none ] || A3D_ARTIFACT_SAS=""
 [[ "${AURA3D_RUN_ID:-}" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$ ]] || { echo "FATAL: invalid run ID" >&2; exit 2; }
 case "${AURA3D_CODE_COMPLETE_GATE:-}" in ''|none|/*|*'..'*|*[!a-zA-Z0-9_./-]*) echo "FATAL: invalid code-complete gate" >&2; exit 2;; esac

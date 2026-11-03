@@ -21,6 +21,7 @@ export NATIVE_REPORT_DIR="/repo/tests/reports/native-5/${NATIVE_RUN_ID}"
 export AURA3D_SOURCE_MANIFEST=".native-source-manifest.json"
 A3D_ARTIFACT_SAS="${AURA3D_ARTIFACTS_SAS:-}"
 unset AURA3D_ARTIFACTS_SAS
+case "$A3D_ARTIFACT_SAS" in b64:*) A3D_ARTIFACT_SAS="$(printf '%s' "${A3D_ARTIFACT_SAS#b64:}" | base64 -d)";; esac  # ACR passes docker args via /bin/sh; the SAS's '&' must not appear raw
 case "$A3D_ARTIFACT_SAS" in none) A3D_ARTIFACT_SAS="";; esac
 mkdir -p "$NATIVE_REPORT_DIR" /tmp/source5-logs
 RESULTS=/tmp/source5-results.tsv
