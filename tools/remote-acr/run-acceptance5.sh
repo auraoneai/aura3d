@@ -13,8 +13,10 @@
 #   2. Plans shards from tools/remote-acr/acceptance5-inventory.txt
 #      (tools/remote-acr/acceptance5.mjs; Playwright --shard, ~900 s of
 #      estimated tests per <= 1800 s ACR run, batches sized to one SAS window).
-#   3. Stages the gate-enumerated candidate (as run.sh native mode), revalidates
-#      the gate inside the staged context, builds ONE Dockerfile.playwright
+#   3. Stages the gate-enumerated candidate (as run.sh native mode), places the
+#      retained source5 plan, archives and consumer files at their recorded in-job
+#      paths (hash-verified), revalidates the gate inside the staged context,
+#      builds ONE Dockerfile.playwright
 #      image (the image build revalidates the gate again).
 #   4. Mints one legacy container SAS (<= 120 min, rcwl, sas-transport.sh) and
 #      runs the shards, <= 2 concurrent `az acr run --timeout 1800`; each run
@@ -120,8 +122,8 @@ mkdir -p "$OUT_DIR"
 cp "$PLAN_TMP" "$OUT_DIR/plan.json"
 PLAN_JSON="$REPO_ROOT/$OUT_DIR/plan.json"
 printf '%s\n' "$BINDING" > "$OUT_DIR/gate-binding.json"
-# null (examplesSourceReport on the source5 path) is passed as `none`.
-bind() { node -p "JSON.parse(process.argv[1])[process.argv[2]] ?? 'none'" "$BINDING" "$1"; }
+# In-job paths (source5: each retained file's jobPath, placed below by place-job-paths).
+bind() { node -p "const v = JSON.parse(process.argv[1])[process.argv[2]]; if (typeof v !== 'string' || !v) process.exit(1); v" "$BINDING" "$1"; }
 RELEASE_PLAN="$(bind candidatePlan)"
 CONSUMER_SOURCE_REPORT="$(bind consumerSourceReport)"
 MATRIX_SOURCE_REPORT="$(bind matrixSourceReport)"
@@ -142,6 +144,9 @@ node tools/remote-acr/acceptance5.mjs safe-inputs "$INPUTS_JSON" "$AURA3D_CODE_C
 node tools/remote-acr/acceptance-staging.mjs select "$INPUTS_LIST" "$AURA3D_CODE_COMPLETE_GATE" "$STAGING_RECORD" $SCAN_FILES || exit 2
 rsync -a --from0 --files-from="$INPUTS_LIST" ./ "$CTX/"
 cp "$STAGING_RECORD" "$CTX/.aura3d-acceptance-staging.json"
+# Source5 records: copy the retained candidate plan, archives and consumer files to their
+# recorded in-job paths (each re-hashed against the gate), so the job sees the source-phase layout.
+node tools/remote-acr/acceptance-staging.mjs place-job-paths "$CTX" "$AURA3D_CODE_COMPLETE_GATE" || exit 2
 # shellcheck disable=SC2086
 node tools/remote-acr/acceptance-staging.mjs verify-context "$CTX" "$INPUTS_LIST" $SCAN_FILES || exit 2
 (cd "$CTX" && node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE") \

@@ -162,6 +162,25 @@ export function deriveShaderDataLayout(type: ShaderDataType, target: ShaderDataT
   return visit(type, "$");
 }
 
+function joinPath(parent: string, key: string | number | undefined): string {
+  return key === undefined ? parent : typeof key === "number" ? `${parent}[${key}]` : `${parent}.${key}`;
+}
+
+/** The success condition of `sequence`, without a path. */
+function isSequence(value: unknown, length: number): value is ArrayLike<unknown> {
+  return !!value && typeof value === "object" && !(value instanceof DataView) && (value as ArrayLike<unknown>).length === length;
+}
+
+/** The success condition of `validateScalar` for a number (the value is stored unchanged). */
+function plainScalarValid(type: ShaderDataScalar, value: number): boolean {
+  if (type === "bool") return value === 1 || value === 0;
+  if (!Number.isFinite(value)) return false;
+  if (type === "f32") return Number.isFinite(Math.fround(value));
+  if (type === "i32") return Number.isInteger(value) && value >= -0x80000000 && value <= 0x7fffffff;
+  if (type === "u32") return Number.isInteger(value) && value >= 0 && value <= 0xffffffff;
+  return false;
+}
+
 function sequence(value: unknown, length: number, path: string): ArrayLike<unknown> {
   if (!value || typeof value !== "object" || value instanceof DataView ||
       (value as ArrayLike<unknown>).length !== length) {
@@ -216,36 +235,52 @@ export function writeShaderData(
   // Write a temporary image first so all validation errors leave the target intact.
   const staging = new Uint8Array(layout.size);
   const view = new DataView(staging.buffer);
-  function storeScalar(type: ShaderDataScalar, input: unknown, offset: number, path: string): void {
-    const v = validateScalar(type, input, path);
+  // Paths name the failing element in errors only; they are built on failure (or once per compound level), never
+  // once per scalar on the success path (this runs for every uniform block upload, every frame).
+  function writeScalar(type: ShaderDataScalar, v: number, offset: number): void {
     if (type === "f32") view.setFloat32(offset, v, true);
     else if (type === "i32") view.setInt32(offset, v, true);
     else view.setUint32(offset, v, true);
   }
-  function store(current: ShaderDataLayout, input: unknown, offset: number, path: string): void {
+  function storeScalar(type: ShaderDataScalar, input: unknown, offset: number, parent: string, key: string | number | undefined): void {
+    writeScalar(type, typeof input === "number" && plainScalarValid(type, input) ? input : validateScalar(type, input, joinPath(parent, key)), offset);
+  }
+  function values(input: unknown, length: number, parent: string, key: string | number | undefined): ArrayLike<unknown> {
+    return isSequence(input, length) ? input : sequence(input, length, joinPath(parent, key));
+  }
+  function store(current: ShaderDataLayout, input: unknown, offset: number, parent: string, key: string | number | undefined): void {
     const type = current.type;
-    if (typeof type === "string") return storeScalar(type, input, offset, path);
+    if (typeof type === "string") return storeScalar(type, input, offset, parent, key);
     switch (type.kind) {
       case "vector": {
-        const values = sequence(input, type.length, path);
-        for (let i = 0; i < type.length; i += 1) storeScalar(type.element, values[i], offset + i * 4, `${path}[${i}]`);
+        const items = values(input, type.length, parent, key);
+        for (let i = 0; i < type.length; i += 1) {
+          const item = items[i];
+          if (typeof item === "number" && plainScalarValid(type.element, item)) writeScalar(type.element, item, offset + i * 4);
+          else storeScalar(type.element, item, offset + i * 4, joinPath(parent, key), i);
+        }
         return;
       }
       case "matrix": {
-        const values = sequence(input, type.columns * type.rows, path);
+        const items = values(input, type.columns * type.rows, parent, key);
         for (let c = 0; c < type.columns; c += 1) {
           for (let r = 0; r < type.rows; r += 1) {
-            storeScalar("f32", values[c * type.rows + r], offset + c * current.stride! + r * 4, `${path}[${c * type.rows + r}]`);
+            const item = items[c * type.rows + r];
+            const at = offset + c * current.stride! + r * 4;
+            if (typeof item === "number" && plainScalarValid("f32", item)) writeScalar("f32", item, at);
+            else storeScalar("f32", item, at, joinPath(parent, key), c * type.rows + r);
           }
         }
         return;
       }
       case "array": {
-        const values = sequence(input, type.length, path);
-        for (let i = 0; i < type.length; i += 1) store(current.element!, values[i], offset + i * current.stride!, `${path}[${i}]`);
+        const items = values(input, type.length, parent, key);
+        const path = joinPath(parent, key);
+        for (let i = 0; i < type.length; i += 1) store(current.element!, items[i], offset + i * current.stride!, path, i);
         return;
       }
       case "struct": {
+        const path = joinPath(parent, key);
         if (!input || typeof input !== "object" || Array.isArray(input) || ArrayBuffer.isView(input)) {
           return fail("SHADER_DATA_VALUE", path, "expected an object with every struct field");
         }
@@ -254,7 +289,7 @@ export function writeShaderData(
           if (!Object.prototype.hasOwnProperty.call(record, member.name)) {
             fail("SHADER_DATA_VALUE", `${path}.${member.name}`, "missing field");
           }
-          store(member.layout, record[member.name], offset + member.offset, `${path}.${member.name}`);
+          store(member.layout, record[member.name], offset + member.offset, path, member.name);
         }
         for (const key of Object.keys(record)) {
           if (!current.members!.some((member) => member.name === key)) fail("SHADER_DATA_VALUE", `${path}.${key}`, "unknown field");
@@ -262,7 +297,7 @@ export function writeShaderData(
       }
     }
   }
-  store(layout, value, 0, "$");
+  store(layout, value, 0, "$", undefined);
   bytes.set(staging, byteOffset);
   return bytes.subarray(byteOffset, byteOffset + layout.size);
 }

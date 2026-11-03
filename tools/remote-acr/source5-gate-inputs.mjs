@@ -60,11 +60,15 @@ export const ARTIFACTS_SCHEMA = 'aura3d.source5-artifacts/1';
  * `source-report.json#artifacts.consumers`: the packed-b consumer reports downloaded and
  * extracted by the launcher, as written by `verifyDownloadedConsumers` in
  * tools/remote-acr/source5-artifacts.mjs ({ schema: 'aura3d.source5-consumers/1', ok, runId,
- * index: { localPath, sha256 }, sourceConsumerReport / matrixSourceReport: { localPath, jobPath, sha256 },
- * examplesSourceReport: null }). Every indexed file is re-hashed here; they become gate inputs.
+ * index: { localPath, sha256 }, sourceConsumerReport / matrixSourceReport / examplesSourceReport:
+ * { localPath, jobPath, sha256 } }). Every indexed file is re-hashed here; they become gate inputs,
+ * each recorded with the in-job path (`jobPath`) the reports and their validators use.
  */
 export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
-const CONSUMER_FIELDS = ['sourceConsumerReport', 'matrixSourceReport'];
+const CONSUMER_FIELDS = ['sourceConsumerReport', 'matrixSourceReport', 'examplesSourceReport'];
+/** A safe repository-relative path (no absolute, backslash, control, empty, `.` or `..` part). */
+const safeRelPath = path => typeof path === 'string' && !!path && !isAbsolute(path) && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
+  && path.split('/').every(part => part && part !== '.' && part !== '..');
 
 const SHA = /^[a-f0-9]{64}$/;
 const GIT_SHA = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/;
@@ -82,7 +86,7 @@ export const STAGE_COMMANDS = Object.freeze({
   suites: ['assets-qr', 'packages'],
   'packed-a': ['build', 'pack', 'package-dist-unit', 'api-baseline', 'integration', 'packages-dist', 'verify-exports', 'verify-imports',
     'tarballs', 'bundle-size', 'api-diff', 'api-contract', 'api-docs-packed', 'api-docs', 'artifacts-upload'],
-  'packed-b': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumer-matrix', 'runtime-audit', 'consumers-upload']
+  'packed-b': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumer-matrix', 'examples-source', 'runtime-audit', 'consumers-upload']
 });
 export const stageCommandIds = stage => (STAGE.exec(stage)?.[1] ? [stage] : STAGE_COMMANDS[stage] ?? null);
 
@@ -92,7 +96,9 @@ export const stageCommandIds = stage => (STAGE.exec(stage)?.[1] ? [stage] : STAG
  * all exit 0; `unit-shards` = every `unit-<i>-of-<n>` shard. `test:parity` is
  * `tests/unit/parity`, run by the unit shards; tests/unit/package-dist needs built
  * packages and runs in packed-a right after `pnpm build`. Both packed stages
- * rebuild and repack, so build/pack must pass in both.
+ * rebuild and repack, so build/pack must pass in both. packed-b's `examples-source`
+ * (every catalog example installed from the packed candidate; not a §4 command)
+ * is folded into `clean-install`: both are clean installs of the packed candidate.
  */
 export const EXPECTED_CHECKS = Object.freeze([
   { id: 'typecheck', section4: 'pnpm typecheck', from: ['static:typecheck'] },
@@ -112,7 +118,7 @@ export const EXPECTED_CHECKS = Object.freeze([
   { id: 'verify-exports', section4: 'pnpm verify:exports', from: ['packed-a:verify-exports'] },
   { id: 'verify-imports', section4: 'pnpm verify:imports', from: ['packed-a:verify-imports'] },
   { id: 'tarballs', section4: 'pnpm check:tarballs', from: ['packed-a:tarballs'] },
-  { id: 'clean-install', section4: 'tools/package-clean-install/index.ts --phase source', from: ['packed-b:clean-install'] },
+  { id: 'clean-install', section4: 'tools/package-clean-install/index.ts --phase source', from: ['packed-b:clean-install', 'packed-b:examples-source'] },
   { id: 'tree-shaking', section4: 'tools/installed-tree-shaking/index.ts', from: ['packed-b:tree-shaking'] },
   { id: 'bundle-size', section4: 'pnpm check:bundle-size', from: ['packed-a:bundle-size'] },
   { id: 'api-diff', section4: 'tools/public-surface-diff/index.ts', from: ['packed-a:api-diff'] },
@@ -264,20 +270,25 @@ function loadConsumers(io, dir, runId, recorded) {
     if (typeof jobPath !== 'string' || !jobPath || isAbsolute(jobPath) || jobPath.split('/').some(part => !part || part === '.' || part === '..')) { problems.push(`retained consumer index lists an unsafe path ${JSON.stringify(jobPath)}`); continue; }
     const path = `${base}/${jobPath}`;
     if (!io.exists(path)) { problems.push(`retained consumer file missing: ${path}`); continue; }
-    const digest = sha256(io.read(path));
+    const data = io.read(path), digest = sha256(data);
     if (digest !== file.sha256) problems.push(`retained consumer file ${path} does not match the consumer index`);
-    files.push({ path, sha256: digest });
-    byJob.set(jobPath, { path, sha256: digest });
+    files.push({ path, jobPath, sha256: digest });
+    byJob.set(jobPath, { path, sha256: digest, data });
   }
-  const reports = {};
+  const reports = {}, planRefs = [];
   for (const field of CONSUMER_FIELDS) {
     const jobPath = index.reports?.[field]?.path, file = byJob.get(jobPath);
     if (!file || index.reports[field].sha256 !== file.sha256 || recorded[field]?.jobPath !== jobPath || recorded[field]?.sha256 !== file.sha256) { problems.push(`retained ${field} ${JSON.stringify(jobPath)} is missing or differs from the consumer index`); continue; }
     reports[field] = { path: file.path, jobPath, sha256: file.sha256 };
+    // The candidate plan each report was produced against (in-job path + SHA-256).
+    const content = json(file.data);
+    const plan = field === 'examplesSourceReport' ? { path: content?.candidatePlan, sha256: content?.candidateSha256 } : { path: content?.candidate?.path, sha256: content?.candidate?.sha256 };
+    if (!safeRelPath(plan.path) || !SHA.test(plan.sha256 ?? '')) problems.push(`retained ${field} does not name its candidate plan (path + SHA-256)`);
+    else planRefs.push({ field, ...plan });
   }
-  if (index.examplesSourceReport !== null || recorded.examplesSourceReport !== null) problems.push('examplesSourceReport is not produced on the source5 path and must be null');
-  if (!problems.length) consumers.value = { runId, index: { path: indexFile.path, sha256: indexFile.sha256 }, ...reports, examplesSourceReport: null,
-    examplesSourceReportAbsent: typeof index.examplesSourceReportAbsent === 'string' ? index.examplesSourceReportAbsent : null, files };
+  if (!problems.length && new Set(planRefs.map(ref => `${ref.path}\0${ref.sha256}`)).size !== 1) problems.push(`retained consumer reports name different candidate plans (${planRefs.map(ref => `${ref.field}=${ref.path}@${ref.sha256}`).join(', ')})`);
+  if (!problems.length) consumers.value = { runId, index: { path: indexFile.path, sha256: indexFile.sha256 }, ...reports, files };
+  consumers.candidatePlan = planRefs[0] ? { jobPath: planRefs[0].path, sha256: planRefs[0].sha256 } : null;
   return consumers;
 }
 export const runSummary = run => ({ dir: run.dir, runId: run.runId, sourceReport: run.reportRef, stagesRun: run.report?.stages ?? [] });
@@ -397,6 +408,9 @@ export function mergeRuns(runs) {
   const planB = checkPlan(plans['packed-b'], 'packed-b candidate plan', commit, lockfileSha256, problems);
   const digests = plan => canonical(plan.packages.map(pkg => [pkg.name, pkg.version, pkg.sha256, pkg.integrity]));
   if (planA && planB && digests(planA) !== digests(planB)) problems.push('candidate archive digests differ between packed-a and packed-b (rebuild/repack is not reproducible)');
+  // packed-b's consumer reports bind packed-b's plan bytes; acceptance places packed-a's retained plan
+  // at their in-job path, so the two plans must be identical (the launcher pins generatedAt).
+  else if (planA && planB && canonical(planA) !== canonical(planB)) problems.push('candidate plans differ between packed-a and packed-b (plan time not pinned: A3D_PLAN_GENERATED_AT)');
   // The exact candidate archives, retained by the packed-a run (uploaded, downloaded, SHA-256-verified).
   const packedRun = winners.get('packed-a');
   let candidatePlan = null, archives = [];
@@ -412,7 +426,9 @@ export function mergeRuns(runs) {
           const found = retained.archives.filter(archive => archive.sha256 === pkg.sha256);
           if (found.length !== 1) { problems.push(`${packedRun.dir}: archive for ${pkg.name}@${pkg.version} (${pkg.sha256}) is not retained exactly once`); return null; }
           if (found[0].integrity !== pkg.integrity) problems.push(`${packedRun.dir}: retained archive ${found[0].path} SHA-512 integrity differs from the plan`);
-          return { name: pkg.name, version: pkg.version, tarball: pkg.tarball, path: found[0].path, sha256: pkg.sha256, integrity: pkg.integrity };
+          if (!safeRelPath(pkg.tarball)) problems.push(`${packedRun.dir}: plan archive path for ${pkg.name} is not a safe repository-relative path`);
+          // jobPath: where the source jobs (and their reports) read this archive.
+          return { name: pkg.name, version: pkg.version, tarball: pkg.tarball, path: found[0].path, jobPath: pkg.tarball, sha256: pkg.sha256, integrity: pkg.integrity };
         }).filter(Boolean);
         if (retained.archives.length !== planA.packages.length) problems.push(`${packedRun.dir}: ${retained.archives.length} retained archives for ${planA.packages.length} planned packages`);
       }
@@ -426,6 +442,12 @@ export function mergeRuns(runs) {
     else {
       problems.push(...consumerRun.consumers.problems.map(problem => `${consumerRun.dir}: ${problem}`));
       consumerReports = consumerRun.consumers.value;
+      // The reports' plan must be the retained candidate plan; acceptance stages it at the reports' in-job path.
+      const ref = consumerRun.consumers.candidatePlan;
+      if (candidatePlan && ref) {
+        if (ref.sha256 !== candidatePlan.sha256) problems.push(`${consumerRun.dir}: consumer reports were produced against plan ${ref.jobPath} (${ref.sha256}), not the retained candidate plan (${candidatePlan.sha256})`);
+        else candidatePlan = { ...candidatePlan, jobPath: ref.jobPath };
+      }
     }
   }
   const value = {

@@ -167,7 +167,7 @@ describe('source5 tested-archive retrieval', () => {
 
 describe('source5 packed-b consumer report retention (stage-consumers -> verify-consumers)', () => {
   const RUN = 'run-1';
-  /** The packed-b job tree: both consumer run directories with reports, projects, logs and a binary archive. */
+  /** The packed-b job tree: the three consumer run directories with reports, projects, logs and a binary archive. */
   function job() {
     const root = temp('job');
     put(root, `tests/reports/native-consumers/${RUN}/source.json`, '{"phase":"source","status":"pass"}\n');
@@ -176,6 +176,8 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     put(root, `tests/reports/native-consumers/${RUN}/dependency-archives/${'a'.repeat(64)}.tgz`, Buffer.from([0, 1, 2, 3, 255]));
     put(root, `tests/reports/native-consumer-matrix/${RUN}/projects/npm-react18-peer-present/package.json`, '{"name":"cell"}\n');
     put(root, `tests/reports/native-consumer-matrix/${RUN}/logs/npm-react18-peer-present-install.log`, 'ok\n');
+    put(root, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`, '{"phase":"source","install":"packed-v1"}\n');
+    put(root, `tests/reports/native-examples-catalog/${RUN}/projects/starter-example-camera-path/package.json`, '{"name":"wrapper"}\n');
     put(root, 'tests/reports/native-consumers/other-run/source.json', '{}\n');
     return root;
   }
@@ -186,17 +188,18 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
   };
   const mac = () => { const root = temp('mac'); return { root, dest: join(root, `tests/reports/native-5/${RUN}/artifacts/consumers`) }; };
 
-  it('round-trips every file of both run directories, chunked, and records the two bound reports', () => {
+  it('round-trips every file of the three run directories, chunked, and records the three bound reports', () => {
     const root = job();
     const { out, index } = upload(root, 400);
     expect(index.chunks.length).toBeGreaterThan(1);
     expect(index.files.map((f: { path: string }) => f.path)).not.toContain('tests/reports/native-consumers/other-run/source.json');
-    expect(index.files).toHaveLength(6);
-    expect(index.examplesSourceReport).toBeNull();
+    expect(index.files).toHaveLength(8);
+    expect(index.reports.examplesSourceReport.path).toBe(`tests/reports/native-examples-catalog/${RUN}/examples-source.json`);
     const m = mac();
     const result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
     expect(result.problems).toEqual([]);
-    expect(result).toMatchObject({ ok: true, files: 6, examplesSourceReport: null,
+    expect(result).toMatchObject({ ok: true, files: 8,
+      examplesSourceReport: { jobPath: `tests/reports/native-examples-catalog/${RUN}/examples-source.json`, sha256: sha256('{"phase":"source","install":"packed-v1"}\n') },
       index: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/${CONSUMER_INDEX_NAME}` },
       sourceConsumerReport: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/tests/reports/native-consumers/${RUN}/source.json`,
         jobPath: `tests/reports/native-consumers/${RUN}/source.json`, sha256: sha256('{"phase":"source","status":"pass"}\n') },
@@ -250,6 +253,9 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     let root = job();
     rmSync(join(root, `tests/reports/native-consumers/${RUN}/matrix-source.json`));
     expect(() => upload(root)).toThrow(/matrixSourceReport was not produced/);
+    root = job();
+    rmSync(join(root, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`));
+    expect(() => upload(root)).toThrow(/examplesSourceReport was not produced/);
     root = job();
     rmSync(join(root, `tests/reports/native-consumer-matrix/${RUN}`), { recursive: true });
     expect(() => upload(root)).toThrow(/consumer report directory missing/);

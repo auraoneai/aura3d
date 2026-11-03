@@ -181,15 +181,24 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
     [ -f "$spec" ] || { echo "FATAL: staged spec missing: $spec" >&2; exit 2; }
   done
   node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE" || exit 2
-  GATE_PLAN="$(node -e 'const g=require("./"+process.argv[1]);if(!g.candidatePlan?.path)process.exit(1);process.stdout.write(g.candidatePlan.path)' "$AURA3D_CODE_COMPLETE_GATE")" || exit 2
+  # ACR source5 records: the job reads each retained file at its recorded in-job path
+  # (jobPath, placed by acceptance-staging.mjs place-job-paths); those bytes must still
+  # hash to the gate's SHA-256.
+  GATE_PLAN="$(node -e 'const g=require("./"+process.argv[1]);const p=g.sourceRunner==="acr-source5"?g.candidatePlan?.jobPath:g.candidatePlan?.path;if(!p)process.exit(1);process.stdout.write(p)' "$AURA3D_CODE_COMPLETE_GATE")" || exit 2
   [ "$GATE_PLAN" = "$A3D_RELEASE_PLAN" ] || { echo "FATAL: candidate release plan mismatch" >&2; exit 2; }
   node - "$AURA3D_CODE_COMPLETE_GATE" <<'NODE' || exit 2
 const fs = require('node:fs');
+const { createHash } = require('node:crypto');
 const gate = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-for (const [field, env] of [['sourceConsumerReport','NATIVE_CONSUMER_SOURCE_REPORT'], ['matrixSourceReport','NATIVE_MATRIX_SOURCE_REPORT'], ['examplesSourceReport','NATIVE_EXAMPLES_SOURCE_REPORT']]) {
-  // ACR source5 records bind no examples source report (no source5 stage produces one).
-  if (field === 'examplesSourceReport' && gate.sourceRunner === 'acr-source5' && gate[field] === null && process.env[env] === 'none') continue;
-  if (!gate[field]?.path || gate[field].path !== process.env[env]) throw new Error(`source report mismatch: ${field}`);
+const source5 = gate.sourceRunner === 'acr-source5';
+const bound = [['candidatePlan', 'A3D_RELEASE_PLAN'], ['sourceConsumerReport','NATIVE_CONSUMER_SOURCE_REPORT'], ['matrixSourceReport','NATIVE_MATRIX_SOURCE_REPORT'], ['examplesSourceReport','NATIVE_EXAMPLES_SOURCE_REPORT']];
+for (const [field, env] of bound.slice(1)) {
+  const path = source5 ? gate[field]?.jobPath : gate[field]?.path;
+  if (!path || path !== process.env[env]) throw new Error(`source report mismatch: ${field}`);
+}
+if (source5) for (const [field, env] of bound) {
+  const file = process.env[env];
+  if (fs.lstatSync(file).isSymbolicLink() || createHash('sha256').update(fs.readFileSync(file)).digest('hex') !== gate[field].sha256) throw new Error(`in-job ${field} does not match the gate SHA-256`);
 }
 NODE
   [ "${NATIVE_NETWORK_REPORT:-}" = "tests/reports/native-acceptance/${AURA3D_RUN_ID}/network.json" ] || { echo "FATAL: unsafe network output path" >&2; exit 2; }

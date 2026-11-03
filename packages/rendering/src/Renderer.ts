@@ -2004,12 +2004,12 @@ export class Renderer {
    */
   private inspectPhase<T>(name: string, reads: readonly string[], writes: readonly string[], fn: () => T): T {
     const trace = this.activeFrameTrace;
-    return trace ? trace.measure({ name, reads, writes, readDrawCalls: () => this.device.getDiagnostics().drawCalls }, fn) : fn();
+    return trace ? trace.measure({ name, reads, writes, readDrawCalls: () => deviceDrawCalls(this.device) }, fn) : fn();
   }
 
   private inspectPhaseAsync<T>(name: string, reads: readonly string[], writes: readonly string[], fn: () => Promise<T>): Promise<T> {
     const trace = this.activeFrameTrace;
-    return trace ? trace.measureAsync({ name, reads, writes, readDrawCalls: () => this.device.getDiagnostics().drawCalls }, fn) : fn();
+    return trace ? trace.measureAsync({ name, reads, writes, readDrawCalls: () => deviceDrawCalls(this.device) }, fn) : fn();
   }
 
   /** Contributor phase executed outside the graph; recorded only when a contributor declares it. */
@@ -2081,7 +2081,7 @@ export class Renderer {
     if (!this.activeFrameTrace) return this.graph.execute(context);
     for (const pass of this.graph.compile()) {
       this.activeFrameTrace.measure({ name: pass.name, reads: pass.reads, writes: pass.writes,
-        readDrawCalls: () => this.device.getDiagnostics().drawCalls }, () => {
+        readDrawCalls: () => deviceDrawCalls(this.device) }, () => {
         const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
         const assertTarget = !meta.env?.PROD && (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } }).process?.env?.NODE_ENV !== "production";
         const before = assertTarget ? this.device.getRenderTarget?.() : undefined;
@@ -7580,4 +7580,10 @@ function inspectionNow(): number | null {
   } catch {
     return null;
   }
+}
+
+/** Draw-call counter for per-stage traces: the WebGL2 device reads its counter directly instead of assembling full diagnostics. */
+function deviceDrawCalls(device: RenderDevice): number {
+  const counted = device as RenderDevice & { readonly drawCallCount?: () => number };
+  return typeof counted.drawCallCount === "function" ? counted.drawCallCount() : device.getDiagnostics().drawCalls;
 }

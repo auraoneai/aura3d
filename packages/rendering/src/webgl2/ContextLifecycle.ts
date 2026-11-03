@@ -130,30 +130,16 @@ export class WebGL2ContextLifecycle {
     // The context can be gone before the webglcontextlost event is dispatched; WebGL reports that synchronously.
     if (this.host.contextLost) return true;
     const gl = this.host.gl as WebGL2RenderingContext & { isContextLost?: () => boolean };
-    if (typeof gl?.isContextLost !== "function") return false;
-    // Inside a device frame the synchronous query runs once: the frame-token, batching and temporal checks
-    // all ask, and each answer would be the same poll. A loss reported by the poll stays reported; the
-    // webglcontextlost event (host.contextLost above) still wins immediately. Outside a frame every call polls.
-    if (this.frameActive && this.lostPollFrame === this.frameSerial) return this.lostPollResult;
-    const lost = gl.isContextLost();
-    if (this.frameActive) {
-      this.lostPollFrame = this.frameSerial;
-      this.lostPollResult = lost;
-    }
-    return lost;
+    // Polled on every call: a native loss reported before its event must be seen by the very next check,
+    // including mid-frame (native-shader-lifecycle "loss reported before its event").
+    return typeof gl?.isContextLost === "function" && gl.isContextLost();
   }
 
-  /** Serial of the current/last device frame; the in-frame context-lost poll is keyed by it. */
-  private frameSerial = 0;
-  private lostPollFrame = -1;
-  private lostPollResult = false;
   /** Context creation attributes, read once per context (null: not read yet, or the context is lost). */
   private contextAttributes: WebGLContextAttributes | null = null;
 
   /** Forget answers that belong to one context generation (on loss and on restore). */
   private forgetContextQueries(): void {
-    this.lostPollFrame = -1;
-    this.lostPollResult = false;
     this.contextAttributes = null;
   }
 
@@ -282,7 +268,6 @@ export class WebGL2ContextLifecycle {
       throw new RenderDeviceError("Frame dimensions must be positive", "INVALID_FRAME_SIZE", { width, height });
     }
     this.frameActive = true;
-    this.frameSerial += 1;
     this.host.counters.drawCalls = 0;
     this.host.counters.nativeEnvironmentBindings = 0;
     this.host.counters.nativeShadowMapBindings = 0;

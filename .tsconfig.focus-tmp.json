@@ -1,0 +1,1 @@
+{"extends": "./tsconfig.check.json", "compilerOptions": {"noEmit": true, "skipLibCheck": true}, "files": ["tools/agent-examples/index.ts", "tools/package-clean-install/index.ts", "tools/native-capability-gate/browser-contract.ts", "tools/native-consumer-matrix/index.ts"], "include": []}

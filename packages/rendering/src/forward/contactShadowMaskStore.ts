@@ -86,7 +86,15 @@ export function validContactShadowFrameIdentity(frame: FrameContributorContext):
     ((typeof view === "string" && view.length > 0) || (typeof view === "number" && Number.isFinite(view))) &&
     Number.isSafeInteger(frame.frameIndex) && frame.frameIndex >= 0 && Number.isFinite(frame.timeSeconds) &&
     !!frame.camera && frame.camera.position?.length === 3 && frame.camera.position.every(Number.isFinite) &&
-    !!matrix && matrix.length === 16 && Array.from(matrix).every(Number.isFinite);
+    !!matrix && matrix.length === 16 && allFinite(matrix);
+}
+
+/** `Array.from(values).every(Number.isFinite)` without the per-call copy (checked on every draw). */
+function allFinite(values: ArrayLike<number>): boolean {
+  for (let index = 0; index < values.length; index += 1) {
+    if (!Number.isFinite(values[index])) return false;
+  }
+  return true;
 }
 
 /**

@@ -8,9 +8,9 @@
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { devNull, tmpdir } from "node:os";
+import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 import { loadValidatedReleasePlan, inspectInstalledRelease } from "../release/exact-release-plan.mjs";
@@ -20,6 +20,7 @@ import { verifyArchiveAdmission, verifyArchiveAdmissionBatch } from "../release/
 import type { ArchiveAdmissionReceipt, SourceEvidenceReference } from "../release/archive-admission.mjs";
 import { createA3DProject } from "../../packages/create-aura3d/src/index";
 import { extractPackedArchive } from "../docs-codeblocks/index";
+import { assertPackedInstall, candidateClosure, PACKED_CANDIDATE_DIR, packedConsumerEnvironment, packedSpec, stagePackedArchives, substitutePackedCandidates } from "../package-clean-install/index";
 
 export interface ExampleCatalogEntry {
   readonly id: string;
@@ -412,6 +413,12 @@ export function validateExampleSourceReport(root: string, reportPath: string, ca
   const report = readJson(resolve(root, reportPath));
   if (report.schema !== "aura3d.native-consumers/1" || report.phase !== "source" || report.pass !== true || report.browser !== "not-run" || report.candidateSha256 !== hash(planBytes) || JSON.stringify(report.source) !== JSON.stringify(plan.source) || JSON.stringify(report.packages) !== JSON.stringify(plan.packages) || report.lockfileSha256 !== plan.source.lockfileSha256) throw new Error("Example source report is failed, malformed, or for another candidate");
   if (!Array.isArray(report.cases) || !Array.isArray(report.projects) || typeof report.runId !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(report.runId)) throw new Error("Example source report lacks cases or projects");
+  // ACR source5 path: projects installed from the packed candidate (no custody locks or candidate reviews).
+  if (report.install === PACKED_EXAMPLES_INSTALL) {
+    const packedErrors = packedExampleReportErrors(root, report, candidatePlanPath);
+    if (packedErrors.length) throw new Error(packedErrors.join("\n"));
+    return report;
+  }
   const sourceManifestPath = `tests/reports/native-capabilities/${report.runId}/source-manifest.json`;
   const planPath = portable(relative(root, resolve(root, candidatePlanPath)));
   if (typeof plan.source.manifestSha256 !== "string") throw new Error("Example source report lacks a staged source identity");
@@ -1027,6 +1034,55 @@ function exampleEnvironment(wrapper: string): NodeJS.ProcessEnv {
   return env;
 }
 
+type ExampleSourceEntry = { readonly id: string; readonly kind: string; readonly sourcePath: string };
+
+/** Where a catalog entry's consumer project lives inside its isolated wrapper. */
+function exampleProjectPath(wrapper: string, entry: ExampleSourceEntry): string {
+  return resolve(wrapper, entry.kind === "capability-example" ? `examples/native-capability/${entry.id.split(":")[1]}` : entry.sourcePath);
+}
+
+/**
+ * Copy (or scaffold) one catalog consumer into its wrapper with exactly the
+ * source support it needs, and resolve its allowlisted build/typecheck
+ * commands. Shared by the custody-lock and packed-candidate source producers.
+ */
+function prepareExampleHarness(root: string, wrapper: string, project: string, entry: ExampleSourceEntry): { harness: string[]; manifest: any; isStandalone: boolean; standalone?: ReturnType<typeof standaloneHarness>; scripts: string; buildCommands: string[][]; typeCommands: string[][] } {
+  const harness = entry.kind === "capability-example" ? makeCapabilityProject(root, project, entry.id.split(":")[1]!) : (copyProject(resolve(root, entry.sourcePath), project), []);
+  if (entry.kind === "documented-example" && entry.sourcePath.startsWith("examples/")) {
+    const sharedPath = resolve(root, "examples/shared");
+    if (existsSync(sharedPath)) { copyProject(sharedPath, resolve(wrapper, "examples/shared")); harness.push("examples/shared (source support)"); }
+  }
+  if (entry.sourcePath.startsWith("apps/")) for (const name of ["common", "wow-common"]) {
+    const sharedPath = resolve(root, "apps", name);
+    if (existsSync(sharedPath)) { copyProject(sharedPath, resolve(wrapper, "apps", name)); harness.push(`apps/${name} (source support)`); }
+  }
+  const manifestFile = resolve(project, "package.json");
+  const isStandalone = !existsSync(manifestFile);
+  if (entry.kind !== "capability-example" && !isStandalone) {
+    // A wrapper app that mounts a sibling example (`*-port`) or reads a
+    // repo-root module builds only if that source is staged beside it.
+    const staging = stageExampleDependencies(root, wrapper, project);
+    harness.push(...staging.staged.map((path) => `${path} (staged source dependency)`));
+    // Vite's default publicDir is the project's own public/; add only the
+    // root-served files its sources name that it does not already carry.
+    for (const path of staging.publicFiles) {
+      const destination = resolve(project, "public", path);
+      mkdirSync(dirname(destination), { recursive: true });
+      cpSync(rootServedFile(root, `/${path}`, staging.publicDirs)!, destination);
+      harness.push(`${portable(relative(wrapper, destination))} (staged root public file)`);
+    }
+  }
+  // Standalone examples stage their dependencies (and fixture host) in standaloneHarness.
+  const standalone = isStandalone ? standaloneHarness(root, wrapper, project, entry as ExampleCatalogEntry) : undefined;
+  if (standalone) harness.push(...standalone.files);
+  const manifest = standalone?.manifest ?? readJson(manifestFile);
+  if (!isStandalone && (typeof manifest.scripts?.build !== "string" || !manifest.scripts.build.trim())) throw new Error(`Missing build script in ${entry.sourcePath}`);
+  const scripts = Object.values(manifest.scripts ?? {}).join(" ");
+  const buildCommands = isStandalone ? [] : sourceScriptCommands(manifest.scripts, "build");
+  const typeCommands = !isStandalone && manifest.scripts.typecheck ? sourceScriptCommands(manifest.scripts, "typecheck") : [];
+  return { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands };
+}
+
 async function produceSource(root: string, runId: string, candidatePath: string, lockInputPath: string | undefined): Promise<void> {
   const plan = loadValidatedReleasePlan(root, candidatePath);
   if (!plan) throw new Error("A validated --candidate-plan is required");
@@ -1058,45 +1114,13 @@ async function produceSource(root: string, runId: string, candidatePath: string,
     if (existsSync(retainedWrapper)) throw new Error(`Run ID already has a project: ${retainedWrapper}`);
     // Outside the checkout so an undeclared dependency cannot resolve through its node_modules.
     const wrapper = mkdtempSync(resolve(tmpdir(), "aura3d-example-"));
-    const project = resolve(wrapper, entry.kind === "capability-example" ? `examples/native-capability/${entry.id.split(":")[1]}` : entry.sourcePath);
+    const project = exampleProjectPath(wrapper, entry);
     const retainedProject = resolve(retainedWrapper, relative(wrapper, project));
     const checks: RunCheck[] = [];
     let projectRecord: any;
     let cacheDir: string | undefined;
     try {
-      const harness = entry.kind === "capability-example" ? makeCapabilityProject(root, project, entry.id.split(":")[1]!) : (copyProject(resolve(root, entry.sourcePath), project), []);
-      if (entry.kind === "documented-example" && entry.sourcePath.startsWith("examples/")) {
-        const sharedPath = resolve(root, "examples/shared");
-        if (existsSync(sharedPath)) { copyProject(sharedPath, resolve(wrapper, "examples/shared")); harness.push("examples/shared (source support)"); }
-      }
-      if (entry.sourcePath.startsWith("apps/")) for (const name of ["common", "wow-common"]) {
-        const sharedPath = resolve(root, "apps", name);
-        if (existsSync(sharedPath)) { copyProject(sharedPath, resolve(wrapper, "apps", name)); harness.push(`apps/${name} (source support)`); }
-      }
-      const manifestFile = resolve(project, "package.json");
-      const isStandalone = !existsSync(manifestFile);
-      if (entry.kind !== "capability-example" && !isStandalone) {
-        // A wrapper app that mounts a sibling example (`*-port`) or reads a
-        // repo-root module builds only if that source is staged beside it.
-        const staging = stageExampleDependencies(root, wrapper, project);
-        harness.push(...staging.staged.map((path) => `${path} (staged source dependency)`));
-        // Vite's default publicDir is the project's own public/; add only the
-        // root-served files its sources name that it does not already carry.
-        for (const path of staging.publicFiles) {
-          const destination = resolve(project, "public", path);
-          mkdirSync(dirname(destination), { recursive: true });
-          cpSync(rootServedFile(root, `/${path}`, staging.publicDirs)!, destination);
-          harness.push(`${portable(relative(wrapper, destination))} (staged root public file)`);
-        }
-      }
-      // Standalone examples stage their dependencies (and fixture host) in standaloneHarness.
-      const standalone = isStandalone ? standaloneHarness(root, wrapper, project, entry as ExampleCatalogEntry) : undefined;
-      if (standalone) harness.push(...standalone.files);
-      const manifest = standalone?.manifest ?? readJson(manifestFile);
-      if (!isStandalone && (typeof manifest.scripts?.build !== "string" || !manifest.scripts.build.trim())) throw new Error(`Missing build script in ${entry.sourcePath}`);
-      const scripts = Object.values(manifest.scripts ?? {}).join(" ");
-      const buildCommands = isStandalone ? [] : sourceScriptCommands(manifest.scripts, "build");
-      const typeCommands = !isStandalone && manifest.scripts.typecheck ? sourceScriptCommands(manifest.scripts, "typecheck") : [];
+      const { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands } = prepareExampleHarness(root, wrapper, project, entry);
       const deps = wrapperDependencies(manifest, plan);
       writeFileSync(resolve(wrapper, "package.json"), `${JSON.stringify({ name: "aura3d-example-install-wrapper", private: true, type: "module", dependencies: deps }, null, 2)}\n`);
       const installInput = installBundle.examples.find((candidate) => candidate.id === entry.id)!;
@@ -1196,6 +1220,249 @@ async function produceSource(root: string, runId: string, candidatePath: string,
   console.log(`Example source report: ${portable(relative(root, out))}`);
 }
 
+// ---------------------------------------------------------------------------
+// Packed-candidate example producer (5.0 decision record item 1). The custody
+// lock input (NATIVE_EXAMPLE_LOCK_INPUT) and the retained native-capabilities
+// source manifest do not exist on the ACR source5 path. There, every catalog
+// example is copied into a fresh wrapper outside the checkout, its Aura3D
+// dependencies are substituted with the exact packed archives named by the
+// validated plan (A3D_RELEASE_PLAN), and an ordinary isolated `npm install`
+// generates a lock that must pin every candidate entry to the plan's SHA-512
+// integrity and staged archive (tools/package-clean-install runPackedSource).
+// Retained per example: the wrapper without node_modules and without the staged
+// archives (they are the plan's archives, bound by integrity), its lock, the
+// built dist and the installed candidate content digests.
+// ---------------------------------------------------------------------------
+
+export const PACKED_EXAMPLES_INSTALL = "packed-v1" as const;
+type PackedPlan = NonNullable<ReturnType<typeof loadValidatedReleasePlan>>;
+type PackedPlanPackage = PackedPlan["packages"][number] & { internalDependencies?: string[] };
+interface PackedSubstitution { readonly section: string; readonly name: string; readonly before: string; readonly after: string }
+interface PackedInstalledPackage { readonly name: string; readonly installPath: string; readonly version: string; readonly sha256: string; readonly integrity: string; readonly contentsSha256: string }
+
+/** Wrapper manifest for one example: its declared dependencies with candidate packages replaced by the staged plan archives. */
+export function packedExampleWrapper(manifest: any, plan: PackedPlan): { wrapper: Record<string, unknown>; closure: PackedPlanPackage[]; substitutions: PackedSubstitution[] } {
+  const declared = { ...manifest.dependencies, ...manifest.devDependencies, ...manifest.optionalDependencies, ...manifest.peerDependencies } as Record<string, string>;
+  const candidates = new Set(plan.packages.map((entry) => entry.name));
+  for (const name of Object.keys(declared)) if (/^(?:three|babylonjs|@babylonjs\/)/.test(name)) throw new Error(`Consumer declares a prohibited external 3D engine: ${name}`);
+  for (const name of Object.keys(declared)) if ((name.startsWith("@aura3d/") || name === "create-aura3d") && !candidates.has(name)) throw new Error(`Missing candidate package ${name}`);
+  for (const [name, version] of Object.entries(declared)) if (!candidates.has(name) && (typeof version !== "string" || version.startsWith("workspace:") || version.startsWith("file:") || version.startsWith("link:"))) throw new Error(`Dependency ${name} requires an unstaged local workspace/file`);
+  const wrapper: Record<string, unknown> = { name: "aura3d-example-install-wrapper", private: true, type: "module", dependencies: declared };
+  const { closure, substitutions } = substitutePackedCandidates(wrapper, plan as never);
+  return { wrapper, closure: closure as PackedPlanPackage[], substitutions };
+}
+
+/**
+ * Bind a retained packed example to the plan without installing it: every
+ * candidate specifier is a recorded substitution with the plan archive, the
+ * lock pins every Aura3D entry to that archive and the plan's SHA-512
+ * integrity, and the recorded installed candidates are exactly the closure.
+ */
+export function assertPackedExampleLock(manifest: any, lock: any, plan: PackedPlan, substitutions: readonly PackedSubstitution[], installed: readonly PackedInstalledPackage[]): void {
+  const packages = plan.packages as PackedPlanPackage[];
+  if (!Array.isArray(substitutions) || !substitutions.length) throw new Error("packed candidate substitutions are missing");
+  const names = new Set<string>();
+  for (const item of substitutions) {
+    const pkg = packages.find((entry) => entry.name === item?.name);
+    if (!pkg || item.after !== packedSpec(pkg as never) || manifest?.[item.section]?.[item.name] !== item.after) throw new Error(`packed substitution is not a candidate archive: ${item?.name}`);
+    names.add(item.name);
+  }
+  for (const section of ["dependencies", "devDependencies", "optionalDependencies", "overrides"]) {
+    for (const [name, value] of Object.entries(manifest?.[section] ?? {})) {
+      if (typeof value === "string" && /^(?:file|link|workspace):/.test(value) && !substitutions.some((item) => item.section === section && item.name === name)) throw new Error(`unrecorded local dependency: ${name}`);
+    }
+  }
+  const closure = candidateClosure(plan as never, names) as PackedPlanPackage[];
+  if (!lock?.packages || typeof lock.packages !== "object") throw new Error("lock has no package inventory");
+  const locked = new Set<string>();
+  for (const [path, entry] of Object.entries(lock.packages) as [string, any][]) {
+    const match = path.match(/(?:^|\/)node_modules\/((?:@aura3d\/[^/]+)|create-aura3d)$/);
+    if (!match) continue;
+    const pkg = closure.find((item) => item.name === match[1]);
+    if (!pkg) throw new Error(`locked Aura3D package is outside the candidate closure: ${path}`);
+    if (entry?.link === true || entry?.version !== pkg.version || entry?.integrity !== pkg.integrity || entry?.resolved !== packedSpec(pkg as never)) throw new Error(`lock is not pinned to the plan integrity: ${path}`);
+    locked.add(pkg.name);
+  }
+  for (const pkg of closure) if (!locked.has(pkg.name)) throw new Error(`candidate package is not locked: ${pkg.name}`);
+  if (!Array.isArray(installed) || !installed.length) throw new Error("no exact candidate packages recorded");
+  for (const item of installed) {
+    const pkg = closure.find((entry) => entry.name === item?.name);
+    const entry = lock.packages[item?.installPath];
+    if (!pkg || item.version !== pkg.version || item.sha256 !== pkg.sha256 || item.integrity !== pkg.integrity || !entry || entry.integrity !== pkg.integrity ||
+        !/^[a-f0-9]{64}$/.test(item.contentsSha256 ?? "")) throw new Error(`installed candidate differs from the plan: ${item?.name}`);
+  }
+  for (const pkg of closure) if (!installed.some((item) => item.name === pkg.name)) throw new Error(`installed candidate inventory is incomplete: ${pkg.name}`);
+}
+
+/** Verify one retained packed example project (paths are repository-relative). */
+function validatePackedExampleProject(root: string, project: any, plan: PackedPlan, runId: string): void {
+  if (project?.retention !== PACKED_EXAMPLES_INSTALL) throw new Error("project is not a packed-v1 retained example");
+  const prefix = `tests/reports/native-examples-catalog/${runId}/projects/`;
+  if (typeof project.wrapperPath !== "string" || !project.wrapperPath.startsWith(prefix)) throw new Error("retained wrapper is outside the run's project directory");
+  const wrapper = safePath(root, project.wrapperPath), dir = safePath(root, project.path);
+  if (!inside(wrapper, dir)) throw new Error("consumer escapes retained wrapper");
+  for (const name of ["node_modules", PACKED_CANDIDATE_DIR]) if (existsSync(resolve(wrapper, name))) throw new Error(`retained wrapper contains ${name}`);
+  const manifestBytes = readFileSync(resolve(wrapper, "package.json")), lockBytes = readFileSync(resolve(wrapper, "package-lock.json"));
+  if (hash(manifestBytes) !== project.manifestSha256 || hash(lockBytes) !== project.lockSha256) throw new Error("manifest or lockfile digest changed");
+  const dist = resolve(dir, "dist");
+  const output = safePath(dist, project.outputEntry);
+  if (!existsSync(output) || !lstatSync(output).isFile()) throw new Error("built browser artifact is missing");
+  assertExampleRetainedIdentity(wrapper, dist, project);
+  assertPackedExampleLock(JSON.parse(manifestBytes.toString("utf8")), JSON.parse(lockBytes.toString("utf8")), plan, project.substitutions, project.installedPackages);
+}
+
+/** Verify a packed-v1 example source report object against the validated plan bytes; returns every problem found. */
+export function packedExampleReportErrors(root: string, report: any, candidatePlanPath: string): string[] {
+  root = resolve(root);
+  const plan = loadValidatedReleasePlan(root, candidatePlanPath);
+  if (!plan) return ["Missing validated candidate plan"];
+  const planBytes = readFileSync(resolve(root, candidatePlanPath));
+  if (report?.schema !== "aura3d.native-consumers/1" || report.phase !== "source" || report.install !== PACKED_EXAMPLES_INSTALL || report.browser !== "not-run" ||
+      report.candidateSha256 !== hash(planBytes) || report.candidatePlan !== portable(relative(root, resolve(root, candidatePlanPath))) ||
+      JSON.stringify(report.source) !== JSON.stringify(plan.source) || JSON.stringify(report.packages) !== JSON.stringify(plan.packages) ||
+      report.lockfileSha256 !== plan.source.lockfileSha256) return ["Packed example source report is malformed or for another candidate"];
+  if (!Array.isArray(report.cases) || !Array.isArray(report.projects) || typeof report.runId !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(report.runId)) return ["Packed example source report lacks cases or projects"];
+  const catalog = [...collectSupportedExampleCatalog(root), ...collectCapabilityCatalog(root)];
+  const errors = validateExampleChecks(catalog, report.cases);
+  const projects = new Map<string, any>();
+  for (const project of report.projects) {
+    if (!project || projects.has(project.id)) { errors.push(`Duplicate or invalid project: ${project?.id}`); continue; }
+    projects.set(project.id, project);
+  }
+  for (const item of report.cases) {
+    const expected = catalog.find((entry) => entry.id === item?.id);
+    if (!expected || item.kind !== expected.kind || item.sourcePath !== expected.sourcePath) errors.push(`${item?.id}: catalog metadata mismatch`);
+    for (const check of item?.checks ?? []) {
+      try {
+        if (!Array.isArray(check.command) || !check.command.length) throw new Error("no executed command");
+        if (hash(readFileSync(safePath(root, check.logPath))) !== check.logSha256) throw new Error("command log missing or changed");
+      } catch (error) { errors.push(`${item.id}: ${check.id} ${String(error)}`); }
+    }
+    const project = projects.get(item?.id);
+    if (!project || item.project !== project.path) { errors.push(`${item?.id}: missing retained project`); continue; }
+    try { validatePackedExampleProject(root, project, plan, report.runId); } catch (error) { errors.push(`${item.id}: ${String(error)}`); }
+  }
+  if (projects.size !== catalog.length) errors.push("retained projects do not match the catalog");
+  return errors;
+}
+
+/** Copy the wrapper for retention: no dependency tree and no staged candidate archives. */
+function retainPackedWrapper(wrapper: string, retainedWrapper: string): void {
+  collectExampleRetainedFiles(wrapper, { excludeNodeModules: true, rejectEmptyDirectories: true });
+  mkdirSync(dirname(retainedWrapper), { recursive: true });
+  cpSync(wrapper, retainedWrapper, { recursive: true, filter: (path) => {
+    if (lstatSync(path).isSymbolicLink()) throw new Error("Refusing unverified retained symlink");
+    const parts = relative(wrapper, path).split(sep).filter(Boolean);
+    if (parts.some((part) => part.toLowerCase() === "node_modules") || parts[0] === PACKED_CANDIDATE_DIR) return false;
+    for (const part of parts) assertRetainableName(part);
+    return true;
+  } });
+  collectExampleRetainedFiles(retainedWrapper, { rejectNodeModules: true, rejectEmptyDirectories: true });
+}
+
+export async function producePackedSource(root: string, runId: string, candidatePath: string): Promise<{ pass: boolean; out: string }> {
+  root = resolve(root);
+  const plan = loadValidatedReleasePlan(root, candidatePath);
+  if (!plan) throw new Error("A validated --candidate-plan is required");
+  const planPath = resolve(root, candidatePath);
+  const candidateSha256 = hash(readFileSync(planPath));
+  const relativePlanPath = portable(relative(root, planPath));
+  const catalog = discoverExampleCatalog(root);
+  const entries = [...catalog.entries, ...collectCapabilityCatalog(root)];
+  const outputDir = safePath(root, `tests/reports/native-examples-catalog/${runId}`);
+  if (existsSync(outputDir)) throw new Error("Example source run ID already exists");
+  mkdirSync(outputDir, { recursive: true });
+  // One private npm cache and home for every example: registry dependencies are
+  // fetched once; candidate archives are always the staged plan bytes.
+  const scratch = realpathSync(mkdtempSync(resolve(tmpdir(), "aura3d-packed-examples-")));
+  const cache = resolve(scratch, ".npm-cache"), home = resolve(scratch, ".home");
+  mkdirSync(cache); mkdirSync(home);
+  const installEnv = packedConsumerEnvironment(cache, home);
+  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull];
+  const projects: any[] = [], cases: any[] = [];
+  let npmVersion = "";
+  try {
+    const version = spawnSync("npm", ["--version"], { cwd: scratch, env: installEnv, encoding: "utf8" });
+    npmVersion = version.status === 0 ? String(version.stdout ?? "").trim() : "";
+    if (!npmVersion) throw new Error("Cannot determine npm version for source-consumer report");
+    for (const entry of entries) {
+      const suffix = entry.id.replace(/[^a-z0-9-]+/gi, "-");
+      const retainedWrapper = resolve(outputDir, "projects", suffix), logs = resolve(outputDir, "logs", suffix);
+      if (existsSync(retainedWrapper)) throw new Error(`Run ID already has a project: ${retainedWrapper}`);
+      // Outside the checkout so an undeclared dependency cannot resolve through its node_modules.
+      const wrapper = mkdtempSync(resolve(tmpdir(), "aura3d-example-"));
+      const project = exampleProjectPath(wrapper, entry);
+      const retainedProject = resolve(retainedWrapper, relative(wrapper, project));
+      const checks: RunCheck[] = [];
+      let record: any;
+      try {
+        const { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands } = prepareExampleHarness(root, wrapper, project, entry);
+        const { wrapper: wrapperManifest, closure, substitutions } = packedExampleWrapper(manifest, plan);
+        writeFileSync(resolve(wrapper, "package.json"), `${JSON.stringify(wrapperManifest, null, 2)}\n`);
+        stagePackedArchives(root, wrapper, closure as never);
+        const before = contentIdentity(project);
+        const install = run(root, wrapper, logs, "install", "npm", npmInstall, installEnv);
+        checks.push(install);
+        const installed = install.status === "passed" ? assertPackedInstall(root, wrapper, plan as never, closure as never) : undefined;
+        const env = exampleEnvironment(wrapper);
+        const wrapperBeforeBuild = contentIdentity(wrapper);
+        if (installed && isStandalone) {
+          checks.push(run(root, wrapper, logs, "typecheck", resolve(wrapper, "node_modules/.bin/tsc"), ["--project", resolve(wrapper, "aura-example.tsconfig.json"), "--noEmit"], env));
+          checks.push(run(root, wrapper, logs, "build", resolve(wrapper, "node_modules/.bin/vite"), ["build", "--config", resolve(wrapper, "aura-example.vite.mjs")], env));
+        } else if (installed) checks.push(runSequence(root, project, wrapper, logs, "build", buildCommands, env));
+        else checks.push(failed(root, logs, "build", "Build not run because install failed"));
+        if (!isStandalone && installed && typeCommands.length && !buildCommands.some((command) => command[0] === "tsc")) checks.push(runSequence(root, project, wrapper, logs, "typecheck", typeCommands, env));
+        else if (!isStandalone && !buildCommands.some((command) => command[0] === "tsc")) checks.push(failed(root, logs, "typecheck", "Missing explicit typecheck script or TypeScript build step"));
+        if (contentIdentity(project) !== before) checks.push(failed(root, logs, "unmodified", "Build changed consumer source files"));
+        if (contentIdentity(wrapper) !== wrapperBeforeBuild) checks.push(failed(root, logs, "harness-unmodified", "Build changed the harness, lockfile, staged archives or shared source files"));
+        if (installed && JSON.stringify(assertPackedInstall(root, wrapper, plan as never, closure as never)) !== JSON.stringify(installed)) checks.push(failed(root, logs, "installed-unmodified", "Installed candidate changed during build"));
+        const dist = resolve(project, "dist");
+        const nestedEntry = standalone?.outputEntry ?? `${portable(relative(wrapper, project))}/index.html`;
+        const outputEntry = ["index.html", nestedEntry].find((name) => existsSync(resolve(dist, name)));
+        if (!outputEntry) checks.push(failed(root, logs, "output", "Build did not produce the expected index.html in dist"));
+        const lockFile = resolve(wrapper, "package-lock.json");
+        const lock = existsSync(lockFile) ? readJson(lockFile) : undefined;
+        record = { id: entry.id, retention: PACKED_EXAMPLES_INSTALL, path: portable(relative(root, retainedProject)), wrapperPath: portable(relative(root, retainedWrapper)),
+          manifestSha256: hash(readFileSync(resolve(wrapper, "package.json"))), lockSha256: lock ? hash(readFileSync(lockFile)) : null, outputEntry: outputEntry ?? null,
+          substitutions, installedPackages: installed ?? [], toolVersions: { typescript: lock?.packages?.["node_modules/typescript"]?.version ?? null, vite: lock?.packages?.["node_modules/vite"]?.version ?? null },
+          harness: { wrapperManifest: portable(relative(root, resolve(retainedWrapper, "package.json"))), generatedFiles: harness, stagedArchives: closure.map((pkg) => basename(pkg.tarball)) }, declaredScripts: scripts };
+      } catch (error) {
+        if (!checks.some((check) => check.id === "install")) checks.push(failed(root, logs, "install", String(error)));
+        if (!checks.some((check) => check.id === "build")) checks.push(failed(root, logs, "build", "Build not run due to preparation failure"));
+        else checks.push(failed(root, logs, "identity", String(error)));
+      } finally {
+        try { retainPackedWrapper(wrapper, retainedWrapper); } catch {
+          rmSync(retainedWrapper, { recursive: true, force: true });
+          record = undefined;
+          checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
+        } finally { rmSync(wrapper, { recursive: true, force: true }); }
+      }
+      if (record) {
+        try {
+          const retainedFiles = collectExampleRetainedFiles(retainedWrapper, { rejectNodeModules: true, rejectEmptyDirectories: true });
+          const dist = resolve(retainedProject, "dist");
+          const outputFiles = existsSync(dist) ? collectExampleRetainedFiles(dist, { rejectNodeModules: true, rejectEmptyDirectories: true }) : [];
+          Object.assign(record, { retainedFiles, retainedSha256: exampleRetainedFilesDigest(retainedFiles), outputFiles, outputSha256: existsSync(dist) ? exampleRetainedFilesDigest(outputFiles) : null });
+          if (checks.every((check) => check.status === "passed")) validatePackedExampleProject(root, record, plan, runId);
+        } catch (error) { checks.push(failed(root, logs, "retained-identity", String(error))); }
+        projects.push(record);
+      }
+      cases.push({ id: entry.id, kind: entry.kind, sourcePath: entry.sourcePath, project: record?.path ?? null, status: checks.every((check) => check.status === "passed") ? "passed" : "failed", checks });
+    }
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+  const report: any = { schema: "aura3d.native-consumers/1", phase: "source", install: PACKED_EXAMPLES_INSTALL, runId, candidateSha256, candidatePlan: relativePlanPath, source: plan.source,
+    stagedSourceSha256: plan.source?.inputDigest ?? plan.source?.fingerprint, lockfileSha256: plan.source.lockfileSha256, packages: plan.packages,
+    toolVersions: { node: process.version, npm: npmVersion }, generatedAt: new Date().toISOString(), pass: false, failures: [] as string[], cases, projects, exemptions: catalog.exemptions, browser: "not-run" };
+  report.failures = validateExampleChecks(entries, cases);
+  if (!report.failures.length) report.failures = packedExampleReportErrors(root, report, candidatePath);
+  report.pass = report.failures.length === 0;
+  const out = resolve(outputDir, "examples-source.json");
+  writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
+  return { pass: report.pass, out: portable(relative(root, out)) };
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const option = (name: string): string | undefined => {
@@ -1208,8 +1475,17 @@ async function main(): Promise<void> {
   const runId = option("--run-id");
   const candidate = option("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN;
   const lockInput = option("--lock-input") ?? process.env.NATIVE_EXAMPLE_LOCK_INPUT;
+  // --packed (ACR source5 path): install each example from the packed candidate; no custody lock input.
+  const packed = args.includes("--packed");
   if (phase !== "source") throw new Error("This source producer accepts --phase source only; browser acceptance uses its own gated spec");
-  if (!runId || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(runId) || !candidate) throw new Error("Provide --phase source --run-id <id> --candidate-plan <validated-plan>");
+  if (!runId || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(runId) || !candidate) throw new Error("Provide --phase source --run-id <id> --candidate-plan <validated-plan> [--packed]");
+  if (packed) {
+    if (lockInput) throw new Error("--packed installs the packed candidate and takes no custody lock input");
+    const result = await producePackedSource(process.cwd(), runId, candidate);
+    if (!result.pass) { console.error(JSON.parse(readFileSync(resolve(process.cwd(), result.out), "utf8")).failures.join("\n")); process.exitCode = 1; }
+    console.log(`Example source report: ${result.out}`);
+    return;
+  }
   await produceSource(process.cwd(), runId, candidate, lockInput);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

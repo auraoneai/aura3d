@@ -3784,6 +3784,11 @@ export class WebGL2Device implements RenderDevice {
     return [...live];
   }
 
+  /** `getDiagnostics().drawCalls` without building the rest of the diagnostics (per-stage trace reads). */
+  drawCallCount(): number {
+    return this.host.counters.drawCalls;
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     this.host.textureRegistry.releaseDisposedTextureHandles();
     // Single passes over the live sets (this runs at least twice a frame): no spread copies, no per-field filter chains.

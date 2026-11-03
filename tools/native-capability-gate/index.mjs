@@ -1043,8 +1043,9 @@ function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports
     ...(ledgerRef ? { ledger: ledgerRef, ledgerRole: 'historical-reference', roadmap: ledger.roadmap ?? null } : {}),
     sourceRunner: 'acr-source5', freezeCommit: proof.commit, testedOrigin: manifest.origin, sourceInputDigest: manifest.inputDigest, lockfileSha256: manifest.lockfileSha256,
     runId: reports.runId, sourceRuns: v.stageSources, releaseKind: v.releaseKind, candidatePlan: v.candidatePlan, archives: v.archives, archiveBinding: v.archiveBinding,
-    // packed-b's consumer source reports, retained and re-hashed (examples: no source5 stage produces one).
-    sourceConsumerReport: v.consumerReports.sourceConsumerReport, matrixSourceReport: v.consumerReports.matrixSourceReport, examplesSourceReport: null,
+    // packed-b's consumer source reports (clean-install, matrix, packed examples), retained and re-hashed;
+    // `jobPath` is the in-job path acceptance stages them at (and the candidate plan / archives likewise).
+    sourceConsumerReport: v.consumerReports.sourceConsumerReport, matrixSourceReport: v.consumerReports.matrixSourceReport, examplesSourceReport: v.consumerReports.examplesSourceReport,
     consumerReports: v.consumerReports,
     requiredOutcomeIds: outcome.required, completedOutcomeIds: reports.completedOutcomeIds, outcomeCompletion: reports.outcomeCompletion, outcomeSnapshotSha256: outcome.snapshotSha256,
     expectedCheckIds: v.expectedCheckIds, executedCheckIds: v.executedCheckIds, passingCheckIds: v.passingCheckIds, checks: v.checks,
@@ -1075,7 +1076,9 @@ export function validateAcceptanceGate({ root = process.cwd(), gatePath, sourceR
     record.outcomeSource === 'aura3d-5.0-scope' ? record.scope.path : undefined);
   for (const key of Object.keys(record)) if (!['schema', 'status', 'createdAt', 'owner'].includes(key) && !(key in result)) fail(`gate field mismatch: ${key}`);
   for (const [key, value] of Object.entries(result)) if (canonical(record[key]) !== canonical(value)) fail(`gate field mismatch: ${key}`);
-  if (sourceReport && ![record.sourceConsumerReport?.path, record.matrixSourceReport?.path, record.examplesSourceReport?.path].includes(sourceReport)) fail('selected source report is not bound to this gate');
+  // A source5 record also binds each report's in-job path (acceptance staging places the retained bytes there).
+  if (sourceReport && ![record.sourceConsumerReport, record.matrixSourceReport, record.examplesSourceReport]
+    .flatMap(ref => [ref?.path, ...(record.sourceRunner === 'acr-source5' && ref?.jobPath ? [ref.jobPath] : [])]).includes(sourceReport)) fail('selected source report is not bound to this gate');
   return record;
 }
 function cli() {

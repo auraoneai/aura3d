@@ -4,12 +4,18 @@ import { tmpdir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 
 export type BrowserReportField = "sourceConsumerReport" | "matrixSourceReport" | "examplesSourceReport";
+/** `jobPath` (ACR source5 records): where acceptance staging placed the retained bytes for the job. */
 export interface BrowserGateRecord {
   status: string;
-  candidatePlan: { path: string; sha256: string };
-  sourceConsumerReport?: { path: string; sha256: string };
-  matrixSourceReport?: { path: string; sha256: string };
-  examplesSourceReport?: { path: string; sha256: string };
+  sourceRunner?: string;
+  candidatePlan: { path: string; sha256: string; jobPath?: string };
+  sourceConsumerReport?: { path: string; sha256: string; jobPath?: string };
+  matrixSourceReport?: { path: string; sha256: string; jobPath?: string };
+  examplesSourceReport?: { path: string; sha256: string; jobPath?: string };
+}
+/** The path a browser job reads for a gate-bound file (source5: its in-job path). */
+export function gateJobPath(gate: Pick<BrowserGateRecord, "sourceRunner">, ref: { path: string; jobPath?: string } | undefined): string | undefined {
+  return gate.sourceRunner === "acr-source5" ? ref?.jobPath : ref?.path;
 }
 export interface BrowserBindings {
   candidatePlan: string;
@@ -30,14 +36,14 @@ export function consumerReportFromEnvironment(env: Record<string, string | undef
 export function bindBrowserGate<G extends BrowserGateRecord>(validate: () => G, bindings: BrowserBindings): G {
   const gate = validate();
   if (gate.status !== "CODE_COMPLETE_GO" || !bindings.candidatePlan ||
-      gate.candidatePlan?.path !== bindings.candidatePlan || !/^[a-f0-9]{64}$/.test(gate.candidatePlan.sha256)) {
+      gateJobPath(gate, gate.candidatePlan) !== bindings.candidatePlan || !/^[a-f0-9]{64}$/.test(gate.candidatePlan.sha256)) {
     throw new Error("Browser candidate plan is not bound to the validated code-complete gate");
   }
   const fields = Object.keys(bindings.reports) as BrowserReportField[];
   if (!fields.length) throw new Error("A gate-bound browser source report is required");
   for (const field of fields) {
     if (!(["sourceConsumerReport", "matrixSourceReport", "examplesSourceReport"] as string[]).includes(field) ||
-        !bindings.reports[field] || gate[field]?.path !== bindings.reports[field] ||
+        !bindings.reports[field] || gateJobPath(gate, gate[field]) !== bindings.reports[field] ||
         !/^[a-f0-9]{64}$/.test(gate[field]?.sha256 ?? "")) {
       throw new Error(`Browser source report is not bound to the validated gate: ${field}`);
     }

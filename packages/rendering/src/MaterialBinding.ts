@@ -171,37 +171,31 @@ export class MaterialBinding {
       uniforms.set("u_dfgLut", dfgLutBinding());
     }
 
-    for (const [name, value] of materialLike.getRecursiveParameters()) {
+    // One owned copy per material revision instead of a fresh clone of every value on every draw.
+    const parameters = materialParameterSnapshot(materialLike);
+    // forEach, not for-of: entry destructuring allocates per parameter on every draw.
+    parameters.forEach((value, name) => {
       if (!isFlatUniformValue(value)) {
         diagnostics.push(`Generated programs cannot bind structured uniform ${name}`);
-        continue;
+        return;
       }
       const renamed = GENERATED_UNIFORM_RENAMES[name];
       if (renamed && isTextureBinding(value)) {
-        uniforms.set(renamed, new TextureBinding({
-          name: renamed,
-          texture: value.texture,
-          sampler: value.sampler,
-          required: value.required,
-          ready: value.ready,
-          expectedColorSpace: value.expectedColorSpace,
-          expectedDimension: value.expectedDimension,
-          transform: { offset: value.offset, scale: value.scale, rotation: value.rotation }
-        }));
+        uniforms.set(renamed, renamedTextureBinding(value, renamed));
       } else {
         uniforms.set(renamed ?? name, value);
       }
-    }
+    });
     if (features?.maps.occlusion && !uniforms.has("u_occlusionStrength")) uniforms.set("u_occlusionStrength", 1);
 
     // Core map transforms travel with the texture binding for materials that
     // do not expose separate fields. Explicit live fields take precedence.
-    for (const name of ["u_baseColorTexture", "u_normalTexture", "u_metallicRoughnessTexture", "u_occlusionTexture", "u_emissiveTexture"]) {
-      const value = materialLike.getParameter(name);
+    for (const [name, offsetName, scaleName, rotationName] of CORE_TEXTURE_TRANSFORM_UNIFORMS) {
+      const value = parameters.get(name);
       if (!isTextureBinding(value)) continue;
-      if (!uniforms.has(`${name}Offset`)) uniforms.set(`${name}Offset`, value.offset);
-      if (!uniforms.has(`${name}Scale`)) uniforms.set(`${name}Scale`, value.scale);
-      if (!uniforms.has(`${name}Rotation`)) uniforms.set(`${name}Rotation`, value.rotation);
+      if (!uniforms.has(offsetName)) uniforms.set(offsetName, value.offset);
+      if (!uniforms.has(scaleName)) uniforms.set(scaleName, value.scale);
+      if (!uniforms.has(rotationName)) uniforms.set(rotationName, value.rotation);
     }
 
     // Lobe maps use a mat3 so descriptor-backed and live bindings share the
@@ -209,7 +203,7 @@ export class MaterialBinding {
     for (const ext of features?.extensions ?? []) {
       for (const slot of ext.maps) {
         const name = `u_${slot}Texture`;
-        const value = materialLike.getParameter(name);
+        const value = parameters.get(name);
         if (!isTextureBinding(value)) continue;
         const offset = uniforms.get(`${name}Offset`) ?? value.offset;
         const scale = uniforms.get(`${name}Scale`) ?? value.scale;
@@ -254,11 +248,11 @@ export class MaterialBinding {
         if (diagnostic) diagnostics.push(diagnostic);
       }
     }
-    for (const [name, value] of uniforms) {
+    uniforms.forEach((value, name) => {
       if (isTextureBinding(value)) {
         const validation = value.validate();
-        diagnostics.push(...validation.diagnostics);
-        warnings.push(...validation.warnings);
+        if (validation.diagnostics.length > 0) diagnostics.push(...validation.diagnostics);
+        if (validation.warnings.length > 0) warnings.push(...validation.warnings);
       } else if (!(material instanceof PortableShaderMaterial && material.uniformSchema.some((uniform) =>
         (GENERATED_UNIFORM_RENAMES[uniform.name] ?? uniform.name) === name))) {
         const valueDiagnostics = uniformValueDiagnostics(name, value);
@@ -266,7 +260,7 @@ export class MaterialBinding {
           diagnostics.push(...valueDiagnostics);
         }
       }
-    }
+    });
     if (diagnostics.length > 0) {
       throw new MaterialBindingError("Material binding validation failed", diagnostics);
     }
@@ -291,21 +285,55 @@ export function isFlatUniformValue(value: RecursiveUniformValue): value is Unifo
     || (Array.isArray(value) && value.every((entry) => typeof entry === "number"));
 }
 
+const NO_DIAGNOSTICS: readonly string[] = Object.freeze([]);
+
+/** Generated-name copy of a material texture binding; bindings are immutable, so one copy per (binding, name). */
+const renamedTextureBindings = new WeakMap<TextureBinding, { readonly name: string; readonly binding: TextureBinding }>();
+function renamedTextureBinding(value: TextureBinding, renamed: string): TextureBinding {
+  const cached = renamedTextureBindings.get(value);
+  if (cached && cached.name === renamed) return cached.binding;
+  const binding = new TextureBinding({
+    name: renamed,
+    texture: value.texture,
+    sampler: value.sampler,
+    required: value.required,
+    ready: value.ready,
+    expectedColorSpace: value.expectedColorSpace,
+    expectedDimension: value.expectedDimension,
+    transform: { offset: value.offset, scale: value.scale, rotation: value.rotation }
+  });
+  renamedTextureBindings.set(value, { name: renamed, binding });
+  return binding;
+}
+
+const CORE_TEXTURE_TRANSFORM_UNIFORMS: readonly (readonly [string, string, string, string])[] =
+  ["u_baseColorTexture", "u_normalTexture", "u_metallicRoughnessTexture", "u_occlusionTexture", "u_emissiveTexture"]
+    .map((name) => [name, `${name}Offset`, `${name}Scale`, `${name}Rotation`] as const);
+
+/** Per-revision parameter snapshot when the material provides one (Material, MaterialInstance); else the owned copy. */
+function materialParameterSnapshot(materialLike: Material | MaterialInstance): ReadonlyMap<string, RecursiveUniformValue> {
+  const source = materialLike as { parameterSnapshot?: () => ReadonlyMap<string, RecursiveUniformValue> };
+  return typeof source.parameterSnapshot === "function" ? source.parameterSnapshot() : materialLike.getRecursiveParameters();
+}
+
 function uniformValueDiagnostics(name: string, value: unknown): readonly string[] {
   if (typeof value === "number") {
-    return Number.isFinite(value) ? [] : [`Unsupported uniform value for ${name}: non-finite number`];
+    return Number.isFinite(value) ? NO_DIAGNOSTICS : [`Unsupported uniform value for ${name}: non-finite number`];
   }
   if (ArrayBuffer.isView(value)) {
     const view = value as unknown as ArrayLike<number>;
     for (let index = 0; index < view.length; index += 1) {
       if (!Number.isFinite(view[index])) return [`Unsupported uniform value for ${name}: typed array contains non-finite values`];
     }
-    return [];
+    return NO_DIAGNOSTICS;
   }
   if (Array.isArray(value)) {
-    return value.every((entry) => typeof entry === "number" && Number.isFinite(entry))
-      ? []
-      : [`Unsupported uniform value for ${name}: array must contain finite numbers`];
+    for (let index = 0; index < value.length; index += 1) {
+      if (!(index in value)) continue; // holes, as Array#every skips them
+      const entry: unknown = value[index];
+      if (typeof entry !== "number" || !Number.isFinite(entry)) return [`Unsupported uniform value for ${name}: array must contain finite numbers`];
+    }
+    return NO_DIAGNOSTICS;
   }
   return [`Unsupported uniform value for ${name}`];
 }

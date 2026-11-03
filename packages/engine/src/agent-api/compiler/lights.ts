@@ -467,7 +467,24 @@ export function prd02LightingOn(flags?: { on(name: string): boolean }, url?: URL
     }
     return ambientLightingMemo.on;
   }
-  return resolveQrFlags({ url: href, env: process.env }).on("A3D_QR_LIGHTING");
+  // An environment with no flag variables resolves exactly like the browser case above (URL only), so it shares
+  // that memo; any A3D flag variable keeps the per-call resolution, since the environment can change between calls.
+  const env = process.env;
+  if (!hasEnvFlagVariables(env)) {
+    if (ambientLightingMemo === undefined || ambientLightingMemo.href !== href) {
+      ambientLightingMemo = { href, on: resolveQrFlags({ url: href, env: {} }).on("A3D_QR_LIGHTING") };
+    }
+    return ambientLightingMemo.on;
+  }
+  return resolveQrFlags({ url: href, env }).on("A3D_QR_LIGHTING");
+}
+
+/** True when `env` sets any variable `resolveQrFlags` reads (`A3D_QR`, `VITE_A3D_QR`, `A3D_QR_*`, `A3D_PARITY_*`). */
+function hasEnvFlagVariables(env: Readonly<Record<string, string | undefined>>): boolean {
+  for (const name in env) {
+    if (name === "A3D_QR" || name === "VITE_A3D_QR" || name.startsWith("A3D_QR_") || name.startsWith("A3D_PARITY_")) return true;
+  }
+  return false;
 }
 
 let ambientLightingMemo: { readonly href: string | undefined; readonly on: boolean } | undefined;

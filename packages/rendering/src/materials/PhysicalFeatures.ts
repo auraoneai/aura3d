@@ -106,6 +106,29 @@ export function physicalFeatureSet(
     readonly instancing?: ProgramFeatures["instancing"];
   }
 ): PhysicalFeatureSet {
+  // The record is a pure function of the descriptor, the flags, the tier and the active lobe list (whose identity
+  // changes with the registry version or the flags). An observed selection must run the loop, so it is never served.
+  if (overrides !== undefined || selectiveLobeObservers.has(ctx)) return computePhysicalFeatureSet(descriptor, ctx, overrides);
+  const lobes = materialLobes(ctx.flags);
+  const cached = physicalFeatureSets.get(descriptor);
+  if (cached && cached.flags === ctx.flags && cached.tier === ctx.tier && cached.lobes === lobes) return cached.result;
+  const result = computePhysicalFeatureSet(descriptor, ctx, undefined);
+  physicalFeatureSets.set(descriptor, { flags: ctx.flags, tier: ctx.tier, lobes, result });
+  return result;
+}
+
+const physicalFeatureSets = new WeakMap<PhysicalMaterialDescriptor, {
+  readonly flags: MaterialFeatureContext["flags"];
+  readonly tier: MaterialFeatureContext["tier"];
+  readonly lobes: readonly MaterialLobe[];
+  readonly result: PhysicalFeatureSet;
+}>();
+
+function computePhysicalFeatureSet(
+  descriptor: PhysicalMaterialDescriptor,
+  ctx: MaterialFeatureContext,
+  overrides: Parameters<typeof physicalFeatureSet>[2]
+): PhysicalFeatureSet {
   const input = physicalMaterialLobeInput(descriptor);
   const lowTier = ctx.tier.maxLightsPerPixel <= QUALITY_TIERS.low.maxLightsPerPixel;
   const extensions: MaterialExtensionFeature[] = [];
@@ -202,6 +225,42 @@ export interface LegacyPhysicalMaterialOptions {
  * and UV set from the live material (or instance) before keying a draw.
  * Transform components remain uniforms, so editing them does not recompile. */
 export function withLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
+  record: T,
+  source: { getParameter(name: string): UniformValue | undefined },
+  ctx?: MaterialFeatureContext
+): T {
+  // Served from a per-(record, source) memo while the source's parameter snapshot (its revision), the flags, the tier
+  // and the number of disposed bound textures (disposal is one-way and the only live input outside the revision) hold.
+  const snapshotSource = source as { parameterSnapshot?: () => ReadonlyMap<string, unknown> };
+  if (typeof snapshotSource.parameterSnapshot !== "function") return computeLivePhysicalMapFeatures(record, source, ctx);
+  const snapshot = snapshotSource.parameterSnapshot();
+  const disposed = disposedTextureCount(snapshot);
+  let bySource = liveFeatureRecords.get(record);
+  const cached = bySource?.get(source);
+  if (cached && cached.snapshot === snapshot && cached.disposed === disposed && cached.flags === ctx?.flags && cached.tier === ctx?.tier) return cached.result as T;
+  const result = computeLivePhysicalMapFeatures(record, source, ctx);
+  if (!bySource) liveFeatureRecords.set(record, bySource = new WeakMap());
+  bySource.set(source, { snapshot, disposed, flags: ctx?.flags, tier: ctx?.tier, result });
+  return result;
+}
+
+const liveFeatureRecords = new WeakMap<object, WeakMap<object, {
+  readonly snapshot: ReadonlyMap<string, unknown>;
+  readonly disposed: number;
+  readonly flags: MaterialFeatureContext["flags"] | undefined;
+  readonly tier: MaterialFeatureContext["tier"] | undefined;
+  readonly result: PhysicalFeatureSet;
+}>>();
+
+function disposedTextureCount(parameters: ReadonlyMap<string, unknown>): number {
+  let count = 0;
+  for (const value of parameters.values()) {
+    if (isTextureBinding(value) && value.texture?.disposed) count += 1;
+  }
+  return count;
+}
+
+function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
   record: T,
   source: { getParameter(name: string): UniformValue | undefined },
   ctx?: MaterialFeatureContext
@@ -316,7 +375,22 @@ const LEGACY_TEXTURE_SLOTS: readonly PhysicalMapSlot[] = [
 ];
 
 /** Builds the C-03 descriptor from a legacy material option bag. Pure. */
+/**
+ * A legacy material's options are its construction-time snapshot (read-only by type), so the descriptor
+ * projected from them is computed once per options object instead of on every feature query and draw.
+ */
+const legacyDescriptors = new WeakMap<LegacyPhysicalMaterialOptions, PhysicalMaterialDescriptor>();
+
 export function legacyPhysicalDescriptor(options: LegacyPhysicalMaterialOptions): PhysicalMaterialDescriptor {
+  let descriptor = legacyDescriptors.get(options);
+  if (!descriptor) {
+    descriptor = computeLegacyPhysicalDescriptor(options);
+    legacyDescriptors.set(options, descriptor);
+  }
+  return descriptor;
+}
+
+function computeLegacyPhysicalDescriptor(options: LegacyPhysicalMaterialOptions): PhysicalMaterialDescriptor {
   const dynamic = options as unknown as Readonly<Record<string, unknown>>;
   const textures: Partial<Record<PhysicalMapSlot, PhysicalMapBinding>> = {};
   for (const slot of LEGACY_TEXTURE_SLOTS) {

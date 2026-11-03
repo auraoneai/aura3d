@@ -26,6 +26,10 @@ export interface TextureBindingValidation {
   readonly warnings: readonly string[];
 }
 
+/** The fallback warning text per binding (name is fixed), so a fallback-bound draw does not rebuild it every frame. */
+const fallbackWarnings = new WeakMap<object, string>();
+const VALID_TEXTURE_BINDING: TextureBindingValidation = Object.freeze({ ok: true, diagnostics: Object.freeze([]) as readonly string[], warnings: Object.freeze([]) as readonly string[] });
+
 export class TextureBinding {
   public readonly [TEXTURE_BINDING_BRAND] = true;
   public readonly name: string;
@@ -56,29 +60,33 @@ export class TextureBinding {
   }
 
   validate(): TextureBindingValidation {
-    const diagnostics: string[] = [];
-    const warnings: string[] = [];
+    // Runs for every bound texture on every draw: report through shared empty lists when there is nothing to say.
+    let diagnostics: string[] | undefined;
+    let warnings: string[] | undefined;
     if (this.required && !this.texture) {
-      diagnostics.push(`Missing required texture: ${this.name}`);
+      (diagnostics ??= []).push(`Missing required texture: ${this.name}`);
     } else if (!this.required && !this.texture) {
-      warnings.push(`Optional texture is not bound; using fallback texture: ${this.name}`);
+      let warning = fallbackWarnings.get(this);
+      if (warning === undefined) fallbackWarnings.set(this, warning = `Optional texture is not bound; using fallback texture: ${this.name}`);
+      (warnings ??= []).push(warning);
     }
     if (this.texture?.disposed) {
-      diagnostics.push(`Texture is disposed: ${this.name}`);
+      (diagnostics ??= []).push(`Texture is disposed: ${this.name}`);
     }
     if (this.texture && !this.ready) {
-      diagnostics.push(`Texture is not ready: ${this.name}`);
+      (diagnostics ??= []).push(`Texture is not ready: ${this.name}`);
     }
     if (this.texture && this.expectedColorSpace && this.texture.colorSpace !== this.expectedColorSpace) {
-      diagnostics.push(`Texture ${this.name} colorSpace must be ${this.expectedColorSpace}, got ${this.texture.colorSpace}`);
+      (diagnostics ??= []).push(`Texture ${this.name} colorSpace must be ${this.expectedColorSpace}, got ${this.texture.colorSpace}`);
     }
     if (this.texture && this.expectedDimension && this.texture.dimension !== this.expectedDimension) {
-      diagnostics.push(`Texture ${this.name} dimension must be ${this.expectedDimension}, got ${this.texture.dimension}`);
+      (diagnostics ??= []).push(`Texture ${this.name} dimension must be ${this.expectedDimension}, got ${this.texture.dimension}`);
     }
-    if (![...this.offset, ...this.scale, this.rotation].every(Number.isFinite)) {
-      diagnostics.push(`Texture transform must contain finite values: ${this.name}`);
+    if (!(Number.isFinite(this.offset[0]) && Number.isFinite(this.offset[1]) && Number.isFinite(this.scale[0]) && Number.isFinite(this.scale[1]) && Number.isFinite(this.rotation))) {
+      (diagnostics ??= []).push(`Texture transform must contain finite values: ${this.name}`);
     }
-    return { ok: diagnostics.length === 0, diagnostics, warnings };
+    if (!diagnostics && !warnings) return VALID_TEXTURE_BINDING;
+    return { ok: diagnostics === undefined, diagnostics: diagnostics ?? [], warnings: warnings ?? [] };
   }
 
   transformUV(uv: readonly [number, number]): readonly [number, number] {

@@ -1162,11 +1162,13 @@ function assertNpmExecutionReady(): void {
   assertMatrixExecutionReady("npm");
 }
 
-export function validateGateMatchesSource(gate: { candidatePlan?: { path: string; sha256: string }; sourceInputDigest?: string; lockfileSha256?: string; archives?: { path: string; sha256: string }[] }, source: MatrixReport): void {
-  must(gate.candidatePlan?.path === source.candidate.path && gate.candidatePlan.sha256 === source.candidate.sha256, "Global gate and consumer candidate plans differ");
+export function validateGateMatchesSource(gate: { sourceRunner?: string; candidatePlan?: { path: string; sha256: string; jobPath?: string }; sourceInputDigest?: string; lockfileSha256?: string; archives?: { path: string; sha256: string; jobPath?: string }[] }, source: MatrixReport): void {
+  // ACR source5 records bind the retained bytes by hash and record the in-job path the source jobs used.
+  const at = (ref: { path: string; jobPath?: string } | undefined) => gate.sourceRunner === "acr-source5" ? ref?.jobPath : ref?.path;
+  must(at(gate.candidatePlan) === source.candidate.path && gate.candidatePlan!.sha256 === source.candidate.sha256, "Global gate and consumer candidate plans differ");
   must(gate.sourceInputDigest === source.source.stagedSourceSha256 && gate.lockfileSha256 === source.source.lockfileSha256, "Global gate and consumer source identities differ");
   const expected = source.candidate.packages.map(pkg => `${pkg.tarball}\0${pkg.sha256}`).sort();
-  const observed = (gate.archives ?? []).map(archive => `${archive.path}\0${archive.sha256}`).sort();
+  const observed = (gate.archives ?? []).map(archive => `${at(archive)}\0${archive.sha256}`).sort();
   must(JSON.stringify(expected) === JSON.stringify(observed), "Global gate and consumer candidate archives differ");
 }
 async function assertGate(root: string, reportPath: string, gatePath: string, source?: MatrixReport): Promise<void> {

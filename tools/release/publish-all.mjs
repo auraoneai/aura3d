@@ -58,6 +58,13 @@ const outPlanArgument = process.argv.indexOf("--out-plan");
 const OUT_PLAN = outPlanArgument < 0 ? null : process.argv[outPlanArgument + 1];
 if (outPlanArgument >= 0 && (!OUT_PLAN || OUT_PLAN.startsWith("--") || !PACK_ONLY)) throw new Error("--out-plan requires --pack-only and an output path");
 if (OUT_PLAN && FROM_PLAN) throw new Error("--out-plan cannot rewrite a retained plan");
+// Pinned plan timestamp (5.0 ACR source pass): both packed stages repack the same
+// commit and must write byte-identical plans, so the launcher passes the frozen
+// commit's UTC committer time. Accepted only for --pack-only --out-plan.
+const PINNED_PLAN_TIME = process.env.A3D_PLAN_GENERATED_AT?.trim() || null;
+if (PINNED_PLAN_TIME && (!OUT_PLAN || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(PINNED_PLAN_TIME) || Number.isNaN(Date.parse(PINNED_PLAN_TIME)))) {
+  throw new Error("A3D_PLAN_GENERATED_AT requires --pack-only --out-plan and a UTC ISO-8601 time");
+}
 if (DRY_RUN && PACK_ONLY) {
   console.error("Choose either --dry-run or --pack-only, not both.");
   process.exit(1);
@@ -286,7 +293,7 @@ if (!retainedPlan) writeFileSync(
   `${JSON.stringify({
     schema: "aura3d-release-plan/1.0",
     source: frozenSource,
-    generatedAt: new Date().toISOString(),
+    generatedAt: PINNED_PLAN_TIME ? new Date(PINNED_PLAN_TIME).toISOString() : new Date().toISOString(),
     commit: frozenSource.commit,
     lockfileSha256: createHash("sha256").update(readFileSync(join(ROOT, "pnpm-lock.yaml"))).digest("hex"),
     version,

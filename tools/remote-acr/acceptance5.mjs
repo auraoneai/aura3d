@@ -252,8 +252,10 @@ export function readHeadCommit(root, freezeCommit) {
  * Host-side refusal before any provider call: the gate must exist, be a GO record and bind this
  * clean HEAD, which is either the freeze commit F itself or the record-only commit on F
  * (freeze sequence step 6; see recordCommitProblem). `inspectHead(F)` supplies the git facts.
- * On the ACR source5 path (sourceRunner acr-source5) examplesSourceReport is null: no source5
- * stage produces it; the clean-install and matrix source reports are required either way.
+ * All three source reports (clean-install, matrix, examples) are required. On the ACR source5
+ * path (sourceRunner acr-source5) the job sees the retained files at their in-job paths
+ * (acceptance-staging.mjs place-job-paths), so the binding hands the job each `jobPath`
+ * (candidate plan and reports); the gate still binds their SHA-256s.
  */
 export function checkGateBinding({ gatePath, gateText, head, trackedClean, inspectHead }) {
   if (!gatePath) throw new Error('AURA3D_CODE_COMPLETE_GATE is required');
@@ -272,12 +274,13 @@ export function checkGateBinding({ gatePath, gateText, head, trackedClean, inspe
     headRelation = 'record-commit';
   }
   if (!trackedClean) throw new Error('tracked changes present; acceptance runs only the frozen commit');
-  const plan = gate.candidatePlan?.path;
-  if (!safeRel(plan)) throw new Error('gate lacks a safe candidate plan path');
   const source5 = gate.sourceRunner === 'acr-source5';
-  const reports = ['sourceConsumerReport', 'matrixSourceReport', 'examplesSourceReport'].map(k => gate[k]?.path ?? null);
-  if (reports.slice(0, 2).some(p => !safeRel(p))) throw new Error('gate lacks bound source consumer reports');
-  if (source5 ? reports[2] !== null && !safeRel(reports[2]) : !safeRel(reports[2])) throw new Error('gate lacks bound source consumer reports');
+  // The path the job reads: source5 records carry the in-job path of each retained file.
+  const jobPath = ref => (source5 ? ref?.jobPath : ref?.path) ?? null;
+  const plan = jobPath(gate.candidatePlan);
+  if (!safeRel(plan)) throw new Error('gate lacks a safe candidate plan path');
+  const reports = ['sourceConsumerReport', 'matrixSourceReport', 'examplesSourceReport'].map(k => jobPath(gate[k]));
+  if (reports.some(p => !safeRel(p))) throw new Error('gate lacks bound source consumer reports');
   return { freezeCommit: gate.freezeCommit, head, headRelation, gateSha256: createHash('sha256').update(gateText).digest('hex'), candidatePlan: plan,
     consumerSourceReport: reports[0], matrixSourceReport: reports[1], examplesSourceReport: reports[2],
     sourceInputDigest: gate.sourceInputDigest ?? null, lockfileSha256: gate.lockfileSha256 ?? null, sourceRunId: gate.runId ?? null };

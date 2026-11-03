@@ -48,6 +48,10 @@ elif [ -n "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ];
 else
   COMMIT="$(git rev-parse HEAD)"
 fi
+# Pinned candidate plan time: the frozen commit's UTC committer time, so both
+# packed stages (and any packed rerun on the same commit) write the same plan bytes.
+PLAN_GENERATED_AT="$(TZ=UTC git log -1 --date=format-local:%Y-%m-%dT%H:%M:%SZ --format=%cd "$COMMIT" 2>/dev/null || true)"
+[[ "$PLAN_GENERATED_AT" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || { echo "FATAL: cannot read the commit time of $COMMIT" >&2; exit 2; }
 OUT_DIR="tests/reports/native-5/$RUN_ID"
 [ -e "$OUT_DIR" ] && { echo "FATAL: $OUT_DIR exists" >&2; exit 2; }
 mkdir -p "$OUT_DIR"
@@ -120,7 +124,7 @@ run_stage() {
   set +eu
   local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
   local common=(--timeout 1800 --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
-    --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage")
+    --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" --set "PLAN_GENERATED_AT=$PLAN_GENERATED_AT")
   if [ "$stage" = packed-a ] || [ "$stage" = packed-b ]; then
     # The upload must finish before the SAS expires.
     if [ "$(sas_seconds_left)" -lt 2100 ]; then

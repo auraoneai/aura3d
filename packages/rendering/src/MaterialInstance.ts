@@ -1,4 +1,4 @@
-import { Material } from "./Material";
+import { flatUniformValuesEqual, Material } from "./Material";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice";
 import { isTextureBinding } from "./TextureBinding";
 
@@ -6,19 +6,28 @@ export class MaterialInstance {
   private readonly overrides = new Map<string, RecursiveUniformValue>();
   private dirty = true;
   private baseRevision: number;
+  /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
+  private overrideRevision = 0;
+  private snapshotCache: { readonly base: number; readonly overrides: number; readonly values: ReadonlyMap<string, RecursiveUniformValue> } | undefined;
 
   constructor(public readonly baseMaterial: Material) {
     this.baseRevision = baseMaterial.getRevision();
   }
 
   setOverride(name: string, value: RecursiveUniformValue): void {
+    const unchanged = flatUniformValuesEqual(this.overrides.get(name), value);
     this.overrides.set(name, cloneMaterialUniformValue(value));
     this.dirty = true;
+    this.overrideRevision += 1;
+    // An identical value keeps the snapshot's contents valid (see Material.setParameterValue).
+    const cached = this.snapshotCache;
+    if (unchanged && cached && cached.overrides === this.overrideRevision - 1) this.snapshotCache = { ...cached, overrides: this.overrideRevision };
   }
 
   clearOverride(name: string): void {
     if (this.overrides.delete(name)) {
       this.dirty = true;
+      this.overrideRevision += 1;
     }
   }
 
@@ -49,6 +58,16 @@ export class MaterialInstance {
 
   getRecursiveParameters(): ReadonlyMap<string, RecursiveUniformValue> {
     return this.getParameters<RecursiveUniformValue>();
+  }
+
+  /** See `Material.parameterSnapshot`: shared until the base material or an override changes. Read-only. */
+  parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue> {
+    const base = this.baseMaterial.getRevision();
+    const cached = this.snapshotCache;
+    if (cached && cached.base === base && cached.overrides === this.overrideRevision && !this.baseMaterial.disposed) return cached.values;
+    const values = this.getRecursiveParameters();
+    this.snapshotCache = { base, overrides: this.overrideRevision, values };
+    return values;
   }
 
   isDirty(): boolean {

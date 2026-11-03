@@ -3,6 +3,8 @@ version: v1.1.0
 # nonsecret. ARTIFACTS_SAS is a short-lived container SAS that reaches packed-a
 # and packed-b only through the 0600 --values file in the run context
 # (tools/remote-acr/sas-transport.sh); every other stage gets ARTIFACTS_SAS=none.
+# PLAN_GENERATED_AT is the frozen commit's UTC committer time, so packed-a and
+# packed-b write byte-identical candidate plans.
 steps:
   - id: source5
     cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}} /repo/tools/remote-acr/source5-run.sh
@@ -12,5 +14,6 @@ steps:
       - NATIVE_RUN_ID={{.Values.RUN_ID}}
       - NATIVE_RELEASE_KIND={{.Values.RELEASE_KIND}}
       - SOURCE5_STAGE={{.Values.STAGE}}
+      - A3D_PLAN_GENERATED_AT={{.Values.PLAN_GENERATED_AT}}
       - AURA3D_ARTIFACTS_SAS={{.Values.ARTIFACTS_SAS}}
     timeout: 1800

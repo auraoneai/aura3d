@@ -958,7 +958,7 @@ export function candidateClosure(plan: ExactReleasePlan, direct: Iterable<string
 }
 
 // npm's canonical relative form, so neither the manifest nor the lock is rewritten.
-const packedSpec = (pkg: PlanPackage): string => `file:${PACKED_CANDIDATE_DIR}/${basename(pkg.tarball)}`;
+export const packedSpec = (pkg: PlanPackage): string => `file:${PACKED_CANDIDATE_DIR}/${basename(pkg.tarball)}`;
 
 /**
  * Replace only candidate dependency specifiers with the staged archives and pin
@@ -992,7 +992,7 @@ export function substitutePackedCandidates(manifest: Record<string, unknown>, pl
   return { closure, substitutions };
 }
 
-function stagePackedArchives(root: string, directory: string, closure: PlanPackage[]): void {
+export function stagePackedArchives(root: string, directory: string, closure: PlanPackage[]): void {
   mkdirSync(resolve(directory, PACKED_CANDIDATE_DIR), { recursive: true });
   if (new Set(closure.map(pkg => basename(pkg.tarball))).size !== closure.length) throw new Error("Duplicate candidate archive filename");
   for (const pkg of closure) writeFileSync(resolve(directory, PACKED_CANDIDATE_DIR, basename(pkg.tarball)), candidateArchive(root, pkg), { flag: "wx" });

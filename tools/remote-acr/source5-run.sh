@@ -47,6 +47,9 @@ run() {
 # SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b
 STAGE="${SOURCE5_STAGE:?SOURCE5_STAGE required}"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=6144}"
+# Both packed stages pack the same commit; the launcher's pinned plan time
+# (frozen commit's UTC committer time) makes their plans byte-identical.
+case "${A3D_PLAN_GENERATED_AT:-}" in none) unset A3D_PLAN_GENERATED_AT;; *) [ -z "${A3D_PLAN_GENERATED_AT:-}" ] || export A3D_PLAN_GENERATED_AT;; esac
 pack_candidate() {
   run build                'pnpm build'
   run pack                 'node tools/release/publish-all.mjs --pack-only --out-plan "$NATIVE_REPORT_DIR/candidate-plan.json"'
@@ -106,12 +109,17 @@ case "$STAGE" in
     run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
     run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
     run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+    # Every catalog example installed from the packed candidate (A3D_RELEASE_PLAN
+    # archives, lock pinned to the plan's SHA-512 integrity) and built; no custody
+    # lock input (decision record item 1). Gate check: clean-install.
+    run examples-source      'pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts --phase source --packed --run-id "$NATIVE_RUN_ID" --candidate-plan "$A3D_RELEASE_PLAN"'
     run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
-    # Consumer source reports (clean-install source.json, matrix-source.json) and
-    # every file under their run directories back to the Mac, so the gate can bind
-    # them for the acceptance consumer phase. A staging or upload failure fails
-    # this command and therefore the stage.
-    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; [ "$s" = 0 ] && AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; u=$?; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    # Consumer source reports (clean-install source.json, matrix-source.json,
+    # examples-source.json) and every file under their run directories back to the
+    # Mac, so the gate can bind them for the acceptance consumer phase. One upload
+    # per <= 128 MiB chunk keeps each upload-artifacts.mjs call under its 512 MiB
+    # limit. A staging or upload failure fails this command and therefore the stage.
+    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
   *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
 esac

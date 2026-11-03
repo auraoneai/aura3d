@@ -620,43 +620,66 @@ export class RendererFrameHooks {
     this.blackboard.set("prd01.outputColorSpace", space);
   }
 
+  /**
+   * The last context built, reused while every input it captures is unchanged: each phase and each contributor
+   * asks for one, and the fields below are the only ones that change during a frame (the rest are fixed inputs).
+   */
+  private contextCache: {
+    readonly items: readonly RenderItem[];
+    readonly depthTexture: Texture | null;
+    readonly coverage: Texture | null;
+    readonly rasterViewportIsFull: boolean | undefined;
+    readonly context: FrameContributorContext;
+  } | undefined;
+
   private context(items: readonly RenderItem[]): FrameContributorContext {
     const depthTexture = this.forwardTarget?.depthTexture ?? null;
     if (this.forwardTarget) {
       this.blackboard.set(PRD01_FORWARD_TARGET, this.forwardTarget);
     }
-    const context: FrameContributorContext = {
-      ...(this.input.postScopeId ? { postScopeId: this.input.postScopeId } : {}),
-      ...(this.input.viewId !== undefined ? { viewId: this.input.viewId } : {}),
-      ...(this.input.temporalAntialiasing !== undefined ? { temporalAntialiasing: this.input.temporalAntialiasing } : {}),
-      device: this.input.device,
-      width: this.input.width,
-      height: this.input.height,
-      frameIndex: this.frameIndex,
-      timeSeconds: this.timeSeconds,
-      camera: this.input.camera,
-      ...(this.rasterViewProjectionMatrix ? { rasterViewProjectionMatrix: this.rasterViewProjectionMatrix } : {}),
-      ...(this.rasterViewportIsFull !== undefined ? { rasterViewportIsFull: this.rasterViewportIsFull } : {}),
-      source: this.renderSource,
-      items,
-      tier: this.input.tier ?? QUALITY_TIERS.high,
-      flags: this.flags,
-      sceneDepth: {
-        texture: depthTexture,
-        coverage: this.sceneDepthCoverage,
-        available: depthTexture !== null,
-        linearize: {
-          near: this.input.camera?.near ?? 0.1,
-          far: this.input.camera?.far ?? 1000,
-          orthographic: this.input.camera?.projection === "orthographic",
-          ...(this.input.camera?.depth ? { depth: this.input.camera.depth } : {}),
-          ...(this.input.camera?.projectionMatrixInverse ? { projectionMatrixInverse: this.input.camera.projectionMatrixInverse } : {})
-        }
-      },
-      blackboard: this.blackboard
-    };
-    this.input.onContext?.(context);
-    return context;
+    const cached = this.contextCache;
+    if (cached && cached.items === items && cached.depthTexture === depthTexture && cached.coverage === this.sceneDepthCoverage
+      && cached.rasterViewportIsFull === this.rasterViewportIsFull) {
+      this.input.onContext?.(cached.context);
+      return cached.context;
+    }
+    // Same fields, same order and the same absent-vs-present optionals as an object literal with conditional
+    // spreads, without the temporary objects; the scene-depth record is shared while its inputs are unchanged.
+    const context: { -readonly [K in keyof FrameContributorContext]?: FrameContributorContext[K] } = {};
+    if (this.input.postScopeId) context.postScopeId = this.input.postScopeId;
+    if (this.input.viewId !== undefined) context.viewId = this.input.viewId;
+    if (this.input.temporalAntialiasing !== undefined) context.temporalAntialiasing = this.input.temporalAntialiasing;
+    context.device = this.input.device;
+    context.width = this.input.width;
+    context.height = this.input.height;
+    context.frameIndex = this.frameIndex;
+    context.timeSeconds = this.timeSeconds;
+    context.camera = this.input.camera;
+    if (this.rasterViewProjectionMatrix) context.rasterViewProjectionMatrix = this.rasterViewProjectionMatrix;
+    if (this.rasterViewportIsFull !== undefined) context.rasterViewportIsFull = this.rasterViewportIsFull;
+    context.source = this.renderSource;
+    context.items = items;
+    context.tier = this.input.tier ?? QUALITY_TIERS.high;
+    context.flags = this.flags;
+    context.sceneDepth = cached && cached.depthTexture === depthTexture && cached.coverage === this.sceneDepthCoverage
+      ? cached.context.sceneDepth
+      : {
+          texture: depthTexture,
+          coverage: this.sceneDepthCoverage,
+          available: depthTexture !== null,
+          linearize: {
+            near: this.input.camera?.near ?? 0.1,
+            far: this.input.camera?.far ?? 1000,
+            orthographic: this.input.camera?.projection === "orthographic",
+            ...(this.input.camera?.depth ? { depth: this.input.camera.depth } : {}),
+            ...(this.input.camera?.projectionMatrixInverse ? { projectionMatrixInverse: this.input.camera.projectionMatrixInverse } : {})
+          }
+        };
+    context.blackboard = this.blackboard;
+    const built = context as FrameContributorContext;
+    this.contextCache = { items, depthTexture, coverage: this.sceneDepthCoverage, rasterViewportIsFull: this.rasterViewportIsFull, context: built };
+    this.input.onContext?.(built);
+    return built;
   }
 
   /** "collect" phase — contributor item-list transforms, applied in order. */

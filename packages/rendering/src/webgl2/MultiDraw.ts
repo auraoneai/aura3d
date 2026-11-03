@@ -992,14 +992,16 @@ export class WebGL2DrawCallBinder {
 
   uploadUniforms(shader: WebGL2ShaderProgram, uniforms: ReadonlyMap<string, unknown>): void {
     let textureUnit = 0;
-    let valueCache = this.uniformValueCache.get(shader);
-    if (!valueCache) {
-      valueCache = new Map();
-      this.uniformValueCache.set(shader, valueCache);
+    let cachedValues = this.uniformValueCache.get(shader);
+    if (!cachedValues) {
+      cachedValues = new Map();
+      this.uniformValueCache.set(shader, cachedValues);
     }
-    for (const [name, value] of uniforms) {
+    const valueCache = cachedValues;
+    // forEach, not for-of: entry destructuring allocates per uniform on every draw.
+    uniforms.forEach((value, name) => {
       if (!shader.reflection.uniforms.has(name)) {
-        continue;
+        return;
       }
       const location = this.getUniformLocation(shader, name);
       if (location === null) {
@@ -1008,7 +1010,7 @@ export class WebGL2DrawCallBinder {
         // A location-less uniform has no storage, so binding is a no-op; treat
         // the reflected name as inactive rather than throwing (06-PARITY).
         this.host.counters.inactiveUniformBindCount += 1;
-        continue;
+        return;
       }
       if (isTextureBinding(value)) {
         textureUnit += 1;
@@ -1033,7 +1035,7 @@ export class WebGL2DrawCallBinder {
         this.host.samplers.uploadTextureUniform(location, value, unit, shader.reflection.uniformDetails.get(name)?.type, !unitKnown);
         if (!unitKnown) units.set(name, unit);
       } else if (typeof value === "number") {
-        if (valueCache.get(name) === value) continue;
+        if (valueCache.get(name) === value) return;
         const kind = integerUniformKind(shader.reflection.uniformDetails.get(name)?.type);
         if (kind === "uint") this.host.gl.uniform1ui(location, value);
         else if (kind === "int") this.host.gl.uniform1i(location, value);
@@ -1053,7 +1055,7 @@ export class WebGL2DrawCallBinder {
         const data = unsigned ? Uint32Array.from(source) : Int32Array.from(source);
         const last = valueCache.get(name);
         if ((unsigned ? last instanceof Uint32Array : last instanceof Int32Array) && (last as Int32Array | Uint32Array).length === length
-          && (data as Int32Array | Uint32Array).every((entry, index) => (last as Int32Array | Uint32Array)[index] === entry)) continue;
+          && (data as Int32Array | Uint32Array).every((entry, index) => (last as Int32Array | Uint32Array)[index] === entry)) return;
         valueCache.set(name, data);
         const gl = this.host.gl;
         switch (setter) {
@@ -1080,7 +1082,7 @@ export class WebGL2DrawCallBinder {
               break;
             }
           }
-          if (same) continue;
+          if (same) return;
           for (let i = 0; i < length; i += 1) lastArray[i] = floatData[i];
         } else {
           valueCache.set(name, Float32Array.from(floatData as ArrayLike<number>));
@@ -1130,7 +1132,7 @@ export class WebGL2DrawCallBinder {
           });
         }
       }
-    }
+    });
   }
 
   getUniformLocation(shader: WebGL2ShaderProgram, name: string): WebGLUniformLocation | null {

@@ -183,9 +183,14 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     if (!name.trim()) {
       throw new Error("Material parameter name is required");
     }
+    const unchanged = flatUniformValuesEqual(this.parameters.get(name), value);
     this.parameters.set(name, cloneUniformValue(value));
     this.dirty = true;
     this.revision += 1;
+    // Every set still bumps the revision. A set that stored an identical value leaves the parameter snapshot's
+    // contents valid, so it follows the revision instead of being rebuilt (per-draw light writes do this every frame).
+    const cached = this.parameterSnapshotCache;
+    if (unchanged && cached && cached.revision === this.revision - 1) this.parameterSnapshotCache = { revision: this.revision, values: cached.values };
   }
 
   getParameter(name: string): TUniform | undefined {
@@ -211,6 +216,21 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
   /** Owned snapshots, retaining aggregate values without a legacy-uniform cast. */
   getRecursiveParameters(): ReadonlyMap<string, RecursiveUniformValue> {
     return this.getParameters();
+  }
+
+  private parameterSnapshotCache: { readonly revision: number; readonly values: ReadonlyMap<string, RecursiveUniformValue> } | undefined;
+
+  /**
+   * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
+   * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+   */
+  parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue> {
+    this.assertAlive();
+    const cached = this.parameterSnapshotCache;
+    if (cached && cached.revision === this.revision) return cached.values;
+    const values = this.getRecursiveParameters();
+    this.parameterSnapshotCache = { revision: this.revision, values };
+    return values;
   }
 
   isDirty(): boolean {
@@ -240,6 +260,7 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
   dispose(): void {
     if (this.disposed) return;
     this.parameters.clear();
+    this.parameterSnapshotCache = undefined;
     this.dirty = false;
     this.disposed = true;
   }
@@ -339,6 +360,23 @@ function cloneUniformValue(value: RecursiveUniformValue): RecursiveUniformValue 
     }
   }
   return clone(value, 0);
+}
+
+/** Exact equality for numbers and flat numeric (typed) arrays of the same kind; other values are never equal. */
+export function flatUniformValuesEqual(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean {
+  if (current === undefined) return false;
+  if (typeof next === "number") return current === next;
+  const sameKind = (next instanceof Float32Array && current instanceof Float32Array)
+    || (next instanceof Int32Array && current instanceof Int32Array)
+    || (next instanceof Uint32Array && current instanceof Uint32Array)
+    || (Array.isArray(next) && Array.isArray(current) && isFlatNumberArray(next) && isFlatNumberArray(current));
+  if (!sameKind) return false;
+  const a = current as ArrayLike<number>, b = next as ArrayLike<number>;
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    if (!Object.is(a[index], b[index])) return false;
+  }
+  return true;
 }
 
 function isFlatNumberArray(value: readonly unknown[]): boolean {

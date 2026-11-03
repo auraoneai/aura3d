@@ -140,31 +140,31 @@ export function verifyDownloadedArtifacts({ dir, root = process.cwd(), expected 
 }
 
 // ---- packed-b consumer reports ------------------------------------------------
-// packed-b retains its clean-install and consumer-matrix source reports with the
-// projects, logs and dependency archives they reference (the acceptance consumer
-// phase re-validates and restores from those exact files). In the image,
-// `stage-consumers` packs both run directories into <= CONSUMER_CHUNK_BYTES
-// chunks plus `consumer-index.json` (per-file SHA-256, offsets); chunks keep the
-// upload inside upload-artifacts.mjs's file-count limit. On the Mac,
+// packed-b retains its clean-install, consumer-matrix and packed example source
+// reports with the projects, logs, builds and dependency archives they reference
+// (the acceptance consumer phase re-validates and restores from those exact
+// files). In the image, `stage-consumers` packs the three run directories into
+// <= CONSUMER_CHUNK_BYTES chunks plus `consumer-index.json` (per-file SHA-256,
+// offsets); source5-run.sh uploads one chunk per upload-artifacts.mjs call, so
+// each call stays under its 512 MiB limit. On the Mac,
 // `verify-consumers` re-hashes every chunk and file and extracts the files under
 // their job paths into <run>/artifacts/consumers/.
 export const CONSUMERS_SCHEMA = 'aura3d.source5-consumers/1';
 export const CONSUMER_INDEX_NAME = 'consumer-index.json';
 export const CONSUMER_CHUNK_BYTES = 128 * 1024 * 1024;
-/** Stays under upload-artifacts.mjs MAX_TOTAL_BYTES (512 MiB per invocation) with room for the index. */
-export const CONSUMER_MAX_BYTES = 480 * 1024 * 1024;
+/** Total retained consumer bytes (each upload-artifacts.mjs call carries one <= 128 MiB chunk). */
+export const CONSUMER_MAX_BYTES = 3 * 1024 * 1024 * 1024;
 export const CONSUMER_MAX_FILES = 50000;
 const RUN_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
 const CHUNK_NAME = /^bundle-\d{3}\.bin$/;
 /** Job repository-relative directories packed-b writes for one run. */
-export const consumerRoots = runId => [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`];
-/** The two packed-b source reports the gate binds (field name -> job path). */
+export const consumerRoots = runId => [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`, `tests/reports/native-examples-catalog/${runId}`];
+/** The three packed-b source reports the gate binds (field name -> job path). */
 export const consumerReportPaths = runId => ({
   sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`,
-  matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json`
+  matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json`,
+  examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json`
 });
-/** Why the third bound report (examplesSourceReport) is null on the source5 path. */
-export const EXAMPLES_SOURCE_REPORT_ABSENT = 'tools/agent-examples/index.ts --phase source needs the custody example lock input (NATIVE_EXAMPLE_LOCK_INPUT) and the retained native-capabilities/<run>/source-manifest.json; it is not a Phase A §4 command and no source5 stage produces it';
 
 const safeJobPath = (path, runId) => typeof path === 'string' && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
   && path.split('/').every(part => part && part !== '.' && part !== '..')
@@ -210,7 +210,6 @@ export function stageConsumers({ root, runId, outDir, chunkBytes = CONSUMER_CHUN
   const index = {
     schema: CONSUMERS_SCHEMA, runId, roots: consumerRoots(runId),
     reports: Object.fromEntries(Object.entries(reports).map(([field, path]) => [field, { path, sha256: byPath.get(path).sha256 }])),
-    examplesSourceReport: null, examplesSourceReportAbsent: EXAMPLES_SOURCE_REPORT_ABSENT,
     chunks, files: entries, totalBytes: total
   };
   writeFileSync(join(outDir, CONSUMER_INDEX_NAME), `${JSON.stringify(index, null, 2)}\n`, { flag: 'wx' });
@@ -238,7 +237,7 @@ function listEntries(root, dir) {
 export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId }) {
   const problems = [], rel = path => relative(root, path).split(sep).join('/');
   const result = { schema: CONSUMERS_SCHEMA, ok: false, runId, dir: rel(dest), index: null,
-    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null, examplesSourceReportAbsent: EXAMPLES_SOURCE_REPORT_ABSENT,
+    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null,
     files: 0, bytes: 0, problems };
   if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
   let indexBytes, index;
@@ -270,7 +269,6 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
     const entry = index.files.find(file => file?.path === path);
     if (!entry || index.reports?.[field]?.path !== path || index.reports[field].sha256 !== entry.sha256) problems.push(`${field} is not retained: ${path}`);
   }
-  if (index.examplesSourceReport !== null) problems.push('examplesSourceReport is not produced on the source5 path');
   if (problems.length) return result;
   mkdirSync(dest, { recursive: true });
   for (const { path, data } of extracted) {
