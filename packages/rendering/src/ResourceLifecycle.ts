@@ -84,6 +84,50 @@ export class ResourceLifecycle {
     if (errors.length > 0) throw new AggregateError(errors, "Resource lifecycle disposal failed.");
   }
 
+  /**
+   * Observe the current disposal attempt; this never starts or retries
+   * cleanup. It resolves once every resource retained by `dispose()` (for
+   * example a WebGPU lease whose retirement fence was still waiting) has a
+   * release receipt, and forgets those resources. A receipt that later
+   * rejects (failed fence or destructor) is reported here; that resource stays
+   * owned, and `disposed` stays false, until `dispose()` is called again.
+   * A retained resource without a `whenDisposed()` receipt cannot be awaited
+   * and is reported as incomplete.
+   */
+  async whenDisposed(): Promise<void> {
+    if (!this.closed) throw new Error("Resource lifecycle disposal has not started.");
+    // Disposal is synchronous; let a reentrant caller's dispose() unwind first.
+    if (this.disposing) await Promise.resolve();
+    const retained = [...this.resources].reverse().filter((resource) => !resourceReleased(resource));
+    const results = await Promise.allSettled(retained.map(async (resource) => {
+      const receipt = (resource as DisposableResource & { whenDisposed?: () => Promise<void> }).whenDisposed;
+      if (typeof receipt !== "function") throw new Error("Resource disposal did not complete and exposes no completion receipt.");
+      await receipt.call(resource);
+    }));
+    const errors: unknown[] = [];
+    results.forEach((result, index) => {
+      const resource = retained[index]!;
+      if (result.status === "rejected") { errors.push(result.reason); return; }
+      if (!this.resources.has(resource)) return;
+      if (resourceReleased(resource)) {
+        this.forget(resource);
+      } else {
+        errors.push(new Error("Resource disposal receipt resolved before release completed."));
+      }
+    });
+    for (const resource of [...this.resources]) {
+      if (resourceReleased(resource) && !retained.includes(resource)) this.forget(resource);
+    }
+    if (errors.length > 0) throw new AggregateError(errors, "Resource lifecycle disposal failed.");
+  }
+
+  private forget(resource: DisposableResource): void {
+    const remaining = (owners.get(resource) ?? 1) - 1;
+    if (remaining > 0) owners.set(resource, remaining);
+    else owners.delete(resource);
+    this.resources.delete(resource);
+  }
+
   leakCount(): number {
     return [...this.resources].filter((resource) => !resourceReleased(resource)).length;
   }

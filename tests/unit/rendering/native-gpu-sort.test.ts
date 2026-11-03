@@ -6,6 +6,9 @@ import {
   type NativeGpuSortBuffer,
   type NativeGpuSortDevice,
 } from "../../../packages/rendering/src/webgpu/NativeGpuSort";
+import type { GaussianSplatGpuOrderDevice } from "../../../packages/rendering/src/webgpu/GaussianSplatGpuOrder";
+import { GaussianSplatRenderer, type GaussianSplatCloud } from "../../../packages/rendering/src/GaussianSplatRenderer";
+import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 
 const STORAGE = 0x80;
 
@@ -308,6 +311,29 @@ describe("native GPU stable index sort", () => {
     await lostSorter.dispose();
   });
 
+  it("does not treat a rejected loss notification as confirmed loss", async () => {
+    const f = fixture();
+    const wait = deferred<void>();
+    f.setFence(wait.promise);
+    const sorter = await createNativeGpuSort(f.device);
+    const buffers = input([3, 1, 2]);
+    const submission = sorter.sort({ ...buffers, count: 3 });
+    f.lost.reject(new Error("loss notification unavailable"));
+    for (let i = 0; i < 16; i += 1) await Promise.resolve();
+    // Submitted work may still be running: scratch stays owned and the sorter stays live.
+    expect(f.allocations.every((buffer) => buffer.destroy.mock.calls.length === 0)).toBe(true);
+    wait.resolve();
+    await submission.completion;
+    await submission.safeToRelease;
+    expect(buffers.result()).toEqual([1, 2, 0]);
+    expect(f.allocations.every((buffer) => buffer.destroy.mock.calls.length === 1)).toBe(true);
+    f.setFence(Promise.resolve());
+    const next = input([2, 1]);
+    await sorter.sort({ ...next, count: 2 }).completion;
+    expect(next.result()).toEqual([1, 0]);
+    await sorter.dispose();
+  });
+
   it("reports shader and validation failures and retains scratch until a failed fence is recovered", async () => {
     const bad = fixture();
     bad.setCompileErrors([{ type: "error", lineNum: 3, linePos: 5, message: "invalid expression" }]);
@@ -351,5 +377,64 @@ describe("native GPU stable index sort", () => {
     await expect(submission.completion).rejects.toSatisfy(code("sort-fence-failed"));
     await Promise.all([disposal, submission.safeToRelease]);
     expect(f.allocations.every((buffer) => buffer.destroy.mock.calls.length === 1)).toBe(true);
+  });
+
+  it("orders Gaussian splats with the GPU sorter and falls back to the CPU sort on a GPU failure", async () => {
+    const f = fixture();
+    const sorter = await createNativeGpuSort(f.device);
+    const copies: (() => void)[] = [];
+    // Key upload and index readback around the sorter's own submissions.
+    const orderDevice: GaussianSplatGpuOrderDevice = {
+      queue: {
+        submit(commands) {
+          const rest = (commands as unknown[]).filter((command) => command !== "copy");
+          if (rest.length) f.device.queue.submit(rest);
+          if (rest.length !== commands.length) copies.splice(0).forEach((copy) => copy());
+        },
+        onSubmittedWorkDone: () => f.device.queue.onSubmittedWorkDone(),
+        writeBuffer(buffer, offset, data) {
+          new Uint8Array((buffer as BufferDouble).data).set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), offset);
+        },
+      },
+      createBuffer(descriptor) {
+        const buffer = f.device.createBuffer(descriptor) as BufferDouble & { mapAsync?: () => Promise<void> };
+        buffer.mapAsync = async () => undefined;
+        return buffer;
+      },
+      createCommandEncoder: () => ({
+        copyBufferToBuffer(source, sourceOffset, destination, destinationOffset, size) {
+          copies.push(() => new Uint8Array((destination as BufferDouble).data).set(new Uint8Array((source as BufferDouble).data, sourceOffset, size), destinationOffset));
+        },
+        finish: () => "copy",
+      }),
+    };
+    const z = [-0.5, -0.75, 0.25, -0.25, 0.5];
+    const data: GaussianSplatCloud = {
+      count: z.length, positions: new Float32Array(z.flatMap((value) => [0, 0, value])),
+      scales: new Float32Array(z.flatMap(() => [0.1, 0.1, 0.1])), rotations: new Float32Array(z.flatMap(() => [0, 0, 0, 1])),
+      colors: new Float32Array(z.flatMap(() => [1, 0, 0])), opacities: new Float32Array(z.map(() => 0.5)), shDegree: 0,
+      metadata: { colorSpace: "lin_rec709_display", coordinateSystem: "RUB" },
+    };
+    const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    const input = { viewMatrix: identity, projectionMatrix: identity, viewport: [100, 100] as const, cameraPosition: [0, 0, 2] as const };
+    const device = new MockRenderDevice();
+    const renderer = new GaussianSplatRenderer(device, data);
+    const cpu = renderer.prepare(input);
+    const gpu = await renderer.prepareAsync(input, { gpuSort: { device: orderDevice, sorter } });
+    expect(gpu.sortBackend).toBe("gpu");
+    expect([...gpu.order]).toEqual([1, 0, 3, 2, 4]);
+    expect([...gpu.order]).toEqual([...cpu.order]);
+    expect(gpu.distanceAt(0)).toBe(cpu.distanceAt(0));
+    await Promise.resolve();
+    expect(f.allocations.filter((buffer) => buffer.label.startsWith("aura3d-splat-sort")).every((buffer) => buffer.destroy.mock.calls.length === 1)).toBe(true);
+
+    const failedFence = Promise.reject(new Error("fence failed"));
+    failedFence.catch(() => undefined);
+    f.setFence(failedFence);
+    const fallback = await renderer.prepareAsync(input, { gpuSort: { device: orderDevice, sorter } });
+    expect(fallback.sortBackend).toBe("cpu");
+    expect(fallback.sortFallbackReason).toMatch(/fence/);
+    expect([...fallback.order]).toEqual([...cpu.order]);
+    renderer.dispose(); device.dispose();
   });
 });

@@ -191,6 +191,12 @@ export interface PortableShaderUniformDescriptor extends Omit<MaterialUniformDes
   /** Fixed-length array of a legacy numeric kind; data uniforms encode arrays in dataType. */
   readonly arrayLength?: number;
   readonly dataType?: ShaderDataType;
+  /**
+   * WebGL2 only: GLSL identifiers for logical struct field names in
+   * `dataType` when the GLSL declaration renames them (graph GLSL prefixes
+   * fields). The WGSL path and host values always use the logical names.
+   */
+  readonly glslFieldNames?: Readonly<Record<string, string>>;
 }
 
 export interface PortableShaderUniform extends PortableShaderUniformDescriptor {
@@ -513,9 +519,19 @@ function snapshotPortableUniforms(uniforms: readonly PortableShaderUniform[]): r
         // Derivation validates and snapshots the complete logical schema,
         // including nested arrays and bools (lowered to u32 by the WGSL path).
         const dataType = freezeDataType(deriveShaderDataLayout(uniform.dataType, "glsl-std430").type);
-        return { ...uniform, dataType, required: uniform.required ?? true };
+        let glslFieldNames: Readonly<Record<string, string>> | undefined;
+        if (uniform.glslFieldNames !== undefined) {
+          const names: Record<string, string> = Object.create(null) as Record<string, string>;
+          for (const [logical, glsl] of Object.entries(uniform.glslFieldNames)) {
+            if (typeof glsl !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(glsl)) throw new Error(`glslFieldNames.${logical} must be a GLSL identifier`);
+            names[logical] = glsl;
+          }
+          glslFieldNames = Object.freeze(names);
+        }
+        return { ...uniform, dataType, required: uniform.required ?? true, ...(glslFieldNames ? { glslFieldNames } : {}) };
       }
       if (uniform.dataType !== undefined) throw new Error("dataType is only valid for data uniforms");
+      if (uniform.glslFieldNames !== undefined) throw new Error("glslFieldNames is only valid for data uniforms");
       if (uniform.arrayLength !== undefined) {
         if (isFrameTexture(kind)) throw new Error("texture uniforms cannot specify arrayLength");
         if (!Number.isSafeInteger(uniform.arrayLength) || uniform.arrayLength < 1) {

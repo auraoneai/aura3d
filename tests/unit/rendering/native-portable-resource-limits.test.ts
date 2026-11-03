@@ -7,6 +7,8 @@ import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
 import { WebGL2Device } from "../../../packages/rendering/src/WebGL2Device";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice, type PortableShaderBinding, type ShaderSources } from "../../../packages/rendering/src/RenderDevice";
+import { flattenPortableDataUniform } from "../../../packages/rendering/src/webgl2/UniformDataFlatten";
+import type { ShaderDataType } from "../../../packages/rendering/src/webgpu/ShaderDataLayout";
 
 function sources(bindings: readonly PortableShaderBinding[] | undefined, vertexUniforms = "", fragmentUniforms = ""): ShaderSources {
   return {
@@ -83,7 +85,7 @@ async function webgpu(limits: Record<string, number>) {
 type WebGLTestUniform = {
   readonly name: string;
   readonly size?: number;
-  readonly kind?: "sampler" | "float" | "vec4" | "mat2" | "mat4";
+  readonly kind?: "sampler" | "float" | "vec2" | "vec4" | "mat2" | "mat4" | "mat3x2" | "bool" | "uint" | "ivec2";
 };
 type UniformUpload = { readonly setter: string; readonly name: string; readonly values: readonly number[] };
 
@@ -91,7 +93,8 @@ function webgl(uniforms: readonly WebGLTestUniform[], limits: { vertex: number; 
   // Use real enum values for the uniform kinds interpreted by the actual GL binder.
   const constants = new Map<string, number>([
     ["FLOAT", 0x1406], ["FLOAT_VEC3", 0x8b51], ["FLOAT_VEC4", 0x8b52],
-    ["FLOAT_MAT2", 0x8b5a], ["FLOAT_MAT4", 0x8b5c]
+    ["FLOAT_MAT2", 0x8b5a], ["FLOAT_MAT4", 0x8b5c], ["FLOAT_VEC2", 0x8b50], ["FLOAT_MAT3x2", 0x8b67],
+    ["BOOL", 0x8b56], ["UNSIGNED_INT", 0x1405], ["INT_VEC2", 0x8b53]
   ]);
   const c = (name: string): number => {
     if (!constants.has(name)) constants.set(name, 0x1000 + constants.size);
@@ -107,8 +110,13 @@ function webgl(uniforms: readonly WebGLTestUniform[], limits: { vertex: number; 
     uniformUploads.push({ setter, name: location.name, values: Array.from(values) });
   };
   const uniformTypes: Record<NonNullable<WebGLTestUniform["kind"]>, string> = {
-    sampler: "SAMPLER_2D", float: "FLOAT", vec4: "FLOAT_VEC4", mat2: "FLOAT_MAT2", mat4: "FLOAT_MAT4"
+    sampler: "SAMPLER_2D", float: "FLOAT", vec2: "FLOAT_VEC2", vec4: "FLOAT_VEC4", mat2: "FLOAT_MAT2", mat4: "FLOAT_MAT4",
+    mat3x2: "FLOAT_MAT3x2", bool: "BOOL", uint: "UNSIGNED_INT", ivec2: "INT_VEC2"
   };
+  const scalar = (setter: string) => (location: { name: string }, value: number) => {
+    uniformUploads.push({ setter, name: location.name, values: [value] });
+  };
+  const matrix = (setter: string) => (location: { name: string }, _transpose: boolean, values: ArrayLike<number>) => upload(setter)(location, values);
   const overrides: Record<string, unknown> = {
     NO_ERROR: 0, INVALID_INDEX: 0xffffffff,
     getError: () => 0,
@@ -134,6 +142,11 @@ function webgl(uniforms: readonly WebGLTestUniform[], limits: { vertex: number; 
     uniform3fv: upload("uniform3fv"),
     uniform4fv: upload("uniform4fv"),
     uniformMatrix4fv: (location: { name: string }, _transpose: boolean, values: ArrayLike<number>) => upload("uniformMatrix4fv")(location, values),
+    uniformMatrix2fv: matrix("uniformMatrix2fv"),
+    uniformMatrix3x2fv: matrix("uniformMatrix3x2fv"),
+    uniform1i: scalar("uniform1i"),
+    uniform1ui: scalar("uniform1ui"),
+    uniform2iv: upload("uniform2iv"),
     drawArrays: () => { draws += 1; }
   };
   const gl = new Proxy({}, { get(_target, property) {
@@ -199,7 +212,9 @@ describe("portable shader resource limits", () => {
         diagnostic: expect.stringMatching(/(?:WebGL|GLSL).*data.*u_data/i),
         draws: 0,
         uploads: [],
-        shaderCreations: 0
+        // S5-WP05-03: a paired, well-formed schema compiles on WebGL2; the flat
+        // binding API still refuses the data uniform before any upload or draw.
+        shaderCreations: paired ? 2 : 0
       });
     } finally { material?.dispose(); device.dispose(); }
   });
@@ -237,7 +252,7 @@ describe("portable shader resource limits", () => {
     } finally { material.dispose(); device.dispose(); }
   });
 
-  it("rejects a recursive matrix schema before its material binding can submit a wrong WebGL draw", () => {
+  it("uploads a portable mat2 data schema with the matrix setter, not a vec4 setter", () => {
     const fixture = webgl([{ name: "u_data", kind: "mat2" }], { vertex: 2, fragment: 2, combined: 4 }, false, true);
     const { device } = fixture;
     const source = materialSources(
@@ -254,40 +269,116 @@ describe("portable shader resource limits", () => {
     try {
       const vertexBuffer = device.createBuffer("vertex", 36);
       device.beginFrame(2, 2);
-      let error: unknown;
-      try {
-        const shader = device.createShaderProgram(library.compileSource(material.shaderKey));
-        const binding = new MaterialBinding().bind(material, shader);
-        device.draw({ label: "recursive-matrix", topology: "triangles", vertexBuffer, vertexFormat: VertexFormat.P3,
-          vertexCount: 3, shader, uniforms: binding.uniforms });
-      } catch (cause) { error = cause; }
+      const shader = device.createShaderProgram(library.compileSource(material.shaderKey));
+      const binding = new MaterialBinding().bind(material, shader);
+      device.draw({ label: "recursive-matrix", topology: "triangles", vertexBuffer, vertexFormat: VertexFormat.P3,
+        vertexCount: 3, shader, uniforms: binding.uniforms });
       device.endFrame();
 
-      // Without schema admission, the old binder picks uniform4fv for mat2
-      // and issues drawArrays. A real GL implementation rejects that setter;
-      // this fake records calls rather than pretending to prove rendered pixels.
-      expect({ error, draws: fixture.draws(), uploads: fixture.uniformUploads }).toMatchObject({
-        error: { code: "WEBGL_PORTABLE_UNIFORM_DATA_UNSUPPORTED", details: { label: source.label, binding: "u_data" } },
-        draws: 0,
-        uploads: []
+      // S5-WP05-03: the binder dispatches on the linked GL type (FLOAT_MAT2),
+      // so the four column-major values reach uniformMatrix2fv, never uniform4fv.
+      expect({ draws: fixture.draws(), uploads: fixture.uniformUploads }).toEqual({
+        draws: 1,
+        uploads: [{ setter: "uniformMatrix2fv", name: "u_data", values: [1, 2, 3, 4] }]
       });
-      expect(fixture.shaderCreations()).toBe(0);
-      expect(fixture.programCreations()).toBe(0);
+    } finally { material.dispose(); device.dispose(); }
+  });
+
+  it("binds struct, array, matrix and integer data uniforms to WebGL2 leaf uniforms with exact typed setters", () => {
+    const fixture = webgl([
+      { name: "u_data.enabled", kind: "bool" },
+      { name: "u_data.count", kind: "uint" },
+      { name: "u_data.offset", kind: "ivec2" },
+      { name: "u_data.basis", kind: "mat3x2" },
+      { name: "u_data.weights[0]", kind: "float", size: 2 },
+      { name: "u_data.items[0].id", kind: "uint" },
+      { name: "u_data.items[0].tint", kind: "vec2" },
+      { name: "u_data.items[1].id", kind: "uint" },
+      { name: "u_data.items[1].tint", kind: "vec2" }
+    ], { vertex: 2, fragment: 2, combined: 4 }, false, true);
+    const { device } = fixture;
+    const dataType: ShaderDataType = { kind: "struct", fields: [
+      { name: "enabled", type: "bool" },
+      { name: "count", type: "u32" },
+      { name: "offset", type: { kind: "vector", element: "i32", length: 2 } },
+      { name: "basis", type: { kind: "matrix", columns: 3, rows: 2 } },
+      { name: "weights", type: { kind: "array", element: "f32", length: 2 } },
+      { name: "items", type: { kind: "array", length: 2, element: { kind: "struct", fields: [
+        { name: "id", type: "u32" }, { name: "tint", type: { kind: "vector", element: "f32", length: 2 } }
+      ] } } }
+    ] };
+    const value = {
+      enabled: true, count: 0xfedcba98, offset: new Int32Array([-3, 16_777_217]),
+      basis: [1, 2, 3, 4, 5, 6], weights: [0.25, 0.75],
+      items: [{ id: 7, tint: [0.5, 1.5] }, { id: 0xffffffff, tint: [2.5, 3.5] }]
+    };
+    const material = new PortableShaderMaterial({
+      name: "webgl-struct-data", shaderLibrary: new ShaderLibrary(),
+      sources: {
+        glsl: { vertex: PORTABLE_MATRIX_GLSL.vertex, fragment: `#version 300 es
+precision highp float;
+precision highp int;
+struct Item { uint id; vec2 tint; };
+struct Data { bool enabled; uint count; ivec2 offset; mat3x2 basis; float weights[2]; Item items[2]; };
+uniform Data u_data;
+out vec4 outColor;
+void main() { outColor = vec4(u_data.basis[2], u_data.weights[1] + u_data.items[1].tint.y, float(u_data.count)); }` },
+        wgsl: { vertex: PORTABLE_MATRIX_WGSL.vertex,
+          fragment: "/* @aura3d-bindings */ @fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(aura.u_data.basis[2], aura.u_data.weights[1], f32(aura.u_data.count)); }" }
+      },
+      uniforms: [{ name: "u_data", kind: "data", dataType, value }]
+    });
+    try {
+      const compiled = material.compile(device);
+      expect(compiled.diagnostics).toEqual([]);
+      const shader = compiled.program!;
+      // The recursive binder sees the struct through its reflected leaves.
+      const bound = new MaterialBinding().bindRecursive(material, shader);
+      expect(bound.warnings.join("\n")).not.toContain("u_data");
+      const descriptor = material.uniformSchema.find((entry) => entry.name === "u_data")!;
+      const uniforms = flattenPortableDataUniform(descriptor as never, bound.uniforms.get("u_data"), material.name);
+      uniforms.set("u_modelViewProjection", new Float32Array(16));
+      const vertexBuffer = device.createBuffer("vertex", 36);
+      device.beginFrame(2, 2);
+      device.draw({ label: "struct-data", topology: "triangles", vertexBuffer, vertexFormat: VertexFormat.P3, vertexCount: 3, shader, uniforms });
+      device.endFrame();
+      expect(fixture.draws()).toBe(1);
+      expect(fixture.uniformUploads).toEqual([
+        { setter: "uniform1i", name: "u_data.enabled", values: [1] },
+        { setter: "uniform1ui", name: "u_data.count", values: [0xfedcba98] },
+        { setter: "uniform2iv", name: "u_data.offset", values: [-3, 16_777_217] },
+        { setter: "uniformMatrix3x2fv", name: "u_data.basis", values: [1, 2, 3, 4, 5, 6] },
+        { setter: "uniform1fv", name: "u_data.weights", values: [0.25, 0.75] },
+        { setter: "uniform1ui", name: "u_data.items[0].id", values: [7] },
+        { setter: "uniform2fv", name: "u_data.items[0].tint", values: [0.5, 1.5] },
+        { setter: "uniform1ui", name: "u_data.items[1].id", values: [0xffffffff] },
+        { setter: "uniform2fv", name: "u_data.items[1].tint", values: [2.5, 3.5] }
+      ]);
+      expect(() => flattenPortableDataUniform(descriptor as never, { ...value, count: -1 }, material.name))
+        .toThrow(expect.objectContaining({ code: "WEBGL_PORTABLE_UNIFORM_DATA_INVALID" }));
     } finally { material.dispose(); device.dispose(); }
   });
 
   it.each([false, true])("rejects recursive or misplaced dataType metadata before sync and async GL compilation (parallel: %s)", async (parallel) => {
     const fixture = webgl([], { vertex: 2, fragment: 2, combined: 4 }, parallel);
-    const bindings: PortableShaderBinding[] = [
+    // Well-formed data schemas now compile on WebGL2 (S5-WP05-03); only
+    // missing, misplaced or invalid schema metadata is refused before GL work.
+    const valid: PortableShaderBinding[] = [
       { name: "u_struct", kind: "data", dataType: { kind: "struct", fields: [
         { name: "weights", type: { kind: "array", length: 2, element: "f32" } },
         { name: "id", type: "u32" }
       ] } },
-      { name: "u_optional", kind: "data", dataType: "f32", required: false },
+      { name: "u_optional", kind: "data", dataType: "f32", required: false }
+    ];
+    const bindings: PortableShaderBinding[] = [
       { name: "u_missing", kind: "data" },
-      { name: "u_wrong_kind", kind: "float", dataType: "f32" }
+      { name: "u_wrong_kind", kind: "float", dataType: "f32" },
+      { name: "u_empty", kind: "data", dataType: { kind: "struct", fields: [] } }
     ];
     try {
+      for (const binding of valid) expect(() => fixture.device.createShaderProgram(sources([binding]))).not.toThrow();
+      const created = { shaders: fixture.shaderCreations(), programs: fixture.programCreations() };
+      expect(created.programs).toBe(valid.length);
       for (const binding of bindings) {
         const source = sources([binding]);
         let error: unknown;
@@ -301,8 +392,8 @@ describe("portable shader resource limits", () => {
           details: { label: source.label, binding: binding.name }
         });
       }
-      expect(fixture.shaderCreations()).toBe(0);
-      expect(fixture.programCreations()).toBe(0);
+      expect(fixture.shaderCreations()).toBe(created.shaders);
+      expect(fixture.programCreations()).toBe(created.programs);
       expect(fixture.device.parallelCompilesPending).toBe(0);
     } finally { fixture.device.dispose(); }
   });

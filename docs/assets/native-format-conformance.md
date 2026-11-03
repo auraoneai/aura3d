@@ -104,6 +104,33 @@ mock WebGL residency were among the failures. This is a pre-integration
 baseline, not a result for a frozen candidate. Rerun it after the budget and
 upload owners' changes and record the candidate identity before claiming a pass.
 
+Rerun on 2026-11-02 (branch `native/5.0`, uncommitted tree): 40/40 in
+`native-texture-budget.test.ts`, plus `native-webgpu-data-mips.test.ts` and
+`native-gltf-texture-budget-device.test.ts` (69/69 across the three files),
+after the downscale contract below replaced a blanket multi-mip refusal.
+
+### Texture budget downscale contract (5.0)
+
+`applyTextureBudget` may return a smaller texture when the request does not
+fit. The result is a new texture identity whose whole mip chain is replaced
+consistently: supplied levels keep their exact bytes (top levels are dropped,
+including compressed blocks and RGBA8 fallback levels), and a lone RGBA8 base
+level is box-filtered. WebGL2 and WebGPU reallocate that copy on any later
+revision of the original texture, so no update lands on a rebased level index.
+The budget refuses (`TEXTURE_BUDGET_EXCEEDED`, nothing allocated or charged)
+instead of downscaling when:
+
+- an updated mip level has no representation in the descriptor;
+- the texture is writable (`storage` or `render-attachment` usage);
+- it is dynamic, a source upload, a 3D volume or an array (later subresource
+  updates address the original extent);
+- on WebGPU, it has a generated data mip chain: WebGPU derives those levels from
+  the base in linear light, so a downscaled base would silently change every
+  derived level.
+
+Scoped admission (glTF decode planning) is a separate nonresident ledger and is
+not subject to the device mip-chain rule.
+
 Run the browser spec only after the global `CODE_COMPLETE_GO` gate, on the
 repository's remote headless runner; retain the test result and visual artifacts.
 Do not treat a successful runner launch as a passing test. See

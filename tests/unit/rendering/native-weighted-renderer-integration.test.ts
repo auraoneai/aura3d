@@ -5,6 +5,7 @@ import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
+import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
 import { WebGL2Device } from "../../../packages/rendering/src/WebGL2Device";
 import { createDefaultShaderLibrary } from "../../../packages/rendering/src/ShaderLibrary";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
@@ -184,5 +185,33 @@ describe("renderer weighted transparency integration", () => {
     } finally {
       spy.mockRestore(); other.dispose(); f.dispose();
     }
+  });
+  it("admits generated lit (PBR) alpha surfaces into the weighted phases", async () => {
+    const f = await fixture();
+    const lit = new PBRMaterial({ name: "lit-transparent", baseColor: [0.2, 0.6, 1, 0.5],
+      renderState: { blend: true, blendMode: "alpha", depthWrite: false, cullMode: "none" } } as ConstructorParameters<typeof PBRMaterial>[0]);
+    const box = Geometry.box();
+    try {
+      const input = { ...f.source, renderItems: [...f.source.renderItems, { geometry: box, material: lit, label: "lit-transparent" }] };
+      for (let i = 0; i < 8 && f.renderer.transparencyDiagnostics?.mode !== "weighted"; i++) { f.draws.length = 0; f.renderer.render(input); }
+      expect(f.renderer.transparencyDiagnostics).toEqual({ mode: "weighted" });
+      const weighted = f.draws.filter((command) => command.uniforms.has("u_a3dOpaqueDepth"));
+      expect(weighted.filter((command) => command.label === "lit-transparent")).toHaveLength(2);
+    } finally { f.dispose(); lit.dispose(); box.dispose(); }
+  });
+
+  it("refuses multisampled and multi-view frames with stable codes and keeps the sorted draw", async () => {
+    const f = await fixture();
+    try {
+      f.renderer.render({ ...f.source, postprocess: { ...f.source.postprocess, sampleCount: 4 } });
+      expect(f.renderer.transparencyDiagnostics).toMatchObject({ mode: "sorted", code: "WEIGHTED_TRANSPARENCY_MSAA_UNSUPPORTED" });
+      f.draws.length = 0;
+      const view = { camera: { viewMatrix: Array.from({ length: 16 }, (_, i) => (i % 5 === 0 ? 1 : 0)), projectionMatrix: Array.from({ length: 16 }, (_, i) => (i % 5 === 0 ? 1 : 0)) },
+        viewport: { x: 0, y: 0, width: 2, height: 4 } };
+      f.renderer.render({ ...f.source, views: [view, { ...view, viewport: { x: 2, y: 0, width: 2, height: 4 } }] } as never);
+      expect(f.renderer.transparencyDiagnostics).toMatchObject({ mode: "sorted", code: "WEIGHTED_TRANSPARENCY_MULTIVIEW_UNSUPPORTED" });
+      expect(f.draws.some((command) => command.label === "weighted-transparency-composite")).toBe(false);
+      expect(f.draws.filter((command) => command.label === "transparent").length).toBeGreaterThanOrEqual(2);
+    } finally { f.dispose(); }
   });
 });

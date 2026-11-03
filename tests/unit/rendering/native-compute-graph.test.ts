@@ -3,7 +3,7 @@ import { ComputeBuffer, ComputePipeline, ComputeSampler, createComputeContext } 
 import type { ComputeGPUDeviceLike, ComputeRenderOwner } from "../../../packages/rendering/src/compute/types.js";
 import type { RenderBuffer } from "../../../packages/rendering/src/RenderDevice.js";
 import { Texture } from "../../../packages/rendering/src/Texture.js";
-import { compileShaderGraph, type ShaderGraphDocument } from "../../../packages/rendering/src/program/ShaderGraphCompiler.js";
+import { compileShaderGraph, packShaderGraphStorage, shaderGraphStorageLayout, type ShaderGraphDocument } from "../../../packages/rendering/src/program/ShaderGraphCompiler.js";
 import { createComputeSurface, type AuraComputeDispatchInput, type AuraComputePipelineSpec } from "../../../packages/engine/src/agent-api/nodes/compute.js";
 
 /** A queue/device double observes source integration; it does not execute WGSL. */
@@ -291,5 +291,59 @@ describe("compiled graph compute bindings", () => {
     const conflict = f.ctx.createPipeline({ wgsl: "@compute @workgroup_size(1) fn main() {}", bindings: [{ binding: 0, type: "storage-texture" }, { binding: 1, type: "sampled-texture" }] });
     expect(() => f.ctx.dispatch({ pipeline: conflict, bindings: { 0: f.output, 1: alias }, workgroups: [1] })).toThrow(/conflicting pass access/);
     expect(() => f.ctx.createPipeline({ wgsl: "/* @group(3) nested /* @group(2) */ */ @compute @workgroup_size(1) fn main() {}" })).not.toThrow();
+  });
+
+  it("writes graph-declared structured storage elements as exact layout-derived bytes (S5-WP05-03)", () => {
+    const particles: ShaderGraphDocument = {
+      version: 1, stage: "compute", workgroupSize: [1, 1, 1],
+      structs: [{ name: "Particle", fields: [
+        { name: "position", type: "vec3" }, { name: "id", type: "u32" }, { name: "basis", type: "mat3x2" }, { name: "signed", type: "i32" }
+      ] }],
+      resources: [
+        { name: "particles", kind: "storage-buffer", type: "struct:Particle", access: "read", binding: 0 },
+        { name: "ids", kind: "storage-buffer", type: "u32", access: "read_write", binding: 1 }
+      ],
+      nodes: [
+        { id: "index", op: "constant", type: "u32", value: 0 },
+        { id: "particle", op: "storageLoad", type: "struct:Particle", resource: "particles", inputs: ["index"] },
+        { id: "id", op: "structField", type: "u32", name: "id", inputs: ["particle"] }
+      ],
+      statements: [{ op: "store", resource: "ids", index: "index", value: "id" }]
+    };
+    // WGSL storage: vec3 @0 (align 16), u32 @12, mat3x2 @16 (column stride 8), i32 @40; size/stride 48.
+    const layout = shaderGraphStorageLayout(particles, "particles", 2);
+    expect({ stride: layout.stride, size: layout.size, members: layout.element!.members!.map(({ name, offset }) => [name, offset]) })
+      .toEqual({ stride: 48, size: 96, members: [["position", 0], ["id", 12], ["basis", 16], ["signed", 40]] });
+    const elements = [
+      { position: [1, 2, 3], id: 16_777_217, basis: [1, 2, 3, 4, 5, 6], signed: -2 },
+      { position: [4, 5, 6], id: 0xffffffff, basis: [7, 8, 9, 10, 11, 12], signed: 0x7fffffff }
+    ];
+    const bytes = packShaderGraphStorage(particles, "particles", elements);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    expect(bytes.byteLength).toBe(96);
+    expect([0, 4, 8].map((offset) => view.getFloat32(48 + offset, true))).toEqual([4, 5, 6]);
+    expect([view.getUint32(12, true), view.getUint32(60, true)]).toEqual([16_777_217, 0xffffffff]);
+    expect([16, 20, 24, 28, 32, 36].map((offset) => view.getFloat32(offset, true))).toEqual([1, 2, 3, 4, 5, 6]);
+    expect([view.getInt32(40, true), view.getInt32(88, true)]).toEqual([-2, 0x7fffffff]);
+    expect([44, 92].map((offset) => view.getUint32(offset, true))).toEqual([0, 0]);
+    expect(() => packShaderGraphStorage(particles, "particles", [{ ...elements[0], id: -1 }])).toThrow(/invalid-resource.*unsigned 32-bit/);
+    expect(() => packShaderGraphStorage(particles, "particles", [{ ...elements[0], extra: 1 }])).toThrow(/unknown field/);
+    expect(() => packShaderGraphStorage(particles, "missing", elements)).toThrow(/unknown-resource/);
+
+    // The compute pipeline writes the same bytes at the element offset.
+    const h = harness();
+    const writes: Array<{ offset: number; bytes: number[] }> = [];
+    (h.device.queue as { writeBuffer: unknown }).writeBuffer = (_buffer: unknown, offset: number, data: ArrayBufferView) => {
+      writes.push({ offset, bytes: [...new Uint8Array(data.buffer, data.byteOffset, data.byteLength)] });
+    };
+    const ctx = createComputeContext(h.device, h.owner);
+    const pipeline = ctx.createPipeline({ graph: compileShaderGraph(particles, "wgsl") });
+    const buffer = ctx.createBuffer({ size: 144 });
+    writes.length = 0;
+    pipeline.writeGraphBuffer("particles", buffer, elements, 1);
+    expect(writes).toEqual([{ offset: 48, bytes: [...bytes] }]);
+    expect(() => pipeline.writeGraphBuffer("particles", buffer, elements, 2)).toThrow(/exceeds the 144-byte buffer/);
+    expect(() => pipeline.writeGraphBuffer("particles", buffer, [{ ...elements[0], signed: 1.5 }])).toThrow(/signed 32-bit/);
+    expect(writes).toHaveLength(1);
   });
 });

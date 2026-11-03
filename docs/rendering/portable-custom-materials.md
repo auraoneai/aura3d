@@ -75,6 +75,51 @@ kinds are `float`, `vec2`, `vec3`, `vec4`, `mat4`, and `texture2d`. Cube texture
 storage resources, compute stages, and arbitrary bind groups are not part of
 this selected portable contract.
 
+### Data uniforms (structs, arrays, matrices, integers)
+
+A uniform with `kind: "data"` carries a `dataType` schema (`ShaderDataType`:
+`f32`/`i32`/`u32`/`bool` scalars, vectors, square and non-square matrices,
+fixed arrays and structs) and a logical value (matrices unpadded column-major,
+structs as objects keyed by field name). Both backends bind it:
+
+- **WebGPU** packs the value into the portable uniform buffer with the
+  `wgsl-uniform` layout (`deriveShaderDataLayout` / `writeShaderData`).
+- **WebGL2** declares it as an ordinary GLSL uniform of the matching struct or
+  array type (`uniform Data u_data;`). The render passes flatten the value to the
+  linked program's leaf uniforms (`u_data.field`, `u_data.items[1].tint`) and
+  upload each with the setter of its declared GL type: `uniform{N}iv`/`uiv`
+  for integer and bool leaves (never float bits), `uniformMatrix{C}x{R}fv` for
+  matrices. Arrays of scalars, vectors or matrices upload as one leaf.
+  `glslFieldNames` maps logical field names to renamed GLSL fields; shader
+  graphs set it automatically. A data uniform without a valid `dataType`, or a
+  `dataType` on a non-data binding, is refused before GL compilation
+  (`WEBGL_PORTABLE_UNIFORM_DATA_UNSUPPORTED`); an invalid value fails the draw
+  (`WEBGL_PORTABLE_UNIFORM_DATA_INVALID`).
+
+Graph storage buffers use the same schema rules: `shaderGraph.storageLayout`
+returns the WGSL storage layout of a declared storage-buffer resource, and
+`shaderGraph.packStorage` (or `ComputePipeline.writeGraphBuffer` for compute
+pipelines) converts typed element values to exact bytes instead of
+hand-packed caller bytes.
+
+### WebGL2 refuses compute and storage graphs
+
+WebGL2 has no compute stage and no storage buffers or storage textures, so the
+graph compiler refuses them for the `glsl` target instead of emulating them:
+
+- a graph with `stage: "compute"` compiled for `glsl` fails with
+  `ShaderGraphError` diagnostic `unsupported-backend` ("WebGL2 has no compute
+  shader stage");
+- a `storage-buffer` or `storage-texture` resource in a graph compiled for
+  `glsl` fails with `unsupported-backend` ("WebGL2 does not support
+  storage-buffer <name>").
+
+Compile such graphs for `wgsl` and run them on a WebGPU device
+(`renderer.backend: "webgpu"`). A material graph that only samples a texture
+written by compute must still run on WebGPU; on WebGL2, upload the data as an
+ordinary sampled texture instead. The refusal is reported at compile time, before
+any device allocation.
+
 The renderer supplies `u_modelViewProjection`, `u_modelMatrix`, and
 `u_normalMatrix`. GLSL must declare the built-ins it uses. WGSL receives them in
 the generated `aura` uniform struct.

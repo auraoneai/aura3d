@@ -256,6 +256,56 @@ describe("opaque BC1 imported images", () => {
     handle.dispose(); first.device.dispose(); second.device.dispose();
   });
 
+  it("uploads a replacement decoded fallback after a compressed content edit into the existing storage", async () => {
+    const red = new Uint8Array(64).map((_, i) => [255, 0, 0, 255][i % 4]!);
+    const blue = new Uint8Array(16).map((_, i) => [0, 0, 255, 255][i % 4]!);
+    const green = new Uint8Array(64).map((_, i) => [0, 255, 0, 255][i % 4]!);
+
+    // WebGPU without BC: the decoded chain lives in one rgba8 allocation.
+    const gpu = await webgpu(false);
+    const handle = texture.fromNativeImage(await parsed([hazardous, safe]));
+    gpu.device.getNativeTexture(handle.texture);
+    expect(gpu.textures).toHaveLength(1);
+    handle.updateMip(0, safe);
+    expect(() => gpu.device.getNativeTexture(handle.texture)).toThrow(/fallback requires replacement data/);
+    expect(() => handle.texture.replaceFallbackLevels([{ width: 4, height: 4, data: green }])).toThrow(/every allocated mip/);
+    expect(() => handle.texture.replaceFallbackLevels([{ width: 4, height: 4, data: green.map((v, i) => i % 4 === 3 ? 0 : v) }, { width: 2, height: 2, data: blue }])).toThrow(/alpha must be opaque/);
+    handle.texture.replaceFallbackLevels([{ width: 4, height: 4, data: green }, { width: 2, height: 2, data: blue }]);
+    expect(handle.texture.fallbackReplaced).toBe(true);
+    const uploadsBefore = gpu.uploads.length;
+    gpu.device.getNativeTexture(handle.texture);
+    expect(gpu.textures).toHaveLength(1);
+    expect(gpu.uploads.slice(uploadsBefore).map((upload) => [upload.mipLevel, upload.bytes.slice(0, 4)])).toEqual([[0, [0, 255, 0, 255]], [1, [0, 0, 255, 255]]]);
+    expect(gpu.device.getDiagnostics()).toMatchObject({ textureFallbacks: 1, textureFallbackBytes: 80 });
+    // A metadata-only revision keeps the written replacement without re-uploading it.
+    handle.texture.markMetadataNeedsUpdate();
+    const uploadsAfterReplacement = gpu.uploads.length;
+    gpu.device.getNativeTexture(handle.texture);
+    expect(gpu.uploads).toHaveLength(uploadsAfterReplacement);
+    // A later content edit invalidates the replacement again.
+    handle.updateMip(1, safe);
+    expect(handle.texture.fallbackReplaced).toBe(false);
+    expect(() => gpu.device.getNativeTexture(handle.texture)).toThrow(/fallback requires replacement data/);
+    handle.dispose(); gpu.device.dispose();
+
+    // WebGL without S3TC: the fallback storage receives the replacement in place.
+    const ctx = webgl({ compression: false });
+    const single = publicTexture.fromNativeImage(await parsed([safe], false));
+    ctx.registry.getTextureHandle(single.texture);
+    expect(ctx.calls.texImage2D).toHaveLength(1);
+    single.updateMip(0, hazardous);
+    expect(() => ctx.registry.getTextureHandle(single.texture)).toThrow(/without replacement fallback levels/);
+    single.texture.replaceFallbackLevels([{ width: 4, height: 4, data: red }]);
+    ctx.registry.getTextureHandle(single.texture);
+    expect(ctx.calls.texImage2D).toHaveLength(2);
+    expect((ctx.calls.texImage2D![1]![8] as number[]).slice(0, 4)).toEqual([255, 0, 0, 255]);
+    expect(ctx.calls.deleteTexture ?? []).toHaveLength(0);
+    single.dispose(); ctx.registry.releaseDisposedTextureHandles();
+    await drainWebglRetirements(ctx.registry);
+    expect(ctx.calls.deleteTexture).toHaveLength(1);
+    expect(textureBudgetReport(ctx.device as never).textureBytes).toBe(0);
+  });
+
   it("reports unresolved alpha, unsupported encodings, and malformed mip data", async () => {
     const asset = await parsed([hazardous]);
     expect(() => texture.fromNativeImage({ ...asset, metadata: { alphaMode: "premultiplied" } })).toThrow(/premultiplied/);

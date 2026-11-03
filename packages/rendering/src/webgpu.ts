@@ -72,3 +72,6 @@ export type { MeshletOptions, NativeMeshlet } from "./webgpu/MeshletPipeline";
 export { VisibilityBufferPipeline } from "./webgpu/VisibilityBufferPipeline";
 export { NativeGpuSort, NativeGpuSortError, assertNativeGpuSortDevice, createNativeGpuSort } from "./webgpu/NativeGpuSort";
 export type { NativeGpuSortBuffer, NativeGpuSortDevice, NativeGpuSortDirection, NativeGpuSortErrorCode, NativeGpuSortOptions, NativeGpuSortRequest, NativeGpuSortSubmission } from "./webgpu/NativeGpuSort";
+export { sortGaussianSplatOrderOnGpu } from "./webgpu/GaussianSplatGpuOrder";
+export type { GaussianSplatGpuOrderDevice, GaussianSplatGpuSort } from "./webgpu/GaussianSplatGpuOrder";
+export type { GaussianSplatPrepareOptions } from "./GaussianSplatRenderer";

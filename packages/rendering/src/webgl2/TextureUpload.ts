@@ -543,7 +543,11 @@ export class WebGL2TextureRegistry {
       const budgetedCopy = this.budgetedTextures.get(texture);
       const replaceStorage = (this.textureColorSpaces.has(texture) && this.textureColorSpaces.get(texture) !== texture.colorSpace)
         || (this.autoMipmaps.has(texture) && this.autoMipmaps.get(texture) !== shouldAutoGenerateMipmaps(texture))
-        || (budgetedCopy && budgetedCopy !== texture && this.textureUploadRevisions.get(texture) !== texture.revision);
+        || (budgetedCopy && budgetedCopy !== texture && this.textureUploadRevisions.get(texture) !== texture.revision)
+        // Edited opaque BC1 RGB blocks that WebGL could expose as transparent
+        // move to the replacement decoded fallback in new RGBA8 storage.
+        || (this.textureUploadModes.get(texture) === "compressed" && texture.format === "bc1-rgb-unorm" && texture.fallbackReplaced
+          && this.textureUploadRevisions.get(texture) !== texture.revision && bc1RgbHasTransparentSelectors(texture));
       if (texture.source && (replaceStorage || this.textureUploadRevisions.get(texture) !== texture.revision)) {
         this.preflightSourceUpload(texture);
         this.assertTextureHandleCurrent(texture, cached);
@@ -1006,7 +1010,23 @@ export class WebGL2TextureRegistry {
       return;
     }
     if (mode === "fallback") {
-      throw new RenderDeviceError("Cannot update a compressed texture while using its uncompressed fallback", "COMPRESSED_TEXTURE_UNSUPPORTED", { label: texture.label, format: texture.format });
+      // A compressed content edit invalidates the decoded copy; only a
+      // replacement supplied for the current content (or an unchanged valid
+      // fallback after a metadata edit) can be uploaded into this storage.
+      const fallbackLevels = texture.fallbackTextureLevels.length === 0 ? [] : completeUploadLevels(texture.fallbackTextureLevels);
+      if (fallbackLevels.length === 0) {
+        throw new RenderDeviceError("Cannot update a compressed texture while using its uncompressed fallback without replacement fallback levels", "COMPRESSED_TEXTURE_UNSUPPORTED", { label: texture.label, format: texture.format });
+      }
+      setTextureBudgetResidentBytes(texture, fallbackLevels.reduce((sum, level) => sum + level.data.byteLength, 0), this.host.device);
+      this.host.stateCache.invalidate();
+      assertLive();
+      gl.bindTexture(textureTarget(gl, texture), handle);
+      assertLive();
+      this.uploadRgba8FallbackTexture(texture, fallbackLevels, assertLive);
+      this.assertUploadSucceeded(texture);
+      assertLive();
+      this.recordTextureUploaded(texture, uploadRevision, pendingRegion);
+      return;
     }
     this.host.stateCache.invalidate();
     assertLive();

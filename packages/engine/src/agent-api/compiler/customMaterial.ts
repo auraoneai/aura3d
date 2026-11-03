@@ -68,6 +68,7 @@ import {
   type UniformValue
 } from "@aura3d/rendering";
 import type { BlendMode } from "@aura3d/rendering/contracts";
+import { shaderGraphGlslFieldNames } from "@aura3d/rendering/shader-graph";
 import { AuraRuntimeError } from "./errors.js";
 import { assertCustomAttributeName } from "../RootGeometry.js";
 import { auraTextureRefBackingStatus, auraTextureRefTexture } from "../nodes/texture.js";
@@ -429,7 +430,8 @@ function lowerUniforms(spec: AuraCustomMaterialSpec): readonly LoweredUniform[] 
     if (typeof uniform !== "string" && uniform.type === "data") {
       const uniformName = customUniformNameFor(publicName);
       // A top-level 4x4 graph matrix has exactly the flat mat4 ABI on both
-      // backends. Other data schemas stay on the WebGPU-only recursive path.
+      // backends. Other data schemas use the recursive path: WebGPU packs them into
+      // the portable uniform buffer, WebGL2 uploads their flattened GL leaves.
       const type = uniform.dataType;
       const flatGraphMat4 = compiledGraphDataSpecs.has(spec) && typeof type === "object"
         && type.kind === "matrix" && type.columns === 4 && type.rows === 4;
@@ -438,6 +440,9 @@ function lowerUniforms(spec: AuraCustomMaterialSpec): readonly LoweredUniform[] 
         ...(flatGraphMat4
           ? { graphDataType: Object.freeze({ kind: "matrix" as const, columns: 4 as const, rows: 4 as const }) }
           : { dataType: uniform.dataType }),
+        // Graph GLSL renames struct fields; WebGL2 addresses its leaf uniforms
+        // through this map while WGSL and host values keep logical names.
+        ...(!flatGraphMat4 && compiledGraphDataSpecs.has(spec) ? { glslFieldNames: shaderGraphGlslFieldNames(uniform.dataType) } : {}),
         required: true, optimizable: true,
         value: normalizeCustomDataValue(uniform.dataType, uniform.value, publicName)
       });

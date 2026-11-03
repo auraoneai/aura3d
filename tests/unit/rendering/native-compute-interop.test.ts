@@ -43,7 +43,9 @@ function harness() {
         mapAsync: async () => {}, getMappedRange: () => new ArrayBuffer(size), unmap() {} };
       const buffer: RenderBuffer & { disposed: boolean } = {
         id: generation * 1000 + nextBufferId++, usage: "storage", byteLength: size, disposed: false,
-        dispose() { if (!this.disposed) { this.disposed = true; void resourceInterop.retire(native); } }
+        // Like WebGPUDevice.retireNative: a lease already destroyed by
+        // generation invalidation has nothing left to retire.
+        dispose() { if (!this.disposed) { this.disposed = true; if (resourceInterop.owns(native)) void resourceInterop.retire(native); } }
       };
       resourceInterop.register(native, () => native.destroy());
       buffers.set(buffer, native);

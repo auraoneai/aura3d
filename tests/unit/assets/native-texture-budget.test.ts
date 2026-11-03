@@ -772,15 +772,35 @@ describe("texture budget: device option and WebGPU ownership", () => {
   });
 
   it("charges WebGPU flat data for its allocated levels without inventing mip generation", async () => {
-    const { device, allocated, finishFence } = await webgpuHarness(64);
-    const texture = new Texture({ ...rgba(4), generateMipmaps: true });
-    device.getNativeTexture(texture);
-    expect(allocated[0]).toMatchObject({ size: { width: 4, height: 4 }, mipLevelCount: 1 });
-    expect(textureBudgetReport(device).textureBytes).toBe(64);
+    // Without generation the one allocated 4×4 RGBA8 level is exactly 64 bytes.
+    const flat = await webgpuHarness(64);
+    const texture = new Texture({ ...rgba(4), generateMipmaps: false });
+    flat.device.getNativeTexture(texture);
+    expect(flat.allocated[0]).toMatchObject({ size: { width: 4, height: 4 }, mipLevelCount: 1 });
+    expect(textureBudgetReport(flat.device).textureBytes).toBe(64);
     texture.dispose();
-    finishFence();
+    flat.finishFence();
     await Promise.resolve();
-    device.dispose();
+    flat.device.dispose();
+
+    // With generation WebGPU allocates the derived chain (64 + 16 + 4 bytes).
+    // It does not fit 64 bytes and is refused atomically rather than being
+    // silently admitted without its levels or with a rebased derived chain.
+    const denied = await webgpuHarness(64);
+    expect(() => denied.device.getNativeTexture(new Texture({ ...rgba(4), generateMipmaps: true }))).toThrow(/generated WebGPU mip chain/);
+    expect(denied.allocated).toHaveLength(0);
+    expect(textureBudgetReport(denied.device).textureBytes).toBe(0);
+    denied.device.dispose();
+
+    const generated = await webgpuHarness(84);
+    const chain = new Texture({ ...rgba(4), generateMipmaps: true });
+    generated.device.getNativeTexture(chain);
+    expect(generated.allocated[0]).toMatchObject({ size: { width: 4, height: 4 }, mipLevelCount: 3 });
+    expect(textureBudgetReport(generated.device).textureBytes).toBe(84);
+    chain.dispose();
+    generated.finishFence();
+    await Promise.resolve();
+    generated.device.dispose();
   });
 
   it("rejects an invalidated compressed fallback after downsizing", async () => {

@@ -16,7 +16,20 @@ const assets = defineAuraAssets({
   rgba: { type: "texture", format: "png", url: "/tests/browser/fixtures/c1-extension/generated/rgba.3b557885.png", hash: "sha256-3b5578856890800a6fd83bbfc80d73c850a23f48e3595d71adb7427a3f17cd33" },
   white: { type: "texture", format: "png", url: "/tests/browser/fixtures/c1-extension/generated/white.0ef49469.png", hash: "sha256-0ef494696c1d5792fde371da1ac80c500774fc1c2ced0dcef89ecbff584e405f" }
 });
-window.runColorProbe = async ({ outputColorSpace, exposure, light, texture }) => {
+/** Read a presented canvas through the 2D API, encoded in the given color space. */
+async function readPresented(app, colorSpace) {
+  const shot = await app.screenshotAsync();
+  const image = new Image(); image.src = shot.dataUrl; await image.decode();
+  const copy = document.createElement("canvas"); copy.width = shot.width; copy.height = shot.height;
+  const context = copy.getContext("2d", { colorSpace });
+  context.drawImage(image, 0, 0);
+  const data = context.getImageData(0, 0, shot.width, shot.height, { colorSpace }).data;
+  // Match the WebGL readPixels row order (bottom row first).
+  const rows = new Uint8Array(data.length), stride = shot.width * 4;
+  for (let y = 0; y < shot.height; y++) rows.set(data.subarray((shot.height - 1 - y) * stride, (shot.height - y) * stride), y * stride);
+  return { width: shot.width, height: shot.height, pixels: rows };
+}
+window.runColorProbe = async ({ outputColorSpace, exposure, light, texture, backend = "webgl2" }) => {
   const stage = document.createElement("div");
   Object.assign(stage.style, { width: "96px", height: "96px" });
   document.body.append(stage);
@@ -26,7 +39,8 @@ window.runColorProbe = async ({ outputColorSpace, exposure, light, texture }) =>
     .add(lights.directional({ color: "#ffffff", position: [0, 0, 4], intensity: light }))
     .add(effects.bloom({ intensity: 0.1, threshold: 0.9 }));
   const app = createAuraApp(stage, { autoStart: false, pixelRatio: 1, resize: false, preserveDrawingBuffer: true,
-    renderer: { qualityProfile: "production", output: { outputColorSpace, exposure, toneMapping: "reinhard", dither: false } }, scene: builder });
+    renderer: { qualityProfile: "production", ...(backend === "webgpu" ? { backend: "webgpu", allowFallback: false } : {}),
+      output: { outputColorSpace, exposure, toneMapping: "reinhard", dither: false } }, scene: builder });
   try {
     await app.ready();
     const deadline = performance.now() + 30000;
@@ -41,6 +55,16 @@ window.runColorProbe = async ({ outputColorSpace, exposure, light, texture }) =>
     await app.stepAsync(1 / 60);
     const canvas = app.canvas;
     if (!canvas) throw new Error("No app canvas");
+    if (backend === "webgpu") {
+      // The configured canvas context is the presentation truth on WebGPU.
+      const configured = canvas.getContext("webgpu")?.getConfiguration?.() ?? null;
+      const drawingBufferColorSpace = configured ? configured.colorSpace ?? "srgb" : null;
+      const read = await readPresented(app, drawingBufferColorSpace === "display-p3" ? "display-p3" : "srgb");
+      const diagnostics = app.diagnostics();
+      return { width: read.width, height: read.height, pixels: Array.from(read.pixels), drawCalls: diagnostics.drawCalls,
+        errors: diagnostics.errors, runtimeBackend: diagnostics.renderer?.runtime.backend, deviceBackend: app.backend, textured,
+        output: diagnostics.output, drawingBufferColorSpace, configuredAlphaMode: configured?.alphaMode ?? null };
+    }
     const gl = canvas.getContext("webgl2");
     if (!gl) throw new Error("WebGL2 unavailable");
     const pixels = new Uint8Array(canvas.width * canvas.height * 4);
@@ -48,7 +72,7 @@ window.runColorProbe = async ({ outputColorSpace, exposure, light, texture }) =>
     const diagnostics = app.diagnostics();
     const output = diagnostics.output;
     return { width: canvas.width, height: canvas.height, pixels: Array.from(pixels), drawCalls: diagnostics.drawCalls,
-      errors: diagnostics.errors, runtimeBackend: diagnostics.renderer?.runtime.backend, textured,
+      errors: diagnostics.errors, runtimeBackend: diagnostics.renderer?.runtime.backend, deviceBackend: app.backend, textured,
       output, drawingBufferColorSpace: gl.drawingBufferColorSpace ?? "srgb" };
   } finally { await app.disposeAsync(); stage.remove(); }
 };
@@ -71,10 +95,10 @@ function fixturePlugin(): Plugin {
 type Negotiation = { requested: "srgb" | "display-p3"; active: "srgb" | "display-p3"; supported: string[]; fallbackReason?: string };
 type Capture = {
   width: number; height: number; pixels: number[]; drawCalls: number; errors: string[];
-  runtimeBackend: string; textured: boolean; output: { colorSpace?: Negotiation } | null;
-  drawingBufferColorSpace: string;
+  runtimeBackend: string; deviceBackend: string; textured: boolean; output: { colorSpace?: Negotiation } | null;
+  drawingBufferColorSpace: string | null; configuredAlphaMode?: string | null;
 };
-type ProbeInput = { outputColorSpace: "srgb" | "display-p3"; exposure: number; light: number; texture: "rgba" | "white" };
+type ProbeInput = { outputColorSpace: "srgb" | "display-p3"; exposure: number; light: number; texture: "rgba" | "white"; backend?: "webgl2" | "webgpu" };
 
 let server: ViteDevServer;
 let origin: string;
@@ -156,6 +180,45 @@ test("packed app renders color textures through lighting, post and negotiated pr
   expect(p3.output?.colorSpace?.requested).toBe("display-p3");
   expect(p3.output?.colorSpace?.active).toBe(p3.drawingBufferColorSpace);
   if (p3.output?.colorSpace?.active === "display-p3") {
+    expect(p3.output.colorSpace.supported).toContain("display-p3");
+    expect(colorDistance(centerMean(p3), srgbBytesToP3(sample))).toBeLessThan(18);
+  } else {
+    expect(p3.output?.colorSpace).toMatchObject({ active: "srgb" });
+    expect(p3.output?.colorSpace?.fallbackReason).toBeTruthy();
+    expect(colorDistance(centerMean(p3), sample)).toBeLessThan(8);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("WebGPU presents negotiated Display-P3 on an opaque canvas or reports its sRGB fallback", async ({ page }) => {
+  test.setTimeout(240_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(`${origin}wp32-color.html`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => typeof (window as unknown as { runColorProbe?: unknown }).runColorProbe === "function");
+  // A missing adapter fails this required entry; it is never reported as a pass.
+  const adapter = await page.evaluate(async () => Boolean(await (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu?.requestAdapter()));
+  expect(adapter, "WebGPU adapter available").toBe(true);
+  const probe = (input: ProbeInput) => page.evaluate((options) =>
+    (window as unknown as { runColorProbe(value: ProbeInput): Promise<Capture> }).runColorProbe(options), input);
+  const base: ProbeInput = { outputColorSpace: "srgb", exposure: 1, light: 1, texture: "rgba", backend: "webgpu" };
+  const srgb = await probe(base);
+  const p3 = await probe({ ...base, outputColorSpace: "display-p3" });
+  for (const capture of [srgb, p3]) {
+    expect(capture.errors).toEqual([]);
+    expect(capture.deviceBackend).toBe("webgpu");
+    expect(capture.runtimeBackend).toBe("production-runtime");
+    expect(capture.textured).toBe(true);
+    expect(capture.drawCalls).toBeGreaterThan(0);
+    expect(capture.pixels).toHaveLength(capture.width * capture.height * 4);
+  }
+  const sample = centerMean(srgb);
+  expect(srgb.output?.colorSpace).toMatchObject({ requested: "srgb", active: "srgb" });
+  expect(p3.output?.colorSpace?.requested).toBe("display-p3");
+  // The reported active space is the one the canvas context was configured with.
+  expect(p3.output?.colorSpace?.active).toBe(p3.drawingBufferColorSpace);
+  if (p3.output?.colorSpace?.active === "display-p3") {
+    expect(p3.configuredAlphaMode).toBe("opaque");
     expect(p3.output.colorSpace.supported).toContain("display-p3");
     expect(colorDistance(centerMean(p3), srgbBytesToP3(sample))).toBeLessThan(18);
   } else {

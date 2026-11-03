@@ -5,6 +5,7 @@ import { type RecursiveUniformValue, type RenderShaderProgram, type UniformValue
 import { TextureBinding, isTextureBinding } from "./TextureBinding";
 import type { ProgramFeatures } from "./contracts/program";
 import { dfgLutBinding } from "./program/DFGLut";
+import { reflectsUniformRoot } from "./webgl2/UniformDataFlatten";
 
 /** C-02 (PRD-01 §8.5): material parameter → generated-program uniform renames.
  * Generated programs name samplers `u_*Map` and read `u_specularIntensity`;
@@ -53,8 +54,10 @@ export class MaterialBinding {
         else diagnostics.push(`Missing shader attribute: ${attribute}`);
       }
     }
+    const isData = (name: string): boolean => material.uniformSchema.some((uniform) => uniform.name === name && uniform.kind === "data");
     for (const uniform of material.requiredUniforms) {
-      if (!shader.reflection.uniforms.has(uniform)) {
+      // A struct/array data uniform reflects only its GL leaves (`u_data.field`).
+      if (isData(uniform) ? !reflectsUniformRoot(shader.reflection.uniforms, uniform) : !shader.reflection.uniforms.has(uniform)) {
         diagnostics.push(`Missing shader uniform: ${uniform}`);
       }
       if (!uniforms.has(uniform)) {
@@ -63,7 +66,9 @@ export class MaterialBinding {
     }
     const optimizedOut: string[] = [];
     for (const uniform of material.uniformSchema) {
-      if (!shader.reflection.uniforms.has(uniform.name)) {
+      const reflected = uniform.kind === "data"
+        ? reflectsUniformRoot(shader.reflection.uniforms, uniform.name) : shader.reflection.uniforms.has(uniform.name);
+      if (!reflected) {
         if (uniform.optimizable === true) optimizedOut.push(uniform.name);
         else if (uniform.required !== false) diagnostics.push(`Missing shader uniform declared by material schema: ${uniform.name}`);
       }

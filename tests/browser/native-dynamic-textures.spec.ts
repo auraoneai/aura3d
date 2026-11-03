@@ -55,7 +55,36 @@ async function makeRenderer(backend) {
     gl.createTexture = () => { const handle = createTexture(); if (handle) { nativeHandles.add(handle); createdHandles.push(handle); } return handle; };
     gl.deleteTexture = (handle) => { if (handle) nativeHandles.delete(handle); deleteTexture(handle); };
   }
-  const device = await createRenderDevice({ backend, canvas, antialias: false, alpha: true, preserveDrawingBuffer: true, errorCheckMode: "strict" });
+  // WebGPU: observe every native GPUTexture the selected device allocates and
+  // destroys. The real adapter and device are used; only their texture factory
+  // is instrumented, so presentation and validation stay native.
+  let webgpu;
+  if (backend === "webgpu" && navigator.gpu) {
+    const gpu = navigator.gpu;
+    webgpu = {
+      getPreferredCanvasFormat: () => gpu.getPreferredCanvasFormat(),
+      get wgslLanguageFeatures() { return gpu.wgslLanguageFeatures; },
+      async requestAdapter(options) {
+        const adapter = await gpu.requestAdapter(options);
+        if (!adapter) return adapter;
+        const requestDevice = adapter.requestDevice.bind(adapter);
+        adapter.requestDevice = async (descriptor) => {
+          const native = await requestDevice(descriptor);
+          const createGpuTexture = native.createTexture.bind(native);
+          native.createTexture = (textureDescriptor) => {
+            const handle = createGpuTexture(textureDescriptor);
+            nativeHandles.add(handle);
+            const destroy = handle.destroy.bind(handle);
+            handle.destroy = () => { nativeHandles.delete(handle); destroy(); };
+            return handle;
+          };
+          return native;
+        };
+        return adapter;
+      }
+    };
+  }
+  const device = await createRenderDevice({ backend, canvas, antialias: false, alpha: true, preserveDrawingBuffer: true, errorCheckMode: "strict", ...(webgpu ? { webgpu } : {}) });
   if (device.kind !== backend || !device.info.capabilities?.includes("rasterization")) {
     device.dispose(); canvas.remove();
     throw new Error("Native requested backend was not created: " + backend);
@@ -91,17 +120,21 @@ async function makeRenderer(backend) {
       const pixels = device.readPixelsAsync ? await device.readPixelsAsync(1, 1, 1, 1) : device.readPixels(1, 1, 1, 1);
       return Array.from(pixels);
     },
-    dispose() {
+    async dispose() {
       // Beginning a fresh frame retires disposed sampled resources on WebGPU
       // and clears an expected rejected-draw diagnostic before counting.
       device.beginFrame(4, 4); device.endFrame();
       for (const { shader, pipeline } of programs.values()) { pipeline.dispose(); shader.dispose(); }
       vertexBuffer.dispose(); target.dispose();
       const resources = device.getDiagnostics();
-      device.dispose(); canvas.remove();
+      device.dispose();
+      // Strict retirement contract: WebGPU textures are destroyed only after
+      // their fences resolve, so count native handles once disposal settles.
+      await device.whenDisposed?.();
+      canvas.remove();
       return { buffers: resources.buffers, shaders: resources.shaders, targets: resources.renderTargets,
         textures: resources.textures, disposedTextures: resources.disposedTextures, lastError: resources.lastError,
-        nativeHandlesAfterDispose: gl ? nativeHandles.size : null };
+        nativeHandlesAfterDispose: gl || webgpu ? nativeHandles.size : null };
     }
   };
 }
@@ -129,20 +162,20 @@ async function dataAndIsolation(backend) {
     const storageReusedA = first.nativeTexture(tex) === storageA;
     const storageReusedB = second.nativeTexture(tex) === storageB;
     const separateStorage = storageA !== storageB;
-    const firstCleanup = first.dispose(); firstDisposed = true;
+    const firstCleanup = await first.dispose(); firstDisposed = true;
     tex.update(new Uint8Array(yellow), { x: 0, y: 1, width: 1, height: 1 });
     const bAfterFirstDispose = await second.sample(tex, [0.25, 0.75, 0]);
     tex.dispose();
     let rejected = false;
     try { await second.sample(tex); } catch { rejected = true; }
-    const cleanup = second.dispose();
+    const cleanup = await second.dispose();
     return { initialA, initialB, aGreen, bGreen, bBlue, aBlue, bAfterFirstDispose, rejected,
       textureDisposed: tex.disposed, firstCleanup, cleanup, storageReusedA, storageReusedB, separateStorage,
       backend: second.device.kind, adapter: second.device.info.renderer };
   } catch (error) {
     if (!tex.disposed) tex.dispose();
-    if (!firstDisposed) first.dispose();
-    second.dispose();
+    if (!firstDisposed) await first.dispose().catch(() => {});
+    await second.dispose().catch(() => {});
     throw error;
   }
 }
@@ -168,9 +201,9 @@ async function canvasChanges(backend) {
     const resized = await renderer.sample(handle.texture, [0.75, 0.75, 0]);
     const dimensions = [source.width, source.height];
     handle.dispose();
-    const cleanup = renderer.dispose();
+    const cleanup = await renderer.dispose();
     return { top, bottom, changed, untouched, resized, dimensions, storageReused, disposed: handle.texture.disposed, cleanup };
-  } catch (error) { handle.dispose(); renderer.dispose(); throw error; }
+  } catch (error) { handle.dispose(); await renderer.dispose().catch(() => {}); throw error; }
 }
 
 async function subresources(backend) {
@@ -201,15 +234,15 @@ async function subresources(backend) {
     try { new Texture({ width: 4, height: 4, format: "etc2-rgb8unorm", mipLevels: [{ width: 4, height: 4, data: new Uint8Array(7) }] }); } catch { invalidBlock = true; }
     array.dispose(); volume.dispose();
     return { array0, array1, arrayChanged, arrayOtherLayer, arrayOtherPixel, arrayMip0, arrayMip1, baseAfterMip,
-      volumeFront, volumeBack, volumeMip, volumeBase, invalidRegion, invalidMip, invalidBlock, cleanup: renderer.dispose() };
-  } catch (error) { array.dispose(); volume.dispose(); renderer.dispose(); throw error; }
+      volumeFront, volumeBack, volumeMip, volumeBase, invalidRegion, invalidMip, invalidBlock, cleanup: await renderer.dispose() };
+  } catch (error) { array.dispose(); volume.dispose(); await renderer.dispose().catch(() => {}); throw error; }
 }
 
 async function compressedCube() {
   const renderer = await makeRenderer("webgl2");
   const gl = renderer.canvas.getContext("webgl2");
   if (!gl.getExtension("WEBGL_compressed_texture_s3tc")) {
-    renderer.dispose();
+    await renderer.dispose();
     return { unavailable: "WEBGL_compressed_texture_s3tc unavailable on this WebGL2 context" };
   }
   // BC1 block: two independent RGB565 endpoints followed by sixteen zero
@@ -232,8 +265,8 @@ async function compressedCube() {
     let invalidBlock = false;
     try { tex.updateMip(1, new Uint8Array(7), { face: "px" }); } catch { invalidBlock = true; }
     tex.dispose();
-    return { baseBefore, mipBefore, mipChanged, otherFace, baseAfter, storageReused, invalidBlock, cleanup: renderer.dispose() };
-  } catch (error) { tex.dispose(); renderer.dispose(); throw error; }
+    return { baseBefore, mipBefore, mipChanged, otherFace, baseAfter, storageReused, invalidBlock, cleanup: await renderer.dispose() };
+  } catch (error) { tex.dispose(); await renderer.dispose().catch(() => {}); throw error; }
 }
 
 async function nextVideoFrame(video) {
@@ -267,9 +300,9 @@ async function videoChanges(backend) {
     handle.dispose();
     video.pause(); video.srcObject = null; stream.getTracks().forEach((track) => track.stop());
     return { first, second, firstTime, secondTime, stopped: stream.getTracks().every((track) => track.readyState === "ended"),
-      disposed: handle.texture.disposed, cleanup: renderer.dispose() };
+      disposed: handle.texture.disposed, cleanup: await renderer.dispose() };
   } catch (error) {
-    handle?.dispose(); video.pause(); video.srcObject = null; stream.getTracks().forEach((track) => track.stop()); renderer?.dispose(); throw error;
+    handle?.dispose(); video.pause(); video.srcObject = null; stream.getTracks().forEach((track) => track.stop()); await renderer?.dispose().catch(() => {}); throw error;
   }
 }
 
@@ -398,8 +431,8 @@ function expectPixel(actual: unknown, reference: readonly number[], tolerance = 
 
 function expectCleanup(value: unknown): void {
   expect(value).toMatchObject({ buffers: 0, shaders: 0, targets: 0, textures: 0, lastError: null });
-  const handles = (value as { nativeHandlesAfterDispose: number | null }).nativeHandlesAfterDispose;
-  if (handles !== null) expect(handles).toBe(0);
+  // Both backends count real native texture handles (WebGL objects or GPUTextures).
+  expect((value as { nativeHandlesAfterDispose: number | null }).nativeHandlesAfterDispose).toBe(0);
 }
 
 for (const backend of ["webgl2", "webgpu"] as const) {
@@ -427,7 +460,7 @@ for (const backend of ["webgl2", "webgpu"] as const) {
         expect(result).toMatchObject({ backend, rejected: true, textureDisposed: true, storageReusedA: true, storageReusedB: true, separateStorage: true });
         const firstCleanup = result.firstCleanup as { buffers: number; shaders: number; targets: number; nativeHandlesAfterDispose: number | null };
         expect(firstCleanup).toMatchObject({ buffers: 0, shaders: 0, targets: 0 });
-        if (firstCleanup.nativeHandlesAfterDispose !== null) expect(firstCleanup.nativeHandlesAfterDispose).toBe(0);
+        expect(firstCleanup.nativeHandlesAfterDispose).toBe(0);
       } else if (probe === "canvas") {
         expectPixel(result.top, expected.red); expectPixel(result.bottom, expected.blue);
         expectPixel(result.changed, expected.green); expectPixel(result.untouched, expected.red);

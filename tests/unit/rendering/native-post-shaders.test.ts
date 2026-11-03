@@ -16,6 +16,8 @@ import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_GLSL } from "../../../packages/rende
 import { FINALIZE_FXAA_FUSED_WGSL, FINALIZE_WGSL } from "../../../packages/rendering/src/post/shaders/finalize.wgsl";
 import { CAMERA_VELOCITY_GLSL, DEPTH_LINEARIZE_GLSL, DEPTH_MINMAX_HALF_GLSL } from "../../../packages/rendering/src/post/shaders/depthDownsample.glsl";
 import { VELOCITY_DILATE_GLSL } from "../../../packages/rendering/src/post/shaders/velocityDilate.glsl";
+import { NORMAL_FROM_DEPTH_GLSL } from "../../../packages/rendering/src/post/shaders/normalReconstruct.glsl";
+import { customPassFragmentSource } from "../../../packages/rendering/src/post/v2Stages";
 import { generateSmaaAreaData, generateSmaaSearchData, SMAA_AREATEX_PNG, SMAA_SEARCHTEX_PNG } from "../../../packages/rendering/src/post/smaa/textures";
 import { encodeViewDepth, linearizeDepth, negotiateDepthConvention, reconstructViewPosition, type DepthConvention } from "../../../packages/rendering/src/DepthConvention";
 
@@ -301,6 +303,19 @@ describe("depth convention references", () => {
   });
 });
 
+describe("custom-pass normal input", () => {
+  it("declares u_normal only for passes that request it and reconstructs from convention-decoded linear depth", () => {
+    expect(customPassFragmentSource("void main() {}")).not.toContain("u_normal");
+    expect(customPassFragmentSource("void main() {}", false, true)).toContain("uniform highp sampler2D u_normal;");
+    // Linear depth is already decoded for the active standard/reversed/log
+    // convention; the normal pass only places it on the inverse-projected ray.
+    expect(NORMAL_FROM_DEPTH_GLSL).toContain("uniform highp sampler2D u_linearDepth;");
+    expect(NORMAL_FROM_DEPTH_GLSL).toContain("u_invProjMatrix * vec4(ndc, -0.5, 1.0)");
+    expect(NORMAL_FROM_DEPTH_GLSL).not.toMatch(/u_near|u_far|u_depthMode/);
+    expect(NORMAL_FROM_DEPTH_GLSL).toContain("o_normal = vec4(0.0); return;");
+  });
+});
+
 describe("offline shader validation", () => {
   it.runIf(process.env.A3D_REQUIRE_NAGA === "1")("requires naga when the source gate requests it", () => {
     expect(hasCommand("naga"), "naga is required for native post WGSL validation").toBe(true);
@@ -309,7 +324,8 @@ describe("offline shader validation", () => {
   it.runIf(hasCommand("glslangValidator"))("validates the modified WebGL shader modules", () => {
     const dir = mkdtempSync(join(tmpdir(), "aura-native-post-glsl-"));
     try {
-      [FXAA_185_FRAGMENT_GLSL, GTAO_GLSL, DEPTH_LINEARIZE_GLSL, DEPTH_MINMAX_HALF_GLSL, CAMERA_VELOCITY_GLSL, VELOCITY_DILATE_GLSL].forEach((source, index) => {
+      [FXAA_185_FRAGMENT_GLSL, GTAO_GLSL, DEPTH_LINEARIZE_GLSL, DEPTH_MINMAX_HALF_GLSL, CAMERA_VELOCITY_GLSL, VELOCITY_DILATE_GLSL, NORMAL_FROM_DEPTH_GLSL,
+        customPassFragmentSource("void main() { outColor = texture(u_color, v_uv) + texture(u_normal, v_uv) * texture(u_reactive, v_uv).r; }", true, true)].forEach((source, index) => {
         const file = join(dir, `${index}.frag`);
         writeFileSync(file, source);
         expect(() => execFileSync("glslangValidator", ["-S", "frag", file], { encoding: "utf8" })).not.toThrow();

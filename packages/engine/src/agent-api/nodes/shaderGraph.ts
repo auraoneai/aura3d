@@ -6,6 +6,8 @@
 import {
   compileShaderGraph,
   validateShaderGraph,
+  shaderGraphStorageLayout,
+  packShaderGraphStorage,
   ShaderGraphError,
   type ShaderGraphDocument,
   type ShaderGraphNode,
@@ -66,10 +68,6 @@ function graphFailure(code: string, message: string, path?: string): never {
 }
 
 type GraphSampledTextureKind = "texture2d" | "texture3d" | "depth2d";
-
-function isPortableGraphMat4(type: ShaderDataType | undefined): boolean {
-  return typeof type === "object" && type.kind === "matrix" && type.columns === 4 && type.rows === 4;
-}
 
 /** Check known live values without replacing the original handle or its sampler. */
 function validateGraphTextureValue(kind: GraphSampledTextureKind, name: string, value: unknown): void {
@@ -422,9 +420,8 @@ export function shaderGraphMaterial(options: ShaderGraphMaterialOptions): AuraMa
   }
   const wgsl = compileShaderGraph(options.graph, "wgsl", { fog: options.fog === true });
   const aggregateBindings = wgsl.bindings.filter((binding) => binding.kind === "uniform" && binding.dataType !== undefined);
-  if (aggregateBindings.some((binding) => !isPortableGraphMat4(binding.dataType)) && options.backend === "glsl") {
-    return graphFailure("unsupported-backend", "graph uniform data other than a flat mat4 requires WebGPU; WebGL2 cannot bind portable uniform data");
-  }
+  // Aggregate and matrix uniforms bind on both backends: WebGPU packs the
+  // portable uniform buffer, WebGL2 uploads the GLSL struct/array leaves.
   const storageResources = (options.graph.resources ?? []).filter((resource) => resource.kind === "storage-buffer" || resource.kind === "storage-texture");
   const storageNames = new Set(storageResources.map((resource) => resource.name));
   if (storageResources.length && options.backend === "glsl") return graphFailure("unsupported-backend", "material storage resources require WebGPU");
@@ -605,5 +602,9 @@ export const shaderGraph = {
   validate: validateShaderGraph,
   compile: compileShaderGraph,
   fromTsl: migrateTslShaderGraph,
-  material: shaderGraphMaterial
+  material: shaderGraphMaterial,
+  /** WGSL storage layout of a graph storage-buffer resource for `elementCount` elements. */
+  storageLayout: shaderGraphStorageLayout,
+  /** Typed element values -> exact layout-derived bytes for a graph storage buffer. */
+  packStorage: packShaderGraphStorage
 };

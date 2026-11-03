@@ -3,7 +3,7 @@
  * text: identifiers, types, data flow and control flow are validated before
  * any GLSL or WGSL is emitted.
  */
-import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType } from "../webgpu/ShaderDataLayout";
+import { deriveShaderDataLayout, writeShaderData, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "../webgpu/ShaderDataLayout";
 import { deriveUniformDataLayout, emitWgslStruct, type UniformBlockLayout } from "./UniformLayout";
 
 export type ShaderGraphTarget = "glsl" | "wgsl";
@@ -308,6 +308,24 @@ function hasNestedArray(type: unknown): boolean {
 }
 function graphSymbol(name: string): string {
   return `v${name.replace(/_/g, "_0")}`;
+}
+/**
+ * Logical-to-GLSL struct field names for a graph uniform's `dataType`. Graph
+ * GLSL declares each struct field as `auraGraph_field_<symbol>`; WebGL2 uses
+ * this map to address the linked program's leaf uniforms (S5-WP05-03).
+ */
+export function shaderGraphGlslFieldNames(type: ShaderDataType): Readonly<Record<string, string>> {
+  const names: Record<string, string> = Object.create(null) as Record<string, string>;
+  const visit = (current: ShaderDataType): void => {
+    if (typeof current === "string") return;
+    if (current.kind === "array") visit(current.element);
+    else if (current.kind === "struct") for (const field of current.fields) {
+      names[field.name] = `auraGraph_field_${graphSymbol(field.name)}`;
+      visit(field.type);
+    }
+  };
+  visit(type);
+  return Object.freeze(names);
 }
 function validValueType(type: unknown, structs: ReadonlyMap<string, ShaderGraphStruct>, depth = 0): type is ShaderGraphValueType {
   if (typeof type !== "string") return false;
@@ -2142,6 +2160,40 @@ fn auraGraphSkin4(joints: vec4<f32>, weights: vec4<f32>) -> mat4x4<f32> {
  * portable stages for both backends. Their expressions remain available to
  * generated-program consumers in `material.vertex` and `material.fragment`.
  */
+/**
+ * Physical WGSL storage layout for `elementCount` elements of a graph
+ * storage-buffer resource, derived from its declared element type. Works for
+ * material and compute graphs; `layout.stride` is the per-element byte step.
+ */
+export function shaderGraphStorageLayout(graph: ShaderGraphDocument, resourceName: string, elementCount = 1): ShaderDataLayout {
+  const diagnostic = (code: string, message: string): never => { throw new ShaderGraphError([{ code, message }]); };
+  if (!Number.isSafeInteger(elementCount) || elementCount < 1) diagnostic("invalid-resource", `storage ${String(resourceName)} element count must be a positive integer`);
+  const binding = compileShaderGraph(graph, "wgsl").bindings.find((entry) => entry.name === resourceName);
+  if (!binding || binding.kind !== "storage-buffer" || binding.dataType === undefined) {
+    return diagnostic("unknown-resource", `no graph storage-buffer resource named ${String(resourceName)}`);
+  }
+  return deriveShaderDataLayout({ kind: "array", element: binding.dataType, length: elementCount }, "wgsl-storage");
+}
+
+/**
+ * Validate typed element values against a graph storage-buffer schema and
+ * return exactly the bytes of that element run, with deterministic zeroed
+ * padding. Upload at `firstElement * shaderGraphStorageLayout(...).stride`
+ * (`device.updateBuffer` or `ComputeBuffer.write`) instead of hand-packing
+ * caller bytes. Integers keep their integer bits; matrices take unpadded
+ * column-major values and structs take objects keyed by field name.
+ */
+export function packShaderGraphStorage(graph: ShaderGraphDocument, resourceName: string, elements: readonly ShaderDataValue[]): Uint8Array {
+  if (!Array.isArray(elements) || elements.length < 1) {
+    throw new ShaderGraphError([{ code: "invalid-resource", message: `storage ${String(resourceName)} requires a nonempty array of elements` }]);
+  }
+  const layout = shaderGraphStorageLayout(graph, resourceName, elements.length);
+  try { return writeShaderData(layout, elements); }
+  catch (error) {
+    throw new ShaderGraphError([{ code: "invalid-resource", message: `storage ${resourceName}: ${error instanceof Error ? error.message : String(error)}` }]);
+  }
+}
+
 export function compileShaderGraph(graph: ShaderGraphDocument, target: ShaderGraphTarget, options: { readonly fog?: boolean; readonly skinning?: 4 | 8 } = {}): ShaderGraphCompileResult {
   if (options.skinning !== undefined && (graph?.stage !== "material" || (options.skinning !== 4 && options.skinning !== 8))) {
     throw new ShaderGraphError([{ code: "invalid-skinning", message: "skinning variants require a material graph and four or eight influences" }]);

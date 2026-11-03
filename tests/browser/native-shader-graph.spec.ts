@@ -314,7 +314,9 @@ test.describe("native graph compute", () => {
     await page.goto(`${server.origin}/tests/browser/rendering-webgpu-harness.html`);
     const result = await page.evaluate(async () => {
       const root = "/packages/engine/src/public/index.ts";
-      const { camera, createAuraApp, material, primitives, scene, shaderGraph } = await import(root);
+      const graphEntry = "/packages/engine/src/public/shader-graph-runtime.ts";
+      const { camera, createAuraApp, material, primitives, scene } = await import(root);
+      const { shaderGraph } = await import(graphEntry);
       const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<{ info?: unknown; isFallbackAdapter?: boolean } | null> } }).gpu;
       const adapter = await gpu?.requestAdapter();
       if (!adapter) throw new Error("WEBGPU_ACCEPTANCE_UNAVAILABLE: no browser WebGPU adapter");
@@ -590,7 +592,9 @@ test.describe("root compute and graph render sharing", () => {
     await page.goto(`${server.origin}/tests/browser/rendering-webgpu-harness.html`);
     const result = await page.evaluate(async () => {
       const root = "/packages/engine/src/public/index.ts";
-      const { camera, createAuraApp, geometry, material, scene, shaderGraph, texture } = await import(root);
+      const graphEntry = "/packages/engine/src/public/shader-graph-runtime.ts";
+      const { camera, createAuraApp, geometry, material, scene, texture } = await import(root);
+      const { shaderGraph } = await import(graphEntry);
       const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<any> } }).gpu;
       const adapter = await gpu?.requestAdapter();
       if (!adapter) throw new Error("WEBGPU_ACCEPTANCE_UNAVAILABLE: no browser WebGPU adapter");

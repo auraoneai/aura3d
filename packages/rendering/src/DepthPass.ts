@@ -1,7 +1,8 @@
 import { Material } from "./Material";
 import { materialUniformValuesEqual, MaterialInstance } from "./MaterialInstance";
 import { isFlatUniformValue } from "./MaterialBinding";
-import { PortableShaderMaterial } from "./PortableShaderMaterial";
+import { flattenPortableDataUniform, reflectsUniformRoot } from "./webgl2/UniformDataFlatten";
+import { PortableShaderMaterial, type PortableShaderUniformDescriptor } from "./PortableShaderMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { PBRMaterial } from "./PBRMaterial";
 import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
@@ -35,6 +36,11 @@ import { materialInstanceColorTarget } from "./shaders/chunks/instance_color_tar
 import { shaderFeaturesFor } from "./contracts/program";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
 import { qrCoreGeneratorOn, qrMaterialsLobeProgramsOn } from "./renderer/qrSubFlags";
+import { ScreenSpaceLineMaterial } from "./ScreenSpaceLineMaterial";
+import { createClippedScreenSpaceLineShader, LINE_CLIP_INVERSE_TRANSFORM } from "./forward/ScreenSpaceLineClipping";
+import { certifiedDefaultScreenLineSource } from "./renderer/TrustedShaderLibrary";
+import { assertSpecializedLineDepthClipRange, createSpecializedLineDepthShader } from "./shadows/SpecializedDepthShader";
+import { assertSpecializedClippedDepthItem, clippedLineDepthTransforms, expandClippedSprite, resolveClippingRasterCamera, retainClippedPoints, specializedClippedPrimitive } from "./shadows/SpecializedClippedDepth";
 
 export interface DepthPassOptions {
   readonly casters: readonly RenderItem[];
@@ -419,8 +425,18 @@ export function assertDepthClippingSupported(source: RenderItem, clip: ClippingB
   }
   if (clip.groups.length === 0) return;
   const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;
-  if (pointGeometry || base?.shaderKey === DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME || source.material?.getParameter("u_spriteMode") === 1) {
-    throw new RenderDeviceError("Clipping is unavailable for point, screen-space line and billboard sprite depth geometry", "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: source.label });
+  const specialized = specializedClippedPrimitive(source, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME);
+  if (specialized) {
+    // Point proxies cannot be clipped by their source centres; the clipped
+    // draw uses the point geometry itself (see clippedDepthCaster).
+    if (specialized === "line" && (!(base instanceof ScreenSpaceLineMaterial) || base.shaderVariant !== undefined)) {
+      throw new RenderDeviceError("Clipped screen-space line depth requires the built-in line material", "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: source.label });
+    }
+    assertSpecializedClippedDepthItem(source, specialized, clip);
+    return;
+  }
+  if (pointGeometry) {
+    throw new RenderDeviceError("Clipping is unavailable for point proxy depth geometry", "DEPTH_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: source.label });
   }
   if (source.instanceTransforms && base?.renderState.cullMode !== "none" && hasInstanceVertexStreams(source)
     && instancedItemNeedsPerInstanceCullState(source, depthUsesGeometryMatrix(source))) {
@@ -903,6 +919,10 @@ export class DepthPass extends BaseRenderPass {
       maxPlanes: this.options.clippingPlaneLimit
     });
     assertDepthClippingSupported(source, clip, device);
+    if (clip.groups.length > 0 && specializedClippedPrimitive(source, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME) === "line"
+      && !certifiedDefaultScreenLineSource(this.shaderLibrary)) {
+      throw new RenderDeviceError("Clipped screen-space line depth requires an authenticated line shader source", "DEPTH_CLIPPING_PROGRAM_UNSUPPORTED", { label: source.label });
+    }
     // A shadow proxy may have a different primitive than the visible geometry.
     // Check both: the original retains batch provenance, while the selected
     // geometry determines the shader behavior that will actually be submitted.
@@ -913,6 +933,11 @@ export class DepthPass extends BaseRenderPass {
   private drawCaster(device: RenderDevice, source: RenderItem, clip: ReturnType<typeof createClippingBinding>): void {
     // Match forward rendering: an explicitly empty transform list is invisible.
     if (source.instanceTransforms !== undefined && source.instanceTransforms.length === 0) return;
+    const specialized = clip.groups.length > 0 ? specializedClippedPrimitive(source, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME) : undefined;
+    if (specialized) {
+      this.drawClippedSpecialized(device, source, clip, specialized);
+      return;
+    }
     const instanceCount = depthInstanceCount(source);
     const base = source.material instanceof MaterialInstance ? source.material.baseMaterial : source.material;
     if (source.instanceTransforms && base?.renderState.cullMode !== "none"
@@ -950,6 +975,119 @@ export class DepthPass extends BaseRenderPass {
       return;
     }
     this.drawPreparedCaster(device, source, instanceCount, clip);
+  }
+
+  /**
+   * Clipped points, billboard sprites and screen-space lines reproduce the
+   * forward primitive's own clipping semantics (see SpecializedClippedDepth).
+   */
+  private drawClippedSpecialized(device: RenderDevice, source: RenderItem, clip: ClippingBinding, primitive: "point" | "sprite" | "line"): void {
+    assertSpecializedClippedDepthItem(source, primitive, clip);
+    if (primitive === "line") {
+      this.drawClippedLine(device, source, clip);
+      return;
+    }
+    const range = resolveDepthDrawRange(source.geometry, source.drawRange);
+    const transient = primitive === "point"
+      ? { geometry: retainClippedPoints(source, clip, range), modelMatrix: undefined }
+      : expandClippedSprite(source, resolveClippingRasterCamera(source), range);
+    const geometry = transient.geometry;
+    // Every point was clipped: nothing remains to cast depth.
+    if (!geometry) return;
+    try {
+      const caster: RenderItem = {
+        ...source,
+        geometry,
+        shadowGeometry: undefined,
+        drawRange: undefined,
+        ...(transient.modelMatrix ? { modelMatrix: transient.modelMatrix, normalMatrix: undefined, modelViewProjectionMatrix: undefined } : {})
+      };
+      // Points were removed by their centres on the CPU; sprite corners are
+      // clipped per fragment by the ordinary clipped depth program.
+      const drawClip = primitive === "point" ? { ...clip, planes: new Float32Array(0), groups: [] } : clip;
+      this.drawPreparedCaster(device, caster, 1, drawClip);
+    } finally {
+      geometry.dispose();
+    }
+  }
+
+  /** Draw a clipped screen-space line with its forward expansion and this pass's projection. */
+  private drawClippedLine(device: RenderDevice, source: RenderItem, clip: ClippingBinding): void {
+    const material = source.material!;
+    const camera = resolveClippingRasterCamera(source);
+    const convention = this.options.depthConvention;
+    if (device.kind === "webgl2" || device.kind === "webgpu") assertSpecializedLineDepthClipRange(device.kind, convention?.clipRange ?? "minus-one-to-one");
+    const logarithmic = convention?.mode === "logarithmic";
+    const log = logarithmic ? this.logDepthUniforms() : undefined;
+    const shader = this.getClippedLineShader(device, logarithmic);
+    const { model, modelViewProjection, inverse } = clippedLineDepthTransforms(source, camera);
+    const uniforms = new Map<string, UniformValue>(material.getParameters());
+    uniforms.set("u_modelMatrix", model);
+    uniforms.set("u_viewMatrix", camera.view);
+    uniforms.set("u_projectionMatrix", camera.projection);
+    uniforms.set("u_modelViewProjection", modelViewProjection);
+    uniforms.set(LINE_CLIP_INVERSE_TRANSFORM, inverse);
+    uniforms.set("u_a3dDepthViewProjection", toMat4(this.options.viewProjectionMatrix ?? identityMat4(), source.label));
+    uniforms.set("u_a3dClipRange", convention?.clipRange === "zero-to-one" ? 1 : 0);
+    for (const [name, value] of createClippingUniforms(clip)) uniforms.set(name, value);
+    if (log) {
+      uniforms.set("u_a3dLogDepthView", log.view);
+      uniforms.set("u_a3dLogDepthRange", log.range);
+    }
+    const geometry = source.geometry;
+    const range = resolveDepthDrawRange(geometry, source.drawRange ?? geometry.drawRange);
+    const vertexBuffers = geometry.uploadVertexBuffers(device, 1);
+    const vertexBuffer = vertexBuffers[0];
+    if (!vertexBuffer) throw new RenderDeviceError("Geometry has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
+    const indexBuffer = geometry.indexBuffer?.upload(device);
+    const command: DrawCommand = {
+      label: source.label ?? "clipped-line-caster",
+      topology: geometry.topology,
+      vertexBuffer,
+      vertexBuffers,
+      vertexFormat: geometry.vertexBuffer.format,
+      vertexCount: indexBuffer ? geometry.vertexBuffer.vertexCount : range.count,
+      ...(indexBuffer === undefined && range.start > 0 ? { firstVertex: range.start } : {}),
+      shader,
+      uniforms,
+      // Lines are double-sided in forward; keep both windings in depth.
+      renderState: depthRenderState(this.options.scissor, "none", convention)
+    };
+    if (indexBuffer) {
+      Object.assign(command, {
+        indexBuffer,
+        indexType: geometry.indexBuffer?.type,
+        indexCount: range.count,
+        ...(range.start > 0 ? { firstIndex: range.start } : {})
+      });
+    }
+    this.submitDraw(device, command);
+  }
+
+  private getClippedLineShader(device: RenderDevice, logarithmic: boolean): RenderShaderProgram {
+    const revision = this.shaderLibrary.getRevision();
+    const generation = device.generation ?? 0;
+    let libraries = DepthPass.configuredShaderModules.get(device);
+    if (!libraries) { libraries = new WeakMap(); DepthPass.configuredShaderModules.set(device, libraries); }
+    let cache = libraries.get(this.shaderLibrary);
+    if (!cache) {
+      cache = { revision, generation, modules: new Map() };
+      libraries.set(this.shaderLibrary, cache);
+    } else if (cache.revision !== revision || cache.generation !== generation) {
+      for (const old of cache.modules.values()) old.dispose();
+      cache.modules.clear();
+      cache.revision = revision;
+      cache.generation = generation;
+    }
+    const key = `line:${logarithmic ? 1 : 0}`;
+    let module = cache.modules.get(key);
+    if (!module) {
+      const line = certifiedDefaultScreenLineSource(this.shaderLibrary);
+      if (!line) throw new RenderDeviceError("Clipped screen-space line depth requires an authenticated line shader source", "DEPTH_CLIPPING_PROGRAM_UNSUPPORTED", {});
+      module = new ShaderModule(createSpecializedLineDepthShader(createClippedScreenSpaceLineShader(line), { logarithmic }) as typeof line);
+      cache.modules.set(key, module);
+    }
+    return module.compile(device);
   }
 
   private drawPreparedCaster(device: RenderDevice, source: RenderItem, instanceCount: number, clip: ReturnType<typeof createClippingBinding>): void {
@@ -1053,7 +1191,7 @@ export class DepthPass extends BaseRenderPass {
         uniforms,
         renderState: {
           ...depthRenderState(this.options.scissor, base?.renderState.cullMode ?? "back", this.options.depthConvention,
-            renderItemHasNegativeHandedness(caster, true))
+            renderItemHasNegativeHandedness(caster, true) !== (base?.renderState.frontFace === "cw"))
         }
       };
       if (indexBuffer) {
@@ -1155,7 +1293,8 @@ export class DepthPass extends BaseRenderPass {
         renderState: {
           ...depthRenderState(this.options.scissor, variant.doubleSided ? "none" :
             (caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material)?.renderState.cullMode === "front" ? "front" : "back",
-            this.options.depthConvention, renderItemHasNegativeHandedness(caster, true))
+            this.options.depthConvention, renderItemHasNegativeHandedness(caster, true)
+              !== ((caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material)?.renderState.frontFace === "cw"))
         }
       };
       if (indexBuffer) {
@@ -1303,14 +1442,19 @@ export class DepthPass extends BaseRenderPass {
     const portableUniforms = new Map<string, RecursiveUniformValue>();
     const parameters = caster.material ? recursiveMaterialParameters(caster.material) : undefined;
     for (const [name, value] of parameters ?? []) {
-      if (!reflected.has(name)) continue;
+      if (!reflectsUniformRoot(reflected, name)) continue;
       const descriptor = base instanceof PortableShaderMaterial
         ? base.uniformSchema.find((uniform) => uniform.name === name) : undefined;
       if (descriptor && base instanceof PortableShaderMaterial) {
         const diagnostic = base.uniformValueDiagnostic(name, value);
         if (diagnostic) throw new RenderDeviceError(diagnostic, "DEPTH_PORTABLE_UNIFORM_INVALID", { label: caster.label, uniform: name });
       }
-      if (descriptor?.kind === "data" || !isFlatUniformValue(value)) {
+      if (descriptor?.kind === "data" && device.kind === "webgl2") {
+        // S5-WP05-03: WebGL2 binds a data uniform as its GL leaf uniforms.
+        for (const [leaf, leafValue] of flattenPortableDataUniform(descriptor as PortableShaderUniformDescriptor, value, caster.label)) shared.set(leaf, leafValue);
+      } else if (!reflected.has(name)) {
+        continue;
+      } else if (descriptor?.kind === "data" || !isFlatUniformValue(value)) {
         if (!descriptor || device.kind !== "webgpu" || !device.drawPortable) {
           throw new RenderDeviceError("Structured depth uniforms require portable WebGPU submission", "PORTABLE_UNIFORM_BACKEND_UNSUPPORTED", { label: caster.label, uniform: name });
         }
@@ -1386,7 +1530,8 @@ export class DepthPass extends BaseRenderPass {
         uniforms,
         ...(nativeStorageBindings?.length ? { nativeStorageBindings } : {}),
         renderState: depthRenderState(this.options.scissor, cullMode, this.options.depthConvention,
-          renderItemHasNegativeHandedness({ ...caster, modelMatrix: model }, usesGeometryMatrix))
+          // Clockwise front faces cull like a mirrored (negative-handedness) transform.
+          renderItemHasNegativeHandedness({ ...caster, modelMatrix: model }, usesGeometryMatrix) !== (base?.renderState.frontFace === "cw"))
       };
       if (indexBuffer) {
         Object.assign(command, {

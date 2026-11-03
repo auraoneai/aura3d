@@ -1,5 +1,6 @@
 import type { RenderBuffer, RenderDevice, RenderShaderProgram, ShaderSources } from "./RenderDevice";
 import { VertexFormat } from "./VertexFormat";
+import { sortGaussianSplatOrderOnGpu, type GaussianSplatGpuSort } from "./webgpu/GaussianSplatGpuOrder";
 
 /** Arrays returned by the splat loader, expressed in the asset's declared local coordinate system. */
 export interface GaussianSplatCloud {
@@ -54,6 +55,29 @@ export interface GaussianSplatFrame {
 export interface GaussianSplatPreparedFrame extends GaussianSplatFrame {
   /** Radial world-space distance from camera to splat center. */
   distanceAt(sortedIndex: number): number;
+  /** Which sort produced `order`; "gpu" means the bounded native sorter (f32 keys, index-stable ties). */
+  readonly sortBackend?: "cpu" | "gpu";
+  /** Set when a requested GPU sort failed and the CPU sort was used instead. */
+  readonly sortFallbackReason?: string;
+}
+
+export interface GaussianSplatPrepareOptions {
+  /** Bounded native GPU sorter and its WebGPU device; omitted means CPU sort. */
+  readonly gpuSort?: GaussianSplatGpuSort;
+  /** Aborts a GPU sort; an aborted prepare rejects instead of falling back. */
+  readonly signal?: AbortSignal;
+}
+
+interface SplatProjection {
+  readonly projected: Float32Array;
+  readonly distances: Float64Array;
+  readonly order: Uint32Array;
+  readonly visible: number;
+  readonly view: readonly number[];
+  readonly projection: readonly number[];
+  readonly camera: readonly number[];
+  readonly width: number;
+  readonly height: number;
 }
 
 /** A contiguous part of one prepared cloud, suitable for a transparent queue. */
@@ -283,7 +307,8 @@ export function gaussianSphericalHarmonicBasis(degree: number, m: number, direct
 
 /**
  * Independent projected-Gaussian renderer. It owns its shader and buffers, not the device or input arrays.
- * Projection and stable sort are CPU-side; the GPU performs Gaussian shading, depth testing and blending.
+ * Projection is CPU-side; the stable back-to-front sort is CPU-side unless `prepareAsync` is given the bounded
+ * native GPU sorter. The GPU performs Gaussian shading, depth testing and blending.
  * Colors are blended in the supplied cloud color space, so the caller must bind a matching target.
  */
 export class GaussianSplatRenderer {
@@ -366,6 +391,58 @@ export class GaussianSplatRenderer {
 
   /** Reproject and sort without submitting. Each call owns a separate frame-local snapshot. */
   prepare(input: GaussianSplatDrawInput): GaussianSplatPreparedFrame {
+    const projection = this.project(input);
+    const sorted = projection.order.subarray(0, projection.visible);
+    const { distances } = projection;
+    sorted.sort((a, b) => distances[b]! - distances[a]! || a - b);
+    return this.finishPrepared(projection, sorted, "cpu");
+  }
+
+  /**
+   * As `prepare`, but orders the visible splats with the bounded native GPU
+   * sorter when `options.gpuSort` is supplied (WebGPU only). Any GPU failure
+   * other than an abort falls back to the CPU sort and is reported in
+   * `sortFallbackReason`; the frame records which sort produced its order.
+   */
+  async prepareAsync(input: GaussianSplatDrawInput, options: GaussianSplatPrepareOptions = {}): Promise<GaussianSplatPreparedFrame> {
+    const projection = this.project(input);
+    const visible = projection.order.subarray(0, projection.visible);
+    if (options.gpuSort && visible.length > 1) {
+      try {
+        const order = await sortGaussianSplatOrderOnGpu(options.gpuSort, projection.distances, visible, options.signal);
+        visible.set(order);
+        this.ensureAvailable();
+        return this.finishPrepared(projection, visible, "gpu");
+      } catch (error) {
+        if (options.signal?.aborted || (error instanceof Error && error.name === "AbortError")) throw error;
+        this.ensureAvailable();
+        const { distances } = projection;
+        visible.sort((a, b) => distances[b]! - distances[a]! || a - b);
+        return this.finishPrepared(projection, visible, "cpu", error instanceof Error ? error.message : String(error));
+      }
+    }
+    const { distances } = projection;
+    visible.sort((a, b) => distances[b]! - distances[a]! || a - b);
+    return this.finishPrepared(projection, visible, "cpu");
+  }
+
+  private finishPrepared(projectionState: SplatProjection, sorted: Uint32Array, sortBackend: "cpu" | "gpu", sortFallbackReason?: string): GaussianSplatPreparedFrame {
+    const { projected, distances, visible, view, projection, camera, width, height } = projectionState;
+    const frame: GaussianSplatPreparedFrame = Object.freeze({
+      visibleCount: visible, order: sorted.slice(), backend: this.device.kind,
+      colorSpace: this.data.metadata?.colorSpace ?? "srgb_rec709_display",
+      sortBackend,
+      ...(sortFallbackReason === undefined ? {} : { sortFallbackReason }),
+      distanceAt(index: number): number {
+        if (!Number.isSafeInteger(index) || index < 0 || index >= visible) throw new RangeError("splat sorted index out of range");
+        return distances[sorted[index]!]!;
+      }
+    });
+    this.prepared.set(frame, { projected, sorted, distances, view, projection, camera: [...camera], viewport: [width, height] });
+    return frame;
+  }
+
+  private project(input: GaussianSplatDrawInput): SplatProjection {
     this.ensureAvailable();
     const view = matrix(input.viewMatrix, "viewMatrix"), projection = matrix(input.projectionMatrix, "projectionMatrix"), model = matrix(input.modelMatrix ?? IDENTITY, "modelMatrix");
     if (Math.abs(model[3]!) + Math.abs(model[7]!) + Math.abs(model[11]!) > 1e-8 || Math.abs(model[15]! - 1) > 1e-8) throw new RangeError("modelMatrix must be affine");
@@ -444,18 +521,7 @@ export class GaussianSplatRenderer {
       if (!Number.isFinite(projected[out + 7]) || !Number.isFinite(projected[out + 8]) || !Number.isFinite(projected[out + 9])) throw new RangeError("splat color must remain finite");
       distances[n] = distance; order[visible++] = n;
     }
-    const sorted = order.subarray(0, visible);
-    sorted.sort((a, b) => distances[b]! - distances[a]! || a - b);
-    const frame: GaussianSplatPreparedFrame = Object.freeze({
-      visibleCount: visible, order: sorted.slice(), backend: this.device.kind,
-      colorSpace: this.data.metadata?.colorSpace ?? "srgb_rec709_display",
-      distanceAt(index: number): number {
-        if (!Number.isSafeInteger(index) || index < 0 || index >= visible) throw new RangeError("splat sorted index out of range");
-        return distances[sorted[index]!]!;
-      }
-    });
-    this.prepared.set(frame, { projected, sorted, distances, view, projection, camera: [...camera], viewport: [width, height] });
-    return frame;
+    return { projected, distances, order, visible, view, projection, camera, width, height };
   }
 
   /** Submit a contiguous range from a frame prepared by this renderer into the active target. */

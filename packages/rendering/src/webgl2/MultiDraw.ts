@@ -31,7 +31,31 @@ function integerUniformKind(type: string | undefined): "int" | "uint" | undefine
   return undefined;
 }
 
-type FloatUniformSetter = "1f" | "2f" | "3f" | "4f" | "mat3" | "mat4";
+type FloatUniformSetter = "1f" | "2f" | "3f" | "4f" | "mat2" | "mat3" | "mat4" | "mat2x3" | "mat2x4" | "mat3x2" | "mat3x4" | "mat4x2" | "mat4x3";
+
+type IntegerArraySetter = "1i" | "2i" | "3i" | "4i" | "1ui" | "2ui" | "3ui" | "4ui";
+
+/**
+ * S5-WP05-03: the integer vector setter for a declared int/ivec/bool/bvec or
+ * uint/uvec uniform (GL enum string or GLSL type name). Integer and boolean
+ * leaves of portable data uniforms are uploaded with these setters so their
+ * values are never reinterpreted as float bits.
+ */
+function integerArraySetter(type: string | undefined): IntegerArraySetter | undefined {
+  switch (type) {
+    case "int": case "bool": case "5124": case "35670": return "1i";
+    case "ivec2": case "bvec2": case "35667": case "35671": return "2i";
+    case "ivec3": case "bvec3": case "35668": case "35672": return "3i";
+    case "ivec4": case "bvec4": case "35669": case "35673": return "4i";
+    case "uint": case "5125": return "1ui";
+    case "uvec2": case "36294": return "2ui";
+    case "uvec3": case "36295": return "3ui";
+    case "uvec4": case "36296": return "4ui";
+    default: return undefined;
+  }
+}
+
+const INTEGER_SETTER_COMPONENTS: Readonly<Record<IntegerArraySetter, number>> = { "1i": 1, "2i": 2, "3i": 3, "4i": 4, "1ui": 1, "2ui": 2, "3ui": 3, "4ui": 4 };
 
 /**
  * GU47 phase 2: the float setter for a declared uniform type, from either the
@@ -53,18 +77,32 @@ function floatUniformSetter(type: string | undefined): FloatUniformSetter | unde
     case "vec4":
     case "35666":
       return "4f";
+    case "mat2":
+    case "mat2x2":
+    case "35674":
+      return "mat2";
     case "mat3":
+    case "mat3x3":
     case "35675":
       return "mat3";
     case "mat4":
+    case "mat4x4":
     case "35676":
       return "mat4";
+    case "mat2x3": case "35685": return "mat2x3";
+    case "mat2x4": case "35686": return "mat2x4";
+    case "mat3x2": case "35687": return "mat3x2";
+    case "mat3x4": case "35688": return "mat3x4";
+    case "mat4x2": case "35689": return "mat4x2";
+    case "mat4x3": case "35690": return "mat4x3";
     default:
       return undefined;
   }
 }
 
-const FLOAT_SETTER_COMPONENTS: Readonly<Record<FloatUniformSetter, number>> = { "1f": 1, "2f": 2, "3f": 3, "4f": 4, mat3: 9, mat4: 16 };
+const FLOAT_SETTER_COMPONENTS: Readonly<Record<FloatUniformSetter, number>> = {
+  "1f": 1, "2f": 2, "3f": 3, "4f": 4, mat2: 4, mat3: 9, mat4: 16, mat2x3: 6, mat2x4: 8, mat3x2: 6, mat3x4: 12, mat4x2: 8, mat4x3: 12
+};
 
 /** Effective values selected by two ordinary lean-unlit draws, in sorted order. */
 export interface StaticUnlitPairUniformPlan {
@@ -943,6 +981,33 @@ export class WebGL2DrawCallBinder {
         else if (kind === "int") this.host.gl.uniform1i(location, value);
         else this.host.gl.uniform1f(location, value);
         valueCache.set(name, value);
+      } else if ((Array.isArray(value) || ArrayBuffer.isView(value))
+        && integerArraySetter(shader.reflection.uniformDetails.get(name)?.type) !== undefined) {
+        // Integer/bool scalars, vectors and their arrays (including flattened
+        // portable data leaves) use the integer setters with exact values.
+        const setter = integerArraySetter(shader.reflection.uniformDetails.get(name)?.type)!;
+        const unsigned = setter.endsWith("ui");
+        const source = value as ArrayLike<number>;
+        const length = source.length;
+        if (length === 0 || length % INTEGER_SETTER_COMPONENTS[setter] !== 0) {
+          throw new RenderDeviceError("Unsupported uniform array length", "UNSUPPORTED_UNIFORM", { name, length });
+        }
+        const data = unsigned ? Uint32Array.from(source) : Int32Array.from(source);
+        const last = valueCache.get(name);
+        if ((unsigned ? last instanceof Uint32Array : last instanceof Int32Array) && (last as Int32Array | Uint32Array).length === length
+          && (data as Int32Array | Uint32Array).every((entry, index) => (last as Int32Array | Uint32Array)[index] === entry)) continue;
+        valueCache.set(name, data);
+        const gl = this.host.gl;
+        switch (setter) {
+          case "1i": gl.uniform1iv(location, data as Int32Array); break;
+          case "2i": gl.uniform2iv(location, data as Int32Array); break;
+          case "3i": gl.uniform3iv(location, data as Int32Array); break;
+          case "4i": gl.uniform4iv(location, data as Int32Array); break;
+          case "1ui": gl.uniform1uiv(location, data as Uint32Array); break;
+          case "2ui": gl.uniform2uiv(location, data as Uint32Array); break;
+          case "3ui": gl.uniform3uiv(location, data as Uint32Array); break;
+          case "4ui": gl.uniform4uiv(location, data as Uint32Array); break;
+        }
       } else if (Array.isArray(value) || ArrayBuffer.isView(value)) {
         const length = (value as ArrayLike<number>).length;
         const floatData = value as Float32List;
@@ -970,6 +1035,13 @@ export class WebGL2DrawCallBinder {
           const gl = this.host.gl;
           if (declared === "mat4") gl.uniformMatrix4fv(location, false, floatData);
           else if (declared === "mat3") gl.uniformMatrix3fv(location, false, floatData);
+          else if (declared === "mat2") gl.uniformMatrix2fv(location, false, floatData);
+          else if (declared === "mat2x3") gl.uniformMatrix2x3fv(location, false, floatData);
+          else if (declared === "mat2x4") gl.uniformMatrix2x4fv(location, false, floatData);
+          else if (declared === "mat3x2") gl.uniformMatrix3x2fv(location, false, floatData);
+          else if (declared === "mat3x4") gl.uniformMatrix3x4fv(location, false, floatData);
+          else if (declared === "mat4x2") gl.uniformMatrix4x2fv(location, false, floatData);
+          else if (declared === "mat4x3") gl.uniformMatrix4x3fv(location, false, floatData);
           else if (declared === "4f") gl.uniform4fv(location, floatData);
           else if (declared === "3f") gl.uniform3fv(location, floatData);
           else if (declared === "2f") gl.uniform2fv(location, floatData);

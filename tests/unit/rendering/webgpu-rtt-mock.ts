@@ -84,7 +84,7 @@ export function createProofWebGPU(options: { readonly corruptCopy?: boolean; rea
     createCommandEncoder() {
       const actions: Action[] = [];
       return {
-        beginRenderPass(descriptor: { readonly label?: string; readonly colorAttachments: readonly { readonly view: { texture: FakeTexture }; readonly loadOp: string; readonly clearValue?: readonly number[] | { readonly r: number; readonly g: number; readonly b: number; readonly a: number } }[] }) {
+        beginRenderPass(descriptor: { readonly label?: string; readonly colorAttachments: readonly { readonly view: { texture: FakeTexture }; readonly resolveTarget?: { texture: FakeTexture }; readonly loadOp: string; readonly clearValue?: readonly number[] | { readonly r: number; readonly g: number; readonly b: number; readonly a: number } }[] }) {
           const attachment = descriptor.colorAttachments[0]!;
           const destination = attachment.view.texture;
           let pipeline: FakePipeline | undefined;
@@ -96,6 +96,8 @@ export function createProofWebGPU(options: { readonly corruptCopy?: boolean; rea
               const color = (Array.isArray(clear) ? clear : [(clear as { r: number }).r, (clear as { g: number }).g, (clear as { b: number }).b, (clear as { a: number }).a]).map(byte);
               for (let at = 0; at < destination.pixels.length; at += 4) destination.pixels.set(color, at);
             }
+            // A multisampled attachment resolves into its single-sample target at pass end.
+            attachment.resolveTarget?.texture.pixels.set(destination.pixels);
           });
           return {
             setPipeline(value: FakePipeline) { pipeline = value; },
@@ -148,6 +150,12 @@ export function createProofWebGPU(options: { readonly corruptCopy?: boolean; rea
               destination.buffer.data.set(source.texture.pixels.subarray(start, start + width * 4), row * destination.bytesPerRow);
             }
             events.push("copy-readback");
+          });
+        },
+        copyTextureToTexture(source: { readonly texture: FakeTexture }, destination: { readonly texture: FakeTexture }) {
+          actions.push(() => {
+            destination.texture.pixels.set(source.texture.pixels);
+            events.push("copy-texture");
           });
         },
         finish() { return { actions }; }

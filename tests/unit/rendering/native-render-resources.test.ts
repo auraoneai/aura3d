@@ -4,6 +4,8 @@ import { MockRenderDevice, getRenderAttachmentIdentity, validateRenderAttachment
 import { WebGL2Device } from "../../../packages/rendering/src/WebGL2Device";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { texture } from "../../../packages/engine/src/agent-api/nodes/texture";
+import { createRenderDevice } from "../../../packages/rendering/src";
+import { createProofWebGPU } from "./webgpu-rtt-mock";
 
 describe("texture dimensions, formats and independent mip updates", () => {
   it("validates volume extent, r32f data and target storage usage", () => {
@@ -184,6 +186,8 @@ function webglDevice() {
       else if (target === constant("DRAW_FRAMEBUFFER")) drawFramebuffer = framebuffer;
     },
     blitFramebuffer: (...args: unknown[]) => calls.push({ name: "blitFramebuffer", args }),
+    framebufferTextureLayer: (...args: unknown[]) => calls.push({ name: "framebufferTextureLayer", args }),
+    texStorage3D: (...args: unknown[]) => calls.push({ name: "texStorage3D", args }),
     readBuffer: (...args: unknown[]) => calls.push({ name: "readBuffer", args }),
     drawBuffers: (...args: unknown[]) => calls.push({ name: "drawBuffers", args }),
     readPixels: (_x: number, _y: number, _w: number, _h: number, _format: number, _type: number, result: Uint8Array) => result.fill(27),
@@ -199,6 +203,82 @@ function webglDevice() {
   const canvas = { getContext: (type: string) => type === "webgl2" ? gl : null, addEventListener() {}, removeEventListener() {} } as unknown as HTMLCanvasElement;
   return { device: WebGL2Device.create({ canvas }), calls, deleted };
 }
+
+describe("3d render targets", () => {
+  it("renders depth slices of one volume through per-slice targets and refuses unsupported combinations", () => {
+    const device = new MockRenderDevice();
+    const volume = device.createRenderTarget({ width: 4, height: 2, dimension: "3d", layers: 3, depth: false });
+    expect(volume.colorTexture).toMatchObject({ dimension: "3d", depth: 3, width: 4, height: 2 });
+    expect(volume.layerTargets).toHaveLength(3);
+    const slice = getRenderAttachmentIdentity(volume.layerTargets![2]!);
+    expect(slice).toMatchObject({ layer: 2, mipLevel: 0, format: "rgba8" });
+    expect(() => validateRenderAttachmentAccess([getRenderAttachmentIdentity(volume.layerTargets![0]!)], [slice])).not.toThrow();
+    expect(() => device.createRenderTarget({ width: 4, height: 4, dimension: "3d", layers: 2 })).toThrow(/color-only/);
+    expect(() => device.createRenderTarget({ width: 4, height: 4, dimension: "3d", depth: false })).toThrow(/require `layers`/);
+    expect(() => device.createRenderTarget({ width: 4, height: 4, dimension: "3d", layers: 2, depth: false, sampleCount: 4 })).toThrow(/single-sample/);
+    volume.dispose();
+    expect(volume.colorTexture.disposed).toBe(true);
+    device.dispose();
+  });
+
+  it("attaches each WebGL2 volume slice with framebufferTextureLayer", () => {
+    const { device, calls } = webglDevice();
+    const volume = device.createRenderTarget({ width: 2, height: 2, dimension: "3d", layers: 4, depth: false });
+    expect(calls.filter(({ name }) => name === "texStorage3D")).toHaveLength(1);
+    expect(calls.find(({ name }) => name === "texStorage3D")!.args.slice(3)).toEqual([2, 2, 4]);
+    expect(calls.filter(({ name }) => name === "framebufferTextureLayer").map(({ args }) => args[4])).toEqual([0, 1, 2, 3]);
+    expect(volume.layerTargets).toHaveLength(4);
+    expect(volume.colorTexture).toMatchObject({ dimension: "3d", depth: 4 });
+    volume.dispose();
+    device.dispose();
+  });
+});
+
+describe("WebGPU layered render targets", () => {
+  it("renders 2d-array layers through single-layer views and retires the shared texture once, after its fence", async () => {
+    const mock = createProofWebGPU();
+    const sizes: unknown[] = [];
+    const views: Record<string, unknown>[] = [];
+    const createTexture = (mock.native as unknown as { createTexture(descriptor: { size: unknown }): { createView(descriptor?: Record<string, unknown>): object } }).createTexture;
+    (mock.native as unknown as { createTexture: typeof createTexture }).createTexture = (descriptor) => {
+      sizes.push(descriptor.size);
+      const native = createTexture(descriptor);
+      const plain = native.createView.bind(native);
+      native.createView = (view?: Record<string, unknown>) => { views.push(view ?? {}); return plain(); };
+      return native;
+    };
+    const device = await createRenderDevice({ backend: "webgpu", webgpu: mock.webgpu });
+    try {
+      const target = device.createRenderTarget({ width: 2, height: 2, dimension: "2d-array", layers: 3, depth: "texture", label: "array" });
+      expect(sizes).toEqual([[2, 2, 3], [2, 2, 3]]);
+      expect(target.layerTargets).toHaveLength(3);
+      expect(target.colorTexture).toMatchObject({ dimension: "2d-array", layers: 3 });
+      expect(getRenderAttachmentIdentity(target.layerTargets![2]!)).toMatchObject({ layer: 2, aspect: "color" });
+      expect(getRenderAttachmentIdentity(target.layerTargets![1]!, "depth")).toMatchObject({ layer: 1, aspect: "depth" });
+      expect(views).toContainEqual({ dimension: "2d-array" });
+      expect(views).toContainEqual({ dimension: "2d", baseArrayLayer: 2, arrayLayerCount: 1, baseMipLevel: 0, mipLevelCount: 1 });
+      device.setRenderTarget(target.layerTargets![1]!);
+      device.beginFrame(2, 2);
+      device.clear([0, 1, 0, 1]);
+      device.endFrame();
+      device.setRenderTarget(null);
+
+      target.layerTargets![0]!.dispose();
+      expect(mock.textures.some((texture) => texture.destroyed)).toBe(false);
+      expect(target.colorTexture.disposed).toBe(false);
+      target.dispose();
+      expect(target.layerTargets!.every((layer) => layer.disposed)).toBe(true);
+      expect(target.colorTexture.disposed).toBe(true);
+      await (target as typeof target & { whenDisposed(): Promise<void> }).whenDisposed();
+      expect(mock.textures.filter((texture) => texture.destroyed)).toHaveLength(2);
+      let refusal: unknown;
+      try { device.createRenderTarget({ width: 2, height: 2, dimension: "3d", layers: 2, depth: false }); } catch (error) { refusal = error; }
+      expect(refusal).toMatchObject({ code: "UNSUPPORTED_RENDER_TARGET_FEATURE" });
+    } finally {
+      device.dispose();
+    }
+  });
+});
 
 describe("WebGL2 resource transfers", () => {
   it("blits once, restores framebuffer state, reads bytes and cleans handles once", async () => {
@@ -219,5 +299,58 @@ describe("WebGL2 resource transfers", () => {
     destination.dispose();
     device.dispose();
     expect(new Set(deleted).size).toBe(deleted.length);
+  });
+});
+
+describe("WebGPU resource transfers", () => {
+  it("resolves, copies and reads owned targets asynchronously; abort and depth copies leave targets untouched", async () => {
+    const mock = createProofWebGPU();
+    const device = await createRenderDevice({ backend: "webgpu", webgpu: mock.webgpu });
+    try {
+      const source = device.createRenderTarget({ width: 2, height: 2, depth: false, sampleCount: 4, label: "msaa" });
+      const destination = device.createRenderTarget({ width: 2, height: 2, depth: false, label: "resolved" });
+      const copy = device.createRenderTarget({ width: 2, height: 2, depth: false, label: "copy" });
+      device.setRenderTarget(source);
+      device.beginFrame(2, 2);
+      device.clear([1, 0, 0, 1]);
+      device.endFrame();
+      device.setRenderTarget(null);
+
+      const controller = new AbortController();
+      const aborted = device.resolveRenderTarget!({ source, destination, signal: controller.signal });
+      controller.abort();
+      await expect(aborted).rejects.toMatchObject({ name: "AbortError" });
+      expect(mock.events).not.toContain("copy-texture");
+
+      await device.resolveRenderTarget!({ source, destination });
+      expect(mock.events.filter((event) => event === "copy-texture")).toHaveLength(1);
+      expect([...await device.readRenderTarget!({ target: destination })]).toEqual(Array(4).fill([255, 0, 0, 255]).flat());
+      await device.copyRenderTarget!({ source: destination, destination: copy });
+      const bytes = await device.readRenderTarget!({ target: copy });
+      expect([...bytes.subarray(0, 4)]).toEqual([255, 0, 0, 255]);
+      expect(device.getRenderTarget?.()).toBe(null);
+      expect([source, destination, copy].some((target) => target.disposed)).toBe(false);
+
+      await expect(device.copyRenderTarget!({ source: copy, destination: copy })).rejects.toMatchObject({ code: "RENDER_ATTACHMENT_HAZARD" });
+      await expect(device.readRenderTarget!({ target: source })).rejects.toMatchObject({ code: "INVALID_RESOURCE_READBACK" });
+      const depthSource = device.createRenderTarget({ width: 2, height: 2, depth: "texture" });
+      const depthDestination = device.createRenderTarget({ width: 2, height: 2, depth: "texture" });
+      await expect(device.copyRenderTarget!({ source: depthSource, destination: depthDestination, aspect: "depth" }))
+        .rejects.toMatchObject({ code: "WEBGPU_DEPTH_COPY_UNSUPPORTED" });
+
+      const readbacksBefore = mock.buffers.length;
+      const readController = new AbortController();
+      const read = device.readRenderTarget!({ target: copy, signal: readController.signal });
+      readController.abort();
+      await expect(read).rejects.toMatchObject({ name: "AbortError" });
+      expect(mock.buffers.slice(readbacksBefore).filter((buffer) => buffer.label.includes("byte-readback"))).toEqual([]);
+      for (const target of [source, destination, copy, depthSource, depthDestination]) target.dispose();
+      await Promise.resolve();
+      const staging = mock.buffers.filter((buffer) => buffer.label.includes("byte-readback"));
+      expect(staging).toHaveLength(2);
+      expect(staging.every((buffer) => buffer.destroyed)).toBe(true);
+    } finally {
+      device.dispose();
+    }
   });
 });

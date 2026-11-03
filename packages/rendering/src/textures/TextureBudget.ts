@@ -100,8 +100,10 @@ function descriptorOf(texture: Texture | TextureDescriptor): TextureDescriptor {
     ...(texture.mipLevels.length ? { mipLevels: texture.mipLevels.map((level, index) => texture.getMipLevel(index) ?? level) } : {}),
     ...(texture.cubeFaces.length ? { cubeFaces: texture.cubeFaces.map((face) => ({ ...face, mipLevels: face.mipLevels.map((level, index) => texture.getMipLevel(index, face.face) ?? level) })) } : {}),
     ...(texture.source ? { source: texture.source } : {}),
-    ...(hasValidFallback && texture.fallbackData ? { fallbackData: texture.fallbackData } : {}),
-    ...(hasValidFallback && texture.fallbackMipLevels.length ? { fallbackMipLevels: texture.fallbackMipLevels } : {}),
+    // A replacement supplied after a compressed edit is the current fallback.
+    ...(hasValidFallback && texture.fallbackReplaced ? { fallbackMipLevels: texture.fallbackTextureLevels } : {}),
+    ...(hasValidFallback && !texture.fallbackReplaced && texture.fallbackData ? { fallbackData: texture.fallbackData } : {}),
+    ...(hasValidFallback && !texture.fallbackReplaced && texture.fallbackMipLevels.length ? { fallbackMipLevels: texture.fallbackMipLevels } : {}),
     ...(texture.dimension === "2d-array" ? { layers: texture.layers } : {}),
     ...(texture.dimension === "3d" ? { depth: texture.depth } : {}),
     mipLevelCount: texture.mipLevelCount,
@@ -286,9 +288,17 @@ export function applyTextureBudget<T extends Texture | TextureDescriptor>(desc: 
     if (desc instanceof Texture && (desc.usage.includes("storage") || desc.usage.includes("render-attachment"))) {
       throw new TextureBudgetExceededError(`Writable texture ${output.label ?? "texture"} cannot be downscaled to fit the budget without changing its coordinates.`);
     }
-    // Scoped admission plans a separate nonresident source, not a GPU mip identity.
-    if (desc instanceof Texture && !scope && (desc.mipLevelCount > 1 || (device?.kind === "webgpu" && planNativeDataMipmaps(desc) !== null))) {
-      throw new TextureBudgetExceededError(`Texture ${output.label ?? "texture"} cannot be safely downscaled to fit the budget without changing mip identity.`);
+    // Downscale contract (5.0): the budget returns a new texture identity whose
+    // whole chain is replaced consistently. Supplied levels keep their exact
+    // bytes (top levels are dropped); a lone base level is box-filtered. Both
+    // devices reallocate that copy on any later revision of the original, so
+    // no update is applied to a rebased level index. Refuse only where the
+    // replacement would silently change content: WebGPU derives missing levels
+    // from the base with linear-light filtering, so a downscaled base would
+    // change every derived level. Scoped admission plans a separate
+    // nonresident source and never owns a device mip chain.
+    if (desc instanceof Texture && !scope && device?.kind === "webgpu" && planNativeDataMipmaps(desc) !== null) {
+      throw new TextureBudgetExceededError(`Texture ${output.label ?? "texture"} has a generated WebGPU mip chain that cannot be safely downscaled to fit the budget without changing its derived levels.`);
     }
     const smaller = dropOneLevel(output);
     if (!smaller) throw new TextureBudgetExceededError(`Texture ${output.label ?? "texture"} cannot fit in the available texture budget.`);

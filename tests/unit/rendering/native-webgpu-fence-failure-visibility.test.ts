@@ -592,4 +592,54 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
     expect(leaves(capture(() => lifecycle.dispose()))).toContain(failure);
     expect(resource.destroy).toHaveBeenCalledOnce();
   });
+  it("lets a parent lifecycle await waiting fences and reflect a later fence rejection", async () => {
+    const f = await fixture();
+    const buffer = f.device.createBuffer("vertex", 4);
+    const target = f.device.createRenderTarget({ width: 1, height: 1, depth: false });
+    const owner = new ResourceLifecycle();
+    owner.track(buffer);
+    owner.track(target);
+    // The fence is waiting: closing cannot complete, and the receipt stays pending.
+    expect(capture(() => owner.dispose())).toBeInstanceOf(AggregateError);
+    expect(owner.disposed).toBe(false);
+    let settled = false;
+    const receipt = owner.whenDisposed().then(() => { settled = true; }, error => { settled = true; throw error; });
+    await flush();
+    expect(settled).toBe(false);
+    expect(owner.leakCount()).toBe(2);
+
+    const failure = new Error("waiting fence later rejected");
+    f.fence.reject(failure);
+    const rejected = await receipt.then(() => undefined, error => error);
+    expect(leaves(rejected)).toContain(failure);
+    expect(owner.disposed).toBe(false);
+    expect(owner.leakCount()).toBe(2);
+    expect(f.buffers[0]!.destroy).not.toHaveBeenCalled();
+
+    f.lost.resolve({ reason: "destroyed", message: "confirmed" });
+    await flush();
+    await owner.whenDisposed();
+    expect(owner.disposed).toBe(true);
+    expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
+    expect(f.textures[0]!.destroy).toHaveBeenCalledOnce();
+    f.device.dispose();
+  });
+
+  it("resolves a parent lifecycle receipt only after a waiting fence passes", async () => {
+    const f = await fixture();
+    const buffer = f.device.createBuffer("vertex", 4);
+    const owner = new ResourceLifecycle();
+    owner.track(buffer);
+    capture(() => owner.dispose());
+    let settled = false;
+    const receipt = owner.whenDisposed().then(() => { settled = true; });
+    await flush();
+    expect(settled).toBe(false);
+    expect(f.buffers[0]!.destroy).not.toHaveBeenCalled();
+    f.fence.resolve();
+    await receipt;
+    expect(owner.disposed).toBe(true);
+    expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
+    f.device.dispose();
+  });
 });

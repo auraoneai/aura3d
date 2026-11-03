@@ -28,6 +28,7 @@ import { Texture } from "../../../packages/rendering/src/Texture";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { Sampler } from "../../../packages/rendering/src/Sampler";
 import { WebGL2DrawCallBinder } from "../../../packages/rendering/src/webgl2/MultiDraw";
+import { flattenPortableDataUniform } from "../../../packages/rendering/src/webgl2/UniformDataFlatten";
 import { WebGPUDevice, type WebGPUDeviceLike, type WebGPULike } from "../../../packages/rendering/src/WebGPUDevice";
 import { deriveShaderDataLayout, type ShaderDataType } from "../../../packages/rendering/src/webgpu/ShaderDataLayout";
 import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
@@ -246,7 +247,7 @@ describe("portable graph material bindings", () => {
       expect(mock.modules.length).toBe(moduleCount);
     } finally { flatBind.mockRestore(); recursiveBind.mockRestore(); geometry.dispose(); material.dispose(); device.dispose(); }
   });
-  it("validates and bridges public recursive graph uniforms without WebGL support", () => {
+  it("validates and bridges public recursive graph uniforms on both backends", () => {
     const graph: ShaderGraphDocument = {
       version: 1, stage: "material",
       structs: [
@@ -269,7 +270,24 @@ describe("portable graph material bindings", () => {
     ] };
     expect(publicShaderGraph.validate(graph, "wgsl")).toEqual([]);
     expect(publicShaderGraph.compile(graph, "wgsl").bindings[0]?.dataType).toBeDefined();
-    expect(() => publicShaderGraph.material({ graph, backend: "glsl", uniforms: { settings: valid } })).toThrow(/unsupported-backend.*WebGL2/);
+    // S5-WP05-03: WebGL2 binds the same schema through the GLSL struct leaves.
+    const glslSpec = publicShaderGraph.material({ graph, backend: "glsl", uniforms: { settings: valid } });
+    const glslMaterial = createCustomShaderMaterial(glslSpec.custom!);
+    try {
+      const fieldNames = { layers: "auraGraph_field_vlayers", enabled: "auraGraph_field_venabled", amount: "auraGraph_field_vamount", count: "auraGraph_field_vcount" };
+      expect(glslMaterial.uniformSchema.find((entry) => entry.name === "u_auraGraph_resource_settings")).toMatchObject({ kind: "data", glslFieldNames: fieldNames });
+      expect(glslMaterial.sources.glsl.fragment).toMatch(/uniform auraGraph_struct_vSettings u_auraGraph_resource_settings;/);
+      const descriptor = glslMaterial.uniformSchema.find((entry) => entry.name === "u_auraGraph_resource_settings")!;
+      const leaves = flattenPortableDataUniform(descriptor as never, glslMaterial.getRecursiveParameter("u_auraGraph_resource_settings"), "graph");
+      expect([...leaves]).toEqual([
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[0].auraGraph_field_venabled", 1],
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[0].auraGraph_field_vamount", 0.25],
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[0].auraGraph_field_vcount", 16_777_217],
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[1].auraGraph_field_venabled", 0],
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[1].auraGraph_field_vamount", 0.75],
+        ["u_auraGraph_resource_settings.auraGraph_field_vlayers[1].auraGraph_field_vcount", 0xffffffff]
+      ]);
+    } finally { glslMaterial.dispose(); }
     expect(() => publicShaderGraph.material({ graph, backend: "wgsl" })).toThrow(/invalid-resource.*requires an initial value/);
     expect(() => publicShaderGraph.material({ graph, backend: "wgsl", uniforms: { settings: { layers: [valid.layers[0]] } } })).toThrow(/invalid-resource.*needs 2 values/);
     expect(() => publicShaderGraph.material({ graph, backend: "wgsl", uniforms: { settings: { layers: [{ ...valid.layers[0], enabled: 2 }, valid.layers[1]] } } })).toThrow(/invalid-resource.*boolean/);

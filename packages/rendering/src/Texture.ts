@@ -360,6 +360,7 @@ export class Texture {
     (this as { cubeFaces: readonly TextureCubeFaceLevel[] }).cubeFaces = [];
     (this as { fallbackData: Uint8Array | null }).fallbackData = null;
     (this as { fallbackMipLevels: readonly TextureMipLevel[] }).fallbackMipLevels = [];
+    this.fallbackReplacement = null;
     this.mipOverrides.clear();
     this.mipRevisions.clear();
     this.fullContentRevision = 0;
@@ -396,6 +397,7 @@ export class Texture {
       + this.cubeFaces.reduce((sum, face) => sum + face.mipLevels.reduce((bytes, level) => bytes + level.data.byteLength, 0), 0)
       + (this.fallbackData?.byteLength ?? 0)
       + this.fallbackMipLevels.reduce((sum, level) => sum + level.data.byteLength, 0)
+      + (this.fallbackReplacement ?? []).reduce((sum, level) => sum + level.data.byteLength, 0)
       + [...this.mipOverrides.values()].reduce((sum, level) => sum + level.data.byteLength, 0);
   }
 
@@ -407,7 +409,8 @@ export class Texture {
   get fallbackTextureLevels(): readonly TextureMipLevel[] {
     // Compressed mip edits, including in-place edits marked dirty, invalidate
     // the decoded copy for every device. Metadata-only edits leave it intact.
-    if (isCompressedTextureFormat(this.format) && (this.mipOverrides.size > 0 || this.fallbackInvalid)) return [];
+    // A replacement supplied after the edit describes the current content.
+    if (isCompressedTextureFormat(this.format) && (this.mipOverrides.size > 0 || this.fallbackInvalid)) return this.fallbackReplacement ?? [];
     if (this.fallbackMipLevels.length > 0) return this.fallbackMipLevels;
     return this.fallbackData ? [{ width: this.width, height: this.height, data: this.fallbackData }] : [];
   }
@@ -425,6 +428,47 @@ export class Texture {
   private contentMarkPending = false;
   private uploadAcknowledgements = 0;
   private fallbackInvalid = false;
+  private fallbackReplacement: readonly TextureMipLevel[] | null = null;
+
+  /** True while a decoded fallback supplied by `replaceFallbackLevels` is current. */
+  get fallbackReplaced(): boolean {
+    return this.fallbackReplacement !== null && isCompressedTextureFormat(this.format) && (this.mipOverrides.size > 0 || this.fallbackInvalid);
+  }
+
+  /**
+   * Supply decoded RGBA8 fallback levels for the current compressed content.
+   * A compressed content edit invalidates the decoded fallback for every
+   * device; this installs its replacement (largest level first, matching the
+   * texture extent, one level per allocated mip for BC1 RGB). Levels are
+   * snapshotted. A later content edit invalidates them again, and devices
+   * upload them on the next revision.
+   */
+  public replaceFallbackLevels(levels: readonly TextureMipLevelDescriptor[]): void {
+    if (this.disposed) throw new Error("Cannot replace the fallback of a disposed texture");
+    if (!isCompressedTextureFormat(this.format)) throw new Error("Fallback levels are only valid for compressed textures");
+    if (this.dimension === "cube" || this.dimension === "3d") throw new Error("Decoded fallbacks are only supported for 2d and 2d-array compressed textures");
+    const cloned = cloneMipLevels(levels, "fallbackMipLevels");
+    validateMipDimensions(cloned, this.width, this.height, this.depth, this.dimension, "fallbackMipLevels");
+    if (cloned.length > this.mipLevelCount) throw new Error("Fallback levels cannot exceed the allocated mip levels");
+    for (const [index, level] of cloned.entries()) {
+      if (!(level.data instanceof Uint8Array) || level.data.byteLength !== level.width * level.height * this.layers * 4) {
+        throw new Error(`Compressed texture fallback mip level ${index} must contain exactly width * height * layers * 4 RGBA8 bytes`);
+      }
+    }
+    if (this.format === "bc1-rgb-unorm") {
+      if (cloned.length !== this.mipLevelCount) throw new Error("BC1 RGB fallback must contain every allocated mip level");
+      for (const level of cloned) {
+        for (let alpha = 3; alpha < level.data.byteLength; alpha += 4) {
+          if (level.data[alpha] !== 255) throw new Error("BC1 RGB fallback alpha must be opaque");
+        }
+      }
+    }
+    // The replacement supersedes the constructor fallback for the current content.
+    this.fallbackInvalid = true;
+    this.fallbackReplacement = cloned;
+    this._needsUpdate = true;
+    this.revision += 1;
+  }
 
   /** Current full-subresource data, or null if it has no CPU content or is disposed. */
   public getMipLevel(level: number, face?: TextureCubeFace): TextureMipLevel | null {
@@ -472,6 +516,7 @@ export class Texture {
       const expected = compressedTextureByteLength(width, height, this.format) * planes;
       if (data.byteLength !== expected) throw new Error(`Compressed mip ${level} for ${this.format} must contain ${expected} bytes`);
       this.mipOverrides.set(key, { width, height, data: clonePixelData(data) });
+      this.fallbackReplacement = null;
     } else {
       validateTexturePixelData(data, width * planes, height, this.format, `mip ${level}`);
       this.mipOverrides.set(key, { width, height, ...(this.dimension === "3d" ? { depth } : {}), data: clonePixelData(data) });
@@ -547,7 +592,7 @@ export class Texture {
     if (this.disposed) return;
     // A caller can modify exposed typed arrays even while a metadata update is
     // already pending; invalidation must not depend on the dirty flag.
-    if (isCompressedTextureFormat(this.format)) this.fallbackInvalid = true;
+    if (isCompressedTextureFormat(this.format)) { this.fallbackInvalid = true; this.fallbackReplacement = null; }
     if (this.contentMarkPending) return;
     this.recordContentChange();
   }
@@ -562,7 +607,7 @@ export class Texture {
   /** Record a distinct source frame even when an earlier frame is still dirty. */
   public recordContentChange(): void {
     if (this.disposed) return;
-    if (isCompressedTextureFormat(this.format)) this.fallbackInvalid = true;
+    if (isCompressedTextureFormat(this.format)) { this.fallbackInvalid = true; this.fallbackReplacement = null; }
     this._needsUpdate = true;
     this.revision += 1;
     this.fullContentRevision = this.revision;
