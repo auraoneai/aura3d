@@ -1,11 +1,15 @@
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial, TextureBinding } from "@aura3d/rendering";
 import * as pngDecoder from "../../../../packages/engine/src/agent-api/PngTexturePixels";
 import { resetSharedProductionTextureDecodes, texturePendingMs } from "../../../../packages/engine/src/agent-api/compiler/textures";
 
-const asset = (url: string) => defineAuraAssets({
-  map: { type: "texture", format: "png", url, hash: "fixture" }
+// Native 5.0: typed assets are verified against their declared digest. The default fetch stub serves the URL text, so
+// each fixture declares the real SHA-256 of that text (pass `bytes` when a test serves something else).
+const sha256 = (data: Uint8Array | string): string => createHash("sha256").update(data).digest("hex");
+const asset = (url: string, bytes: Uint8Array | string = url) => defineAuraAssets({
+  map: { type: "texture", format: "png", url, hash: sha256(bytes) }
 }).map;
 
 // Declared explicitly: deriving this from `resource`'s return type is circular because `resource` pushes into `resources`.
@@ -65,8 +69,8 @@ function runEntries(entries: Entry[], warn: (message: string) => void = () => un
   return pending;
 }
 const run = (values: Resource[], warn?: (message: string) => void): Promise<void> => runEntries([{ resources: values }], warn);
-const floor = (prefix: string): Resource[] =>
-  Array.from({ length: 4 }, (_, index) => resource(`${prefix}-${index}`, { texture: asset(`/${prefix}-${index}.png`) }));
+const floor = (prefix: string, count = 4): Resource[] =>
+  Array.from({ length: count }, (_, index) => resource(`${prefix}-${index}`, { texture: asset(`/${prefix}-${index}.png`) }));
 
 function source(value: Resource, uniform = "u_baseColorTexture") {
   const binding = value.texturedMaterial?.getParameter(uniform);
@@ -82,7 +86,7 @@ function browser(options: {
   const counts = new Map<string, number>();
   const starts: Decode[] = [];
   let unblocked = false;
-  const fetchMock = vi.fn(async (url: string) => {
+  const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
     const attempt = (counts.get(url) ?? 0) + 1;
     counts.set(url, attempt);
     return options.response?.(url, attempt) ?? new Response(url);
@@ -109,7 +113,15 @@ function browser(options: {
 
 const turn = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
-test("four blocked floor map sets do not prevent all four shared decal decodes from starting", async () => {
+/*
+ * Native 5.0: the 4.7.x look-ahead prefetch (822f9d071) and cache-only ready assembly (4e4a24a5e) bypassed the request
+ * policy and are not restored. Every test below is retargeted to the native queue's observable equivalent: at most
+ * PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY (4) resources work at once, every queued resource reads pending ("queued"),
+ * all maps of a started resource load together, a map shared by several resources decodes once, and disposal or
+ * failure releases exactly the leases a resource took. "Floors" are blocked resources that occupy workers; where a
+ * 4.7.x test relied on prefetch starting work behind four blocked floors, it now uses three, so one worker is free.
+ */
+test("four blocked floors hold the four workers; queued decals read pending, then share one decode per map", async () => {
   const mock = browser();
   const floors = floor("floor");
   const urls = ["/scorch.png", "/crack.png", "/hazard.png", "/bullet.png"];
@@ -118,17 +130,18 @@ test("four blocked floor map sets do not prevent all four shared decal decodes f
   );
   const warn = vi.fn();
   const done = run([...floors, ...decals], warn);
-  await vi.waitFor(() => expect(new Set(mock.starts.map(({ url }) => url))).toEqual(new Set([
-    "/floor-0.png", "/floor-1.png", "/floor-2.png", "/floor-3.png", ...urls
-  ])));
-  expect(mock.fetchMock).toHaveBeenCalledTimes(8);
+  await vi.waitFor(() => expect(mock.starts.map(({ url }) => url).sort()).toEqual(floors.map((_, i) => `/floor-${i}.png`)));
+  await turn();
+  expect(mock.fetchMock).toHaveBeenCalledTimes(4);
   expect(floors.map((value) => value.textureStage)).toEqual(floors.map((_, i) => `decode /floor-${i}.png`));
   expect(decals.every((value) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
   expect(decals.every((value) => texturePendingMs(value) !== undefined)).toBe(true);
 
-  for (const started of mock.starts.filter(({ url }) => urls.includes(url))) started.land();
-  await vi.waitFor(() => expect(decals.every((value) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
-  expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
+  // Freed workers take the decal sets round-robin, so the four distinct decal maps start together.
+  for (const started of mock.starts.filter(({ url }) => url.startsWith("/floor-"))) started.land();
+  await vi.waitFor(() => expect(new Set(mock.starts.map(({ url }) => url))).toEqual(new Set([
+    ...floors.map((_, i) => `/floor-${i}.png`), ...urls
+  ])));
   mock.unblock();
   await done;
   expect(warn).not.toHaveBeenCalled();
@@ -149,32 +162,37 @@ test("four blocked floor map sets do not prevent all four shared decal decodes f
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);
 });
 
-test.each(["fetch", "body", "decode"] as const)("look-ahead runs while the four workers are stalled at %s", async (phase) => {
+test.each(["fetch", "body", "decode"] as const)("a worker stalled at %s holds only its own slot; queued resources use the rest", async (phase) => {
   const releaseGates: (() => void)[] = [];
   unblockers.push(() => { for (const release of releaseGates) release(); });
   const mock = browser({
     response: (url) => {
-      const response = new Response(url);
-      if (!url.startsWith("/phase-floor-")) return response;
-      if (phase === "fetch") return new Promise<Response>((resolve) => { releaseGates.push(() => resolve(response)); });
+      if (!url.startsWith("/phase-floor-")) return new Response(url);
+      if (phase === "fetch") return new Promise<Response>((resolve) => { releaseGates.push(() => resolve(new Response(url))); });
       if (phase === "body") {
-        const read = response.arrayBuffer.bind(response);
-        response.arrayBuffer = async () => {
-          await new Promise<void>((resolve) => { releaseGates.push(resolve); });
-          return read();
-        };
+        // The policy transport streams the body: the stall is a body that delivered its first byte and then stops.
+        let release!: () => void;
+        const gate = new Promise<void>((resolve) => { release = resolve; });
+        releaseGates.push(release);
+        const bytes = new TextEncoder().encode(url);
+        let pulls = 0;
+        return new Response(new ReadableStream<Uint8Array>({
+          async pull(controller) {
+            if (pulls++ === 0) { controller.enqueue(bytes.slice(0, 1)); return; }
+            await gate;
+            controller.enqueue(bytes.slice(1));
+            controller.close();
+          }
+        }));
       }
-      return response;
+      return new Response(url);
     },
     hold: (url) => phase === "decode" && url.startsWith("/phase-floor-")
   });
-  const floors = floor("phase-floor");
+  const floors = floor("phase-floor", 3);
   const decals = Array.from({ length: 4 }, (_, i) => resource(`decal-${i}`, { texture: asset(`/phase-decal-${i}.png`) }));
   const done = run([...floors, ...decals]);
-  await vi.waitFor(() => {
-    expect(decals.every((_, i) => mock.starts.some(({ url }) => url === `/phase-decal-${i}.png`))).toBe(true);
-    expect(floors.map((value) => value.textureStage)).toEqual(floors.map((_, i) => `${phase} /phase-floor-${i}.png`));
-  });
+  await vi.waitFor(() => expect(floors.map((value) => value.textureStage)).toEqual(floors.map((_, i) => `${phase} /phase-floor-${i}.png`)));
   await vi.waitFor(() => expect(decals.every((value) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
   expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   for (const release of releaseGates) release();
@@ -183,46 +201,31 @@ test.each(["fetch", "body", "decode"] as const)("look-ahead runs while the four 
   expect([...floors, ...decals].every((value) => value.textureStatus === "textured")).toBe(true);
 });
 
-test("look-ahead is globally capped, map-set diverse, and counts abandoned unsettled work", async () => {
+test("work is capped at four workers and a queued resource disposed before its turn never fetches", async () => {
   const mock = browser();
   const firstFloors = floor("first-floor");
   const firstQueued = Array.from({ length: 20 }, (_, i) => resource(`first-${i}`, {
     texture: asset(`/first-${i}.png`), ...(i === 0 ? { normal: asset("/first-extra.png") } : {})
   }));
-  run([...firstFloors, ...firstQueued]);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(20));
-  expect(mock.fetchMock).toHaveBeenCalledTimes(20); // four actual workers + sixteen speculative URLs
-  expect(firstQueued.slice(0, 16).every((_, i) => mock.counts.get(`/first-${i}.png`) === 1)).toBe(true);
-  expect(mock.counts.has("/first-extra.png")).toBe(false);
-  for (let i = 1; i < 16; i += 1) mock.starts.find(({ url }) => url === `/first-${i}.png`)!.land();
-  await turn(); // Completed images still consume the bounded speculative budget while held.
-
-  const second = [...floor("second-floor"), resource("second-waiting", { texture: asset("/second-waiting.png") })];
-  run(second);
-  expect(mock.fetchMock).toHaveBeenCalledTimes(24);
-  expect(mock.counts.has("/second-waiting.png")).toBe(false);
-  const abandoned = mock.starts.find(({ url }) => url === "/first-0.png")!;
-  dispose(firstQueued[0]!);
-
-  const third = [...floor("third-floor"), resource("third-waiting", { texture: asset("/third-waiting.png") })];
-  run(third);
-  expect(mock.fetchMock).toHaveBeenCalledTimes(28);
-  expect(mock.counts.has("/third-waiting.png")).toBe(false);
-  abandoned.land();
-  await vi.waitFor(() => expect(abandoned.image.close).toHaveBeenCalledTimes(1));
+  const done = run([...firstFloors, ...firstQueued]);
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
   await turn();
-
-  const fourth = [...floor("fourth-floor"), resource("fourth-waiting", { texture: asset("/fourth-waiting.png") })];
-  run(fourth);
-  expect(mock.counts.get("/fourth-waiting.png")).toBe(1);
-  expect(mock.fetchMock).toHaveBeenCalledTimes(33);
-  for (const value of resources) dispose(value);
+  expect(mock.fetchMock).toHaveBeenCalledTimes(4); // four workers, no speculative fetches
+  expect(firstQueued.every((value) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
+  expect(firstQueued.every((_, i) => !mock.counts.has(`/first-${i}.png`))).toBe(true);
+  dispose(firstQueued[0]!);
   mock.unblock();
-  await Promise.all(runs);
+  await done;
+  expect(mock.counts.has("/first-0.png")).toBe(false);
+  expect(mock.counts.has("/first-extra.png")).toBe(false);
+  expect(firstQueued[0]!.textureStage).toBe("cancelled");
+  expect(firstQueued.slice(1).every((value, i) => value.textureStatus === "textured" && mock.counts.get(`/first-${i + 1}.png`) === 1)).toBe(true);
+  expect(mock.fetchMock).toHaveBeenCalledTimes(23);
+  for (const value of resources) dispose(value);
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);
 });
 
-test("extra base and extension maps start after the first map from each queued set", async () => {
+test("a started resource loads its base and extension maps together; a bad geometry check fails only its resource", async () => {
   const mock = browser();
   const first = resource("first", {
     texture: asset("/first.png"), normal: asset("/first-normal.png"), clearcoatMap: asset("/first-coat.png")
@@ -235,22 +238,29 @@ test("extra base and extension maps start after the first map from each queued s
   first.geometry.vertexBuffer.format.hasAttribute = firstUvCheck;
   broken.geometry.vertexBuffer.format.hasAttribute = brokenUvCheck;
   second.geometry.vertexBuffer.format.hasAttribute = secondUvCheck;
-  const values = [...floor("slot-floor"), first, broken, second];
-  const done = run(values);
-  expect(mock.fetchMock.mock.calls.map(([url]) => url).slice(4)).toEqual([
-    "/first.png", "/second.png", "/first-normal.png", "/second-glow.png", "/first-coat.png"
+  const warn = vi.fn();
+  const done = run([first, broken, second], warn);
+  // Every map of both started resources is in flight before any decode lands.
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
+  expect(mock.fetchMock.mock.calls.map(([url]) => url).sort()).toEqual([
+    "/first-coat.png", "/first-normal.png", "/first.png", "/second-glow.png", "/second.png"
   ]);
+  expect(first.textureStage?.split("; ")).toHaveLength(3);
+  expect(second.textureStage?.split("; ")).toHaveLength(2);
   expect(firstUvCheck).toHaveBeenCalledTimes(1);
   expect(brokenUvCheck).toHaveBeenCalledTimes(1);
   expect(secondUvCheck).toHaveBeenCalledTimes(1);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(9));
-  for (const value of values) dispose(value);
   mock.unblock();
   await done;
+  expect([first.textureStatus, broken.textureStatus, second.textureStatus]).toEqual(["textured", "fallback", "textured"]);
+  expect(warn).toHaveBeenCalledTimes(1);
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining("bad geometry"));
+  expect(mock.counts.has("/bad-check.png")).toBe(false);
+  for (const value of [first, broken, second]) dispose(value);
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);
 });
 
-test("a resource disposed between prefetch rounds cannot use its cached later URLs", async () => {
+test("a resource disposed while its maps load gives every started map back and never installs", async () => {
   const victim = resource("victim", {
     texture: asset("/before-disposal.png"), normal: asset("/after-disposal.png")
   });
@@ -260,18 +270,19 @@ test("a resource disposed between prefetch rounds cannot use its cached later UR
       return new Response(url);
     }
   });
-  const floors = floor("round-floor");
+  const floors = floor("round-floor", 2);
   const trigger = resource("trigger", { texture: asset("/dispose-trigger.png") });
   const values = [...floors, victim, trigger];
   const done = run(values);
-  expect(mock.fetchMock.mock.calls.map(([url]) => url).slice(4)).toEqual([
-    "/before-disposal.png", "/dispose-trigger.png"
-  ]);
-  expect(mock.counts.has("/after-disposal.png")).toBe(false);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(6));
-  const abandoned = mock.starts.find(({ url }) => url === "/before-disposal.png")!;
-  abandoned.land();
-  await vi.waitFor(() => expect(abandoned.image.close).toHaveBeenCalledTimes(1));
+  await vi.waitFor(() => expect(mock.counts.has("/dispose-trigger.png")).toBe(true));
+  // The victim's maps had no other holder, so disposal cancels their shared transports: both requests were started
+  // together, both are aborted, and neither is ever decoded.
+  const victimCalls = () => mock.fetchMock.mock.calls.filter(([url]) => url.endsWith("-disposal.png"));
+  await vi.waitFor(() => expect(victimCalls()).toHaveLength(2));
+  await vi.waitFor(() => expect(victimCalls().every(([, init]) => init?.signal?.aborted)).toBe(true));
+  await turn();
+  expect(mock.starts.filter(({ url }) => url.endsWith("-disposal.png"))).toHaveLength(0);
+  expect(victim.texturedMaterial).toBeNull();
   expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   for (const value of values) dispose(value);
   mock.unblock();
@@ -279,7 +290,9 @@ test("a resource disposed between prefetch rounds cannot use its cached later UR
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);
 });
 
-test("look-ahead ignores invalid refs, URLs, procedural inputs, live handles, and unusable geometry", async () => {
+test("nothing scans queued invalid refs, URLs, procedural inputs, live handles, or unusable geometry ahead of a worker", async () => {
+  // Native 5.0: with all four workers blocked, no queued input is touched speculatively (4.7.x look-ahead skipped
+  // these inputs; native never looks ahead). Disposal before any worker frees keeps every one of them unfetched.
   const mock = browser();
   const floors = floor("blocked");
   const badRef = (url: unknown, extra: Record<string, unknown> = {}) => ({
@@ -305,54 +318,42 @@ test("look-ahead ignores invalid refs, URLs, procedural inputs, live handles, an
   noUv1.geometry.vertexBuffer.format.hasAttribute = (name: string) => name !== "uv1";
   const good = resource("valid", { texture: asset("/valid.png") });
   const done = run([...floors, ...invalid, noUv, noUv1, good]);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
-  expect([...mock.counts.keys()].sort()).toEqual([
-    "/blocked-0.png", "/blocked-1.png", "/blocked-2.png", "/blocked-3.png", "/valid.png"
-  ]);
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
+  await turn();
+  expect([...mock.counts.keys()].sort()).toEqual(["/blocked-0.png", "/blocked-1.png", "/blocked-2.png", "/blocked-3.png"]);
+  expect(good.textureStage).toBe("queued");
   for (const value of [...floors, ...invalid, noUv, noUv1, good]) dispose(value);
   mock.unblock();
   await done;
+  expect([...mock.counts.keys()].sort()).toEqual(["/blocked-0.png", "/blocked-1.png", "/blocked-2.png", "/blocked-3.png"]);
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);
 });
 
-test("a failed prefetch retries when its resource starts and reports the real failure", async () => {
+test("a failed map load fails only its resource, warns once, and a later resource retries", async () => {
   const mock = browser({
     response: (url, attempt) => {
-      if (url === "/retry.png" && attempt === 1) return new Response("prefetch", { status: 503 });
-      if (url === "/failure.png" && attempt < 3) return new Response("failure", { status: attempt === 1 ? 503 : 404 });
+      if (url === "/failure.png" && attempt === 1) return new Response("failure", { status: 404 });
       return new Response(url);
     },
-    hold: (url) => url.startsWith("/failure-floor-")
+    hold: () => false
   });
-  const floors = floor("failure-floor");
-  const retry = resource("retry", { texture: asset("/retry.png") });
+  const healthy = resource("healthy", { texture: asset("/healthy.png") });
   const failure = resource("failure", { texture: asset("/failure.png") });
   const warn = vi.fn();
-  const done = run([...floors, retry, failure], warn);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
-  await turn();
-  expect(mock.counts.get("/retry.png")).toBe(1);
+  await run([healthy, failure], warn);
+  expect(healthy.textureStatus).toBe("textured");
   expect(mock.counts.get("/failure.png")).toBe(1);
-  expect(warn).not.toHaveBeenCalled();
-  expect([retry.textureStage, failure.textureStage]).toEqual(["queued", "queued"]);
-  // The queue head may have a lease-free disposal watcher; the other failed
-  // prefetch must release its speculative owner immediately.
-  expect(failure.textureDisposer).toBeUndefined();
-  mock.unblock();
-  await done;
-  expect(mock.counts.get("/retry.png")).toBe(2);
-  expect(retry.textureStatus).toBe("textured");
-  expect(mock.counts.get("/failure.png")).toBe(2);
   expect(failure.textureStatus).toBe("fallback");
   expect(failure.textureStage).toBe("failed");
   expect(warn).toHaveBeenCalledTimes(1);
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining("status 404 for /failure.png"));
+  // Transport errors are redacted on the policy path (they can carry signed URLs); the resource is still named.
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('textured upgrade failed for "failure"'));
   expect(failure.textureWarnings).toEqual([warn.mock.calls[0]![0]]);
 
   const later = resource("later-retry", { texture: asset("/failure.png") });
   await run([later], warn);
   expect(later.textureStatus).toBe("textured");
-  expect(mock.counts.get("/failure.png")).toBe(3);
+  expect(mock.counts.get("/failure.png")).toBe(2);
   expect(warn).toHaveBeenCalledTimes(1);
 });
 
@@ -373,17 +374,17 @@ test("a bad queued geometry check is reported by its real worker, not by specula
   expect(mock.counts.has("/broken.png")).toBe(false);
 });
 
-test("disposing a ready owner immediately closes its decoded image while workers remain blocked", async () => {
+test("disposing a ready owner immediately closes its decoded image while other workers remain blocked", async () => {
   const mock = browser();
-  const floors = floor("dispose-floor");
+  const floors = floor("dispose-floor", 3);
   const owner = resource("owner", { texture: asset("/disposed.png") });
   const previousDisposer = vi.fn();
   owner.textureDisposer = previousDisposer;
   const done = run([...floors, owner]);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
   const image = mock.starts.find(({ url }) => url === "/disposed.png")!.image;
   mock.starts.find(({ url }) => url === "/disposed.png")!.land();
-  await turn();
+  await vi.waitFor(() => expect(owner.textureStatus).toBe("textured"));
   expect(image.close).not.toHaveBeenCalled();
   dispose(owner);
   expect(image.close).toHaveBeenCalledTimes(1);
@@ -395,58 +396,68 @@ test("disposing a ready owner immediately closes its decoded image while workers
   expect(image.close).toHaveBeenCalledTimes(1);
 });
 
-test("an active worker takes ownership of an in-flight prefetch and reports its real decode stage", async () => {
+test("a queued resource joins an in-flight shared decode without a second fetch and reports its decode stage", async () => {
   const mock = browser();
-  const floors = floor("transfer-floor");
+  const floors = floor("transfer-floor", 3);
+  const leader = resource("leader", { texture: asset("/transfer.png") });
   const queued = resource("queued", { texture: asset("/transfer.png") });
-  const done = run([...floors, queued]);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
-  const prefetched = mock.starts.find(({ url }) => url === "/transfer.png")!;
+  const done = run([...floors, leader, queued]);
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
+  expect(queued.textureStage).toBe("queued");
+  const inFlight = mock.starts.find(({ url }) => url === "/transfer.png")!;
   mock.starts.find(({ url }) => url === "/transfer-floor-0.png")!.land();
   await vi.waitFor(() => expect(queued.textureStage).toBe("decode /transfer.png"));
   expect(mock.counts.get("/transfer.png")).toBe(1);
-  prefetched.land();
+  inFlight.land();
   await vi.waitFor(() => expect(queued.textureStatus).toBe("textured"));
-  expect(source(queued).source).toBe(prefetched.image);
-  expect(prefetched.image.close).not.toHaveBeenCalled();
+  expect(source(queued).source).toBe(inFlight.image);
+  expect(source(leader).source).toBe(inFlight.image);
+  dispose(leader);
+  expect(inFlight.image.close).not.toHaveBeenCalled();
   dispose(queued);
-  expect(prefetched.image.close).toHaveBeenCalledTimes(1);
+  expect(inFlight.image.close).toHaveBeenCalledTimes(1);
   expect(floors.slice(1).every((value) => value.textureStatus === "pending")).toBe(true);
   mock.unblock();
   await done;
-  expect(prefetched.image.close).toHaveBeenCalledTimes(1);
+  expect(inFlight.image.close).toHaveBeenCalledTimes(1);
 });
 
 test("a worker rejection preserves a completed ready material's image ownership", async () => {
   const mock = browser();
-  const floors = floor("exception-floor");
+  const floors = floor("exception-floor", 3);
   const queued = resource("queued", { texture: asset("/queued.png") });
   const done = run([...floors, queued], () => { throw new Error("warning sink failed"); });
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
-  const prefetched = mock.starts.find(({ url }) => url === "/queued.png")!;
-  prefetched.land();
-  await turn();
-  expect(prefetched.image.close).not.toHaveBeenCalled();
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(4));
+  const ready = mock.starts.find(({ url }) => url === "/queued.png")!;
+  ready.land();
+  await vi.waitFor(() => expect(queued.textureStatus).toBe("textured"));
+  expect(ready.image.close).not.toHaveBeenCalled();
   mock.starts.find(({ url }) => url === "/exception-floor-0.png")!.fail(new Error("decode failure"));
-  await expect(done).rejects.toThrow("warning sink failed");
+  // Native 5.0: the pass settles once its in-flight workers settle, so the rejection is observed after they finish.
+  let rejected: unknown;
+  void done.catch((error: unknown) => { rejected = error; });
+  await vi.waitFor(() => expect(floors[0]!.textureStatus).toBe("fallback"));
   expect(queued.textureStatus).toBe("textured");
-  expect(prefetched.image.close).not.toHaveBeenCalled();
+  expect(ready.image.close).not.toHaveBeenCalled();
   expect(queued.textureDisposer).toBeDefined();
   expect(floors.slice(1).every((value) => value.textureStatus === "pending")).toBe(true);
   for (const value of [...floors, queued]) dispose(value);
-  expect(prefetched.image.close).toHaveBeenCalledTimes(1);
+  expect(ready.image.close).toHaveBeenCalledTimes(1);
   mock.unblock();
   await vi.waitFor(() => expect(floors.slice(1).every((value) => value.textureStage === "cancelled")).toBe(true));
+  await vi.waitFor(() => expect(rejected).toBeInstanceOf(Error));
+  expect((rejected as Error).message).toContain("warning sink failed");
 });
 
-test("a cancelled pending prefetch closes on arrival and a replacement never reuses it", async () => {
+test("a cancelled pending decode closes on arrival and a replacement never reuses it", async () => {
   const mock = browser();
-  const floors = floor("late-floor");
+  const floors = floor("late-floor", 3);
   const owner = resource("owner", { texture: asset("/late.png") });
   const remaining = resource("remaining", { texture: asset("/late.png") });
   const warn = vi.fn();
   const done = run([...floors, owner, remaining], warn);
   await vi.waitFor(() => expect(mock.starts.filter(({ url }) => url === "/late.png")).toHaveLength(1));
+  expect(remaining.textureStage).toBe("queued");
   const old = mock.starts.find(({ url }) => url === "/late.png")!;
   dispose(owner);
   expect(old.image.close).not.toHaveBeenCalled();
@@ -459,14 +470,13 @@ test("a cancelled pending prefetch closes on arrival and a replacement never reu
   fresh.land();
   await replacementDone;
   expect(source(replacement).source).toBe(fresh.image);
-  await vi.waitFor(() => expect(remaining.textureStatus).toBe("textured"));
-  expect(source(remaining).source).toBe(fresh.image);
-  expect(fresh.image.close).not.toHaveBeenCalled();
-  dispose(replacement);
-  expect(fresh.image.close).not.toHaveBeenCalled();
+  // The queued sibling starts once a worker frees and joins the live replacement decode, never the cancelled one.
   mock.unblock();
   await done;
+  expect(remaining.textureStatus).toBe("textured");
+  expect(source(remaining).source).toBe(fresh.image);
   expect(mock.starts.filter(({ url }) => url === "/late.png")).toHaveLength(2);
+  dispose(replacement);
   expect(fresh.image.closed).toBe(false);
   expect(warn).not.toHaveBeenCalled();
   dispose(remaining);
@@ -474,9 +484,9 @@ test("a cancelled pending prefetch closes on arrival and a replacement never reu
   expect(old.image.close).toHaveBeenCalledTimes(1);
 });
 
-test("a cancelled prefetch can reject later without warning or an unhandled rejection", async () => {
+test("a cancelled decode can reject later without warning or an unhandled rejection", async () => {
   const mock = browser();
-  const floors = floor("reject-floor");
+  const floors = floor("reject-floor", 3);
   const owner = resource("cancelled", { texture: asset("/reject.png") });
   const warn = vi.fn();
   const done = run([...floors, owner], warn);
@@ -492,7 +502,7 @@ test("a cancelled prefetch can reject later without warning or an unhandled reje
   expect(warn).not.toHaveBeenCalled();
 });
 
-test("disposal re-entering from fetch still releases the not-yet-returned prefetch lease", async () => {
+test("disposal re-entering from fetch still releases the not-yet-returned decode lease", async () => {
   let owner!: Resource;
   const mock = browser({
     response: (url) => {
@@ -500,29 +510,30 @@ test("disposal re-entering from fetch still releases the not-yet-returned prefet
       return new Response(url);
     }
   });
-  const floors = floor("reentrant-floor");
+  const floors = floor("reentrant-floor", 3);
   owner = resource("reentrant", { texture: asset("/reentrant.png") });
   const warn = vi.fn();
   const done = run([...floors, owner], warn);
-  await vi.waitFor(() => expect(mock.starts.filter(({ url }) => url === "/reentrant.png")).toHaveLength(1));
-  const late = mock.starts.find(({ url }) => url === "/reentrant.png")!;
-  late.land();
-  await vi.waitFor(() => expect(late.image.close).toHaveBeenCalledTimes(1));
+  // Native 5.0: the last holder left during fetch, so the shared transport is cancelled and never decodes.
+  await vi.waitFor(() => expect(mock.fetchMock.mock.calls.find(([url]) => url === "/reentrant.png")?.[1]?.signal?.aborted).toBe(true));
+  await turn();
+  expect(mock.starts.filter(({ url }) => url === "/reentrant.png")).toHaveLength(0);
   expect(floors.every((value) => value.textureStatus === "pending")).toBe(true);
   mock.unblock();
   await done;
   expect(warn).not.toHaveBeenCalled();
-  expect(late.image.close).toHaveBeenCalledTimes(1);
+  expect(owner.texturedMaterial).toBeNull();
 });
 
-test("disposing a prefetch owner releases only its lease when another resource shares the decode", async () => {
+test("disposing one owner releases only its lease when another resource shares the decode", async () => {
   const mock = browser();
-  const floors = floor("shared-floor");
+  const floors = floor("shared-floor", 3);
   const owner = resource("queued-owner", { texture: asset("/shared.png") });
   const done = run([...floors, owner]);
   await vi.waitFor(() => expect(mock.starts.filter(({ url }) => url === "/shared.png")).toHaveLength(1));
   const active = resource("active", { texture: asset("/shared.png") });
   const activeDone = run([active]);
+  await vi.waitFor(() => expect(active.textureStage).toBe("decode /shared.png"));
   expect(mock.counts.get("/shared.png")).toBe(1);
   const image = mock.starts.find(({ url }) => url === "/shared.png")!;
   image.land();
@@ -537,7 +548,7 @@ test("disposing a prefetch owner releases only its lease when another resource s
   expect(image.image.close).toHaveBeenCalledTimes(1);
 });
 
-test("runtime-added entries receive their own look-ahead in the next sweep", async () => {
+test("runtime-added entries join the next sweep of the same pass and read queued until a worker frees", async () => {
   const mock = browser();
   const first = floor("initial");
   const entries: Entry[] = [{ resources: first }];
@@ -550,7 +561,7 @@ test("runtime-added entries receive their own look-ahead in the next sweep", asy
   entries.push({ resources: [...laterFloors, ...laterDecals] });
   expect(laterDecals.every((value) => value.textureStatus === "none")).toBe(true);
   for (const started of mock.starts.filter(({ url }) => url.startsWith("/initial-"))) started.land();
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(12));
+  await vi.waitFor(() => expect(mock.starts).toHaveLength(8));
   expect(laterFloors.map((value) => value.textureStage)).toEqual(laterFloors.map((_, i) => `decode /added-floor-${i}.png`));
   expect(laterDecals.every((value) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
   mock.unblock();
@@ -558,7 +569,7 @@ test("runtime-added entries receive their own look-ahead in the next sweep", asy
   expect([...first, ...laterFloors, ...laterDecals].every((value) => value.textureStatus === "textured")).toBe(true);
 });
 
-test("prefetched PNGs stay lazy and preserve exact transparent scalar pixels", async () => {
+test("shared PNGs stay lazy for GPU-only users and preserve exact transparent scalar pixels", async () => {
   const png = Uint8Array.from(Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAG0lEQVR4nGP4IBjNwHOCnZHhnuLJercJe/8DADUDBxKxTfM3AAAAAElFTkSuQmCC",
     "base64"
@@ -570,16 +581,15 @@ test("prefetched PNGs stay lazy and preserve exact transparent scalar pixels", a
     hold: (url) => url.startsWith("/pixels-floor-")
   });
   const decode = vi.spyOn(pngDecoder, "decodePngTexturePixels");
-  const floors = floor("pixels-floor");
-  const color = resource("color", { texture: asset("/transparent.png") });
-  const scalar = resource("scalar", { roughnessMap: asset("/transparent.png"), metalnessMap: asset("/transparent.png") });
-  const done = run([...floors, color, scalar]);
-  await vi.waitFor(() => expect(mock.starts).toHaveLength(5));
+  const floors = floor("pixels-floor", 3);
+  const color = resource("color", { texture: asset("/transparent.png", png) });
+  const done = run([...floors, color]);
+  await vi.waitFor(() => expect(color.textureStage).toBe("done"));
   await turn();
+  // GPU-only use never starts the CPU PNG decoder.
   expect(decode).not.toHaveBeenCalled();
-  expect([color.textureStage, scalar.textureStage]).toEqual(["done", "queued"]);
-  mock.unblock();
-  await done;
+  const scalar = resource("scalar", { roughnessMap: asset("/transparent.png", png), metalnessMap: asset("/transparent.png", png) });
+  await run([scalar]);
   expect(mock.counts.get("/transparent.png")).toBe(1);
   expect(decode).toHaveBeenCalledTimes(1);
   expect([...source(scalar, "u_metallicRoughnessTexture").data!]).toEqual([
@@ -592,4 +602,6 @@ test("prefetched PNGs stay lazy and preserve exact transparent scalar pixels", a
   expect(image.close).not.toHaveBeenCalled();
   dispose(scalar);
   expect(image.close).toHaveBeenCalledTimes(1);
+  mock.unblock();
+  await done;
 });

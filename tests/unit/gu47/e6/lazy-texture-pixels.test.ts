@@ -1,8 +1,10 @@
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, TextureHandle, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial, Texture, TextureBinding } from "@aura3d/rendering";
 import * as pngDecoder from "../../../../packages/engine/src/agent-api/PngTexturePixels";
 import {
+  acquirePreparedProductionTextureImage,
   acquireSharedProductionTextureImage,
   auraTextureRefPixels,
   bitmapRgbaPixels,
@@ -12,6 +14,7 @@ import {
   productionPrimitiveBitmapPixels,
   resetSharedProductionTextureDecodes
 } from "../../../../packages/engine/src/agent-api/compiler/textures";
+import { prepareBitmapAssetLoad } from "../../../../packages/engine/src/agent-api/compiler/bitmapAsset";
 import { createProductionRuntimeBackgroundImage } from "../../../../packages/engine/src/agent-api/compiler/backgroundImage";
 import { createCustomShaderMaterial } from "../../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { upgradeCustomMaterialTextures } from "../../../../packages/engine/src/agent-api/compiler/customTextures";
@@ -36,10 +39,16 @@ const composite = [
   255, 17, 91, 255, 255, 200, 7, 255,
   255, 33, 201, 255, 255, 144, 189, 255
 ];
+// Native 5.0: typed assets are verified against their declared digest before decoding, so each fixture declares the
+// real SHA-256 of the bytes its fetch stub serves (every default stub serves `png`).
+const sha256 = (data: Uint8Array): string => createHash("sha256").update(data).digest("hex");
 const assets = defineAuraAssets({
-  map: { type: "texture", format: "png", url: "/transparent.png", hash: "fixture" },
-  other: { type: "texture", format: "png", url: "/other.png", hash: "other" }
+  map: { type: "texture", format: "png", url: "/transparent.png", hash: sha256(png) },
+  other: { type: "texture", format: "png", url: "/other.png", hash: sha256(png) }
 });
+/** The `/transparent.png` asset declaring the digest of different served bytes. */
+const mapServing = (data: Uint8Array) =>
+  defineAuraAssets({ map: { type: "texture", format: "png", url: "/transparent.png", hash: sha256(data) } }).map;
 const actualDecode = pngDecoder.decodePngTexturePixels;
 
 class FakeBitmap {
@@ -106,7 +115,7 @@ function boundTexture(value: ReturnType<typeof resource>, uniform: string): Text
   return (binding as TextureBinding).texture!;
 }
 
-async function fallbackColor(name: string) {
+async function fallbackColor(name: string, map: typeof assets.map = assets.map) {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   class FallbackImage {
     readonly width = 2;
@@ -120,7 +129,7 @@ async function fallbackColor(name: string) {
   vi.stubGlobal("createImageBitmap", vi.fn(() => new Promise(() => undefined)));
   vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:ref-fixture");
   const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
-  const color = resource(name, { texture: assets.map });
+  const color = resource(name, { texture: map });
   const pending = run([color]);
   await vi.waitFor(() => expect(color.textureStage).toBe("decode /transparent.png"));
   await vi.advanceTimersByTimeAsync(PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS);
@@ -186,7 +195,9 @@ test("an explicit cache lease keeps a shared image alive for a texture handle", 
   const color = resource("leased-color", { texture: assets.map });
   await run([color]);
   const source = boundTexture(color, "u_baseColorTexture").source as ImageBitmap;
-  const lease = acquireSharedProductionTextureImage("/transparent.png");
+  // Native 5.0: typed maps share decodes per request identity, not per bare URL, so the explicit lease is taken
+  // through the same typed asset's prepared request (a bare-URL lease is a different identity).
+  const lease = await acquirePreparedProductionTextureImage(prepareBitmapAssetLoad(assets.map));
   const handle = new TextureHandle(new Texture({ width: 2, height: 2, source }));
   try {
     expect(await lease.image).toBe(source);
@@ -668,11 +679,14 @@ test("a failed cube face closes completed and late-arriving sibling images", asy
   backgrounds.push(background);
   await vi.waitFor(() => expect(bitmaps).toHaveLength(4));
   fail();
-  await vi.waitFor(() => expect(warn).toHaveBeenCalledWith(expect.stringContaining("status 404")));
+  // Native 5.0: transport errors are redacted (they can carry a signed URL), so the warning names the generic failure.
+  await vi.waitFor(() => expect(warn).toHaveBeenCalledWith(expect.stringContaining("Bitmap texture acquisition or decoding failed")));
   expect(bitmaps.every((bitmap) => bitmap.close.mock.calls.length === 1)).toBe(true);
+  // Native 5.0: the failure cancels the sibling transports, so the late face is never decoded (4.7.x decoded it and
+  // closed it on arrival). Either way no late image survives.
   finishLate();
-  await vi.waitFor(() => expect(bitmaps).toHaveLength(5));
-  await vi.waitFor(() => expect(bitmaps[4]!.close).toHaveBeenCalledTimes(1));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(bitmaps).toHaveLength(4);
   expect(background.current()).toBeUndefined();
   background.dispose();
   expect(bitmaps.every((bitmap) => bitmap.close.mock.calls.length === 1)).toBe(true);
@@ -692,9 +706,11 @@ test("disposing a pending cube background closes completed and later faces once"
   await vi.waitFor(() => expect(bitmaps).toHaveLength(5));
   background.dispose();
   await vi.waitFor(() => expect(bitmaps.every((bitmap) => bitmap.close.mock.calls.length === 1)).toBe(true));
+  // Native 5.0: disposal cancels the pending transport, so the late face is never decoded (4.7.x decoded it and
+  // closed it on arrival). Either way no late image survives.
   finishLate();
-  await vi.waitFor(() => expect(bitmaps).toHaveLength(6));
-  await vi.waitFor(() => expect(bitmaps[5]!.close).toHaveBeenCalledTimes(1));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(bitmaps).toHaveLength(5);
   expect(background.current()).toBeUndefined();
   expect(warn).not.toHaveBeenCalled();
 });
@@ -712,7 +728,8 @@ test("unsupported PNG layouts retain the existing canvas fallback for scalar map
     }))
   });
   const decode = vi.spyOn(pngDecoder, "decodePngTexturePixels");
-  const value = resource("canvas-fallback", { roughnessMap: assets.map, metalnessMap: assets.map });
+  const map = mapServing(unsupported);
+  const value = resource("canvas-fallback", { roughnessMap: map, metalnessMap: map });
   await run([value]);
   expect(value.textureStatus).toBe("textured");
   expect([...boundTexture(value, "u_metallicRoughnessTexture").data!]).toEqual(composite);
@@ -725,7 +742,7 @@ test("unsupported shared PNG layouts still use canvas for fallback-image texture
   unsupported[25] = 3;
   vi.mocked(fetch).mockImplementation(async () => new Response(unsupported.slice()));
   const decode = vi.spyOn(pngDecoder, "decodePngTexturePixels");
-  const { source } = await fallbackColor("unsupported-ref-color");
+  const { source } = await fallbackColor("unsupported-ref-color", mapServing(unsupported));
   const drawImage = vi.fn();
   const canvasPixels = Uint8ClampedArray.from([
     0, 0, 0, 0, 0, 0, 0, 1,

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { afterEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial } from "@aura3d/rendering";
@@ -7,7 +8,10 @@ import { resetSharedProductionTextureDecodes, texturePendingMs } from "../../../
  * GU47 e6 (g09 handoff): a textured-material row stuck in `pending` gave no hint of where it waited. The upgrade now
  * records its last step (`stage`) and, while pending, how long it has waited (`pendingMs`).
  */
-const assets = defineAuraAssets({ map: { type: "texture", format: "png", url: "/map.png", hash: "fixture" } });
+// Native 5.0: the policy transport verifies the declared digest, so declare the real SHA-256 of the served bytes.
+const BYTES = [0, 1, 2, 3];
+const SHA256 = createHash("sha256").update(Uint8Array.from(BYTES)).digest("hex");
+const assets = defineAuraAssets({ map: { type: "texture", format: "png", url: "/map.png", hash: SHA256 } });
 // GU47 e6 phase 8: decodes are shared per URL across calls; a stalled fixture decode must not leak into the next test.
 afterEach(() => { vi.unstubAllGlobals(); resetSharedProductionTextureDecodes(); });
 function resource(name: string, materialSpec: Record<string, unknown>) {
@@ -30,7 +34,7 @@ test("a pending upgrade names the fetch it waits on and how long it has waited",
 });
 
 test("a finished upgrade reports stage done and no pendingMs", async () => {
-  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([0, 1, 2, 3]))));
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(Uint8Array.from(BYTES))));
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1, height: 1, close: vi.fn() })));
   const value = resource("ok", { texture: assets.map });
   await run([value]);
@@ -49,8 +53,8 @@ test("a failed upgrade reports stage failed", async () => {
 });
 
 test("every queued resource reads pending, and one stalled fetch does not hold the others back", async () => {
-  const slow = defineAuraAssets({ stall: { type: "texture", format: "png", url: "/stall.png", hash: "stall" } });
-  vi.stubGlobal("fetch", vi.fn((url: string) => url.includes("stall") ? new Promise<Response>(() => undefined) : Promise.resolve(new Response(new Uint8Array([0, 1, 2, 3])))));
+  const slow = defineAuraAssets({ stall: { type: "texture", format: "png", url: "/stall.png", hash: SHA256 } });
+  vi.stubGlobal("fetch", vi.fn((url: string) => url.includes("stall") ? new Promise<Response>(() => undefined) : Promise.resolve(new Response(Uint8Array.from(BYTES)))));
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1, height: 1, close: vi.fn() })));
   const stalled = resource("stalled", { texture: slow.stall });
   const later = [resource("a", { texture: assets.map }), resource("b", { texture: assets.map })];
@@ -65,7 +69,7 @@ test("every queued resource reads pending, and one stalled fetch does not hold t
 });
 
 test("a decode that never settles is named as decode, not fetch", async () => {
-  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([0, 1, 2, 3]))));
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(Uint8Array.from(BYTES))));
   vi.stubGlobal("createImageBitmap", vi.fn(() => new Promise(() => undefined)));
   const value = resource("decoding", { texture: assets.map });
   void run([value]);

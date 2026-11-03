@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { afterEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial, type Texture } from "@aura3d/rendering";
@@ -14,12 +15,17 @@ import type { AuraCustomMaterialSpec, ProductionRuntimePrimitiveEntry } from "..
  * GU47 e6 phase 8 (shared decodes): Bunker Zero builds 188 textured materials over ~20 map URLs, and each material used
  * to fetch and decode its own copy of every map. Decodes are now shared per URL (refcounted), and a material's maps
  * start decoding together.
+ *
+ * Native 5.0: typed assets go through the policy transport, which verifies the declared SHA-256 before decoding, so
+ * each fixture declares the real digest of the bytes its fetch stub serves (every stub serves the same JPG bytes).
  */
+const JPG_BYTES = [0xff, 0xd8, 0xff, 0xd9];
+const JPG_SHA256 = createHash("sha256").update(Uint8Array.from(JPG_BYTES)).digest("hex");
 const assets = defineAuraAssets({
-  color: { type: "texture", format: "jpg", url: "/bz-color.jpg", hash: "c" },
-  normal: { type: "texture", format: "jpg", url: "/bz-normal.jpg", hash: "n" },
-  ao: { type: "texture", format: "jpg", url: "/bz-ao.jpg", hash: "a" },
-  glow: { type: "texture", format: "jpg", url: "/bz-glow.jpg", hash: "g" }
+  color: { type: "texture", format: "jpg", url: "/bz-color.jpg", hash: JPG_SHA256 },
+  normal: { type: "texture", format: "jpg", url: "/bz-normal.jpg", hash: JPG_SHA256 },
+  ao: { type: "texture", format: "jpg", url: "/bz-ao.jpg", hash: JPG_SHA256 },
+  glow: { type: "texture", format: "jpg", url: "/bz-glow.jpg", hash: JPG_SHA256 }
 });
 
 type FakeBitmap = { width: number; height: number; close: ReturnType<typeof vi.fn>; closed: boolean; url: string };
@@ -28,7 +34,7 @@ let bitmaps: FakeBitmap[] = [];
 
 function stubBrowser(fetchImpl?: (url: string) => Promise<Response>) {
   bitmaps = [];
-  const fetchMock = vi.fn(fetchImpl ?? (async (url: string) => new Response(new Uint8Array([0xff, 0xd8, 0xff, 0xd9]), { headers: { "x-url": url } })));
+  const fetchMock = vi.fn(fetchImpl ?? (async (url: string) => new Response(Uint8Array.from(JPG_BYTES), { headers: { "x-url": url } })));
   vi.stubGlobal("fetch", fetchMock);
   vi.stubGlobal("createImageBitmap", vi.fn(async () => {
     const value: FakeBitmap = { width: 4, height: 4, closed: false, url: "", close: vi.fn(() => { value.closed = true; }) };
@@ -77,7 +83,7 @@ test("N materials referencing the same two URLs fetch and decode each URL once",
 test("the maps of one material start decoding together, not one after another", async () => {
   const gates = new Map<string, () => void>();
   const fetchMock = stubBrowser((url) => new Promise<Response>((resolve) => {
-    gates.set(url, () => resolve(new Response(new Uint8Array([0xff, 0xd8, 0xff, 0xd9]))));
+    gates.set(url, () => resolve(new Response(Uint8Array.from(JPG_BYTES))));
   }));
   const value = resource("panel", { texture: assets.color, normal: assets.normal, occlusionMap: assets.ao, emissiveMap: assets.glow });
   const done = run([value]);
@@ -138,7 +144,7 @@ test("a decode whose every holder left before it landed is closed on arrival and
 
 test("a failed decode leaves the cache, so the next material retries", async () => {
   let attempt = 0;
-  stubBrowser(async () => (attempt++ === 0 ? new Response("absent", { status: 404 }) : new Response(new Uint8Array([0xff, 0xd8, 0xff, 0xd9]))));
+  stubBrowser(async () => (attempt++ === 0 ? new Response("absent", { status: 404 }) : new Response(Uint8Array.from(JPG_BYTES))));
   const failed = resource("failed", { texture: assets.color });
   await run([failed]);
   expect(failed.textureStatus).toBe("fallback");
@@ -152,8 +158,11 @@ test("custom-material asset textures share the decode with PBR maps and load the
   const custom: AuraCustomMaterialSpec = {
     glsl: { fragment: "out vec4 outColor;\nvoid main() { outColor = texture(map, vec2(0.5)) + texture(mask, vec2(0.5)); }" },
     uniforms: {
-      map: { type: "texture2d", value: { kind: "aura-asset-ref", type: "texture", id: "color", url: "/bz-color.jpg" } },
-      mask: { type: "texture2d", value: { kind: "aura-asset-ref", type: "texture", id: "ao", url: "/bz-ao.jpg" } }
+      // Native 5.0: the typed refs themselves (format + digest), so the custom uniforms carry the same request
+      // identity as the PBR map and may share its decode. Hand-built refs without a format are rejected, and refs
+      // without the digest are a different identity (integrity is part of it), so they would not share.
+      map: { type: "texture2d", value: assets.color },
+      mask: { type: "texture2d", value: assets.ao }
     }
   } as unknown as AuraCustomMaterialSpec;
   const material = createCustomShaderMaterial(custom, "primitive-box");

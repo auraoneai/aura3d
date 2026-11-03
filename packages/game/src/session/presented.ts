@@ -39,7 +39,11 @@ export async function awaitFirstPresentedDraw(
 type ReadinessOutcome =
   | { readonly state: "ready" }
   | { readonly state: "failed"; readonly code: string; readonly message: string }
-  | { readonly state: "cancelled" | "disposed" };
+  | { readonly state: "cancelled" | "disposed" }
+  // Mirrors `AuraReadyOutcome` in @aura3d/engine: the awaited mount was replaced
+  // by a newer one. Like a superseded render termination, the wait retries
+  // against the current mount instead of failing.
+  | { readonly state: "superseded" };
 
 type RenderTermination =
   | { readonly state: "failed"; readonly code: string; readonly message: string; readonly revision?: number }
@@ -181,6 +185,7 @@ export async function awaitGamePresentedDraw(
           continue;
         }
         const outcome = renderer.value;
+        if (outcome.state === "superseded") continue;
         if (outcome.state === "cancelled") {
           handleCancellation();
           continue;
@@ -207,6 +212,7 @@ export async function awaitGamePresentedDraw(
         }
         if (first.value.kind === "first-frame") {
           const outcome = first.value.outcome;
+          if (outcome.state === "superseded") continue;
           if (outcome.state === "cancelled") {
             handleCancellation();
             continue;

@@ -212,36 +212,14 @@ describe("Bunker Zero queued surface prefetch", () => {
     return { blocked, queued, blockerUrls, targetUrls, fetched, started, warnings, release, done, wall, color, normal };
   }
 
-  it("prefetches and binds the real wall color and normal refs while four decal workers are blocked", async () => {
+  // Native 5.0: the 4.7.x look-ahead prefetch (822f9d071) and cache-only ready assembly (4e4a24a5e) bypassed the
+  // request policy and are not restored. These tests now pin the native queue: a resource waits "queued" (no fetch)
+  // while the four workers are busy, then loads both maps together and binds the exact decoded images.
+  it("keeps the real wall color and normal refs queued behind four blocked decal workers, then binds them", async () => {
     expect(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY).toBe(4);
     const run = startQueue();
     expect(run.color).toBe(run.wall.color);
     expect(run.normal).toBe(run.wall.normal);
-    await vi.waitFor(() => {
-      expect(run.blocked.every((resource) => resource.textureStatus === "pending" && resource.textureStage?.startsWith("decode "))).toBe(true);
-      expect(run.targetUrls.every((url) => run.started.has(url))).toBe(true);
-      expect(run.queued.textureStatus).toBe("textured");
-    });
-    expect(run.queued.textureStage).toBe("done");
-    expect(run.blocked.every((resource) => resource.textureStatus === "pending")).toBe(true);
-    expect(run.fetched).toHaveLength(6);
-    for (const url of [...run.blockerUrls, ...run.targetUrls]) {
-      expect(run.fetched.filter((fetched) => fetched === url)).toHaveLength(1);
-    }
-    for (const [uniform, url] of [["u_baseColorTexture", run.targetUrls[0]!], ["u_normalTexture", run.targetUrls[1]!]] as const) {
-      const binding = run.queued.texturedMaterial?.getParameter(uniform);
-      expect(binding).toBeInstanceOf(TextureBinding);
-      if (!(binding instanceof TextureBinding)) throw new Error(`missing ${uniform} binding`);
-      expect(binding.texture?.source).toBe(run.started.get(url));
-    }
-    run.release();
-    await run.done;
-    expect(run.warnings).toEqual([]);
-    expect(run.blocked.every((resource) => resource.textureStatus === "textured")).toBe(true);
-  });
-
-  it("reproduces the old failure: missing-id surface maps cannot prefetch until a worker is free", async () => {
-    const run = startQueue(true);
     await vi.waitFor(() => expect(run.blocked.every((resource) =>
       resource.textureStatus === "pending" && resource.textureStage?.startsWith("decode ")
     )).toBe(true));
@@ -253,6 +231,35 @@ describe("Bunker Zero queued surface prefetch", () => {
     await run.done;
     expect(run.warnings).toEqual([]);
     expect(run.queued.textureStatus).toBe("textured");
-    expect(run.targetUrls.every((url) => run.started.has(url))).toBe(true);
+    expect(run.queued.textureStage).toBe("done");
+    expect(run.fetched).toHaveLength(6);
+    for (const url of [...run.blockerUrls, ...run.targetUrls]) {
+      expect(run.fetched.filter((fetched) => fetched === url)).toHaveLength(1);
+    }
+    for (const [uniform, url] of [["u_baseColorTexture", run.targetUrls[0]!], ["u_normalTexture", run.targetUrls[1]!]] as const) {
+      const binding = run.queued.texturedMaterial?.getParameter(uniform);
+      expect(binding).toBeInstanceOf(TextureBinding);
+      if (!(binding instanceof TextureBinding)) throw new Error(`missing ${uniform} binding`);
+      expect(binding.texture?.source).toBe(run.started.get(url));
+    }
+    expect(run.blocked.every((resource) => resource.textureStatus === "textured")).toBe(true);
+  });
+
+  it("rejects the old missing-id surface map shape through the typed bitmap policy without fetching it", async () => {
+    // 4.7.x eventually loaded this shape on a free worker; native 5.0 requires a typed texture asset (with an id).
+    const run = startQueue(true);
+    await vi.waitFor(() => expect(run.blocked.every((resource) =>
+      resource.textureStatus === "pending" && resource.textureStage?.startsWith("decode ")
+    )).toBe(true));
+    expect(run.queued.textureStatus).toBe("pending");
+    expect(run.queued.textureStage).toBe("queued");
+    expect(new Set(run.fetched)).toEqual(new Set(run.blockerUrls));
+    run.release();
+    await run.done;
+    expect(run.queued.textureStatus).toBe("fallback");
+    expect(run.warnings).toHaveLength(1);
+    expect(run.warnings[0]).toContain("typed texture asset");
+    expect(run.targetUrls.every((url) => !run.fetched.includes(url) && !run.started.has(url))).toBe(true);
+    expect(run.blocked.every((resource) => resource.textureStatus === "textured")).toBe(true);
   });
 });

@@ -1911,3 +1911,12 @@ export class ProductionEffectSystem {
     if (errors.length) throw new AggregateError(errors, "Failed to dispose the app's effect system cleanly.");
   }
 }
+
+/**
+ * Built-in prototype snapshot for the vfx bridge's provenance check, captured
+ * when this module evaluates. It lives here, not in `vfx/bridge.ts`, because the
+ * two modules import each other: whichever loads first, the bridge reads this
+ * live binding only at call time, after both have evaluated.
+ */
+export const STOCK_PRODUCTION_EFFECT_SYSTEM_METHODS: PropertyDescriptorMap =
+  Object.getOwnPropertyDescriptors(ProductionEffectSystem.prototype);

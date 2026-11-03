@@ -5,7 +5,7 @@
 
 import { attachOwnedRootRenderSourceOverlay, attachRootRenderSourceOverlay } from "../RootRuntimeSupport";
 import { registerStockFrameFeed } from "@aura3d/rendering/contracts";
-import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem";
+import { ProductionEffectSystem, STOCK_PRODUCTION_EFFECT_SYSTEM_METHODS } from "../../production-runtime/effects/ProductionEffectSystem";
 import { LiveAtmosphere, type AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere";
 import { EffectDiagnostics } from "../../production-runtime/effects/EffectDiagnostics";
 import { TransientLightPool } from "../../production-runtime/effects/TransientLightPool";
@@ -14,7 +14,6 @@ import { RibbonBatch } from "@aura3d/rendering";
 // These snapshots are captured from the actual built-ins, not from a source
 // supplied by an application. Instance overrides or later prototype changes
 // make the otherwise opaque bridge provenance ineligible.
-const systemMethods = Object.getOwnPropertyDescriptors(ProductionEffectSystem.prototype);
 const atmosphereMethods = Object.getOwnPropertyDescriptors(LiveAtmosphere.prototype);
 const diagnosticMethods = Object.getOwnPropertyDescriptors(EffectDiagnostics.prototype);
 const lightMethods = Object.getOwnPropertyDescriptors(TransientLightPool.prototype);
@@ -45,6 +44,8 @@ function emptyOwnArray(value: object, name: string): boolean {
 
 /** Only the empty stock system is certified; active VFX stays fail-closed. */
 function emptyStockSystem(system: ProductionEffectSystem): boolean {
+  // Captured at ProductionEffectSystem's module load (import cycle with this file).
+  const systemMethods = STOCK_PRODUCTION_EFFECT_SYSTEM_METHODS;
   // The system's `atmosphere` is a private field behind a prototype getter
   // (native 5.0). Read it only after the instance and its prototype accessors
   // are verified stock, so the getter cannot be an application substitute.

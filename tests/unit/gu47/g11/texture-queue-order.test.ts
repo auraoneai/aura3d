@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { afterEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial } from "@aura3d/rendering";
@@ -7,14 +8,18 @@ import { interleaveByMapSet, resetSharedProductionTextureDecodes } from "../../.
  * GU47 g11 phase 10: Bunker Zero's 31 decal rows share 4 PNGs. In authoring order the 4 upgrade workers all waited on
  * the same in-flight decode, so the PNGs decoded one at a time and 19 rows were still pending at the 25 s luma shot.
  * The queue is taken round-robin over map sets, so every distinct set starts as soon as a worker is free.
+ *
+ * Native 5.0: typed assets are verified against their declared digest. These fixtures never serve bytes (fetches stay
+ * pending or only the queue order is read), so each declares the SHA-256 of its URL as a well-formed stand-in.
  */
+const sha256 = (data: string): string => createHash("sha256").update(data).digest("hex");
 const maps = defineAuraAssets({
-  scorch: { type: "texture", format: "png", url: "/scorch.png", hash: "a" },
-  crack: { type: "texture", format: "png", url: "/crack.png", hash: "b" },
-  hazard: { type: "texture", format: "png", url: "/hazard.png", hash: "c" },
-  bullet: { type: "texture", format: "png", url: "/bullet.png", hash: "d" },
-  wall: { type: "texture", format: "jpg", url: "/wall.jpg", hash: "e" },
-  wallN: { type: "texture", format: "jpg", url: "/wall-n.jpg", hash: "f" }
+  scorch: { type: "texture", format: "png", url: "/scorch.png", hash: sha256("/scorch.png") },
+  crack: { type: "texture", format: "png", url: "/crack.png", hash: sha256("/crack.png") },
+  hazard: { type: "texture", format: "png", url: "/hazard.png", hash: sha256("/hazard.png") },
+  bullet: { type: "texture", format: "png", url: "/bullet.png", hash: sha256("/bullet.png") },
+  wall: { type: "texture", format: "jpg", url: "/wall.jpg", hash: sha256("/wall.jpg") },
+  wallN: { type: "texture", format: "jpg", url: "/wall-n.jpg", hash: sha256("/wall-n.jpg") }
 });
 afterEach(() => { vi.unstubAllGlobals(); resetSharedProductionTextureDecodes(); });
 function resource(name: string, materialSpec: Record<string, unknown>) {
@@ -57,9 +62,9 @@ test("with 4 workers, all 4 decal PNGs are fetched before any decode lands", asy
 
 test("different URL sets cannot collide when a URL contains the map-set separator", () => {
   const special = defineAuraAssets({
-    combined: { type: "texture", format: "png", url: "/a|/b", hash: "combined" },
-    a: { type: "texture", format: "png", url: "/a", hash: "a" },
-    b: { type: "texture", format: "png", url: "/b", hash: "b" }
+    combined: { type: "texture", format: "png", url: "/a|/b", hash: sha256("/a|/b") },
+    a: { type: "texture", format: "png", url: "/a", hash: sha256("/a") },
+    b: { type: "texture", format: "png", url: "/b", hash: sha256("/b") }
   });
   const queue = [
     resource("combined 0", { texture: special.combined }),

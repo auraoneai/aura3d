@@ -4,14 +4,16 @@ import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrim
 import { auraTextureRefTexture, texture, type TextureHandle } from "../nodes/texture.js";
 import { prepareNativeTextureLoad, startNativeTextureLoad, type PreparedNativeTextureLoad } from "../nodes/loadNativeTexture.js";
 import {
+  decodeBitmapWithFallback,
   identifyPreparedBitmapAssetLoad,
   matchesPreparedBitmapAssetLoad,
   prepareBitmapAssetLoad,
   productionPrimitiveBitmapPixels,
+  productionPrimitiveBitmapPngBytes,
   startBitmapAssetLoad,
   type PreparedBitmapAssetLoad
 } from "./bitmapAsset.js";
-export { productionPrimitiveBitmapPixels } from "./bitmapAsset.js";
+export { decodeProductionImageFallback, PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS, productionPrimitiveBitmapPixels } from "./bitmapAsset.js";
 import type { AssetRequestOptions } from "@aura3d/assets/browser";
 import { AuraRuntimeError } from "./errors.js";
 import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
@@ -382,62 +384,18 @@ function closeSharedProductionTextureImage(bitmap: ProductionTextureImage): void
   bitmap.close();
 }
 
-/**
- * GU47 e6 phase 7 (g09 texPending): how long a map waits for `createImageBitmap` before it decodes through an
- * `<img>` instead. On the loaded software-WebGL2 runner `createImageBitmap` was measured not settling for 20 s+ on a
- * 121 KB JPG and a 191-byte PNG while `<img>.decode()` of the same blob finished, so textured upgrades sat pending and
- * captures showed untextured surfaces. A healthy decode settles far inside this bound and keeps the bitmap path.
- */
-export const PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS = 3000;
-
-const DECODE_TIMED_OUT = Symbol("decode-timed-out");
-
-/**
- * Decodes `blob` through an `<img>`. The upload is equivalent to the bitmap path: the WebGL2 upload sets
- * `UNPACK_PREMULTIPLY_ALPHA_WEBGL = false`, `UNPACK_COLORSPACE_CONVERSION_WEBGL = NONE` and `UNPACK_FLIP_Y_WEBGL =
- * texture.flipY` (false here) before `texImage2D`; an `<img>` source honours those, an `ImageBitmap` source ignores them
- * and carries `premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip instead (the same three settings).
- */
-export async function decodeProductionImageFallback(blob: Blob): Promise<HTMLImageElement & { close(): void }> {
-  if (typeof Image !== "function" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
-    throw new Error("texture decode fallback requires HTMLImageElement + URL.createObjectURL");
-  }
-  const objectUrl = URL.createObjectURL(blob);
-  const image = new Image() as HTMLImageElement & { close(): void };
-  image.decoding = "async";
-  image.src = objectUrl;
-  try {
-    await image.decode();
-  } catch (error) {
-    URL.revokeObjectURL(objectUrl);
-    throw error;
-  }
-  // `close()` mirrors ImageBitmap.close(): owners release the blob URL with the texture.
-  image.close = () => URL.revokeObjectURL(objectUrl);
-  return image;
+// GU47 e6 phase 7: `PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS`, the `<img>` fallback and the race live in
+// `bitmapAsset.ts`, so typed assets (policy transport) and plain URLs share one implementation.
+async function decodeProductionTextureImage(blob: Blob, onFallback?: () => void): Promise<ProductionTextureImage> {
+  return decodeBitmapWithFallback(blob, undefined, onFallback);
 }
 
-async function decodeProductionTextureImage(blob: Blob, onFallback?: () => void): Promise<ProductionTextureImage> {
-  const bitmapDecode = createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<typeof DECODE_TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(DECODE_TIMED_OUT), PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS); });
-  try {
-    const first = await Promise.race([bitmapDecode, timeout]);
-    if (first !== DECODE_TIMED_OUT) return first;
-  } finally {
-    clearTimeout(timer);
-  }
-  // The bitmap decode is stalled: decode through an <img>. Whichever finishes first is used; a late loser is released.
-  onFallback?.();
-  const fallback = decodeProductionImageFallback(blob);
-  const winner = await new Promise<ProductionTextureImage>((resolve, reject) => {
-    let failures = 0;
-    const lose = (error: unknown): void => { failures += 1; if (failures === 2) reject(error); };
-    bitmapDecode.then(resolve, lose);
-    fallback.then(resolve, lose);
-  });
-  for (const decode of [bitmapDecode, fallback]) void decode.then((image) => { if (image !== winner) image.close(); }, () => undefined);
-  return winner;
+/** Move verified PNG bytes from a deferred policy-transport load into the lazy CPU-pixel state. */
+function adoptDeferredProductionTexturePixels(image: ProductionTextureImage): void {
+  const bytes = productionPrimitiveBitmapPngBytes.get(image);
+  if (!bytes) return;
+  productionPrimitiveBitmapPngBytes.delete(image);
+  if (!productionTexturePixels.has(image)) pendingProductionTexturePixels.set(image, { bytes });
 }
 
 async function loadProductionPrimitiveBitmapImpl(
@@ -480,7 +438,7 @@ export async function loadProductionPrimitiveBitmap(
   onStepOrSignal?: ((step: ProductionTextureLoadStep) => void) | AbortSignal
 ): Promise<ProductionTextureImage> {
   if (typeof AbortSignal !== "undefined" && onStepOrSignal instanceof AbortSignal) {
-    return startBitmapAssetLoad(prepareBitmapAssetLoad(url), onStepOrSignal).result;
+    return startBitmapAssetLoad(prepareBitmapAssetLoad(url), onStepOrSignal, { decodeFallback: true }).result;
   }
   return loadProductionPrimitiveBitmapImpl(url, onStepOrSignal as ((step: ProductionTextureLoadStep) => void) | undefined, false);
 }
@@ -514,6 +472,8 @@ interface SharedProductionTextureDecode {
   readonly listeners: Set<(step: ProductionTextureLoadStep) => void>;
   /** Set when the last holder released: the image is (or will be, when it lands) closed. */
   dead: boolean;
+  /** Cancels the shared transport; fired when the last holder leaves before the image landed. */
+  readonly abandon: AbortController;
 }
 
 const sharedProductionTextureDecodes = new Map<string, SharedProductionTextureDecode>();
@@ -531,7 +491,7 @@ export interface SharedProductionTextureImageHandle {
 export function acquireSharedProductionTextureImage(
   url: string,
   onStep?: (step: ProductionTextureLoadStep) => void,
-  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> =
+  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void, signal: AbortSignal) => Promise<ProductionTextureImage> =
     (source, report) => loadProductionPrimitiveBitmapImpl(source, report, true)
 ): SharedProductionTextureImageHandle {
   const key = sharedProductionTextureKey(url);
@@ -542,10 +502,11 @@ export function acquireSharedProductionTextureImage(
     sharedProductionTextureDecodeStats.decodes += 1;
     const listeners = new Set<(step: ProductionTextureLoadStep) => void>();
     let created: SharedProductionTextureDecode | undefined;
+    const abandon = new AbortController();
     const promise = loader(url, (step) => {
       if (created) created.step = step;
       for (const listener of listeners) listener(step);
-    }).then((image) => {
+    }, abandon.signal).then((image) => {
       trackProductionTextureImage(image);
       created!.image = image;
       listeners.clear();
@@ -558,7 +519,7 @@ export function acquireSharedProductionTextureImage(
     });
     // Holders observe the promise; this keeps a decode whose holders all left from surfacing as unhandled.
     promise.catch(() => undefined);
-    created = { key, promise, refs: 0, listeners, dead: false };
+    created = { key, promise, refs: 0, listeners, dead: false, abandon };
     entry = created;
     sharedProductionTextureDecodes.set(key, entry);
   }
@@ -595,6 +556,9 @@ function retainSharedProductionTextureImage(
       held.dead = true;
       if (sharedProductionTextureDecodes.get(held.key) === held) sharedProductionTextureDecodes.delete(held.key);
       if (held.image) closeSharedProductionTextureImage(held.image);
+      // Native 5.0: nobody waits for it any more, so cancel the shared transport (the policy path honours it;
+      // an image that still lands is closed on arrival above).
+      else held.abandon.abort();
     }
   };
 }
@@ -646,12 +610,12 @@ export async function acquirePreparedProductionTextureImage(
   const identity = await identifyPreparedBitmapAssetLoad(plan);
   throwIfTextureAborted(signal);
   if (!identity.reusable) {
-    onStep?.("fetch");
-    const started = startBitmapAssetLoad(plan, signal);
+    const started = startBitmapAssetLoad(plan, signal, { deferPixels: true, decodeFallback: true, ...(onStep ? { onStep } : {}) });
     let loaded: ProductionTextureImage | undefined;
     let released = false;
     const image = started.result.then((bitmap) => {
       trackProductionTextureImage(bitmap);
+      adoptDeferredProductionTexturePixels(bitmap);
       loaded = bitmap;
       if (released) closeSharedProductionTextureImage(bitmap);
       return bitmap;
@@ -669,15 +633,20 @@ export async function acquirePreparedProductionTextureImage(
   }
   const key = `bitmap-plan:${identity.key}`;
   const cacheKey = sharedProductionTextureKey(key);
-  const handle = acquireSharedProductionTextureImage(key, onStep, (_key, report) => {
-    report("fetch");
-    // Shared: not bound to one holder's signal. Holders cancel their own view below.
-    const started = startBitmapAssetLoad(plan);
+  const handle = acquireSharedProductionTextureImage(key, onStep, (_key, report, abandoned) => {
+    // Shared: not bound to one holder's signal. Holders cancel their own view below; the
+    // transport itself is cancelled once the last holder has left (`abandoned`).
+    // GU47 e6 phases 7/8 on the policy transport: `<img>` fallback for a stalled
+    // createImageBitmap and lazy CPU PNG pixels (first scalar user decodes them).
+    const started = startBitmapAssetLoad(plan, abandoned, { deferPixels: true, decodeFallback: true, onStep: report });
     sharedPlanSettlements.set(cacheKey, started.settled);
     void started.settled.then(() => {
       if (sharedPlanSettlements.get(cacheKey) === started.settled) sharedPlanSettlements.delete(cacheKey);
     });
-    return started.result;
+    return started.result.then((image) => {
+      adoptDeferredProductionTexturePixels(image);
+      return image;
+    });
   });
   const settled = sharedPlanSettlements.get(cacheKey) ?? Promise.resolve();
   const image = abortableImage(handle.image, signal, () => handle.release());

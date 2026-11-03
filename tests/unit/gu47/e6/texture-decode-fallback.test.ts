@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { afterEach, expect, test, vi } from "vitest";
 import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
 import { PBRMaterial, TexturedPBRMaterial } from "@aura3d/rendering";
@@ -11,7 +12,10 @@ import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2
  * upgrades sat pending for the whole capture. A decode that does not settle within PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS
  * now falls back to an `<img>` decode of the same blob, uploaded with the same unpack settings as the bitmap.
  */
-const assets = defineAuraAssets({ map: { type: "texture", format: "jpg", url: "/map.jpg", hash: "fixture" } });
+// Native 5.0: the policy transport verifies the declared digest, so declare the real SHA-256 of the served bytes.
+const JPG_BYTES = [0xff, 0xd8, 0xff, 0xd9];
+const JPG_SHA256 = createHash("sha256").update(Uint8Array.from(JPG_BYTES)).digest("hex");
+const assets = defineAuraAssets({ map: { type: "texture", format: "jpg", url: "/map.jpg", hash: JPG_SHA256 } });
 
 class FakeImage {
   static created: FakeImage[] = [];
@@ -27,7 +31,7 @@ function bitmap() { return { width: 4, height: 2, close: vi.fn() }; }
 
 function stubBrowser(createImageBitmapImpl: () => Promise<unknown>) {
   FakeImage.created = [];
-  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([0xff, 0xd8, 0xff, 0xd9]))));
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(Uint8Array.from(JPG_BYTES))));
   vi.stubGlobal("createImageBitmap", vi.fn(createImageBitmapImpl));
   vi.stubGlobal("Image", FakeImage);
   vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:fixture");
@@ -104,7 +108,8 @@ test("an <img> source uploads with no premultiply, no colour-space conversion an
     createTexture: () => ({}), bindTexture: () => undefined, texParameteri: () => undefined, generateMipmap: () => undefined,
     pixelStorei: (name: number, value: unknown) => { state.set(name, value); },
     texImage2D: (...args: unknown[]) => {
-      atUpload.push({ source: args[5], flipY: state.get(0x9240), premultiply: state.get(0x9241), colorspace: state.get(0x9243) });
+      // GLboolean: native 5.0 passes 0/1, 4.7.x passed false/true; both mean the same unpack state.
+      atUpload.push({ source: args[5], flipY: Number(state.get(0x9240)), premultiply: Number(state.get(0x9241)), colorspace: state.get(0x9243) });
     },
     getExtension: () => null, getParameter: () => 4096
   } as unknown as WebGL2RenderingContext;
@@ -112,5 +117,5 @@ test("an <img> source uploads with no premultiply, no colour-space conversion an
     lifecycle: { readError: () => null } } as unknown as WebGL2DeviceHost;
   const image = new FakeImage() as unknown as HTMLImageElement;
   new WebGL2TextureRegistry(host).getTextureHandle(new Texture({ width: 4, height: 2, source: image, colorSpace: "srgb", label: "fallback-basecolor" }));
-  expect(atUpload).toEqual([{ source: image, flipY: false, premultiply: false, colorspace: 0 }]);
+  expect(atUpload).toEqual([{ source: image, flipY: 0, premultiply: 0, colorspace: 0 }]);
 });

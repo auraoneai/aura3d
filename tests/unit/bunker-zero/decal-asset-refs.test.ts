@@ -188,7 +188,10 @@ function startQueue(legacy = false) {
 }
 
 describe("Bunker Zero queued texture prefetch", () => {
-  it("starts all four actual decal bitmap jobs while four floor workers remain blocked", async () => {
+  // Native 5.0: the 4.7.x look-ahead prefetch (822f9d071) bypassed the request policy and is not restored. These
+  // tests now pin the native queue: decals wait "queued" (no fetch) while the four floor workers are busy, then the
+  // freed workers take the four decal sets round-robin and every decal of a kind shares one decode.
+  it("queues all 31 decals behind four blocked floor workers, then shares one decode per decal PNG", async () => {
     expect(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY).toBe(4);
     const queue = startQueue();
     const decalUrls = KINDS.map((kind) => queue.refs[kind].url);
@@ -197,15 +200,10 @@ describe("Bunker Zero queued texture prefetch", () => {
     expect(BZ_DECAL_NODES).toBe(31);
     expect(KINDS.map((kind) => queue.queued.filter((row) => row.kind === kind).length)).toEqual([8, 4, 12, 7]);
 
-    await vi.waitFor(() => {
-      expect(new Set(queue.completed)).toEqual(new Set(decalUrls));
-      expect(queue.floors.map((value) => value.textureStage)).toEqual(queue.floorUrls.map((url) => `decode ${url}`));
-    });
-    expect(queue.floors.every((value) => value.textureStatus === "pending")).toBe(true);
-    await vi.waitFor(() => expect(queue.queued.every(({ value }) => value.textureStatus === "textured" && value.textureStage === "done")).toBe(true));
-    expect(queue.floors.every((value) => value.textureStatus === "pending")).toBe(true);
-    expect(queue.fetches).toHaveLength(8);
-    for (const url of [...queue.floorUrls, ...decalUrls]) expect(queue.fetches.filter((fetched) => fetched === url)).toHaveLength(1);
+    await vi.waitFor(() => expect(queue.floors.map((value) => value.textureStage)).toEqual(queue.floorUrls.map((url) => `decode ${url}`)));
+    expect(queue.queued.every(({ value }) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
+    expect(new Set(queue.fetches)).toEqual(new Set(queue.floorUrls));
+    expect(queue.completed).toEqual([]);
 
     queue.release();
     await queue.done;
@@ -214,6 +212,7 @@ describe("Bunker Zero queued texture prefetch", () => {
       value.textureStatus === "textured" && value.textureStage === "done"
     )).toBe(true);
     expect(queue.fetches).toHaveLength(8);
+    for (const url of [...queue.floorUrls, ...decalUrls]) expect(queue.fetches.filter((fetched) => fetched === url)).toHaveLength(1);
     for (const kind of KINDS) {
       const image = queue.starts.find((started) => started.url === queue.refs[kind].url)!.image;
       for (const { value } of queue.queued.filter((row) => row.kind === kind)) {
@@ -224,7 +223,8 @@ describe("Bunker Zero queued texture prefetch", () => {
     }
   });
 
-  it("reproduces the old failure: missing-id refs do not prefetch while the floor workers block", async () => {
+  it("rejects the old missing-id decal ref shape through the typed bitmap policy without fetching it", async () => {
+    // 4.7.x eventually loaded this shape on a free worker; native 5.0 requires a typed texture asset (with an id).
     const queue = startQueue(true);
     await vi.waitFor(() => expect(queue.floors.map((value) => value.textureStage)).toEqual(queue.floorUrls.map((url) => `decode ${url}`)));
     expect(queue.queued.every(({ value }) => value.textureStatus === "pending" && value.textureStage === "queued")).toBe(true);
@@ -233,8 +233,9 @@ describe("Bunker Zero queued texture prefetch", () => {
 
     queue.release();
     await queue.done;
-    expect(queue.warn).not.toHaveBeenCalled();
-    expect(queue.fetches).toHaveLength(8);
-    expect(queue.queued.every(({ value }) => value.textureStatus === "textured")).toBe(true);
+    expect(queue.fetches).toHaveLength(4);
+    expect(queue.queued.every(({ value }) => value.textureStatus === "fallback")).toBe(true);
+    expect(queue.warn).toHaveBeenCalledTimes(BZ_DECAL_NODES);
+    expect(queue.floors.every((value) => value.textureStatus === "textured")).toBe(true);
   });
 });
