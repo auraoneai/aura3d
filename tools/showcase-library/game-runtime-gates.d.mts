@@ -32,7 +32,11 @@ export interface RunGameRuntimeGatesOptions {
   readonly against?: string | undefined;
 }
 
+/** Throws when `options.against` is not a readable revision. */
 export function runGameRuntimeGates(options?: RunGameRuntimeGatesOptions): GameRuntimeGateReport;
 
 /** Read a file from the working tree, or from a git revision when `against` is given. */
 export function readSource(path: string, against?: string): string | undefined;
+
+/** True when `against` names a commit this checkout can read (false in a staged tree with no `.git`). */
+export function canReadRevision(against: string): boolean;
