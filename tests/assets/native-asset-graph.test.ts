@@ -237,8 +237,13 @@ describe("asset dependency graph and ownership", () => {
     const first = manager.load("model", { signal: cancelled.signal });
     await start.promise;
     const second = manager.load<string>("model");
-    // Ensure second subscriber has joined the in-flight request.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // Wait until the second caller has actually joined the shared flight. Its request identity is a WebCrypto digest
+    // that settles on the threadpool, so a fixed setTimeout(0) raced it under load (the first abort then cancelled
+    // a flight that had only one subscriber). Observe the subscriber set instead of guessing a delay.
+    const flights = (manager as unknown as { readonly flights: Map<string, { readonly subscribers: Set<unknown> }> }).flights;
+    await vi.waitFor(() => {
+      expect([...flights.values()].map((flight) => flight.subscribers.size)).toEqual([2]);
+    }, { timeout: 30_000, interval: 1 });
     cancelled.abort("first caller left");
     await expect(first).rejects.toThrow("Asset load aborted");
     expect(sharedSignal?.aborted).toBe(false);

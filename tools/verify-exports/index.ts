@@ -117,6 +117,31 @@ function getPackageDirs(root: string): string[] {
     .sort();
 }
 
+/** The slice of /aura.exports.json (tools/generate-resolution-maps) this verifier reads. */
+interface ExportsRegistry {
+  readonly entries?: Readonly<Record<string, unknown>>;
+  readonly deprecated?: Readonly<Record<string, unknown>>;
+  readonly paths?: readonly (readonly [string, string, ...unknown[]])[];
+  readonly workspaceExports?: Readonly<Record<string, Readonly<Record<string, { readonly source?: string; readonly literal?: unknown }>>>>;
+}
+
+/** Registry-declared subpaths of one workspace package, as the generator emits them (src/<rest>.ts -> ./dist/<rest>). */
+function registryWorkspaceSubpaths(registry: ExportsRegistry | undefined, packageDir: string): Record<string, ApprovedSubpath> {
+  const out: Record<string, ApprovedSubpath> = {};
+  for (const [subpath, entry] of Object.entries(registry?.workspaceExports?.[`packages/${packageDir}`] ?? {})) {
+    if (subpath === ".") continue;
+    if (typeof entry.source === "string") {
+      const match = /^src\/(.+)\.tsx?$/.exec(entry.source);
+      if (match) out[subpath] = { types: `./dist/${match[1]}.d.ts`, import: `./dist/${match[1]}.js` };
+      continue;
+    }
+    const literal = entry.literal as { types?: unknown; import?: unknown } | string | undefined;
+    if (typeof literal === "string") out[subpath] = { asset: literal };
+    else if (literal && typeof literal.types === "string" && typeof literal.import === "string") out[subpath] = { types: literal.types, import: literal.import };
+  }
+  return out;
+}
+
 export interface VerifyExportsOptions {
   readonly packages?: readonly string[];
 }
@@ -132,7 +157,7 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
   const publicPackages: string[] = [];
   const registryPath = join(root, "aura.exports.json");
   const registry = existsSync(registryPath)
-    ? JSON.parse(readFileSync(registryPath, "utf8")) as { paths?: readonly (readonly [string, string, ...unknown[]])[] }
+    ? JSON.parse(readFileSync(registryPath, "utf8")) as ExportsRegistry
     : undefined;
 
   for (const dir of packageDirs) {
@@ -158,7 +183,12 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     if (!exportsMap || typeof exportsMap !== "object" || !("." in exportsMap)) {
       violations.push({ packageName: name, message: "Package must expose only an explicit \".\" export." });
     } else {
-      const approvedSubpaths: Record<string, ApprovedSubpath> = { ...(approvedSubpathExports[name] ?? {}) };
+      // Registry-declared workspace subpaths (aura.exports.json#workspaceExports) are approved; the hard-coded
+      // table above still pins the historical targets it names.
+      const approvedSubpaths: Record<string, ApprovedSubpath> = {
+        ...registryWorkspaceSubpaths(registry, dir.split(/[\\/]/).at(-1) ?? ""),
+        ...(approvedSubpathExports[name] ?? {})
+      };
       // New opt-in subpaths use the same authoritative registry as dev aliases
       // and dist generation, rather than a second hand-maintained list.
       for (const [specifier, source] of registry?.paths ?? []) {
@@ -231,6 +261,16 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     const rootExports = rootManifest.exports;
     if (!rootExports || typeof rootExports !== "object") {
       violations.push({ packageName: rootManifest.name ?? "root", message: "Root package must define exports." });
+    } else if (registry?.entries) {
+      // The root subpath set is declared in aura.exports.json (entries + deprecated stubs), the same registry that
+      // generates package.json#exports. Deriving it from the workspace package list would resurrect the legacy
+      // subpaths removed in 5.0.0 (docs/migration/4-to-5.md B15: ./apps, ./rendering, ...).
+      const declared = [...Object.keys(registry.entries), ...Object.keys(registry.deprecated ?? {})];
+      for (const subpath of declared) {
+        if (!(subpath in rootExports)) {
+          violations.push({ packageName: rootManifest.name ?? "root", message: `Missing root export ${subpath === "." ? "." : subpath}.` });
+        }
+      }
     } else {
       for (const packageName of publicPackages) {
         if (standaloneRootPackages.has(packageName)) continue;

@@ -2,15 +2,22 @@
 # In-image runner for the Aura3D 5.0 source pass (decision record item 1 in
 # docs/prds/aura3d-native-code-complete.md). Runs the Phase A §4 command list
 # in order, never stops early, and records one exit code per command. No
-# browser stage runs here. Results are printed between SOURCE5_REPORT markers
-# so the launcher can retain them without blob credentials.
+# browser stage runs here. Results are printed between SOURCE5_REPORT markers.
+# packed-a also uploads the tested plan, archives and packed reports to
+# source5/<run>/artifacts/ in the run container (artifacts-upload below); the
+# container SAS arrives only as AURA3D_ARTIFACTS_SAS from the launcher's 0600
+# --values file and is handed to upload-artifacts.mjs alone.
 set -uo pipefail
 cd /repo
 export CI=1
 export NATIVE_RUN_ID="${NATIVE_RUN_ID:?}"
 export NATIVE_RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
 export NATIVE_REPORT_DIR="/repo/tests/reports/native-5/${NATIVE_RUN_ID}"
-export AURA3D_SOURCE_MANIFEST="/repo/tools/remote-acr/.source5-manifest.txt"
+# JSON manifest in the stagedSourceIdentity schema (tools/remote-acr/source5-manifest.mjs).
+export AURA3D_SOURCE_MANIFEST=".native-source-manifest.json"
+A3D_ARTIFACT_SAS="${AURA3D_ARTIFACTS_SAS:-}"
+unset AURA3D_ARTIFACTS_SAS
+case "$A3D_ARTIFACT_SAS" in none) A3D_ARTIFACT_SAS="";; esac
 mkdir -p "$NATIVE_REPORT_DIR" /tmp/source5-logs
 RESULTS=/tmp/source5-results.tsv
 : > "$RESULTS"
@@ -21,7 +28,12 @@ run() {
   local started ended rc
   started=$(date +%s)
   echo "::: SOURCE5_BEGIN ${id} :: $*"
-  timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
+  # Only artifacts-upload sees the SAS (as SOURCE5_SAS, never in the command text).
+  if [ "$id" = artifacts-upload ]; then
+    SOURCE5_SAS="$A3D_ARTIFACT_SAS" timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
+  else
+    timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
+  fi
   rc=$?
   ended=$(date +%s)
   if [ "$rc" = 0 ]; then tail -n 20 "$log"; else tail -n "${SOURCE5_FAIL_LINES:-400}" "$log"; fi | sed "s/^/[${id}] /"
@@ -82,6 +94,10 @@ case "$STAGE" in
     # Public reference from the packed candidate's declarations (S5-WP24-03).
     run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/public-api.md" --write'
     run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
+    # Tested plan + archives + packed reports back to the Mac (packed-a only;
+    # packed-b's archives are compared byte-for-byte by the launcher). An upload
+    # or staging failure fails this command and therefore the stage.
+    run artifacts-upload     'rm -rf /tmp/source5-artifacts && mkdir -p /tmp/source5-artifacts && node tools/remote-acr/source5-artifacts.mjs stage "$A3D_RELEASE_PLAN" "$NATIVE_REPORT_DIR" /tmp/source5-artifacts/artifacts "$NATIVE_RUN_ID"; s=$?; AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" /tmp/source5-artifacts/artifacts; u=$?; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
   packed-b)
     pack_candidate

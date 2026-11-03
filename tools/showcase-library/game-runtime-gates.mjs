@@ -199,8 +199,23 @@ function opaqueAssetGate(against, options = {}) {
   };
 }
 
+/** True when `against` names a commit this checkout can read (a staged tree with no `.git` cannot). */
+export function canReadRevision(against) {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", `${against}^{commit}`], { cwd: ROOT, stdio: ["ignore", "ignore", "ignore"] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function runGameRuntimeGates(options = {}) {
   const against = options.against;
+  // An unreadable revision must not read as "every route deleted": that would turn the
+  // observed-failing-on-<rev> proof into an unrelated route-missing verdict.
+  if (against && !canReadRevision(against)) {
+    throw new Error(`game-runtime gates: revision ${against} is not readable in this checkout (no Git history?)`);
+  }
   const checks = [
     penetrationGate(against),
     motionFeelGate(against),

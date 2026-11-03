@@ -804,6 +804,8 @@ const parityL7Children = new Map<AuraRuntimeNodeHandle, Set<AuraRuntimeNodeHandl
 type RuntimeParentedNode = { readonly localNode: MutableAuraRuntimeSceneNode; readonly worldFacing: boolean; readonly source?: AuraSceneNode };
 const runtimeParentedNodes = new WeakMap<AuraRuntimeNodeHandle, RuntimeParentedNode>();
 const runtimeNodeChanged = new WeakMap<AuraRuntimeNodeHandle, () => void>();
+// Version bump without a scene notification, for edits that already notify once for the whole commit (attach).
+const runtimeNodeVersionBump = new WeakMap<AuraRuntimeNodeHandle, () => void>();
 const runtimeHierarchyEnabled = new WeakSet<AuraRuntimeNodeHandle>();
 const anonymousGraphHandles = new WeakSet<AuraRuntimeNodeHandle>();
 const registrySceneHandles = new WeakMap<AuraRuntimeNodeRegistry, WeakMap<AuraSceneNode, AuraRuntimeNodeHandle>>();
@@ -2244,7 +2246,8 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       }
       children.add(child);
       if (!priorState && runtimeHierarchyEnabled.has(child)) enableRuntimeParentedNode(child, false);
-      if (runtimeHierarchyEnabled.has(child)) runtimeNodeChanged.get(child)?.();
+      // One attach is one committed scene change: bump the child version here, notify once below.
+      if (runtimeHierarchyEnabled.has(child)) runtimeNodeVersionBump.get(child)?.();
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -2317,6 +2320,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   };
   parityL7NodeSpecs.set(handle, node);
   runtimeNodeChanged.set(handle, () => { bumpVersion(); onSceneNodeChange?.(handle); });
+  runtimeNodeVersionBump.set(handle, bumpVersion);
   return handle;
 }
 

@@ -201,6 +201,12 @@
       "file": "packages/assets/src/gltf-runtime.ts"
     },
     {
+      "name": "@aura3d/assets/vite",
+      "file": "packages/assets/src/vite/auraDecoders.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
       "name": "@aura3d/animation/pose",
       "file": "packages/animation/src/contracts/pose.ts",
       "devOnly": true,

@@ -68,6 +68,25 @@ async function bundleEditorRuntime(): Promise<string> {
   return chunk.code;
 }
 
+/**
+ * Package sources name their module workers by the emitted `.js` file
+ * (`new Worker(new URL("../workers/zstd.worker.js", import.meta.url))`) so the packed dist and its
+ * finalize-dist worker checks keep working. Inside the monorepo the aliases point at the package `src` trees,
+ * where only the `.ts` source exists; map such a worker entry to its source sibling.
+ */
+export function createSourceWorkerEntryPlugin() {
+  return {
+    name: "a3d-source-worker-entries",
+    enforce: "pre" as const,
+    resolveId(id: string) {
+      const path = id.split("?", 1)[0] ?? "";
+      if (!/\/packages\/[^/]+\/src\/.+\.worker\.js$/.test(path) || existsSync(path)) return null;
+      const source = path.replace(/\.js$/, ".ts");
+      return existsSync(source) ? source + id.slice(path.length) : null;
+    }
+  };
+}
+
 export function createEditorExportRuntimePlugin(
   bundle: () => Promise<string> = bundleEditorRuntime,
   font: () => string = () => readFileSync(resolve(repoRoot, "public/fonts/whitney-regular.woff2")).toString("base64")
@@ -90,6 +109,7 @@ export default {
     alias,
   },
   plugins: [
+    createSourceWorkerEntryPlugin(),
     createEditorExportRuntimePlugin(),
     {
       name: "a3d-contextual-taxonomy-aliases",

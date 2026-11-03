@@ -45,8 +45,11 @@ const engineSourceEntry = path.join(repoRoot, "packages", "engine", "src", "agen
  * bundle: `prd08.camera"` was absent from the route chunk.
  */
 const enginePublicEntry = path.join(repoRoot, "packages", "engine", "src", "public", "index.ts");
-// PRD-15 split the agent API: the game presentation helpers now live in nodes/game.
-const engineGameSource = path.join(repoRoot, "packages", "engine", "src", "agent-api", "nodes", "game", "index.ts");
+// PRD-15 split the agent API: the game presentation helpers now live in nodes/game
+// (5.0 moved the namespace body from index.ts into core.ts).
+const engineGameSources = ["index.ts", "core.ts"].map((file) =>
+  path.join(repoRoot, "packages", "engine", "src", "agent-api", "nodes", "game", file)
+);
 
 const showcaseRoutes = [
   "showcase-index",
@@ -181,7 +184,7 @@ function assertShowcaseAssetsMaterialized() {
 }
 
 function assertRequiredEngineSourceHelpers() {
-  const engineSource = [engineSourceEntry, engineGameSource]
+  const engineSource = [engineSourceEntry, ...engineGameSources]
     .filter((file) => existsSync(file))
     .map((file) => readFileSync(file, "utf8"))
     .join("\n");

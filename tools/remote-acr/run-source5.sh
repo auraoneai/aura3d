@@ -4,6 +4,13 @@
 # Dockerfile.playwright from the committed candidate, then one `az acr run`
 # per stage (<= 1800 s each, <= 2 concurrent, ACR policy), reports merged into
 # tests/reports/native-5/<run>/source-report.json, image deleted afterwards.
+# The staged context carries .native-source-manifest.json (stagedSourceIdentity
+# schema, tools/remote-acr/source5-manifest.mjs). When packed-a runs, one
+# container-scoped rcwl SAS (<= SAS_TTL_MINUTES, default 120) is minted once
+# (tools/remote-acr/sas-transport.sh) and reaches packed-a only via the 0600
+# --values file; packed-a uploads the tested plan, archives and packed reports
+# to source5/<run>/artifacts/, which are downloaded into <run>/artifacts/ and
+# re-hashed against the plan (tools/remote-acr/source5-artifacts.mjs).
 # Usage: RUN_ID=native-5-source-001 tools/remote-acr/run-source5.sh
 #        STAGES="static suites" ... to run a subset (rerun of affected checks).
 set -euo pipefail
@@ -21,6 +28,9 @@ UNIT_SHARDS="${UNIT_SHARDS:-6}"
 DEFAULT_STAGES="static suites packed-a packed-b"
 for i in $(seq 1 "$UNIT_SHARDS"); do DEFAULT_STAGES="$DEFAULT_STAGES unit-$i-of-$UNIT_SHARDS"; done
 STAGES="${STAGES:-$DEFAULT_STAGES}"
+# packed-a uploads with the run's single SAS, so it starts first (well inside the SAS lifetime).
+case " $STAGES " in *" packed-a "*) STAGES="packed-a $(printf '%s\n' $STAGES | { grep -vx packed-a || true; } | tr '\n' ' ')"; STAGES="${STAGES% }"; WANT_ARTIFACTS=1;; *) WANT_ARTIFACTS=0;; esac
+SAS_TTL_MINUTES="${SAS_TTL_MINUTES:-120}"
 MAX_PARALLEL=2
 [[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$ ]] || { echo 'invalid RUN_ID' >&2; exit 2; }
 if [ "${BUILD:-1}" = 0 ]; then
@@ -37,11 +47,14 @@ IMAGE_TAG="${IMAGE_TAG:-run-$RUN_ID}"
 BUILD="${BUILD:-1}"
 CTX="$(mktemp -d /tmp/aura3d-source5.XXXXXX)"
 PUSHED=0
+# shellcheck source=tools/remote-acr/sas-transport.sh
+. "$REPO_ROOT/tools/remote-acr/sas-transport.sh"
 cleanup() {
   local rc=$?
   trap - EXIT INT TERM
   # Never delete the image while a stage run still uses it.
   wait 2>/dev/null || true
+  sas_transport_close
   if [ "$PUSHED" = 1 ] && [ "$KEEP_IMAGE" != 1 ]; then
     "$AZ_WRAPPER" acr repository delete -n "$ACR_NAME" --image "$IMAGE_REPO:$IMAGE_TAG" --yes -o none || { echo "image cleanup FAILED: $IMAGE_REPO:$IMAGE_TAG" >&2; rc=1; }
   fi
@@ -53,8 +66,9 @@ trap cleanup EXIT INT TERM
 SUB="$("$AZ_WRAPPER" account show --query id -o tsv)"
 [ "$SUB" = "$EXPECTED_SUB" ] || { echo "FATAL: subscription $SUB" >&2; exit 2; }
 
-if [ "${BUILD:-1}" = 0 ]; then MANIFEST_SHA=reused-image; LOCK_SHA=reused-image; else
+if [ "${BUILD:-1}" = 0 ]; then MANIFEST_SHA=reused-image; LOCK_SHA=reused-image; INPUT_DIGEST=-; TREE=-; else
 echo "== staging committed candidate $COMMIT"
+TREE="$(git rev-parse "$COMMIT^{tree}")"
 # Untracked local reports stay out; committed (tracked) reports are candidate
 # source (e.g. tests/reports/final-competitive-baseline) and are staged.
 { git ls-files -z --cached --others --exclude-standard \
@@ -62,11 +76,13 @@ echo "== staging committed candidate $COMMIT"
   git ls-files -z --cached -- tests/reports; } \
   > "$CTX.list"
 rsync -a --from0 --files-from="$CTX.list" ./ "$CTX/"
-( cd "$CTX" && tr '\0' '\n' < "$CTX.list" | while IFS= read -r f; do [ -f "$f" ] && shasum -a 256 "$f"; done ) > "$CTX/tools/remote-acr/.source5-manifest.txt"
-printf '%s\n' "$COMMIT" > "$CTX/tools/remote-acr/.source5-commit"
-cp "$CTX/tools/remote-acr/.source5-manifest.txt" "$OUT_DIR/source-manifest.txt"
-MANIFEST_SHA="$(shasum -a 256 "$OUT_DIR/source-manifest.txt" | cut -d' ' -f1)"
-LOCK_SHA="$(shasum -a 256 pnpm-lock.yaml | cut -d' ' -f1)"
+# JSON manifest in the exact stagedSourceIdentity schema (publish-all --pack-only
+# and every AURA3D_SOURCE_MANIFEST consumer), verified here before any build.
+node tools/remote-acr/source5-manifest.mjs write "$CTX" "$CTX.list" "$COMMIT" "$TREE"
+cp "$CTX/.native-source-manifest.json" "$OUT_DIR/source-manifest.json"
+MANIFEST_SHA="$(shasum -a 256 "$OUT_DIR/source-manifest.json" | cut -d' ' -f1)"
+LOCK_SHA="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).lockfileSha256' "$OUT_DIR/source-manifest.json")"
+INPUT_DIGEST="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).inputDigest' "$OUT_DIR/source-manifest.json")"
 du -sh "$CTX" | awk '{print "   context: "$1}'
 fi
 
@@ -87,13 +103,28 @@ tail -15 "$OUT_DIR/acr-build.log"
 [ "$BUILD_RC" = 0 ] || { echo "FATAL: build failed ($OUT_DIR/acr-build.log)" >&2; exit 3; }
 fi
 
+if [ "$WANT_ARTIFACTS" = 1 ]; then
+  # One SAS per launcher run, minted after the build so packed-a (queued first) starts at once.
+  sas_transport_open "$SAS_TTL_MINUTES" tools/remote-acr/task.source5.yaml || { echo 'FATAL: artifact transport unavailable; packed-a cannot return its archives' >&2; exit 3; }
+fi
+
 run_stage() {
   set +eu
   local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
-  "$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f tools/remote-acr/task.source5.yaml --timeout 1800 \
-    --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG" \
-    --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" \
-    /dev/null > "$log" 2>&1 || rc=$?
+  local common=(--timeout 1800 --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
+    --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage")
+  if [ "$stage" = packed-a ]; then
+    # The upload must finish before the SAS expires.
+    if [ "$(sas_seconds_left)" -lt 2100 ]; then
+      echo "packed-a not started: SAS has $(sas_seconds_left)s left (< 2100s)" > "$log"; rc=97
+    else
+      "$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f task.source5.yaml --values "$A3D_SAS_VALUES_FILE" \
+        "${common[@]}" "$A3D_SAS_DIR" > "$log" 2>&1 || rc=$?
+    fi
+  else
+    "$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f tools/remote-acr/task.source5.yaml \
+      "${common[@]}" --set "ARTIFACTS_SAS=none" /dev/null > "$log" 2>&1 || rc=$?
+  fi
   awk '/::: SOURCE5_REPORT_BEGIN/{f=1;next}/::: SOURCE5_REPORT_END/{f=0}f' "$log" \
     | sed -E 's/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9:]+ //' | tr -d '\r' | base64 -d > "$OUT_DIR/stage-$stage.json" 2>/dev/null || true
   echo "$rc" > "$OUT_DIR/stage-$stage.rc"
@@ -106,7 +137,27 @@ for stage in $STAGES; do
 done
 wait
 
-COMMIT="$COMMIT" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" OUT="$OUT_DIR" STAGES="$STAGES" node -e '
+ARTIFACTS_JSON="$OUT_DIR/artifacts-verification.json"
+if [ "$WANT_ARTIFACTS" = 1 ]; then
+  sas_redact_file "$OUT_DIR/acr-run-packed-a.log"
+  echo "== downloading source5/$RUN_ID/artifacts"
+  DL="$OUT_DIR/.artifacts-download"
+  rm -rf "$DL" "$OUT_DIR/artifacts"; mkdir -p "$DL"
+  if AZURE_STORAGE_KEY="$A3D_SAS_KEY" "$AZ_WRAPPER" storage blob download-batch --source "$A3D_SAS_CONTAINER" \
+      --account-name "$A3D_SAS_STORAGE_ACCOUNT" --auth-mode key --pattern "source5/$RUN_ID/artifacts/*" \
+      --destination "$DL" -o none --only-show-errors > "$OUT_DIR/artifacts-download.log" 2>&1 \
+      && [ -d "$DL/source5/$RUN_ID/artifacts" ]; then
+    mv "$DL/source5/$RUN_ID/artifacts" "$OUT_DIR/artifacts"
+  else
+    echo "   artifact download failed ($OUT_DIR/artifacts-download.log)"; mkdir -p "$OUT_DIR/artifacts"
+  fi
+  rm -rf "$DL"
+  sas_transport_close
+  node tools/remote-acr/source5-artifacts.mjs verify "$OUT_DIR/artifacts" "$REPO_ROOT" "$COMMIT" "$LOCK_SHA" "$INPUT_DIGEST" "$ARTIFACTS_JSON" || true
+fi
+
+COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" INPUT_DIGEST="$INPUT_DIGEST" OUT="$OUT_DIR" STAGES="$STAGES" \
+  WANT_ARTIFACTS="$WANT_ARTIFACTS" ARTIFACTS_JSON="$ARTIFACTS_JSON" node -e '
   const fs = require("fs");
   const out = process.env.OUT;
   const stages = process.env.STAGES.split(/\s+/).filter(Boolean);
@@ -123,14 +174,27 @@ COMMIT="$COMMIT" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" OUT="$OUT_DIR
   const planStages = Object.keys(plans);
   if (planStages.length > 1 && new Set(planStages.map((s) => digestsOf(plans[s]))).size !== 1)
     problems.push(`candidate archive digests differ between ${planStages.join(", ")}`);
+  let artifacts = null;
+  if (process.env.WANT_ARTIFACTS === "1") {
+    try { artifacts = JSON.parse(fs.readFileSync(process.env.ARTIFACTS_JSON, "utf8")); } catch { artifacts = { ok: false, problems: ["artifact verification did not run"] }; }
+    if (!artifacts.ok) problems.push(...(artifacts.problems || []).map((p) => `artifacts: ${p}`));
+  }
+  const known = (v) => (v && v !== "-" && v !== "reused-image" ? v : null);
   const report = {
     schema: "aura3d.source5-report/2",
-    candidate: { commit: process.env.COMMIT, sourceManifestSha256: process.env.MANIFEST_SHA, lockfileSha256: process.env.LOCK_SHA },
+    candidate: {
+      commit: process.env.COMMIT, tree: known(process.env.TREE),
+      sourceManifestPath: known(process.env.MANIFEST_SHA) ? `${out}/source-manifest.json` : null,
+      sourceManifestSha256: process.env.MANIFEST_SHA, inputDigest: known(process.env.INPUT_DIGEST),
+      lockfileSha256: process.env.LOCK_SHA
+    },
     stages, commands,
     passed: commands.filter((c) => c.exitCode === 0).map((c) => c.id),
     failed: commands.filter((c) => c.exitCode !== 0).map((c) => c.id),
     problems,
     candidatePlan: plans["packed-a"] || plans["packed-b"] || null,
+    // Downloaded tested archives (tools/remote-acr/source5-artifacts.mjs verify); null when packed-a did not run.
+    artifacts,
     browserAcceptance: "not-run"
   };
   fs.writeFileSync(`${out}/source-report.json`, JSON.stringify(report, null, 2) + "\n");

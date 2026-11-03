@@ -53,7 +53,31 @@ describe("opt-in shader graph public entry", () => {
       expect(runtime.getParameter("u_auraGraph_resource_settings")).toEqual(initial);
       expect(runtime.sources.wgsl!.fragment).toContain("aura.u_auraGraph_resource_settings.layers[1u].color");
     } finally { runtime.dispose(); }
-    expect(() => entry.shaderGraph.material({ graph, backend: "glsl", uniforms: { settings: initial } })).toThrow(/unsupported-backend/);
+    // 5.0 scope S5-WP05-03 (docs/prds/aura3d-5.0-scope.md): WebGL2 binds portable struct/array data
+    // uniforms by flattening to GL leaf uniforms, so graph `backend: "glsl"` is no longer refused for them.
+    const glslSpec = entry.shaderGraph.material({ graph, backend: "glsl", uniforms: { settings: initial } });
+    const glslUniform = glslSpec.custom!.uniforms!.auraGraph_resource_settings as any;
+    expect(glslUniform.type).toBe("data");
+    expect(glslUniform.dataType).toEqual(uniform.dataType);
+    expect(glslUniform.value).toEqual(initial);
+    const glslRuntime = entry.createCustomShaderMaterial(glslSpec.custom!);
+    try {
+      expect(glslRuntime.getParameter("u_auraGraph_resource_settings")).toEqual(initial);
+      expect(glslRuntime.sources.glsl!.fragment).toMatch(/uniform auraGraph_struct_\w*Data u_auraGraph_resource_settings;/);
+    } finally { glslRuntime.dispose(); }
+    // GLSL ES 3.00 still has no arrays of arrays: a nested-array resource stays refused on the glsl backend.
+    const nested = {
+      version: 1, stage: "material",
+      resources: [{ name: "grid", kind: "uniform", type: "array:2:array:2:f32" }],
+      nodes: [
+        { id: "grid", op: "uniform", resource: "grid", type: "array:2:array:2:f32" },
+        { id: "index", op: "constant", type: "u32", value: 1 },
+        { id: "row", op: "arrayIndex", type: "array:2:f32", inputs: ["grid", "index"] },
+        { id: "cell", op: "arrayIndex", type: "f32", inputs: ["row", "index"] }
+      ],
+      outputs: { opacity: "cell" }
+    } as unknown as entry.ShaderGraphDocument;
+    expect(() => entry.shaderGraph.material({ graph: nested, backend: "glsl", uniforms: { grid: [[0, 1], [2, 3]] } })).toThrow(/unsupported-backend[\s\S]*nested array/);
   });
   it("preserves the original facade, material, persistence, migration, and compiler bindings", () => {
     expect(entry.shaderGraph).toBe(facade.shaderGraph);

@@ -10,6 +10,29 @@ interface RuntimeSuiteMapping {
 }
 
 const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
+  // @aura3d/addons (native objects, generators, worker pool, shadow geometry)
+  // shipped runtime source after this audit was written; its edge suites own
+  // disposal, invalid input and worker failure behaviour.
+  addons: {
+    suites: [
+      "tests/unit/addons/native-objects-generators.test.ts",
+      "tests/unit/addons/native-shadow-geometry-projection.test.ts",
+      "tests/unit/addons/native-worker-pool.test.ts"
+    ],
+    edgeTerms: [/dispose/i, /throws?/i, /invalid/i, /fail/i, /reject/i]
+  },
+  // @aura3d/game (genre kits shell/session/HUD): ready failure, context loss,
+  // presentation cleanup and full reset are its edge behaviour.
+  game: {
+    suites: [
+      "tests/unit/game/context-loss.test.ts",
+      "tests/unit/game/native-game-ready-failure.test.ts",
+      "tests/unit/game/native-presentation-cleanup.test.ts",
+      "tests/unit/game/native-full-game-reset.test.ts",
+      "tests/unit/game/session.test.ts"
+    ],
+    edgeTerms: [/context loss|lost/i, /dispose/i, /throws?/i, /fail/i, /reset/i]
+  },
   animation: {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
     edgeTerms: [/missing targets?/i, /loop/i, /disposal/i, /deterministic/i, /state transitions?/i]

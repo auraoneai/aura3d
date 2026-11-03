@@ -67,7 +67,7 @@ describe("physics and animation scene/ECS integration", () => {
       setPosition: ([x, y, z]) => platform.transform.setPosition(x, y, z)
     });
     const sceneMixer = new AnimationMixer(sceneAnimation);
-    sceneMixer.play(
+    const sceneMixerAction = sceneMixer.play(
       new AnimationClip({
         name: "raise-platform",
         duration: 1,
@@ -83,6 +83,9 @@ describe("physics and animation scene/ECS integration", () => {
         ]
       })
     );
+    // A repeat action wraps when it lands exactly on the clip end (three.js LoopRepeat: t === duration
+    // completes a loop, packages/animation/src/AnimationAction.ts), so hold the end pose explicitly.
+    sceneMixerAction.setLoop("once").clampWhenFinished = true;
     sceneMixer.update(1);
     expect(platform.transform.position).toEqual([0, 2, 0]);
 
@@ -90,7 +93,7 @@ describe("physics and animation scene/ECS integration", () => {
     const ecsAnimation = new ECSAnimationBridge();
     ecsAnimation.register("entity", ecsTransform as unknown as ECSAnimationComponent);
     const ecsMixer = new AnimationMixer(ecsAnimation);
-    ecsMixer.play(
+    const ecsMixerAction = ecsMixer.play(
       new AnimationClip({
         name: "move-entity",
         duration: 1,
@@ -106,6 +109,7 @@ describe("physics and animation scene/ECS integration", () => {
         ]
       })
     );
+    ecsMixerAction.setLoop("once").clampWhenFinished = true;
     ecsMixer.update(1);
     expect(ecsTransform.position).toEqual([5, 0, 0]);
   });

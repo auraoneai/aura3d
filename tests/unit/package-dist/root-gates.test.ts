@@ -8,6 +8,11 @@ import { importEnginePackageViaNode } from "./package-dist-helpers.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const tempDirs: string[] = [];
+/**
+ * Importing the CLI dist graph cold (vite-node transforms every emitted module) and running release validation on a
+ * scratch project takes ~5 s on the shared ACR runner; these cases do real work, so they get an explicit budget.
+ */
+const CLI_DIST_TIMEOUT_MS = 60_000;
 
 describe("package/dist root gate parity", () => {
   afterEach(() => {
@@ -47,7 +52,7 @@ describe("package/dist root gate parity", () => {
     expectExportedFunction(bridge, "rankResolveCandidates");
     expectExportedFunction(bridge, "selectPullable");
     expectExportedFunction(bridge, "toResolveConstraints");
-  });
+  }, CLI_DIST_TIMEOUT_MS);
 
   test("CLI dist validation rejects rendered-probe, role-quality, and AST bypass failures", async () => {
     const cli = await importDistModule("../../../packages/aura3d-cli/dist/index.js");
@@ -109,7 +114,7 @@ describe("package/dist root gate parity", () => {
     expect(warnings).toContain("role-aware release product validation requires readable material evidence");
     expect(warnings).toContain("role-aware release product validation requires texture evidence");
     expect(arrayStrings(report["failures"]).join("\n")).toContain("raw model string id \"distFighter\"");
-  });
+  }, CLI_DIST_TIMEOUT_MS);
 
   test("asset-index and root engine dist exports preserve package metadata contracts", async () => {
     const assetIndex = await importDistModule("../../../packages/asset-index/dist/index.js");

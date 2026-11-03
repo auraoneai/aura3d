@@ -14,7 +14,9 @@ describe("animation runtime-node source gates", () => {
       "node.animation = { ...options, clip };",
       "node.animation = animation;",
       "animation: node.animation,",
-      "runtimeNodes.reset(renderSnapshot);"
+      // 5.0: AuraRuntimeNodeRegistry.reset(snapshot, authoredSnapshot?) also receives the authored snapshot
+      // (packages/engine/src/agent-api/app/runtimeNodes.ts); the render snapshot is still the first, bound argument.
+      "runtimeNodes.reset(renderSnapshot, snapshot);"
     ]);
     expectIncludesAll(shotTimeline, [
       "export interface ShotPlaybackRuntimeNodeHandle",

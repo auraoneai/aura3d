@@ -241,7 +241,7 @@ the tool is on PATH and all variants compile).
 ### 6c. Source-pass environment fixes (no assertion change)
 
 - No `.git` on ACR: `tools/remote-acr/source5-files.mjs` lists candidate files from Git or the staged `tools/remote-acr/.source5-manifest.txt`; used by `tools/agent-eval/lib/sandbox.mjs` (bench authors sandbox leak check) and `lfs-fixture-attributes.test.ts`. The LFS clean-filter cases need the `git-lfs` binary (absent in the image) and skip without it; the attribute cases still run.
-- `tools/agent-examples` no longer treats the staged manifest as route references (it made every `examples/*` dir "documented", e.g. `examples/shadow-lab`).
+- `tools/agent-examples` no longer treats the staged manifest as route references (it made every `examples/*` dir "documented", e.g. the `shadow-lab` example; the route is not spelled as a path here because any `docs/` mention of one is itself a catalog reference).
 - `run-source5.sh` stages tracked `tests/reports/**` (e.g. `final-competitive-baseline`); untracked reports stay out.
 - `tests/unit/package-dist/**` imports built dist: excluded from the pre-build unit shards, run in `packed-a` after `pnpm build`.
 - Native custody guard tests kept: `sqlite_stat4` tamper only where SQLite has STAT4; the workspace fixture lives in a private parent (Linux `/tmp` is world-writable).

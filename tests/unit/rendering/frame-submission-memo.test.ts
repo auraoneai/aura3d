@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { computeProgramKey, type ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
-import { createRegistry, type QrFlags, type RegistryEntry } from "../../../packages/rendering/src/contracts/core";
+import { createRegistry, createTrustedQrFlags, type QrFlags, type RegistryEntry } from "../../../packages/rendering/src/contracts/core";
 import { withCoreOutputOff } from "../../../packages/rendering/src/renderer/coreOutputPostRoute";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
@@ -67,10 +67,10 @@ describe("computeProgramKey memo", () => {
 
 describe("registry active() memo", () => {
   interface Entry extends RegistryEntry { readonly tag: string }
-  const flagsOf = (names: readonly string[]): QrFlags => {
-    const values = Object.freeze(Object.fromEntries(names.map((name) => [name, true])));
-    return { values, on: (name) => values[name as keyof typeof values] === true } as QrFlags;
-  };
+  // 5.0 registry contract (`packages/rendering/src/contracts/core.ts`, RegistryImpl.activeMemo): only factory-created
+  // flag identities (`createTrustedQrFlags`, which `resolveQrFlags` uses) are memoised; a hand-built object with a
+  // frozen `values` map is a custom flags object and is never cached. Build the flags the way production does.
+  const flagsOf = (names: readonly string[]): QrFlags => createTrustedQrFlags(Object.fromEntries(names.map((name) => [name, true])));
 
   it("returns the same list for the same flags until the registry changes, and honours registration order rules", () => {
     const registry = createRegistry<Entry>("test");

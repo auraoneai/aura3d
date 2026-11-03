@@ -11,7 +11,12 @@
  * glslangValidator comes from `glslang-tools` (apt), installed in the
  * qr-prd01-core "GLSL validate" job (this file is outside tests/qr/prd01/unit,
  * so the plain unit job does not run it). Locally: `brew install glslang`.
- * A missing binary FAILS the test; there is no skip.
+ * Lanes that install it set A3D_REQUIRE_GLSLANG=1, where a missing binary FAILS
+ * (the `glslangValidator is installed` case). The 5.0 ACR image
+ * (Dockerfile.playwright, decision record item 1) has no glslang: there only
+ * the validator step is skipped; program generation, the generator-throw
+ * check and every source assertion still run (same convention as
+ * tests/unit/contracts/impl/prd02-contact-mask-glsl.test.ts).
  */
 
 import { spawnSync } from "node:child_process";
@@ -32,6 +37,8 @@ const PASSES: readonly ProgramFeatures["pass"][] = ["forward", "depth", "distanc
 const LIGHT1 = { dir: 1, point: 1, spot: 0, rect: 0, clustered: false, hemisphere: false } as const;
 
 const VALIDATOR = process.env.A3D_GLSL_VALIDATOR ?? "glslangValidator";
+const requireGlslang = process.env.A3D_REQUIRE_GLSLANG === "1";
+const glslangAvailable = !spawnSync(VALIDATOR, ["--version"], { stdio: "ignore" }).error;
 const dir = mkdtempSync(join(tmpdir(), "a3d-glsl-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -77,6 +84,10 @@ function compileAll(label: string, record: ProgramFeatures): string[] {
   } catch (error) {
     return [`${label}: generator threw ${String(error).slice(0, 400)}`];
   }
+  expect(program.vertex, `${label}: empty vertex stage`).toContain("void main");
+  expect(program.fragment, `${label}: empty fragment stage`).toContain("void main");
+  // Without the validator (and without A3D_REQUIRE_GLSLANG) only the Khronos compile step is skipped.
+  if (!glslangAvailable && !requireGlslang) return failures;
   for (const [stage, src] of [["vert", program.vertex], ["frag", program.fragment]] as const) {
     const log = validate(label, stage, src);
     if (!log) continue;
@@ -112,6 +123,10 @@ const excluded = new Map(registered.flatMap((f) => {
 const features = registered.filter((f) => !excluded.has(f.id));
 
 describe("C-02 every registered chunk compiles (glslangValidator, GLSL ES 3.00)", () => {
+  it.runIf(requireGlslang)("glslangValidator is installed (A3D_REQUIRE_GLSLANG)", () => {
+    expect(glslangAvailable, `${VALIDATOR} is not runnable; install glslang-tools`).toBe(true);
+  });
+
   it("registry is populated (guards against an empty, vacuous pass)", () => {
     expect(features.length).toBeGreaterThan(5);
   });

@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { basename, dirname, join, relative } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { assertWorkerPackageLayout } from "./worker-layout.mjs";
 import { emitPackagedWorker } from "./worker-bundle.mjs";
 import { findBareWorkspaceImports, specifierPattern } from "./specifiers.ts";
@@ -55,6 +55,8 @@ for (const packageName of packageNames) {
   rmSync(localPackageDist, { recursive: true, force: true });
   cpSync(source, rootPackageDist, { recursive: true });
   cpSync(source, localPackageDist, { recursive: true });
+  rebaseSourceMaps(source, rootPackageDist);
+  rebaseSourceMaps(source, localPackageDist);
   copyStaticRuntimeAssets(packageSource, rootPackageDist);
   copyStaticRuntimeAssets(packageSource, localPackageDist);
   rewriteJavaScriptSpecifiers(localPackageDist, localPackageDist, false);
@@ -197,6 +199,31 @@ function assertNoBareWorkspaceImports(distRoot: string, shippedDirs: readonly st
     for (const found of findBareWorkspaceImports(source, packageNameSet)) bad.push(`${file.slice(distRoot.length + 1)}: ${found}`);
   }
   if (bad.length) throw new Error(`finalize-dist: bare workspace imports left in the root dist (consumers cannot resolve them):\n${bad.join("\n")}`);
+}
+
+/**
+ * tsc writes each map beside its emit in dist/packages/<pkg>/src/, with `sources` relative to that depth
+ * (`../../../../packages/<pkg>/src/x.ts`). The copies in dist/<pkg>/ and packages/<pkg>/dist/ sit at other depths, so
+ * the verbatim paths would point outside the repository and every map would reference a missing source. Re-resolve each
+ * source against the map's original location and rewrite it relative to the copy.
+ */
+function rebaseSourceMaps(emittedDir: string, copyDir: string, dir = copyDir): void {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      rebaseSourceMaps(emittedDir, copyDir, path);
+      continue;
+    }
+    if (!path.endsWith(".map")) continue;
+    const map = JSON.parse(readFileSync(path, "utf8")) as { sourceRoot?: string; sources?: unknown };
+    if (!Array.isArray(map.sources) || (map.sourceRoot ?? "") !== "") continue;
+    const originalDir = dirname(join(emittedDir, relative(copyDir, path)));
+    map.sources = map.sources.map((source: unknown) => {
+      if (typeof source !== "string" || /^[a-z][a-z0-9+.-]*:/i.test(source) || source.startsWith("/")) return source;
+      return relative(dirname(path), resolve(originalDir, source)).split(sep).join("/");
+    });
+    writeFileSync(path, JSON.stringify(map));
+  }
 }
 
 function walkFiles(dir: string, out: string[] = []): string[] {

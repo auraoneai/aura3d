@@ -133,7 +133,13 @@ function installRendererShell(observePublications = false) {
         }
         return { ...device.getDiagnostics(), drawCalls: items.length };
       },
-      dispose: () => device.dispose()
+      dispose: () => device.dispose(),
+      // Renderer contract (5.0 decision record item 3, teardown): completion is observed only after
+      // the owned device disposed and its retirement receipt (whenDisposed) resolved.
+      async whenOwnedDeviceDisposed() {
+        if (!device.disposed) throw new Error("RENDERER_DEVICE_DISPOSAL_INCOMPLETE");
+        await (device as { whenDisposed?: () => Promise<void> }).whenDisposed?.();
+      }
     };
     return shell as unknown as Renderer;
   });

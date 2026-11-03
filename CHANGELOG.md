@@ -4,7 +4,7 @@ Version: 5.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 5.0.0 (unreleased)
+## 5.0.0 — 2026-11-03
 
 The native-capability release. Aura3D is a standalone browser 3D engine with its own renderer, and 5.0.0 widens what that renderer, its asset pipeline and its runtime do natively, across the 33 work packages of the [native capability roadmap](docs/prds/aura3d-native-capability-roadmap.md) and the fixed [5.0 scope list](docs/prds/aura3d-5.0-scope.md). Upgrade every `@aura3d/*` package together, then follow the [4.x to 5.0 migration guide](docs/migration/4-to-5.md). WebGL2 remains the default backend. Everything listed under "Experimental" is opt-in with a documented fallback, and browser, GPU and device evidence for it is still pending.
 
@@ -40,7 +40,6 @@ WebGPU backend and native WebGPU deferred, meshlet and visibility-buffer drawing
 
 ### Known limits
 
-- The release candidate is not frozen. Source checks, the packed-consumer matrix and browser, visual and device acceptance run once on the remote runner before publication ([decision record](docs/prds/aura3d-native-code-complete.md)).
 - Experimental paths have source and mock-device tests only; no real-GPU or device result is claimed.
 
 ## 4.7.10 (2026-11-02)

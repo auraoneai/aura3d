@@ -13,6 +13,7 @@ import { verifyPortableInputs } from '../remote-acr/portable-inputs.mjs';
 import { ARCHIVE_ADMISSION_FILES, ARCHIVE_ADMISSION_TESTS, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER_TEST, EXTERNAL_CODEC_SOURCE_TEST, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_SOURCE_TEST, HISTORICAL_SOURCE_TEST, assertPassingPhaseReport, buildSteps, expectedExternalCodecAcceptance, expectedHistoricalAcceptance, expectedHistoricalReplay, nativeSourceInventoryForManifest, sourceTestFileCoverage, parseTap, parseVitestInventory, sourceHandoffApi, validateSourceArgv } from '../remote-acr/source-checks.mjs';
 import { redactText } from '../remote-acr/upload-artifacts.mjs';
 import { ACCEPTANCE_STAGING_RECORD, readAcceptanceStaging } from '../remote-acr/acceptance-staging.mjs';
+import { GATE_INPUTS_SCHEMA as SOURCE5_GATE_INPUTS_SCHEMA, verifySource5GateInputs } from '../remote-acr/source5-gate-inputs.mjs';
 
 const SHA = /^[a-f0-9]{64}$/;
 const fail = message => { throw new Error(`native capability gate: ${message}`); };
@@ -114,7 +115,43 @@ function parseTree(data, format) {
   if (new Set(entries.map(e => e.name)).size !== entries.length) fail('duplicate git tree entry');
   return entries;
 }
-function createCommitProof(root, freezeCommit) {
+// Git LFS: a committed LFS file's blob is a pointer naming the content SHA-256
+// and size, not the bytes. The 5.0 proof carries those pointer blobs so the
+// smudged working-tree bytes can still be bound to the freeze tree.
+const LFS_POINTER = /^version https:\/\/git-lfs\.github\.com\/spec\/v1\noid sha256:([a-f0-9]{64})\nsize (\d+)\n$/;
+function lfsPointerMatches(format, pointerBase64, oid, data) {
+  if (typeof pointerBase64 !== 'string' || !pointerBase64) return false;
+  const pointer = Buffer.from(pointerBase64, 'base64');
+  if (gitObjectHash(format, 'blob', pointer) !== oid) return false;
+  const match = LFS_POINTER.exec(pointer.toString('utf8'));
+  return Boolean(match) && (data === null || (match[1] === sha256(data) && Number(match[2]) === data.length));
+}
+function lfsPointerBlobs(root, commit) {
+  const run = (args, input) => execFileSync('git', args, { cwd: root, input, maxBuffer: 512 * 1024 * 1024 });
+  const entries = run(['ls-tree', '-r', '-z', '--full-tree', commit]).toString('utf8').split('\0').filter(Boolean).map(line => {
+    const tab = line.indexOf('\t'), [mode, type, oid] = line.slice(0, tab).split(' ');
+    return { mode, type, oid, path: line.slice(tab + 1) };
+  }).filter(entry => entry.type === 'blob' && entry.mode !== '120000' && isSourceInput(entry.path));
+  if (!entries.length) return {};
+  const attrs = run(['check-attr', '-z', '--stdin', 'filter'], `${entries.map(entry => entry.path).join('\0')}\0`).toString('utf8').split('\0');
+  const lfs = new Set();
+  for (let i = 0; i + 2 < attrs.length; i += 3) if (attrs[i + 2] === 'lfs') lfs.add(attrs[i]);
+  const wanted = entries.filter(entry => lfs.has(entry.path));
+  if (!wanted.length) return {};
+  const batch = run(['cat-file', '--batch'], `${wanted.map(entry => entry.oid).join('\n')}\n`);
+  const pointers = {};
+  let offset = 0;
+  for (const entry of wanted) {
+    const newline = batch.indexOf(0x0a, offset);
+    const size = Number(/ blob (\d+)$/.exec(batch.subarray(offset, newline).toString('utf8'))?.[1]);
+    if (!Number.isSafeInteger(size)) fail(`cannot read LFS pointer blob for ${entry.path}`);
+    const data = batch.subarray(newline + 1, newline + 1 + size);
+    offset = newline + 1 + size + 1;
+    if (LFS_POINTER.test(data.toString('utf8'))) pointers[entry.path] = data.toString('base64');
+  }
+  return Object.fromEntries(Object.entries(pointers).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+}
+function createCommitProof(root, freezeCommit, { lfs = false } = {}) {
   const format = git(root, 'rev-parse', '--show-object-format').toString().trim();
   if (!['sha1', 'sha256'].includes(format)) fail('unsupported git object format');
   const commit = git(root, 'rev-parse', '--verify', `${freezeCommit}^{commit}`).toString().trim();
@@ -130,7 +167,7 @@ function createCommitProof(root, freezeCommit) {
     for (const entry of parseTree(data, format)) if (entry.mode === '40000' || entry.mode === '040000') visit(entry.oid);
   };
   visit(tree);
-  return { format, commit, tree, commitObject: commitBytes.toString('base64'), treeObjects: objects };
+  return { format, commit, tree, commitObject: commitBytes.toString('base64'), treeObjects: objects, ...(lfs ? { lfsPointers: lfsPointerBlobs(root, commit) } : {}) };
 }
 function verifyCommitProof(root, proof, manifest, omitted = NO_OMISSIONS) {
   if (!proof || !['sha1', 'sha256'].includes(proof.format)) fail('missing commit proof');
@@ -146,6 +183,8 @@ function verifyCommitProof(root, proof, manifest, omitted = NO_OMISSIONS) {
   }
   const source = new Map(manifest.files.map(entry => [entry.path, entry]));
   const visited = new Set(), actual = [];
+  const pointers = proof.lfsPointers ?? null, usedPointers = new Set();
+  if (pointers !== null && (typeof pointers !== 'object' || Array.isArray(pointers))) fail('invalid LFS pointer proof');
   const visit = (oid, prefix) => {
     const data = objects.get(oid);
     if (!data) fail(`missing tree proof ${oid}`);
@@ -156,12 +195,18 @@ function verifyCommitProof(root, proof, manifest, omitted = NO_OMISSIONS) {
       if (!isSourceInput(path)) continue;
       const expected = source.get(path);
       if (!expected || !['100644', '100755', '120000'].includes(entry.mode) || expected.mode !== entry.mode) fail(`unlisted or incompatible committed source: ${path}`);
-      if (!omitted.has(path) && gitObjectHash(proof.format, 'blob', sourceBytes(root, expected)) !== entry.oid) fail(`source differs from freeze commit: ${path}`);
+      const pointer = pointers && Object.hasOwn(pointers, path) ? pointers[path] : null;
+      if (pointer !== null) { usedPointers.add(path); if (!lfsPointerMatches(proof.format, pointer, entry.oid, null)) fail(`invalid LFS pointer proof: ${path}`); }
+      if (!omitted.has(path)) {
+        const data = sourceBytes(root, expected);
+        if (gitObjectHash(proof.format, 'blob', data) !== entry.oid && !(pointer !== null && expected.type === 'file' && lfsPointerMatches(proof.format, pointer, entry.oid, data))) fail(`source differs from freeze commit: ${path}`);
+      }
       actual.push(path);
     }
   };
   visit(tree, '');
   if (visited.size !== objects.size) fail('unreferenced tree object in proof');
+  if (pointers && Object.keys(pointers).some(path => !usedPointers.has(path))) fail('unreferenced LFS pointer in proof');
   equalSet([...source.keys()], actual, 'committed source inventory');
 }
 function roadmapRequirements(markdown) {
@@ -949,6 +994,7 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
     try { omitted = readAcceptanceStaging(root, gateBytes, array(manifest.files, 'manifest files').map(entry => entry.path)) ?? NO_OMISSIONS; }
     catch (error) { fail(error.message); }
   }
+  if (reports?.schema === SOURCE5_GATE_INPUTS_SCHEMA) return evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports, ledgerRef, ledger, manifest, reports, proof, omitted });
   const { paths, fingerprint } = manifestInputs(root, manifest, omitted);
   verifyCommitProof(root, proof, manifest, omitted);
   const reportPaths = verifyReports(root, reports, sourceManifest, manifest, fingerprint);
@@ -973,9 +1019,39 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
     deferredAcceptanceTests, deferredReplayTests, deferredExternalCodecTests,
     acceptance: 'not-run', commitProof: proof, inputs };
 }
+// 5.0 decision record item 1: the ACR source5 pass replaces the custody runner.
+// Its gate inputs (tools/remote-acr/source5-gate-inputs.mjs) are re-derived from
+// the retained run files; the custody handoff, portable-input and retained
+// consumer-project checks do not apply. Manifest bytes, the freeze-commit proof
+// and exact scope completion are checked exactly as on the custody path.
+function evaluateSource5({ root, scoped, scopeRef, sourceManifest, sourceReports, ledgerRef, ledger, manifest, reports, proof, omitted }) {
+  if (!scoped) fail('ACR source5 gate inputs require --scope (5.0 scope list)');
+  const { paths } = manifestInputs(root, manifest, omitted);
+  verifyCommitProof(root, proof, manifest, omitted);
+  let scope;
+  try { scope = parseScopeOutcomes(bytes(root, scopeRef.path).toString('utf8')); }
+  catch (error) { fail(error.message.replace(/^native capability gate: /, '')); }
+  let verified;
+  try { verified = verifySource5GateInputs({ reports, manifestRef: sourceManifest, scope, io: { exists: path => existsSync(safePath(root, path)), read: path => bytes(root, path) } }); }
+  catch (error) { fail(error.message.replace(/^native capability gate: /, '')); }
+  const outcome = verifyScope(root, scopeRef.path, reports);
+  const v = verified.value;
+  const inputs = [...new Set([sourceManifest.path, sourceReports.path, scopeRef.path, ...(ledgerRef ? [ledgerRef.path] : []),
+    ...(ledger?.roadmap?.path ? [ledger.roadmap.path] : []), ...paths, ...verified.used])].sort();
+  return { sourceManifest, sourceReports, outcomeSource: 'aura3d-5.0-scope', scope: scopeRef, experimentalOutcomes: outcome.experimental, supersededOutcomes: outcome.superseded,
+    ...(ledgerRef ? { ledger: ledgerRef, ledgerRole: 'historical-reference', roadmap: ledger.roadmap ?? null } : {}),
+    sourceRunner: 'acr-source5', freezeCommit: proof.commit, testedOrigin: manifest.origin, sourceInputDigest: manifest.inputDigest, lockfileSha256: manifest.lockfileSha256,
+    runId: reports.runId, sourceRuns: v.stageSources, releaseKind: v.releaseKind, candidatePlan: v.candidatePlan, archives: v.archives, archiveBinding: v.archiveBinding,
+    sourceConsumerReport: null, matrixSourceReport: null, examplesSourceReport: null,
+    requiredOutcomeIds: outcome.required, completedOutcomeIds: reports.completedOutcomeIds, outcomeCompletion: reports.outcomeCompletion, outcomeSnapshotSha256: outcome.snapshotSha256,
+    expectedCheckIds: v.expectedCheckIds, executedCheckIds: v.executedCheckIds, passingCheckIds: v.passingCheckIds, checks: v.checks,
+    deferredToAcceptance: v.deferredToAcceptance, acceptance: 'not-run', commitProof: proof, inputs };
+}
 export function emitCodeCompleteGate({ root = process.cwd(), sourceManifest, sourceReports, ledger, scope, freezeCommit, out, owner }) {
   root = resolve(root); nonempty(owner, 'integration owner');
-  const proof = createCommitProof(root, nonempty(freezeCommit, 'freeze commit'));
+  let source5 = false;
+  try { source5 = readJson(root, sourceReports).schema === SOURCE5_GATE_INPUTS_SCHEMA; } catch { /* evaluate reports the unreadable path */ }
+  const proof = createCommitProof(root, nonempty(freezeCommit, 'freeze commit'), { lfs: source5 });
   const result = evaluate(root, sourceManifest, sourceReports, ledger, proof, null, scope);
   const actualInputs = git(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard').toString().split('\0').filter(isSourceInput);
   equalSet([...new Set(actualInputs)], readJson(root, sourceManifest).files.map(x => x.path), 'working source inventory');
@@ -996,7 +1072,7 @@ export function validateAcceptanceGate({ root = process.cwd(), gatePath, sourceR
     record.outcomeSource === 'aura3d-5.0-scope' ? record.scope.path : undefined);
   for (const key of Object.keys(record)) if (!['schema', 'status', 'createdAt', 'owner'].includes(key) && !(key in result)) fail(`gate field mismatch: ${key}`);
   for (const [key, value] of Object.entries(result)) if (canonical(record[key]) !== canonical(value)) fail(`gate field mismatch: ${key}`);
-  if (sourceReport && ![record.sourceConsumerReport.path, record.matrixSourceReport.path, record.examplesSourceReport.path].includes(sourceReport)) fail('selected source report is not bound to this gate');
+  if (sourceReport && ![record.sourceConsumerReport?.path, record.matrixSourceReport?.path, record.examplesSourceReport?.path].includes(sourceReport)) fail('selected source report is not bound to this gate');
   return record;
 }
 function cli() {

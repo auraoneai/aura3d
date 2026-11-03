@@ -38,6 +38,12 @@ const PIPELINE: PostPipelineOptions = {
   dither: true
 };
 
+// WebGL2DeviceHost.device is a WebGL2Device, whose negotiateOutputColorSpace is
+// non-optional (packages/rendering/src/WebGL2Device.ts); the canvas-tail path in
+// executePostGraphWebGL2 calls it. The fake mirrors a context with no
+// drawingBufferColorSpace selection: it reports sRGB only.
+const srgbOnlyNegotiation = (requested: "srgb" | "display-p3" = "srgb") => ({ requested, active: "srgb" as const, supported: ["srgb" as const], ...(requested === "srgb" ? {} : { fallbackReason: "Drawing buffer color-space selection is unavailable" }) });
+
 let seq = 0;
 function fakeTarget(format: "rgba8" | "rgba16f" = "rgba16f"): RenderTarget {
   return {
@@ -60,7 +66,7 @@ function run(pipeline: PostPipelineOptions, passes: readonly LdrPostprocessPassD
   const trace: Trace = { events: [], presented: [], tailPipelines: [], outputPass: outputPassCalls, get blooms() { return blooms; } };
   const host = {
     gl: {} as never,
-    device: { setRenderTarget: (target: unknown) => { trace.events.push(target === null ? "bind-canvas" : "bind-target"); } },
+    device: { setRenderTarget: (target: unknown) => { trace.events.push(target === null ? "bind-canvas" : "bind-target"); }, negotiateOutputColorSpace: srgbOnlyNegotiation },
     stateCache: { invalidate: () => undefined },
     resolveMultisampleTarget: () => undefined,
     post: {
@@ -104,7 +110,7 @@ describe("PostGraph v2 migration: stage ordering", () => {
       : { target: bloom, release: releaseBloom });
     const host = {
       gl: {} as never,
-      device: { setRenderTarget: () => undefined },
+      device: { setRenderTarget: () => undefined, negotiateOutputColorSpace: srgbOnlyNegotiation },
       stateCache: { invalidate: () => undefined },
       resolveMultisampleTarget: () => undefined,
       post: {

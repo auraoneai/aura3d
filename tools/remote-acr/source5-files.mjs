@@ -2,14 +2,17 @@
 //
 // In a Git checkout this is `git ls-files` (same flags the 5.0 source-pass
 // launcher stages with). The ACR source pass (tools/remote-acr/run-source5.sh)
-// ships the staged files without `.git`, plus a `shasum -a 256` manifest of
-// exactly those files at tools/remote-acr/.source5-manifest.txt; without Git
-// history that manifest is the candidate's file list.
+// ships the staged files without `.git`, plus `.native-source-manifest.json`
+// (tools/remote-acr/source5-manifest.mjs): its `files`, `administrativeFiles`
+// and `stagedExcludedPaths` together are exactly the staged files, so without
+// Git history that manifest is the candidate's file list. The legacy
+// `shasum` list tools/remote-acr/.source5-manifest.txt is still read when present.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const SOURCE5_MANIFEST = 'tools/remote-acr/.source5-manifest.txt';
+export const SOURCE5_MANIFEST = '.native-source-manifest.json';
+export const LEGACY_SOURCE5_MANIFEST = 'tools/remote-acr/.source5-manifest.txt';
 
 /** True when `repoRoot` is inside a Git work tree. */
 export function hasGitWorkTree(repoRoot) {
@@ -22,7 +25,14 @@ export function hasGitWorkTree(repoRoot) {
 
 /** Repo-relative paths from the staged source5 manifest, or null when absent. */
 export function readSource5Manifest(repoRoot) {
-  const path = join(repoRoot, SOURCE5_MANIFEST);
+  const json = join(repoRoot, SOURCE5_MANIFEST);
+  if (existsSync(json)) {
+    const manifest = JSON.parse(readFileSync(json, 'utf8'));
+    if (manifest?.schema !== 'aura3d.native-source-manifest/1' || !Array.isArray(manifest.files)) throw new Error(`Invalid staged source manifest: ${SOURCE5_MANIFEST}`);
+    const entries = [...manifest.files, ...(manifest.administrativeFiles ?? [])].map((entry) => entry?.path);
+    return [...new Set([...entries, ...(manifest.stagedExcludedPaths ?? [])])].filter((p) => typeof p === 'string' && p).sort();
+  }
+  const path = join(repoRoot, LEGACY_SOURCE5_MANIFEST);
   if (!existsSync(path)) return null;
   const files = [];
   for (const line of readFileSync(path, 'utf8').split('\n')) {

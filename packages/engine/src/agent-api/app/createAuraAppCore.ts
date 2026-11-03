@@ -57,7 +57,7 @@ import { bindAppAssetEventScope, createAppAssetEventScope, unbindAppAssetEventSc
 import { bindAtmosphereRuntimeOwner, disposeAtmosphereExtension } from "../vfx/atmosphere-api.js";
 import { bindPrd07AppRuntimeOwner, disposePrd07SystemFor, prd07MountAuthorityFor, prd07SystemFor } from "../vfx/effects-api.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
-import { sanitizeDiagnosticValue } from "../sanitizeDiagnostics.js";
+import { sanitizeDiagnosticText, sanitizeDiagnosticValue } from "../sanitizeDiagnostics.js";
 import { createAuraXRRuntime } from "../xr/xrRuntime.js";
 import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { createWorkerRootApp } from "./workerRootApp.js";
@@ -1412,7 +1412,8 @@ export function createAuraAppWithPhysicsWorldAccess(
         callback(frame);
       } catch (error) {
         // A throwing callback used to unwind the frame loop: nothing was drawn again and the page stayed blank.
-        const message = `onFrame callback threw: ${productionRenderErrorMessage(error)}`;
+        // Shipped 4.2.0 format (docs/agents/recipes.md): the Error message itself, redacted, without the "Error:" name prefix.
+        const message = `onFrame callback threw: ${frameCallbackErrorText(error)}`;
         if (!reportedFrameCallbackErrors.has(message)) {
           if (reportedFrameCallbackErrors.size >= 128) reportedFrameCallbackErrors.delete(reportedFrameCallbackErrors.values().next().value!);
           reportedFrameCallbackErrors.add(message);
@@ -1809,7 +1810,10 @@ export function createAuraAppWithPhysicsWorldAccess(
             // The narrow createAuraApp source entry need not load the PRD07
             // extension. Distinguish that normal absence from an installed
             // effect system whose authority has been revoked or is invalid.
-            if (!prd07SystemFor(app)) return undefined;
+            // A system disposed directly (supported: see ProductionEffectSystem.onDispose) has no overlay
+            // left to bind, so it is the same normal absence, not a revoked authority.
+            const prd07System = prd07SystemFor(app);
+            if (!prd07System || prd07System.disposed) return undefined;
             if (scopedAtmosphere?.isLive()) return scopedAtmosphere;
             const authority = prd07MountAuthorityFor(app, canvas, runtimeOwner);
             if (!authority?.isLive()) return null;
@@ -2650,4 +2654,17 @@ export function createAuraAppWithPhysicsWorldAccess(
     if (failures.length > 1) throw new AggregateError(failures, "Could not initialize or dispose app physics.");
     throw error;
   }
+}
+
+/** onFrame error text: the redacted Error message (4.2.0 format); other values and hostile accessors use the diagnostic formatter. */
+function frameCallbackErrorText(error: unknown): string {
+  if (error instanceof Error) {
+    try {
+      const message: unknown = error.message;
+      if (typeof message === "string") return sanitizeDiagnosticText(message);
+    } catch {
+      // Fall through to the accessor-safe formatter.
+    }
+  }
+  return productionRenderErrorMessage(error);
 }

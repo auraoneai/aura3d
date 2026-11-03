@@ -443,6 +443,50 @@ export function readGateRoutes(): ReadonlyMap<string, GateRoute> {
 }
 
 /**
+ * `git grep -ohE <pattern> -- <paths>` over shipped files: every match, one per line.
+ *
+ * In a Git checkout the index decides what is shipped, so untracked scratch files never count.
+ * A staged source tree with no `.git` (the 5.0 ACR source pass stages exactly
+ * `git ls-files --cached --others --exclude-standard`) holds only shipped files, so there the
+ * same matches come from a filesystem walk. Returning nothing there would silently demote
+ * documented and gate-driven routes to unclassified. `undefined` means the search could not run.
+ */
+function grepShippedFiles(pattern: string, paths: readonly string[]): string | undefined {
+  if (existsSync(join(repoRoot, ".git"))) {
+    try {
+      return execFileSync("git", ["grep", "-ohE", pattern, "--", ...paths], {
+        cwd: repoRoot,
+        encoding: "utf8",
+        maxBuffer: 64 * 1024 * 1024
+      });
+    } catch (error) {
+      // git grep exits 1 when nothing matches.
+      if ((error as { status?: number }).status === 1) return "";
+      return undefined;
+    }
+  }
+  const regex = new RegExp(pattern, "g");
+  const matches: string[] = [];
+  const visit = (relative: string): void => {
+    const absolute = join(repoRoot, relative);
+    if (!existsSync(absolute)) return;
+    const stats = statSync(absolute);
+    if (stats.isDirectory()) {
+      if (/(^|\/)(node_modules|\.git)$/.test(relative)) return;
+      for (const entry of readdirSync(absolute)) visit(join(relative, entry));
+      return;
+    }
+    if (!stats.isFile() || stats.size > 16 * 1024 * 1024) return;
+    const buffer = readFileSync(absolute);
+    // git grep skips binary files; mirror its NUL-byte heuristic.
+    if (buffer.subarray(0, 8000).includes(0)) return;
+    for (const match of buffer.toString("utf8").matchAll(regex)) matches.push(match[0]);
+  };
+  for (const path of paths) visit(path.replace(/\/+$/, ""));
+  return matches.join("\n");
+}
+
+/**
  * Route ids mentioned by a shipped document under `docs/`.
  *
  * `git grep` rather than a filesystem walk, so an untracked scratch file cannot promote a route
@@ -450,16 +494,8 @@ export function readGateRoutes(): ReadonlyMap<string, GateRoute> {
  */
 function readDocumentedRoutes(): ReadonlySet<string> {
   const documented = new Set<string>();
-  let out = "";
-  try {
-    out = execFileSync("git", ["grep", "-ohE", "(apps|examples)/[a-z0-9][a-z0-9-]*", "--", "docs/"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-      maxBuffer: 32 * 1024 * 1024
-    });
-  } catch {
-    return documented;
-  }
+  const out = grepShippedFiles("(apps|examples)/[a-z0-9][a-z0-9-]*", ["docs/"]);
+  if (out === undefined) return documented;
   for (const line of out.split("\n")) {
     const id = line.trim().split("/")[1];
     if (id) documented.add(id);
@@ -545,11 +581,9 @@ function readSpecDrivenRoutes(): ReadonlySet<string> {
      * a unit test rather than a literal navigation. Those are the same claim: a retained gate
      * depends on the route existing and behaving.
      */
-    out = execFileSync(
-      "git",
-      ["grep", "-ohE", "(apps|examples)/[a-z0-9][a-z0-9-]*/[a-zA-Z0-9_.-]+", "--", "tests/browser/", "tests/unit/", "tools/"],
-      { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
-    );
+    const found = grepShippedFiles("(apps|examples)/[a-z0-9][a-z0-9-]*/[a-zA-Z0-9_.-]+", ["tests/browser/", "tests/unit/", "tools/"]);
+    if (found === undefined) return driven;
+    out = found;
   } catch {
     return driven;
   }

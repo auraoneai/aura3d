@@ -23,8 +23,12 @@ describe("Aura Clash evidence route current proof wiring", () => {
   it("keeps the evidence model pointed at current arena proof files", () => {
     const serialized = JSON.stringify(auraClashEvidence);
 
-    expect(serialized).toContain("apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts");
-    expect(serialized).toContain("apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts");
+    // PRD-14 §10 (T1.10, 63f95e3a1) moved the default-boot arena app and its proof schema under
+    // src/legacy/ (src/main.ts boots ./legacy/main unless ?a3d-qr=route-aura-clash); the old
+    // src/playable/ paths are re-export shims or gone, so the evidence must cite the real modules.
+    expect(serialized).toContain("apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts");
+    expect(serialized).toContain("apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts");
+    expect(serialized).not.toContain("apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts");
     expect(serialized).toContain("window.__AURA_CLASH_ARENA_PROOF__");
     expect(serialized).not.toContain("apps/aura-clash-showcase/src/game/AuraClashGame.ts");
     expect(serialized).not.toContain("apps/aura-clash-showcase/src/game/HitboxSystem.ts");
@@ -52,7 +56,7 @@ describe("Aura Clash evidence route current proof wiring", () => {
     expect(runtimeExport).not.toContain("__AURA_CLASH_RUNTIME_EVIDENCE__");
 
     const appSource = readFileSync(
-      resolve("apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"),
+      resolve("apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts"),
       "utf8",
     );
     const globalName = runtimeExport.replace(/^window\./, "").split(".")[0] ?? "";
@@ -61,7 +65,7 @@ describe("Aura Clash evidence route current proof wiring", () => {
 
   it("grounds every required signal in a field of the current arena proof schema", () => {
     const schemaSource = readFileSync(
-      resolve("apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts"),
+      resolve("apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts"),
       "utf8",
     );
     const declaredFields = new Set(

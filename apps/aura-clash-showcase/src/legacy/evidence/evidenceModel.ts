@@ -99,11 +99,11 @@ export const auraClashRuntimeMutationEvidenceContract = {
   ],
   sourceFiles: [
     "apps/aura-clash-showcase/src/main.ts",
-    "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
-    "apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts",
-    "apps/aura-clash-showcase/src/playable/combat/AuraClashFighterController.ts",
-    "apps/aura-clash-showcase/src/fighters/HitboxSystem.ts",
-    "apps/aura-clash-showcase/src/playable/arena/RenderedArenaStage.ts",
+    "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+    "apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts",
+    "apps/aura-clash-showcase/src/gameplay/combat/AuraClashFighterController.ts",
+    "apps/aura-clash-showcase/src/gameplay/fighters/HitboxSystem.ts",
+    "apps/aura-clash-showcase/src/legacy/playable/arena/RenderedArenaStage.ts",
   ],
 } as const;
 
@@ -238,8 +238,8 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     files: [
       "apps/aura-clash-showcase/src/aura-assets.ts",
       "apps/aura-clash-showcase/public/aura-assets",
-      "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
-      "apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts",
     ],
   },
   {
@@ -272,9 +272,9 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     status: "implemented",
     proof: "The route exposes A/D or arrow-key movement, Space jump, attacks, guard, dash, meter, round timer, AI pressure, restart, P/Escape pause, and result states.",
     files: [
-      "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
-      "apps/aura-clash-showcase/src/playable/combat/auraClashMoveData.ts",
-      "apps/aura-clash-showcase/src/playable/playable.css",
+      "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+      "apps/aura-clash-showcase/src/gameplay/combat/auraClashMoveData.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/playable.css",
       "apps/aura-clash-showcase/playable/index.html",
     ],
   },
@@ -284,9 +284,9 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     status: "implemented",
     proof: "The playable route creates typed GLB actors once, mutates their actor roots and animation state every frame, and exports JSON proof through window.__AURA_CLASH_ARENA_PROOF__ without per-frame scene rebuilds or GLB reloads.",
     files: [
-      "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
-      "apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps.ts",
-      "apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+      "apps/aura-clash-showcase/src/gameplay/animation/auraClashClipMaps.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts",
     ],
   },
   {
@@ -296,7 +296,7 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     proof: "The evidence route declares the current aura-clash-arena-proof/v1 schema, reads window.__AURA_CLASH_ARENA_PROOF__, and links the 1.0.6 readiness/deployed proof artifacts instead of stale deleted-attempt artifacts.",
     files: [
       "apps/aura-clash-showcase/evidence/index.html",
-      "apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts",
+      "apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts",
       "apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json",
       "apps/aura-clash-showcase/launch-evidence/deployed-106-proof.json",
     ],
@@ -321,7 +321,7 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     proof: "Reduced motion, reduced flash, and high contrast toggles are available in the game UI; reduced motion also suppresses scene/camera animation where practical.",
     files: [
       "apps/aura-clash-showcase/src/main.ts",
-      "apps/aura-clash-showcase/src/styles.css",
+      "apps/aura-clash-showcase/src/legacy/styles.css",
       "apps/aura-clash-showcase/accessibility/index.html",
     ],
   },
@@ -346,7 +346,7 @@ export const auraClashEvidence: AuraClashEvidenceItem[] = [
     proof: "The implementation has not been browser-reviewed or screenshot-approved in this pass.",
     files: [
       "apps/aura-clash-showcase/src/main.ts",
-      "apps/aura-clash-showcase/src/styles.css",
+      "apps/aura-clash-showcase/src/legacy/styles.css",
       "apps/aura-clash-showcase/tests/screenshot.spec.ts",
     ],
   },
@@ -382,7 +382,7 @@ export const auraClashAcceptanceGates: AuraClashEvidenceItem[] = [
     label: "Public Aura3D API usage",
     status: "implemented",
     proof: "The showcase uses public createGameApp, game.combatWorld, createGameAudio, scene, and typed production-runtime GLB actor helpers from @aura3d/engine with typed assets.",
-    files: ["apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"],
+    files: ["apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts"],
   },
   {
     id: "browser-qa",

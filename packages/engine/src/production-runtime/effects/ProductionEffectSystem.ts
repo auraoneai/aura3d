@@ -579,6 +579,9 @@ export class ProductionEffectSystem {
     return this.#atmosphere.renderSnapshot(this.#app);
   }
 
+  /** True once `dispose()` ran (directly or through the app); a disposed system issues no mount authority. */
+  get disposed(): boolean { return this.#disposed; }
+
   /** Let the canvas overlay detach even when the system is disposed directly. */
   onDispose(listener: () => void): () => void {
     if (this.#disposed) { listener(); return () => {}; }

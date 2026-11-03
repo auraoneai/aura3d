@@ -38,6 +38,11 @@ function outputValues(result: ReturnType<typeof exportGLTF>, accessorIndex: numb
   return Array.from({ length: accessor.count * width }, (_, i) => data.getFloat32((view.byteOffset ?? 0) + (accessor.byteOffset ?? 0) + i * 4, true));
 }
 
+/** An adapter view whose runtime material names collide again (authored names, no `#index` suffix). */
+function collidingRuntimeNames<T extends { readonly materials: readonly { readonly name: string; readonly sourceName?: string }[] }>(asset: T): T {
+  return { ...asset, materials: asset.materials.map((material) => material.sourceName === undefined ? material : { ...material, name: material.sourceName }) };
+}
+
 describe("glTF property animation export", () => {
   it("writes typed material and light pointers with independent output accessors", () => {
     const result = exportGLTF(fixture());
@@ -77,15 +82,29 @@ describe("glTF property animation export", () => {
     live.dispose(); loader.dispose(output); loader.dispose(input);
   });
 
-  it("reports loss for ambiguous material names rather than guessing which definition was animated", async () => {
+  // 5.0 loader contract (GLTFMaterialAsset.name, 0c51a09c6): a repeated
+  // authored material name is made unique at load (`Paint.Finish#1`), so the
+  // loaded runtime track target names exactly one material and the export must
+  // resolve it to the source index. Ambiguity remains possible only when an
+  // adapter supplies colliding runtime names; that case must still be lost.
+  it("binds a repeated authored material name to its exact source index and reports loss when runtime names collide", async () => {
     const source = fixture();
     const onlyMaterial = source.animations![0].pointerChannels![0];
     const duplicate = { ...source, materials: [source.materials![0], { ...source.materials![0] }], animations: [{ name: "ambiguous", channels: [], pointerChannels: [onlyMaterial] }] };
     const loader = new GLTFLoader();
     const input = await loader.load({ url: url(exportGLTF(duplicate)) }, new LoadContext());
+    expect(input.materials.map((material) => material.name)).toEqual(["Paint.Finish", "Paint.Finish#1"]);
     const snapshot = sceneFromGLTFAsset(input);
-    expect(snapshot.animations).toEqual([]);
-    expect(snapshot.sourceWarnings?.map((warning) => warning.code)).toEqual(expect.arrayContaining(["ANIMATION_TRACK_LOST", "ANIMATION_CLIP_LOST"]));
+    expect(snapshot.sourceWarnings?.filter((warning) => warning.code === "ANIMATION_TRACK_LOST")).toEqual([]);
+    expect(snapshot.animations?.[0]?.pointerChannels?.map((channel) => channel.pointer)).toEqual(["/materials/0/pbrMetallicRoughness/metallicFactor"]);
+    const output = await loader.load({ url: url(exportGLTF(snapshot)) }, new LoadContext());
+    expect(output.animations[0].tracks.map((track) => track.target)).toEqual(["material:Paint.Finish.pbrMetallicRoughness.metallicFactor"]);
+    expect(output.animations[0].tracks[0].sample(1)).toBe(0.75);
+    loader.dispose(output);
+
+    const colliding = sceneFromGLTFAsset(collidingRuntimeNames(input));
+    expect(colliding.animations).toEqual([]);
+    expect(colliding.sourceWarnings?.map((warning) => warning.code)).toEqual(expect.arrayContaining(["ANIMATION_TRACK_LOST", "ANIMATION_CLIP_LOST"]));
     loader.dispose(input);
   });
 
@@ -99,9 +118,18 @@ describe("glTF property animation export", () => {
     };
     const loader = new GLTFLoader();
     const input = await loader.load({ url: url(exportGLTF(duplicate)) }, new LoadContext());
+    // Unique runtime names (5.0 loader contract): the track belongs to the
+    // material that carries the extension, never to its namesake without it.
     const snapshot = sceneFromGLTFAsset(input);
-    expect(snapshot.animations).toEqual([]);
-    expect(snapshot.sourceWarnings?.some((warning) => warning.code === "ANIMATION_TRACK_LOST")).toBe(true);
+    expect(snapshot.sourceWarnings?.filter((warning) => warning.code === "ANIMATION_TRACK_LOST")).toEqual([]);
+    expect(snapshot.animations?.[0]?.pointerChannels?.map((channel) => channel.pointer)).toEqual(["/materials/0/extensions/KHR_materials_clearcoat/clearcoatFactor"]);
+    expect(snapshot.materials?.[0]?.gltf?.clearcoat?.factor).toBe(0.25);
+    expect(snapshot.materials?.[1]?.gltf?.clearcoat).toBeUndefined();
+    // Colliding runtime names: the one material that has the extension must
+    // not be taken as the identity of the name.
+    const colliding = sceneFromGLTFAsset(collidingRuntimeNames(input));
+    expect(colliding.animations).toEqual([]);
+    expect(colliding.sourceWarnings?.some((warning) => warning.code === "ANIMATION_TRACK_LOST")).toBe(true);
     loader.dispose(input);
   });
 

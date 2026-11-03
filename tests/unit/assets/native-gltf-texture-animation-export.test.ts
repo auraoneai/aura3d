@@ -212,8 +212,18 @@ describe("glTF texture-transform pointer animation export", () => {
 
   it("reports ambiguous names, absent transforms and missing texture bytes as lost tracks", async () => {
     const loader = new GLTFLoader();
+    // 5.0 loader contract (GLTFMaterialAsset.name, 0c51a09c6): a repeated
+    // authored name loads as `Paint.Finish#1`, so the loaded track names one
+    // material and exports to its exact source index. Names are ambiguous only
+    // when an adapter restores the colliding authored names; that is lost.
+    const duplicated = await loadDocument(loader, authoredDocument(sampleBinding, { duplicateName: true }));
+    expect(duplicated.materials.map((material) => material.name)).toEqual(["Paint.Finish", "Paint.Finish#1"]);
+    const uniqueSnapshot = sceneFromGLTFAsset(duplicated);
+    expect(uniqueSnapshot.sourceWarnings?.filter((warning) => warning.code === "ANIMATION_TRACK_LOST")).toEqual([]);
+    expect(uniqueSnapshot.animations?.[0]?.pointerChannels?.map((channel) => channel.pointer)).toEqual([`${samplePrefix}offset`]);
+    loader.dispose(duplicated);
     const ambiguous = await loadDocument(loader, authoredDocument(sampleBinding, { duplicateName: true }));
-    const ambiguousSnapshot = sceneFromGLTFAsset(ambiguous);
+    const ambiguousSnapshot = sceneFromGLTFAsset({ ...ambiguous, materials: ambiguous.materials.map((material) => material.sourceName === undefined ? material : { ...material, name: material.sourceName }) });
     expect(ambiguousSnapshot.animations).toEqual([]);
     expect(ambiguousSnapshot.sourceWarnings?.map((warning) => warning.code)).toEqual(expect.arrayContaining(["ANIMATION_TRACK_LOST", "ANIMATION_CLIP_LOST"]));
     loader.dispose(ambiguous);
