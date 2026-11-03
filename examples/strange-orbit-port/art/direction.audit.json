@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/strange-orbit-port/art/direction.ts",
-  "sourceSha256": "d4f8a0afcffb117743331dc8631606b2c025891cfb97908f2827af9147642f30",
+  "sourceSha256": "6e55c32fcf9b0028c0c39593889e64d5b04b369da4a540508654de4ac67acef4",
   "id": "strange-orbit-port",
   "genre": "racing",
   "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
@@ -65,70 +65,70 @@
     },
     "models": [
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "strange_orbit_port_craterPylon",
+        "assetKey": "pylon",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -647,13 +647,6 @@
       {
         "role": "prop",
         "assetKey": "pylon",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "strange_orbit_port_craterPylon",
         "maxTriangles": 60000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048

@@ -24,7 +24,6 @@ import {
 import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
 import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
 import { MESHY, MESHY_ENABLED, MESHY_SIZE } from "./models";
-import { assets as craterAssets } from "../../apps/showcase-strange-orbit-port/src/aura-assets";
 import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
@@ -407,8 +406,7 @@ export function buildWorld(options: WorldOptions): World {
     for (const side of [-1, 1]) {
       const p = f.p.clone().addScaledVector(f.side, side * 11.1).addScaledVector(f.up, 6.4);
       if (MESHY_ENABLED) {
-        // GU47 SO47-M1 (gouache): the painted craterPylon (same 0.1755 footprint ratio at 13 m); `?look=original` keeps the 4.6.1 pylon.
-        builder.add(model(look === "gouache" ? craterAssets.strange_orbit_port_craterPylon : MESHY.pylon, { name: `gate-${i}-pillar-${side}`, position: [p.x - f.up.x * 6.5, p.y - f.up.y * 6.5, p.z - f.up.z * 6.5], rotation: rot, targetMaxDimension: 13, castShadow: false, receiveShadow: false }));
+        builder.add(model(MESHY.pylon, { name: `gate-${i}-pillar-${side}`, position: [p.x - f.up.x * 6.5, p.y - f.up.y * 6.5, p.z - f.up.z * 6.5], rotation: rot, targetMaxDimension: 13, castShadow: false, receiveShadow: false }));
         continue;
       }
       builder.add(primitives.cylinder({
