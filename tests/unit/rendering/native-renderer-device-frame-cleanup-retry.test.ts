@@ -58,9 +58,14 @@ describe("renderer device disposal ownership", () => {
       expect(device.disposed).toBe(false);
       expect(peerDevice.disposed).toBe(false);
       owner.dispose();
+      // 5.0 teardown contract (decision record item 3): a failed dispose stays
+      // pending until dispose() is called again, so the failed history cleanup
+      // is retried exactly once, like the device; completed work never repeats.
+      expect(deviceDispose).toHaveBeenCalledTimes(2);
+      expect(historyDispose).toHaveBeenCalledTimes(2);
       owner.dispose();
       expect(deviceDispose).toHaveBeenCalledTimes(2);
-      expect(historyDispose).toHaveBeenCalledTimes(1);
+      expect(historyDispose).toHaveBeenCalledTimes(2);
       expect(device.disposed).toBe(true);
       expect(peerDevice.disposed).toBe(false);
     } finally {

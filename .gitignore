@@ -524,3 +524,9 @@ evidence/look-reference-frames/
 # Written into the ACR staging context by tools/remote-acr/run-source5.sh; never source.
 /tools/remote-acr/.source5-manifest.txt
 /tools/remote-acr/.source5-commit
+# Poly Haven CC0 HDRI environment corpus (manifest-pinned SHA-256; *.hdr via LFS per .gitattributes),
+# read by tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts.
+!/fixtures/environment-corpus/
+!/fixtures/environment-corpus/manifest.json
+!/fixtures/environment-corpus/hdri/
+!/fixtures/environment-corpus/hdri/*.hdr

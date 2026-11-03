@@ -319,3 +319,65 @@ specs read three release probes from ignored `tests/reports/`; `turboFormulaCirc
 `showcaseRoboticWeldingWorkcell` probes were copied, paths rewritten, into the un-ignored
 `tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/`, and `turbo-drift-circuit.json` now points at the
 existing `showcaseTsukubaCircuit` fixture probe, as `turbo-drift-racing.json` already did).
+
+## 9. `tests/unit` rendering/gu47/contracts/environments/navigation-recast/input cases (ACR unit shards 3-4, candidate `4639e868c`, render34 lane)
+
+### 9a. Retired (deleted feature)
+
+| Test / case | Reason | Replacement coverage |
+|---|---|---|
+| `tests/unit/rendering/terrain-sprites-d2d4.test.ts` › assigns nearer tiles lower LODs with morph in [0, 1]; › counts hole cells through the hole mask | `createTerrainTileGrid` (plan-only tile records, never rendered) was removed by QR-10 / PRD-10 (`864ccaa89`, "planner removal") and is a throwing `removed-world-planner` stub; same removal as §7a `createNamedEnvironmentPreset`. | One case now asserts the stub throws with its replacement hint (A3D_QR_WORLD terrain pass, C-26 world queries); `tests/qr/prd10/unit/world-frame-passes.test.ts`, `chunks-registration.test.ts`. The other D2/D4 cases in the file are unchanged. |
+
+### 9b. Rewritten onto the current contract (no live-behavior assertion weakened)
+
+| File › case | Old assertion | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/environments/three-compat-environments.test.ts` | ≥ 12 presets, ≥ 6 real HDRIs | QR-10 (`864ccaa89`, "HDRI de-alias") dropped 3 alias presets that repeated a canonical sha256; the manifest's own `requirements` are 9 / 3 | requirements are 9 / 3, counts meet them, every real HDRI sha-verifies and has a distinct sha256; all other assertions unchanged |
+| `tests/unit/navigation-recast/optional-boundary.test.ts` › optional peer | root `optionalDependencies` = `{ recast-navigation }` | `3bce07cb7` moved it to an optional peer (runtime lazy-loads); `docs/migration/4-to-5.md` §3 lists the optional peer `recast-navigation` `0.43.1` | not in `dependencies`/`optionalDependencies`; root `peerDependencies` pins `0.43.1` with `peerDependenciesMeta.optional` |
+| `tests/unit/rendering/current-routes-interactive-renderer-api.test.ts` › one-renderer surface | literal `productionRenderer.render(` / `renderAsync(` in the bridge | frames now reach `Renderer.render`/`renderAsync` through the probe-frame helpers (PRD-02 probe capture + PRD-07 operation lease) | the helpers call `renderer.render(source, camera)` / `renderer.renderAsync(source, camera)` and the bridge dispatches through them with `productionRenderer` |
+| `tests/unit/rendering/shader-library.test.ts` › GGX/Burley; › packaged files synchronized | `pow(distanceToLight / range, 4.0)` literal | PRD-02 §6.3: `range <= 0` is infinite (decay only) (`ShaderLibrary.ts` comment) | the full `rangeFalloff` line with the infinite-range branch. The sync case also found a product defect, see 9c |
+| `tests/unit/rendering/native-shadow-checked.test.ts` › 2 `mock` cases (late unsupported caster preflight) | clipped point caster throws `Clipping is unavailable` on a non-WebGPU device | the 5.0 clipped specialized depth path (`ed5a52d58`, `shadows/SpecializedClippedDepth.ts`; `native-specialized-clipped-depth.test.ts` "submits only points whose source centre is retained (shadow pass)") supports clipped points | the late caster is an *instanced* clipped point (still unsupported on every device: `Clipped point depth does not support …`); no clear, no allocation, no draw, target restored, all unchanged; the `webgpu` cases are unchanged |
+| `tests/unit/rendering/native-renderer-device-frame-cleanup-retry.test.ts` › retries a failed mock device | the failed history dispose is not retried (1 call) | decision record item 3 teardown contract: a failed dispose stays pending until `dispose()` is called again (`Renderer.disposeTemporalHistory` keeps `temporalCleanupPending`) | the failed history cleanup is retried exactly once like the device (2 calls each) and a third `dispose()` repeats nothing |
+| `tests/unit/rendering/native-point-quads.test.ts` › disposed upload attempts | read `disposed.vertexBuffer` after `Geometry.dispose()` | 5.0 `Geometry`: a closed geometry's `vertexBuffer`/`indexBuffer` getters assert alive | the owned buffers are held before dispose; the getter throws `Geometry is disposed`; uploads throw `disposed` and record the attempt (unchanged) |
+| `tests/unit/gu47/ec/lut.test.ts` › help lists the lut type | `[--type …|navigation|lut]` | 5.0 adds `scalar-volume` (`docs/migration/4-to-5.md` B3, `docs/api/native-formats.md`) | `[--type …|navigation|lut|scalar-volume]` |
+| `tests/unit/gu47/eh/glb-part-handle.test.ts` › C-37 `part` member | an ownerless actor is found through a handle created for app `{}` | 5.0 scopes live actors per app owner (`actorAnimationContextFor`; ownerless actors share a separate bucket) | another owner's (ownerless) actor is not visible; the actor loaded with `runtimeOwner: app` resolves per call and stops resolving after dispose |
+
+### 9c. Product fixes
+
+- **`packages/rendering/src/shaders/pbr-direct.{vert,frag}.glsl`** were stale against the default shader library
+  (missing diffuse-detail/retroreflection, detail UVs, contact-shadow mask, two-sided rect lights, infinite range,
+  cluster tile fix). Regenerated from `createDefaultShaderLibrary().compileSource(DEFAULT_PBR_SHADER_NAME)`; the
+  sync assertion is unchanged.
+- **`packages/engine/src/agent-api/SceneQueries.ts`** mesh queries rejected a skinned item whose palette sets
+  `extraInfluences` while the geometry declares only the first influence set; the renderer
+  (`validateSkinningGeometryContract`) and `SkinningBounds` accept and draw it with four influences. The query now
+  applies the same contract (second set used only when both halves exist; a half-declared set is rejected).
+  Fixes `native-vertex-deformation.test.ts` › instance-rate joints (assertions unchanged).
+- **`packages/input/src/InputSystem.ts`** registered capture listeners with a boolean `true`; Node's `EventTarget`
+  on the ACR image reads only `options?.capture` in `removeEventListener` (local Node 26 flattens booleans), so
+  `dispose()` left every pointer listener attached and a press after dispose was recorded. Add and remove now use
+  `{ capture: true }`. Fixes `tests/unit/input/pointer-cancel-301.test.ts` on ACR (assertions unchanged).
+
+### 9d. Harness / environment fixes (assertions unchanged)
+
+- `tests/unit/contracts/impl/prd01-program-generator.test.ts` › explicit WGSL emitter: the fake program never
+  reported disposal (`disposed` stayed false), which the 5.0 retirement contract reports as
+  `Shader program did not report disposal`; the fake's `dispose()` now sets `disposed`.
+- `tests/unit/gu47/eh/root-source-shadows.test.ts`: the fake canvas `{ width, height }` is treated as a worker
+  canvas (`isHtmlCanvas`; root extensions are HTML-canvas-only in 5.0), so the attached source was never read;
+  the fake now has `getBoundingClientRect`.
+- `tests/unit/rendering/contact-shadow-mask.test.ts` (5 cases): the ACR image has no `glslangValidator`. Same
+  convention as `prd02-contact-mask-glsl.test.ts`: the compile step runs wherever glslang is installed, a
+  `runIf(A3D_REQUIRE_GLSLANG=1)` case fails when it is missing, and every source assertion still runs.
+- `tests/unit/contracts/impl/prd12-variants.test.ts`: already fixed after the candidate by `ed6613888`
+  ("prd12 overlay resynced"); passes unchanged.
+
+### 9e. Open — gitignored third-party corpus (not retired, not committed)
+
+`tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts` (2 cases) verifies the 14 HDRIs pinned
+by the tracked `fixtures/environment-corpus/manifest.json` (Poly Haven CC0, 2k + one 8k, 202 MB; the 8k file is
+134 MB, above GitHub's 100 MB per-file limit without LFS). Only the three 1k files are tracked; the rest are
+ignored by `/fixtures/*`, so both cases fail in the source pass (`ENOENT …/studio_small_08_2k.hdr`). The data is
+legitimately obtainable and neither three.js-derived nor a deleted feature, so neither retirement rule applies.
+Owner choice: (1) track the 2k/8k files through LFS (`.gitattributes` + un-ignore, as §3a did for Khronos files), or
+(2) run the case only where the corpus is present (acceptance), recorded as a deferral.

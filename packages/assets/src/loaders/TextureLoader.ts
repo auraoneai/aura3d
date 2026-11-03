@@ -1,5 +1,5 @@
 /**
- * threejs-parity ST-04/ST-07 (§6 lane L4): `THREE.TextureLoader`.
+ * threejs-parity ST-04/ST-07 (§6 lane L4): `TextureLoader`.
  *
  * `load(url, onLoad?, onProgress?, onError?)` and `loadAsync(...)` both decode
  * through the native texture/image loaders and return an owned acquisition.

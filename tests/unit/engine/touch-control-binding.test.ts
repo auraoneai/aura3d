@@ -208,10 +208,13 @@ describe("both game routes consume the reusable binding", () => {
   /**
    * The point of the extraction. If a route re-authors its own version the duplication returns and the
    * repeated-cluster metric silently climbs again.
+   *
+   * The original two consumers (`showcase-skyline-runner`, `showcase-turbo-drift-circuit`) were retired in
+   * 4.0.1 (`docs/project/showcase/apps-classification.md`); the binding's current game consumers are checked.
    */
   it.each([
-    ["apps/showcase-skyline-runner/src/main.ts"],
-    ["apps/showcase-turbo-drift-circuit/src/main.ts"]
+    ["examples/heatsink-port/main.ts"],
+    ["examples/roadster-hours-port/main.ts"]
   ])("%s declares controls instead of wiring them", async (path) => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync(path, "utf8");

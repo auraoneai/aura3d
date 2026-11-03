@@ -668,7 +668,7 @@ export class PhysicsWorld {
   sphereCastAll(origin: Vec3, radius: number, direction: Vec3, options: RaycastOptions = {}): readonly SphereCastHit[] {
     this.assertAlive();
     validateQuery(origin, options);
-    if (!Number.isFinite(radius) || radius <= 0) throw new Error("sphere cast radius must be finite and positive.");
+    if (!Number.isFinite(radius) || radius <= 0) throw new Error("sphereCast radius must be a finite positive number.");
     const normalized = normalizeVec3(direction);
     const hits: SphereCastHit[] = [];
     for (const collider of this.colliderValues()) {

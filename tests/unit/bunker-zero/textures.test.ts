@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -30,11 +30,15 @@ describe("Bunker Zero surface textures (GU47 WP-21 BZ-04)", () => {
     for (const [file, rec] of Object.entries(BZ_TEXTURE_FILES)) {
       const relative = `apps/showcase-bunker-zero/public/aura-assets/textures/${file}`;
       const bytes = readFileSync(path.join(DIR, file));
-      const tracked = execFileSync("git", ["ls-files", "--error-unmatch", "--", relative], { cwd: ROOT, encoding: "utf8" }).trim();
-      const committed = execFileSync("git", ["show", `HEAD:${relative}`], { cwd: ROOT });
+      // *.jpg here is force-added; the tracked/committed checks need Git. The ACR source pass has no
+      // .git and stages only tracked + unignored files, so there the file exists only if it is tracked.
+      if (existsSync(path.join(ROOT, ".git"))) {
+        const tracked = execFileSync("git", ["ls-files", "--error-unmatch", "--", relative], { cwd: ROOT, encoding: "utf8" }).trim();
+        const committed = execFileSync("git", ["show", `HEAD:${relative}`], { cwd: ROOT });
+        expect(tracked, file).toBe(relative);
+        expect(bytes.equals(committed), file).toBe(true);
+      }
       const image = await sharp(bytes).metadata();
-      expect(tracked, file).toBe(relative);
-      expect(bytes.equals(committed), file).toBe(true);
       expect(sha256(bytes), file).toBe(rec.sha256);
       expect(bytes.length, file).toBe(rec.bytes);
       expect([image.format, image.width, image.height], file).toEqual(["jpeg", ...rec.size]);

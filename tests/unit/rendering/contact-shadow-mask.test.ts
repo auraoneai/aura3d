@@ -66,7 +66,20 @@ const UNSHADOWED = { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false } 
 const dir = mkdtempSync(join(tmpdir(), "a3d-contact-mask-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
+// Same convention as tests/unit/contracts/impl/prd02-contact-mask-glsl.test.ts:
+// the Khronos validator runs wherever it is installed, and lanes that set
+// A3D_REQUIRE_GLSLANG=1 fail when it is missing. The 5.0 ACR image
+// (Dockerfile.playwright, decision record item 1) has no glslang, so there the
+// compile step is skipped while every source assertion below still runs.
+const glslangAvailable = !spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).error;
+const requireGlslang = process.env.A3D_REQUIRE_GLSLANG === "1";
+
+it.runIf(requireGlslang)("glslangValidator is installed (A3D_REQUIRE_GLSLANG)", () => {
+  expect(glslangAvailable, "glslangValidator missing (apt-get install glslang-tools / brew install glslang)").toBe(true);
+});
+
 function validate(name: string, source: string): string {
+  if (!glslangAvailable && !requireGlslang) return "";
   const file = join(dir, `${name}.frag`);
   writeFileSync(file, source);
   const run = spawnSync("glslangValidator", ["-S", "frag", file], { encoding: "utf8" });

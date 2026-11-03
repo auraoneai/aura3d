@@ -39,8 +39,12 @@ describe("CurrentRoutes explicit interactive renderer API", () => {
     expect(devtools).toContain("rendererFeatureReport");
     expect(devtools).toContain("rendererShadowReport");
     expect(bridge).toContain("Renderer.create");
-    expect(bridge).toContain("productionRenderer.render(");
-    expect(bridge).toContain("productionRenderer.renderAsync(");
+    // Frames reach Renderer.render / renderAsync through the probe-frame
+    // helpers (PRD-02 probe capture + PRD-07 renderer operation lease).
+    expect(bridge).toContain("renderer.render(source, camera)");
+    expect(bridge).toContain("renderer.renderAsync(source, camera)");
+    expect(bridge).toContain("renderProductionSourceWithProbesInFrame(productionRenderer,");
+    expect(bridge).toContain("renderProductionSourceWithProbesInAsyncFrame(productionRenderer,");
     // Deprecated aliases survive this phase only (removed in Phase 8).
     expect(barrel).toContain("Renderer as ProductionWebGL2Renderer");
     expect(barrel).toContain("Renderer as ProductionRuntimeRenderer");

@@ -1,8 +1,8 @@
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { listCandidateFiles } from "../../../tools/remote-acr/source5-files.mjs";
 
 const APP = path.resolve("apps/showcase-bunker-zero");
 const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "utf8"));
@@ -23,9 +23,11 @@ describe("bunker zero local assets", () => {
       expect(entry.provenance?.license).toBeTruthy();
       for (const evidence of entry.provenance?.evidence ?? []) expect(existsSync(path.join(APP, evidence)), evidence).toBe(true);
       // `*.png` and `*.jpg` are gitignored: a file that exists on disk but is untracked is missing on every fresh clone.
+      // `git ls-files`, or without `.git` (ACR source pass) the staged candidate manifest, which holds only
+      // tracked and un-ignored files (tools/remote-acr/source5-files.mjs).
       for (const rel of [entry.outputPath, ...(entry.provenance?.evidence ?? [])]) {
-        const tracked = execFileSync("git", ["ls-files", "--", path.join("apps/showcase-bunker-zero", rel)], { encoding: "utf8" }).trim();
-        expect(tracked, `${rel} must be tracked in git`).not.toBe("");
+        const repoPath = path.posix.join("apps/showcase-bunker-zero", rel);
+        expect(listCandidateFiles(process.cwd(), [repoPath]), `${rel} must be tracked in git`).toContain(repoPath);
       }
     });
   }

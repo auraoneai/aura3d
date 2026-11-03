@@ -133,12 +133,13 @@ describe("PRD-04 P3-1 programFeatures()", () => {
 });
 
 describe("PRD-04 P3-2 materialLobes registry", () => {
-	it("registers all eleven lobes flag-gated to A3D_QR_MATERIALS", () => {
+	it("registers all twelve lobes flag-gated to A3D_QR_MATERIALS", () => {
 		const active = materialLobes(FLAGS_ON);
 		// Registry sorts by (order ?? 0, id) — order-independent check.
+		// 5.0 (26eae82e2) adds KHR_materials_diffuse_transmission as the twelfth lobe (docs/rendering/material-matrix.md).
 		const ids = active.filter((l) => l.owner === "prd04").map((l) => l.id).sort();
 		expect(ids).toEqual([
-			"anisotropy", "clearcoat", "dispersion", "emissive-strength", "ior", "iridescence",
+			"anisotropy", "clearcoat", "diffuse-transmission", "dispersion", "emissive-strength", "ior", "iridescence",
 			"sheen", "specular", "transmission", "unlit", "volume"
 		]);
 		for (const lobe of active) {

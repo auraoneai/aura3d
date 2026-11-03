@@ -847,7 +847,12 @@ function intersectReadableGeometry(geometry: Geometry, matrix: Float32Array, ori
   })) return [];
   if (options.skinning) {
     const skin = options.skinning;
-    const names = skin.extraInfluences ? ["joints", "weights", "joints1", "weights1"] as const : ["joints", "weights"] as const;
+    // Same geometry contract as the renderer (`validateSkinningGeometryContract`,
+    // SkinningBounds): a vec4 first set is required; the second set is used
+    // only when the palette enables it and the geometry declares both halves.
+    const hasJoints1 = vertices.format.hasAttribute("joints1"), hasWeights1 = vertices.format.hasAttribute("weights1");
+    if (hasJoints1 !== hasWeights1) return [];
+    const names = skin.extraInfluences && hasJoints1 ? ["joints", "weights", "joints1", "weights1"] as const : ["joints", "weights"] as const;
     if (!Number.isSafeInteger(skin.jointCount) || skin.jointCount <= 0 || !(skin.matrices instanceof Float32Array) || skin.matrices.length < skin.jointCount * 16 ||
       names.some((name) => !vertices.format.hasAttribute(name) || vertices.format.getAttribute(name).components !== 4)) return [];
     for (let joint = 0; joint < skin.jointCount; joint += 1) {

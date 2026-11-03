@@ -22,6 +22,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
+import { listCandidateFiles } from "../remote-acr/source5-files.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
 
@@ -129,10 +130,11 @@ const SKIP_DIRECTORIES = new Set([
  */
 function trackedFiles(): ReadonlySet<string> {
   try {
-    const out = execFileSync("git", ["ls-files", "-z"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-    return new Set(out.split("\u0000").filter((value) => value.length > 0));
+    // `git ls-files`; without `.git` (the 5.0 ACR source pass) the staged candidate manifest,
+    // which lists exactly the files that were shipped (`tools/remote-acr/source5-files.mjs`).
+    return new Set(listCandidateFiles(repoRoot));
   } catch {
-    // No git available: fall back to the stricter reading and treat everything as tracked.
+    // Neither available: fall back to the stricter reading and treat everything as tracked.
     return new Set<string>();
   }
 }
@@ -425,8 +427,15 @@ function withoutQuotedSpans(line: string): string {
  *   3. a bare identifier standing alone as an array or object-literal entry, which is how a
  *      generated registry table names a symbol without naming its file — accepted only in a file
  *      whose path already looks like a registry, since elsewhere it is ordinary code.
+ *
+ * Shapes 2 and 3 name the symbol without a module specifier, so they bind the candidate's export
+ * only when the referencing file has no declaration of its own with that name: a
+ * `const frame = …` followed by `return { uniforms, frame }` (or `register(frame)`) passes the
+ * local value. `declaredLocally` answers that per file. A `.require(` method call (for example
+ * `registry.require(id)`) is not CommonJS `require`, and an `export const`/`let`/`var` line
+ * declares a new binding — braces on it are a type or value literal, not a binding list.
  */
-function bindsSymbol(line: string, symbol: string, referencingPath: string): boolean {
+function bindsSymbol(line: string, symbol: string, referencingPath: string, declaredLocally: (symbol: string) => boolean = () => false): boolean {
   // Cheap prefilter. The three shapes below all require the name to be present literally, and this
   // scan runs the check for every exported symbol against every line of the repository.
   if (!line.includes(symbol)) return false;
@@ -439,8 +448,8 @@ function bindsSymbol(line: string, symbol: string, referencingPath: string): boo
   //    `export interface I { readonly frame: number }` is not a consumer of `frame`.
   //    `export type { X }` stays a binding export, so it is excluded from the declaration test.
   const isBracedExport = /^\s*export\s*(?:type\s*)?\{/.test(code);
-  const isDeclaration = !isBracedExport && /^\s*export\s+(?:declare\s+)?(?:abstract\s+)?(?:interface|type|class|function|enum|namespace|async)\b/.test(code);
-  if ((/^\s*(?:import|export)\b/.test(code) || /\brequire\s*\(/.test(code)) && !isDeclaration) {
+  const isDeclaration = !isBracedExport && /^\s*export\s+(?:declare\s+)?(?:abstract\s+)?(?:interface|type|class|function|enum|namespace|async|const|let|var)\b/.test(code);
+  if ((/^\s*(?:import|export)\b/.test(code) || COMMONJS_REQUIRE.test(code)) && !isDeclaration) {
     for (const braced of code.match(/\{[^}]*\}/g) ?? []) {
       if (boundary.test(braced)) return true;
     }
@@ -451,11 +460,14 @@ function bindsSymbol(line: string, symbol: string, referencingPath: string): boo
     return false;
   }
 
-  // 2. `registerThing(X)` / `registry.add(X)`.
+  if (declaredLocally(symbol)) return false;
+
+  // 2. `registerThing(X)` / `registry.add(X)` — X a whole top-level argument, not a callback
+  //    parameter or a property inside an object-literal argument.
   const registerCall = /\b(?:register[A-Za-z0-9_$]*|registry(?:\.[A-Za-z0-9_$]+)?)\s*\(([^)]*)\)/g;
   let call: RegExpExecArray | null;
   while ((call = registerCall.exec(code)) !== null) {
-    if (boundary.test(call[1])) return true;
+    if (call[1].split(",").some((argument) => argument.trim().replace(/^\.\.\./, "") === symbol)) return true;
   }
 
   // 3. A bare table entry inside a generated registry.
@@ -464,6 +476,16 @@ function bindsSymbol(line: string, symbol: string, referencingPath: string): boo
   }
 
   return false;
+}
+
+/** CommonJS `require(` — not a `.require(` method call such as `registry.require(id)`. */
+const COMMONJS_REQUIRE = /(?<![.\w$])require\s*\(/;
+
+/** Whether `text` declares `symbol` itself (const/let/var/function/class, or a destructuring). */
+function declaresLocally(text: string, symbol: string): boolean {
+  const name = escapeRegExp(symbol);
+  return new RegExp(`\\b(?:const|let|var|function\\*?|class)\\s+${name}\\b`).test(text)
+    || new RegExp(`\\b(?:const|let|var)\\s*[{[][^=;]*\\b${name}\\b[^=;]*[}\\]]\\s*=`).test(text);
 }
 
 /** The last path segment of a specifier, without a module extension. */
@@ -531,7 +553,7 @@ function referencesSpecifier(line: string, specifier: string): boolean {
  * name in the candidate is a collision rather than a consumer.
  */
 function bindsFromOtherModule(line: string, candidateSpecifiers: readonly string[]): boolean {
-  if (!/\b(import|export)\b/.test(line) && !/\brequire\s*\(/.test(line)) return false;
+  if (!/\b(import|export)\b/.test(line) && !COMMONJS_REQUIRE.test(line)) return false;
   const sources = [...line.matchAll(/(?:from|require\s*\(|import\s*\()\s*["'`]([^"'`]+)["'`]/g)].map((match) => match[1] ?? "");
   if (sources.length === 0) return false;
   return sources.every((source) => !candidateSpecifiers.some((specifier) => quotedResolvesTo(source, specifier)));
@@ -661,6 +683,15 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
 
   for (const file of repo) {
     if (file.path === path) continue;
+    const localDeclarations = new Map<string, boolean>();
+    const declaredLocally = (symbol: string): boolean => {
+      let declared = localDeclarations.get(symbol);
+      if (declared === undefined) {
+        declared = file.text.includes(symbol) && declaresLocally(file.text, symbol);
+        localDeclarations.set(symbol, declared);
+      }
+      return declared;
+    };
     for (const evidence of multilinePublicBindings(file, path, symbols)) {
       const key = `${evidence.point}|${evidence.at}`;
       if (seen.has(key)) continue;
@@ -695,7 +726,7 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
          * blocked by a cross-package import that does not exist.
          */
         if (bindsFromOtherModule(line, specifiers)) continue;
-        const symbolHit = symbols.find((symbol) => symbol.length > 4 && bindsSymbol(line, symbol, file.path));
+        const symbolHit = symbols.find((symbol) => symbol.length > 4 && bindsSymbol(line, symbol, file.path, declaredLocally));
         if (symbolHit === undefined) continue;
         matched = symbolHit;
       }

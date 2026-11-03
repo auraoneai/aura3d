@@ -10,7 +10,12 @@ describe("optional Recast navigation boundary", () => {
 
     const root = JSON.parse(readFileSync("package.json", "utf8"));
     expect(root.dependencies).not.toHaveProperty("recast-navigation");
-    expect(root.optionalDependencies).toEqual({ "recast-navigation": "0.43.1" });
+    // 3bce07cb7 moved recast-navigation from optionalDependencies to an
+    // optional peer (runtime lazy-loads it); docs/migration/4-to-5.md §3
+    // records the optional peer `recast-navigation` `0.43.1` for 5.0.
+    expect(root.optionalDependencies ?? {}).not.toHaveProperty("recast-navigation");
+    expect(root.peerDependencies).toEqual(expect.objectContaining({ "recast-navigation": "0.43.1" }));
+    expect(root.peerDependenciesMeta?.["recast-navigation"]).toEqual({ optional: true });
 
     for (const path of ["packages/rendering/package.json", "packages/product-studio/package.json"]) {
       // invariant: source must keep `@aura3d/navigation-recast` — enters the engine only as an optional peer and stays out of recommended runtime dependenci

@@ -113,7 +113,9 @@ describe("renderer post and batch disposal retry", () => {
       expect(attempts).toEqual([3, 1]);
       expect(ownDispose).toHaveBeenCalledTimes(2);
       expect(batchDispose).toHaveBeenCalledTimes(2);
-      expect(historyDispose).toHaveBeenCalledTimes(1);
+      // 5.0 teardown contract (decision record item 3): a failed dispose stays pending until dispose() is
+      // called again, so the failed (independent) history cleanup is retried once and then succeeds.
+      expect(historyDispose).toHaveBeenCalledTimes(2);
       expect(deviceDispose).toHaveBeenCalledTimes(1);
 
       blocked = false;
@@ -124,6 +126,7 @@ describe("renderer post and batch disposal retry", () => {
       expect(batchDispose).toHaveBeenCalledTimes(3);
       expect(ownBatch.disposed).toBe(true);
       expect(deviceBatch.disposed).toBe(true);
+      expect(historyDispose).toHaveBeenCalledTimes(2);
       expect(deviceDispose).toHaveBeenCalledTimes(1);
     } finally {
       blocked = false;

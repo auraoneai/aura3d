@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,6 +14,7 @@ import {
   type AdmissionModel,
   type GateG5Result,
 } from "../../../packages/aura3d-cli/src/admission/gates.js";
+import { listCandidateFiles } from "../../../tools/remote-acr/source5-files.mjs";
 import { readAssetManifest } from "../../../packages/aura3d-cli/src/asset-manifest.js";
 import { admissionModelFromGltf, readAdmissionGltf } from "../../../packages/aura3d-cli/src/admission/glb.js";
 import { isBuilderGenerator, isBuilderScriptPath } from "../../../packages/aura3d-cli/src/admission/builder-patterns.js";
@@ -158,9 +158,9 @@ describe("admission gate units", () => {
 
 describe("builder pattern coverage", () => {
   test("every builder-named script under apps/*/scripts is detected", () => {
-    const files = execFileSync("git", ["ls-files", "apps/*/scripts/*"], { cwd: root, encoding: "utf8" })
-      .split("\n")
-      .filter(Boolean);
+    // `git ls-files apps/*/scripts/*` (a pathspec `*` also matches `/`); without `.git` (ACR source
+    // pass) the staged candidate manifest via tools/remote-acr/source5-files.mjs.
+    const files = listCandidateFiles(root, ["apps"]).filter((file) => /^apps\/.+\/scripts\/.+/.test(file));
     const builderNamed = files.filter((file) => /(?:build|blender-build|build-review|register)-[^/]*\.(?:mjs|ts|py)$/i.test(file));
     // Corpus sanity bound: 19 builder scripts remain after the arcade-slate
     // removal (c41705be2); keep a lower bound that still fails on an empty

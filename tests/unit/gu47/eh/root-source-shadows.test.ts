@@ -45,7 +45,10 @@ describe("GU47 E-H root render sources and shadows", () => {
       .add(primitives.box({ name: "ground", size: [20, 0.2, 20], castShadow: false }).runtime({ id: "ground" }))
       .toJSON() as AuraSceneSnapshot;
     const primitiveNodes = snapshot.nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive");
-    const canvas = { width: 320, height: 180 } as HTMLCanvasElement;
+    // Root app extensions bind only to an HTML canvas (5.0 worker rendering:
+    // `isHtmlCanvas` in compiler/labels.ts); a bare size object is treated as
+    // a worker canvas and never sees attached root sources.
+    const canvas = { width: 320, height: 180, getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 180 }) } as unknown as HTMLCanvasElement;
     const modelMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.5, 0, 1];
     const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => actor.collectRenderItems({ modelMatrix }) } });
     try {

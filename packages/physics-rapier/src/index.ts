@@ -887,7 +887,9 @@ export class RapierPhysicsWorld {
     if (!best) return undefined;
     const distance = best.time_of_impact;
     const castCenter = pointAt(query.origin, query.direction, distance);
-    const normal = queryNormal(rotateVector(best.normal1, rotation), query.direction);
+    // A sweep that starts overlapping has no separating direction (Rapier reports an arbitrary
+    // penetration axis); like the reference query path (`Raycast.ts`), it reports `-direction`.
+    const normal = distance === 0 ? overlapNormal(query.direction) : queryNormal(rotateVector(best.normal1, rotation), query.direction);
     return { distance, castCenter, point: [castCenter[0] - normal[0] * sphereRadius, castCenter[1] - normal[1] * sphereRadius, castCenter[2] - normal[2] * sphereRadius], normal };
   }
   raycast(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance = Number.POSITIVE_INFINITY): RapierRayHit | undefined {
@@ -975,8 +977,13 @@ function pointAt(origin: NativeVector, direction: NativeVector, distance: number
 
 function queryNormal(value: NativeVector, direction: NativeVector): PhysicsVec3 {
   const length = Math.hypot(value.x, value.y, value.z);
-  if (!Number.isFinite(length) || length < 1e-8) return [-direction.x, -direction.y, -direction.z];
+  if (!Number.isFinite(length) || length < 1e-8) return overlapNormal(direction);
   return [value.x / length, value.y / length, value.z / length];
+}
+
+/** `-direction` without negative zeros (`0 - 0` is `+0`, unary minus is `-0`). */
+function overlapNormal(direction: NativeVector): PhysicsVec3 {
+  return [0 - direction.x, 0 - direction.y, 0 - direction.z];
 }
 
 function rotateVector(value: NativeVector, q: NativeRotation): NativeVector {

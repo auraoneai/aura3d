@@ -13,6 +13,23 @@ import {
 } from "@aura3d/asset-index";
 import { validateAnimationStudioAssets } from "../../../packages/aura3d-cli/src/index";
 
+/**
+ * Smallest well-formed GLB 2.0 container (header + one JSON chunk). `validate-animation` parses
+ * every `format: "glb"` output and its external dependencies (S5-WP07-01 / S5-WP28-02, 5.0), so the
+ * fixture outputs must be real GLB containers rather than arbitrary bytes.
+ */
+function minimalGlb(tag: string): Buffer {
+  let json = Buffer.from(JSON.stringify({ asset: { version: "2.0", generator: tag } }), "utf8");
+  if (json.length % 4 !== 0) json = Buffer.concat([json, Buffer.alloc(4 - (json.length % 4), 0x20)]);
+  const header = Buffer.alloc(20);
+  header.writeUInt32LE(0x46546c67, 0);
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(20 + json.length, 8);
+  header.writeUInt32LE(json.length, 12);
+  header.writeUInt32LE(0x4e4f534a, 16);
+  return Buffer.concat([header, json]);
+}
+
 function asset(partial: Partial<AuraCanonicalAsset> & Pick<AuraCanonicalAsset, "id">): AuraCanonicalAsset {
   return {
     source: partial.source ?? "test",
@@ -165,7 +182,7 @@ describe("evaluateAnimationAssetProfile", () => {
     const outputDir = join(projectDir, "public", "aura-assets");
     mkdirSync(outputDir, { recursive: true });
     mkdirSync(join(projectDir, "src"), { recursive: true });
-    const payload = Buffer.from("starter-pack-asset");
+    const payload = minimalGlb("starter-pack-asset");
     const hash = `sha256-${createHash("sha256").update(payload).digest("hex")}`;
 
     const assets = animationStarterPack.map((entry, index) => {
@@ -239,7 +256,7 @@ describe("evaluateAnimationAssetProfile", () => {
     const assets = selected.map((entry, index) => {
       const fileName = `${entry.id.replace(/[^a-z0-9]+/gi, "-")}.glb`;
       const outputPath = `public/aura-assets/${fileName}`;
-      const payload = Buffer.from(`starter-pack-episode-${entry.id}`);
+      const payload = minimalGlb(`starter-pack-episode-${entry.id}`);
       const hash = `sha256-${createHash("sha256").update(payload).digest("hex")}`;
       writeFileSync(join(projectDir, outputPath), payload);
       return {

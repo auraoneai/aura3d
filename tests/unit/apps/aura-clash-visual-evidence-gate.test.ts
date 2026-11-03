@@ -126,7 +126,10 @@ describe("Aura Clash machine visual table cannot pass on page declarations", () 
   });
 
   it("does not reintroduce a primitive skyline as the arena backdrop", () => {
-    const stage = readFileSync("apps/aura-clash-showcase/src/playable/arena/RenderedArenaStage.ts", "utf8");
+    // QR-14 T1.10 (63f95e3a1) moved the default (flag-off) playable route under `src/legacy/`; `src/main.ts`
+    // boots `legacy/main` unless `?a3d-qr=route-aura-clash`, so the live sources are read there.
+    const PLAYABLE = "apps/aura-clash-showcase/src/legacy/playable";
+    const stage = readFileSync(`${PLAYABLE}/arena/RenderedArenaStage.ts`, "utf8");
     // Six primitive cubes previously stood in for the hero environment, which the repo forbids and
     // which rendered as flat dark rectangles behind the fighters.
     expect(stage).not.toContain("skylineBlocks");
@@ -146,12 +149,12 @@ describe("Aura Clash machine visual table cannot pass on page declarations", () 
      * authoritative declaration is the element list in `AuraClashArenaStage.ts`, which is matched
      * against labels a real frame submitted, so a backdrop that emits nothing cannot pass.
      */
-    const declarations = readFileSync("apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts", "utf8");
+    const declarations = readFileSync(`${PLAYABLE}/arena/AuraClashArenaStage.ts`, "utf8");
     expect(declarations).toContain("typed-arena-environment");
     expect(declarations).toContain("aura-clash-arena-architecture");
 
     // And the route must bind that prefix to a typed asset rather than to primitives.
-    const route = readFileSync("apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts", "utf8");
+    const route = readFileSync(`${PLAYABLE}/AuraClashArenaApp.ts`, "utf8");
     expect(route).toContain("labelPrefix: \"aura-clash-arena-architecture\"");
     expect(route).toContain("asset: assets.arenaNeonDowntownTextured");
   });

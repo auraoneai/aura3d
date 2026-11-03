@@ -73,6 +73,11 @@ function stripComments(source: string): string {
 // argument, a concatenated path, a `model("…")` payload — stays a violation.
 const RAW_ASSET_URL = /["'`](?:https?:\/\/|\/|\.{1,2}\/)[^"'`]*\.(?:glb|gltf)(?:[?#][^"'`]*)?["'`]/gi;
 const TYPED_ASSET_FIELD = /(?:url|colliderUrl|source|mobile)\s*:\s*(?:new\s+URL\(\s*)?$/;
+// Provenance records written by `aura3d assets add --download-url/--source-url/--source-page`
+// (`metadata.provenance` of a typed-asset definition) name the upstream file the
+// asset was admitted from. Only a remote http(s) provenance literal is sanctioned;
+// nothing loads it at runtime.
+const PROVENANCE_FIELD = /(?:downloadUrl|sourceUrl|sourcePage)\s*:\s*$/;
 
 describe("public example source boundary", () => {
   it("does not import renderer internals or raw model assets for public showcase/template visuals", () => {
@@ -100,7 +105,9 @@ describe("public example source boundary", () => {
       let rawUrl: RegExpExecArray | null;
       while ((rawUrl = RAW_ASSET_URL.exec(source)) !== null) {
         const lineStart = source.lastIndexOf("\n", rawUrl.index) + 1;
-        if (!TYPED_ASSET_FIELD.test(source.slice(lineStart, rawUrl.index))) {
+        const prefix = source.slice(lineStart, rawUrl.index);
+        const provenance = PROVENANCE_FIELD.test(prefix) && /^["'`]https?:\/\//i.test(rawUrl[0]);
+        if (!TYPED_ASSET_FIELD.test(prefix) && !provenance) {
           violations.push(`${file}: raw GLB/glTF URL outside generated typed assets`);
           break;
         }

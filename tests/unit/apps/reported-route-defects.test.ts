@@ -121,51 +121,9 @@ describe("aura-clash-showcase — hit timing, spacing and recovery frames", () =
   });
 });
 
-describe("showcase-skyline-runner — jump, landing, scenery, session lifecycle", () => {
-  const source = routeSource("showcase-skyline-runner");
-
-  it("derives jump motion from the shared solver rather than route-local tuning", () => {
-    // The barely-there jump came from apex being geometry-derived in `solvePlatformerMotion`. The
-    // fix is intent-derived apex; the binding is that this route uses the solver at all.
-    expect(source).toMatch(/solvePlatformerMotion|validatePlatformerMotion|platformerMotion/);
-  });
-
-  it("does not carry its own gravity or jump-velocity constants", () => {
-    // Route-local physics constants are how a shared fix stops reaching the route (R3).
-    expect(source).not.toMatch(/const\s+(GRAVITY|JUMP_VELOCITY|JUMP_SPEED)\s*=/);
-  });
-
-  it("reports session lifecycle rather than self-authoring completion", () => {
-    // Retained from the existing gameplay-regression suite because it is one of the named
-    // symptoms: a route that declares itself complete cannot demonstrate a session.
-    // invariant: source must keep `completed: false` — uses the shared focus API rather than building its own indicator
-    expect(source).toContain("completed: false");
-    expect(source).not.toContain("visualReviewPass: true");
-  });
-});
-
-describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent", () => {
-  const source = routeSource("showcase-turbo-drift-circuit");
-
-  it("grounds the car on a surface query rather than a frozen plane constant", () => {
-    /*
-     * The wheels-sinking defect was a rendered Y pinned to a single `TRACK_SURFACE_Y` literal: a
-     * car grounded on a frozen plane cannot respond to the surface it is over. `VehicleChassis`
-     * takes a surface query and derives chassis height from four contact points.
-     */
-    expect(source).toMatch(/createVehicleChassis|vehicleChassis|surfaceQuery/);
-    expect(source).not.toMatch(/const\s+TRACK_SURFACE_Y\s*=/);
-  });
-
-  it("drives the opponent from a shared driver rather than a route-local integrator", () => {
-    expect(source).toMatch(/createTurboOpponentAi|opponentAi/);
-  });
-
-  it("still declares its blocker rather than claiming a visual pass", () => {
-    // ADR 0002 blocks the force-model migration, so this route stays honest about it.
-    expect(source).not.toContain("visualReviewPass: true");
-  });
-});
+// `showcase-skyline-runner` and `showcase-turbo-drift-circuit` were retired in 4.0.1
+// (`docs/project/showcase/apps-classification.md`); their route-binding cases are retired with them
+// (docs/project/status/retired-tests.md section 9).
 
 describe("showcase-blockfall-reactor — complete game-loop verification", () => {
   const source = routeSource("showcase-blockfall-reactor");

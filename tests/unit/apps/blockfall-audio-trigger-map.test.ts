@@ -19,7 +19,9 @@ import {
   blockfallStemsForLevel
 } from "../../../apps/showcase-blockfall-reactor/src/blockfall-audio-manifest";
 
-const TRIGGER_MAP_SOURCE = readFileSync("apps/showcase-blockfall-reactor/src/main.ts", "utf8");
+// QR-14 T1.10 (PRD-14 §10): `src/main.ts` is now the route-flag dispatcher and boots `src/legacy/main.ts`
+// by default, and the audio controller moved to `src/gameplay/` (the old path is a re-export shim).
+const TRIGGER_MAP_SOURCE = readFileSync("apps/showcase-blockfall-reactor/src/legacy/main.ts", "utf8");
 
 describe("Blockfall Reactor audio manifest is CLI-registered and CC0-synthesized", () => {
   it("registers exactly the nine gameplay cues plus hum and four stems", () => {
@@ -90,7 +92,7 @@ describe("Every mounted state change is wired to its registered cue", () => {
   it("fires cues from the trigger map at the observed-event sites in main.ts", () => {
     // Accepted-action sites: the kit emits an event of the same kind only when
     // the action was accepted, so cue firing proves acceptance, not attempt.
-    const AUDIO_SOURCE = readFileSync("apps/showcase-blockfall-reactor/src/reactor-audio.ts", "utf8");
+    const AUDIO_SOURCE = readFileSync("apps/showcase-blockfall-reactor/src/gameplay/reactor-audio.ts", "utf8");
     expect(TRIGGER_MAP_SOURCE).toContain('action.type === "move" && accepted.has("move")) void reactorAudio.cue("move")');
     expect(TRIGGER_MAP_SOURCE).toContain('action.type === "rotate" && accepted.has("rotate")) void reactorAudio.cue("rotate")');
     expect(TRIGGER_MAP_SOURCE).toContain('action.type === "hold" && accepted.has("hold")) void reactorAudio.cue("hold-swap")');

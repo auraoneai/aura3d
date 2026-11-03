@@ -151,9 +151,14 @@ export class InputSystem {
     const disposers: Array<() => void> = [() => { prepareCaptureReleases()(); this.captureReleasers.delete(target); }];
     // The public structural target only requires two arguments; DOM targets
     // accept this optional third capture argument, and simpler hosts ignore it.
+    // The options-object form is used for both calls: older Node EventTarget
+    // releases (the ACR image's Node; local Node 26 is fixed) read only
+    // `options?.capture` in removeEventListener, so a boolean `true` there
+    // left every capture listener attached after dispose.
+    const captureOptions = { capture: true } as const;
     const eventTarget = target as InputEventTargetLike & {
-      addEventListener(type: string, listener: EventListener, capture: boolean): void;
-      removeEventListener(type: string, listener: EventListener, capture: boolean): void;
+      addEventListener(type: string, listener: EventListener, options: { readonly capture: boolean }): void;
+      removeEventListener(type: string, listener: EventListener, options: { readonly capture: boolean }): void;
     };
     for (const [type, listener] of listeners) {
       // DOM capture phase observes an old event before a control's bubbling
@@ -161,8 +166,8 @@ export class InputSystem {
       const capture = type.startsWith("pointer") || type === "lostpointercapture";
       if (capture) {
         try {
-          eventTarget.addEventListener(type, listener, true);
-          disposers.push(() => eventTarget.removeEventListener(type, listener, true));
+          eventTarget.addEventListener(type, listener, captureOptions);
+          disposers.push(() => eventTarget.removeEventListener(type, listener, captureOptions));
         } catch {
           // Some synthetic targets enforce the two-argument structural API.
           target.addEventListener(type, listener);

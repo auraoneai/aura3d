@@ -637,11 +637,17 @@ describe("staged native point snapshot leases", () => {
     expect(lostSource.indexBuffer!.hasAttemptedUpload).toBe(true);
 
     const disposed = pointGeometry(true);
+    // 5.0 Geometry: a closed geometry no longer exposes its released buffers
+    // (`Geometry.vertexBuffer`/`indexBuffer` getters assert alive), so the
+    // owned buffers are held directly to observe their disposed upload attempts.
+    const disposedVertex = disposed.vertexBuffer;
+    const disposedIndex = disposed.indexBuffer!;
     disposed.dispose();
-    expect(() => disposed.vertexBuffer.upload(firstDevice)).toThrow(/disposed/i);
-    expect(() => disposed.indexBuffer!.upload(firstDevice)).toThrow(/disposed/i);
-    expect(disposed.vertexBuffer.hasAttemptedUpload).toBe(true);
-    expect(disposed.indexBuffer!.hasAttemptedUpload).toBe(true);
+    expect(() => disposed.vertexBuffer).toThrow(/Geometry is disposed/);
+    expect(() => disposedVertex.upload(firstDevice)).toThrow(/disposed/i);
+    expect(() => disposedIndex.upload(firstDevice)).toThrow(/disposed/i);
+    expect(disposedVertex.hasAttemptedUpload).toBe(true);
+    expect(disposedIndex.hasAttemptedUpload).toBe(true);
     await arena.dispose();
     source.dispose();
     lostSource.dispose();

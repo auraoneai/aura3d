@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -54,12 +54,16 @@ describe("Bunker Zero decal asset refs", () => {
       expect(new URL(ref.url, "https://bunker.example").origin).toBe("https://bunker.example");
       expect(ref.hash).toMatch(/^sha256-[a-f0-9]{64}$/);
 
-      const tracked = execFileSync("git", ["ls-files", "--error-unmatch", "--", relative], { cwd: ROOT, encoding: "utf8" }).trim();
-      const committed = execFileSync("git", ["show", `HEAD:${relative}`], { cwd: ROOT });
       const local = readFileSync(path.join(ROOT, relative));
-      expect(tracked).toBe(relative);
-      expect(local.equals(committed)).toBe(true);
-      expect(ref.hash).toBe(sha256(committed));
+      // The tracked/committed checks need Git; the ACR source pass has no .git and stages only tracked +
+      // unignored files (*.png is ignored repo-wide), so there the PNG exists only if it is tracked.
+      if (existsSync(path.join(ROOT, ".git"))) {
+        const tracked = execFileSync("git", ["ls-files", "--error-unmatch", "--", relative], { cwd: ROOT, encoding: "utf8" }).trim();
+        const committed = execFileSync("git", ["show", `HEAD:${relative}`], { cwd: ROOT });
+        expect(tracked).toBe(relative);
+        expect(local.equals(committed)).toBe(true);
+      }
+      expect(ref.hash).toBe(sha256(local));
     }
   });
 

@@ -281,7 +281,8 @@ describe("hook splicing + extension lobes", () => {
       kind: "webgpu", disposed: false, contextLost: false,
       createShaderProgram(sources: ShaderSources) {
         captured = sources;
-        return { id: 1, label: sources.label, marker: sources.marker, disposed: false, dispose() {} };
+        // 5.0 teardown contract: a program is retired only once it reports disposal.
+        return { id: 1, label: sources.label, marker: sources.marker, disposed: false, dispose() { this.disposed = true; } };
       }
     } as unknown as RenderDevice;
     const cache = new ProgramCache(device, { parallelCompile: false });

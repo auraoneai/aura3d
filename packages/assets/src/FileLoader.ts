@@ -1,5 +1,5 @@
 /**
- * threejs-parity ST-04 (§6 lane L4): `THREE.FileLoader` — fetch a URL and hand
+ * threejs-parity ST-04 (§6 lane L4): `FileLoader` — fetch a URL and hand
  * back the response in the requested `responseType`, with real progress
  * callbacks and abort support.
  */

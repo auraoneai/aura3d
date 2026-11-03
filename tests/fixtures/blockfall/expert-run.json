@@ -9090,9 +9090,9 @@
     }
   ],
   "expected": {
-    "finalScore": 155436,
-    "finalLines": 91,
-    "stateChecksum": "f807fc7c",
-    "scoreHash": "e3ff544f"
+    "finalScore": 130282,
+    "finalLines": 84,
+    "stateChecksum": "de3e3384",
+    "scoreHash": "aa56d05d"
   }
 }

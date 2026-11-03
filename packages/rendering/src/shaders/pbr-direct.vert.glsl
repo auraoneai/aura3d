@@ -3,6 +3,8 @@
 precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
+layout(location = 2) in vec2 a_uv;
+layout(location = 7) in vec2 a_uv1;
 layout(location = 4) in vec4 a_color;
 layout(location = 8) in vec4 a_instanceMatrix0;
 layout(location = 9) in vec4 a_instanceMatrix1;
@@ -17,8 +19,12 @@ uniform float u_instanceCount;
 uniform float u_instanceAttributeMode;
 out vec3 v_normal;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec4 v_vertexColor;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   // P2 instanced-GLB path (muse3jsparity-PRD): the u_instanceCount branch is
   // taken only for items carrying instanceTransforms; every other draw keeps
   // the legacy math bit-exact. Mirrors the instanced-PBR vertex convention.

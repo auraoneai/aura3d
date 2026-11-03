@@ -110,24 +110,8 @@ const packageEntryPoints = new Map<string, string>([
   // #865: two ktx-parse versions in the lockfile, so pnpm does not hoist it to
   // .pnpm/node_modules; the root node_modules link is the stable path.
   ["ktx-parse", "/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
-  ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
-  ["three/addons/loaders/DRACOLoader.js", "/node_modules/three/examples/jsm/loaders/DRACOLoader.js"],
-  ["three/addons/loaders/KTX2Loader.js", "/node_modules/three/examples/jsm/loaders/KTX2Loader.js"],
-  ["three/addons/loaders/RGBELoader.js", "/node_modules/three/examples/jsm/loaders/RGBELoader.js"],
-  ["three/addons/loaders/HDRLoader.js", "/node_modules/three/examples/jsm/loaders/HDRLoader.js"],
-  ["three/addons/controls/OrbitControls.js", "/node_modules/three/examples/jsm/controls/OrbitControls.js"],
-  ["three/addons/csm/CSM.js", "/node_modules/three/examples/jsm/csm/CSM.js"],
-  ["three/addons/environments/RoomEnvironment.js", "/node_modules/three/examples/jsm/environments/RoomEnvironment.js"],
-  ["three/addons/objects/Reflector.js", "/node_modules/three/examples/jsm/objects/Reflector.js"],
-  ["three/addons/libs/meshopt_decoder.module.js", "/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js"],
-  ["three/addons/postprocessing/EffectComposer.js", "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js"],
-  ["three/addons/postprocessing/OutputPass.js", "/node_modules/three/examples/jsm/postprocessing/OutputPass.js"],
-  ["three/addons/postprocessing/RenderPass.js", "/node_modules/three/examples/jsm/postprocessing/RenderPass.js"],
-  ["three/addons/postprocessing/UnrealBloomPass.js", "/node_modules/three/examples/jsm/postprocessing/UnrealBloomPass.js"],
-  ["three/addons/webxr/XRButton.js", "/node_modules/three/examples/jsm/webxr/XRButton.js"],
-  ["three/webgpu", "/node_modules/three/build/three.webgpu.js"],
-  ["three/tsl", "/node_modules/three/build/three.tsl.js"],
-  ["three", "/node_modules/three/build/three.module.js"],
+  // S5-WP19-07: `three` is no longer in the workspace install or lock graph, so the former
+  // `three`, `three/webgpu`, `three/tsl` and `three/addons/*` mappings pointed at missing files.
   ["tslib", "/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs"],
 ]);
 

@@ -19,28 +19,13 @@ import {
  */
 
 describe("D2 tiled terrain with LOD morph + holes", () => {
-  it("assigns nearer tiles lower LODs with morph in [0, 1]", () => {
-    const plans = createTerrainTileGrid({ tileCountX: 4, tileCountZ: 4, cameraX: 16, cameraZ: 16 });
-    expect(plans).toHaveLength(16);
-    for (const plan of plans) {
-      expect(plan.morphFactor).toBeGreaterThanOrEqual(0);
-      expect(plan.morphFactor).toBeLessThanOrEqual(1);
-      expect(plan.resolution).toBeGreaterThanOrEqual(5);
-    }
-    const lods = new Set(plans.map((plan) => plan.key.lod));
-    expect(lods.size).toBeGreaterThan(1);
-  });
-
-  it("counts hole cells through the hole mask", () => {
-    const plans = createTerrainTileGrid({
-      tileCountX: 1,
-      tileCountZ: 1,
-      holeMask: () => true,
-    });
-    expect(plans[0]!.hasHoles).toBe(true);
-    expect(plans[0]!.holeCellCount).toBe((plans[0]!.resolution - 1) ** 2);
-    const solid = createTerrainTileGrid({ tileCountX: 1, tileCountZ: 1 });
-    expect(solid[0]!.hasHoles).toBe(false);
+  // The plan-only tile grid (LOD morph + hole cells) was deleted by QR-10 /
+  // PRD-10 (864ccaa89, "planner removal"); the export is a throwing stub that
+  // names its replacement. Retirement: docs/project/status/retired-tests.md §9.
+  it("createTerrainTileGrid is a removed-world-planner stub naming the A3D_QR_WORLD terrain pass", () => {
+    expect(() => createTerrainTileGrid({ tileCountX: 4, tileCountZ: 4, cameraX: 16, cameraZ: 16 }))
+      .toThrow(/^removed-world-planner: .*A3D_QR_WORLD terrain pass and C-26 world queries/);
+    expect(() => createTerrainTileGrid()).toThrow(/removed-world-planner/);
   });
 
   it("blends rock on steeps, grass on flats, snow above the snowline", () => {

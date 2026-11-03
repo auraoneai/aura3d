@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
@@ -16,6 +16,12 @@ const execFileAsync = promisify(execFile);
  */
 const scratch = mkdtempSync(join(tmpdir(), "deletion-safety-"));
 const repoRoot = resolve(import.meta.dirname, "..", "..", "..");
+/*
+ * The HEAD-body and history fallbacks read `git show`/`git log`. The 5.0 ACR source pass ships the
+ * staged files without `.git` (`tools/remote-acr/run-source5.sh`), so those two cases run only in a
+ * Git checkout; there is no history to prove a deletion from.
+ */
+const hasGitHistory = existsSync(join(repoRoot, ".git"));
 
 afterAll(() => {
   rmSync(scratch, { recursive: true, force: true });
@@ -209,7 +215,7 @@ describe("deletion-safety (R8)", () => {
     expect(failures.some((failure) => failure.includes("already gone"))).toBe(true);
   }, 180_000);
 
-  it("proves a tracked working-tree deletion from its HEAD body", async () => {
+  it.skipIf(!hasGitHistory)("proves a tracked working-tree deletion from its HEAD body", async () => {
     /*
      * Use a documentation fixture rather than a live runtime module. This test temporarily moves
      * the candidate so the gate has to read its body from HEAD. Using OceanSurface.ts here raced
@@ -240,7 +246,7 @@ describe("deletion-safety (R8)", () => {
     }
   }, 180_000);
 
-  it("keeps a deletion proof reproducible after the deletion commit", async () => {
+  it.skipIf(!hasGitHistory)("keeps a deletion proof reproducible after the deletion commit", async () => {
     /*
      * Reuse a closed deletion manifest instead of spelling one of its candidates in this test.
      * The manifest is an input to the proof, not a consumer, and the CLI excludes the active

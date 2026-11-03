@@ -133,7 +133,9 @@ describe("ShaderLibrary", () => {
       expect(compiled.fragment).toContain("proceduralSpecularResponse");
       expect(compiled.fragment).toContain("a3dFresnelSchlickSpecular");
       expect(compiled.fragment).toContain("a3dFresnelSchlickRoughnessSpecular");
-      expect(compiled.fragment).toContain("pow(distanceToLight / range, 4.0)");
+      // PRD-02 §6.3: range <= 0 is infinite (decay only); positive ranges keep
+      // the windowed inverse-square falloff.
+      expect(compiled.fragment).toContain("float rangeFalloff = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / max(positionRange.w, 0.0001), 4.0), 0.0, 1.0);");
     expect(compiled.fragment).toContain("attenuation = rangeFalloff / max(distanceToLight * distanceToLight, 1.0);");
     expect(compiled.fragment).not.toContain("attenuation = clamp(1.0 - distanceToLight / range");
     expect(compiled.fragment).not.toContain("normalize(-v_worldPosition)");
@@ -418,7 +420,7 @@ describe("ShaderLibrary", () => {
     expect(fragmentSource).toContain("vec3 a3dPbrExtensionEnvironmentLight(");
     expect(fragmentSource).toContain("shaded += a3dPbrExtensionEnvironmentLight(");
     expect(fragmentSource).toContain("shaded += a3dPbrExtensionDirectLight(");
-    expect(fragmentSource).toContain("pow(distanceToLight / range, 4.0)");
+    expect(fragmentSource).toContain("float rangeFalloff = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / max(positionRange.w, 0.0001), 4.0), 0.0, 1.0);");
     expect(fragmentSource).toContain("attenuation = rangeFalloff / max(distanceToLight * distanceToLight, 1.0);");
     expect(fragmentSource).not.toContain("shaded += a3dLambert(");
     expect(fragmentSource).not.toContain("attenuation = clamp(1.0 - distanceToLight / range");

@@ -36,9 +36,18 @@ const POLY_HAVEN_ASSETS = {
   },
 };
 
+// PRD-05 §6.6 (QR-05, 066ade44f): the catalog load also lists HDRIs and textures
+// (`/assets?t=hdris|textures`, see the adapter header). These model-only cases
+// serve empty HDRI/texture maps; the model fixture and assertions are unchanged.
+const EMPTY_KIND_URLS = new Set([
+  "https://api.polyhaven.com/assets?t=hdris",
+  "https://api.polyhaven.com/assets?t=textures",
+]);
+
 function fetchJsonFrom(payload: unknown): FetchJson {
   return async (url: string) => {
     if (url === "https://api.polyhaven.com/assets?t=models") return payload;
+    if (EMPTY_KIND_URLS.has(url)) return {};
     throw new Error(`unexpected url ${url}`);
   };
 }
@@ -107,20 +116,20 @@ describe("createPolyHavenAdapter", () => {
   });
 
   it("caches the catalog after the first search", async () => {
-    let calls = 0;
+    const calls: string[] = [];
+    const serve = fetchJsonFrom(POLY_HAVEN_ASSETS);
     const countingCtx = {
       fetchJson: async (url: string) => {
-        calls += 1;
-        if (url === "https://api.polyhaven.com/assets?t=models") {
-          return POLY_HAVEN_ASSETS;
-        }
-        throw new Error(`unexpected url ${url}`);
+        calls.push(url);
+        return serve(url);
       },
     };
     const adapter = createPolyHavenAdapter();
     await adapter.search(query, countingCtx);
     await adapter.search(query, countingCtx);
-    expect(calls).toBe(1);
+    // One catalog load (models + hdris + textures), none on the second search.
+    expect(calls.filter((url) => url === "https://api.polyhaven.com/assets?t=models")).toHaveLength(1);
+    expect(calls).toHaveLength(3);
   });
 
   it("throws when the catalog is not an object map", async () => {

@@ -279,6 +279,26 @@
       "script": "test:visual",
       "path": "tools/visual-baseline/index.ts",
       "reason": "deleted-quarantined: superseded by the quality gate (T3.8); root manifest swap to quality:gate is Q-15-1"
+    },
+    {
+      "script": "audit:external-parity-completion",
+      "path": "tools/external-parity-completion-audit/index.ts",
+      "reason": "deleted-quarantined: moved to tools/_quarantine by QR-12 (4e5f98cf6); kept in the root manifest by tools/script-prune REVIEW_KEEP (public-demo-deploy.yml contract) until Q-15-1"
+    },
+    {
+      "script": "audit:external-parity-external-evidence-readiness",
+      "path": "tools/external-parity-external-evidence-readiness/index.ts",
+      "reason": "deleted-quarantined: moved to tools/_quarantine by QR-12 (4e5f98cf6); kept in the root manifest by tools/script-prune REVIEW_KEEP (public-demo-deploy.yml contract) until Q-15-1"
+    },
+    {
+      "script": "audit:external-parity-production-readiness",
+      "path": "tools/external-parity-production-readiness/index.ts",
+      "reason": "deleted-quarantined: moved to tools/_quarantine by QR-12 (4e5f98cf6); kept in the root manifest by tools/script-prune REVIEW_KEEP (public-demo-deploy.yml contract) until Q-15-1"
+    },
+    {
+      "script": "verify:external-parity-report-freshness",
+      "path": "tools/external-parity-report-freshness/index.ts",
+      "reason": "deleted-quarantined: moved to tools/_quarantine by QR-12 (4e5f98cf6); kept in the root manifest by tools/script-prune REVIEW_KEEP (public-demo-deploy.yml contract) until Q-15-1"
     }
   ]
 }

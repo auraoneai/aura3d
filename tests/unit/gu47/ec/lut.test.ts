@@ -82,7 +82,9 @@ describe("CLI: aura3d assets add <file.cube> --type lut", () => {
   it("help lists the lut type and E-A's --hdri optimize line", () => {
     expect(assetsAddHelp()).toContain("--type model|texture|environment|audio|navigation|lut");
     const main = mainHelp("prop");
-    expect(main).toContain("[--type model|texture|environment|audio|navigation|lut]");
+    // 5.0 adds the `scalar-volume` asset type (docs/migration/4-to-5.md B3,
+    // docs/api/native-formats.md NRRD); `lut` stays listed.
+    expect(main).toContain("[--type model|texture|environment|audio|navigation|lut|scalar-volume]");
     expect(main).toContain("aura3d assets optimize --hdri <1k|2k> [--rgb9e5-cube]");
   });
 });

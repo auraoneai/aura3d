@@ -14,6 +14,10 @@ const float A3D_PI = 3.14159265359;
 const float A3D_INV_PI = 0.31830988618;
 const float A3D_EPSILON = 0.00001;
 const float A3D_MIN_ROUGHNESS = 0.045;
+// Fragment-local controls are initialized to the legacy response. Physical
+// shaders set them once per fragment before evaluating any direct light.
+float a3dPbrDiffuseRoughness = 0.0;
+float a3dPbrRetroreflection = 0.0;
 float a3dSaturate(float value) {
   return clamp(value, 0.0, 1.0);
 }
@@ -59,6 +63,22 @@ float a3dDiffuseBurley(float nDotV, float nDotL, float lDotH, float roughness) {
   float viewScatter = 1.0 + (fd90 - 1.0) * pow(a3dSaturate(1.0 - nDotV), 5.0);
   return lightScatter * viewScatter * energyFactor;
 }
+// Bounded Oren–Nayar angular response and optional retroreflection. At zero
+// roughness and zero retroreflection this is exactly one, preserving the
+// existing diffuse model and leaving the specular lobe untouched.
+float a3dPbrDiffuseDetail(vec3 N, vec3 V, vec3 L) {
+  float nl = clamp(dot(N, L), 0.0, 1.0), nv = clamp(dot(N, V), 0.0, 1.0);
+  float sinL = sqrt(max(1.0 - nl * nl, 0.0)), sinV = sqrt(max(1.0 - nv * nv, 0.0));
+  float alignment = 0.0;
+  if (sinL * sinV > A3D_EPSILON) alignment = max(dot(L - N * nl, V - N * nv) / (sinL * sinV), 0.0);
+  float sigma = clamp(a3dPbrDiffuseRoughness, 0.0, 1.0) * (0.5 * A3D_PI);
+  float sigma2 = sigma * sigma;
+  float a = 1.0 - 0.5 * sigma2 / (sigma2 + 0.33);
+  float b = 0.45 * sigma2 / (sigma2 + 0.09);
+  float angular = clamp(a + b * alignment * max(sinL, sinV) * min(sinL, sinV) / max(max(nl, nv), A3D_EPSILON), 0.0, 1.0);
+  float retro = clamp(a3dPbrRetroreflection, 0.0, 1.0);
+  return angular * (1.0 - retro * (1.0 - pow(clamp(dot(L, V), 0.0, 1.0), 8.0)));
+}
 vec3 a3dPbrF0(vec3 albedo, float metallic, float specularFactor, vec3 specularColorFactor) {
   vec3 dielectricF0 = vec3(0.04) * clamp(specularFactor, 0.0, 1.0) * clamp(specularColorFactor, vec3(0.0), vec3(1.0));
   return mix(dielectricF0, clamp(albedo, vec3(0.0), vec3(1.0)), clamp(metallic, 0.0, 1.0));
@@ -90,7 +110,7 @@ vec3 a3dPbrDirectLight(
   float G = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, roughness);
   vec3 specular = D * G * F;
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
-  vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0));
+  vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0)) * a3dPbrDiffuseDetail(N, V, L);
   return (diffuse + specular) * lightColor * lightIntensity * nDotL;
 }
 vec3 a3dPbrRectAreaLightSample(
@@ -113,7 +133,7 @@ vec3 a3dPbrRectAreaLightSample(
   float distanceToSample = length(toSample);
   vec3 lightDirection = distanceToSample > A3D_EPSILON ? toSample / distanceToSample : -normalize(emitterNormal);
   float emitterCosine = max(dot(normalize(emitterNormal), -lightDirection), 0.0);
-  float rangeFalloff = clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
+  float rangeFalloff = range <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
   rangeFalloff *= rangeFalloff;
   float irradiance = lightIntensity * sampleArea * emitterCosine * rangeFalloff / max(distanceToSample * distanceToSample, 0.01);
   return a3dPbrDirectLight(
@@ -140,6 +160,7 @@ vec3 a3dPbrRectAreaLight(
   float width,
   float height,
   float range,
+  float twoSided,
   vec3 normal,
   vec3 viewDirection,
   vec3 lightColor,
@@ -150,6 +171,9 @@ vec3 a3dPbrRectAreaLight(
   float specularFactor,
   vec3 specularColorFactor
 ) {
+  // Every sample lies in the same plane, so the emitter faces the receiver
+  // on the back as well only when the light explicitly enables both sides.
+  if (twoSided > 0.5 && dot(emitterNormal, worldPosition - center) < 0.0) emitterNormal = -emitterNormal;
   float quadratureOffset = 0.28867513459;
   vec3 rightOffset = normalize(emitterRight) * width * quadratureOffset;
   vec3 upOffset = normalize(emitterUp) * height * quadratureOffset;
@@ -417,6 +441,22 @@ vec3 a3dPbrExtensionEnvironmentLight(
   vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 1.5) * 0.1;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
+uniform float u_diffuseRoughness;
+uniform float u_retroreflection;
+in vec2 v_a3dDetailUv0;
+in vec2 v_a3dDetailUv1;
+vec2 a3dLegacyDetailUv(float setIndex, vec2 offset, vec2 scale, float rotation) {
+  vec2 p = (setIndex > 0.5 ? v_a3dDetailUv1 : v_a3dDetailUv0) * scale;
+  float c = cos(rotation), s = sin(rotation);
+  return vec2(c * p.x - s * p.y, s * p.x + c * p.y) + offset;
+}
+void a3dLegacySetDiffuseDetail() {
+  a3dPbrDiffuseRoughness = clamp(u_diffuseRoughness, 0.0, 1.0);
+  a3dPbrRetroreflection = clamp(u_retroreflection, 0.0, 1.0);
+}
+vec3 a3dLegacyBumpNormal(vec3 position, vec3 geometryNormal, vec3 shadingNormal) {
+  return shadingNormal;
+}
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;
 uniform float u_metallic;
@@ -551,6 +591,15 @@ vec3 a3dApplyEnvironmentFog(vec3 linearColor, vec3 worldPosition) {
     fogged += inscatter + dither * (1.0 / 255.0);
   }
   return fogged;
+}
+uniform sampler2D u_contactShadowMask;
+uniform float u_contactShadowMaskStrength;
+uniform vec2 u_contactShadowMaskViewport;
+uniform float u_contactShadowLightIndex;
+float a3dContactShadowMaskFactor(float kind) {
+  if (kind > 0.5 || u_contactShadowMaskStrength <= 0.0) return 1.0;
+  float mask = texture(u_contactShadowMask, gl_FragCoord.xy / u_contactShadowMaskViewport).r;
+  return mix(1.0, mask, clamp(u_contactShadowMaskStrength, 0.0, 1.0));
 }
 vec2 a3dEnvironmentEquirectUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
@@ -707,8 +756,10 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 normal = normalize(v_normal);
   if (!gl_FrontFacing) normal = -normal;
+  normal = a3dLegacyBumpNormal(v_worldPosition, normal, normal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 materialBase = a3dApplyAdvancedPbrLobes(
     u_baseColor.rgb * v_vertexColor.rgb,
@@ -815,7 +866,7 @@ void main() {
     vec3 refractionRadiance = (refractedEnvironment + vec3(causticEnergy)) * volumeTint * u_environmentMapTextureIntensity * transmissionAmount * fallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * roughVolumeIorLift;
     shaded = mix(shaded, shaded * 0.72 + refractionRadiance, transmissionAmount * mix(0.08, 0.58, fallbackEnvironmentTransmissionEnergy));
   }
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -832,7 +883,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
       );
@@ -844,19 +895,21 @@ void main() {
       vec3 toLight = positionRange.xyz - v_worldPosition;
       float distanceToLight = length(toLight);
       lightDirection = distanceToLight > 0.0001 ? toLight / distanceToLight : -directionKind.xyz;
-      float range = max(positionRange.w, 0.0001);
-      float rangeFalloff = clamp(1.0 - pow(distanceToLight / range, 4.0), 0.0, 1.0);
+      // range <= 0 means infinite (physical descriptors, PRD-02 §6.3): no
+      // range window, decay-only attenuation. Legacy ranges are always > 0.
+      float rangeFalloff = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / max(positionRange.w, 0.0001), 4.0), 0.0, 1.0);
       rangeFalloff *= rangeFalloff;
       attenuation = rangeFalloff / max(distanceToLight * distanceToLight, 1.0);
     }
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z));
+    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z));
     shaded += a3dPbrDirectLight(
       normal,
       viewDirection,

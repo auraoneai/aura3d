@@ -1498,7 +1498,7 @@ export function compositeDeepEXR(source: AuraEXRDeepData): Float32Array {
 
 
 /**
- * `new THREE.EXRLoader()` — real async decode. Works standalone
+ * `new EXRLoader()` — real async decode. Works standalone
  * (`load(url, onLoad?, onProgress?, onError?)` → `Promise<AuraEXRTextureData>`)
  * and as an `AssetManager` loader (`type: "exr"`).
  *

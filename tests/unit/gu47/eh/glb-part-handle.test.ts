@@ -95,13 +95,19 @@ describe("GU47 E-H GLB part handles", () => {
     expect(extension?.appliesTo).toEqual(["model"]);
     expect(extension?.flag).toBe("A3D_QR_COMPILER");
     const handle = { id: "bus", kind: "model" } as unknown as AuraRuntimeNodeHandle;
-    const part = extension!.create(handle, {} as AuraApp);
+    // 5.0 scopes live actors per app owner (`actorAnimationContextFor`): the
+    // member resolves the actor the app itself loaded, never an ownerless one.
+    const app = {} as AuraApp;
+    const part = extension!.create(handle, app);
     expect(part("wheelFrontR")).toBeUndefined(); // GLB not loaded yet
-    const actor = await loadActor("bus");
-    expect(liveTypedGLBActor("bus")).toBe(actor);
+    const ownerless = await loadActor("bus");
+    expect(part("wheelFrontR")).toBeUndefined(); // another owner's actor is not visible
+    ownerless.dispose();
+    const actor = await loadActor("bus", { runtimeOwner: app });
+    expect(liveTypedGLBActor("bus", app)).toBe(actor);
     expect(part("wheelFrontR")?.name).toBe("wheelFrontR");
     actor.dispose();
-    expect(liveTypedGLBActor("bus")).toBeUndefined();
+    expect(liveTypedGLBActor("bus", app)).toBeUndefined();
     expect(part("wheelFrontR")).toBeUndefined();
   });
 });

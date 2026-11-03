@@ -151,14 +151,17 @@ describe("checked WebGPU shadow publication", () => {
     const points = Geometry.points([[0, 0, 0]]);
     const light = new DirectionalLight("sun"); light.castsShadow = true;
     const previous = f.device.createRenderTarget({ width: 4, height: 4, depth: true });
+    // Clipped points are a supported non-WebGPU shadow caster since the 5.0
+    // clipped specialized depth path (ed5a52d58, SpecializedClippedDepth.ts);
+    // instanced clipped points stay unsupported on every device.
     const pass = new ShadowPass({ light, shadowMap: new ShadowMap({ size: 4 }), casters: [item, {
-      geometry: points, label: "late-clipped-points", globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true }
+      geometry: points, label: "late-clipped-points", instanceTransforms: [...IDENTITY], globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true }
     }] });
     const clear = vi.spyOn(f.device, "clearRenderTarget");
     const allocate = vi.spyOn(f.device, "createRenderTarget");
     try {
       f.device.beginFrame(4, 4); f.device.setRenderTarget(previous);
-      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipping is unavailable/);
+      expect(() => pass.execute({ device: f.device, width: 4, height: 4 })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
       expect(clear).not.toHaveBeenCalled();
       expect(allocate).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);
@@ -311,9 +314,9 @@ describe("checked WebGPU shadow publication", () => {
       f.device.beginFrame(4, 4); f.device.setRenderTarget(previous);
       expect(() => system.update({ camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near: camera.near, far: camera.far },
         sun: { direction: [0, -1, -0.2] }, cameraPosition: EYE,
-        casters: [item, { geometry: points, label: "late-clipped-points", globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } }],
+        casters: [item, { geometry: points, label: "late-clipped-points", instanceTransforms: [...IDENTITY], globalClipping: { planes: [[1, 0, 0, 0]], clipShadows: true } }],
         localLights: [{ shadowIndex: 0, kind: "point", position: [1, 2, 3], direction: [0, -1, 0], range: 20, size: 64 }],
-        flags: FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipping is unavailable/);
+        flags: FLAGS_ON, tier: QUALITY_TIERS.high })).toThrow(kind === "webgpu" ? /WebGPU point depth requires/ : /Clipped point depth does not support/);
       expect(clear).not.toHaveBeenCalled();
       expect(allocate).not.toHaveBeenCalled();
       expect(f.attempts).toHaveLength(0);

@@ -1,5 +1,5 @@
 /**
- * threejs-parity ST-04 (§6 lane L4): `THREE.DataTextureLoader` — the abstract
+ * threejs-parity ST-04 (§6 lane L4): `DataTextureLoader` — the abstract
  * binary-format loader base. `EXRLoader`/`HDRLoader`-family subclasses decode
  * fetched bytes via `parse`; the public surface mirrors three:
  * `load(url, onLoad?, onProgress?, onError?)` + `loadAsync`.

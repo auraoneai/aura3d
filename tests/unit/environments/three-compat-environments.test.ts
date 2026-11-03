@@ -12,9 +12,14 @@ describe("ThreeCompat environment library", () => {
     const gallery = createThreeCompatEnvironmentGalleryModel(manifest);
 
     expect(manifest.schema).toBe("a3d-three-compat-environment-library");
-    expect(summary.presetCount).toBeGreaterThanOrEqual(12);
-    expect(summary.realHdriCount).toBeGreaterThanOrEqual(6);
-    expect(summary.checkedRealHdriCount).toBeGreaterThanOrEqual(6);
+    // QR-10 (864ccaa89, "HDRI de-alias") dropped the three alias presets that
+    // repeated a canonical preset's sha256; the manifest's own requirements
+    // are now 9 presets / 3 distinct real HDRI sources.
+    expect(manifest.requirements).toEqual(expect.objectContaining({ minimumPresets: 9, minimumRealHdriSources: 3 }));
+    expect(summary.presetCount).toBeGreaterThanOrEqual(manifest.requirements.minimumPresets);
+    expect(summary.realHdriCount).toBeGreaterThanOrEqual(manifest.requirements.minimumRealHdriSources);
+    expect(summary.checkedRealHdriCount).toBe(summary.realHdriCount);
+    expect(new Set(manifest.presets.filter((preset) => preset.kind === "real-hdri").map((preset) => preset.sha256)).size).toBe(summary.realHdriCount);
     expect(summary.proceduralCount).toBeGreaterThanOrEqual(6);
     expect(summary.probeTypes).toEqual(["emissive", "reflective", "rough", "transmissive"]);
     expect(summary.unresolvedFlagshipBindings).toEqual([]);
