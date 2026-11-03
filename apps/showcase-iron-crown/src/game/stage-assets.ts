@@ -2224,6 +2224,195 @@ export const stageAssets = defineAuraAssets({
       "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
     },
   },
+  "propRockA": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/propRockA.52dd1f0f.glb",
+    hash: "sha256-52dd1f0f8d9fc9c65de6475522e43f8715eade7286fb5293aa6292fb959ae0e2",
+    bounds: [
+      0.255,
+      0.148,
+      0.281
+    ],
+    sizeBytes: 4156760,
+    metadata: {
+      "materials": [
+        "07_-_Default"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 5 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/propRockA.52dd1f0f.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "3dhdscan",
+        "sourceFamily": "objaverse",
+        "attribution": "3dhdscan",
+        "sha256": "sha256-52dd1f0f8d9fc9c65de6475522e43f8715eade7286fb5293aa6292fb959ae0e2",
+        "retrievedAt": "2026-08-02T08:33:35.785Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:519c813e95af46a59e010539cd02ac5f",
+          "query": "granite rock formation",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0.61,
+          "scoreBreakdown": {
+            "semantic": 10.61,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 10.61",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role"
+          ],
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "3dhdscan",
+          "attribution": "3dhdscan",
+          "semanticScore": 0.7898582005840453,
+          "postDownloadInspection": {
+            "bounds": [
+              0.255,
+              0.148,
+              0.281
+            ],
+            "materialCount": 1,
+            "textureCount": 3,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:519c813e95af46a59e010539cd02ac5f",
+            "title": "Granite rock yellowish brown",
+            "source": "objaverse",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/519c813e95af46a59e010539cd02ac5f/thumbnails/c4264885cfcb480ca114af1d8f0894fd/1024x576.jpeg",
+            "attribution": "3dhdscan",
+            "score": 0.7898582005840453
+          }
+        },
+        "checkedAt": "2026-08-02T08:33:35.785Z"
+      },
+      "sourcePath": "public/aura-assets/propRockA.52dd1f0f.glb",
+      "outputPath": "public/aura-assets/propRockA.52dd1f0f.glb",
+      "license": "CC-BY-4.0",
+      "author": "3dhdscan",
+      "boundsMetadata": {
+        "min": [
+          -0.136,
+          -0.002,
+          -0.17
+        ],
+        "max": [
+          0.119,
+          0.146,
+          0.111
+        ],
+        "size": [
+          0.255,
+          0.148,
+          0.281
+        ],
+        "center": [
+          -0.009,
+          0.072,
+          -0.03
+        ],
+        "maxDimension": 0.281,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "07_-_Default",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "sutr_zula_midle1.FBX",
+        "RootNode",
+        "sutr_zula_midle1",
+        "sutr_zula_midle1_07 - Default_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/propRockA.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
   "showcaseModernBuildingOne": {
     type: "model",
     format: "glb",

@@ -383,9 +383,8 @@ const COLOSSEUM = makeStage(
     modelProp(stageAssets.heatsinkArch, "co-arch-r", [2.4, 0, -2.2], 2.6, -0.1),
     modelProp(assets.ironcrownColosseumBust, "co-bust-l", [-1.6, 0, -1.55], 1.45, 0.35),
     modelProp(assets.ironcrownColosseumBust, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
-    // Wave 1 (post-4.7.9, IC47-A1): Iron Crown Meshy props in the old rubble slots (same position and max size).
-    modelProp(assets.ironcrownWeaponRack, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
-    modelProp(assets.ironcrownForgeAnvil, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
+    modelProp(stageAssets.propBoulder, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
+    modelProp(stageAssets.propRockA, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
   ]
 );
 
