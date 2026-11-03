@@ -278,16 +278,16 @@ the tool is on PATH and all variants compile).
 - `native-entry-runtime-binding.test.ts` › no-TLA readiness: the three entry imports run sequentially. Concurrent dynamic imports of entries that share the agent-api node graph (it contains import cycles, e.g. through `nodes/scene.ts`) deadlocked vitest's module runner after `resetModules` (240 s timeout locally). Assertions unchanged.
 - `native-physics-entry-graph.test.ts` › staged entry graph rows: explicit 60 s budget; the first row parses the whole source graph cold and exceeded the 5 s default on ACR (`STACK_TRACE_ERROR`).
 
-## 6. Apps / CLI / create-aura3d / agent-api unit cases (source pass 2026-11-02)
+## 8. `tests/unit` apps/CLI/create-aura3d/agent-api/engine cases (source pass 2026-11-02, apps lane)
 
-### 6a. Retired (deleted feature)
+### 8a. Retired (deleted feature)
 
 | Test | Reason | Replacement coverage |
 |---|---|---|
 | `tests/unit/apps/skyline-challenge-feedback.test.ts` (whole file; deleted) | `showcase-skyline-runner` was retired in 4.0.1 (`docs/project/showcase/apps-classification.md`); the file read `apps/showcase-skyline-runner/src/main.ts`, which no longer exists, and failed at collection. Same route as section 3b. | none (route deleted) |
 | `tests/unit/apps/smart-city-scene-update.test.ts` › "enlarges its bounds-derived command vehicle for the compact composition probe" — the `extent: [0.35, 0.1, 0.35]` assertion only | `72945ca70` (4.0.1 studio upgrade) removed the compact-only vehicle enlargement and fixed the command vehicle at a realistic 0.34-unit scale (pre-existing 4.x failure). | Same case, renamed: asserts the enlargement stays gone and `vehicleTargetMaxDimension()` returns 0.34; compact camera distance and FOV assertions unchanged. |
 
-### 6b. Rewritten onto the current contract
+### 8b. Rewritten onto the current contract
 
 | File › case | Old assertion / input | Contract that changed it | Current assertion |
 |---|---|---|---|

@@ -40,6 +40,8 @@ PUSHED=0
 cleanup() {
   local rc=$?
   trap - EXIT INT TERM
+  # Never delete the image while a stage run still uses it.
+  wait 2>/dev/null || true
   if [ "$PUSHED" = 1 ] && [ "$KEEP_IMAGE" != 1 ]; then
     "$AZ_WRAPPER" acr repository delete -n "$ACR_NAME" --image "$IMAGE_REPO:$IMAGE_TAG" --yes -o none || { echo "image cleanup FAILED: $IMAGE_REPO:$IMAGE_TAG" >&2; rc=1; }
   fi
@@ -86,13 +88,12 @@ tail -15 "$OUT_DIR/acr-build.log"
 fi
 
 run_stage() {
-  set +e
-  local stage="$1" log="$OUT_DIR/acr-run-$1.log"
+  set +eu
+  local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
   "$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f tools/remote-acr/task.source5.yaml --timeout 1800 \
     --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG" \
     --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" \
-    /dev/null > "$log" 2>&1
-  local rc=$?
+    /dev/null > "$log" 2>&1 || rc=$?
   awk '/::: SOURCE5_REPORT_BEGIN/{f=1;next}/::: SOURCE5_REPORT_END/{f=0}f' "$log" \
     | sed -E 's/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9:]+ //' | tr -d '\r' | base64 -d > "$OUT_DIR/stage-$stage.json" 2>/dev/null || true
   echo "$rc" > "$OUT_DIR/stage-$stage.rc"
