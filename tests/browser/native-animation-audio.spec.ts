@@ -3,7 +3,8 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 // Phase B: run on the remote browser runner after the global source freeze.
 // The existing root-app harness admits a typed animated GLB and compares pixels
-// inside its subject region at two deterministic clip times.
+// at two deterministic clip times, attributing changed pixels to the subject via
+// its projected posed (skinned) bounds; camera stability is measured, not assumed.
 test.describe("native animation and Web Audio", () => {
   let server: ExampleDevServer;
 
@@ -20,9 +21,17 @@ test.describe("native animation and Web Audio", () => {
     expect(result.renderer.fallbackUsed).toBe(false);
     expect(result.asset.skinnedRenderItemCount).toBeGreaterThan(0);
     expect(result.asset.skinningPaletteUpdated).toBe(true);
+    // cameraStable is measured from the live camera pose at both captures.
     expect(result.animation.cameraStable).toBe(true);
+    // The subject region is the projected posed (skinned) bounds of both frames.
+    expect(result.animation.frameA.subjectBoundsSource).toBe("deformed");
+    expect(result.animation.frameB.subjectBoundsSource).toBe("deformed");
+    expect(result.animation.diff.subjectRegion).not.toBeNull();
+    expect(result.animation.diff.subjectRegionPixels).toBeLessThan(result.animation.frameA.width * result.animation.frameA.height);
     expect(result.animation.diff.hashA).not.toBe(result.animation.diff.hashB);
     expect(result.animation.diff.changedSubjectPixels).toBeGreaterThan(120);
+    // With a fixed camera and static backdrop, change outside the subject is noise.
+    expect(result.animation.diff.subjectAttribution).toBeGreaterThan(0.9);
     expect(result.animation.diff.meanDelta).toBeGreaterThan(0.05);
     expect(errors).toEqual([]);
   });

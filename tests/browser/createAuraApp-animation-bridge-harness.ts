@@ -161,7 +161,7 @@ async function run(nextMode: HarnessMode): Promise<void> {
   });
 
   const keyboardEvents: string[] = [];
-  const exercisedControls: AnimationBridgeEvidence["animation"]["playbackControls"] = {
+  const exercisedControls: { -readonly [K in keyof AnimationBridgeEvidence["animation"]["playbackControls"]]: boolean } = {
     play: false,
     pause: false,
     loop: false,
@@ -200,7 +200,7 @@ async function run(nextMode: HarnessMode): Promise<void> {
         mode: nextMode,
         controllerId: binding?.controllerId,
         currentState,
-        activeClipId: controller.activeClipId(),
+        activeClipId: controller.snapshot().activeClipId,
         runtimeClip: runtimeSnapshot.animation?.clip,
         bindingClip: binding?.activeClipId,
         playbackControls: createPlaybackControlEvidence(controller, exercisedControls),
@@ -231,7 +231,7 @@ async function run(nextMode: HarnessMode): Promise<void> {
   };
 
   const capture = () => readCanvasPixels(app, runner);
-  const playAndCapture = (clip: RunnerClip, time: number, state: string): PixelFrame => {
+  const playAndCapture = (clip: RunnerClip, time: number, state: string): CapturedFrame => {
     currentState = state;
     controller.scrub(clip, time, { play: true });
     app.step(1 / 60);
