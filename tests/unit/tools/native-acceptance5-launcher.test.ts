@@ -181,7 +181,7 @@ describe('acceptance5 gate refusal', () => {
       put(CODE_COMPLETE_RECORD, text);
       const bind = () => {
         const head = git('rev-parse', 'HEAD');
-        return checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head, trackedClean: true, inspectHead: f => readHeadCommit(root, f) });
+        return checkGateBinding({ gatePath: CODE_COMPLETE_RECORD, gateText: text, head, trackedClean: true, inspectHead: (f: string) => readHeadCommit(root, f) });
       };
       expect(bind()).toMatchObject({ headRelation: 'freeze-commit', freezeCommit: freeze });
 

@@ -225,7 +225,7 @@ export function loadRun(io, dir) {
   if (io.exists(manifestPath)) { const file = ref(io, manifestPath); run.manifest = { ...strip(file), content: json(file.data) }; }
   const recorded = run.report.artifacts;
   // packed-a's part; a packed-b-only rerun records just `artifacts.consumers`.
-  if (recorded && typeof recorded === 'object' && !Array.isArray(recorded) && (recorded.schema !== undefined || run.report.stages?.includes?.('packed-a'))) {
+  if (recorded && typeof recorded === 'object' && !Array.isArray(recorded) && ['schema', 'ok', 'plan'].some(key => recorded[key] !== undefined)) {
     const artifacts = { candidatePlan: null, archives: [], problems: [] };
     if (recorded.schema !== ARTIFACTS_SCHEMA || recorded.ok !== true) artifacts.problems.push(`retained artifacts were not verified by the launcher (${ARTIFACTS_SCHEMA}, ok: ${recorded.ok}): ${(recorded.problems ?? []).join('; ')}`);
     const planRecord = recorded.plan ?? null, planWhere = planRecord?.localPath ?? planRecord?.path;

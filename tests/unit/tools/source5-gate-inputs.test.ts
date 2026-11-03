@@ -6,6 +6,8 @@ import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseScopeOutcomes, validateAcceptanceGate } from '../../../tools/native-capability-gate/index.mjs';
 import { buildGateInputs, deriveCompletion, EXPECTED_CHECKS, rowIsDone, STAGE_COMMANDS, VERIFY_ONLY_ROWS } from '../../../tools/remote-acr/source5-gate-inputs.mjs';
+import { stageConsumers, verifyDownloadedConsumers } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { checkGateBinding } from '../../../tools/remote-acr/acceptance5.mjs';
 
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -71,7 +73,23 @@ function fixture() {
     packages: tarballs.map(t => ({ name: t.name, version: '5.0.0', internalDependencies: [], tarball: `.release-pack/${t.file}`, sha256: hash(t.data), integrity: sha512(t.data), unpublished: null }))
   };
 
-  type RunOptions = { stages?: string[]; failing?: string[]; commit?: string; fullPass?: boolean; artifacts?: boolean; dropStageReport?: string[] };
+  type RunOptions = { stages?: string[]; failing?: string[]; commit?: string; fullPass?: boolean; artifacts?: boolean; consumers?: boolean; dropStageReport?: string[] };
+  /** packed-b consumer reports through the real stage (job) -> verify/extract (Mac) round trip. */
+  const retainConsumers = (dir: string, runId: string) => {
+    const job = mkdtempSync(join(tmpdir(), 'aura3d-source5-job-'));
+    roots.push(job);
+    const jobPut = (path: string, text: string) => { mkdirSync(dirname(join(job, path)), { recursive: true }); writeFileSync(join(job, path), text); };
+    jobPut(`tests/reports/native-consumers/${runId}/source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass' })}\n`);
+    jobPut(`tests/reports/native-consumers/${runId}/matrix-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', matrix: true })}\n`);
+    jobPut(`tests/reports/native-consumers/${runId}/projects/react-import/package.json`, '{"name":"react-import"}\n');
+    jobPut(`tests/reports/native-consumer-matrix/${runId}/projects/npm-react19-peer-present/package.json`, '{"name":"cell"}\n');
+    jobPut(`tests/reports/native-consumer-matrix/${runId}/logs/npm-react19-peer-present-install.log`, 'installed\n');
+    const upload = join(job, 'upload/consumers');
+    stageConsumers({ root: job, runId, outDir: upload, chunkBytes: 256 });
+    const result = verifyDownloadedConsumers({ dir: upload, dest: join(root, dir, 'artifacts/consumers'), root, runId });
+    expect(result.problems).toEqual([]);
+    return result;
+  };
   const makeRun = (runId: string, options: RunOptions = {}) => {
     const dir = `tests/reports/native-5/${runId}`, stages = options.stages ?? ALL_STAGES, failing = new Set(options.failing ?? []);
     const runCommit = options.commit ?? commit, full = options.fullPass ?? true;
@@ -97,6 +115,8 @@ function fixture() {
         archives: tarballs.map(t => ({ name: t.name, version: '5.0.0', planTarball: `.release-pack/${t.file}`, localPath: `${dir}/artifacts/tarballs/${t.file}`,
           sha256: put(`${dir}/artifacts/tarballs/${t.file}`, t.data).sha256, size: t.data.length, verified: true })), reports: [], problems: [] };
     }
+    const consumers = stages.includes('packed-b') && options.consumers !== false ? retainConsumers(dir, runId) : null;
+    if (consumers) artifacts = { ...(artifacts as object ?? {}), consumers };
     putJson(`${dir}/source-report.json`, {
       schema: 'aura3d.source5-report/2',
       candidate: { commit: runCommit, sourceManifestSha256: manifestRef?.sha256 ?? 'reused-image', lockfileSha256: full ? lockfileSha256 : 'reused-image' },
@@ -136,6 +156,19 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(Object.keys(record.commitProof.lfsPointers)).toEqual(['assets/big.bin']);
     expect(record.inputs).toEqual(expect.arrayContaining([result.sourceManifest.path, `${full}/artifacts/tarballs/aura3d-engine-5.0.0.tgz`, `${full}/stage-packed-b.json`]));
     expect(validateAcceptanceGate({ root: f.root, gatePath: 'tests/reports/native-capabilities/code-complete-go.json' }).status).toBe('CODE_COMPLETE_GO');
+
+    // packed-b's consumer reports: retained, re-hashed, bound in the record and consumed by acceptance gate-binding.
+    const consumerBase = `${full}/artifacts/consumers/tests/reports`;
+    expect(record.sourceConsumerReport).toEqual({ path: `${consumerBase}/native-consumers/full/source.json`, jobPath: 'tests/reports/native-consumers/full/source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
+    expect(record.matrixSourceReport.path).toBe(`${consumerBase}/native-consumers/full/matrix-source.json`);
+    expect(record.examplesSourceReport).toBeNull();
+    expect(record.consumerReports.files).toHaveLength(5);
+    expect(record.inputs).toEqual(expect.arrayContaining([`${full}/artifacts/consumers/consumer-index.json`, record.sourceConsumerReport.path,
+      `${consumerBase}/native-consumer-matrix/full/logs/npm-react19-peer-present-install.log`]));
+    expect(validateAcceptanceGate({ root: f.root, gatePath: 'tests/reports/native-capabilities/code-complete-go.json', sourceReport: record.matrixSourceReport.path }).status).toBe('CODE_COMPLETE_GO');
+    const gateText = readFileSync(join(f.root, 'tests/reports/native-capabilities/code-complete-go.json'), 'utf8');
+    expect(checkGateBinding({ gatePath: 'tests/reports/native-capabilities/code-complete-go.json', gateText, head: f.commit, trackedClean: true })).toMatchObject({
+      consumerSourceReport: record.sourceConsumerReport.path, matrixSourceReport: record.matrixSourceReport.path, examplesSourceReport: null });
   });
 
   it('a later rerun on the same commit supersedes a failed stage', () => {
@@ -155,6 +188,14 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(() => f.build([f.makeRun('nopackb', { stages: ALL_STAGES.filter(s => s !== 'packed-b') })])).toThrow(/stage packed-b never ran[\s\S]*check clean-install: no result/);
     expect(() => f.build([f.makeRun('noreport', { dropStageReport: ['suites'] })])).toThrow(/stage suites: no stage report/);
     expect(() => f.build([f.makeRun('noartifacts', { artifacts: false })])).toThrow(/no retained artifacts/);
+    expect(() => f.build([f.makeRun('noconsumers', { consumers: false })])).toThrow(/no retained consumer reports \(artifacts\.consumers\)/);
+    const tampered = f.makeRun('tampered');
+    f.put(`${tampered}/artifacts/consumers/tests/reports/native-consumers/tampered/source.json`, '{}\n');
+    expect(() => f.build([tampered])).toThrow(/native-consumers\/tampered\/source\.json does not match the consumer index[\s\S]*retained sourceConsumerReport/);
+    // A packed-b rerun with consumer reports supersedes a full pass whose packed-b retained none.
+    const noConsumers = f.makeRun('full-noconsumers', { consumers: false });
+    const packedB = f.makeRun('packedb-rerun', { stages: ['packed-b'], fullPass: false });
+    expect(f.build([noConsumers, packedB]).reports.consumerReports.runId).toBe('packedb-rerun');
     const good = f.makeRun('good');
     const later = f.makeRun('later', { stages: ['static'], failing: ['static:typecheck'], fullPass: false });
     expect(() => f.build([good, later])).toThrow(/check typecheck: FAILED static:typecheck exit 1 \(run later\)/);
@@ -184,6 +225,10 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     const relogged = f.gate(result.sourceReports.path, result.sourceManifest.path);
     expect(relogged.status).not.toBe(0);
     expect(relogged.stderr).toMatch(/stageSources differs from the retained runs/);
+    f.put(`${full}/artifacts/consumers/tests/reports/native-consumer-matrix/full/logs/npm-react19-peer-present-install.log`, 'rewritten\n');
+    const consumerChanged = f.gate(result.sourceReports.path, result.sourceManifest.path);
+    expect(consumerChanged.status).not.toBe(0);
+    expect(consumerChanged.stderr).toMatch(/does not match the consumer index/);
     f.put(`${full}/stage-static.json`, '{}');
     const stale = f.gate(result.sourceReports.path, result.sourceManifest.path);
     expect(stale.status).not.toBe(0);

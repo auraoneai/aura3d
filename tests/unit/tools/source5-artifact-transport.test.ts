@@ -4,14 +4,14 @@
 // downloaded tested archives must be re-verified against the candidate plan.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { gitSourceInputDigest, sourceIdentity, stagedSourceIdentity } from '../../../tools/release/source-identity.mjs';
 import { buildSource5Manifest, SOURCE5_MANIFEST_NAME, writeSource5Manifest } from '../../../tools/remote-acr/source5-manifest.mjs';
 import { readSource5Manifest } from '../../../tools/remote-acr/source5-files.mjs';
-import { planArchives, stageArtifacts, verifyDownloadedArtifacts } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { CONSUMER_INDEX_NAME, planArchives, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumers } from '../../../tools/remote-acr/source5-artifacts.mjs';
 
 const REPO = resolve(__dirname, '../../..');
 const temps: string[] = [];
@@ -162,5 +162,102 @@ describe('source5 tested-archive retrieval', () => {
     expect(result.ok).toBe(false);
     expect(result.problems).toEqual(['report not produced in the image: api-diff.json']);
     expect(result.archives.every((a: { verified: boolean }) => a.verified)).toBe(true);
+  });
+});
+
+describe('source5 packed-b consumer report retention (stage-consumers -> verify-consumers)', () => {
+  const RUN = 'run-1';
+  /** The packed-b job tree: both consumer run directories with reports, projects, logs and a binary archive. */
+  function job() {
+    const root = temp('job');
+    put(root, `tests/reports/native-consumers/${RUN}/source.json`, '{"phase":"source","status":"pass"}\n');
+    put(root, `tests/reports/native-consumers/${RUN}/matrix-source.json`, '{"phase":"source","matrix":true}\n');
+    put(root, `tests/reports/native-consumers/${RUN}/projects/react-import/dist/index.js`, 'export default 1;\n'.repeat(20));
+    put(root, `tests/reports/native-consumers/${RUN}/dependency-archives/${'a'.repeat(64)}.tgz`, Buffer.from([0, 1, 2, 3, 255]));
+    put(root, `tests/reports/native-consumer-matrix/${RUN}/projects/npm-react18-peer-present/package.json`, '{"name":"cell"}\n');
+    put(root, `tests/reports/native-consumer-matrix/${RUN}/logs/npm-react18-peer-present-install.log`, 'ok\n');
+    put(root, 'tests/reports/native-consumers/other-run/source.json', '{}\n');
+    return root;
+  }
+  const upload = (root: string, chunkBytes?: number) => {
+    const out = join(temp('upload'), 'consumers');
+    const index = stageConsumers({ root, runId: RUN, outDir: out, ...(chunkBytes ? { chunkBytes } : {}) });
+    return { out, index };
+  };
+  const mac = () => { const root = temp('mac'); return { root, dest: join(root, `tests/reports/native-5/${RUN}/artifacts/consumers`) }; };
+
+  it('round-trips every file of both run directories, chunked, and records the two bound reports', () => {
+    const root = job();
+    const { out, index } = upload(root, 400);
+    expect(index.chunks.length).toBeGreaterThan(1);
+    expect(index.files.map((f: { path: string }) => f.path)).not.toContain('tests/reports/native-consumers/other-run/source.json');
+    expect(index.files).toHaveLength(6);
+    expect(index.examplesSourceReport).toBeNull();
+    const m = mac();
+    const result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
+    expect(result.problems).toEqual([]);
+    expect(result).toMatchObject({ ok: true, files: 6, examplesSourceReport: null,
+      index: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/${CONSUMER_INDEX_NAME}` },
+      sourceConsumerReport: { localPath: `tests/reports/native-5/${RUN}/artifacts/consumers/tests/reports/native-consumers/${RUN}/source.json`,
+        jobPath: `tests/reports/native-consumers/${RUN}/source.json`, sha256: sha256('{"phase":"source","status":"pass"}\n') },
+      matrixSourceReport: { jobPath: `tests/reports/native-consumers/${RUN}/matrix-source.json` } });
+    for (const file of index.files) expect(sha256(readFileSync(join(m.dest, file.path)))).toBe(file.sha256);
+  });
+
+  it('refuses tampered, missing or extra chunks, another run id and a non-empty destination', () => {
+    const root = job();
+    let { out } = upload(root, 400);
+    const chunk = readdirSync(out).find(name => name.endsWith('.bin'))!;
+    writeFileSync(join(out, chunk), 'tampered');
+    let m = mac();
+    let result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
+    expect(result.ok).toBe(false);
+    expect(result.problems).toContain(`chunk bytes differ from the index: ${chunk}`);
+    expect(existsSync(m.dest)).toBe(false);
+
+    ({ out } = upload(root));
+    rmSync(join(out, 'bundle-000.bin'));
+    writeFileSync(join(out, 'stray.bin'), 'x');
+    m = mac();
+    result = verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN });
+    expect(result.problems).toEqual(expect.arrayContaining(['chunk not downloaded: bundle-000.bin', 'unexpected downloaded file: stray.bin']));
+
+    ({ out } = upload(root));
+    expect(verifyDownloadedConsumers({ dir: out, dest: mac().dest, root: m.root, runId: 'run-2' }).problems).toEqual(['consumer index has an unknown schema or another run id']);
+    m = mac();
+    put(m.dest, 'leftover.txt', 'x');
+    expect(verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN }).problems[0]).toMatch(/not empty/);
+    expect(verifyDownloadedConsumers({ dir: join(temp('empty'), 'consumers'), dest: mac().dest, root: m.root, runId: RUN }).ok).toBe(false);
+  });
+
+  it('refuses an index that escapes the run directories or drops a bound report', () => {
+    const root = job();
+    const { out } = upload(root);
+    const index = JSON.parse(readFileSync(join(out, CONSUMER_INDEX_NAME), 'utf8'));
+    const escaped = { ...index, files: index.files.map((f: { path: string }, i: number) => (i === 0 ? { ...f, path: '../../etc/passwd' } : f)) };
+    writeFileSync(join(out, CONSUMER_INDEX_NAME), JSON.stringify(escaped));
+    const m = mac();
+    expect(verifyDownloadedConsumers({ dir: out, dest: m.dest, root: m.root, runId: RUN }).problems).toEqual(expect.arrayContaining([
+      'unsafe or duplicate consumer path "../../etc/passwd"']));
+    expect(existsSync(m.dest)).toBe(false);
+    const dropped = { ...index, files: index.files.filter((f: { path: string }) => !f.path.endsWith('/matrix-source.json')) };
+    writeFileSync(join(out, CONSUMER_INDEX_NAME), JSON.stringify(dropped));
+    expect(verifyDownloadedConsumers({ dir: out, dest: mac().dest, root: m.root, runId: RUN }).problems).toEqual([
+      `matrixSourceReport is not retained: tests/reports/native-consumers/${RUN}/matrix-source.json`]);
+  });
+
+  it('fails staging (and so the packed-b stage) on a missing report, a symlink or an oversize inventory', () => {
+    let root = job();
+    rmSync(join(root, `tests/reports/native-consumers/${RUN}/matrix-source.json`));
+    expect(() => upload(root)).toThrow(/matrixSourceReport was not produced/);
+    root = job();
+    rmSync(join(root, `tests/reports/native-consumer-matrix/${RUN}`), { recursive: true });
+    expect(() => upload(root)).toThrow(/consumer report directory missing/);
+    root = job();
+    symlinkSync('package.json', join(root, `tests/reports/native-consumer-matrix/${RUN}/projects/npm-react18-peer-present/link.json`));
+    expect(() => upload(root)).toThrow(/contain a symlink/);
+    root = job();
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'c'), maxBytes: 64 })).toThrow(/exceed 64 bytes/);
+    expect(() => stageConsumers({ root, runId: '../x', outDir: join(temp('o'), 'c') })).toThrow(/invalid run id/);
   });
 });
