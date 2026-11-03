@@ -225,16 +225,23 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
     const retirement = f.device.resourceInterop.retire(f.buffers[0]!);
     const lifecycle = new ResourceLifecycle();
     lifecycle.track(f.device);
-    lifecycle.dispose();
-    expect(lifecycle.disposed).toBe(true);
-    expect(f.device[resourceDisposalPending]).toBe(false);
+    // Strict teardown: the waiting fence is interop-owned but is not a
+    // release receipt, so the device and its lifecycle stay pending.
+    expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+    expect(lifecycle.disposed).toBe(false);
+    expect(lifecycle.leakCount()).toBe(1);
+    expect(f.device.disposed).toBe(true);
+    expect(f.device[resourceDisposalPending]).toBe(true);
     expect(f.device.resourceInterop.hasUnfencedRetirements).toBe(false);
     expect(f.buffers[0]!.destroy).not.toHaveBeenCalled();
     f.fence.resolve();
     await retirement;
     await flush();
     expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
+    expect(f.device[resourceDisposalPending]).toBe(false);
     lifecycle.dispose();
+    expect(lifecycle.disposed).toBe(true);
+    await expect(f.device.whenDisposed()).resolves.toBeUndefined();
     expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
   });
 
@@ -246,21 +253,28 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
     const retirement = f.device.resourceInterop.retire(f.buffers[0]!);
     const lifecycle = new ResourceLifecycle();
     lifecycle.track(f.device);
-    lifecycle.dispose();
-    expect(lifecycle.disposed).toBe(true);
+    // Strict teardown: the waiting fence keeps the lifecycle owning the device.
+    expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+    expect(lifecycle.disposed).toBe(false);
+    expect(f.device[resourceDisposalPending]).toBe(true);
     f.fence.reject(failure);
     await flush();
     expect(f.device[resourceDisposalPending]).toBe(true);
     expect(f.device.resourceInterop.retirementFenceErrors).toEqual([failure]);
-    // A synchronous owner that already transferred its lease cannot be
-    // re-enrolled retroactively by this interop receipt.
-    expect(lifecycle.disposed).toBe(true);
+    // The lifecycle never released the device, so the later rejection is
+    // still visible to it rather than lost after a premature transfer.
+    expect(lifecycle.disposed).toBe(false);
+    expect(lifecycle.leakCount()).toBe(1);
     expect(leaves(capture(() => f.device.dispose()))).toContain(failure);
+    expect(leaves(capture(() => lifecycle.dispose()))).toContain(failure);
     expect(f.buffers[0]!.destroy).not.toHaveBeenCalled();
     f.lost.resolve({ reason: "destroyed", message: "confirmed" });
     await retirement;
     await flush();
     expect(f.device[resourceDisposalPending]).toBe(false);
+    expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
+    lifecycle.dispose();
+    expect(lifecycle.disposed).toBe(true);
     expect(f.buffers[0]!.destroy).toHaveBeenCalledOnce();
   });
 
@@ -484,8 +498,12 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
       await flush();
       expect(f.device.resourceInterop.owns(first)).toBe(false);
       expect(f.device.resourceInterop.owns(other)).toBe(true);
-      expect(f.device[resourceDisposalPending]).toBe(false);
+      // The older failure is cleared, but the other lease's waiting fence
+      // keeps the device pending under the strict teardown contract.
+      expect(f.device.resourceInterop.retirementDestructionErrors).toEqual([]);
+      expect(f.device[resourceDisposalPending]).toBe(true);
       expect(() => f.device.dispose()).not.toThrow();
+      expect(f.device[resourceDisposalPending]).toBe(true);
       expect(first.destroy).toHaveBeenCalledOnce();
       expect(other.destroy).not.toHaveBeenCalled();
       otherFence.resolve();
@@ -493,6 +511,11 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
       expect(other.destroy).toHaveBeenCalledOnce();
       expect(first.destroy).toHaveBeenCalledOnce();
       expect(f.device.resourceInterop.liveResources).toBe(0);
+      expect(f.device[resourceDisposalPending]).toBe(false);
+      await expect(f.device.whenDisposed()).resolves.toBeUndefined();
+      f.device.dispose();
+      expect(other.destroy).toHaveBeenCalledOnce();
+      expect(first.destroy).toHaveBeenCalledOnce();
     }
   );
 
@@ -512,10 +535,15 @@ describe("WebGPU failed-fence lifecycle visibility", () => {
       await flush();
       f.device.dispose();
       expect(f.device.resourceInterop.retirementDestructionErrors).toEqual([]);
-      expect(f.device[resourceDisposalPending]).toBe(false);
+      // The retry clears the sweep failure; its fence is still waiting.
+      expect(f.device[resourceDisposalPending]).toBe(true);
       expect(resource.destroy).not.toHaveBeenCalled();
       f.fence.resolve();
       await flush();
+      expect(resource.destroy).toHaveBeenCalledOnce();
+      expect(f.device[resourceDisposalPending]).toBe(false);
+      await expect(f.device.whenDisposed()).resolves.toBeUndefined();
+      f.device.dispose();
       expect(resource.destroy).toHaveBeenCalledOnce();
     } finally {
       spy.mockRestore();

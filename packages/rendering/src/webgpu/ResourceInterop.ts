@@ -16,6 +16,8 @@ interface ResourceRecord {
   retired: boolean;
   destroying: boolean;
   fencePassed: boolean;
+  /** Queue submission serial when the lease was registered. */
+  readonly registeredSerial: number;
   fence?: RetirementFence;
   failure?: { readonly error: unknown };
   completion?: RetirementCompletion;
@@ -87,10 +89,13 @@ export class WebGPUResourceInterop {
   get liveResources(): number { return this.resources.size; }
 
   /**
-   * A waiting fence has an interop-owned completion path. In contrast, a
-   * fence still being requested, unavailable, or failed cannot yet release
-   * its lease. Do not infer this from the queue's current method: it may have
-   * changed since retirement, or the originally returned promise may reject.
+   * Retired leases whose fence is still being requested, is unavailable, or
+   * has failed: nothing in flight can release them without a retry or loss.
+   * A waiting fence is excluded only because it has a completion path; it is
+   * still not a release receipt (it can reject, or its destructor can fail),
+   * so owners must keep reporting disposal pending while `owns()` holds.
+   * Do not infer this from the queue's current method: it may have changed
+   * since retirement, or the originally returned promise may reject.
    */
   get hasUnfencedRetirements(): boolean {
     if (this.invalidated) return false;
@@ -192,9 +197,23 @@ export class WebGPUResourceInterop {
     if (destroyedResources.has(resource)) throw new Error("WEBGPU_INTEROP_RESOURCE_DESTROYED");
     owners.set(resource, this);
     this.resources.set(resource, {
-      destroy, retryDestroy, retired: false, destroying: false, fencePassed: false
+      destroy, retryDestroy, retired: false, destroying: false, fencePassed: false, registeredSerial: this.serial
     });
     return resource;
+  }
+
+  /**
+   * Declare that the owner never exposed this lease to GPU work, e.g. a
+   * texture allocated for a render target whose creation failed before the
+   * target existed. Its retirement then needs no queue fence and destroys
+   * synchronously. Ignored (the fence stays required) once the lease is
+   * retired or after any interop submission since it was registered.
+   */
+  markUnsubmitted(resource: object): void {
+    const record = this.resources.get(resource);
+    if (!record || owners.get(resource) !== this) throw new Error("WEBGPU_INTEROP_FOREIGN_RESOURCE");
+    if (record.retired || record.fence || this.submissionsInFlight || record.registeredSerial !== this.serial) return;
+    record.fencePassed = true;
   }
 
   assertUsable(resource: object): void {

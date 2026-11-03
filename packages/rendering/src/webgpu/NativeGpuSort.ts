@@ -545,7 +545,7 @@ export class NativeGpuSort {
   }
 
   private releasePending(pending: PendingSort, cause?: NativeGpuSortError): NativeGpuSortError | undefined {
-    if (pending.released) return;
+    if (pending.released) return undefined;
     const failures: unknown[] = [];
     if (!pending.scratchReleased) {
       try { pending.scratch.destroy(); pending.scratchReleased = true; }
@@ -574,6 +574,7 @@ export class NativeGpuSort {
       pending.settled = true;
       if (cause) pending.reject(cause); else pending.resolve();
     }
+    return undefined;
   }
 
   private retryLostCleanup(): void {

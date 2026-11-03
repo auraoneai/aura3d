@@ -79,10 +79,15 @@ describe("WebGPUDevice interop teardown ownership", () => {
     target.dispose();
     buffer.dispose();
 
-    lifecycle.dispose();
-    // The synchronous wrapper has handed cleanup to interop; its pending
-    // receipt is for failed/in-progress wrapper cleanup, not the GPU fence.
-    expect(lifecycle.disposed).toBe(true);
+    // Strict teardown: cleanup has been handed to interop, but a scheduled
+    // fence is not a release receipt, so the device stays pending (and the
+    // lifecycle keeps owning it) until the fence resolves.
+    expect(leaves(capture(() => lifecycle.dispose())).map(error => (error as Error).message))
+      .toContain("Resource disposal did not complete.");
+    expect(lifecycle.disposed).toBe(false);
+    expect(lifecycle.leakCount()).toBe(1);
+    expect(owner.device.disposed).toBe(true);
+    expect(owner.device[resourceDisposalPending]).toBe(true);
     expect(owner.device.resourceInterop.liveResources).toBe(2);
     expect(owner.device.resourceInterop.owns(owner.textures[0]!)).toBe(true);
     expect(owner.device.resourceInterop.owns(owner.buffers[0]!)).toBe(true);
@@ -100,6 +105,11 @@ describe("WebGPUDevice interop teardown ownership", () => {
     expect(peer.device.getDiagnostics().textureBytes).toBe(4);
     lifecycle.dispose();
     expect(lifecycle.disposed).toBe(true);
+    expect(lifecycle.leakCount()).toBe(0);
+    await expect(owner.device.whenDisposed()).resolves.toBeUndefined();
+    // Completion does not repeat successful native cleanup.
+    expect(owner.textures[0]!.destroy).toHaveBeenCalledOnce();
+    expect(owner.buffers[0]!.destroy).toHaveBeenCalledOnce();
     other.dispose();
     peer.finish();
     await flush();

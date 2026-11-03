@@ -346,9 +346,13 @@ function deviceDisposalFor(device: RenderDevice): DeviceDisposal {
       throw error;
     }
     try {
-      if (!nativeWhenDisposed && cleanupFinished()) {
+      if (cleanupFinished() && (!nativeWhenDisposed || descriptor?.get !== undefined)) {
         // Synchronous devices already have a complete receipt; do not defer
-        // their established lifecycle semantics to a microtask.
+        // their established lifecycle semantics to a microtask. A native
+        // device publishing a pending signal (WebGPU) reports false only once
+        // no fence-waiting, failed, or uncertain native work remains, so with
+        // every lane-owned step also done there is nothing left to await. A
+        // later native failure re-raises that signal and reopens this lane.
         resolveAttempt(attempt);
       } else {
         observeAttempt(attempt);

@@ -1044,7 +1044,9 @@ export class WebGPUDevice implements RenderDevice {
   public contextLost = false;
   public readonly generation = nextWebGPUGeneration++;
   public readonly resourceInterop: WebGPUResourceInterop;
-  public readonly depthConvention: DepthConvention;
+  #depthConvention: DepthConvention;
+  /** The renderer-selected frame convention; clears and pass loads use its clear value. */
+  get depthConvention(): DepthConvention { return this.#depthConvention; }
   private nativeConfirmedLost = false;
   private nativeDestroyPending = false;
   private nativeDestroyFailure?: { readonly error: unknown };
@@ -1072,7 +1074,13 @@ export class WebGPUDevice implements RenderDevice {
   private readonly activeNativeSampledReleases = new Set<Texture>();
   private deviceBudgetedDisposalAttempts: Set<Texture> | undefined;
   private readonly pendingNativeBudgetedDisposals = new Map<Texture, { inFlight: boolean; uncertain: boolean; error?: unknown }>();
-  /** Async fences remain owned by interop; observed failures compose with synchronous cleanup. */
+  /**
+   * Strict teardown: disposal stays pending until every native lease is
+   * released, including leases whose retirement fence is merely scheduled or
+   * waiting (a scheduled fence is not a release receipt). Observed failures
+   * compose with synchronous cleanup, and a failed attempt stays pending until
+   * an explicit dispose() retry replaces its rejected receipt.
+   */
   get [resourceDisposalPending](): boolean {
     return this.deviceDisposing || this.nativeRetirementsInFlight > 0 || this.nativeCleanupInFlight > 0
       // A rejected attempt must also be acknowledged by an explicit retry.
@@ -1707,11 +1715,14 @@ export class WebGPUDevice implements RenderDevice {
    * device. Acquire ownership before destroying it; if that cannot be proven,
    * retain both the handle and its charge rather than damaging a peer.
    */
-  private retireUnregisteredNative(resource: { destroy(): void }, release?: () => void): void {
+  private retireUnregisteredNative(resource: { destroy(): void }, release?: () => void, unsubmitted = false): void {
     let registered = false;
     try {
       this.registerNativeCleanup(resource, release ? [{ run: release }] : []);
       registered = true;
+      // A handle allocated for a render target that was never created cannot
+      // be referenced by queued GPU work, so it needs no retirement fence.
+      if (unsubmitted) this.resourceInterop.markUnsubmitted(resource);
       this.retireNative(resource);
     } catch (error) {
       if (registered && this.resourceInterop.owns(resource)) {
@@ -2519,9 +2530,16 @@ export class WebGPUDevice implements RenderDevice {
 
   setDepthConvention(convention: DepthConvention): void {
     this.assertAlive();
-    if (convention.mode !== "standard" || convention.clipRange !== "zero-to-one" || convention.clearValue !== 1 || convention.compare !== "less-equal") {
+    // Generated WGSL programs remap the renderer's minus-one-to-one camera
+    // projection into WebGPU's zero-to-one clip space, which preserves the
+    // reversed ordering (near = 1, far = 0). They do not write logarithmic
+    // fragment depth, so the renderer rejects that mode before this point.
+    const reversed = convention.mode === "reversed";
+    if ((convention.mode !== "standard" && !reversed) || convention.clipRange !== "zero-to-one"
+      || convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
       throw new RenderDeviceError("Depth convention is unsupported by the active WebGPU pipeline", "DEPTH_MODE_UNSUPPORTED", { mode: convention.mode });
     }
+    this.#depthConvention = Object.freeze({ ...convention });
   }
 
   private constructor(
@@ -2537,7 +2555,7 @@ export class WebGPUDevice implements RenderDevice {
     this.resourceInterop = new WebGPUResourceInterop(device.queue, this.generation);
     // A compare/clear change alone is not reversed-depth support: the shadow,
     // shader and post paths must all use the same encoding first.
-    this.depthConvention = negotiateDepthConvention({ mode: options.depthMode, allowFallback: options.allowDepthFallback }, { clipRange: "zero-to-one", reversed: false, logarithmic: false });
+    this.#depthConvention = negotiateDepthConvention({ mode: options.depthMode, allowFallback: options.allowDepthFallback }, { clipRange: "zero-to-one", reversed: true, logarithmic: false });
     const supportsNativeRenderPipeline = hasNativeRenderPipeline(device);
     const supportsNativeTextureReadback = hasNativeTextureReadback(device);
     const supportsCanvasSurface = supportsNativeRenderPipeline && canvasContext !== null;
@@ -2999,7 +3017,7 @@ export class WebGPUDevice implements RenderDevice {
         { texture: nativeDepthTexture, registered: depthRegistered, release: releaseDepth }
       ]) {
         if (!texture) { release(); continue; }
-        if (!registered) this.retireUnregisteredNative(texture, release);
+        if (!registered) this.retireUnregisteredNative(texture, release, true);
         else {
           try { if (this.resourceInterop.owns(texture)) this.retireNative(texture); }
           catch (cleanupError) {
@@ -3101,12 +3119,12 @@ export class WebGPUDevice implements RenderDevice {
             || this.resourceInterop.owns(candidate);
           if (multisampleNative && multisampleNative !== native) {
             if (priorOwns(multisampleNative)) this.uncertainNativeAllocations.add({ resource: multisampleNative, error, release: releaseMultisample });
-            else this.retireUnregisteredNative(multisampleNative, releaseMultisample);
+            else this.retireUnregisteredNative(multisampleNative, releaseMultisample, true);
           } else if (multisampleNative) this.uncertainNativeAllocations.add({ resource: multisampleNative, error, release: releaseMultisample });
           else releaseMultisample();
           if (native) {
             if (priorOwns(native)) this.uncertainNativeAllocations.add({ resource: native, error, release });
-            else this.retireUnregisteredNative(native, release);
+            else this.retireUnregisteredNative(native, release, true);
           } else release();
           throw error;
         }
@@ -3137,10 +3155,10 @@ export class WebGPUDevice implements RenderDevice {
       for (const color of pending) {
         color.texture.dispose();
         if (color.registered && this.resourceInterop.owns(color.native)) this.retireNative(color.native);
-        else if (!color.registered) this.retireUnregisteredNative(color.native, color.release);
+        else if (!color.registered) this.retireUnregisteredNative(color.native, color.release, true);
         if (color.multisampleNative) {
           if (color.multisampleRegistered && this.resourceInterop.owns(color.multisampleNative)) this.retireNative(color.multisampleNative);
-          else if (!color.multisampleRegistered) this.retireUnregisteredNative(color.multisampleNative, color.releaseMultisample);
+          else if (!color.multisampleRegistered) this.retireUnregisteredNative(color.multisampleNative, color.releaseMultisample, true);
         }
       }
       throw error;

@@ -120,12 +120,22 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(context.unconfigure).toHaveBeenCalledOnce();
       expect(sibling).toHaveBeenCalledOnce();
+      // The retry completes canvas cleanup, but sibling retirement fences are
+      // still waiting: strict teardown keeps the device owned until they pass.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(context.unconfigure).toHaveBeenCalledTimes(2);
+      expect(device[resourceDisposalPending]).toBe(true);
+      expect(lifecycle.disposed).toBe(false);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(false);
       expect(context.unconfigure).toHaveBeenCalledTimes(2);
       expect(sibling).toHaveBeenCalledOnce();
+      expect(f.native.destroy).not.toHaveBeenCalled();
     } finally {
       capture(() => lifecycle.dispose());
       capture(() => device.dispose());
@@ -157,6 +167,15 @@ describe("WebGPU device post teardown", () => {
       expect(owner.nativeStreamingLeases.has(textures[0]!)).toBe(true);
       expect(owner.nativeStreamingLeases.has(textures[1]!)).toBe(false);
       expect(healthy).toHaveBeenCalledOnce();
+      // The retry unsubscribes the failed lease; native fences still wait.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(owner.nativeStreamingLeases.size).toBe(0);
+      expect(failed).toHaveBeenCalledTimes(2);
+      expect(device[resourceDisposalPending]).toBe(true);
+      expect(lifecycle.disposed).toBe(false);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
@@ -185,7 +204,15 @@ describe("WebGPU device post teardown", () => {
       try {
         original.device.dispose();
         expect(context.unconfigure).toHaveBeenCalledOnce();
-        expect((original.device as WebGPUDevice & { readonly [resourceDisposalPending]: boolean })[resourceDisposalPending]).toBe(false);
+        const originalPending = () => (original.device as WebGPUDevice & { readonly [resourceDisposalPending]: boolean })[resourceDisposalPending];
+        // Canvas cleanup is complete; the original's retirement fence still waits.
+        expect(originalPending()).toBe(true);
+        original.finish();
+        await flush();
+        expect(originalPending()).toBe(false);
+        await expect(original.device.whenDisposed()).resolves.toBeUndefined();
+        original.device.dispose();
+        expect(context.unconfigure).toHaveBeenCalledOnce();
         expect(replacement.device.disposed).toBe(false);
         replacement.device.dispose();
         expect(context.unconfigure).toHaveBeenCalledTimes(2);
@@ -260,6 +287,14 @@ describe("WebGPU device post teardown", () => {
       expect(device.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(true);
       expect(remove).toHaveBeenCalledOnce();
+      // The retry unsubscribes; the native retirement fences are still waiting.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(remove).toHaveBeenCalledTimes(2);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       expect(remove).toHaveBeenCalledTimes(2);
       expect(lifecycle.disposed).toBe(true);
@@ -290,7 +325,13 @@ describe("WebGPU device post teardown", () => {
       device.dispose();
       expect(unsubscribe).toHaveBeenCalledTimes(2);
       expect(owner.nativeStreamingLeases.size).toBe(0);
+      // Unsubscribed, but the streaming allocations' fences are still waiting.
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
       expect(device[resourceDisposalPending]).toBe(false);
+      device.dispose();
+      expect(unsubscribe).toHaveBeenCalledTimes(2);
     } finally {
       capture(() => device.dispose());
       f.finish();
@@ -333,7 +374,8 @@ describe("WebGPU device post teardown", () => {
       fail = false;
       device.dispose();
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Retired again, but a scheduled fence is not a release receipt.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(2);
       expect(retire.mock.calls.filter(([resource]) => resource === frameUniform)).toHaveLength(2);
       expect(cache.invalidate).toHaveBeenCalledOnce();
@@ -342,6 +384,12 @@ describe("WebGPU device post teardown", () => {
       expect(frameUniform.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(uniform.destroy).toHaveBeenCalledOnce();
+      expect(frameUniform.destroy).toHaveBeenCalledOnce();
+      device.dispose();
+      expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(2);
+      expect(retire.mock.calls.filter(([resource]) => resource === frameUniform)).toHaveLength(2);
       expect(uniform.destroy).toHaveBeenCalledOnce();
       expect(frameUniform.destroy).toHaveBeenCalledOnce();
     } finally {
@@ -432,7 +480,8 @@ describe("WebGPU device post teardown", () => {
       expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(1);
       expect(retire.mock.calls.filter(([resource]) => resource === frameUniform)).toHaveLength(1);
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Invalidation succeeded; the uniforms' retirement fence still waits.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(cache.invalidate).toHaveBeenCalledTimes(2);
       expect(cache.dispose).toHaveBeenCalledOnce();
       expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(1);
@@ -441,6 +490,12 @@ describe("WebGPU device post teardown", () => {
       expect(frameUniform.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(uniform.destroy).toHaveBeenCalledOnce();
+      expect(frameUniform.destroy).toHaveBeenCalledOnce();
+      device.dispose();
+      expect(cache.invalidate).toHaveBeenCalledTimes(2);
+      expect(retire.mock.calls.filter(([resource]) => resource === uniform)).toHaveLength(1);
       expect(uniform.destroy).toHaveBeenCalledOnce();
       expect(frameUniform.destroy).toHaveBeenCalledOnce();
     } finally {
@@ -478,13 +533,20 @@ describe("WebGPU device post teardown", () => {
       expect(retire.mock.calls.filter(([resource]) => resource === depth)).toHaveLength(1);
       fail = false;
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Both retirements are scheduled; their fences are not release receipts.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(retire.mock.calls.filter(([resource]) => resource === fallback)).toHaveLength(2);
       expect(retire.mock.calls.filter(([resource]) => resource === depth)).toHaveLength(1);
       expect(fallback.destroy).not.toHaveBeenCalled();
       expect(depth.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(fallback.destroy).toHaveBeenCalledOnce();
+      expect(depth.destroy).toHaveBeenCalledOnce();
+      device.dispose();
+      expect(retire.mock.calls.filter(([resource]) => resource === fallback)).toHaveLength(2);
+      expect(retire.mock.calls.filter(([resource]) => resource === depth)).toHaveLength(1);
       expect(fallback.destroy).toHaveBeenCalledOnce();
       expect(depth.destroy).toHaveBeenCalledOnce();
     } finally {
@@ -520,13 +582,19 @@ describe("WebGPU device post teardown", () => {
       expect(budgetedDispose).toHaveBeenCalledOnce();
       fail = false;
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Budgeted cleanup is complete; the sampled texture's fence still waits.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(retire.mock.calls.filter(([resource]) => resource === native)).toHaveLength(2);
       expect(budgetedDispose).toHaveBeenCalledTimes(2);
       expect(budgeted.disposed).toBe(true);
       expect(native.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(native.destroy).toHaveBeenCalledOnce();
+      device.dispose();
+      expect(retire.mock.calls.filter(([resource]) => resource === native)).toHaveLength(2);
+      expect(budgetedDispose).toHaveBeenCalledTimes(2);
       expect(native.destroy).toHaveBeenCalledOnce();
     } finally {
       fail = false;
@@ -558,7 +626,14 @@ describe("WebGPU device post teardown", () => {
       expect(second).toHaveBeenCalledOnce();
       device.dispose();
       device.dispose();
+      // Both unsubscribes are done; the sampled textures' fences still wait.
+      expect(device[resourceDisposalPending]).toBe(true);
+      expect(first).toHaveBeenCalledTimes(2);
+      expect(second).toHaveBeenCalledOnce();
+      f.finish();
+      await flush();
       expect(device[resourceDisposalPending]).toBe(false);
+      device.dispose();
       expect(first).toHaveBeenCalledTimes(2);
       expect(second).toHaveBeenCalledOnce();
     } finally {
@@ -617,6 +692,14 @@ describe("WebGPU device post teardown", () => {
       expect(device.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(true);
       expect(unsubscribe).toHaveBeenCalledOnce();
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(false);
@@ -667,6 +750,14 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(retire.mock.calls.filter(([resource]) => resource === frameUniform)).toHaveLength(1);
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       expect(device[resourceDisposalPending]).toBe(false);
       expect(lifecycle.disposed).toBe(true);
@@ -740,13 +831,20 @@ describe("WebGPU device post teardown", () => {
       expect(retire.mock.calls.filter(([resource]) => resource === second)).toHaveLength(1);
       fail = false;
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Both are retired; their scheduled fences are not release receipts.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(retire.mock.calls.filter(([resource]) => resource === first)).toHaveLength(2);
       expect(retire.mock.calls.filter(([resource]) => resource === second)).toHaveLength(1);
       expect(first.destroy).not.toHaveBeenCalled();
       expect(second.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(first.destroy).toHaveBeenCalledOnce();
+      expect(second.destroy).toHaveBeenCalledOnce();
+      device.dispose();
+      expect(retire.mock.calls.filter(([resource]) => resource === first)).toHaveLength(2);
+      expect(retire.mock.calls.filter(([resource]) => resource === second)).toHaveLength(1);
       expect(first.destroy).toHaveBeenCalledOnce();
       expect(second.destroy).toHaveBeenCalledOnce();
     } finally {
@@ -786,6 +884,17 @@ describe("WebGPU device post teardown", () => {
       expect(f.native.destroy).toHaveBeenCalledTimes(borrowed ? 0 : 1);
 
       fail = false;
+      if (borrowed) {
+        // Strict teardown: a borrowed device's retirement fences still wait
+        // after the retry, so the lifecycle keeps owning it until they pass.
+        expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+        expect(lifecycle.disposed).toBe(false);
+        expect(device[resourceDisposalPending]).toBe(true);
+        expect(color).toHaveBeenCalledTimes(2);
+        f.finish();
+        await flush();
+        expect(device[resourceDisposalPending]).toBe(false);
+      }
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
@@ -833,6 +942,14 @@ describe("WebGPU device post teardown", () => {
       const handle = f.buffers.find(resource => resource.label.includes("vertex"))!;
       expect(retire.mock.calls.filter(([resource]) => resource === handle)).toHaveLength(1);
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(false);
@@ -879,8 +996,18 @@ describe("WebGPU device post teardown", () => {
       fail = false;
       device.dispose();
       device.dispose();
+      // Both handles are retired; their scheduled fences are not receipts yet.
+      expect(buffer[resourceDisposalPending]).toBe(true);
+      expect(device[resourceDisposalPending]).toBe(true);
+      expect(failed.destroy).not.toHaveBeenCalled();
+      expect(healthy.destroy).not.toHaveBeenCalled();
+      f.finish();
+      await flush();
       expect(buffer[resourceDisposalPending]).toBe(false);
       expect(device[resourceDisposalPending]).toBe(false);
+      expect(failed.destroy).toHaveBeenCalledOnce();
+      expect(healthy.destroy).toHaveBeenCalledOnce();
+      device.dispose();
       expect(retire.mock.calls.filter(([resource]) => resource === failed)).toHaveLength(2);
       expect(retire.mock.calls.filter(([resource]) => resource === healthy)).toHaveLength(1);
       expect(siblingDispose).toHaveBeenCalledOnce();
@@ -917,6 +1044,14 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(sibling).toHaveBeenCalledOnce();
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
@@ -953,10 +1088,15 @@ describe("WebGPU device post teardown", () => {
       resource.dispose();
       expect(nested).toBeInstanceOf(AggregateError);
       expect(device.disposed).toBe(true);
-      expect(device[resourceDisposalPending]).toBe(false);
+      // The in-flight callback signal is cleared, but the scheduled retirement
+      // fences are not release receipts: the device stays pending until they pass.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(lifecycle.disposed).toBe(false);
       expect(dispose).toHaveBeenCalledOnce();
       expect(sibling).toHaveBeenCalledOnce();
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
@@ -1000,8 +1140,14 @@ describe("WebGPU device post teardown", () => {
       fail = false;
       device.dispose();
       device.dispose();
+      // The retried texture cleanup is done; retirement fences still wait.
+      expect(device[resourceDisposalPending]).toBe(true);
+      expect(color).toHaveBeenCalledTimes(2);
+      f.finish();
+      await flush();
       expect(device[resourceDisposalPending]).toBe(false);
       expect(target.nativeDisposalComplete).toBe(true);
+      device.dispose();
       expect(color).toHaveBeenCalledTimes(2);
       expect(siblingDispose).toHaveBeenCalledOnce();
     } finally {
@@ -1039,8 +1185,16 @@ describe("WebGPU device post teardown", () => {
       fail = false;
       device.dispose();
       device.dispose();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // Both uniforms are retired; their scheduled fences are not receipts yet.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(owner.webgpuPostRetiredUniformBuffers).toEqual([]);
+      expect(healthy.destroy).not.toHaveBeenCalled();
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
+      expect(healthy.destroy).toHaveBeenCalledOnce();
+      expect((failed as unknown as { destroy: ReturnType<typeof vi.fn> }).destroy).toHaveBeenCalledOnce();
+      device.dispose();
       expect(retire.mock.calls.filter(([resource]) => resource === failed)).toHaveLength(2);
       expect(retire.mock.calls.filter(([resource]) => resource === healthy)).toHaveLength(1);
     } finally {
@@ -1080,6 +1234,14 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(sibling).toHaveBeenCalledOnce();
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(device[resourceDisposalPending]).toBe(false);
@@ -1115,17 +1277,23 @@ describe("WebGPU device post teardown", () => {
       texture.dispose();
       expect(nested).toBeInstanceOf(AggregateError);
       expect(device.disposed).toBe(true);
-      expect(device[resourceDisposalPending]).toBe(false);
+      // The sampled retirement's fence is waiting: not yet a release receipt.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(lifecycle.disposed).toBe(false);
       expect(native.destroy).not.toHaveBeenCalled();
       expect(sibling).toHaveBeenCalledOnce();
-      lifecycle.dispose();
-      lifecycle.dispose();
-      expect(lifecycle.disposed).toBe(true);
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
       expect(sibling).toHaveBeenCalledOnce();
       expect(native.destroy).not.toHaveBeenCalled();
       f.finish();
       await flush();
+      expect(native.destroy).toHaveBeenCalledOnce();
+      expect(device[resourceDisposalPending]).toBe(false);
+      lifecycle.dispose();
+      lifecycle.dispose();
+      expect(lifecycle.disposed).toBe(true);
+      expect(sibling).toHaveBeenCalledOnce();
       expect(native.destroy).toHaveBeenCalledOnce();
     } finally {
       capture(() => lifecycle.dispose());
@@ -1158,6 +1326,14 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(sibling).toHaveBeenCalledOnce();
       pending = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(shader.disposed).toBe(true);
@@ -1317,14 +1493,28 @@ describe("WebGPU device post teardown", () => {
       expect(device.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(true);
       expect(lifecycle.leakCount()).toBe(1);
-      expect(sim.cleanupPending).toBe(false);
+      // The particle targets were retired by the nested device disposal, but
+      // their fences are waiting, so the sim cannot report its cleanup done.
+      expect(sim.cleanupPending).toBe(true);
       expect(particleDispose).toHaveBeenCalledOnce();
       expect(poolDispose).toHaveBeenCalledOnce();
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      // M3: the particle sim's attempt failed while its fences waited, so it
+      // stays pending until the next explicit dispose, which completes it.
+      expect(sim.cleanupPending).toBe(true);
+      expect(device[resourceDisposalPending]).toBe(true);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(lifecycle.disposed).toBe(true);
       expect(device[resourceDisposalPending]).toBe(false);
+      expect(sim.cleanupPending).toBe(false);
       expect(color).toHaveBeenCalledTimes(2);
       expect(particleDispose).toHaveBeenCalledOnce();
       expect(poolDispose).toHaveBeenCalledOnce();
@@ -1364,6 +1554,17 @@ describe("WebGPU device post teardown", () => {
       expect(sim.cleanupPending).toBe(true);
       expect(healthy).toHaveBeenCalledOnce();
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      // M3: the particle sim's attempt failed while its fences waited, so it
+      // stays pending until the next explicit dispose, which completes it.
+      expect(sim.cleanupPending).toBe(true);
+      expect(device[resourceDisposalPending]).toBe(true);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(sim.cleanupPending).toBe(false);
@@ -1408,6 +1609,14 @@ describe("WebGPU device post teardown", () => {
       expect(lifecycle.leakCount()).toBe(1);
       expect(healthy).toHaveBeenCalledOnce();
       fail = false;
+      // Strict teardown: the retry completes the failed cleanup, but scheduled
+      // retirement fences still wait, so the lifecycle keeps owning the device.
+      expect(capture(() => lifecycle.dispose())).toBeInstanceOf(AggregateError);
+      expect(lifecycle.disposed).toBe(false);
+      expect(device[resourceDisposalPending]).toBe(true);
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(false);
       lifecycle.dispose();
       lifecycle.dispose();
       expect(target[resourceDisposalPending]).toBe(false);
@@ -1489,10 +1698,18 @@ describe("WebGPU device post teardown", () => {
     try {
       expect(causes(capture(() => device.dispose()))).toContain(failure);
       expect(target.nativeDisposalComplete).toBe(true);
-      expect(device[resourceDisposalPending]).toBe(false);
+      // M3: the failed attempt keeps the device pending until dispose() is
+      // called again, even after its fences pass.
+      expect(device[resourceDisposalPending]).toBe(true);
       expect(dispose).toHaveBeenCalledOnce();
       expect(sibling).toHaveBeenCalledOnce();
+      f.finish();
+      await flush();
+      expect(device[resourceDisposalPending]).toBe(true);
+      await expect(device.whenDisposed()).rejects.toBeDefined();
       device.dispose();
+      expect(device[resourceDisposalPending]).toBe(false);
+      await expect(device.whenDisposed()).resolves.toBeUndefined();
       expect(dispose).toHaveBeenCalledOnce();
       expect(sibling).toHaveBeenCalledOnce();
     } finally {
@@ -1617,12 +1834,21 @@ describe("WebGPU device post teardown", () => {
       exposure.failure = undefined;
       expect(() => f.device.dispose()).not.toThrow();
       expect(() => f.device.dispose()).not.toThrow();
-      expect(device[resourceDisposalPending]).toBe(false);
+      // A borrowed device's retirement fences still wait after the retry.
+      expect(device[resourceDisposalPending]).toBe(borrowed);
+      if (borrowed) {
+        expect(liveResources.filter(resource => resource.destroy.mock.calls.length !== 0).map(resource => resource.label)).toEqual([]);
+        f.finish();
+        await flush();
+        expect(device[resourceDisposalPending]).toBe(false);
+        expect(liveResources.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
+        f.device.dispose();
+      }
       expect(exposure.attempts).toBe(3);
       expect(history.attempts).toBe(2);
       expect(post.filter(record => record !== exposure && record !== history).every(record => record.attempts === 1)).toBe(true);
       expect(f.native.destroy).toHaveBeenCalledTimes(borrowed ? 0 : 1);
-      if (borrowed) expect(liveResources.filter(resource => resource.destroy.mock.calls.length !== 0).map(resource => resource.label)).toEqual([]);
+      if (borrowed) expect(liveResources.every(resource => resource.destroy.mock.calls.length === 1)).toBe(true);
     } finally {
       exposure.failure = undefined;
       history.failure = undefined;
