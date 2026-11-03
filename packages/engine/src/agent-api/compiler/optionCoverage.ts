@@ -540,7 +540,7 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   modelInstances("instances.model", "instancingAware", true, false, "actor.runtimeWarnings"),
   modelInstances("instances.model", "lights", probeInstanceLights, { ...probeInstanceLights, offset: [0, 3, 0] }, "actor.instanceLights"),
   modelInstances("instances.model", "wind", false, true, "actor.windLabel"),
-  modelInstancesIgnored("instances.model", "collider", "bounds", "auto", "actor.option-ignored", "instances.model builds no collider from \"collider\" (a single bounds collider cannot represent instances; it is reported as OPTION_IGNORED); remove it, or declare physics with an explicit shape"),
+  modelInstances("instances.model", "collider", false, "bounds", "actor.physicsBodies"),
   modelInstancesIgnored("instances.model", "lod", { levels: [{ maxDistance: 10 }] }, { levels: [{ maxDistance: 10 }, { maxDistance: 40 }], hysteresis: 2 }, "actor.option-ignored", "per-instance LOD switching is not implemented, so instances.model \"lod\" is reported as OPTION_IGNORED; remove it, or use model(asset, { lod }) for an imported MSFT_lod chain"),
   modelInstancesIgnored("instances.model", "maxInstancesPerDraw", 64, 1, "actor.option-ignored", "the renderer draws each mesh's instances in one batch, so instances.model \"maxInstancesPerDraw\" is reported as OPTION_IGNORED; remove it"),
   modelInstancesIgnored("instances.model", "static", true, false, "actor.option-ignored", "the scatter placements block is never promoted to a world scatter node, so instances.model \"static\" is reported as OPTION_IGNORED; remove it"),

@@ -303,6 +303,255 @@
       "bytes": 4130500,
       "sha256": "786051059e6757cbbbd43336a38d74bcfbde50de433bd00b09acbf04a3422a17",
       "modified": true
+    },
+    {
+      "id": "alpha-blend-mode-test",
+      "path": "fixtures/asset-corpus/alpha-blend-mode-test.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "AlphaBlendModeTest",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/metadata.json",
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Ed Mackey",
+          "owner": "Analytical Graphics, Inc.",
+          "year": "2018",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        }
+      ],
+      "bytes": 2978812,
+      "sha256": "37c3577d143071b42dd46e9d942b157837eb25c6340112171d7faecaa987b14e",
+      "modified": false
+    },
+    {
+      "id": "anisotropy-barn-lamp",
+      "path": "fixtures/asset-corpus/anisotropy-barn-lamp.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "AnisotropyBarnLamp",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyBarnLamp/glTF-Binary/AnisotropyBarnLamp.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyBarnLamp/metadata.json",
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Eric Chadwick",
+          "owner": "Copyright 2023 Wayfair, LLC",
+          "year": "2023",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        }
+      ],
+      "bytes": 7833440,
+      "sha256": "0e728826c30bd6f3a18a0911db9f5f9ddc2dafa8e20bf9c3312c9625d1e32a24",
+      "modified": false
+    },
+    {
+      "id": "anisotropy-rotation-test",
+      "path": "fixtures/asset-corpus/anisotropy-rotation-test.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "AnisotropyRotationTest",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyRotationTest/glTF-Binary/AnisotropyRotationTest.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyRotationTest/metadata.json",
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Ed Mackey",
+          "owner": "Analytical Graphics, Inc.",
+          "year": "2023",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        }
+      ],
+      "bytes": 832340,
+      "sha256": "8f6a45e69b1304cde2eb55edfd700cb3e73692be38d6f0ae146c41029a907e90",
+      "modified": false
+    },
+    {
+      "id": "dispersion-test",
+      "path": "fixtures/asset-corpus/dispersion-test.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "DispersionTest",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DispersionTest/glTF-Binary/DispersionTest.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DispersionTest/metadata.json",
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Ed Mackey",
+          "owner": "AGI",
+          "year": "2023",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        }
+      ],
+      "bytes": 2310944,
+      "sha256": "bbac38386632b5a7a27289737963314c2f92095074dfdf0e8c0c1c25270b3e37",
+      "modified": false
+    },
+    {
+      "id": "iridescence-lamp",
+      "path": "fixtures/asset-corpus/iridescence-lamp.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "IridescenceLamp",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/metadata.json",
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Eric Chadwick",
+          "owner": "Wayfair, LLC",
+          "year": "2022",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        }
+      ],
+      "bytes": 4083912,
+      "sha256": "17cfdc79ec9e38fadb28db159734c5f9592ca423977b546e5057e350ba29ff13",
+      "modified": false
+    },
+    {
+      "id": "normal-tangent-test",
+      "path": "fixtures/asset-corpus/normal-tangent-test.glb",
+      "kind": "khronos-sample",
+      "sourceModel": "NormalTangentTest",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NormalTangentTest/glTF-Binary/NormalTangentTest.glb",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NormalTangentTest/metadata.json",
+      "licenses": [
+        "CC0-1.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Ed Mackey",
+          "owner": "Analytical Graphics, Inc.",
+          "year": "2018",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
+        }
+      ],
+      "bytes": 1796996,
+      "sha256": "5ac0932355ae1ea05a7485eeddcc3f1fbe56c678e00b519075feced80e9e9d6a",
+      "modified": false
+    },
+    {
+      "id": "damaged-helmet-uastc",
+      "path": "fixtures/asset-corpus/damaged-helmet-uastc.glb",
+      "kind": "derived-from-khronos-sample",
+      "sourceModel": "DamagedHelmet",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+      "derivedFrom": {
+        "path": "fixtures/asset-corpus/damaged-helmet.glb",
+        "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656"
+      },
+      "generator": "npx --package @gltf-transform/cli@4.5.1 gltf-transform uastc damaged-helmet.glb damaged-helmet-uastc.glb --level 2 --zstd 18 (toktx v4.4.0, KTX-Software 4.4.0)",
+      "generatorDeterministic": false,
+      "licenses": [
+        "CC-BY-4.0",
+        "CC-BY-NC-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Rebuild and conversion to glTF",
+          "artist": "ctxwing",
+          "owner": "ctxwing",
+          "year": "2018",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        },
+        {
+          "what": "Earlier version of model",
+          "artist": "theblueturtle_",
+          "owner": "theblueturtle_",
+          "year": "2016",
+          "license": "CC-BY-NC-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/legalcode"
+        }
+      ],
+      "note": "KTX2 re-encode of the tracked DamagedHelmet recorded in benchmarks/quality-rebuild/scenes/prd04/assets.ts at author time. Not regenerated in the 5.0 source-pass tracking step (toktx unavailable); bytes and SHA-256 equal the assets.ts pin.",
+      "bytes": 13509040,
+      "sha256": "ee2925a04a3fa22d062eded69ea6edb08639042ec21819b06171239c10ab5725",
+      "modified": true
+    },
+    {
+      "id": "damaged-helmet-etc1s",
+      "path": "fixtures/asset-corpus/damaged-helmet-etc1s.glb",
+      "kind": "derived-from-khronos-sample",
+      "sourceModel": "DamagedHelmet",
+      "sourceUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+      "derivedFrom": {
+        "path": "fixtures/asset-corpus/damaged-helmet.glb",
+        "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656"
+      },
+      "generator": "npx --package @gltf-transform/cli@4.5.1 gltf-transform etc1s damaged-helmet.glb damaged-helmet-etc1s.glb --quality 128 (toktx v4.4.0, KTX-Software 4.4.0)",
+      "generatorDeterministic": false,
+      "licenses": [
+        "CC-BY-4.0",
+        "CC-BY-NC-4.0"
+      ],
+      "attribution": [
+        {
+          "what": "Rebuild and conversion to glTF",
+          "artist": "ctxwing",
+          "owner": "ctxwing",
+          "year": "2018",
+          "license": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode"
+        },
+        {
+          "what": "Earlier version of model",
+          "artist": "theblueturtle_",
+          "owner": "theblueturtle_",
+          "year": "2016",
+          "license": "CC-BY-NC-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/legalcode"
+        }
+      ],
+      "note": "KTX2 re-encode of the tracked DamagedHelmet recorded in benchmarks/quality-rebuild/scenes/prd04/assets.ts at author time. Not regenerated in the 5.0 source-pass tracking step (toktx unavailable); bytes and SHA-256 equal the assets.ts pin.",
+      "bytes": 2312324,
+      "sha256": "8dedd96deb99d91490e677bd092d893290ac853044567682ba19b2ded04f2afe",
+      "modified": true
+    },
+    {
+      "id": "texture-transform-test",
+      "path": "fixtures/asset-corpus/texture-transform-test.glb",
+      "kind": "derived-from-khronos-sample",
+      "sourceModel": "TextureTransformTest",
+      "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/TextureTransformTest/glTF",
+      "sourceMetadataUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/TextureTransformTest/metadata.json",
+      "generator": "Packed to GLB from the upstream glTF/ directory variant (upstream ships no glTF-Binary), PNG textures embedded; JSON chunk re-padded with 0x20 per glTF 2.0 \u00a74.4.3.1",
+      "generatorDeterministic": false,
+      "licenses": [
+        "CC0-1.0"
+      ],
+      "attribution": [
+        {
+          "what": "Everything",
+          "artist": "Microsoft",
+          "owner": "Microsoft",
+          "year": "2018",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
+        }
+      ],
+      "note": "Not regenerated in the 5.0 source-pass tracking step; bytes and SHA-256 equal the pin in benchmarks/quality-rebuild/scenes/prd04/assets.ts.",
+      "bytes": 26156,
+      "sha256": "05e03a4952b41fa0496efc484060d5bdd8c666932372b93d2a0e7f0c4ca119fb",
+      "modified": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 // Physics operations parameterized by the importing entry's world access.
 
-import type { AuraVec3, AuraColor, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWorldController, AuraSceneSnapshot } from "./types.js";
+import type { AuraVec3, AuraColor, AuraTransformSpec, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWorldController, AuraSceneSnapshot } from "./types.js";
 import type { ColliderDescriptor, CollisionEvent, Constraint, ConstraintDescriptor, Contact, DebugLine, PhysicsShape, PhysicsSnapshot, PhysicsWorldDescriptor, RaycastHit, RaycastOptions, RigidBody, RigidBodyDescriptor, PhysicsVehicleController, PhysicsWheelSpec, PhysicsCharacterController, PhysicsCharacterControllerDescriptor, ScenePhysicsNode, SphereCastHit } from "@aura3d/physics/solverless";
 import type { AuraSceneBuilder } from "./scene.js";
 import { PhysicsDebugDraw, PhysicsStepper, ScenePhysicsBridge, Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
@@ -11,7 +11,7 @@ import { material } from "./material.js";
 import { performanceNow } from "../platform.js";
 import { primitive, primitives } from "./primitives.js";
 import { primitiveSize, flattenSceneSnapshot, scaleToVec3, normalizeSceneSnapshot, resolveModelFitScale, shouldNormalizeModelNode } from "../sceneMath.js";
-import { composeTRSInto, localMatrixOf } from "../sceneGraph.js";
+import { composeTRSInto, decomposeMatrix, localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
 import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 import { parentTransformOf, worldTransformOf } from "../compiler/sceneGraph.js";
 import { round } from "../GameRuntimeCore.js";
@@ -680,8 +680,10 @@ function createPhysicsWorldFromScene(
     }
   };
   assertModelHierarchy(snapshot.nodes, false);
-  const nodes = flattenSceneSnapshot(snapshot).nodes;
-  assertScenePhysicsPivotSupport(nodes);
+  const flattened = flattenSceneSnapshot(snapshot).nodes;
+  assertScenePhysicsPivotSupport(flattened);
+  // One body per instance (S5-WP19-04): instanced physics nodes expand first.
+  const nodes = expandScenePhysicsInstances(flattened);
   const guards = nodes.flatMap((node) => {
     if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) return [];
     // Validate before allocating the solver, including the offset and pose.
@@ -773,6 +775,125 @@ export interface AuraRuntimeScenePhysics {
   dispose(): void;
 }
 
+/** The batch node and instance slot an expanded per-instance physics node came from. */
+export interface InstancePhysicsOrigin {
+  readonly batch: AuraModelNode | AuraPrimitiveNode;
+  readonly index: number;
+  /** The batch node's world matrix the instance transform was composed with. */
+  readonly batchMatrix: Float32Array;
+}
+
+const instancePhysicsOrigins = new WeakMap<object, InstancePhysicsOrigin>();
+
+/** Where an expanded per-instance physics node came from, if it is one. */
+export function instancePhysicsOriginOf(node: object): InstancePhysicsOrigin | undefined {
+  return instancePhysicsOrigins.get(node);
+}
+
+function batchWorldMatrix(node: AuraModelNode | AuraPrimitiveNode): Float32Array {
+  const world = worldTransformOf(node);
+  if (world) return new Float32Array(world.matrix);
+  return localMatrixOf({
+    ...(node.position ? { position: node.position } : {}),
+    ...(node.rotation ? { rotation: node.rotation } : {}),
+    ...(node.rotationOrder ? { rotationOrder: node.rotationOrder } : {}),
+    ...(node.quaternion ? { quaternion: node.quaternion } : {}),
+    ...(node.scale !== undefined ? { scale: node.scale } : {})
+  }, new Float32Array(16));
+}
+
+/**
+ * S5-WP19-04: an instanced node (`instances.model`, `instances.<primitive>`)
+ * with physics gets one rigid body per instance. Each instance's transform is
+ * composed with the batch node's transform into a detached single node (no
+ * `instances`) that every body builder consumes unchanged, so the collider
+ * option, explicit shapes and bounds colliders resolve per instance. Returns
+ * undefined for a node without instances; an empty batch expands to no nodes.
+ */
+export function expandInstancePhysicsNodes(node: AuraModelNode | AuraPrimitiveNode): readonly (AuraModelNode | AuraPrimitiveNode)[] | undefined {
+  const transforms = node.instances;
+  if (transforms === undefined || !node.physics) return undefined;
+  if (node.lookAt !== undefined) {
+    throw new RangeError("INSTANCE_PHYSICS_UNSUPPORTED_LOOK_AT: a physics instance batch cannot use lookAt; use a rotation or quaternion.");
+  }
+  const batchMatrix = batchWorldMatrix(node);
+  const {
+    instances: _instances, instanceColors: _colors, ...rest
+  } = node as AuraModelNode & { instances?: unknown; instanceColors?: unknown };
+  const base = { ...rest } as Record<string, unknown>;
+  for (const key of ["instanceCulling", "instanceLod", "placements", "instanceWind", "instanceColorTarget", "rotation", "rotationOrder", "quaternion", "lookAt"]) delete base[key];
+  return transforms.map((transform, index) => {
+    if (transform.lookAt !== undefined) {
+      throw new RangeError(`INSTANCE_PHYSICS_UNSUPPORTED_LOOK_AT: instance ${index} of a physics batch cannot use lookAt; use a rotation or quaternion.`);
+    }
+    const composed = new Float32Array(16);
+    multiplyMat4Into(composed, batchMatrix, localMatrixOf(transform, new Float32Array(16)));
+    const world = decomposeMatrix(composed);
+    if (world.sheared || !composed.every(Number.isFinite) || !world.quaternion.every(Number.isFinite) ||
+        world.scale.some((value) => !Number.isFinite(value) || value === 0)) {
+      throw new RangeError(`PHYSICS_UNSUPPORTED_WORLD_TRANSFORM: instance ${index} of a physics batch has a sheared, singular, or non-finite world transform.`);
+    }
+    const length = Math.hypot(...world.quaternion);
+    const quaternion = world.quaternion.map((value) => value / length) as [number, number, number, number];
+    const expanded = {
+      ...base,
+      ...(node.name !== undefined ? { name: `${node.name}[${index}]` } : {}),
+      position: [world.position[0], world.position[1], world.position[2]] as AuraVec3,
+      quaternion,
+      scale: [world.scale[0], world.scale[1], world.scale[2]] as AuraVec3
+    } as unknown as AuraModelNode | AuraPrimitiveNode;
+    instancePhysicsOrigins.set(expanded, { batch: node, index, batchMatrix });
+    return expanded;
+  });
+}
+
+/** Expand every instanced physics node in a flat list into its per-instance nodes. */
+export function expandScenePhysicsInstances(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
+  return nodes.flatMap((node) => (node.kind === "model" || node.kind === "primitive") ? [...(expandInstancePhysicsNodes(node) ?? [node])] : [node]);
+}
+
+function invertAffineInto(out: Float32Array, m: Float32Array): Float32Array {
+  const [a00, a01, a02, , a10, a11, a12, , a20, a21, a22, , tx, ty, tz] = m as unknown as number[];
+  const b01 = a22 * a11 - a12 * a21, b11 = -a22 * a10 + a12 * a20, b21 = a21 * a10 - a11 * a20;
+  const det = a00 * b01 + a01 * b11 + a02 * b21;
+  if (!Number.isFinite(det) || det === 0) throw new RangeError("PHYSICS_UNSUPPORTED_WORLD_TRANSFORM: an instance batch transform is singular.");
+  const inv = 1 / det;
+  out[0] = b01 * inv; out[1] = (-a22 * a01 + a02 * a21) * inv; out[2] = (a12 * a01 - a02 * a11) * inv; out[3] = 0;
+  out[4] = b11 * inv; out[5] = (a22 * a00 - a02 * a20) * inv; out[6] = (-a12 * a00 + a02 * a10) * inv; out[7] = 0;
+  out[8] = b21 * inv; out[9] = (-a21 * a00 + a01 * a20) * inv; out[10] = (a11 * a00 - a01 * a10) * inv; out[11] = 0;
+  out[12] = -(out[0] * tx! + out[4] * ty! + out[8] * tz!);
+  out[13] = -(out[1] * tx! + out[5] * ty! + out[9] * tz!);
+  out[14] = -(out[2] * tx! + out[6] * ty! + out[10] * tz!);
+  out[15] = 1;
+  return out;
+}
+
+/**
+ * Map a per-instance body pose back to the batch's local instance transform
+ * (the inverse of {@link expandInstancePhysicsNodes}); the instance keeps its
+ * authored scale, rotation convention and pivot.
+ */
+export function instanceTransformFromPhysics(
+  expanded: AuraModelNode | AuraPrimitiveNode,
+  bodyPosition: AuraVec3,
+  bodyRotation: readonly [number, number, number, number],
+  modelOffset?: AuraVec3
+): AuraTransformSpec {
+  const origin = instancePhysicsOrigins.get(expanded);
+  if (!origin) throw new Error("INSTANCE_PHYSICS_UNBOUND: node is not an expanded physics instance.");
+  const authored = origin.batch.instances?.[origin.index] ?? {};
+  const worldOrigin = nodePositionFromPhysics(expanded, bodyPosition, bodyRotation, modelOffset);
+  const world = composeTRSInto(new Float32Array(16), worldOrigin, bodyRotation, scaleToVec3(expanded.scale));
+  const local = new Float32Array(16);
+  multiplyMat4Into(local, invertAffineInto(new Float32Array(16), origin.batchMatrix), world);
+  const pose = decomposeMatrix(local);
+  const length = Math.hypot(...pose.quaternion);
+  const quaternion = pose.quaternion.map((value) => value / length) as [number, number, number, number];
+  const next: { -readonly [K in keyof AuraTransformSpec]: AuraTransformSpec[K] } = { ...authored, position: [local[12]!, local[13]!, local[14]!] };
+  writeNodeRotationFromBody(next, quaternion, (euler) => { next.rotation = euler; });
+  return next;
+}
+
 function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, nodes: readonly AuraSceneNode[]): Array<{ readonly node: AuraModelNode | AuraPrimitiveNode; readonly body: RigidBody }> {
   const created: Array<{ readonly node: AuraModelNode | AuraPrimitiveNode; readonly body: RigidBody }> = [];
   for (const node of nodes) {
@@ -793,10 +914,41 @@ function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, n
     });
     created.push({ node, body });
     if (node.physics.type !== "static") {
-      controller.bindNode(body, scenePhysicsNodeAdapter(node), node.physics.type === "kinematic" ? "kinematic" : "dynamic");
+      const origin = instancePhysicsOriginOf(node);
+      controller.bindNode(body, origin ? instancePhysicsNodeAdapter(node, origin) : scenePhysicsNodeAdapter(node), node.physics.type === "kinematic" ? "kinematic" : "dynamic");
     }
   }
   return created;
+}
+
+/** Write a per-instance body back into its batch's instance transform (and the expanded node). */
+function instancePhysicsNodeAdapter(node: AuraModelNode | AuraPrimitiveNode, origin: InstancePhysicsOrigin): ScenePhysicsNode {
+  const offset = resolveNodePhysicsOffset(node);
+  let pendingPosition: AuraVec3 | undefined;
+  return {
+    getWorldPosition: () => nodePhysicsPosition(node, offset),
+    getWorldQuaternion: () => nodeRotationQuaternion(node),
+    setWorldPosition: (position) => { pendingPosition = [position[0], position[1], position[2]]; },
+    setWorldQuaternion: (rotation) => {
+      const position = pendingPosition ?? nodePhysicsPosition(node, offset);
+      pendingPosition = undefined;
+      writeInstancePhysicsPose(node, origin, position, rotation, offset);
+    }
+  };
+}
+
+function writeInstancePhysicsPose(
+  node: AuraModelNode | AuraPrimitiveNode,
+  origin: InstancePhysicsOrigin,
+  position: AuraVec3,
+  rotation: readonly [number, number, number, number],
+  offset: AuraVec3 | undefined
+): void {
+  const local = instanceTransformFromPhysics(node, position, rotation, offset);
+  (node as { position?: AuraVec3 }).position = nodePositionFromPhysics(node, position, rotation, offset);
+  (node as { quaternion?: readonly [number, number, number, number] }).quaternion = [rotation[0], rotation[1], rotation[2], rotation[3]];
+  const instances = origin.batch.instances as AuraTransformSpec[] | undefined;
+  if (instances && origin.index < instances.length) instances[origin.index] = local;
 }
 
 function scenePhysicsNodeAdapter(node: AuraModelNode | AuraPrimitiveNode): ScenePhysicsNode {
@@ -845,7 +997,7 @@ function createRuntimeScenePhysicsUsing(
   requireWorld: () => PhysicsWorldConstructor
 ): AuraRuntimeScenePhysics | undefined {
   assertScenePhysicsPivotSupport(snapshot.nodes);
-  const physicsNodes = snapshot.nodes.filter((node): node is AuraModelNode | AuraPrimitiveNode =>
+  const physicsNodes = expandScenePhysicsInstances(snapshot.nodes).filter((node): node is AuraModelNode | AuraPrimitiveNode =>
     (node.kind === "model" || node.kind === "primitive") && Boolean(node.physics)
   );
   if (physicsNodes.length === 0) return undefined;
@@ -961,6 +1113,11 @@ function createRuntimeScenePhysicsForWorld(
         if (binding.body.type !== "dynamic") continue;
         const position = [binding.body.position[0], binding.body.position[1], binding.body.position[2]] as AuraVec3;
         const rotation = binding.body.rotation;
+        const instanceOrigin = instancePhysicsOriginOf(binding.node);
+        if (instanceOrigin) {
+          writeInstancePhysicsPose(binding.node, instanceOrigin, position, rotation, binding.modelOffset);
+          continue;
+        }
         const nodePosition = nodePositionFromPhysics(binding.node, position, rotation, binding.modelOffset);
         (binding.node as { position?: AuraVec3 }).position = nodePosition;
         (binding.node as { physicsRotation?: readonly [number, number, number, number] }).physicsRotation = [rotation[0], rotation[1], rotation[2], rotation[3]];

@@ -696,7 +696,15 @@ export interface GLTFSamplerAsset {
 }
 
 export interface GLTFMaterialAsset {
+  /**
+   * Unique within the asset. glTF material names are not unique (the Khronos
+   * MaterialsVariantsShoe gives every variant material the same name), and
+   * runtime material libraries, variant mappings and slot overrides key by
+   * name, so a repeated authored name is suffixed with `#<material index>`.
+   */
   readonly name: string;
+  /** The authored glTF name when `name` was made unique; absent otherwise. */
+  readonly sourceName?: string;
   readonly unlit: boolean;
   readonly baseColorFactor: readonly [number, number, number, number];
   readonly baseColorTexture?: GLTFResolvedTextureInfo;
@@ -2063,16 +2071,40 @@ function resolveDefaultSceneIndex(json: GLTFJson): number {
   return json.scene ?? 0;
 }
 
+/**
+ * Material identity is the glTF index, but the runtime keys materials by name.
+ * Keep the first use of an authored name and suffix later repeats with their
+ * index so distinct materials (e.g. KHR_materials_variants entries sharing one
+ * name) never collapse into one runtime material.
+ */
+function uniqueMaterialNames(materials: readonly GLTFMaterial[]): readonly string[] {
+  const authored = materials.map((material, index) => material.name ?? `material-${index}`);
+  const taken = new Set<string>();
+  const repeated = new Set(authored.filter((name, index) => authored.indexOf(name) !== index));
+  // Reserve every authored name that occurs once so a suffix cannot shadow it.
+  for (const name of authored) if (!repeated.has(name)) taken.add(name);
+  return authored.map((name, index) => {
+    if (!repeated.has(name)) return name;
+    if (!taken.has(name)) { taken.add(name); return name; }
+    let candidate = `${name}#${index}`;
+    for (let attempt = 1; taken.has(candidate); attempt += 1) candidate = `${name}#${index}-${attempt}`;
+    taken.add(candidate);
+    return candidate;
+  });
+}
+
 function createMaterialAssets(
   json: GLTFJson,
   textures: readonly GLTFTextureAsset[]
 ): readonly GLTFMaterialAsset[] {
+  const names = uniqueMaterialNames(json.materials ?? []);
   return (json.materials ?? []).map((material, index) => {
     const pbr = material.pbrMetallicRoughness;
     const pbrSpecularGlossiness = resolvePBRSpecularGlossiness(material, textures, index).pbrSpecularGlossiness;
     const specular = resolveSpecular(material, textures, index).specular ?? createSpecularFromSpecularGlossiness(pbrSpecularGlossiness);
     return {
-      name: material.name ?? `material-${index}`,
+      name: names[index]!,
+      ...(names[index] !== (material.name ?? `material-${index}`) ? { sourceName: material.name ?? `material-${index}` } : {}),
       unlit: material.extensions?.KHR_materials_unlit !== undefined,
       baseColorFactor: pbrSpecularGlossiness?.diffuseFactor ?? resolveColor4(pbr?.baseColorFactor, [1, 1, 1, 1], `material ${index} baseColorFactor`),
       baseColorTexture: pbrSpecularGlossiness?.diffuseTexture ?? resolveTextureInfo(textures, pbr?.baseColorTexture, `material ${index} baseColorTexture`),

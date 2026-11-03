@@ -44,5 +44,13 @@ source URLs, full attribution and SHA-256 digests are in
 | `normal-tangent-mirror-test.glb` | NormalTangentMirrorTest | CC-BY-4.0 | Ed Mackey, Analytical Graphics, Inc., 2018 |
 | `materials-variants-shoe.glb` | MaterialsVariantsShoe | CC-BY-4.0 | Shopify, 2021 |
 | `damaged-helmet-draco.glb`, `damaged-helmet-meshopt.glb` | DamagedHelmet (derived) | CC-BY-4.0 (ctxwing, 2018); earlier version CC-BY-NC-4.0 (theblueturtle_, 2016) | Generated from the tracked `damaged-helmet.glb` by `node tools/generate-prd04-compressed-fixtures.mjs` (deterministic; regeneration is byte-identical) |
+| `alpha-blend-mode-test.glb` | AlphaBlendModeTest | CC-BY-4.0 | Ed Mackey, Analytical Graphics, Inc., 2018 |
+| `anisotropy-barn-lamp.glb` | AnisotropyBarnLamp | CC-BY-4.0 | Eric Chadwick, Wayfair, LLC, 2023 |
+| `anisotropy-rotation-test.glb` | AnisotropyRotationTest | CC-BY-4.0 | Ed Mackey, Analytical Graphics, Inc., 2023 |
+| `dispersion-test.glb` | DispersionTest | CC-BY-4.0 | Ed Mackey, AGI, 2023 |
+| `iridescence-lamp.glb` | IridescenceLamp | CC-BY-4.0 | Eric Chadwick, Wayfair, LLC, 2022 |
+| `normal-tangent-test.glb` | NormalTangentTest | CC0-1.0 | Ed Mackey, Analytical Graphics, Inc., 2018 |
+| `texture-transform-test.glb` | TextureTransformTest (derived) | CC0-1.0 | Microsoft, 2018; packed to GLB from the upstream glTF/ variant, JSON re-padded with 0x20 (not byte-identical to any upstream file) |
+| `damaged-helmet-uastc.glb`, `damaged-helmet-etc1s.glb` | DamagedHelmet (derived) | as DamagedHelmet above | KTX2 re-encodes (`gltf-transform` 4.5.1 + toktx 4.4.0, commands in `khronos-sources.json`); not regenerated when tracked |
 
 LicenseRef-CC-BY-TM / LegalMark texts: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/LICENSES

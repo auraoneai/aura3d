@@ -6,7 +6,7 @@ import type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } fr
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
-import { assertScenePhysicsPivotSupport, createRuntimeScenePhysicsWithAccess, fixedModelBoundsPhysicsGuard, nodePhysicsPosition, pivotPhysicsColliderSync, nodePositionFromPhysics, nodeRotationQuaternion, offsetPhysicsPosition, resolveNodePhysicsOffset, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics-core.js";
+import { assertScenePhysicsPivotSupport, createRuntimeScenePhysicsWithAccess, expandInstancePhysicsNodes, instanceTransformFromPhysics, fixedModelBoundsPhysicsGuard, nodePhysicsPosition, pivotPhysicsColliderSync, nodePositionFromPhysics, nodeRotationQuaternion, offsetPhysicsPosition, resolveNodePhysicsOffset, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics-core.js";
 import { hasNonzeroPivot } from "../pivotGuard.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
@@ -360,6 +360,78 @@ export function createAuraAppWithPhysicsWorldAccess(
   const appPhysicsBodyOwners = new Map<number, readonly string[]>();
   const retiringDeclaredBodyIds = new Set<number>();
   let appDeclaredBodyIds = new Set<number>();
+  /**
+   * S5-WP19-04: one body per instance of an instanced physics node. A batch
+   * remembers the `instances` array (and batch pose) its bodies were built
+   * from; `setInstances` replaces that array, so the next step or query
+   * rebuilds the batch's bodies (add/remove/update), and retirement of the
+   * owning runtime node releases all of them.
+   */
+  type InstanceBatch = {
+    readonly live: AuraModelNode | AuraPrimitiveNode;
+    readonly flat: AuraModelNode | AuraPrimitiveNode;
+    readonly owners: readonly string[];
+    bodyIds: number[];
+    builtInstances: AuraModelNode["instances"];
+    builtPose: string;
+  };
+  const appPhysicsInstanceBatches = new Set<InstanceBatch>();
+  const appPhysicsInstanceBodies = new Map<number, { readonly batch: InstanceBatch; readonly node: AuraModelNode | AuraPrimitiveNode; readonly offset?: AuraVec3 }>();
+  const instanceBatchPoseKey = (node: AuraModelNode | AuraPrimitiveNode): string =>
+    JSON.stringify([node.position ?? null, node.rotation ?? null, node.rotationOrder ?? null, node.quaternion ?? null, node.scale ?? null]);
+  const retireInstanceBatches = (matches: (batch: InstanceBatch) => boolean): void => {
+    for (const batch of [...appPhysicsInstanceBatches]) if (matches(batch)) appPhysicsInstanceBatches.delete(batch);
+  };
+  /** Create one body + collider per instance of a batch's current `instances`. */
+  const createInstanceBatchBodies = (world: World, batch: InstanceBatch): number[] => {
+    const current = batch.live === batch.flat ? batch.live : { ...batch.flat, instances: batch.live.instances } as AuraModelNode | AuraPrimitiveNode;
+    const created: number[] = [];
+    try {
+      for (const node of expandInstancePhysicsNodes(current) ?? []) {
+        const spec = node.physics!;
+        const offset = resolveNodePhysicsOffset(node);
+        const body = world.createRigidBody({
+          type: spec.type ?? "dynamic",
+          position: nodePhysicsPosition(node, offset),
+          rotation: nodeRotationQuaternion(node),
+          ...(spec.mass === undefined ? {} : { mass: spec.mass }),
+          ...(spec.friction === undefined ? {} : { friction: spec.friction }),
+          ...(spec.restitution === undefined ? {} : { restitution: spec.restitution })
+        });
+        created.push(body.id);
+        world.createCollider(body, {
+          shape: resolveNodePhysicsShape(node, spec),
+          ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
+          material: { friction: spec.friction ?? 0.5, restitution: spec.restitution ?? 0 }
+        });
+        appDeclaredBodyIds.add(body.id);
+        appPhysicsBodyOwners.set(body.id, batch.owners);
+        if (node.name) appPhysicsNodeNames.set(body.id, node.name);
+        appPhysicsInstanceBodies.set(body.id, { batch, node, ...(offset ? { offset } : {}) });
+      }
+    } catch (error) {
+      for (const id of created) {
+        try { world.removeRigidBody(id); } catch { /* already gone */ }
+        appDeclaredBodyIds.delete(id); appPhysicsBodyOwners.delete(id); appPhysicsNodeNames.delete(id); appPhysicsInstanceBodies.delete(id);
+      }
+      throw error;
+    }
+    return created;
+  };
+  /** Rebuild the bodies of every batch whose instances (or batch pose) changed since they were built. */
+  const syncInstanceBatches = (): void => {
+    for (const batch of appPhysicsInstanceBatches) {
+      const pose = batch.live === batch.flat ? instanceBatchPoseKey(batch.live) : batch.builtPose;
+      if (batch.live.instances === batch.builtInstances && pose === batch.builtPose) continue;
+      const world = appPhysicsWorld();
+      const next = createInstanceBatchBodies(world, batch);
+      const previous = batch.bodyIds;
+      batch.bodyIds = next;
+      batch.builtInstances = batch.live.instances;
+      batch.builtPose = pose;
+      retireDeclaredBodies(previous);
+    }
+  };
   const appPhysicsWorld = (): World => {
     if (appPhysicsWorldInstance === undefined) {
       const WorldConstructor = physicsAccess.requireReady();
@@ -421,6 +493,9 @@ export function createAuraAppWithPhysicsWorldAccess(
             appPhysicsPivotKinematics.delete(id);
             appPhysicsColliderSyncs.delete(id);
             appPhysicsModelBounds.delete(id);
+            const instance = appPhysicsInstanceBodies.get(id);
+            if (instance) instance.batch.bodyIds = instance.batch.bodyIds.filter((bodyId) => bodyId !== id);
+            appPhysicsInstanceBodies.delete(id);
           }
         } catch (error) { failures.push(error); }
       } finally {
@@ -436,6 +511,7 @@ export function createAuraAppWithPhysicsWorldAccess(
   ) => {
     // Resolve all scene-side descriptors before allocating or mutating a world.
     assertScenePhysicsPivotSupport(sourceNodes);
+    const stagedInstanceBatches: InstanceBatch[] = [];
     const physicsNodes = candidate.nodes.filter((node) => (node.kind === "model" || node.kind === "primitive") && node.physics);
     const sources = physicsNodes.length
       ? sourceOwnership(sourceNodes, incremental?.prefix)
@@ -446,9 +522,18 @@ export function createAuraAppWithPhysicsWorldAccess(
     })) {
       throw new Error("PHYSICS_SOURCE_OWNERSHIP_MISMATCH: flattened physics nodes do not match their authored declarations.");
     }
-    const descriptors = physicsNodes.flatMap((node, index) => {
-      if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) return [];
+    const descriptors = physicsNodes.flatMap((batchNode, index) => {
+      if ((batchNode.kind !== "model" && batchNode.kind !== "primitive") || !batchNode.physics) return [];
       const source = sources[index]!;
+      // S5-WP19-04: an instanced node gets one body per instance. The live
+      // node is the one whose `instances` the runtime handle replaces.
+      const live = (incremental ? source.node : batchNode) as AuraModelNode | AuraPrimitiveNode;
+      const expanded = expandInstancePhysicsNodes(batchNode);
+      const batch: InstanceBatch | undefined = expanded
+        ? { live, flat: batchNode, owners: source.owners, bodyIds: [], builtInstances: live.instances, builtPose: instanceBatchPoseKey(live) }
+        : undefined;
+      if (batch) stagedInstanceBatches.push(batch);
+      return (expanded ?? [batchNode]).map((node) => {
       if (qrFlags.on("A3D_QR_CORE") && source.parented && source.lookAt) {
         throw new Error("PARENTED_LOOK_AT_UNSUPPORTED: live parented look-at physics is not supported.");
       }
@@ -460,21 +545,21 @@ export function createAuraAppWithPhysicsWorldAccess(
       // cases before allocating or mutating the app's physics world. Preserve
       // existing reflected-collider handling: manually specified symmetric
       // shapes can still have meaningful behavior under a mirrored visual.
-      const worldTransform = worldTransformOf(node);
+      const worldTransform = worldTransformOf(batchNode);
       if (worldTransform && (worldTransform.sheared ||
           !worldTransform.matrix.every(Number.isFinite) ||
           !worldTransform.quaternion.every(Number.isFinite) ||
           worldTransform.scale.some((value) => !Number.isFinite(value) || value === 0))) {
         throw new RangeError("PHYSICS_UNSUPPORTED_WORLD_TRANSFORM: a declared physics node has a sheared, singular, or non-finite world transform.");
       }
-      const spec = node.physics;
+      const spec = node.physics!;
       const modelOffset = resolveNodePhysicsOffset(node);
       const authored = source.node as AuraModelNode | AuraPrimitiveNode;
       if (modelOffset && !qrFlags.on("A3D_QR_CORE") &&
           (authored.quaternion !== undefined || (authored.rotationOrder !== undefined && authored.rotationOrder !== "ZYX"))) {
         throw new RangeError("MODEL_COLLIDER_UNSUPPORTED_TRANSFORM: legacy model rendering cannot match quaternion or non-default Euler physics.");
       }
-      const parent = modelOffset && (spec.type ?? "dynamic") !== "static" ? parentTransformOf(node) : undefined;
+      const parent = modelOffset && (spec.type ?? "dynamic") !== "static" ? parentTransformOf(batchNode) : undefined;
       if (modelOffset && source.parented && (spec.type ?? "dynamic") !== "static" && worldTransform &&
           worldTransform.scale.some((value) => value <= 0)) {
         throw new RangeError("MODEL_COLLIDER_UNSUPPORTED_PARENT: moving parented models cannot use reflected world transforms.");
@@ -488,14 +573,15 @@ export function createAuraAppWithPhysicsWorldAccess(
           throw new RangeError("MODEL_COLLIDER_UNSUPPORTED_PARENT: moving model bodies require a finite, positive, uniform-scale parent.");
         }
       }
-      const runtimeId = node.runtime?.id;
+      const runtimeId = batchNode.runtime?.id;
       if (modelOffset && node.kind === "model" && (spec.type ?? "dynamic") !== "static" && options.physics?.bindNodes === true && runtimeId === undefined) {
         throw new RangeError("MODEL_COLLIDER_UNBOUND: a bound moving model requires a runtime node id.");
       }
       const rotation = nodeRotationQuaternion(node);
       const shape = resolveNodePhysicsShape(node, spec);
       const position = nodePhysicsPosition(node, modelOffset);
-      return [{ node, source, spec, rotation, shape, position, modelOffset }];
+      return { node, source, spec, rotation, shape, position, modelOffset, batch };
+      });
     });
     const ids = new Set<number>();
     const names = new Map<number, string>();
@@ -505,6 +591,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     const pivotKinematics = new Map<number, AuraModelNode | AuraPrimitiveNode>();
     const modelBounds = new Map<number, ModelBoundsBinding>();
     const owners = new Map<number, readonly string[]>();
+    const instanceBodies = new Map<number, { readonly batch: InstanceBatch; readonly node: AuraModelNode | AuraPrimitiveNode; readonly offset?: AuraVec3 }>();
     const hadWorld = appPhysicsWorldInstance !== undefined;
     let world: World | undefined;
     let active = true;
@@ -526,7 +613,7 @@ export function createAuraAppWithPhysicsWorldAccess(
     };
     try {
       if (descriptors.length > 0) world = appPhysicsWorld();
-      for (const { node, source, spec, rotation, shape, position, modelOffset } of descriptors) {
+      for (const { node, source, spec, rotation, shape, position, modelOffset, batch } of descriptors) {
         const body = world!.createRigidBody({
           type: spec.type ?? "dynamic",
           position,
@@ -543,6 +630,12 @@ export function createAuraAppWithPhysicsWorldAccess(
         });
         owners.set(body.id, source.owners);
         if (node.name) names.set(body.id, node.name);
+        if (batch) {
+          // Per-instance bodies are synchronized through their batch (syncInstanceBatches / syncBoundNodes).
+          batch.bodyIds.push(body.id);
+          instanceBodies.set(body.id, { batch, node, ...(modelOffset ? { offset: modelOffset } : {}) });
+          continue;
+        }
         const bindingNode = (incremental ? source.node : node) as AuraModelNode | AuraPrimitiveNode;
         const modelGuard = fixedModelBoundsPhysicsGuard(source.node as AuraModelNode | AuraPrimitiveNode);
         const flatModelGuard = source.node === node ? undefined : fixedModelBoundsPhysicsGuard(node);
@@ -585,6 +678,7 @@ export function createAuraAppWithPhysicsWorldAccess(
           ? [...appPhysicsBodyOwners].filter(([, paths]) => paths.some((id) => incremental.replaceIds.includes(id))).map(([id]) => id)
           : [...appDeclaredBodyIds];
         retireDeclaredBodies(replaced);
+        retireInstanceBatches((batch) => !incremental || batch.owners.some((id) => incremental.replaceIds.includes(id)));
         // Retiring an older body may synchronously publish a newer subtree.
         // It owns the runtime ID now, so discard this staged generation.
         if (!isCurrent()) { rollback(); return false; }
@@ -596,6 +690,8 @@ export function createAuraAppWithPhysicsWorldAccess(
         for (const [id, sync] of colliderSyncs) appPhysicsColliderSyncs.set(id, sync);
         for (const [id, node] of pivotKinematics) appPhysicsPivotKinematics.set(id, node);
         for (const [id, binding] of modelBounds) appPhysicsModelBounds.set(id, binding);
+        for (const [id, instance] of instanceBodies) appPhysicsInstanceBodies.set(id, instance);
+        for (const batch of stagedInstanceBatches) appPhysicsInstanceBatches.add(batch);
         active = false;
         return true;
       }
@@ -1108,6 +1204,7 @@ export function createAuraAppWithPhysicsWorldAccess(
   };
   const preflightModelBounds = () => {
     const kinematics: Array<{ body: ReturnType<World["createRigidBody"]>; position: AuraVec3; rotation: ReturnType<typeof nodeRotationQuaternion> }> = [];
+    syncInstanceBatches();
     const world = appPhysicsWorldInstance;
     if (!world) return kinematics;
     for (const [id, binding] of appPhysicsModelBounds) {
@@ -1158,6 +1255,24 @@ export function createAuraAppWithPhysicsWorldAccess(
   const syncBoundNodes = (): void => {
     const world = appPhysicsWorldInstance;
     if (world === undefined) return;
+    // Dynamic per-instance bodies write their pose back into the batch's instance transforms.
+    for (const batch of appPhysicsInstanceBatches) {
+      const runtimeId = batch.live.runtime?.id;
+      const handle = runtimeId === undefined ? undefined : runtimeNodes.get(runtimeId);
+      const transforms = batch.live.instances;
+      if (!handle || !transforms || batch.live.instances !== batch.builtInstances || batch.bodyIds.length !== transforms.length) continue;
+      let moved = false;
+      const next = transforms.map((transform, index) => {
+        const body = world.getBody(batch.bodyIds[index]!);
+        const instance = appPhysicsInstanceBodies.get(batch.bodyIds[index]!);
+        if (!body || !instance || body.type !== "dynamic" || body.sleeping) return transform;
+        moved = true;
+        return instanceTransformFromPhysics(instance.node, body.position, body.rotation, instance.offset);
+      });
+      if (!moved) continue;
+      handle.setInstances(next, batch.live.instanceColors);
+      batch.builtInstances = batch.live.instances;
+    }
     for (const [bodyId, binding] of appPhysicsNodeBindings) {
       const body = world.getBody(bodyId);
       const handle = runtimeNodes.get(binding.runtimeId);
@@ -2448,7 +2563,11 @@ export function createAuraAppWithPhysicsWorldAccess(
       // Capture IDs now: compiler disposal can synchronously add a new subtree
       // with the same runtime ID, which must survive this older removal.
       const bodyIds = [...appPhysicsBodyOwners].filter(([, paths]) => paths.some((id) => removed.has(id))).map(([id]) => id);
-      return () => retireDeclaredBodies(bodyIds);
+      const batches = new Set([...appPhysicsInstanceBatches].filter((batch) => batch.owners.some((id) => removed.has(id))));
+      return () => {
+        retireInstanceBatches((batch) => batches.has(batch));
+        retireDeclaredBodies([...bodyIds, ...[...batches].flatMap((batch) => batch.bodyIds)]);
+      };
     }
   });
   for (const ext of appExtensionsAll()) {

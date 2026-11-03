@@ -11,14 +11,16 @@
  *     primitive render state (`productionPrimitiveRenderState`), which the `prd04.alphaToCoverage`
  *     shader feature reads for masked materials on MSAA tiers.
  *
- * Still unconsumed (kept): double-sided, unlit.
+ *   - `material.unlit` — 5.0 (S5-WP19-04): primitives draw with `UnlitMaterial` /
+ *     `InstancedUnlitMaterial` / `TexturedUnlitMaterial` (option probe row `material.pbr.unlit`).
+ *
+ * Still unconsumed (kept): double-sided.
  */
 import { registerOptionCoverage } from "../../contracts/compiler.js";
 
 /** Remaining lane-04 diagnostic-only fields — mirrors the contract map's owner-4 entries. */
 export const DIAGNOSTIC_ONLY_PRD04_FIELDS: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
-  "material.doubleSided": { reason: "C-15: double-sided pipeline variant is PRD 04's", ownerPrd: 4 },
-  "material.unlit": { reason: "C-15: unlit lobe is PRD 04's", ownerPrd: 4 }
+  "material.doubleSided": { reason: "C-15: double-sided pipeline variant is PRD 04's", ownerPrd: 4 }
 };
 
 /** PRD-04 P2-14: option-coverage rows for the fields wired in PR B. */

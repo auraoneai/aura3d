@@ -404,8 +404,6 @@ function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset,
  * degradation (strict mode throws) instead of silently drawing without it.
  */
 const UNAPPLIED_INSTANCED_MODEL_OPTIONS: Readonly<Record<string, string>> = {
-  // buildModel keeps `collider` for model() only; `collider: false` (no collider) is what happens anyway.
-  collider: "a single bounds collider cannot represent instances, so no collider is built. Remove it, or declare physics with an explicit shape",
   lod: "per-instance LOD switching is not implemented; every instance draws the full model. Remove it, or use model(asset, { lod }) for an imported MSFT_lod chain",
   maxInstancesPerDraw: "the renderer draws each mesh's instances in one batch without a per-draw cap. Remove it",
   static: "the scatter placements block it stamps is never promoted to a world scatter node. Remove it",
@@ -416,7 +414,7 @@ const UNAPPLIED_INSTANCED_MODEL_OPTIONS: Readonly<Record<string, string>> = {
 
 function unappliedInstancedModelOptions(options: AuraInstancedModelOptions): { readonly unappliedOptions?: readonly string[] } {
   const notes = Object.entries(UNAPPLIED_INSTANCED_MODEL_OPTIONS)
-    .filter(([key]) => key === "collider" ? Boolean(options.collider) : Reflect.get(options, key) !== undefined)
+    .filter(([key]) => Reflect.get(options, key) !== undefined)
     .map(([key, why]) => `OPTION_IGNORED instances.model: option "${key}" is accepted but not applied at runtime, so it has no effect: ${why}.`);
   return notes.length ? { unappliedOptions: notes } : {};
 }

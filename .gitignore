@@ -373,6 +373,17 @@ fixtures/
 !/fixtures/asset-corpus/materials-variants-shoe.glb
 !/fixtures/asset-corpus/damaged-helmet-draco.glb
 !/fixtures/asset-corpus/damaged-helmet-meshopt.glb
+# PRD-04 fixtures read by tests/qr/prd04/unit/glb-fixtures-valid.test.ts
+# (pinned in benchmarks/quality-rebuild/scenes/prd04/assets.ts).
+!/fixtures/asset-corpus/alpha-blend-mode-test.glb
+!/fixtures/asset-corpus/anisotropy-barn-lamp.glb
+!/fixtures/asset-corpus/anisotropy-rotation-test.glb
+!/fixtures/asset-corpus/dispersion-test.glb
+!/fixtures/asset-corpus/iridescence-lamp.glb
+!/fixtures/asset-corpus/normal-tangent-test.glb
+!/fixtures/asset-corpus/texture-transform-test.glb
+!/fixtures/asset-corpus/damaged-helmet-uastc.glb
+!/fixtures/asset-corpus/damaged-helmet-etc1s.glb
 # Generated workflow fixtures: the external-image PNGs referenced by the tracked
 # *-external.gltf files (byte-identical to the data URIs embedded in the tracked
 # *.gltf siblings); tests/assets/foundation-gltf-loader.test.ts reads them.

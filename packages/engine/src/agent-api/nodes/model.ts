@@ -41,6 +41,7 @@ function modelOptionError(message: string): never {
 }
 
 function validateModelOptions(asset: AuraAssetRef<"model">, options: AuraModelOptions): void {
+  validateModelColliderOption(asset, options);
   const lod = options.lod;
   if (lod !== undefined && lod !== false && lod !== "auto") {
     if (!lod || typeof lod !== "object" || "levels" in lod) {
@@ -56,6 +57,10 @@ function validateModelOptions(asset: AuraAssetRef<"model">, options: AuraModelOp
       modelOptionError("model.lod.crossFadeSeconds must be a finite non-negative number");
     }
   }
+}
+
+/** `collider` is shared by model() and instances.model() (one bounds collider per instance there). */
+function validateModelColliderOption(asset: AuraAssetRef<"model">, options: AuraModelOptions): void {
   const collider = options.collider;
   if (collider !== undefined && collider !== false && collider !== "auto" && collider !== "bounds") {
     modelOptionError("model.collider accepts false, 'auto', or 'bounds'");
@@ -87,6 +92,8 @@ export function buildModel<TAsset extends AuraAssetRef<"model">>(
   // instances.model has its own per-instance LOD contract; do not reinterpret it
   // as an imported-model MSFT_lod policy.
   if (guard.builder === "model") validateModelOptions(asset, options);
+  else if (guard.builder === "instances.model") validateModelColliderOption(asset, options);
+  const colliderBuilder = guard.builder === "model" || guard.builder === "instances.model";
   const ignored = modelIgnoredOptions(options, guard);
   return new AuraNodeBuilder({
     kind: "model",
@@ -114,12 +121,12 @@ export function buildModel<TAsset extends AuraAssetRef<"model">>(
     targetHeight: options.targetHeight,
     targetMaxDimension: options.targetMaxDimension,
     targetLength: options.targetLength,
-    physics: options.physics ?? (guard.builder === "model" && options.collider ? { type: "static" } : undefined),
+    physics: options.physics ?? (colliderBuilder && options.collider ? { type: "static" } : undefined),
     hiddenNodeNames: options.hiddenNodeNames,
     ...(options.materialOverrides !== undefined ? { materialOverrides: options.materialOverrides } : {}),
     ...(options.variant !== undefined ? { variant: options.variant } : {}),
     ...(guard.builder === "model" && options.lod !== undefined ? { lod: options.lod } : {}),
-    ...(guard.builder === "model" && options.collider !== undefined ? { collider: options.collider } : {}),
+    ...(colliderBuilder && options.collider !== undefined ? { collider: options.collider } : {}),
     wrinkle: options.wrinkle
   });
 }

@@ -137,10 +137,17 @@ export interface AuraAssetMetadata {
   };
 }
 
-export type AuraAssetRef<
+/**
+ * Identity half of {@link AuraAssetRef}: the `kind`/`id`/`type` fields and the
+ * engine-private brand only `defineAuraAssets` sets. A named, exported
+ * interface so a consumer's emitted declarations (`declaration: true`) can name
+ * an inferred `{ a: assets.robot }` type without reaching the private brand
+ * symbol (TS4023). Type-only; it grants no way to construct a ref.
+ */
+export interface AuraAssetRefIdentity<
   TType extends AuraAssetType = AuraAssetType,
   TId extends string = string
-> = AuraAssetDefinition & {
+> {
   readonly kind: "aura-asset-ref";
   readonly id: TId;
   readonly type: TType;
@@ -148,7 +155,12 @@ export type AuraAssetRef<
     readonly type: TType;
     readonly id: TId;
   };
-};
+}
+
+export type AuraAssetRef<
+  TType extends AuraAssetType = AuraAssetType,
+  TId extends string = string
+> = AuraAssetDefinition & AuraAssetRefIdentity<TType, TId>;
 
 export type AuraAssetMap<T extends Record<string, AuraAssetDefinition>> = {
   readonly [K in keyof T]: AuraAssetRef<T[K]["type"], Extract<K, string>> & T[K];

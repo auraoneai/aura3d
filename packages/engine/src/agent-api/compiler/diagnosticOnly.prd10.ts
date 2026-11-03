@@ -13,7 +13,6 @@ export const PRD10_DIAGNOSTIC_ONLY: Readonly<Record<string, { readonly reason: s
   "instances.model.static": { reason: "T3.8: stamps §7.1.5 placements on the node; inert without A3D_QR_WORLD (no scatter handler)", ownerPrd: 10 },
   "instances.model.chunkSize": { reason: "T3.8: placements chunk size (default 32 at >256 instances); inert without A3D_QR_WORLD", ownerPrd: 10 },
   "instances.model.shadowLod": { reason: "T3.8: placements shadow LOD; inert without A3D_QR_WORLD", ownerPrd: 10 },
-  "instances.model.wind": { reason: "T3.8: placements wind flag → a3d_prd10_wind feature; inert without A3D_QR_WORLD", ownerPrd: 10 },
   "instances.model.impostor": { reason: "T3.8: placements impostor ref; inert without A3D_QR_WORLD", ownerPrd: 10 },
   "material.practical": { reason: "C-10: `practical` material flag is PRD 10 time-of-day's, unwired until Phase 6", ownerPrd: 10 }
 };
