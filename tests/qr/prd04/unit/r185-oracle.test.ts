@@ -195,5 +195,5 @@ describe("split-sum table sampled by the oracle vs an independent quadrature", (
 			}
 		}
 		expect(failures).toEqual([]);
-	});
+	}, 60_000); // heavy deterministic computation; ACR shards exceed the 5 s default
 });

@@ -163,7 +163,8 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(reports.outcomeCompletion.filter(row => row.basis === 'verified-checks').map(row => row.id).sort()).toEqual(Object.keys(VERIFY_ONLY_ROWS).sort());
 
     const run = f.gate(result.sourceReports.path, result.sourceManifest.path);
-    expect(run.stderr).toBe('');
+    // Node 24 (ACR image) prints a runtime ExperimentalWarning for node:sqlite; any other stderr output still fails.
+    expect(run.stderr.split('\n').filter((line) => line && !/ExperimentalWarning: SQLite|--trace-warnings/.test(line)).join('\n')).toBe('');
     expect(run.stdout).toContain('CODE_COMPLETE_GO emitted');
     const record = JSON.parse(readFileSync(join(f.root, 'tests/reports/native-capabilities/code-complete-go.json'), 'utf8'));
     expect(record).toMatchObject({ status: 'CODE_COMPLETE_GO', sourceRunner: 'acr-source5', freezeCommit: f.commit, outcomeSource: 'aura3d-5.0-scope', acceptance: 'not-run' });

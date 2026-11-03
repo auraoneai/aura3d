@@ -188,7 +188,7 @@ describe("BatchPlanCache (plan cached by structural version)", () => {
     }
     expect(cache.planVersion).toBe(1);
     expect(cache.lastReport.planVersion).toBe(1);
-  });
+  }, 60_000); // heavy deterministic computation; ACR shards exceed the 5 s default
 
   it("matrix changes on an unchanged set refresh transforms without replan", () => {
     const geometry = boxGeometry();
