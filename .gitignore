@@ -325,6 +325,10 @@ test-data/
 # GLB sidecar textures are runtime source dependencies and must travel with snapshots.
 !public/aura-assets/Textures/
 !public/aura-assets/Textures/*.png
+!templates/*/public/aura-assets/Textures/
+!templates/*/public/aura-assets/Textures/*.png
+!packages/create-aura3d/templates/*/public/aura-assets/Textures/
+!packages/create-aura3d/templates/*/public/aura-assets/Textures/*.png
 
 # Brand touch icon (SEO/apple-touch-icon) is a source asset, not a build artifact.
 !marketing/public/apple-touch-icon.png

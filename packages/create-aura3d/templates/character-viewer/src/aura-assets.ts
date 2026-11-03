@@ -7,6 +7,7 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
     bounds: [2, 2, 2],
     hash: "sha256-0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b",
+    integrity: { version: 1, digest: "sha256-0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b", dependencies: { "Textures/colormap.png": "sha256-319f1087d8ed50a8794f9a8179f64671d5595f2365fdf3e47ec2d4eb74dba20f" }, requireDependencies: true },
     metadata: {
       materials: ["colormap"],
       animations: ["static", "idle", "walk", "sprint", "jump", "fall", "crouch", "sit", "drive", "die"],

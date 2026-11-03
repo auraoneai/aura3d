@@ -268,7 +268,7 @@ describe("source-backed native example catalog fixture", () => {
     }
   }, 30_000);
 
-  it("fails offline startup admission for the mini-game's missing key and star texture", async () => {
+  it("admits the mini-game's key and star only with their verified Platformer Kit texture", async () => {
     const base = "packages/create-aura3d/templates/mini-game";
     const source = readFileSync(resolve(root, `${base}/src/main.ts`), "utf8");
     const typed = readFileSync(resolve(root, `${base}/src/aura-assets.ts`), "utf8");
@@ -278,7 +278,12 @@ describe("source-backed native example catalog fixture", () => {
     expect(source).toContain("void miniGame.ready().then(");
     expect(compiler).toContain("const settled = await Promise.allSettled(modelNodes.map");
     expect(compiler).toContain("throw failure?.reason");
-    expect(existsSync(resolve(root, `${base}/public/aura-assets/Textures/colormap.png`))).toBe(false);
+    // The Kenney Platformer Kit colormap, byte-identical to the texture embedded in
+    // two independent Platformer Kit derivatives (showcaseKenneyOobiPlatformerHero
+    // from the official kit zip, and linksAlpineSnowPine). Not a similarly named file.
+    const textureDigest = "439dfcac935cfd75dc16f28333a4c8284fffcc4b24f857c61cfb4c8a964a15bd";
+    const texture = readFileSync(resolve(root, `${base}/public/aura-assets/Textures/colormap.png`));
+    expect(createHash("sha256").update(texture).digest("hex")).toBe(textureDigest);
     const entries = [
       ["kenneyPlatformerKitKey.2e930961.glb", "2e9309616c56536495d96fee85e75def26b63354139d19533773f23900984986"],
       ["kenneyPlatformerKitStar.a102a1b9.glb", "a102a1b961fe0932c98ca29200ee6becae711b42437f14d58703388114eeff3c"]
@@ -292,27 +297,52 @@ describe("source-backed native example catalog fixture", () => {
       expect(createHash("sha256").update(bytes).digest("hex")).toBe(digest);
       expect(typed).toContain(`url: "/aura-assets/${file}"`);
       expect(typed).toContain(`hash: "sha256-${digest}"`);
+      const integrity = {
+        version: 1 as const,
+        digest: `sha256-${digest}`,
+        dependencies: { "Textures/colormap.png": `sha256-${textureDigest}` },
+        requireDependencies: true
+      };
+      expect(typed).toContain(`integrity: { version: 1, digest: "sha256-${digest}", dependencies: { "Textures/colormap.png": "sha256-${textureDigest}" }, requireDependencies: true }`);
       const url = `https://mini-fixture.invalid/aura-assets/${file}`;
+      const textureUrl = "https://mini-fixture.invalid/aura-assets/Textures/colormap.png";
       const requests: string[] = [];
       vi.stubGlobal("fetch", async (input: string | URL | Request) => {
         const actual = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
         requests.push(actual);
         if (actual === url) return new Response(new Uint8Array(bytes), { status: 200 });
-        if (actual === "https://mini-fixture.invalid/aura-assets/Textures/colormap.png") return new Response(null, { status: 404 });
+        if (actual === textureUrl) return new Response(new Uint8Array(texture), { status: 200 });
         throw new Error(`Unexpected offline mini-game request: ${actual}`);
       });
+      let actor: TypedGLBActor | undefined;
       try {
+        // Without the admitted dependency digest the typed loader still fails
+        // closed before fetching the image.
         const failure = await createTypedGLBActor({
           asset: { url, format: "glb", hash: `sha256-${digest}` },
           id: file, width: WIDTH, height: HEIGHT, shareTextures: false
         }).then(() => undefined, (error: unknown) => error);
         expect(failure).toBeInstanceOf(Error);
         expect((failure as Error).name).toBe("AssetIntegrityError");
-        expect((failure as Error).message).toBe("Missing required dependency integrity metadata for https://mini-fixture.invalid/aura-assets/Textures/colormap.png");
-        // Admission fails before fetching the absent image, not after decoding a
-        // placeholder or a successfully loaded texture.
+        expect((failure as Error).message).toBe(`Missing required dependency integrity metadata for ${textureUrl}`);
         expect(requests).toEqual([url]);
+        // With the template's integrity the verified texture is fetched and decoded.
+        requests.length = 0;
+        const decoded: number[] = [];
+        actor = await createTypedGLBActor({
+          asset: { url, format: "glb", hash: `sha256-${digest}`, integrity },
+          id: file, width: WIDTH, height: HEIGHT, shareTextures: false,
+          imageDecoder: async (image) => {
+            if (!image.data) throw new Error("mini-game texture bytes were not supplied");
+            decoded.push(image.data.byteLength);
+            const { data, info } = await sharp(Buffer.from(image.data)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+            return { width: info.width, height: info.height, data: new Uint8Array(data) };
+          }
+        });
+        expect(requests).toContain(textureUrl);
+        expect(decoded).toEqual([texture.byteLength]);
       } finally {
+        actor?.dispose();
         vi.unstubAllGlobals();
       }
     }

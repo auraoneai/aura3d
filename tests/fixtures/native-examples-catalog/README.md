@@ -95,11 +95,17 @@ digest test correctly fails until those changes are reviewed and reconciled.
 
 Eleven current template IDs remain without a defensible fixture:
 
-* `template:architecture-interior`, `template:asset-inspector`,
-  `template:character-viewer`, `template:custom-scene`, and
-  `template:large-scene`: the typed hero GLBs refer to an absent
-  `Textures/colormap.png`. A generic floor, pedestal, or scale cube would not
-  establish the typed subject. Asset ownership needs to resolve the texture.
+* `template:architecture-interior` and `template:custom-scene`: the typed hero
+  GLBs (Kenney Modular Dungeon Kit, Kenney Pirate Kit) refer to an absent
+  `Textures/colormap.png`; no byte-verified copy of either kit's colormap exists
+  in the repository or its history. A generic floor, pedestal, or scale cube
+  would not establish the typed subject. Asset ownership needs to resolve the
+  texture.
+* `template:asset-inspector`, `template:character-viewer`, and
+  `template:large-scene`: the typed GLBs' `Textures/colormap.png` is now
+  admitted with a dependency digest (Car Kit and Mini Forest colormaps,
+  byte-identical to textures embedded in provenance-recorded derivatives of the
+  same kits). No source-derived subject expectation has been written yet.
 * `template:animation-studio`: the default live route intentionally mounts an
   empty neutral placeholder with no characters or props. A floor-color check
   would not establish a scene; the example document is not the default route.
@@ -107,12 +113,12 @@ Eleven current template IDs remain without a defensible fixture:
   its `#app` has `pointer-events: none`. The catalog's current canvas
   `elementFromPoint` exposure check cannot identify that canvas. The layout and
   exposure contract need reconciliation before an honest region is admitted.
-* `template:mini-game`: the hero texture is embedded, but the default scene
-  also loads the key and stars. Both GLBs reference the absent
-  `public/aura-assets/Textures/colormap.png`; their typed metadata also lacks
-  a dependency digest. An in-memory-only source test confirms that the typed
-  loader rejects both and the scene compiler propagates a model-load failure.
-  The hero alone therefore does not make the default scene a defensible case.
+* `template:mini-game`: the hero texture is embedded, and the key and stars
+  now ship the Kenney Platformer Kit `public/aura-assets/Textures/colormap.png`
+  with a typed dependency digest. An in-memory-only source test confirms the
+  typed loader admits both with that digest and still rejects them without it.
+  No source-derived subject expectation has been written for the default scene
+  yet.
 * `template:character-controller`: its player GLB has embedded textures, but
   the default-on shoulder rig uses collision. A historical unscoped probe hit
   the hero itself and placed over 90% of sampled skinned vertices in front of

@@ -1,18 +1,19 @@
 /**
- * The one scene definition both engines build, shared so neither can quietly get an easier one.
+ * The fixed native reference workload the production-path benchmark builds, declared once.
  *
  * WS-1.4 replaces a benchmark that drew a 3-vertex triangle through a raw WebGL2 context and
- * reported the result as an engine comparison. The single most important property here is that the
- * content is *identical* and *declared once*: object count, grid layout, colours, camera, light rig
- * and canvas size all come from this file, so a difference in the measurement is a difference in the
- * engines rather than a difference in what they were asked to draw.
+ * reported the result as an engine measurement. The single most important property here is that the
+ * content is *fixed* and *declared once*: object count, grid layout, colours, camera, light rig and
+ * canvas size all come from this file, so a difference between runs is a difference in the engine
+ * rather than a difference in what it was asked to draw. `--gate-only` rejects a retained report whose
+ * scene differs from this definition.
  */
 export interface BenchmarkSceneObject {
   readonly x: number;
   readonly y: number;
   readonly z: number;
   readonly scale: number;
-  /** sRGB hex, applied identically as a PBR base colour in both engines. */
+  /** sRGB hex, applied as a PBR base colour. */
   readonly color: string;
   readonly roughness: number;
   readonly metalness: number;
@@ -22,7 +23,7 @@ export interface BenchmarkSceneDefinition {
   readonly id: string;
   readonly label: string;
   readonly canvas: { readonly width: number; readonly height: number };
-  /** Pinned to 1 so an adaptive device pixel ratio cannot change the pixel count between engines. */
+  /** Pinned to 1 so an adaptive device pixel ratio cannot change the pixel count between runs. */
   readonly pixelRatio: 1;
   readonly background: string;
   readonly camera: {

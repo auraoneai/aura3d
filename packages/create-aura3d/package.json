@@ -43,6 +43,7 @@
     "!templates/**/package-lock.json",
     "!templates/**/.DS_Store",
     "!templates/**/*.png",
+    "templates/*/public/aura-assets/Textures/*.png",
     "!templates/**/*.jpg",
     "!templates/**/*.jpeg",
     "!templates/**/*.csv",
