@@ -16,7 +16,7 @@ import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
 import { orbitAnimatedAngle, orbitAnimatedPosition } from "./compiler/actors.js";
 import { resolveAnimationSeconds } from "./compiler/animation.js";
 import { resolveCameraFrame } from "./compiler/camera.js";
-import { resolveProductionCameraDepth } from "./compiler/cameraDepth.js";
+import { resolveProductionCameraDepth, standardDepthCamera } from "./compiler/cameraDepth.js";
 import { assertLegacyPivotHierarchySupported, assertValidPivot, hasNonzeroPivot } from "./pivotGuard.js";
 
 export function seededRange(index: number, salt: number, min: number, max: number): number {
@@ -130,16 +130,24 @@ export function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
 }
 
 /** The camera's view, projection and combined matrices (column-major) for one frame. */
-export function createCameraMatrices(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } {
+export function createCameraMatrices(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry, depth: "frame" | "standard" = "frame"): { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } {
   const cameraSpec = snapshot.camera;
   const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
   const view = lookAtMat4([...eye], [...target], [...(cameraSpec.up ?? [0, 1, 0])]);
-  const projection = createCameraProjection(resolveProductionCameraDepth(cameraSpec).projectionCamera, aspect);
+  // Validate the requested depth convention in both cases; "frame" builds the
+  // matrix the renderer rasterizes with (reversed depth maps near to +1).
+  const { projectionCamera } = resolveProductionCameraDepth(cameraSpec);
+  const projection = createCameraProjection(depth === "frame" ? projectionCamera : standardDepthCamera(projectionCamera), aspect);
   return { view: new Float32Array(view), projection: new Float32Array(projection), viewProjection: new Float32Array(multiplyMat4(projection, view)) };
 }
 
+/**
+ * Public query/picking view-projection. It always uses standard depth: x/y
+ * projection is identical in every depth mode, and ray unprojection between
+ * NDC z = -1 (near) and z = 1 (far) stays valid for reversed cameras.
+ */
 export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
-  return createCameraMatrices(snapshot, aspect, time, runtimeNodes).viewProjection;
+  return createCameraMatrices(snapshot, aspect, time, runtimeNodes, "standard").viewProjection;
 }
 
 export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {

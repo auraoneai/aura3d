@@ -9,14 +9,16 @@ import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDev
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameProjectionMetadata } from "./renderer/FrameGraph";
 import type { DepthConvention } from "./DepthConvention";
-import { frameContributors, potentiallyActiveFrameContributors, type FrameCamera, type FrameContributorContext, type TransparentQueueItem } from "./contracts/frameGraph";
+import { applyFrameDepthConvention } from "./renderer/FrameDepthConvention";
+import { frameContributors, potentiallyActiveFrameContributors, type AuraFramePhase, type FrameCamera, type FrameContributorContext, type TransparentQueueItem } from "./contracts/frameGraph";
 import {
   assertPrd07RendererOperation, beginPrd07RendererOperation, beginPrd07RendererView,
   disposePrd07RendererAuthority, endPrd07RendererOperation, endPrd07RendererView, preparePrd07RendererView,
   prd07RendererContextSnapshot, prd07RendererLegacyFog, producePrd07RendererContext, registerPrd07RendererContext, takePrd07RendererOperation,
   type Prd07RendererOperation, type Prd07RendererView
 } from "./vfx/Prd07RendererBridge";
-import { prd07WetnessState } from "./atmosphere/shaders/wetness.glsl";
+import { prd07WetnessState, type WetnessUniformState } from "./atmosphere/shaders/wetness.glsl";
+import { applyNativeWetnessMaterialCpu } from "./atmosphere/shaders/wetness.wgsl";
 import { disposePrd07GpuSimsForOwner } from "./vfx/contributors";
 import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
 import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture, validateNativeDofRoute, webgpuAutoExposureRequested, webgpuDepthOfFieldRequested } from "./renderer/PostprocessExecution";
@@ -460,7 +462,9 @@ export interface RendererFrameInspection {
   readonly frameNumber: number;
   readonly passes: readonly PostStageTraceEvent[];
   readonly diagnostics: RenderDeviceDiagnostics;
+  /** Whole render call on the CPU, from inspection begin to finish. */
   readonly cpuTimeMs: number | null;
+  /** Whole-frame GPU duration; null until a backend measures the full render call. */
   readonly gpuTimeMs: number | null;
   /** Measured per-view intervals; these do not cover the entire render call. */
   readonly gpuViewTiming?: InspectionGpuTimingSnapshot | null;
@@ -756,7 +760,8 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
     readonly sceneDepth: {
       readonly texture: Texture | null;
       readonly available: boolean;
-      readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+      readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean;
+        readonly depth?: DepthConvention; readonly projectionMatrixInverse?: Float32Array };
     };
   } | null;
 }
@@ -861,6 +866,7 @@ export class Renderer {
   private readonly inspectionTimingByTrace = new WeakMap<PostStageTraceSession, InspectionTimingCapture>();
   private readonly inspectionHistory: { readonly inspection: RendererFrameInspection; readonly timing: InspectionTimingCapture }[] = [];
   private activeFrameTrace: PostStageTraceSession | null = null;
+  private readonly inspectionStartByTrace = new WeakMap<PostStageTraceSession, number | null>();
   private lastFrameInspection: RendererFrameInspection | null = null;
   private lastInspectionTiming: InspectionTimingCapture | null = null;
   private readonly shaderLibrary: ShaderLibrary;
@@ -1149,6 +1155,8 @@ export class Renderer {
       throw new RenderDeviceError("Probe face target is disposed", "RENDER_TARGET_DISPOSED", { face });
     }
     const vp = toMat4(viewProjection, "viewProjection", `probe face ${face}`);
+    // Probe faces are radiance captures with their own standard projection.
+    applyFrameDepthConvention(this.device, "standard");
     sceneFromSource(source)?.updateWorldTransforms();
     const items = collectRenderItems(source, vp).filter((item) => !item.environmentCube);
     const frameCamera = prd07View ? prd07ProbeCamera(vp) : null;
@@ -1920,8 +1928,10 @@ export class Renderer {
     try {
     this.lastDrawingPath = null;
     this.temporalViews.clear();
+    const nativeStartedAt = inspectionNow();
     const selected = withRendererQrFlags(this.device, () => this.selectDrawingPath(sourceOrInput, camera, views));
     if (selected.rendered) {
+      this.recordNativeDeviceFrame(nativeStartedAt, selected.rendered);
       this.assertAuthoredFrameCurrent(frame);
       return selected.rendered;
     }
@@ -1964,9 +1974,47 @@ export class Renderer {
     const session = this.frameTrace.beginFrame(frameNumber);
     this.inspectionTimingByTrace.set(session, this.inspectionTiming.begin(frameNumber));
     this.activeFrameTrace = session;
-    // Shadow, contributor, post and native-device phases are not all observed.
-    session.markIncomplete();
+    this.inspectionStartByTrace.set(session, inspectionNow());
     return session;
+  }
+
+  /**
+   * Record one directly executed frame phase (shadow maps, contributor
+   * phases, post, output, view composite) on the active inspection trace.
+   * Graph passes are recorded by `executeInspectedGraphScoped`.
+   */
+  private inspectPhase<T>(name: string, reads: readonly string[], writes: readonly string[], fn: () => T): T {
+    const trace = this.activeFrameTrace;
+    return trace ? trace.measure({ name, reads, writes, readDrawCalls: () => this.device.getDiagnostics().drawCalls }, fn) : fn();
+  }
+
+  private inspectPhaseAsync<T>(name: string, reads: readonly string[], writes: readonly string[], fn: () => Promise<T>): Promise<T> {
+    const trace = this.activeFrameTrace;
+    return trace ? trace.measureAsync({ name, reads, writes, readDrawCalls: () => this.device.getDiagnostics().drawCalls }, fn) : fn();
+  }
+
+  /** Contributor phase executed outside the graph; recorded only when a contributor declares it. */
+  private contributorPhaseActive(phase: AuraFramePhase): boolean {
+    return this.activeFrameTrace !== null && frameContributors(rendererQrFlags(this.device)).some((contributor) => contributor.phases.includes(phase));
+  }
+
+  private inspectContributorPhase(phase: AuraFramePhase, fn: () => void): void {
+    if (this.contributorPhaseActive(phase)) this.inspectPhase(`contributors:${phase}`, [`phase.${phase}`], [`phase.${phase}`], fn);
+    else fn();
+  }
+
+  private inspectContributorPhaseAsync(phase: AuraFramePhase, fn: () => Promise<void>): Promise<void> {
+    return this.contributorPhaseActive(phase) ? this.inspectPhaseAsync(`contributors:${phase}`, [`phase.${phase}`], [`phase.${phase}`], fn) : fn();
+  }
+
+  /** The native WebGPU drawing path submitted the whole frame inside admission. */
+  private recordNativeDeviceFrame(startedAt: number | null, rendered: RenderDeviceDiagnostics | undefined): void {
+    const trace = this.activeFrameTrace;
+    if (!trace || !rendered) return;
+    const end = inspectionNow();
+    trace.record({ name: "native-device-frame", reads: ["scene"], writes: ["output"],
+      drawCalls: Number.isSafeInteger(rendered.drawCalls) && rendered.drawCalls >= 0 ? rendered.drawCalls : null,
+      cpuTimeMs: startedAt !== null && end !== null && end >= startedAt ? end - startedAt : null, gpuTimeMs: null, status: "completed" });
   }
 
   private finishFrameInspection(session: PostStageTraceSession, diagnostics?: RenderDeviceDiagnostics): void {
@@ -1974,10 +2022,16 @@ export class Renderer {
     this.activeFrameTrace = null;
     const timing = this.inspectionTimingByTrace.get(session) ?? null;
     if (timing) this.inspectionTiming.end(timing);
+    const startedAt = this.inspectionStartByTrace.get(session) ?? null;
+    const endedAt = inspectionNow();
+    // Whole render call on the CPU (admission, every phase and submission).
+    const cpuTimeMs = startedAt !== null && endedAt !== null && endedAt >= startedAt ? endedAt - startedAt : null;
+    // A render that threw did not run its remaining phases.
+    if (!diagnostics) session.markIncomplete();
     session.finish();
     const trace = session.snapshot();
     this.lastFrameInspection = { frameNumber: trace.frameNumber, passes: trace.passes, complete: trace.complete,
-      diagnostics: diagnostics ?? this.getDiagnostics(), cpuTimeMs: null, gpuTimeMs: null,
+      diagnostics: diagnostics ?? this.getDiagnostics(), cpuTimeMs, gpuTimeMs: null,
       gpuViewTiming: timing ? this.inspectionTiming.snapshot(timing) : null };
     this.lastInspectionTiming = timing;
     if (timing) {
@@ -2018,7 +2072,13 @@ export class Renderer {
     }
   }
 
-  /** Reject conventions until the entire forward/shadow/post pipeline agrees. */
+  /**
+   * Negotiate the frame's depth convention and make it the device's active
+   * convention (clear value; forward compares and logarithmic programs read
+   * it). Every frame path calls this before clearing or drawing, so a later
+   * standard camera always restores standard depth. Shadow passes scope their
+   * own standard light convention; probe faces use standard depth.
+   */
   private assertSupportedCameraDepth(camera: Pick<CameraLike, "projectionMetadata" | "depthConvention"> | undefined): void {
     const metadata = camera?.projectionMetadata;
     const convention = camera?.depthConvention;
@@ -2027,13 +2087,22 @@ export class Renderer {
     }
     const mode = metadata?.mode ?? convention?.mode ?? "standard";
     const clipRange = metadata?.clipRange ?? convention?.clipRange ?? "minus-one-to-one";
-    const active = this.device.getDepthConvention?.();
-    if (active && (active.mode !== "standard" || active.clearValue !== 1 || active.compare !== "less-equal" || active.biasSign !== 1)) {
-      throw new RenderDeviceError("The active device depth convention is not supported by the renderer.", "DEPTH_MODE_UNSUPPORTED", { mode: active.mode, backend: this.device.kind });
+    if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") {
+      throw new RenderDeviceError("Unknown camera depth mode.", "DEPTH_MODE_UNSUPPORTED", { mode, backend: this.device.kind });
     }
-    if (mode !== "standard" || clipRange !== "minus-one-to-one") {
-      throw new RenderDeviceError("The active renderer requires standard depth and a minus-one-to-one camera projection.", "DEPTH_MODE_UNSUPPORTED", { mode, clipRange, backend: this.device.kind });
+    if (clipRange !== "minus-one-to-one") {
+      throw new RenderDeviceError("The active renderer requires a minus-one-to-one camera projection in every depth mode.", "DEPTH_MODE_UNSUPPORTED", { mode, clipRange, backend: this.device.kind });
     }
+    if (mode === "logarithmic") {
+      if (this.device.kind === "webgpu") {
+        throw new RenderDeviceError("Logarithmic depth is unavailable: generated WebGPU programs do not write logarithmic fragment depth.", "DEPTH_MODE_UNSUPPORTED", { mode, backend: this.device.kind });
+      }
+      const near = metadata?.near, far = metadata?.far;
+      if (near === undefined || far === undefined || !(near > 0) || !Number.isFinite(far) || !(far > near)) {
+        throw new RenderDeviceError("Logarithmic depth requires projection metadata with finite 0 < near < far.", "DEPTH_MODE_UNSUPPORTED", { mode, near, far, backend: this.device.kind });
+      }
+    }
+    applyFrameDepthConvention(this.device, mode, mode === "logarithmic" ? { near: metadata!.near!, far: metadata!.far!, ...(metadata!.kind !== "custom" ? { kind: metadata!.kind } : {}) } : undefined);
   }
 
   private planNativeDepthOfField(postprocess: RendererPostProcessOptions | undefined,
@@ -2913,11 +2982,17 @@ export class Renderer {
     const pipeline = postprocess?.pipeline && typeof postprocess.pipeline === "object" ? postprocess.pipeline as { readonly alphaMode?: unknown; readonly backgroundCoverage?: unknown } : undefined;
     if (this.outputOptions.backgroundCoverage || (this.outputOptions.alphaMode && this.outputOptions.alphaMode !== "opaque") || pipeline?.backgroundCoverage || (pipeline?.alphaMode !== undefined && pipeline.alphaMode !== "opaque")) return this.deferredFrameFallback("background coverage or preserved alpha requires the full forward renderer");
     const flags = rendererQrFlags(this.device);
+    let wetness: WetnessUniformState | undefined;
     if (flags.on("A3D_QR_VFX")) {
-      // Deferred does not implement the wetness material response; check the
-      // authenticated view packet before choosing the native opaque path.
-      const wetness = prd07WetnessState(frameContext);
-      if (wetness.wetness > 0 || wetness.rainRipples > 0 || wetness.snowCover > 0) return this.deferredFrameFallback("live PRD-07 wetness requires the full forward renderer");
+      // Read the authenticated view packet before choosing the native opaque
+      // path. Without puddle noise the wetness response is uniform for each
+      // material, so it is applied to the native materials below. The G-buffer
+      // has no noise input; a supplied noise texture keeps the forward route.
+      const state = prd07WetnessState(frameContext);
+      if (state.wetness > 0 || state.rainRipples > 0 || state.snowCover > 0) {
+        if (state.puddleNoise !== null) return this.deferredFrameFallback("PRD-07 puddle-noise textures require the full forward renderer");
+        wetness = state;
+      }
     }
     const tier = this.liveQualityTier()?.settings ?? QUALITY_TIERS.high;
     const materialContext = { flags, tier };
@@ -2939,6 +3014,7 @@ export class Renderer {
       const selected = { ...materialFeatures.features, ...selectShaderFeatureBits({ item, pass: "forward", tier, flags, frameContext }) };
       const admission = this.nativeDrawingPipelines!.admitNativeDeferredFeatures(selected, selectedFeatures, materialFeatures.extensions, selectedLobes);
       if (admission.reason || !admission.ibl) return this.deferredFrameFallback(admission.reason ?? "the physical probe feature is unavailable");
+      if ((admission.wetness === true) !== (wetness !== undefined)) return this.deferredFrameFallback("mixed PRD-07 wetness variants require the full forward renderer");
       if (indirectFraction !== undefined && indirectFraction !== admission.indirectFraction) return this.deferredFrameFallback("mixed indirect-fraction variants require the full forward renderer");
       indirectFraction = admission.indirectFraction;
     }
@@ -2951,6 +3027,7 @@ export class Renderer {
       if (error instanceof RenderDeviceError && error.code === "NATIVE_DRAW_INVALID_INPUT") return this.deferredFrameFallback(error.message);
       throw error;
     }
+    if (wetness) scene = deferredWetnessScene(scene, wetness);
     const firstMaterial = items[0]!.material!;
     const uniforms = new Map<string, UniformValue>();
     applyPrd02EnvironmentUniforms(environment, items[0]!, firstMaterial, uniforms);
@@ -3205,7 +3282,7 @@ export class Renderer {
       });
       this.width = frame.width;
       this.height = frame.height;
-      this.compositeViews(views, frame.output);
+      this.inspectPhase("view-composite", ["views.color"], ["output"], () => this.compositeViews(views, frame.output));
       this.markFrameSubmitted();
       return last;
     } finally {
@@ -3238,7 +3315,7 @@ export class Renderer {
       }
       this.width = frame.width;
       this.height = frame.height;
-      this.compositeViews(views, frame.output);
+      this.inspectPhase("view-composite", ["views.color"], ["output"], () => this.compositeViews(views, frame.output));
       this.markFrameSubmitted();
       return last;
     } finally {
@@ -3350,7 +3427,10 @@ export class Renderer {
     items: readonly RenderItem[], target: RenderTarget | undefined,
     shared: ForwardPassOptions, blocked: boolean
   ): RenderPass | undefined {
+    // Weighted transparency is integrated for standard depth only; reversed
+    // and logarithmic frames keep exact sorted transparency.
     if (source instanceof Scene || isIterable(source) || source.transparencyMode !== "weighted" || blocked
+      || (this.device.getDepthConvention?.()?.mode ?? "standard") !== "standard"
       || (this.device.kind !== "webgl2" && this.device.kind !== "mock")
       || !this.device.info.capabilities?.includes("float-blending") || !target || target.disposed
       || target.width !== this.width || target.height !== this.height || (target.sampleCount ?? 1) !== 1
@@ -4103,7 +4183,10 @@ export class Renderer {
               linearize: {
                 near: frameCamera?.near ?? 0.1,
                 far: frameCamera?.far ?? 1000,
-                orthographic: frameCamera?.projection === "orthographic"
+                orthographic: frameCamera?.projection === "orthographic",
+                // Custom depth consumers decode with the frame's convention.
+                ...(frameCamera?.depth ? { depth: frameCamera.depth } : {}),
+                ...(frameCamera?.projectionMatrixInverse ? { projectionMatrixInverse: frameCamera.projectionMatrixInverse } : {})
               }
             }
           }
@@ -4111,7 +4194,7 @@ export class Renderer {
         // C-28 (#91): the post-hdr contributors and the postprocess chain report
         // under the "post" scope (lane 03 owns the chain internals).
         this.scopePost(() => {
-          frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
+          this.inspectContributorPhase("post-hdr", () => frameHooks.runPhase("post-hdr", items, postprocess !== undefined));
           if (nativeDofFrame) assertNativeDofCurrent!();
           assertScalarVolumeFrameCurrent(scalarVolumes, this.device, scalarVolumeGeneration);
           postprocess = this.finishSelectiveBloom(postprocess!, selectiveFrame, selectiveRequested, route.legacyGraph ? withCoreOutputOff(rendererQrFlags(this.device)) : rendererQrFlags(this.device), Boolean(environmentBackground), ownedTargets[0], source);
@@ -4119,11 +4202,11 @@ export class Renderer {
         });
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.stageTemporalHistory(Boolean(postprocess.taa));
       } else if (qrOutput) {
-        this.scopePost(() => frameHooks.runPhase("post-hdr", items, true));
+        this.scopePost(() => this.inspectContributorPhase("post-hdr", () => frameHooks.runPhase("post-hdr", items, true)));
         assertScalarVolumeFrameCurrent(scalarVolumes, this.device, scalarVolumeGeneration);
-        this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
+        this.inspectPhase("output", ["scene.hdr"], ["output"], () => this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget));
       }
-      frameHooks.runPhase("after-output", items);
+      this.inspectContributorPhase("after-output", () => frameHooks.runPhase("after-output", items));
       if (benchmarkFrame && frameHooks.hasExtraSceneGeometry()) benchmarkFrame = { unsupported: "additional contributor geometry is unsupported" };
       frameCompleted = true;
     } catch (error) {
@@ -4250,8 +4333,10 @@ export class Renderer {
     try {
     this.lastDrawingPath = null;
     this.temporalViews.clear();
+    const nativeStartedAt = inspectionNow();
     const selected = withRendererQrFlags(this.device, () => this.selectDrawingPath(sourceOrInput, camera, views));
     if (selected.rendered) {
+      this.recordNativeDeviceFrame(nativeStartedAt, selected.rendered);
       this.assertAuthoredFrameCurrent(frame);
       return selected.rendered;
     }
@@ -4951,7 +5036,10 @@ export class Renderer {
               linearize: {
                 near: frameCamera?.near ?? 0.1,
                 far: frameCamera?.far ?? 1000,
-                orthographic: frameCamera?.projection === "orthographic"
+                orthographic: frameCamera?.projection === "orthographic",
+                // Custom depth consumers decode with the frame's convention.
+                ...(frameCamera?.depth ? { depth: frameCamera.depth } : {}),
+                ...(frameCamera?.projectionMatrixInverse ? { projectionMatrixInverse: frameCamera.projectionMatrixInverse } : {})
               }
             }
           }
@@ -4959,7 +5047,7 @@ export class Renderer {
         // C-28 (#91): "post" scope. FrameStats.scope is synchronous, so on the
         // async path it times the CPU submission up to the first await.
         await this.scopePost(async () => {
-          await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
+          await this.inspectContributorPhaseAsync("post-hdr", () => frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined));
           this.assertAuthoredFrameCurrent();
           if (nativeDofFrame) assertNativeDofCurrent!();
           if (prd07View) assertPrd07RendererOperation(prd07View.operation);
@@ -4972,16 +5060,16 @@ export class Renderer {
         });
         if (!this.disposed && !this.device.disposed && postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.stageTemporalHistory(Boolean(postprocess.taa));
       } else if (qrOutput) {
-        await this.scopePost(() => frameHooks.runPhaseAsync("post-hdr", items, true));
+        await this.scopePost(() => this.inspectContributorPhaseAsync("post-hdr", () => frameHooks.runPhaseAsync("post-hdr", items, true)));
         this.assertAuthoredFrameCurrent();
         if (prd07View) assertPrd07RendererOperation(prd07View.operation);
         if (!this.disposed && !this.device.disposed) {
           assertScalarVolumeFrameCurrent(scalarVolumes, this.device, scalarVolumeGeneration);
-          this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget);
+          this.inspectPhase("output", ["scene.hdr"], ["output"], () => this.executeOutputPass(frameHooks, items, ownedTargets[0] ?? null, explicitRenderTarget));
         }
       }
       if (!this.disposed && !this.device.disposed) {
-        await frameHooks.runPhaseAsync("after-output", items);
+        await this.inspectContributorPhaseAsync("after-output", () => frameHooks.runPhaseAsync("after-output", items));
         if (prd07View) assertPrd07RendererOperation(prd07View.operation);
         this.assertAuthoredFrameCurrent();
         if (benchmarkFrame && frameHooks.hasExtraSceneGeometry()) benchmarkFrame = { unsupported: "additional contributor geometry is unsupported" };
@@ -5119,6 +5207,9 @@ export class Renderer {
       const attrs = item.geometry.vertexBuffer.format.attributes;
       const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);
       const selectedFeatures = { ...mf.features, ...selected };
+      // Warm the variant ForwardPass selects from the active frame convention.
+      delete selectedFeatures["a3d.logarithmicDepth"];
+      if (this.device.getDepthConvention?.()?.mode === "logarithmic") selectedFeatures["a3d.logarithmicDepth"] = true;
       delete selectedFeatures["a3d.nativePrimitive"];
       const nativePrimitive = nativeUnlitPrimitiveForGeometry(item.geometry, this.device, mf.lighting);
       if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
@@ -5710,10 +5801,10 @@ export class Renderer {
     }
   }
   private executePostprocess(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): void {
-    return this.host.post.executePostprocess(postprocess, ownedTargets, outputTarget);
+    return this.inspectPhase("post-process", ["scene.color", "scene.depth"], ["output"], () => this.host.post.executePostprocess(postprocess, ownedTargets, outputTarget));
   }
   private async executePostprocessAsync(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): Promise<void> {
-    return this.host.post.executePostprocessAsync(postprocess, ownedTargets, outputTarget);
+    return this.inspectPhaseAsync("post-process", ["scene.color", "scene.depth"], ["output"], () => this.host.post.executePostprocessAsync(postprocess, ownedTargets, outputTarget));
   }
   private executeRendererShadowMap(options: {
     readonly shadowOptions: RendererShadowOptions | undefined;
@@ -5729,7 +5820,8 @@ export class Renderer {
     /** Every visible item of the frame (shadow receivers); lets the sun cascades skip a cascade no item selects. */
     readonly receivers?: readonly RenderItem[];
   }): ForwardShadowMapOptions | undefined {
-    return withRendererQrFlags(this.device, () => this.host.shadows.executeRendererShadowMap(options));
+    const run = (): ForwardShadowMapOptions | undefined => withRendererQrFlags(this.device, () => this.host.shadows.executeRendererShadowMap(options));
+    return options.shadowOptions && options.shadowOptions.enabled !== false ? this.inspectPhase("shadow-maps", ["scene.shadowCasters"], ["shadow.map"], run) : run();
   }
 }
 export function pickSceneRenderables(
@@ -7286,4 +7378,31 @@ function normalizeDefaultLightDirection(direction: readonly [number, number, num
     return [0, 0, -1];
   }
   return [direction[0] / length, direction[1] / length, direction[2] / length];
+}
+
+/**
+ * S5-DEF-02: the noise-free PRD-07 wetness response on native deferred
+ * materials. It matches the forward WGSL/GLSL material edit (porosity 1,
+ * neutral puddle noise). The G-buffer adds specular antialiasing after this,
+ * so curved surfaces can differ from forward by that small term.
+ */
+function deferredWetnessScene(scene: NativeDrawingScene, wetness: WetnessUniformState): NativeDrawingScene {
+  return {
+    ...scene,
+    materials: scene.materials.map((material) => {
+      if (material.shading !== "physical" || material.roughness === undefined) return material;
+      const [r, g, b, a] = material.baseColor;
+      const wet = applyNativeWetnessMaterialCpu([r, g, b], Math.min(1, Math.max(0.0525, material.roughness)), wetness);
+      return { ...material, baseColor: [wet.albedo[0], wet.albedo[1], wet.albedo[2], a], roughness: wet.roughness };
+    })
+  };
+}
+
+function inspectionNow(): number | null {
+  try {
+    const value = typeof performance !== "undefined" ? performance.now() : Date.now();
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
+  }
 }

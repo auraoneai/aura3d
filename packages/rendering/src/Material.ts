@@ -42,6 +42,8 @@ export interface RenderState {
   readonly blendMode?: BlendMode;
   /** C-04 (PR 0a/PRD-01): full depth-compare vocabulary; wins over `depthCompare` when set. */
   readonly depthCompareV2?: DepthCompareV2;
+  /** @internal Compare/offset already expressed in the active frame depth convention. */
+  readonly depthConventionApplied?: boolean;
   /** PR 0a (PRD 04): MSAA alpha-to-coverage; copied into the command state. */
   readonly alphaToCoverage?: boolean;
   readonly colorWrite: ColorWriteMask;

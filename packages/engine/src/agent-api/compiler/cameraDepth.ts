@@ -1,12 +1,23 @@
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import type { AuraCameraSpec } from "../nodes/types.js";
-import { negotiateDepthConvention, type DepthConvention } from "@aura3d/rendering";
+import { negotiateDepthConvention, type DepthConvention, type DepthMode } from "@aura3d/rendering";
 
 /**
- * The production forward, shadow, postprocess and explicit-item culling paths
- * currently share only standard depth with a minus-one-to-one camera matrix.
- * Negotiate before building a frame or running captures; a fallback must also
- * rebuild every projection rather than merely relabel the authored matrix.
+ * Production depth is one convention shared by the projection, the depth
+ * clear/compare/bias state, every camera-depth consumer and readback.
+ *
+ * - standard: minus-one-to-one projection, clear 1, compare less-equal.
+ * - reversed: the projection maps near to +1 and far to -1 (window depth
+ *   near = 1, far = 0), clear 0, compare greater-equal, negated bias. The
+ *   portable path keeps the minus-one-to-one clip range and a fixed-point
+ *   depth attachment, so ordering is correct but the floating-point precision
+ *   gain of reversed Z is not delivered; diagnostics report "reduced".
+ * - logarithmic: standard projection; generated programs write
+ *   ln(distance / near) / ln(far / near) as fragment depth, which disables
+ *   early depth testing for those draws. Needs finite 0 < near < far.
+ *
+ * Backend availability is negotiated by the renderer (WebGPU generated
+ * programs do not write logarithmic fragment depth and fail precisely).
  */
 export function resolveProductionCameraDepth(
   camera: AuraCameraSpec,
@@ -17,7 +28,7 @@ export function resolveProductionCameraDepth(
     readonly kind: "perspective" | "orthographic";
     readonly near: number;
     readonly far: number;
-    readonly mode: "standard";
+    readonly mode: DepthMode;
     readonly clipRange: "minus-one-to-one";
   };
   readonly depthConvention: DepthConvention;
@@ -33,29 +44,37 @@ export function resolveProductionCameraDepth(
   if ((mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") ||
       (requested?.clipRange !== undefined && requested.clipRange !== "minus-one-to-one") ||
       (requested?.allowFallback !== undefined && typeof requested.allowFallback !== "boolean")) {
-    throw new RangeError(`${code}: production cameras require standard minus-one-to-one depth and valid depth options`);
+    throw new RangeError(`${code}: production cameras require a standard, reversed or logarithmic mode with minus-one-to-one clip range and valid depth options`);
   }
-  // Validate the authored range first: fallback must not make an invalid
-  // logarithmic range, or an invalid perspective near plane, appear valid.
+  // Validate the authored range for every mode; a nonstandard mode never
+  // makes an invalid perspective near plane or logarithmic range valid.
   const { near, far } = resolveCameraClipping(camera);
   if (!Number.isFinite(far)) {
     throw new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: production cameras require finite far clipping`);
   }
-  if (mode !== "standard" && requested?.allowFallback !== true) {
-    throw new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: production cameras require standard minus-one-to-one depth; ${mode} depth is unavailable in the active rendering pipeline`);
+  if (mode === "logarithmic" && !(near > 0 && far > near)) {
+    throw new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: logarithmic depth requires finite 0 < near < far`);
   }
-  const depthConvention = negotiateDepthConvention(
+  const negotiated = negotiateDepthConvention(
     { mode, allowFallback: requested?.allowFallback === true },
-    { clipRange: "minus-one-to-one", reversed: false, logarithmic: false }
+    { clipRange: "minus-one-to-one", reversed: true, logarithmic: true }
   );
+  const depthConvention: DepthConvention = Object.freeze({
+    ...negotiated,
+    ...(mode === "reversed"
+      ? { precision: "reduced" as const, precisionReason: "reversed depth is rendered through a minus-one-to-one clip range into a fixed-point depth attachment; ordering is correct without the floating-point precision gain" }
+      : mode === "logarithmic"
+        ? { precision: "extended" as const, precisionReason: "logarithmic fragment depth distributes precision by relative distance and disables early depth testing for those draws" }
+        : { precision: "standard" as const })
+  });
   return {
     // Do not mutate the scene snapshot: it continues to record what was asked.
-    projectionCamera: mode === "standard" ? camera : { ...camera, depth: { mode: "standard" } },
+    projectionCamera: camera,
     projectionMetadata: {
       kind: camera.mode === "orthographic" || camera.mode === "isometric" ? "orthographic" : "perspective",
       near,
       far,
-      mode: "standard",
+      mode,
       clipRange: "minus-one-to-one"
     },
     depthConvention
@@ -67,4 +86,15 @@ export function productionCameraProjectionMetadata(
   code = "CAMERA_DEPTH_UNSUPPORTED"
 ): ReturnType<typeof resolveProductionCameraDepth>["projectionMetadata"] {
   return resolveProductionCameraDepth(camera, code).projectionMetadata;
+}
+
+/**
+ * Scene queries, picking rays and probe/mirror captures do not share the
+ * frame's depth buffer. They use the camera's standard-depth projection,
+ * whose x/y projection is identical in every mode.
+ */
+export function standardDepthCamera(camera: AuraCameraSpec): AuraCameraSpec {
+  const mode = camera.depth?.mode;
+  if (mode === undefined || mode === "standard") return camera;
+  return { ...camera, depth: { ...camera.depth, mode: "standard" } };
 }

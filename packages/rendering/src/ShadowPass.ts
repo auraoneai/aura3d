@@ -1,3 +1,4 @@
+import { withStandardDeviceDepth } from "./renderer/FrameDepthConvention";
 import { Light, type SceneNode } from "@aura3d/scene";
 import { DepthPass, assertStableDepthClippingInputs, type PreparedDepthPlan } from "./DepthPass";
 import { type ForwardShadowMapOptions, type RenderItem } from "./ForwardPass";
@@ -164,7 +165,9 @@ export class ShadowPass {
         prepared = pass.prepare(context);
         pass.validatePrepared(context, prepared);
       }
-      return this.executeWithinFrame(context, opaqueCasters, skippedTransparentCasters, pass, prepared);
+      // Light depth is standard even inside a reversed or logarithmic camera
+      // frame: the target clear and the receiver comparison both assume it.
+      return withStandardDeviceDepth(context.device, () => this.executeWithinFrame(context, opaqueCasters, skippedTransparentCasters, pass, prepared));
     } finally {
       try {
         prepared?.dispose();

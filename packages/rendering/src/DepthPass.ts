@@ -1515,7 +1515,7 @@ function depthRenderState(
     cullMode: !negativeHandedness || cullMode === "none" ? cullMode : cullMode === "back" ? "front" : "back",
     blend: false,
     depthCompare: "less-equal",
-    ...(convention?.mode === "reversed" ? { depthCompareV2: "greater-equal" as const } : {}),
+    ...(convention?.mode === "reversed" ? { depthCompareV2: "greater-equal" as const, depthConventionApplied: true } : {}),
     ...(scissor ? { scissor } : {})
   };
 }

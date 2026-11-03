@@ -1545,12 +1545,12 @@ export class WebGL2Device implements RenderDevice {
 
   clear(color: readonly [number, number, number, number]): void {
     this.assertOutsideGaussianSplatDraw();
-    this.host.lifecycle.clear(color);
+    this.host.lifecycle.clear(color, this.activeDepthConvention.clearValue);
   }
 
   clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
     this.assertOutsideGaussianSplatDraw();
-    this.host.lifecycle.clearRenderTarget(color, attachment);
+    this.host.lifecycle.clearRenderTarget(color, attachment, this.activeDepthConvention.clearValue);
   }
 
   endFrame(): void {
@@ -3674,6 +3674,17 @@ export class WebGL2Device implements RenderDevice {
       ["stateCacheIssued", this.stateCache.stats().issued],
       ["stateCacheSkipped", this.stateCache.stats().skipped]
     ]);
+  }
+
+  getLiveTextures(): readonly Texture[] {
+    const live = new Set<Texture>();
+    for (const target of this.renderTargets) {
+      if (target.disposed) continue;
+      const colors = target.depthOnly ? [] : target.colorTextures ?? [target.colorTexture];
+      for (const texture of [...colors, target.depthTexture]) if (texture && !texture.disposed) live.add(texture);
+    }
+    for (const texture of this.host.textureRegistry.textures.keys()) if (!texture.disposed) live.add(texture);
+    return [...live];
   }
 
   getDiagnostics(): RenderDeviceDiagnostics {

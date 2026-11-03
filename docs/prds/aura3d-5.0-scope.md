@@ -166,7 +166,7 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP12-01 | Pointer dragging/selection: plane, hover, capture, multi-touch, marquee | FINISH-5.0 | Wire marquee to pointer events and selection state. |
+| S5-WP12-01 | Pointer dragging/selection: plane, hover, capture, multi-touch, marquee | FINISH-5.0 | Wire marquee to pointer events and selection state. **DONE 2026-11-02:** `SelectionBox.connect()` drives marquee from pointerdown/move/up/cancel/lostcapture/blur into committed `selection` + marquee events; new behavioral test in `tests/unit/controls/native-drag-select.test.ts` (start/move/end commit, cancel/blur keep prior selection, shouldStart gate, replacement, disconnect removes listeners) — 20/20 pass. |
 | S5-WP12-02 | Complete arcball gestures; listener cleanup on all controls | FINISH-5.0 | Verify-only: run existing control cleanup suites in source pass; device gesture evidence Phase B. |
 
 ### WP-13
@@ -269,8 +269,8 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP23-01 | Scope React asset resources by loader/context/digest; bounded ownership | FINISH-5.0 | Bound default unsignalled `read()`/`useAuraAsset()` interest; prevent eviction of owned entries with live work; test direct-read signal path. |
-| S5-WP23-02 | SSR DOM-free render; hydrate without duplicate loops or leaks | FINISH-5.0 | Install dispose counter before onReady; assert renderer/asset resource retirement and await async cleanup in packed-browser source. |
+| S5-WP23-01 | Scope React asset resources by loader/context/digest; bounded ownership | FINISH-5.0 | Bound default unsignalled `read()`/`useAuraAsset()` interest; prevent eviction of owned entries with live work; test direct-read signal path. **DONE 2026-11-02:** default unsignalled `read()`/`useAuraAsset()` interest is bounded by the 30 s shared deadline (aborts the stalled flight, retryable TimeoutError; retain pauses it); owned/live entries are not evicted under cache pressure; direct `read({ signal })` path covered — new tests in `tests/unit/react/resource-lifecycle.test.ts`, 15/15 pass. |
+| S5-WP23-02 | SSR DOM-free render; hydrate without duplicate loops or leaks | FINISH-5.0 | Install dispose counter before onReady; assert renderer/asset resource retirement and await async cleanup in packed-browser source. **DONE 2026-11-02:** `tests/browser/native-react-lifecycle.spec.ts` installs a webgl2-acquisition counter and GL object ledger before hydration (covers StrictMode's pre-onReady mount), awaits every disposed app's `whenDisposed()` and GL deletes, and asserts retired == disposed == ready, 0 live GL objects and the abandoned preload flight aborted after each unmount (source only; not run). |
 
 ### WP-24
 
@@ -297,10 +297,10 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP26-01 | Licensed fonts, shaping, kerning, RTL, fallback, wrapping, dynamic atlas | FINISH-5.0 | Implement retained dynamically updated glyph atlas; support wrapping through open bidi scope. |
+| S5-WP26-01 | Licensed fonts, shaping, kerning, RTL, fallback, wrapping, dynamic atlas | FINISH-5.0 | Implement retained dynamically updated glyph atlas; support wrapping through open bidi scope. **DONE 2026-11-02:** retained bounded `LoadedFontGlyphAtlas` (LRU, `AURA_TEXT_GLYPH_ATLAS_FULL`, purge on font dispose; entries are whole shaped runs to keep ligatures/kerning/bidi) is the default for `createDynamicSdfText`; wrapping closes/reopens open bidi embeddings/isolates per line in `TextShaper.ts` — 5 text suites 86/86 pass, rendering tsc clean. |
 | S5-WP26-02 | Wide/dashed lines in world/screen units, gradients, clipping, errors | FINISH-5.0 | Verify-only: run line diagnostic suites in source pass; rendered output Phase B. |
 | S5-WP26-03 | Custom materials on imported slots; model LOD/collider options | FINISH-5.0 | Per-slot custom shader selection; accept textured authored + variant; bounds colliders apply model scale and error on missing bounds; behavioral collider test. |
-| S5-WP26-04 | Request geometry/type changes from owners; verify pixels, interaction, teardown | FINISH-5.0 | Browser spec must assert pointer/keyboard interaction; owner-request bookkeeping dropped. |
+| S5-WP26-04 | Request geometry/type changes from owners; verify pixels, interaction, teardown | FINISH-5.0 | Browser spec must assert pointer/keyboard interaction; owner-request bookkeeping dropped. **DONE 2026-11-02:** `tests/browser/native-lines-models.spec.ts` adds real `page.mouse`/`page.keyboard` input: mesh raycast pick vs miss, 48 px drag moves the imported model's red-pixel centroid, ArrowLeft nudges and `h` hides it, then listeners removed and termination `disposed` (source only; typechecks clean). |
 
 ### WP-27
 
@@ -381,7 +381,7 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-DEF-01 | Classify and fix all WebGPU teardown/fence-failure test failures | FINISH-5.0 | Classify the 32 failures; fix lifecycle so ResourceLifecycle completion and fence retention agree across `WebGPUDevice.ts`, `ResourceInterop.ts`; do not weaken tests. |
+| S5-DEF-01 | Classify and fix all WebGPU teardown/fence-failure test failures | FINISH-5.0 | Classify the 32 failures; fix lifecycle so ResourceLifecycle completion and fence retention agree across `WebGPUDevice.ts`, `ResourceInterop.ts`; do not weaken tests. **DONE 2026-11-02:** strict fence contract; 10 teardown files 161/161; rendering tsc clean. |
 | S5-DEF-02 | Native WebGPU wetness | FINISH-5.0 | Add wetness to generated PBR feature allowlist (`webgpu/GeneratedPbrProgram.ts:243`) and deferred route in `Renderer.ts`; keep explicit fallback only for unsupported cases. **CODE 2026-11-02 (experimental, no GPU evidence):** WGSL response in `atmosphere/shaders/wetness.wgsl.ts`, stock-identity admission in `GeneratedPbrProgram.ts`/`NativeDeferredAdmission.ts`, deferred materials in `Renderer.ts`; puddle-noise textures stay an explicit fallback/rejection. |
 | S5-DEF-03 | Resolve alpha-cutoff validation vs existing test | FINISH-5.0 | Decide 5.0 contract for `alphaCutoff` > 1; make glTF validation and `workstream5-runtime.test.ts:2576` agree without weakening; record in 5.0 migration guide. **DONE 2026-11-02:** case now asserts a negative cutoff (glTF 2.0 `alphaCutoff` has no maximum) is rejected; passes. |
 | S5-DEF-04 | Mini-game colormap.png sidecar and digest | FINISH-5.0 | Source and admit exact `Textures/colormap.png` for star/key GLBs in `templates/mini-game` and `packages/create-aura3d/templates/mini-game`; add digest/sidecar; fix three mirror HTML/font diffs. **DONE 2026-11-02 (00120b81f):** proven colormaps + integrity in all mini-game copies. |

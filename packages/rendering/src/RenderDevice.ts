@@ -370,6 +370,12 @@ export interface RenderCommandState {
   readonly blendMode?: import("./contracts/blend").BlendMode;
   /** C-04 (PR 0a): full depth-compare vocabulary; wins over `depthCompare` when set. */
   readonly depthCompareV2?: import("./contracts/blend").DepthCompare;
+  /**
+   * Depth comparison and polygon offset are authored in standard-depth terms
+   * unless this is true. Under an active reversed frame convention a device
+   * flips ordering compares and the offset direction of every other state.
+   */
+  readonly depthConventionApplied?: boolean;
   /** PR 0a (PRD 04): MSAA alpha-to-coverage. */
   readonly alphaToCoverage?: boolean;
   readonly sampleMask?: number;
@@ -821,6 +827,12 @@ export interface RenderDevice {
   endFrame(): void;
   captureState(): ReadonlyMap<string, string | number | boolean | null>;
   getDiagnostics(): RenderDeviceDiagnostics;
+  /**
+   * Live, undisposed texture handles this device currently holds (uploaded
+   * textures plus live render-target attachments). Read-only inventory for
+   * inspectors; it never uploads, allocates or reads back pixels.
+   */
+  getLiveTextures?(): readonly Texture[];
   dispose(): void;
   /**
    * Observe the current device disposal attempt, including native retirement.
@@ -1688,8 +1700,25 @@ export class MockRenderDevice implements RenderDevice {
       for (const floats of this.activeRenderTarget.attachmentFloatPixels) {
         if (floats) for (let i = 0; i < floats.length; i += 4) floats.set(color, i);
       }
-      this.activeRenderTarget.depthPixels?.fill(1);
+      this.activeRenderTarget.depthPixels?.fill(this.mockDepthConvention.clearValue);
     }
+  }
+
+  private mockDepthConvention: import("./DepthConvention").DepthConvention = Object.freeze({
+    requestedMode: "standard", mode: "standard", clipRange: "minus-one-to-one", clearValue: 1, compare: "less-equal", biasSign: 1
+  });
+
+  /** The mock follows the same clear-value contract as the GPU devices. */
+  getDepthConvention(): import("./DepthConvention").DepthConvention { return this.mockDepthConvention; }
+
+  setDepthConvention(convention: import("./DepthConvention").DepthConvention): void {
+    this.assertAlive();
+    const reversed = convention.mode === "reversed";
+    if (convention.clipRange !== "minus-one-to-one" || !["standard", "reversed", "logarithmic"].includes(convention.mode)
+      || convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
+      throw new RenderDeviceError("Depth convention is invalid for the mock device", "INVALID_DEPTH_CONVENTION");
+    }
+    this.mockDepthConvention = Object.freeze({ ...convention });
   }
 
   clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {

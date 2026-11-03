@@ -1,5 +1,6 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from WebGL2Device.ts; 0 changed logic lines.
 
+import { resolveDepthDrawState } from "../DepthConvention";
 import { RenderDeviceError, type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderShaderProgram, type UniformValue } from "../RenderDevice";
 import { hasAttachmentRenderOverrides, resolveBlendMode, validateRenderCommandState } from "../contracts/blend";
 import type { BlendEquation, BlendFactor } from "../contracts/blend";
@@ -1336,7 +1337,8 @@ export class WebGL2DrawCallBinder {
   }
 
   applyRenderState(state: DrawCommand["renderState"]): void {
-    const renderState = state ?? {
+    // Standard-sense states follow the device's active frame convention.
+    const authored = state ?? {
       depthTest: true,
       depthWrite: true,
       cullMode: "back" as const,
@@ -1347,6 +1349,7 @@ export class WebGL2DrawCallBinder {
       polygonOffset: null,
       stencil: null
     };
+    const renderState = resolveDepthDrawState(authored, this.host.device?.getDepthConvention?.());
     this.validateAttachmentState(renderState);
     validateRenderCommandState(renderState);
     // These values are dynamic WebGL state and must be restored on every draw,

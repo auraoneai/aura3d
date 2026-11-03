@@ -60,7 +60,7 @@ import { convertNativeVertexRecords, needsNativeVertexConversion, planNativeVert
   NATIVE_VERTEX_CONVERSION_MAX_BYTES, NATIVE_VERTEX_CONVERSION_MAX_INDICES, NATIVE_VERTEX_CONVERSION_MAX_OPERATIONS,
   type NativeVertexConversionPlan } from "./webgpu/NativeVertexAttributeConversion";
 import { assertRgba8Level, filterNativeDataMip, planNativeDataMipmaps } from "./webgpu/NativeDataMipmaps";
-import { negotiateDepthConvention, type DepthConvention } from "./DepthConvention";
+import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention } from "./DepthConvention";
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
 import { deriveUniformDataLayout, emitWgslStruct, writeUniformData, type UniformBlockLayout } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts } from "./webgpu/NativeRenderState";
@@ -4545,6 +4545,17 @@ export class WebGPUDevice implements RenderDevice {
     ]);
   }
 
+  getLiveTextures(): readonly Texture[] {
+    const live = new Set<Texture>();
+    for (const target of this.renderTargets) {
+      if (target.disposed) continue;
+      const colors = target.colorTextures ?? [target.colorTexture];
+      for (const texture of [...colors, target.depthTexture]) if (texture && !texture.disposed) live.add(texture);
+    }
+    for (const texture of this.nativeSampledTextures.keys()) if (!texture.disposed) live.add(texture);
+    return [...live];
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     const liveRenderTargets = [...this.renderTargets].filter((target) => !target.disposed);
     const bufferBytes = [...this.buffers].filter((buffer) => !buffer.disposed).reduce((total, buffer) => total + buffer.byteLength, 0);
@@ -7514,7 +7525,8 @@ export class WebGPUDevice implements RenderDevice {
     const morphPacket = shader.nativeUniformLayout === "generated-morph-unlit" ? this.prepareNativeMorphUniforms(command) : undefined;
     const shouldClear = this.activeRenderTarget ? this.activeRenderTarget.nativeNeedsClear : this.drawCalls === 0;
     const depthView = this.gaussianSplatBorrowedDepth?.nativeDepthView ?? (this.activeRenderTarget ? this.activeRenderTarget.nativeDepthView : this.canvasDepthView);
-    const state: RenderCommandState = command.renderState ?? { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" };
+    // Standard-sense states follow the renderer-selected frame convention.
+    const state: RenderCommandState = resolveDepthDrawState(command.renderState ?? { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" }, this.depthConvention);
     if ((shader.generatedPbr || shader.generatedUnlit) && state.alphaToCoverage) {
       throw new RenderDeviceError("Generated material alpha-to-coverage is not supported", "WEBGPU_GENERATED_PBR_ALPHA_TO_COVERAGE_UNSUPPORTED");
     }

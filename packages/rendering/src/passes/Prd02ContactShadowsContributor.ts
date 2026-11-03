@@ -305,6 +305,8 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
         timeSeconds: ctx.timeSeconds,
         ...(ctx.camera ? { cameraPosition: ctx.camera.position } : {}),
         ...(ctx.camera?.depth ? { depthConvention: ctx.camera.depth } : {}),
+        // A logarithmic camera prepass encodes against the frame view and range.
+        ...(ctx.camera?.depth?.mode === "logarithmic" ? { depthViewMatrix: ctx.camera.viewMatrix, depthRange: { near: ctx.camera.near, far: ctx.camera.far } } : {}),
         variantResolver: (item: RenderItem) =>
           resolvePrd02ShadowCasterVariant(item, ctx.flags, ctx.tier, depthFeatures),
         depthVariantFeatures: depthFeatures

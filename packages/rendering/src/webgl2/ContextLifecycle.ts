@@ -265,12 +265,13 @@ export class WebGL2ContextLifecycle {
     this.host.stateCache.depthFunc(this.host.gl.LEQUAL, () => this.host.gl.depthFunc(this.host.gl.LEQUAL));
   }
 
-  clear(color: readonly [number, number, number, number]): void {
+  /** `depth` is the active depth convention's clear value (0 for reversed depth). */
+  clear(color: readonly [number, number, number, number], depth: 0 | 1 = 1): void {
     this.assertFrame();
-    this.clearColorDepthStencil(color);
+    this.clearColorDepthStencil(color, depth);
   }
 
-  clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
+  clearRenderTarget(color: readonly [number, number, number, number], attachment?: number, depth: 0 | 1 = 1): void {
     this.assertFrame();
     if (attachment !== undefined) {
       // MRT (lane 03 Q-01-2): clear a single draw buffer, leaving depth and the
@@ -280,7 +281,7 @@ export class WebGL2ContextLifecycle {
       if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
       return;
     }
-    this.clearColorDepthStencil(color);
+    this.clearColorDepthStencil(color, depth);
   }
 
   /** The default context is a request, and an external XR framebuffer is independently supplied. */
@@ -307,11 +308,11 @@ export class WebGL2ContextLifecycle {
     this.applyViewState();
   }
 
-  private clearColorDepthStencil(color: readonly [number, number, number, number]): void {
+  private clearColorDepthStencil(color: readonly [number, number, number, number], depth: 0 | 1): void {
     const gl = this.host.gl;
     gl.clearColor(color[0], color[1], color[2], color[3]);
     this.host.stateCache.depthMask(true, () => gl.depthMask(true));
-    gl.clearDepth(1);
+    gl.clearDepth(depth);
     let bits = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT;
     if (this.hasStencilAttachment()) {
       // A prior draw may have disabled some or all stencil writes. Clear must

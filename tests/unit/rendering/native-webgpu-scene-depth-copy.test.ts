@@ -132,14 +132,16 @@ describe("scene depth snapshot", () => {
     expect(f.device.getDepthConvention().mode).toBe("standard");
     expect(uniformForLastResolve()).toBe(0);
 
-    // Current WebGPU negotiation rejects reversed depth. Simulating a future
-    // negotiated convention exercises the pass's policy, not rendered pixels.
-    const reversed = { ...f.device.getDepthConvention(), requestedMode: "reversed" as const, mode: "reversed" as const, clearValue: 0 as const, compare: "greater-equal" as const, biasSign: -1 as const };
-    expect(() => f.device.setDepthConvention(reversed)).toThrow(/depth/i);
-    Object.defineProperty(f.device, "getDepthConvention", { value: () => reversed, configurable: true });
+    // WebGPU now accepts a negotiated reversed frame convention (and still
+    // rejects inconsistent clear/compare values); the resolve follows it.
+    const standard = f.device.getDepthConvention();
+    const reversed = { ...standard, requestedMode: "reversed" as const, mode: "reversed" as const, clearValue: 0 as const, compare: "greater-equal" as const, biasSign: -1 as const };
+    expect(() => f.device.setDepthConvention({ ...reversed, clearValue: 1 as never })).toThrow(/depth/i);
+    f.device.setDepthConvention(reversed);
+    expect(f.device.getDepthConvention()).toMatchObject({ mode: "reversed", clearValue: 0, compare: "greater-equal" });
     pass.execute({ device: f.device, width: 7, height: 3 });
     expect(uniformForLastResolve()).toBe(1);
-    delete (f.device as unknown as { getDepthConvention?: unknown }).getDepthConvention;
+    f.device.setDepthConvention(standard);
 
     // Both variants stay cached if adjacent views use different sample counts.
     new SceneDepthCopyPass(single, copy).execute({ device: f.device, width: 7, height: 3 });

@@ -796,13 +796,14 @@ describe("Renderer camera depth negotiation", () => {
     const device = renderer.device as MockRenderDevice;
     const item = { geometry: Geometry.triangle(), material: new UnlitMaterial() };
     const good = { viewProjectionMatrix: IDENTITY };
-    const reversed = { viewProjectionMatrix: IDENTITY, projectionMetadata: { kind: "perspective" as const, mode: "reversed" as const, clipRange: "minus-one-to-one" as const } };
+    // Reversed depth is native; a logarithmic view without a near/far range is not.
+    const unsupported = { viewProjectionMatrix: IDENTITY, projectionMetadata: { kind: "custom" as const, mode: "logarithmic" as const, clipRange: "minus-one-to-one" as const } };
     const input = { source: { renderItems: [item], cameraPolicy: "require" as const }, views: [
       { camera: good, viewport: rect(0, 0, 20, 20) },
-      { camera: reversed, viewport: rect(20, 0, 20, 20) }
+      { camera: unsupported, viewport: rect(20, 0, 20, 20) }
     ] };
-    if (mode === "sync") expect(() => renderer.render(input)).toThrowError(/requires standard depth/);
-    else await expect(renderer.renderAsync(input)).rejects.toThrowError(/requires standard depth/);
+    if (mode === "sync") expect(() => renderer.render(input)).toThrowError(/finite 0 < near < far/);
+    else await expect(renderer.renderAsync(input)).rejects.toThrowError(/finite 0 < near < far/);
     expect(device.drawCommands).toHaveLength(0);
     expect(renderer.info.render.frame).toBe(0);
     renderer.dispose();
@@ -901,7 +902,7 @@ describe("Renderer target-owned temporal history", () => {
 });
 
 describe("Renderer frame inspection", () => {
-  it.each(["sync", "async"] as const)("reports actual graph passes and labels unobserved phases partial (%s)", async (mode) => {
+  it.each(["sync", "async"] as const)("reports actual graph passes and whole-frame CPU time for a fully observed frame (%s)", async (mode) => {
     const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
     expect(renderer.getFrameInspection()).toBeNull();
     const item = { geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "inspected" };
@@ -909,14 +910,16 @@ describe("Renderer frame inspection", () => {
     const diagnostics = mode === "sync" ? renderer.render(input) : await renderer.renderAsync(input);
     const capture = renderer.getFrameInspection()!;
     expect(capture.frameNumber).toBe(1);
-    expect(capture.complete).toBe(false);
+    // Shadow, contributor, post, output and native-device phases are now
+    // recorded when they run; this frame runs only the forward graph pass.
+    expect(capture.complete).toBe(true);
     expect(capture.passes).toHaveLength(1);
     expect(capture.passes[0]).toMatchObject({ name: "forward", status: "completed", drawCalls: 1, gpuTimeMs: null });
     expect(capture.passes[0]!.reads).toEqual([]);
     expect(capture.passes[0]!.writes.length).toBeGreaterThan(0);
     expect(capture.passes[0]!.cpuTimeMs).toBeGreaterThanOrEqual(0);
     expect(capture.diagnostics).toEqual(diagnostics);
-    expect(capture.cpuTimeMs).toBeNull();
+    expect(capture.cpuTimeMs).toBeGreaterThanOrEqual(capture.passes[0]!.cpuTimeMs!);
     expect(capture.gpuTimeMs).toBeNull();
     renderer.dispose();
     expect(renderer.getFrameInspection()).toBeNull();

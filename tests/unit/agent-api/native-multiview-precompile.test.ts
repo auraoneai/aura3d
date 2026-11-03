@@ -166,7 +166,7 @@ describe("root multiview precompile", () => {
   it.each([
     { name: "second array depth", view: cameras.array({ cameras: [
       { viewport: rect(0, 0, 0.5, 1) },
-      { viewport: rect(0.5, 0, 0.5, 1), camera: { depth: { mode: "reversed" } } }
+      { viewport: rect(0.5, 0, 0.5, 1), camera: { depth: { mode: "reversed", clipRange: "zero-to-one" } as never } }
     ] }), error: /CAMERA_ARRAY_DEPTH_UNSUPPORTED/ },
     { name: "second array tile", view: cameras.array({ cameras: [
       { viewport: rect(0, 0, 0.5, 1) },

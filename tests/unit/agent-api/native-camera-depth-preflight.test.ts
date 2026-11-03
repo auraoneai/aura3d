@@ -42,9 +42,28 @@ async function prepareFixture(snapshot: AuraSceneSnapshot) {
 }
 
 describe("production camera depth preflight", () => {
-  it.each(["reversed", "logarithmic"] as const)("rejects root %s depth even when fallback is permitted", (mode) => {
-    const snapshot = scene().camera(camera.perspective({ depth: { mode, allowFallback: true } })).toJSON();
-    expect(() => productionInput(snapshot)).toThrow(/CAMERA_DEPTH_UNSUPPORTED/);
+  it.each([
+    { mode: "reversed", nearNdc: 1, farNdc: -1, clearValue: 0, compare: "greater-equal", biasSign: -1, precision: "reduced" },
+    { mode: "logarithmic", nearNdc: -1, farNdc: 1, clearValue: 1, compare: "less-equal", biasSign: 1, precision: "extended" }
+  ] as const)("publishes native root $mode depth with a matching projection and convention", (expected) => {
+    for (const allowFallback of [undefined, true, false]) {
+      const depth = allowFallback === undefined ? { mode: expected.mode } : { mode: expected.mode, allowFallback };
+      const output = productionInput(scene().camera(camera.perspective({ near: 0.2, far: 30, depth })).toJSON()).camera!;
+      expect(output.projectionMetadata).toEqual({ kind: "perspective", near: 0.2, far: 30, mode: expected.mode, clipRange: "minus-one-to-one" });
+      expect(output.depthConvention).toMatchObject({ requestedMode: expected.mode, mode: expected.mode, clipRange: "minus-one-to-one",
+        clearValue: expected.clearValue, compare: expected.compare, biasSign: expected.biasSign, precision: expected.precision });
+      expect(output.depthConvention).not.toHaveProperty("fallbackReason");
+      expect(projectDepth(output.shaderProjectionMatrix!, 0.2)).toBeCloseTo(expected.nearNdc, 5);
+      expect(projectDepth(output.shaderProjectionMatrix!, 30)).toBeCloseTo(expected.farNdc, 5);
+    }
+  });
+
+  it("rejects logarithmic depth without a positive orthographic near plane", () => {
+    expect(() => camera.orthographic({ near: 0, far: 30, depth: { mode: "logarithmic" } })).toThrow(/logarithmic depth require near > 0/);
+    // A runtime snapshot that bypassed the builder is rejected by production lowering.
+    const spec = { ...camera.orthographic({ near: 0, far: 30 }), depth: { mode: "logarithmic" } } as AuraCameraSpec;
+    expect(() => productionInput(scene().camera(camera.orthographic()).toJSON()) && productionInput({ ...scene().camera(camera.orthographic()).toJSON(), camera: spec }))
+      .toThrow(/logarithmic depth require near > 0|logarithmic depth requires finite 0 < near < far/);
   });
 
   it("rejects a runtime zero-to-one root projection instead of interpreting it as standard", () => {
@@ -68,7 +87,7 @@ describe("production camera depth preflight", () => {
     expect(projectDepth(output.shaderProjectionMatrix!, 30)).toBeCloseTo(1, 5);
   });
 
-  it.each(["reversed", "logarithmic"] as const)("rejects an inherited %s request before any mirror or cube capture", async (mode) => {
+  it.each(["reversed", "logarithmic"] as const)("carries an inherited %s request to every eye while captures stay standard", async (mode) => {
     const snapshot = scene()
       .camera(camera.perspective({ depth: { mode, allowFallback: true } }))
       .add(cameras.stereo())
@@ -77,30 +96,35 @@ describe("production camera depth preflight", () => {
       .toJSON();
     const f = await prepareFixture(snapshot);
     try {
-      expect(() => f.prepare()).toThrow(/CAMERA_STEREO_DEPTH_UNSUPPORTED/);
-      expect(() => f.prepare(false)).toThrow(/CAMERA_STEREO_DEPTH_UNSUPPORTED/);
-      expect(f.probe).not.toHaveBeenCalled();
-      expect(f.render).not.toHaveBeenCalled();
-      expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+      const views = f.prepare().views!;
+      expect(views).toHaveLength(2);
+      for (const view of views) {
+        expect(view.camera.projectionMetadata?.mode).toBe(mode);
+        expect(view.camera.depthConvention?.mode).toBe(mode);
+      }
+      // Cube faces and the mirror own their targets and render standard depth.
+      expect(f.probe).toHaveBeenCalled();
+      for (const call of f.render.mock.calls) expect((call[1] as { projectionMetadata?: unknown } | undefined)?.projectionMetadata).toBeUndefined();
+      expect(f.renderer.device.getDepthConvention?.().mode).toBe("standard");
     } finally { f.dispose(); }
   });
 
-  it("rejects an unsupported scene camera even when both array views override it to standard", async () => {
+  it("accepts a reversed scene camera when both array views override it to standard", async () => {
     const snapshot = scene().camera(camera.perspective({ depth: { mode: "reversed" } })).add(cameras.array({ cameras: [
       { viewport: rect(0, 0, 0.5, 1), camera: { depth: { mode: "standard" } } },
       { viewport: rect(0.5, 0, 0.5, 1), camera: { depth: { mode: "standard" } } }
     ] })).add(surfaces.mirror({ resolution: 4 })).toJSON();
     const f = await prepareFixture(snapshot);
     try {
-      expect(() => f.prepare()).toThrow(/CAMERA_ARRAY_DEPTH_UNSUPPORTED/);
-      expect(f.render).not.toHaveBeenCalled();
-      expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+      const views = f.prepare().views!;
+      expect(views.map((view) => view.camera.depthConvention?.mode)).toEqual(["standard", "standard"]);
+      expect(views.map((view) => view.camera.projectionMetadata?.mode)).toEqual(["standard", "standard"]);
     } finally { f.dispose(); }
   });
 
-  it.each(["reversed", "logarithmic"] as const)("rejects an unsupported second array view with %s depth before captures", async (mode) => {
+  it.each(["reversed", "logarithmic"] as const)("publishes a second array view's own %s convention", async (mode) => {
     const snapshot = scene()
-      .camera(camera.perspective())
+      .camera(camera.perspective({ near: 0.1, far: 50 }))
       .add(cameras.array({ cameras: [
         { viewport: rect(0, 0, 0.5, 1) },
         { viewport: rect(0.5, 0, 0.5, 1), camera: { depth: { mode, allowFallback: true } } }
@@ -110,15 +134,16 @@ describe("production camera depth preflight", () => {
       .toJSON();
     const f = await prepareFixture(snapshot);
     try {
-      expect(() => f.prepare()).toThrow(/CAMERA_ARRAY_DEPTH_UNSUPPORTED/);
-      expect(() => f.prepare(false)).toThrow(/CAMERA_ARRAY_DEPTH_UNSUPPORTED/);
-      expect(f.probe).not.toHaveBeenCalled();
-      expect(f.render).not.toHaveBeenCalled();
-      expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+      const [left, right] = f.prepare().views!;
+      expect(left!.camera.depthConvention?.mode).toBe("standard");
+      expect(right!.camera.depthConvention?.mode).toBe(mode);
+      expect(right!.camera.projectionMetadata?.mode).toBe(mode);
+      expect(projectDepth(right!.camera.projectionMatrix!, 0.1)).toBeCloseTo(mode === "reversed" ? 1 : -1, 5);
+      expect(projectDepth(right!.camera.projectionMatrix!, 50)).toBeCloseTo(mode === "reversed" ? -1 : 1, 5);
     } finally { f.dispose(); }
   });
 
-  it.each(["reversed", "logarithmic"] as const)("rejects an unsupported second perspective eye with %s depth before captures", async (mode) => {
+  it.each(["reversed", "logarithmic"] as const)("publishes a second perspective eye's own %s convention", async (mode) => {
     const snapshot = scene()
       .camera(camera.perspective())
       .add(cameras.stereo({ views: [{}, { camera: { depth: { mode, allowFallback: true } } }] }))
@@ -127,10 +152,9 @@ describe("production camera depth preflight", () => {
       .toJSON();
     const f = await prepareFixture(snapshot);
     try {
-      expect(() => f.prepare()).toThrow(/CAMERA_STEREO_DEPTH_UNSUPPORTED/);
-      expect(f.probe).not.toHaveBeenCalled();
-      expect(f.render).not.toHaveBeenCalled();
-      expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+      const [left, right] = f.prepare().views!;
+      expect(left!.camera.depthConvention?.mode).toBe("standard");
+      expect(right!.camera.depthConvention?.mode).toBe(mode);
     } finally { f.dispose(); }
   });
 

@@ -146,15 +146,14 @@ describe("native depth-preview shader contracts", () => {
     }
   });
 
-  it("keeps production reversed/logarithmic camera requests rejected", () => {
+  it("accepts native production reversed/logarithmic cameras and still rejects a zero-to-one request", () => {
     for (const mode of ["reversed", "logarithmic"] as const) {
-      expect(() => productionCameraProjectionMetadata({ mode: "perspective", depth: { mode } }))
-        .toThrow(/standard minus-one-to-one/);
-      expect(() => productionCameraProjectionMetadata({ mode: "perspective", depth: { mode, allowFallback: true } }))
-        .toThrow(/standard minus-one-to-one/);
+      for (const depth of [{ mode }, { mode, allowFallback: true }]) {
+        expect(productionCameraProjectionMetadata({ mode: "perspective", depth })).toMatchObject({ mode, clipRange: "minus-one-to-one" });
+      }
     }
     expect(() => productionCameraProjectionMetadata({ mode: "orthographic", depth: { clipRange: "zero-to-one" } } as never))
-      .toThrow(/standard minus-one-to-one/);
+      .toThrow(/minus-one-to-one clip range/);
   });
 
   it("creates the native WebGPU shader with the reflected clip-range binding", async () => {

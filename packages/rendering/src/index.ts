@@ -855,6 +855,7 @@ export {
   SDF_OCCLUDED_OPACITY,
   SDF_SUPPORTED_GLYPHS,
   applySdfTextOcclusion,
+  LoadedFontGlyphAtlas,
   createDynamicSdfText,
   createSdfFontAtlas,
   createSdfTextQuadMesh,
@@ -863,12 +864,15 @@ export {
   rasterizeSdfTextLabelImage,
   resolveSdfTextFrameOpacity,
   sampleSdfCoverage,
+  sharedLoadedFontGlyphAtlasStats,
   sdfTextLodFade,
   summarizeTextSurfaces
 } from "./SdfText";
 export type {
   DynamicSdfText,
   DynamicSdfTextOptions,
+  LoadedFontGlyphAtlasOptions,
+  LoadedFontGlyphAtlasStats,
   SdfFontAtlas,
   SdfFontAtlasOptions,
   SdfGlyphMetrics,
@@ -1453,8 +1457,8 @@ export { FUSED_2D_BLOOM_FUSION, SEPARABLE_BLOOM_FUSION, bloomLevelBlursIn2d, res
 export type { BloomFusionConfig } from "./webgl2/BloomFusion.js";
 export { DEFAULT_CLIPPING_PLANE_LIMIT, normalizeClippingPlane, validateClippingGroup, transformClippingPlane, createClippingBinding, createClippingUniforms, clippingRetainsPoint, classifyClippingBounds } from "./ClippingPlanes";
 export type { ClippingPlane, ClippingSpace, ClippingCombination, ClippingScope, ClippingPass, ClippingPrimitive, ClippingGroupInput, ClippingGroup, ClippingGroupBinding, ClippingBinding, ClippingBindingOptions, ClippingBounds } from "./ClippingPlanes";
-export { negotiateDepthConvention, encodeViewDepth, linearizeDepth, reconstructViewPosition } from "./DepthConvention";
-export type { DepthMode, DepthClipRange, DepthOptions, DepthCapabilities, DepthConvention, DepthDistanceRange } from "./DepthConvention";
+export { negotiateDepthConvention, encodeViewDepth, linearizeDepth, reconstructViewPosition, remapDepthCompare, depthModeId, isStandardDepthConvention, toStandardWindowDepth } from "./DepthConvention";
+export type { DepthMode, DepthClipRange, DepthOptions, DepthCapabilities, DepthConvention, DepthDistanceRange, DepthPrecision, DepthCompareFunction } from "./DepthConvention";
 export { parametricGeometry } from "./geometry/ParametricGeometry";
 export type { ParametricGeometryOptions, SurfacePoint } from "./geometry/ParametricGeometry";
 export { loftGeometry } from "./geometry/LoftGeometry";

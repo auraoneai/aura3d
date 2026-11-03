@@ -24,7 +24,7 @@ import type { AuraCameraSpec, AuraRuntimeNodeRegistry, AuraSceneSnapshot } from 
 import { groups } from "../nodes/groups.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { cameraFollowTargetIdentity, resolveCameraFrame, sampleCameraFrame, type SmoothedCameraFrame } from "./camera.js";
-import { productionCameraProjectionMetadata, resolveProductionCameraDepth } from "./cameraDepth.js";
+import { productionCameraProjectionMetadata, resolveProductionCameraDepth, standardDepthCamera } from "./cameraDepth.js";
 import { createCameraProjection } from "../RootRuntimeSupport.js";
 import { invertMat4, lookAtMat4, multiplyMat4, type Mat4 } from "@aura3d/scene/math";
 import { computeStereoEyes } from "../stereoMath.js";
@@ -284,7 +284,9 @@ export function createProductionParitySurfaces(
         ...(source.collectRenderItems?.() ?? source.renderItems ?? [])
       ];
       const { eye, target } = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes);
-      const projection = createCameraProjection(resolveProductionCameraDepth(snapshot.camera).projectionCamera, aspect);
+      // Cube and mirror captures own their targets and render with standard depth
+      // through renderProbeFace/render; x/y match the frame projection.
+      const projection = createCameraProjection(standardDepthCamera(resolveProductionCameraDepth(snapshot.camera).projectionCamera), aspect);
       const extraItems: RenderItem[] = [];
 
       // SC-01: six-face cube captures feed `material.*({ envMap })` items.

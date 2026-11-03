@@ -1683,6 +1683,21 @@ export interface AuraCameraSpec {
   readonly filmOffset?: number;
   /** Sub-view coordinates in pixels, measured from the top left. */
   readonly viewOffset?: { readonly fullWidth: number; readonly fullHeight: number; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  /**
+   * Depth convention for the whole frame (experimental for nonstandard modes:
+   * source-tested only, no real-GPU evidence yet).
+   * - "standard" (default): near = 0, far = 1, compare less-equal.
+   * - "reversed": near = 1, far = 0, clear 0, compare greater-equal. Material
+   *   depth compares stay authored in standard terms and are flipped by the
+   *   renderer. Precision is reported as "reduced": the portable path keeps a
+   *   minus-one-to-one clip range and a 24-bit depth attachment.
+   * - "logarithmic": generated programs write ln(d / near) / ln(far / near)
+   *   as fragment depth (WebGL2 only; disables early depth testing; WebGPU
+   *   fails with DEPTH_MODE_UNSUPPORTED). Requires finite 0 < near < far.
+   * All modes require a finite far. `allowFallback` is validated and
+   * retained, but the renderer does not yet downgrade a WebGPU logarithmic
+   * frame to standard depth; it fails precisely instead.
+   */
   readonly depth?: { readonly mode?: "standard" | "reversed" | "logarithmic"; readonly allowFallback?: boolean };
   /** Positive near clipping distance in world units; defaults to 0.05. */
   readonly near?: number;

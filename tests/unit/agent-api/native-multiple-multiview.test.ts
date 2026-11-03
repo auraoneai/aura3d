@@ -112,7 +112,8 @@ describe("multiple authored camera groups", () => {
 
   it("preflights later depth failures before captures even without dimensions", async () => {
     const authored = scene().camera(camera.perspective()).add(array("first"))
-      .add(cameras.stereo({ name: "last", views: [{}, { camera: { depth: { mode: "reversed" } } }] }))
+      // Reversed depth is native; a runtime zero-to-one clip range is still unsupported.
+      .add(cameras.stereo({ name: "last", views: [{}, { camera: { depth: { mode: "reversed", clipRange: "zero-to-one" } as never } }] }))
       .add(cameras.cube({ resolution: 4 })).add(surfaces.mirror({ resolution: 4 })).toJSON();
     const f = await fixture(authored);
     const probe = vi.spyOn(f.renderer, "renderProbeFace");

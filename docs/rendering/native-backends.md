@@ -16,7 +16,7 @@ contracts are already public.
 | Root app, WebGL2 | The root production renderer defaults to WebGL2 and requires a usable WebGL2 canvas when that backend is selected for a renderable browser scene. | Existing receipts in [Claims and Boundaries](../agents/claims-and-boundaries.md) and [renderer lifecycle](renderer-lifecycle.md) cover only their named workloads, largely on software WebGL2. They do not establish every feature on every device. |
 | Root app, WebGPU | Experimental root selection is exposed via `renderer.backend: "webgpu"` or `"auto"`; permitted initialization failures can attempt WebGL2 fallback on the same canvas. | WP-03 still requires candidate-bound verification of selection, selected-device compute, fallback and lifecycle. A browser receipt must show adapter, active backend, dispatch, output and pixels. |
 | `@aura3d/rendering` devices | The lower-level `Renderer` and `createRenderDevice` expose WebGL2, WebGPU and mock device paths. The WebGPU device value is also exposed from `@aura3d/rendering/webgpu`. A package device is a lower-level API, not proof of root-app support. | Selected portable-material workloads have their own bounded package evidence in [portable custom materials](portable-custom-materials.md). A mock tests contracts without establishing browser rasterization or physical-device support. |
-| Depth and section clipping | Conventional camera near/far and depth paths exist. An integrated root choice of standard, reversed or logarithmic depth and general section planes is not established. | WP-30 requires consistent projection, culling, clear/compare, shadows, postprocessing and readback, followed by the relevant source and packed-browser checks. |
+| Depth and section clipping | Root cameras choose standard, reversed or logarithmic depth (experimental, source-tested). Projection, culling, clear/compare, camera depth prepasses, postprocess linearization and readback follow the frame convention; shadow maps keep standard light depth. Reversed precision is reported as reduced (24-bit depth, minus-one-to-one clip); logarithmic depth is WebGL2 only. | Packed-browser and real-GPU evidence per mode; float depth with zero-to-one clip for full reversed precision; WebGPU logarithmic fragment depth. |
 | Draw state and vertex data | Material and draw descriptors expose multiple state fields. Their presence does not mean every field is implemented identically by each device. | WP-31 must connect and verify the complete supported state and vertex layouts on each backend. Native WebGPU currently reduces several state choices; see below. |
 | Transparency | The forward queue sorts blended items; object sorting cannot make intersecting transparent geometry order independent. | Weighted order-independent transparency and its sorted fallback are roadmap work under WP-31; refractive multilayer transmission is a separate limitation. |
 | Camera views and postprocessing | Root array and stereo camera nodes describe multiple viewports, but the renderer currently rejects their combination with postprocessing. | WP-02 requires independent per-view culling, targets, postprocessing and state restoration; the current viewport tests alone do not prove those outcomes. |
@@ -78,10 +78,28 @@ reporting a result; software rendering is not physical-GPU evidence.
 The root camera clipping helper currently validates finite `0 < near < far`;
 the default root helper values are `0.05` and `100`. Individual lower-level
 camera constructors have their own defaults and validation. Choose a near plane
-appropriate to the scene and avoid assuming infinite far planes or a reversed
-depth mode are supported end to end. The built-in native WebGPU shader maps
-conventional clip coordinates to the WebGPU depth interval; that observation
-does not cover every custom shader, shadow pass or depth-reading effect.
+appropriate to the scene and do not assume infinite far planes. The built-in
+native WebGPU shader maps conventional clip coordinates to the WebGPU depth
+interval.
+
+`camera.depth.mode` selects the frame depth convention (experimental for
+`reversed` and `logarithmic`; source and mock-device tested only):
+
+| Mode | Projection | Clear / compare | Stored depth | Precision report |
+|---|---|---|---|---|
+| `standard` | near -> -1, far -> +1 | 1 / `less-equal` | standard window depth | `standard` |
+| `reversed` | near -> +1, far -> -1 | 0 / `greater-equal`, negated polygon offset | 1 - standard depth | `reduced`: 24-bit attachment and minus-one-to-one clip, so ordering only |
+| `logarithmic` (WebGL2) | standard | 1 / `less-equal` | `ln(d / near) / ln(far / near)` written as fragment depth (no early-Z) | `extended` |
+
+The renderer makes the camera's convention the device's active convention for
+each frame. Materials author compares in standard terms; ForwardPass, camera
+depth prepasses and the WebGL2/WebGPU devices flip them for a reversed frame.
+Shadow maps, probe faces and mirrors scope standard depth. Postprocess depth is
+linearized with the frame's mode and actual inverse projection, and CPU depth
+readback is converted to standard window depth. Contact shadows, Gaussian
+splats, scalar volumes, depth preview materials and the native deferred,
+meshlet and visibility paths require standard depth and fail precisely.
+Weighted transparency uses sorted transparency for nonstandard frames. The legacy `VolumeRenderer` and vegetation impostors still write standard fragment depth and are not converted.
 
 The roadmap's section-plane contract retains the nonnegative signed-distance
 half-space and calls for validated world/local planes, union/intersection

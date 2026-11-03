@@ -6,8 +6,18 @@ import {
   encodeViewDepth,
   linearizeDepth,
   negotiateDepthConvention,
-  reconstructViewPosition
+  reconstructViewPosition,
+  remapDepthCompare,
+  resolveDepthDrawState,
+  toStandardWindowDepth
 } from "../../../packages/rendering/src/DepthConvention.js";
+import { resolveProductionCameraDepth } from "../../../packages/engine/src/agent-api/compiler/cameraDepth.js";
+import { createCameraProjection as createRootCameraProjection } from "../../../packages/engine/src/agent-api/RootRuntimeSupport.js";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags.js";
+import { Geometry } from "../../../packages/rendering/src/Geometry.js";
+import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial.js";
+import { Renderer } from "../../../packages/rendering/src/Renderer.js";
+import { withStandardDeviceDepth, standardizeDepthReadback } from "../../../packages/rendering/src/renderer/FrameDepthConvention.js";
 import { createRendererFrameHooks, toFrameCamera } from "../../../packages/rendering/src/renderer/FrameGraph.js";
 import { registerFrameContributor, type FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph.js";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice.js";
@@ -349,3 +359,126 @@ describe("root projection and frame metadata", () => {
     } finally { unregister(); texture.dispose(); device.dispose(); }
   });
 });
+
+describe("production reversed and logarithmic depth (WP-30)", () => {
+  const near = 0.5;
+  const far = 400;
+  const range = { near, far };
+  const distances = [0.5, 0.75, 3, 40, 250, 400];
+  const productionMode = (mode: "standard" | "reversed" | "logarithmic", kind: "perspective" | "orthographic" = "perspective") =>
+    resolveProductionCameraDepth({ mode: kind, fov: 50, orthographicSize: 3, near, far, depth: { mode } });
+  /** GPU window depth: NDC z remapped by the default [0, 1] depth range, or the log fragment formula. */
+  const stored = (mode: string, projection: ArrayLike<number>, distance: number): number => {
+    if (mode === "logarithmic") return Math.log(distance / near) / Math.log(far / near);
+    const z = -distance;
+    return ((projection[10]! * z + projection[14]!) / (projection[11]! * z + projection[15]!) + 1) / 2;
+  };
+
+  it.each(["standard", "reversed", "logarithmic"] as const)("%s: projection, store and reconstruct agree numerically", (mode) => {
+    for (const kind of ["perspective", "orthographic"] as const) {
+      const { projectionCamera, projectionMetadata, depthConvention } = productionMode(mode, kind);
+      expect(projectionMetadata).toMatchObject({ kind, near, far, mode, clipRange: "minus-one-to-one" });
+      const projection = createRootCameraProjection(projectionCamera, 1.5);
+      const standard = createRootCameraProjection(productionMode("standard", kind).projectionCamera, 1.5);
+      const inverse = new Matrix4(projection as unknown as Matrix4["elements"]).inverse().elements;
+      // Reversed maps near to +1 and far to -1; logarithmic keeps the standard matrix.
+      if (mode === "logarithmic") expectPoint(Array.from(projection), Array.from(standard), 12);
+      const nearStored = stored(mode, projection, near);
+      const farStored = stored(mode, projection, far);
+      expect(nearStored).toBeCloseTo(mode === "reversed" ? 1 : 0, 9);
+      expect(farStored).toBeCloseTo(mode === "reversed" ? 0 : 1, 9);
+      let previous: number | undefined;
+      for (const distance of distances) {
+        const value = stored(mode, projection, distance);
+        // CPU reference encoding equals the GPU path, and reconstruction inverts it.
+        expect(encodeViewDepth(distance, projection, depthConvention, range)).toBeCloseTo(value, 10);
+        expect(linearizeDepth(Math.min(1, Math.max(0, value)), inverse, depthConvention, range) / distance).toBeCloseTo(1, 6);
+        // Every mode converts to the standard window depth of the same distance.
+        expect(toStandardWindowDepth(value, depthConvention, { kind, ...range })).toBeCloseTo(stored("standard", standard, distance), 9);
+        // The negotiated compare orders nearer surfaces first against the clear value.
+        const compare = remapDepthCompare("less-equal", depthConvention);
+        expect(compare).toBe(depthConvention.compare);
+        expect(compare === "greater-equal" ? value >= depthConvention.clearValue : value <= depthConvention.clearValue).toBe(true);
+        if (previous !== undefined) expect(mode === "reversed" ? value < previous : value > previous).toBe(true);
+        previous = value;
+      }
+    }
+  });
+
+  it("gives logarithmic depth more resolution far away than standard depth", () => {
+    const standard = createRootCameraProjection(productionMode("standard").projectionCamera, 1);
+    const step = (mode: string) => stored(mode, standard, 300.01) - stored(mode, standard, 300);
+    expect(step("logarithmic")).toBeGreaterThan(step("standard") * 10);
+  });
+
+  it("maps standard-sense draw state to reversed depth exactly once", () => {
+    const reversed = { mode: "reversed" as const };
+    expect(["less", "less-equal", "greater", "greater-equal", "equal", "not-equal", "always", "never"].map((c) => remapDepthCompare(c as never, reversed)))
+      .toEqual(["greater", "greater-equal", "less", "less-equal", "equal", "not-equal", "always", "never"]);
+    expect(remapDepthCompare("less", { mode: "logarithmic" })).toBe("less");
+    const state = { depthCompare: "less-equal" as const, polygonOffset: { factor: 1.5, units: 2 } };
+    const resolved = resolveDepthDrawState(state, reversed);
+    expect(resolved).toMatchObject({ depthCompare: "less-equal", depthCompareV2: "greater-equal", polygonOffset: { factor: -1.5, units: -2 }, depthConventionApplied: true });
+    expect(resolveDepthDrawState(resolved, reversed)).toBe(resolved);
+    expect(resolveDepthDrawState(state, { mode: "standard" })).toBe(state);
+    expect(resolveDepthDrawState({ depthCompare: "always" as const }, reversed).depthCompareV2).toBe("always");
+  });
+
+  it("standardizes reversed and logarithmic readback for reference depth consumers", () => {
+    const reversed = negotiateDepthConvention({ mode: "reversed" }, { clipRange: "minus-one-to-one", reversed: true, logarithmic: true });
+    expect(Array.from(standardizeDepthReadback(new Float32Array([1, 0.25, 0]), reversed))).toEqual([0, 0.75, 1]);
+    const log = { ...negotiateDepthConvention({ mode: "logarithmic" }, { clipRange: "minus-one-to-one", reversed: true, logarithmic: true }), logRange: { near, far, kind: "perspective" as const } };
+    const standard = createRootCameraProjection(productionMode("standard").projectionCamera, 1);
+    const out = standardizeDepthReadback(new Float32Array([stored("logarithmic", standard, 40)]), log);
+    expect(out[0]).toBeCloseTo(stored("standard", standard, 40), 6);
+    expect(() => standardizeDepthReadback(new Float32Array([0.5]), { ...log, logRange: { near, far } })).toThrow(/projection kind/);
+  });
+
+  it("clears, compares and draws with the frame convention, and scopes standard light depth", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: resolveQrFlags({ options: { A3D_QR_CORE: true } }) });
+    const device = renderer.device as MockRenderDevice;
+    const geometry = Geometry.triangle();
+    const material = new UnlitMaterial();
+    try {
+      const { projectionCamera, projectionMetadata, depthConvention } = productionMode("reversed");
+      const projection = createRootCameraProjection(projectionCamera, 1);
+      const camera = { viewProjectionMatrix: projection, viewMatrix: identityMat4(), projectionMatrix: projection, projectionMetadata, depthConvention };
+      const target = device.createRenderTarget({ width: 8, height: 8, depth: "texture" });
+      renderer.render({ renderItems: [{ geometry, material, label: "reversed" }], renderTarget: target, cameraPolicy: "require" }, camera);
+      expect(device.getDepthConvention()).toMatchObject({ mode: "reversed", clearValue: 0, compare: "greater-equal", biasSign: -1 });
+      const draws = device.drawCommands.filter((command) => command.label === "reversed");
+      expect(draws.length).toBeGreaterThan(0);
+      for (const draw of draws) expect(draw.renderState).toMatchObject({ depthCompareV2: "greater-equal", depthConventionApplied: true });
+      device.beginFrame(8, 8);
+      device.setRenderTarget(target);
+      device.clear([0, 0, 0, 1]);
+      expect(target.depthPixels?.every((value) => value === 0)).toBe(true);
+      expect(withStandardDeviceDepth(device, () => {
+        device.clear([0, 0, 0, 1]);
+        return device.getDepthConvention().mode;
+      })).toBe("standard");
+      expect(target.depthPixels?.every((value) => value === 1)).toBe(true);
+      expect(device.getDepthConvention().mode).toBe("reversed");
+      device.endFrame();
+
+      // Logarithmic frames select the log program variant and bind its range.
+      device.drawCommands.length = 0;
+      const log = productionMode("logarithmic");
+      const logProjection = createRootCameraProjection(log.projectionCamera, 1);
+      renderer.render({ renderItems: [{ geometry, material, label: "log" }], renderTarget: target, cameraPolicy: "require" },
+        { viewProjectionMatrix: logProjection, viewMatrix: identityMat4(), projectionMatrix: logProjection, projectionMetadata: log.projectionMetadata, depthConvention: log.depthConvention });
+      const logDraws = device.drawCommands.filter((command) => command.label === "log");
+      expect(logDraws.length).toBeGreaterThan(0);
+      for (const draw of logDraws) {
+        expect(Array.from(draw.uniforms?.get("u_a3dLogDepthRange") as number[])).toEqual([near, far]);
+        expect(draw.renderState?.depthCompareV2 ?? draw.renderState?.depthCompare).toBe("less-equal");
+      }
+
+      // A later standard camera restores the standard convention.
+      renderer.render({ renderItems: [{ geometry, material, label: "standard" }], renderTarget: target, cameraPolicy: "identity" });
+      expect(device.getDepthConvention()).toMatchObject({ mode: "standard", clearValue: 1 });
+      target.dispose();
+    } finally { geometry.dispose(); material.dispose(); renderer.dispose(); }
+  });
+});
+

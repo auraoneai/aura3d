@@ -180,15 +180,19 @@ describe("orthographic stereo scene cameras", () => {
     f.dispose();
   });
 
-  it.each(["reversed", "logarithmic"] as const)("rejects unsupported per-eye %s depth before drawing", async (mode) => {
-    const f = await fixture(camera.orthographic(), { views: [{}, { camera: { depth: { mode } } }] });
-    expect(() => f.prepare()).toThrow(/CAMERA_STEREO_DEPTH_UNSUPPORTED/);
+  it.each(["reversed", "logarithmic"] as const)("publishes native per-eye %s depth without drawing", async (mode) => {
+    // Logarithmic depth needs a positive orthographic near plane.
+    const f = await fixture(camera.orthographic({ near: 0.1 }), { views: [{}, { camera: { depth: { mode } } }] });
+    const [left, right] = f.prepare().views!;
+    expect(left!.camera.depthConvention?.mode).toBe("standard");
+    expect(right!.camera.depthConvention?.mode).toBe(mode);
+    expect(right!.camera.projectionMetadata).toMatchObject({ kind: "orthographic", mode });
     expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
     f.dispose();
   });
 
-  it("rejects unsupported scene-camera depth before drawing", async () => {
-    const f = await fixture(camera.orthographic({ depth: { mode: "reversed" } }));
+  it("rejects a runtime zero-to-one scene-camera clip range before drawing", async () => {
+    const f = await fixture(camera.orthographic({ depth: { mode: "reversed", clipRange: "zero-to-one" } as never }));
     expect(() => f.prepare()).toThrow(/CAMERA_STEREO_DEPTH_UNSUPPORTED/);
     expect((f.renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
     f.dispose();

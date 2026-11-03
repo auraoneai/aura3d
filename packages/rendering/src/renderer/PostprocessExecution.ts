@@ -1,6 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from Renderer.ts; 0 changed logic lines.
 // File: packages/rendering/src/renderer/PostprocessExecution.ts — owner lane 03.
 
+import { standardizeDepthReadback } from "./FrameDepthConvention";
 import type { RenderItem } from "../ForwardPass";
 import { type BloomOptions, BloomPass, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthOfFieldOptions, type DepthTextureBinding, type FXAAOptions, FXAAPass, type FilmGrainOptions, type FusedLdrPostProcessPass, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, ToneMappingPass, type VolumetricLightOptions, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels } from "../PostProcessPass";
 import { type LdrPostprocessPassDescriptor, type LdrPostprocessPresentationOptions, type NativeWebGPUDofFrame, type NativeWebGPUDofFrameSubmission, type RenderDevice, type RenderDeviceDiagnostics, RenderDeviceError, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
@@ -1332,7 +1333,8 @@ export class RendererPostprocessPipeline {
       label: forwardTarget.depthTexture.label,
       width: forwardTarget.width,
       height: forwardTarget.height,
-      data: this.host.device.readDepthPixels(0, 0, forwardTarget.width, forwardTarget.height)
+      // Reference passes reconstruct standard window depth.
+      data: standardizeDepthReadback(this.host.device.readDepthPixels(0, 0, forwardTarget.width, forwardTarget.height), this.host.device.getDepthConvention?.())
     });
   }
 }

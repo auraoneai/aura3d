@@ -393,6 +393,12 @@ export interface SceneRaycastCamera {
   readonly viewMatrix?: Float32Array | readonly number[];
   readonly projectionMatrix?: Float32Array | readonly number[];
   readonly viewProjectionMatrix?: Float32Array | readonly number[];
+  /**
+   * Depth convention of a supplied projection. A reversed matrix maps the
+   * near plane to NDC z = +1; logarithmic depth uses a standard matrix.
+   * Defaults to standard (as returned by `app.viewProjection`).
+   */
+  readonly depth?: { readonly mode?: "standard" | "reversed" | "logarithmic" };
 }
 
 /** `raycast` ray input: a world ray, or a camera + NDC position (three's `setFromCamera`). */
@@ -878,8 +884,9 @@ function rayFromCameraNdc(camera: SceneRaycastCamera, ndc: readonly [number, num
   if (vp) {
     const inv = invertMat4(vp);
     if (!inv) return undefined;
-    const near = unprojectPoint(inv, ndc[0], ndc[1], -1);
-    const far = unprojectPoint(inv, ndc[0], ndc[1], 1);
+    const nearZ = camera.depth?.mode === "reversed" ? 1 : -1;
+    const near = unprojectPoint(inv, ndc[0], ndc[1], nearZ);
+    const far = unprojectPoint(inv, ndc[0], ndc[1], -nearZ);
     if (!near || !far) return undefined;
     const direction = normalize([far[0] - near[0], far[1] - near[1], far[2] - near[2]]);
     return direction ? { origin: near, direction } : undefined;

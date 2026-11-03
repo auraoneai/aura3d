@@ -24,7 +24,19 @@ export interface DepthConvention {
   /** Multiply a standard-depth polygon/shadow bias by this value. */
   readonly biasSign: 1 | -1;
   readonly fallbackReason?: string;
+  /**
+   * Honest precision report for the negotiated pipeline. "reduced" means the
+   * mode is rendered correctly but does not deliver its full precision gain
+   * (for example reversed Z through a minus-one-to-one clip remap into a
+   * fixed-point depth attachment). Absent for conventions built elsewhere.
+   */
+  readonly precision?: DepthPrecision;
+  readonly precisionReason?: string;
+  /** Camera near/far for a logarithmic frame; generated programs encode against it. */
+  readonly logRange?: DepthDistanceRange & { readonly kind?: "perspective" | "orthographic" };
 }
+
+export type DepthPrecision = "standard" | "reduced" | "extended";
 
 /**
  * Negotiate for the complete pipeline, not just the device's ability to change
@@ -56,6 +68,78 @@ export function negotiateDepthConvention(options: DepthOptions = {}, capabilitie
 }
 
 export interface DepthDistanceRange { readonly near: number; readonly far: number }
+
+export type DepthCompareFunction = "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always";
+
+/**
+ * Materials and passes author depth comparisons in the standard sense
+ * (nearer = smaller). Reversed depth stores nearer fragments as larger values,
+ * so every ordering comparison flips; equality and constant tests do not.
+ */
+export function remapDepthCompare<T extends DepthCompareFunction>(compare: T, convention: Pick<DepthConvention, "mode"> | undefined): DepthCompareFunction {
+  if (convention?.mode !== "reversed") return compare;
+  switch (compare) {
+    case "less": return "greater";
+    case "less-equal": return "greater-equal";
+    case "greater": return "less";
+    case "greater-equal": return "less-equal";
+    default: return compare;
+  }
+}
+
+interface DepthDrawState {
+  readonly depthCompare: "always" | "less-equal";
+  readonly depthCompareV2?: DepthCompareFunction;
+  readonly polygonOffset?: { readonly factor: number; readonly units: number; readonly clamp?: number } | null;
+  readonly depthConventionApplied?: boolean;
+}
+
+/**
+ * Express a standard-sense draw state in the active convention. Reversed
+ * depth flips ordering compares (in `depthCompareV2`, which wins over the
+ * legacy field) and the polygon-offset direction, and marks the state so a
+ * device never flips it twice. Other conventions return the same object.
+ */
+export function resolveDepthDrawState<T extends DepthDrawState>(state: T, convention: Pick<DepthConvention, "mode"> | undefined): T {
+  if (convention?.mode !== "reversed" || state.depthConventionApplied === true) return state;
+  const offset = state.polygonOffset;
+  return {
+    ...state,
+    depthCompareV2: remapDepthCompare(state.depthCompareV2 ?? state.depthCompare, convention),
+    ...(offset ? { polygonOffset: { ...offset, factor: -offset.factor, units: -offset.units } } : {}),
+    depthConventionApplied: true
+  };
+}
+
+/** Shader-side depth mode id shared by post and reconstruction shaders. */
+export function depthModeId(convention: Pick<DepthConvention, "mode"> | undefined): 0 | 1 | 2 {
+  return convention?.mode === "reversed" ? 1 : convention?.mode === "logarithmic" ? 2 : 0;
+}
+
+/** True when a convention requests exactly the standard clear/compare/bias contract. */
+export function isStandardDepthConvention(convention: DepthConvention | undefined): boolean {
+  return !convention || (convention.mode === "standard" && convention.clearValue === 1 && convention.compare === "less-equal" && convention.biasSign === 1);
+}
+
+/**
+ * Convert any stored depth to the standard window depth of the same
+ * projection (perspective: f(d - n) / (d(f - n)); orthographic: linear).
+ * Reversed depth is exactly 1 - standard depth for finite ranges; logarithmic
+ * depth stores ln(d / n) / ln(f / n). Picking, readback and CPU reference
+ * passes use this to share one standard reconstruction.
+ */
+export function toStandardWindowDepth(
+  stored: number,
+  convention: Pick<DepthConvention, "mode">,
+  projection: { readonly kind: "perspective" | "orthographic"; readonly near: number; readonly far: number }
+): number {
+  if (!Number.isFinite(stored)) throw new RangeError("Stored depth must be finite.");
+  if (convention.mode === "standard") return stored;
+  if (convention.mode === "reversed") return 1 - stored;
+  const { near, far } = validateLogRange(projection);
+  const distance = Math.exp(Math.log(near) + stored * (Math.log(far) - Math.log(near)));
+  return projection.kind === "orthographic" ? (distance - near) / (far - near) : far * (distance - near) / (distance * (far - near));
+}
 
 function validateLogRange(range: DepthDistanceRange | undefined): DepthDistanceRange {
   if (!range || !Number.isFinite(range.near) || range.near <= 0 || !Number.isFinite(range.far) || range.far <= range.near) {

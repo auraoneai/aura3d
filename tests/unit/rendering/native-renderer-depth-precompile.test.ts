@@ -29,9 +29,9 @@ async function fixture() {
 
 describe("renderer depth preflight", () => {
   it.each([
-    { mode: "reversed", clipRange: "minus-one-to-one" },
-    { mode: "logarithmic", clipRange: "minus-one-to-one" },
-    { mode: "standard", clipRange: "zero-to-one" }
+    { mode: "standard", clipRange: "zero-to-one" },
+    { mode: "reversed", clipRange: "zero-to-one" },
+    { mode: "logarithmic", clipRange: "zero-to-one" }
   ] as const)("rejects $mode / $clipRange before source collection or compilation", async (depth) => {
     const f = await fixture();
     try {
@@ -44,6 +44,37 @@ describe("renderer depth preflight", () => {
     } finally { f.dispose(); }
   });
 
+  it.each(["reversed", "logarithmic"] as const)("negotiates native %s depth on the device and warms the matching program variant", async (mode) => {
+    const f = await fixture();
+    try {
+      const camera = { viewProjectionMatrix: IDENTITY, viewMatrix: IDENTITY, projectionMetadata: { ...STANDARD, mode } };
+      const result = await f.renderer.precompile(f.source, camera);
+      expect(result.compiledPrograms).toBeGreaterThan(0);
+      expect(f.renderer.device.getDepthConvention?.()).toMatchObject(mode === "reversed"
+        ? { mode, clearValue: 0, compare: "greater-equal", biasSign: -1 }
+        : { mode, clearValue: 1, compare: "less-equal", biasSign: 1, logRange: { near: 0.1, far: 100, kind: "perspective" } });
+      const sources = f.compile.mock.calls.map((call) => JSON.stringify(call[0]));
+      expect(sources.some((source) => source.includes("#define A3D_LOG_DEPTH 1"))).toBe(mode === "logarithmic");
+      // A later standard camera restores the standard convention.
+      await f.renderer.precompile(f.source, { viewProjectionMatrix: IDENTITY, projectionMetadata: STANDARD });
+      expect(f.renderer.device.getDepthConvention?.()).toMatchObject({ mode: "standard", clearValue: 1 });
+      expect(f.begin).not.toHaveBeenCalled();
+    } finally { f.dispose(); }
+  });
+
+  it("rejects logarithmic depth on WebGPU and without a finite near/far range before compilation", async () => {
+    const f = await fixture();
+    try {
+      await expect(f.renderer.precompile(f.source, { viewProjectionMatrix: IDENTITY,
+        projectionMetadata: { kind: "custom", mode: "logarithmic", clipRange: "minus-one-to-one" } })).rejects.toMatchObject({ code: "DEPTH_MODE_UNSUPPORTED" });
+      Object.defineProperty(f.renderer.device, "kind", { configurable: true, value: "webgpu" });
+      await expect(f.renderer.precompile(f.source, { viewProjectionMatrix: IDENTITY,
+        projectionMetadata: { ...STANDARD, mode: "logarithmic" } })).rejects.toThrow(/generated WebGPU programs do not write logarithmic/);
+      expect(f.collectRenderItems).not.toHaveBeenCalled();
+      expect(f.compile).not.toHaveBeenCalled();
+    } finally { f.dispose(); }
+  });
+
   it("checks the updated scene camera rather than its previous published metadata", async () => {
     const f = await fixture();
     const scene = new Scene();
@@ -52,9 +83,9 @@ describe("renderer depth preflight", () => {
     const collect = vi.spyOn(scene, "collectRenderables");
     try {
       expect(camera.projectionMetadata.mode).toBe("standard");
-      camera.depth = { mode: "reversed", clipRange: "minus-one-to-one" };
+      camera.depth = { mode: "standard", clipRange: "zero-to-one" };
       await expect(f.renderer.precompile(scene)).rejects.toMatchObject({ code: "DEPTH_MODE_UNSUPPORTED" });
-      expect(camera.projectionMetadata.mode).toBe("reversed");
+      expect(camera.projectionMetadata.clipRange).toBe("zero-to-one");
       expect(collect).not.toHaveBeenCalled();
       expect(f.compile).not.toHaveBeenCalled();
       expect(f.begin).not.toHaveBeenCalled();
@@ -106,13 +137,13 @@ describe("renderer depth preflight", () => {
     try {
       const left = new PerspectiveCamera();
       const right = new PerspectiveCamera();
-      right.depth = { mode: "reversed", clipRange: "minus-one-to-one" };
+      right.depth = { mode: "reversed", clipRange: "zero-to-one" };
       const views = [
         { camera: left, viewport: { x: 0, y: 0, width: 16, height: 16 } },
         { camera: right, viewport: { x: 16, y: 0, width: 16, height: 16 } }
       ];
       await expect(f.renderer.precompile({ source: f.source, views })).rejects.toMatchObject({ code: "DEPTH_MODE_UNSUPPORTED" });
-      expect(right.projectionMetadata.mode).toBe("reversed");
+      expect(right.projectionMetadata).toMatchObject({ mode: "reversed", clipRange: "zero-to-one" });
       expect(f.collectRenderItems).not.toHaveBeenCalled();
       expect(f.compile).not.toHaveBeenCalled();
       expect(f.begin).not.toHaveBeenCalled();
@@ -146,7 +177,7 @@ describe("renderer depth preflight", () => {
     const f = await fixture();
     try {
       const right = new PerspectiveCamera();
-      right.depth = { mode: "reversed", clipRange: "minus-one-to-one" };
+      right.depth = { mode: "reversed", clipRange: "zero-to-one" };
       const input = { source: f.source, views: [
         { camera: new PerspectiveCamera(), viewport: { x: 0, y: 0, width: 16, height: 16 } },
         { camera: right, viewport: { x: 16, y: 0, width: 16, height: 16 } }

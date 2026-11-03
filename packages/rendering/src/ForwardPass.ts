@@ -1,3 +1,4 @@
+import { remapDepthCompare, resolveDepthDrawState, type DepthConvention } from "./DepthConvention";
 import { Geometry } from "./Geometry";
 import { VertexBuffer } from "./VertexBuffer";
 import { IndexBuffer } from "./IndexBuffer";
@@ -43,7 +44,7 @@ import { VertexFormat } from "./VertexFormat";
 import { MAX_LIGHTS_PER_CLUSTER, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { allShaderFeatures, potentiallyActiveShaderFeatures, programCacheSlot, shaderFeaturesFor, type ProgramCacheLike, type ProgramFeatures, type ShaderFeature } from "./contracts/program";
 import { materialLobes, potentiallyActiveMaterialLobes } from "./contracts/materialLobes";
-import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
+import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
 import { weightedTransparencyIneligibility, type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency";
 import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram, withLiveAlphaCutoff } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, makeShaderFeatureReplayGuard, selectShaderFeatureBits, stockArrayMatches, stockFeatureVerifier } from "./program/FeatureSelect";
@@ -1385,6 +1386,7 @@ export class ForwardPass extends BaseRenderPass {
         || !forwardDrawProvidersSafe(flags) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
         || this.options.globalClipping || this.options.materialClippingFor || this.options.disableCombinedDraw
         || this.options.nativeDepthCoverage || this.options.shadowMap || this.options.photometricFrame || this.options.projectedSpotFrame
+        || (device.getDepthConvention?.()?.mode ?? "standard") !== "standard"
         || resolveContactShadowMask(this.contactMaskScope)
         || !staticUnlitItemSafe(first, generated) || !staticUnlitItemSafe(second, generated)
         || first.geometry !== second.geometry || first.material !== second.material
@@ -2158,6 +2160,20 @@ export class ForwardPass extends BaseRenderPass {
           // A reused graph shader must never retain the previous draw's groups.
           uniforms.set("u_a3dClipGroupCount", 0);
         }
+        const logDepth = device.getDepthConvention?.();
+        if (logDepth?.mode === "logarithmic") {
+          // Every draw of a logarithmic frame must write the same encoded
+          // fragment depth; a program that cannot would mis-order surfaces.
+          if (!generated || this.lastProgramFeatures?.features[PROGRAM_LOG_DEPTH_FEATURE] !== true
+            || !shader.reflection.uniforms.has("u_a3dLogDepthView") || !shader.reflection.uniforms.has("u_a3dLogDepthRange")) {
+            throw new RenderDeviceError("The selected shader does not write logarithmic fragment depth", "FORWARD_LOG_DEPTH_PROGRAM_UNSUPPORTED", { material: baseMaterial.name, label: item.label });
+          }
+          const view = this.spriteFrameCamera?.view ?? this.options.cameraViewMatrix;
+          const range = logDepth.logRange;
+          if (!view || !range) throw new RenderDeviceError("Logarithmic depth requires the frame view matrix and near/far range", "FORWARD_LOG_DEPTH_FRAME_UNAVAILABLE", { label: item.label });
+          uniforms.set("u_a3dLogDepthView", new Float32Array(toMat4Values(view, "cameraViewMatrix", item.label)));
+          uniforms.set("u_a3dLogDepthRange", [range.near, range.far]);
+        }
         if (advancedLighting) {
           // User hooks and geometry resolution can change attachments. Check
           // the ticket and certificate after them, directly before submission.
@@ -2361,7 +2377,7 @@ export class ForwardPass extends BaseRenderPass {
       const buffers = lease.upload();
       const vertexBuffer = buffers[0];
       if (!vertexBuffer) throw new RenderDeviceError("Point quad has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
-      device.drawNativePointQuads({ label: item.label, topology: "triangles", renderState: { ...material.renderState, cullMode: "none" },
+      device.drawNativePointQuads({ label: item.label, topology: "triangles", renderState: renderStateForDepthConvention({ ...material.renderState, cullMode: "none" }, device.getDepthConvention?.()),
         vertexBuffer, vertexBuffers: buffers, vertexFormat: lease.vertexFormat, vertexCount: lease.vertexCount, shader, uniforms },
       { lease, item, range, viewport });
     } finally {
@@ -2745,6 +2761,9 @@ export class ForwardPass extends BaseRenderPass {
     if (projected) selectedFeatures[PROJECTED_SPOT_FEATURE] = true;
     delete selectedFeatures[PROGRAM_CLIPPING_FEATURE];
     if (clipping && clipping.groups.length > 0) selectedFeatures[PROGRAM_CLIPPING_FEATURE] = true;
+    // The variant follows the active frame convention, never the material.
+    delete selectedFeatures[PROGRAM_LOG_DEPTH_FEATURE];
+    if (device.getDepthConvention?.()?.mode === "logarithmic") selectedFeatures[PROGRAM_LOG_DEPTH_FEATURE] = true;
     delete selectedFeatures["a3d.nativePrimitive"];
     const nativePrimitive = item && nativeUnlitPrimitiveForGeometry(item.geometry, device, mf.lighting);
     if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
@@ -2859,7 +2878,11 @@ export class ForwardPass extends BaseRenderPass {
     geometry: { readonly vertexBuffer: { readonly format: VertexFormat }; readonly topology?: RenderItem["geometry"]["topology"] },
     usesGeometryMatrix: boolean
   ): RenderPipeline {
-    const originalState = renderStateForItem(baseMaterial.renderState, item, usesGeometryMatrix);
+    const depthConvention = device.getDepthConvention?.();
+    const reversedDepth = depthConvention?.mode === "reversed";
+    const itemState = renderStateForItem(baseMaterial.renderState, item, usesGeometryMatrix);
+    // Material compares and offsets are authored in standard-depth terms.
+    const originalState = reversedDepth ? renderStateForDepthConvention(itemState, depthConvention) : itemState;
     const renderState = this.options.nativeDepthCoverage ? { ...originalState,
       colorAttachments: [undefined, { colorWrite: [true, false, false, false] as const, blendMode: "opaque" as const }] }
       : this.options.weightedTransparency ? { ...originalState, ...this.options.weightedTransparency.bindings.state } : originalState;
@@ -2868,7 +2891,7 @@ export class ForwardPass extends BaseRenderPass {
     const attrsId = ForwardPass.weakId(ForwardPass.requiredAttributeIds, () => ForwardPass.nextRequiredAttributeId++, baseMaterial.requiredAttributes);
     // `renderStateForItem` returns the SAME object for the unflipped case, so
     // the flip bit is the only per-item term needed in the key.
-    const key = `${shader.id}|${vertexFormatId}|${geometry.topology ?? "triangles"}|${renderStateId}:${originalState === baseMaterial.renderState ? 0 : 1}|${attrsId}|coverage:${this.options.nativeDepthCoverage ? 1 : 0}|weighted:${this.options.weightedTransparency?.phase ?? "none"}`;
+    const key = `${shader.id}|${vertexFormatId}|${geometry.topology ?? "triangles"}|${renderStateId}:${itemState === baseMaterial.renderState ? 0 : 1}|${attrsId}|coverage:${this.options.nativeDepthCoverage ? 1 : 0}|weighted:${this.options.weightedTransparency?.phase ?? "none"}|depth:${reversedDepth ? "reversed" : "standard"}`;
     let cache = ForwardPass.pipelineCaches.get(device);
     if (!cache) {
       cache = new Map();
@@ -3768,9 +3791,12 @@ function contactShadowLightIndex(scope: ContactShadowMaskScope | undefined, item
 function validateContactShadowReceiver(material: Material, index: number, scope: ContactShadowMaskScope | undefined): void {
   if (index < 0) return;
   const state = material.renderState;
-  const depthCompare = scope?.frame?.camera?.depth?.mode === "reversed" ? "greater-equal" : "less-equal";
+  // Receiver states are authored in standard-depth terms and remapped for a
+  // reversed frame exactly like the camera depth prepass.
+  const frameDepth = scope?.frame?.camera?.depth;
+  const depthCompare = frameDepth?.mode === "reversed" ? "greater-equal" : "less-equal";
   if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite
-    || (state.depthCompareV2 ?? state.depthCompare) !== depthCompare
+    || remapDepthCompare(state.depthCompareV2 ?? state.depthCompare, frameDepth) !== depthCompare
     || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null) {
     throw new RenderDeviceError("Contact shadows require an opaque receiver matching the camera depth prepass", "CONTACT_SHADOW_RECEIVER_DEPTH_UNSUPPORTED", { material: material.name });
   }
@@ -3997,6 +4023,11 @@ function supportsInstanceAttributes(shader: RenderShaderProgram): boolean {
   return shader.reflection.uniforms.has("u_instanceAttributeMode") &&
     shader.reflection.uniforms.has("u_instanceCount") &&
     INSTANCE_MATRIX_ATTRIBUTE_NAMES.every((name) => shader.reflection.attributes.has(name));
+}
+
+/** Map a standard-sense material state to the active frame convention (see `resolveDepthDrawState`). */
+export function renderStateForDepthConvention<T extends RenderState>(renderState: T, convention: Pick<DepthConvention, "mode"> | undefined): T {
+  return resolveDepthDrawState(renderState, convention);
 }
 
 function renderStateForItem(renderState: RenderState, item: RenderItem, usesGeometryMatrix: boolean): RenderState {

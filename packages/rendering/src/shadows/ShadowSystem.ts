@@ -13,6 +13,7 @@
  * pass multiplies world positions by before comparing.
  */
 
+import { withStandardDeviceDepth } from "../renderer/FrameDepthConvention";
 import type { ShadowPcfTapTier } from "./ShadowFilterTier";
 import { DepthPass, assertStableDepthClippingInputs, depthAlphaVariantForItem, type PreparedDepthPlan } from "../DepthPass";
 import { RenderDeviceError, type RenderDevice, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
@@ -253,8 +254,11 @@ export class Prd02ShadowSystem {
     const prepared = this.prepareShadowFrame(casters, resolve, cameraPosition, frame.timeSeconds, skip);
     let uniforms: Prd02ShadowFrameUniforms;
     try {
-      this.renderCascades(casters, resolve, cameraPosition, frame.timeSeconds, skip, prepared);
-      this.renderAtlas(casters, resolve, cameraPosition, frame.timeSeconds, prepared);
+      // Light depth stays standard inside reversed/logarithmic camera frames.
+      withStandardDeviceDepth(this.device, () => {
+        this.renderCascades(casters, resolve, cameraPosition, frame.timeSeconds, skip, prepared);
+        this.renderAtlas(casters, resolve, cameraPosition, frame.timeSeconds, prepared);
+      });
       uniforms = this.frameUniforms();
     } catch (error) {
       try { disposePreparedShadowDraws(prepared?.all ?? []); }
