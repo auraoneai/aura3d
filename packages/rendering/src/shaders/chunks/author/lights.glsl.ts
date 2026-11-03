@@ -95,7 +95,9 @@ vec3 a3dDirect(vec3 N, vec3 V, vec3 albedo, float roughness, vec3 worldPos) {
         vec3 delta = samplePosition - worldPos;
         float distanceToLight = length(delta);
         vec3 l = distanceToLight > 0.0001 ? delta / distanceToLight : -axis;
-        float window = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / positionRange.w, 4.0), 0.0, 1.0);
+        float areaRatio = distanceToLight / max(positionRange.w, 0.0001);
+        float areaRatio2 = areaRatio * areaRatio;
+        float window = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - areaRatio2 * areaRatio2, 0.0, 1.0);
         float geometry = width * height * 0.25 * abs(dot(axis, -l)) * window * window / max(distanceToLight * distanceToLight, 0.01);
         total += a3dDirectLight(N, V, l, colorIntensity.rgb * colorIntensity.a * geometry, albedo, roughness);
       }

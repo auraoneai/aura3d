@@ -41,6 +41,34 @@ export interface SourceCandidateReview {
   readonly note: string;
 }
 
+/**
+ * A reviewed disposition for a whole class of candidates that is independent of
+ * the file it appears in: a standardized-equation id (the pattern matches only
+ * the published constants themselves) or a reviewer-supplied fingerprint id.
+ * Matching is exact on kind and detail; any other class stays unreviewed.
+ */
+export interface SourceCandidateClassReview {
+  readonly kind: "standardized-equation" | "fingerprint";
+  readonly detail: string;
+  readonly disposition: CandidateDisposition;
+  readonly reviewer: string;
+  readonly note: string;
+}
+
+/** Shape of docs/prds/aura3d-native-provenance-record.json: path records plus the reserved class-review key. */
+export const CANDIDATE_CLASS_REVIEWS_KEY = "$candidateClassReviews";
+
+/** Split a provenance record document into digest-bound file records and class reviews. */
+export function parseProvenanceRecord(document: unknown): {
+  provenance: Record<string, SourceProvenance>; classReviews: SourceCandidateClassReview[];
+} {
+  if (!document || typeof document !== "object" || Array.isArray(document)) throw new Error("Provenance must be a path-to-record object");
+  const { [CANDIDATE_CLASS_REVIEWS_KEY]: classReviews, ...provenance } = document as Record<string, unknown>;
+  if (Object.keys(provenance).some((path) => path.startsWith("$"))) throw new Error("Unknown reserved provenance record key");
+  return { provenance: provenance as Record<string, SourceProvenance>,
+    classReviews: classReviews === undefined ? [] : validateClassReviews(classReviews) };
+}
+
 export interface SourceEntry {
   readonly path: string;
   readonly bytes: Uint8Array;
@@ -62,6 +90,8 @@ export interface SourceEvidenceOptions {
   readonly prohibitedPackages?: readonly string[];
   readonly fingerprints?: readonly SourceFingerprint[];
   readonly provenance?: Readonly<Record<string, SourceProvenance>>;
+  /** Reviewed equation/fingerprint classes; see SourceCandidateClassReview. */
+  readonly classReviews?: readonly SourceCandidateClassReview[];
 }
 
 export interface SourceEvidenceFile {
@@ -91,6 +121,13 @@ export interface SourceCandidateReviewSummary {
   readonly reviewed: number;
   readonly unreviewed: number;
   readonly byDisposition: Readonly<Partial<Record<CandidateDisposition, number>>>;
+  /**
+   * Unreviewed candidates inside the reviewed scope: every standardized-equation
+   * and fingerprint candidate, and every candidate in a file that carries a
+   * digest-bound provenance record. Any entry here is a new, unreviewed
+   * candidate and fails the source audit.
+   */
+  readonly gatedUnreviewed: number;
 }
 
 export interface SourceEvidenceReport {
@@ -261,18 +298,24 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
   if (!Array.isArray(prohibited) || prohibited.some((name) => typeof name !== "string" || !name || name.length > 200)) throw new Error("Invalid prohibited package name");
   let virtualCount = 0;
   const reviews = new Map<string, readonly SourceCandidateReview[]>();
+  const recorded = new Set<string>();
+  const classReviews = options.classReviews === undefined ? [] : validateClassReviews(options.classReviews);
   for (const entry of entries) inspect(entry, 0);
+  let gatedUnreviewed = 0;
   for (let index = 0; index < findings.length; index += 1) {
     const finding = findings[index]!;
-    const review = reviews.get(finding.path)?.find((item) => item.kind === finding.kind && (item.detail === undefined || item.detail === finding.detail));
+    const review = reviews.get(finding.path)?.find((item) => item.kind === finding.kind && (item.detail === undefined || item.detail === finding.detail)) ??
+      classReviews.find((item) => item.kind === finding.kind && item.detail === finding.detail);
     if (review) findings[index] = { ...finding, review: { disposition: review.disposition, reviewer: review.reviewer, note: review.note } };
+    else if (finding.kind === "standardized-equation" || finding.kind === "fingerprint" ||
+        recorded.has(finding.path) || recorded.has(finding.path.split("#", 1)[0]!)) gatedUnreviewed += 1;
   }
   const byDisposition: Partial<Record<CandidateDisposition, number>> = {};
   for (const finding of findings) if (finding.review) byDisposition[finding.review.disposition] = (byDisposition[finding.review.disposition] ?? 0) + 1;
   const reviewedCount = findings.filter((finding) => finding.review).length;
   return {
     schema: "aura3d.native-source-evidence/1", files, findings,
-    candidateReview: { candidates: findings.length, reviewed: reviewedCount, unreviewed: findings.length - reviewedCount, byDisposition },
+    candidateReview: { candidates: findings.length, reviewed: reviewedCount, unreviewed: findings.length - reviewedCount, byDisposition, gatedUnreviewed },
     limitations: [
       "Text, import, source-map and supplied fingerprint matches are review candidates; neither a match nor its absence proves authorship or copying.",
       "Only selected source paths, checked alias targets and supplied packed payloads are inspected; generated build outputs, installed packages and network activity need their own supplied evidence.",
@@ -283,8 +326,9 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
       "Percent-encoded non-source-map data URLs and dynamically constructed payloads are not decoded; inspect their actual bytes separately.",
       "License, copyright, attribution and bundled-source references are review candidates, not verified ownership or license determinations.",
       "License, owner, replacement status and review evidence are unverified unless explicitly supplied and bound to the current file digest.",
-      "Standardized-equation matches mark published formulas and constants that independent implementations share; they are review candidates, and only a recorded human disposition classifies them.",
-      "Candidate dispositions are human judgements bound to the reviewed file digest; the scanner applies but never infers them."
+      "Standardized-equation matches mark published formulas and constants that independent implementations share; they are review candidates, and only a recorded reviewer disposition classifies them.",
+      "Candidate dispositions are recorded reviewer judgements (human, or agent under recorded owner delegation) bound to the reviewed file digest or to an exact equation/fingerprint class; the scanner applies but never infers them.",
+      "Unreviewed standardized-equation or fingerprint candidates, and unreviewed candidates in files with a provenance record, are new review items and fail the source audit."
     ]
   };
 
@@ -300,6 +344,7 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
       throw new Error(`Invalid provenance record for ${entry.path}`);
     }
     if (supplied && supplied.sha256 !== sha256) throw new Error(`Stale provenance digest for ${entry.path}`);
+    if (supplied) recorded.add(entry.path);
     if (supplied && (!Array.isArray(supplied.reviewEvidence) || !supplied.reviewEvidence.every((item) => typeof item === "string" && item.trim().length > 0) ||
         (supplied.owner !== null && (typeof supplied.owner !== "string" || !supplied.owner.trim())) ||
         (supplied.license !== null && (typeof supplied.license !== "string" || !supplied.license.trim())) ||
@@ -581,6 +626,22 @@ function findReferences(path: string, text: string, prohibited: readonly string[
       findings.push({ path, kind: "package-import", detail: specifier, line: line(match.index) });
     }
   }
+}
+
+function validateClassReviews(value: unknown): SourceCandidateClassReview[] {
+  if (!Array.isArray(value)) throw new Error("Candidate class reviews must be an array");
+  const seen = new Set<string>();
+  return value.map((review: SourceCandidateClassReview) => {
+    if (!review || typeof review !== "object" || (review.kind !== "standardized-equation" && review.kind !== "fingerprint") ||
+        typeof review.detail !== "string" || !review.detail || !dispositions.includes(review.disposition) ||
+        typeof review.reviewer !== "string" || !review.reviewer.trim() || typeof review.note !== "string" || !review.note.trim()) {
+      throw new Error("Invalid candidate class review");
+    }
+    const key = `${review.kind}\0${review.detail}`;
+    if (seen.has(key)) throw new Error(`Duplicate candidate class review: ${review.detail}`);
+    seen.add(key);
+    return review;
+  });
 }
 
 function validateFingerprints(fingerprints: readonly SourceFingerprint[]): { id: string; sha256?: string; text?: string; bytes?: Buffer }[] {

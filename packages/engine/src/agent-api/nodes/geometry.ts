@@ -16,7 +16,7 @@ import {
 } from "../RootGeometry.js";
 import { convexParityMesh, edgesParityMesh, wireframeParityMesh, type ConvexPointInput } from "@aura3d/rendering";
 import { buildUVAtlas } from "../geometry/UVAtlas.js";
-import { primitive } from "./primitives.js";
+import { PRIMITIVE_OPTION_KEYS, primitive } from "./primitives.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
 
@@ -28,7 +28,10 @@ export const geometry = lazyNamespace(() => ({
    * can request normalized conversion before they reach the shader.
    */
   define: defineAuraCustomGeometry,
-  custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) }),
+  // S5-WP19-04: the positional spec is the geometry; an untyped `geometry` option would be overwritten, so it is reported as OPTION_IGNORED.
+  custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) }, {
+    builder: "geometry.custom", validKeys: PRIMITIVE_OPTION_KEYS.filter((key) => key !== "geometry"), options
+  }),
   /**
    * threejs-parity SG-05 (L2-03): typed-array dynamic geometry — `geometry.dynamic`
    * validates + tags the spec so `handle.setGeometry(spec)`/`updateAttribute`

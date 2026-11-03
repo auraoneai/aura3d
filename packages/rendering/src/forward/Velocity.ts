@@ -38,6 +38,27 @@ interface VelocityDrawContext {
   readonly reactive: number;
   readonly owner: VelocityHistory;
   readonly mrtWritable: boolean;
+  /** Previous pose inputs, independent of the MRT item fields. */
+  readonly previousMorph?: Float32Array;
+  readonly previousInstances?: Float32Array;
+  readonly previousJoints?: Float32Array;
+  /** True when a deformed or instanced object has history but no pose correspondence. */
+  readonly poseUnavailable: boolean;
+}
+
+/**
+ * Previous-pose inputs of one prepared draw, for a renderer-owned motion pass.
+ * Only a draw prepared by a live history for its current frame has them.
+ */
+export interface VelocityMotionInputs {
+  readonly objectKey: TemporalIdentity;
+  readonly matrices: TemporalCameraMatrices;
+  readonly model: Float32Array;
+  readonly previousModel: Float32Array;
+  readonly previousMorphWeights?: Float32Array;
+  readonly previousInstanceTransforms?: Float32Array;
+  readonly previousJointMatrices?: Float32Array;
+  readonly poseUnavailable: boolean;
 }
 const velocityContext: unique symbol = Symbol("aura.velocity.draw");
 
@@ -50,6 +71,8 @@ export const VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES = [
 interface PoseState {
   readonly morph?: Float32Array;
   readonly instances?: Float32Array;
+  /** Skinning joint palette (column-major mat4 per joint). */
+  readonly joints?: Float32Array;
 }
 
 function finiteArray(value: Float32Array | readonly number[], name: string): Float32Array {
@@ -95,6 +118,10 @@ function matrix(value: Float32Array | readonly number[]): Float32Array {
  */
 export class VelocityHistory implements TemporalHistoryLike {
   private previousViewProjection?: Float32Array;
+  // The physical projection of the committed frame, so a motion producer can
+  // recover previous view-space depth exactly (any depth convention).
+  private previousProjection?: Float32Array;
+  private preparedProjection?: Float32Array;
   private previousModels = new Map<TemporalIdentity, Float32Array>();
   private framePreviousModels = new Map<TemporalIdentity, Float32Array>();
   private pendingModels = new Map<TemporalIdentity, Float32Array>();
@@ -113,16 +140,18 @@ export class VelocityHistory implements TemporalHistoryLike {
   private currentCoverage: VelocityCoverage = emptyCoverage();
   private preparedJitter: readonly [number, number] = [0, 0];
 
-  prepare(viewProjection: Float32Array, jitter: readonly [number, number], frameId?: TemporalFrameId): TemporalCameraMatrices {
+  prepare(viewProjection: Float32Array, jitter: readonly [number, number], frameId?: TemporalFrameId, projection?: Float32Array | readonly number[]): TemporalCameraMatrices {
     const [jitterX, jitterY] = jitter;
+    const projectionCopy = projection === undefined ? undefined : matrix(projection);
     if (!Number.isFinite(jitterX) || !Number.isFinite(jitterY)) throw new RangeError("Temporal jitter must be finite");
     if (typeof frameId === "number" && !Number.isFinite(frameId)) throw new RangeError("Temporal frame ID must be finite");
     const vp = matrix(viewProjection);
     const implicit = frameId === undefined;
     const nextFrame = frameId ?? Symbol("aura.velocity.frame");
     if (nextFrame === this.activeFrame && this.prepared) {
-      if (!sameMatrix(this.prepared.unjittered, vp) || this.preparedJitter[0] !== jitterX || this.preparedJitter[1] !== jitterY) {
-        throw new RangeError("A temporal frame cannot use different view-projection matrices or jitter");
+      if (!sameMatrix(this.prepared.unjittered, vp) || this.preparedJitter[0] !== jitterX || this.preparedJitter[1] !== jitterY
+        || !sameOptional(this.preparedProjection, projectionCopy)) {
+        throw new RangeError("A temporal frame cannot use different view-projection matrices, projection or jitter");
       }
       return this.prepared;
     }
@@ -149,13 +178,19 @@ export class VelocityHistory implements TemporalHistoryLike {
     this.currentCoverage = emptyCoverage();
     this.preparedJitter = [jitterX, jitterY];
     const previous = new Float32Array(this.previousViewProjection ?? vp);
+    this.preparedProjection = projectionCopy;
+    // A first frame (or one after a reset) reprojects through itself.
+    const previousProjection = this.previousViewProjection ? this.previousProjection : projectionCopy;
     // Retain the same frame handle across passes, but never expose the arrays
     // used for its baseline or the next commit to callers or uniform hooks.
-    this.prepared = Object.freeze({
+    const prepared: TemporalCameraMatrices = {
       get jittered() { return new Float32Array(jittered); },
       get unjittered() { return new Float32Array(vp); },
       get previous() { return new Float32Array(previous); }
-    });
+    };
+    if (projectionCopy) Object.defineProperty(prepared, "projection", { enumerable: true, get: () => new Float32Array(projectionCopy) });
+    if (previousProjection) Object.defineProperty(prepared, "previousProjection", { enumerable: true, get: () => new Float32Array(previousProjection) });
+    this.prepared = Object.freeze(prepared);
     return this.prepared;
   }
 
@@ -171,10 +206,12 @@ export class VelocityHistory implements TemporalHistoryLike {
     if (priorPending && !sameMatrix(priorPending, model)) throw new RangeError("A temporal object key has conflicting transforms within one frame");
     const pose: PoseState = {
       ...(item.morphTargets?.length && item.morphWeights ? { morph: finiteArray(item.morphWeights, "morph weights") } : {}),
-      ...(item.instanceTransforms?.length ? { instances: finiteArray(item.instanceTransforms, "instance transforms") } : {})
+      ...(item.instanceTransforms?.length ? { instances: finiteArray(item.instanceTransforms, "instance transforms") } : {}),
+      ...(item.skinning?.matrices.length ? { joints: finiteArray(item.skinning.matrices, "joint matrices") } : {})
     };
     const priorPose = this.pendingPoses.get(key);
-    if (priorPose && (!sameOptional(priorPose.morph, pose.morph) || !sameOptional(priorPose.instances, pose.instances))) {
+    if (priorPose && (!sameOptional(priorPose.morph, pose.morph) || !sameOptional(priorPose.instances, pose.instances)
+      || !sameOptional(priorPose.joints, pose.joints))) {
       throw new RangeError("A temporal object key has conflicting deformation or instance state within one frame");
     }
     if (priorPending) {
@@ -226,6 +263,14 @@ export class VelocityHistory implements TemporalHistoryLike {
       // A changed instance count has no per-instance correspondence.
       poseUnavailable ||= supplied === undefined && history === undefined && baseline !== undefined;
     }
+    // The previous joint palette, for producers that deform on the CPU or in
+    // their own program (the MRT program reads the previous palette texture).
+    let previousJoints: Float32Array | undefined;
+    if (pose.joints) {
+      const history = prior?.joints?.length === pose.joints.length ? prior.joints : undefined;
+      previousJoints = history ?? pose.joints;
+      poseUnavailable ||= history === undefined && item.previousJointTexture === undefined && baseline !== undefined;
+    }
     // Eight-influence skinning already uses every portable attribute slot.
     const instanceSlots = Boolean(previousInstances) && !item.skinning?.extraInfluences;
     const deformed = Boolean(item.skinning || item.morphTargets?.length || item.instanceTransforms?.length);
@@ -242,7 +287,11 @@ export class VelocityHistory implements TemporalHistoryLike {
           !(VELOCITY_PREVIOUS_INSTANCE_ATTRIBUTES as readonly string[]).includes(attribute.shaderName)), ...instanceColumns(previousInstances!)] }
         : {}),
       [velocityContext]: {
-        matrices: this.prepared, objectKey: key, previousModel: new Float32Array(baseline ?? model), reactive, owner: this, mrtWritable
+        matrices: this.prepared, objectKey: key, previousModel: new Float32Array(baseline ?? model), reactive, owner: this, mrtWritable,
+        poseUnavailable,
+        ...(previousMorph ? { previousMorph: new Float32Array(previousMorph) } : {}),
+        ...(previousInstances ? { previousInstances: new Float32Array(previousInstances) } : {}),
+        ...(previousJoints ? { previousJoints: new Float32Array(previousJoints) } : {})
       }
     } as ContextItem;
   }
@@ -255,6 +304,7 @@ export class VelocityHistory implements TemporalHistoryLike {
   commit(frameId: TemporalFrameId | undefined = this.activeFrame): void {
     if (frameId === undefined || frameId !== this.activeFrame || frameId === this.committedFrame || !this.prepared) return;
     this.previousViewProjection = new Float32Array(this.prepared.unjittered);
+    this.previousProjection = this.preparedProjection ? new Float32Array(this.preparedProjection) : undefined;
     this.previousModels = new Map(this.pendingModels);
     this.previousPoses = new Map(this.pendingPoses);
     this.committedFrame = frameId;
@@ -270,6 +320,7 @@ export class VelocityHistory implements TemporalHistoryLike {
     this.counted.clear();
     this.activeFrame = undefined;
     this.prepared = undefined;
+    this.preparedProjection = undefined;
     this.implicit = false;
     this.preparedJitter = [0, 0];
     this.currentCoverage = emptyCoverage();
@@ -277,6 +328,8 @@ export class VelocityHistory implements TemporalHistoryLike {
   }
   reset(_reason: TemporalResetReason): void {
     this.previousViewProjection = undefined;
+    this.previousProjection = undefined;
+    this.preparedProjection = undefined;
     this.previousModels.clear();
     this.framePreviousModels.clear();
     this.pendingModels.clear();
@@ -309,6 +362,20 @@ export function postVelocityCoverage(item?: RenderItem): VelocityCoverage {
   return context
     ? { ...context.owner.coverage, available: true }
     : { ...emptyCoverage(), available: false };
+}
+/** Previous-pose inputs of a draw prepared for the current frame, else undefined. */
+export function velocityMotionInputs(item: RenderItem): VelocityMotionInputs | undefined {
+  const context = currentVelocityContext(item);
+  if (!context) return undefined;
+  return {
+    objectKey: context.objectKey, matrices: context.matrices,
+    model: item.modelMatrix ? matrix(item.modelMatrix) : identity(),
+    previousModel: new Float32Array(context.previousModel),
+    poseUnavailable: context.poseUnavailable,
+    ...(context.previousMorph ? { previousMorphWeights: new Float32Array(context.previousMorph) } : {}),
+    ...(context.previousInstances ? { previousInstanceTransforms: new Float32Array(context.previousInstances) } : {}),
+    ...(context.previousJoints ? { previousJointMatrices: new Float32Array(context.previousJoints) } : {})
+  };
 }
 export function velocityFramePrepared(item?: RenderItem): boolean {
   return Boolean(currentVelocityContext(item)?.mrtWritable);

@@ -212,8 +212,17 @@ describe("shared parsed GLB reuse in loadProductionGLTFRenderPipeline", () => {
       const baseColor = material.getParameter("u_baseColor") as readonly number[] | undefined;
       expect(baseColor?.[0]).not.toBe(0.1);
     }
-    // The shared parse itself stayed untouched by the per-pipeline scene writes.
-    expect(first.resources.scene.collectRenderables().length).toBe(second.resources.scene.collectRenderables().length);
+    // The shared parse itself stayed untouched by the per-pipeline scene writes. collectRenderables
+    // prunes hidden ancestry (5.0 SceneQuery contract), so the hidden first root yields none while
+    // both scenes keep the same renderable structure.
+    const renderableNodes = (pipeline: typeof first): number => {
+      let count = 0;
+      pipeline.resources.scene.root.traverse((node) => { if (node.renderable) count += 1; });
+      return count;
+    };
+    expect(first.resources.scene.collectRenderables()).toHaveLength(0);
+    expect(renderableNodes(first)).toBe(second.resources.scene.collectRenderables().length);
+    expect(renderableNodes(second)).toBe(second.resources.scene.collectRenderables().length);
     first.dispose();
     second.dispose();
   });

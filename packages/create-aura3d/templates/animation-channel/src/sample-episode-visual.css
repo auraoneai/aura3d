@@ -16,7 +16,6 @@ body {
   inset: 0;
   z-index: 5;
   opacity: 0.96;
-  pointer-events: none;
 }
 
 #app canvas {

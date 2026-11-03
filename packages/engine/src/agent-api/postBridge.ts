@@ -1066,6 +1066,14 @@ interface RgbLike { readonly r: number; readonly g: number; readonly b: number }
 
 function rgbField(node: AuraEffectNode, field: string, fallback: RgbLike): RgbLike {
   const value = (node as unknown as Record<string, unknown>)[field];
+  // S5-WP19-04: the builders accept `AuraColor` strings ("#rrggbb"); the
+  // bridge previously read only arrays/objects, so a string bloom/vignette/
+  // volumetric colour silently fell back. Parse it exactly as the runtime
+  // `handle.set({ color })` patch path does.
+  if (typeof value === "string" && value.trim()) {
+    const [r, g, b] = colorToRgba(value);
+    return { r, g, b };
+  }
   if (Array.isArray(value) && value.length >= 3) {
     return { r: Number(value[0]), g: Number(value[1]), b: Number(value[2]) };
   }

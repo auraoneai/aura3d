@@ -103,6 +103,19 @@ const unwrapAngles = (angles: number[]): number[] => {
   return e;
 };
 
+/**
+ * The original's tangent: a central difference of +-1e-4 in curve parameter, clamped to [0, 1] even on this closed
+ * loop (so it is one-sided at the seam). The engine's `getTangent` wraps periodic curves at the seam instead; the
+ * port keeps the original's sampling so the track fingerprint matches. Only the direction is used, so the
+ * difference is returned unnormalized.
+ */
+function originalTangentAt(curve: CatmullRomCurve3, u: number): { readonly x: number; readonly z: number } {
+  const t = curve.getUtoTmapping(u);
+  const a = curve.getPoint(Math.max(0, t - 0.0001));
+  const b = curve.getPoint(Math.min(1, t + 0.0001));
+  return { x: b.x - a.x, z: b.z - a.z };
+}
+
 function smoothAndRefit(curve: CatmullRomCurve3, cfg: Smoothing): CatmullRomCurve3 {
   const samples = cfg.samples;
   const win = cfg.window;
@@ -193,7 +206,7 @@ export class Track {
     for (let h = 0; h < l; h++) {
       const u = h / l;
       const p = curve.getPointAt(u);
-      const t = curve.getTangentAt(u);
+      const t = originalTangentAt(curve, u);
       // original: tangent.y = 0; tangent.normalize()
       const mag = Math.hypot(t.x, t.z) || 1;
       cx.push(p.x);

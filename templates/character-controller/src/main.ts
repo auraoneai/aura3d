@@ -126,16 +126,10 @@ controllerGame.start();
 const heroNode: AuraRuntimeNodeHandle = app.nodes.require("hero");
 // F-08-1/C-10: the shoulder rig owns the presented camera and damps through
 // world collision (flag-off mounts the no-op stub controller; the authored
-// perspective spec stays the fallback). Right-half drag binds an orbit rig's
-// pointer handler for look input (no-op while rigs resolve to stubs).
+// perspective spec stays the fallback). No DOM layer covers the canvas: the
+// former right-half "look pad" bound an orbit rig that was never presented and
+// whose `bindPointer` does not exist, so it only swallowed canvas pointer input.
 app.camera?.use(camera.rigs.shoulder({ target: "hero", collision: true }));
-const orbit = camera.rigs.orbit({ target: "hero" });
-const lookPad = document.createElement("div");
-lookPad.id = "look-pad";
-lookPad.setAttribute("style", "position:fixed;right:0;top:0;width:50%;height:100%;touch-action:none;");
-document.body.appendChild(lookPad);
-const orbitPointer = (orbit as { bindPointer?: (el: HTMLElement) => void }).bindPointer;
-if (orbitPointer) orbitPointer.call(orbit, lookPad);
 const feel = gameFeel.create({ app, time: app.time });
 app.feel?.preset("platformer");
 

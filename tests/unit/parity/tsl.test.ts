@@ -307,11 +307,21 @@ describe("material.node GLSL emission", () => {
     expect(a.uniforms.map((u) => u.name)).toEqual(["tslUniform0", "tslUniform1", "tslUniform2"]);
   });
 
-  it("rejects unsupported outputs, the WGSL backend, bad types and duplicate uniform names", () => {
-    expect(codeOf(() => material.node({ normalNode: tsl.normalWorld }))).toBe("tsl-unsupported-output");
-    expect(codeOf(() => material.node({ roughnessNode: tsl.float(0.5) }))).toBe("tsl-unsupported-output");
-    expect(codeOf(() => material.node({ metalnessNode: tsl.float(1) }))).toBe("tsl-unsupported-output");
-    expect(codeOf(() => material.node({ backend: "wgsl", colorNode: tsl.color("#fff") }))).toBe("tsl-requires-glsl-backend");
+  it("routes normal/roughness/metalness outputs and the WGSL backend to the shader graph; rejects bad types and duplicate uniform names", () => {
+    // 5.0: material.node sends these through migrateTslShaderGraph +
+    // shaderGraphMaterial (packages/engine/src/agent-api/nodes/material.ts),
+    // which emits paired GLSL and WGSL stages instead of rejecting them.
+    for (const options of [
+      { normalNode: tsl.normalWorld },
+      { roughnessNode: tsl.float(0.5) },
+      { metalnessNode: tsl.float(1) },
+      { backend: "wgsl" as const, colorNode: tsl.color("#fff") }
+    ]) {
+      const spec = material.node(options) as { kind?: string; custom?: { glsl?: { fragment?: string }; wgsl?: { fragment?: string } } };
+      expect(spec.kind).toBe("custom");
+      expect(typeof spec.custom?.glsl?.fragment).toBe("string");
+      expect(typeof spec.custom?.wgsl?.fragment).toBe("string");
+    }
     expect(codeOf(() => material.node({ colorNode: tsl.float(1) }))).toBe("tsl-type-mismatch");
     expect(codeOf(() => material.node({ opacityNode: tsl.vec3(1, 1, 1) }))).toBe("tsl-type-mismatch");
     expect(codeOf(() => material.node({ positionNode: tsl.uv() }))).toBe("tsl-type-mismatch");

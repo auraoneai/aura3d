@@ -125,6 +125,8 @@ export interface AuraRuntimeNodeImportedAssetEvidence {
   readonly activeMorphTargets: RuntimeNodeMorphTargetWeights;
   readonly missingMorphTargets: readonly string[];
   readonly bounds?: AuraRuntimeNodeBounds | undefined;
+  /** Posed (skinned) world bounds; opt-in via the `aura:evidence-deformed-bounds` runtime tag. */
+  readonly deformedBounds?: AuraRuntimeNodeBounds | undefined;
   readonly renderItemCount: number;
   readonly skinnedRenderItemCount: number;
   readonly morphRenderItemCount: number;
@@ -158,6 +160,7 @@ export interface AuraRuntimeNodeImportedAssetEvidenceInput {
   readonly activeMorphTargets?: RuntimeNodeMorphTargetWeights | undefined;
   readonly missingMorphTargets?: readonly string[] | undefined;
   readonly bounds?: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput | undefined;
+  readonly deformedBounds?: AuraRuntimeNodeBounds | undefined;
   readonly renderItemCount?: number | undefined;
   readonly skinnedRenderItemCount?: number | undefined;
   readonly morphRenderItemCount?: number | undefined;

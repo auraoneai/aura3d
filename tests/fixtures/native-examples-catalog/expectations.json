@@ -16,7 +16,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
       ],
       "regions": [
@@ -49,7 +49,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
       ],
       "regions": [
@@ -82,7 +82,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
       ],
       "regions": [
@@ -115,7 +115,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
       ],
       "regions": [
@@ -148,10 +148,10 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" },
-        { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "ae55fd043e9d6d5b379fd8cf7bcdf24b69c50a2d81df6a07a84afe359fd90b8f" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "48ec2c773cf9a2c3c522a164247578cb2d01cc24270fe47b8e00d938642bb757" },
+        { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "bc9a4a103db6c38d9d1e04dcf88313367ecf17784c4789a6bb49d996a55deb0f" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -184,7 +184,7 @@
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
         { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
-        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779" }
+        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b" }
       ],
       "regions": [
         {
@@ -321,7 +321,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
         }
       ],
       "regions": [
@@ -612,7 +612,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
-        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
       ],
       "regions": [
@@ -842,7 +842,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -904,7 +904,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -978,7 +978,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/GameRuntimeCore.ts",
-          "sha256": "91d6c223f14e7586261f3dc339bac05936c8bbcf8ca54126753ac6292d0275b1"
+          "sha256": "c3b3634dc797f2d56d71fa084a0362a66b2c7fdf654d271bed091596c83072a5"
         },
         {
           "path": "packages/engine/src/agent-api/vehicle/BicycleModel.ts",
@@ -990,11 +990,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/rigs/chase.ts",
-          "sha256": "e40ec570877700846f17a51b4748bdbce6866ab8cf1a16d026736ceac0f9b23a"
+          "sha256": "ea0f6f657e991ddb31415662a3a16d84798654a9bfc7db19ec271b5966121908"
         },
         {
           "path": "packages/engine/src/agent-api/camera/rigs/rigUtils.ts",
-          "sha256": "499e1fcbf0d6e20e07e54bb323c7b5acfb3443dd76358406d96bb9fc9baa58b0"
+          "sha256": "92e07c2c6caee135e31a5d781d8c835fe581f6f7a66fc1904ac4b6189c0e3531"
         },
         {
           "path": "packages/engine/src/agent-api/camera/Spring.ts",
@@ -1014,7 +1014,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "f483ffff016fa757fe234ffc7951b1a2ef1da79236b82b1998d4fb28a9a78c71"
+          "sha256": "f68722a23e45f4ce4b4f02103ef2e70efca3a2b7fbf62034ce1dc1bfff5933ba"
         },
         {
           "path": "packages/rendering/src/contracts/flags.state.ts",
@@ -1030,19 +1030,19 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "af374ce2b2b06ddded5d2e931517a73842037309fc765b5c466245c5a93a39d4"
+          "sha256": "f7e4dec31c3745a9c7dfe5d5de5689071102d228069e4d057cbe344b5d0f354f"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "319447e7f43b5cf592841e9aba3f5bf63e76daef523257cca589d404f1d56792"
+          "sha256": "6d99b522427faaa37601b36dddb516eb6cd119a899e742b9242224d3e66dd918"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
-          "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6"
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
         },
         {
           "path": "packages/engine/src/agent-api/sceneGraph.ts",
-          "sha256": "2e84808adb109057c1a332cdb58315102358ba4d41054f26270aacfd3145f17c"
+          "sha256": "76c796b842540adc5edabba8b9fa7e4c12bf1a36a209495e3b54a61623923bd3"
         },
         {
           "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
@@ -1058,7 +1058,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
-          "sha256": "ce9e44b4ad1ad5f9ac5d010d0a7aa3d63e3273abc0458d12d7893b6464a7a207"
+          "sha256": "4b455e1eba2ffa8eb34cafac39e2588f6e73440731fac40150f3cf34f736d572"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/geometry.ts",
@@ -1066,27 +1066,27 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "9b4e26bc6d3b75a03d236cdae2575f4f310caa871d3361f77b6fa14d91e1e09e"
+          "sha256": "f5867330c157af0140e71158ca5faea95951fd5d8ccb7c0c8d7633ef5eca1390"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
-          "sha256": "9e52dc612d62e89abd1f0b8d269420a188774c68a701630f1e9cfdaec409ddcf"
+          "sha256": "901afb0a16c3e4c97f75f5252de3e2b1eacd9bb15a9e9b0dcad882ab7ffc8fa1"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "f3bc1195451b6259eda829ff2f68075c472fce1d69404557a4b404eebe04d08e"
+          "sha256": "5b42d4b969c7f8346604822328b7a17ed5435086919441d62c23c6a5e6971195"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "58355fdd61d9b6421c88c38466cdd639a23328d9ab51d8441a058de01327576c"
+          "sha256": "f6618d83389f2bb364622c8067b997abb2bdd434ee94f03660a946766eb67962"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "26d7fd945c4664c0e3e55872b0e55b8eb856c89cfee55e9d2b2f185db788c316"
+          "sha256": "74a4b73b6589a9409d1be42491ae454ec6f947596565d94754aa899191551969"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
-          "sha256": "fba0ec744e9658abcfab8734ad1f13f5ffd823570e347397bbb00ee09457c0d7"
+          "sha256": "fbcf9185d34e01fb78eeab222cf2aba97a32c7098b3b964748d6cb9a15838509"
         },
         {
           "path": "packages/engine/src/production-runtime/actor/extensions.ts",
@@ -1094,7 +1094,7 @@
         },
         {
           "path": "packages/assets/src/GLTFRenderResources.ts",
-          "sha256": "ac4efae7bace6982b9b8f17daed9897ae4e83ad695e87644afeef8284d66e4da"
+          "sha256": "332d8472354c18749cd082b6a8522fa169aeeb720ac27681876392e6f966f807"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1102,7 +1102,7 @@
         },
         {
           "path": "packages/game/src/createGameCore.ts",
-          "sha256": "90a7403b73e18d178bbb8fc4435b0a8e794279f1f9803b143a33a998268823a2"
+          "sha256": "b64d016c667c6d13cb81173de820b132062d3ca1cdb1ecc4411be5585decfb0c"
         },
         {
           "path": "packages/game/src/touch/TouchControls.ts",

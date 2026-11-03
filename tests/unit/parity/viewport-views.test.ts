@@ -876,7 +876,7 @@ describe("Renderer camera depth negotiation", () => {
 });
 
 describe("Renderer temporal view ownership", () => {
-  it("retains unaffected view history on resize and reports camera-only motion", async () => {
+  it("retains unaffected view history on resize and reports renderer-owned object motion", async () => {
     const flags = resolveQrFlags({ options: { A3D_QR_POST: true } });
     const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, qrFlags: flags });
     renderer.device.presentLdrPostprocess = () => undefined;
@@ -890,10 +890,13 @@ describe("Renderer temporal view ownership", () => {
       { id: "left", camera: viewCamera, viewport: rect(0, 0, 40, 40) },
       { id: "right", camera: viewCamera, viewport: rect(40, 0, 40, 40) }
     ] });
+    // Each view owns its velocity/reactive surfaces. A camera given only as a
+    // view-projection has no projection, so previous depth stays approximate.
     expect(first.temporalViews).toMatchObject([
-      { viewId: "left", motionSource: "camera", unsupportedMotion: expect.arrayContaining(["previous-depth-approximation"]) },
-      { viewId: "right", motionSource: "camera", unsupportedMotion: expect.arrayContaining(["previous-depth-approximation"]) }
+      { viewId: "left", motionSource: "object", unsupportedMotion: ["previous-depth-approximation"] },
+      { viewId: "right", motionSource: "object", unsupportedMotion: ["previous-depth-approximation"] }
     ]);
+    expect(prepare.mock.calls.map((call) => call[5].motion)).toEqual(["renderer", "renderer"]);
     expect(prepare.mock.calls.map((call) => call[5].depthNear)).toEqual([0.5, 0.5]);
     const rightHistory = prepare.mock.results[1]!.value.history;
     renderer.resize(90, 40);

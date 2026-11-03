@@ -746,7 +746,9 @@ describe("line, point and sprite clipping propagation", () => {
             expect.objectContaining({ code: "FORWARD_CLIPPING_LINE_CAMERA_MISMATCH" })
           );
         }
-        expect(device.drawCommands).toHaveLength(0);
+        // The renderer-owned temporal motion pre-pass (velocity/reactive) runs
+        // before the forward pass; no forward draw may be submitted.
+        expect(device.drawCommands.filter(command => !command.label?.startsWith("object-motion"))).toHaveLength(0);
       } finally { removeHook(); }
     } finally { detach(); renderer.dispose(); compiled.dispose(); local.dispose(); }
   });

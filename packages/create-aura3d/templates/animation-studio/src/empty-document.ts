@@ -17,8 +17,9 @@ export const EMPTY_DOCUMENT_NOTICE =
   "No scene loaded — rendering the empty placeholder. Create one with `animation-scene new --prompt \"<your scene>\"`, " +
   "or set AURA_DOCUMENT to a saved EpisodeDocument (e.g. a serialized copy of the moon-garden example).";
 
-// A neutral, content-free "studio void": a flat grey floor + soft 3-point rig. No
-// characters, no props, no themed set pieces — nothing tied to any particular prompt.
+// A neutral, content-free "studio void": a flat grey floor, a self-lit stage mark and
+// a soft 3-point rig. No characters, no props, no themed set pieces — nothing tied to
+// any particular prompt.
 const NEUTRAL_ENVIRONMENT: EnvironmentSpec = {
   color: [0.5, 0.52, 0.55],
   intensity: 0.4,
@@ -48,6 +49,24 @@ const NEUTRAL_SET: SetSpec = {
       emissiveColor: [0.02, 0.02, 0.03],
       emissiveStrength: 0.05,
       includeInAutoFrame: true
+    },
+    {
+      // A neutral, self-lit stage mark where a scene's cast will stand. It is
+      // not content (no character, prop or theme): it only makes the "no scene
+      // loaded" frame recognisable instead of a near-uniform grey void.
+      id: "void-stage-mark",
+      geometry: "cube",
+      position: [0, 0.01, 0],
+      scale: [1.6, 0.02, 1.6],
+      baseColor: [0.55, 0.57, 0.6, 1],
+      metallic: 0.0,
+      roughness: 0.8,
+      emissiveColor: [0.55, 0.57, 0.6],
+      emissiveStrength: 0.6,
+      // A constant glow keeps this piece on the self-lit PBR path in both the
+      // stylized (cel) and PBR render styles.
+      glow: { dim: 0.6, full: 0.6 },
+      includeInAutoFrame: false
     }
   ],
   lights: [

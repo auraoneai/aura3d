@@ -8,6 +8,15 @@ import {
   scene
 } from "@aura3d/engine";
 import { assets } from "../../src/aura-assets";
+import {
+  attributeChangedPixels,
+  cameraPosesEqual,
+  perspectiveViewProjection,
+  projectBoundsToPixelRect,
+  unionRects,
+  type CameraPose,
+  type PixelRect
+} from "./subject-pixel-attribution";
 
 type RunnerClip = "IDLE" | "WALK" | "RUN" | "ALL";
 type HarnessMode = "pose-pair" | "controls" | "keyboard";
@@ -18,11 +27,21 @@ interface PixelFrame {
   readonly nonBackgroundPixels: number;
   readonly uniqueColorBuckets: number;
   readonly hash: string;
+  /** Live camera pose read from the mounted scene at capture time (undefined if not a perspective pose). */
+  readonly camera: CameraPose | undefined;
+  /** Screen rectangle of the projected posed (skinned) subject bounds, in readPixels rows. */
+  readonly subjectRect: PixelRect | null;
+  readonly subjectBoundsSource: "deformed" | "unavailable" | "clipped";
 }
 
 interface PixelDiff {
   readonly changedPixels: number;
+  /** Changed pixels inside the union of both frames' projected subject regions. */
   readonly changedSubjectPixels: number;
+  readonly changedOutsideSubjectPixels: number;
+  readonly subjectAttribution: number;
+  readonly subjectRegion: PixelRect | null;
+  readonly subjectRegionPixels: number;
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly hashA: string;
@@ -114,7 +133,8 @@ async function run(nextMode: HarnessMode): Promise<void> {
           .position(0, 0, 0)
           .rotate(0, 0.38, 0)
           .animate({ clip: "IDLE", loop: true, captureTime: 0, speed: 1 })
-          .runtime(game.runtimeNode("runner", { tags: ["player", "typed-glb", "skinned", "animated"] }))
+          // aura:evidence-deformed-bounds publishes per-frame posed skinned bounds for the subject mask.
+          .runtime(game.runtimeNode("runner", { tags: ["player", "typed-glb", "skinned", "animated", "aura:evidence-deformed-bounds"] }))
       )
       .add(lights.studio())
   });
@@ -184,9 +204,10 @@ async function run(nextMode: HarnessMode): Promise<void> {
         runtimeClip: runtimeSnapshot.animation?.clip,
         bindingClip: binding?.activeClipId,
         playbackControls: createPlaybackControlEvidence(controller, exercisedControls),
-        cameraStable: true,
-        frameA,
-        frameB,
+        // Measured: the live camera pose must match at both captures.
+        cameraStable: cameraPosesEqual(frameA.camera, frameB.camera),
+        frameA: publicFrame(frameA),
+        frameB: publicFrame(frameB),
         diff,
         ...(pauseDiff ? { pauseDiff } : {})
       },
@@ -209,11 +230,12 @@ async function run(nextMode: HarnessMode): Promise<void> {
     return evidence;
   };
 
+  const capture = () => readCanvasPixels(app, runner);
   const playAndCapture = (clip: RunnerClip, time: number, state: string): PixelFrame => {
     currentState = state;
     controller.scrub(clip, time, { play: true });
     app.step(1 / 60);
-    return readCanvasPixels(app.canvas);
+    return capture();
   };
 
   if (nextMode === "keyboard") {
@@ -237,12 +259,12 @@ async function run(nextMode: HarnessMode): Promise<void> {
       if (input.pressed("hit")) {
         keyboardEvents.push("hit");
         currentState = "hit";
-        lastFrameA = readCanvasPixels(app.canvas);
+        lastFrameA = capture();
         controller.scrub("ALL", 1.42, { play: true });
       } else if (input.pressed("run") || input.held("run")) {
         keyboardEvents.push("run");
         currentState = "run";
-        lastFrameA = readCanvasPixels(app.canvas);
+        lastFrameA = capture();
         controller.scrub("RUN", 1.24, { play: true });
       }
     });
@@ -253,7 +275,7 @@ async function run(nextMode: HarnessMode): Promise<void> {
       queueMicrotask(() => {
         pendingKeyboardStep = false;
         app.step(1 / 60);
-        lastFrameB = readCanvasPixels(app.canvas);
+        lastFrameB = capture();
         lastDiff = diffFrames(lastFrameA, lastFrameB);
         publish(lastFrameA, lastFrameB, lastDiff);
       });
@@ -271,12 +293,12 @@ async function run(nextMode: HarnessMode): Promise<void> {
     exercisedControls.play = true;
     exercisedControls.loop = true;
     controller.update(0.18);
-    const frameA = readCanvasPixels(app.canvas);
+    const frameA = capture();
     controller.pause("RUN");
     app.step(1 / 60);
-    const pauseA = readCanvasPixels(app.canvas);
+    const pauseA = capture();
     app.step(0.24);
-    const pauseB = readCanvasPixels(app.canvas);
+    const pauseB = capture();
     controller.resume("RUN");
     controller.crossFade("WALK", 0.1, { loop: "loop", speed: 0.7 });
     exercisedControls.crossFade = true;
@@ -289,7 +311,7 @@ async function run(nextMode: HarnessMode): Promise<void> {
     controller.scrub("RUN", 1.48, { play: true });
     exercisedControls.seek = true;
     app.step(1 / 60);
-    const frameB = readCanvasPixels(app.canvas);
+    const frameB = capture();
     publish(frameA, frameB, diffFrames(frameA, frameB), diffFrames(pauseA, pauseB));
     window.__AURA3D_ANIMATION_BRIDGE_CAPTURE__ = () => window.__AURA3D_ANIMATION_BRIDGE_CONTRACT__!;
     return;
@@ -333,7 +355,29 @@ async function waitFor(predicate: () => boolean, timeoutMs: number): Promise<voi
   throw new Error("Timed out waiting for Aura3D animation bridge harness.");
 }
 
-function readCanvasPixels(canvas: HTMLCanvasElement | undefined): PixelFrame & { readonly pixels: Uint8Array } {
+type CapturedFrame = PixelFrame & { readonly pixels: Uint8Array };
+
+function publicFrame(frame: PixelFrame): PixelFrame {
+  const { pixels: _pixels, ...rest } = frame as CapturedFrame;
+  return rest;
+}
+
+/** The pose the renderer draws this frame: app.scene.camera, when it is a plain perspective spec. */
+function readLiveCamera(app: ReturnType<typeof createAuraApp>): CameraPose | undefined {
+  const spec = (app.scene as { readonly camera?: { readonly mode?: string; readonly position?: unknown; readonly target?: unknown; readonly up?: unknown; readonly fov?: unknown } }).camera;
+  const vec3 = (value: unknown): readonly [number, number, number] | undefined =>
+    Array.isArray(value) && value.length === 3 && value.every((component) => typeof component === "number" && Number.isFinite(component))
+      ? [value[0], value[1], value[2]] : undefined;
+  if (!spec || spec.mode !== "perspective" || typeof spec.fov !== "number") return undefined;
+  const position = vec3(spec.position);
+  const target = vec3(spec.target);
+  if (!position || !target) return undefined;
+  const up = vec3(spec.up);
+  return { position, target, fov: spec.fov, ...(up ? { up } : {}) };
+}
+
+function readCanvasPixels(app: ReturnType<typeof createAuraApp>, runner: ReturnType<ReturnType<typeof createAuraApp>["nodes"]["require"]>): CapturedFrame {
+  const canvas = app.canvas;
   if (!canvas) throw new Error("Aura app did not expose a canvas.");
   const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
   if (!gl) throw new Error("WebGL2 context unavailable for animation bridge pixel proof.");
@@ -356,9 +400,21 @@ function readCanvasPixels(canvas: HTMLCanvasElement | undefined): PixelFrame & {
     hash ^= red + (green << 8) + (blue << 16) + alpha;
     hash = Math.imul(hash, 16777619) >>> 0;
   }
+  const camera = readLiveCamera(app);
+  const deformed = runner.importedAssetEvidence()?.deformedBounds;
+  let subjectRect: PixelRect | null = null;
+  let subjectBoundsSource: PixelFrame["subjectBoundsSource"] = "unavailable";
+  if (camera && deformed) {
+    const projected = projectBoundsToPixelRect(deformed, perspectiveViewProjection(camera, width / height), width, height);
+    subjectRect = projected.rect;
+    subjectBoundsSource = projected.clipped ? "clipped" : "deformed";
+  }
   return {
     width,
     height,
+    camera,
+    subjectRect,
+    subjectBoundsSource,
     nonBackgroundPixels,
     uniqueColorBuckets: buckets.size,
     hash: hash.toString(16).padStart(8, "0"),
@@ -366,33 +422,20 @@ function readCanvasPixels(canvas: HTMLCanvasElement | undefined): PixelFrame & {
   };
 }
 
-function diffFrames(
-  a: PixelFrame & { readonly pixels: Uint8Array },
-  b: PixelFrame & { readonly pixels: Uint8Array }
-): PixelDiff {
-  const pixelCount = Math.min(a.pixels.length, b.pixels.length) / 4;
-  let changedPixels = 0;
-  let changedSubjectPixels = 0;
-  let totalDelta = 0;
-  let maxDelta = 0;
-  for (let index = 0; index < pixelCount * 4; index += 4) {
-    const dr = Math.abs((a.pixels[index] ?? 0) - (b.pixels[index] ?? 0));
-    const dg = Math.abs((a.pixels[index + 1] ?? 0) - (b.pixels[index + 1] ?? 0));
-    const db = Math.abs((a.pixels[index + 2] ?? 0) - (b.pixels[index + 2] ?? 0));
-    const delta = (dr + dg + db) / 3;
-    const subject =
-      (a.pixels[index] ?? 0) > 18 || (a.pixels[index + 1] ?? 0) > 18 || (a.pixels[index + 2] ?? 0) > 22 ||
-      (b.pixels[index] ?? 0) > 18 || (b.pixels[index + 1] ?? 0) > 18 || (b.pixels[index + 2] ?? 0) > 22;
-    totalDelta += delta;
-    maxDelta = Math.max(maxDelta, delta);
-    if (delta > 10) changedPixels += 1;
-    if (subject && delta > 10) changedSubjectPixels += 1;
-  }
+function diffFrames(a: CapturedFrame, b: CapturedFrame): PixelDiff {
+  // Changed pixels count toward the subject only inside the projected posed
+  // bounds of either frame; everything else is reported as outside change.
+  const region = unionRects(a.subjectRect, b.subjectRect);
+  const attribution = attributeChangedPixels(a.pixels, b.pixels, Math.min(a.width, b.width), Math.min(a.height, b.height), region);
   return {
-    changedPixels,
-    changedSubjectPixels,
-    meanDelta: pixelCount > 0 ? totalDelta / pixelCount : 0,
-    maxDelta,
+    changedPixels: attribution.changedPixels,
+    changedSubjectPixels: attribution.changedSubjectPixels,
+    changedOutsideSubjectPixels: attribution.changedOutsideSubjectPixels,
+    subjectAttribution: attribution.subjectAttribution,
+    subjectRegion: region,
+    subjectRegionPixels: attribution.subjectRegionPixels,
+    meanDelta: attribution.meanDelta,
+    maxDelta: attribution.maxDelta,
     hashA: a.hash,
     hashB: b.hash
   };

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { collectDependencyGraph, parsePnpmLock } from "../../../tools/native-runtime-audit/dependency-graph.js";
+import { installProfileInventory, packedConsumerProfiles } from "../../../tools/native-runtime-audit/index.js";
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
@@ -102,6 +103,75 @@ describe("native dependency graph", () => {
     expect(clean).toMatchObject({ path: "templates/clean", nodes: ["importer:packages/math"], unresolved: [], prohibited: [], complete: true });
     expect(report.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "projected-dependency" }));
     expect(report.limitations.join(" ")).toContain("workspace-lock projection");
+  });
+
+  it("scans every install profile, packed consumer profiles, and records external comparison harnesses as excluded", () => {
+    const root = fixture();
+    writeJson(root, "package.json", { name: "root" });
+    write(root, "pnpm-workspace.yaml", "packages:\n  - 'packages/*'\n");
+    writeJson(root, "packages/engine/package.json", { name: "@example/engine", dependencies: { helper: "1.0.0" } });
+    write(root, "pnpm-lock.yaml", [
+      "lockfileVersion: '9.0'", "importers:", "  .: {}", "  packages/engine:", "    dependencies:", "      helper:",
+      "        specifier: 1.0.0", "        version: 1.0.0", "packages:", "  helper@1.0.0: {}", "snapshots:", "  helper@1.0.0: {}", ""
+    ].join("\n"));
+    write(root, "packages/create-aura3d/src/index.ts", 'export const CREATE_AURA3D_TEMPLATES = ["starter"] as const;\n');
+    writeJson(root, "packages/create-aura3d/templates/starter/package.json", { name: "starter", dependencies: { "@example/engine": "5.0.0" } });
+    writeJson(root, "packages/create-aura3d/templates/retired/package.json", { name: "retired", dependencies: { "@example/engine": "5.0.0" } });
+    writeJson(root, "templates/vanilla/package.json", { name: "vanilla", dependencies: { "@example/engine": "5.0.0" } });
+    writeJson(root, "apps/game/package.json", { name: "game", dependencies: { "@example/engine": "5.0.0" } });
+    mkdirSync(join(root, "apps/no-manifest"), { recursive: true });
+    writeJson(root, "apps/showcase-kits/package.json", { name: "kits", dependencies: { three: "0.180.0" } });
+    writeJson(root, "benchmarks/threejs/package.json", { name: "bench-three", dependencies: { three: "0.180.0" } });
+    writeJson(root, "benchmarks/babylon/package.json", { name: "bench-babylon", dependencies: { "@babylonjs/core": "8.0.0" } });
+    writeJson(root, "marketing/package.json", { name: "site", dependencies: { "@example/engine": "5.0.0" } });
+
+    const inventory = installProfileInventory(root);
+    expect(inventory.profiles).toEqual(["packages/create-aura3d/templates/starter", "packages/create-aura3d/templates/retired",
+      "templates/vanilla", "apps/game", "marketing"]);
+    expect(inventory.externalHarnesses).toEqual(["apps/showcase-kits", "benchmarks/babylon", "benchmarks/threejs"]);
+
+    const consumers = packedConsumerProfiles([{ id: "npm-a" }, { id: "pnpm-b" }], (cell) => ({ name: `consumer-${cell.id}`,
+      dependencies: { "@example/engine": "file:./tarballs/engine.tgz", ...(cell.id === "pnpm-b" ? { extra: "npm:three@1.0.0" } : {}) } }));
+    const report = collectDependencyGraph(root, { installProfiles: inventory.profiles, externalHarnesses: inventory.externalHarnesses, virtualProfiles: consumers });
+    expect(report.installProfiles.map((profile) => profile.path)).toEqual([".", ...inventory.profiles, "packed-consumer/npm-a", "packed-consumer/pnpm-b"]);
+    expect(report.projectedProfiles!.find((profile) => profile.path === "packed-consumer/npm-a"))
+      .toMatchObject({ nodes: ["helper@1.0.0", "importer:packages/engine"], prohibited: [], complete: true });
+    // An engine reaching a packed consumer profile is a finding, attributed to that profile.
+    expect(report.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "declared-dependency",
+      edge: expect.objectContaining({ owner: "packed-consumer/pnpm-b/package.json", alias: true }) }));
+    expect(report.findings.filter((finding) => finding.edge.owner.startsWith("apps/showcase-kits") || finding.edge.owner.startsWith("benchmarks"))).toEqual([]);
+    expect(report.externalHarnesses).toEqual([
+      { path: "apps/showcase-kits", declaredEngines: ["three"], workspaceMember: false, locked: false },
+      { path: "benchmarks/babylon", declaredEngines: ["@babylonjs/core"], workspaceMember: false, locked: false },
+      { path: "benchmarks/threejs", declaredEngines: ["three"], workspaceMember: false, locked: false }
+    ]);
+    // Without the engine-bearing consumer, every shipped profile is engine-free.
+    const clean = collectDependencyGraph(root, { installProfiles: inventory.profiles, externalHarnesses: inventory.externalHarnesses, virtualProfiles: consumers.slice(0, 1) });
+    expect(clean.findings).toEqual([]);
+
+    // A harness may never be a shipped profile, nor be installed by the workspace.
+    expect(() => collectDependencyGraph(root, { installProfiles: ["benchmarks/threejs"], externalHarnesses: ["benchmarks/threejs"] })).toThrow(/may not also be an install profile/);
+    write(root, "pnpm-workspace.yaml", "packages:\n  - 'packages/*'\n  - 'benchmarks/*'\n");
+    const installed = collectDependencyGraph(root, { externalHarnesses: ["benchmarks/threejs"] });
+    expect(installed.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "harness-installed" }));
+  });
+
+  it("accepts npm lock link targets outside the project (local file: dependencies) but not escaping install paths", () => {
+    const root = fixture();
+    writeJson(root, "package.json", { name: "root" });
+    write(root, "pnpm-lock.yaml", "lockfileVersion: '9.0'\nimporters:\n  .: {}\n");
+    writeJson(root, "apps/local/package.json", { name: "local", dependencies: { "@example/engine": "file:../.." } });
+    const lock = { name: "local", lockfileVersion: 3, packages: {
+      "": { name: "local", dependencies: { "@example/engine": "file:../.." } },
+      "../..": { name: "@example/engine", version: "1.0.0", dependencies: { three: "1.0.0" } },
+      "node_modules/@example/engine": { resolved: "../..", link: true }
+    } };
+    writeJson(root, "apps/local/package-lock.json", lock);
+    const report = collectDependencyGraph(root, { installProfiles: ["apps/local"] });
+    expect(report.npmLockPackages.map((item) => [item.path, item.name])).toContainEqual(["../..", "@example/engine"]);
+    expect(report.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "lock-review" }));
+    writeJson(root, "apps/local/package-lock.json", { ...lock, packages: { ...lock.packages, "../node_modules/x": { version: "1.0.0" } } });
+    expect(() => collectDependencyGraph(root, { installProfiles: ["apps/local"] })).toThrow(/Unsafe npm lock package path/);
   });
 
   it("inspects every file and nested package manifest in a supplied packed payload without extracting it", () => {

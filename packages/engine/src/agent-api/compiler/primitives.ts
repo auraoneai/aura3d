@@ -429,6 +429,11 @@ export function selectProductionPrimitiveResource(entry: ProductionRuntimePrimit
   return entry.resources[Math.min(selection.levelIndex, entry.resources.length - 1)]!;
 }
 
+/** Orientation fields only the scene-graph composer (`createModelMatrixV2`) honours. */
+function usesSceneGraphOrientation(node: AuraTransformSpec): boolean {
+  return node.quaternion !== undefined || node.rotationOrder !== undefined || node.lookAt !== undefined;
+}
+
 export function createProductionModelInstanceTransforms(
   transforms: readonly AuraTransformSpec[],
   node: AuraModelNode,
@@ -442,9 +447,10 @@ export function createProductionModelInstanceTransforms(
     const pivoted = hasNonzeroPivot(node.pivot) || hasNonzeroPivot(transform.pivot);
     const localNode: AuraModelNode = {
       ...node, ...transform,
-      ...(pivoted && transform.rotation !== undefined && transform.quaternion === undefined ? { quaternion: undefined } : {})
+      ...(transform.rotation !== undefined && transform.quaternion === undefined ? { quaternion: undefined } : {})
     };
-    matrices.set(pivoted
+    // S5-WP19-04: the legacy composer ignores quaternion / rotationOrder / lookAt.
+    matrices.set(pivoted || usesSceneGraphOrientation(localNode)
       ? createModelMatrixV2(localNode, bounds, shouldNormalizeModelNode(node), time, new Float32Array(16))
       : createModelMatrix(localNode, bounds, shouldNormalizeModelNode(node), time), index * 16);
   });
@@ -457,7 +463,7 @@ export function createProductionInstanceTransforms(transforms: readonly AuraTran
     assertValidPivot(transform.pivot);
     const localNode: AuraPrimitiveNode = { kind: "primitive", primitive: node.primitive, size: node.size, ...transform };
     const bounds = { min: [-0.5, -0.5, -0.5] as AuraVec3, max: [0.5, 0.5, 0.5] as AuraVec3 };
-    matrices.set(hasNonzeroPivot(transform.pivot)
+    matrices.set(hasNonzeroPivot(transform.pivot) || usesSceneGraphOrientation(localNode)
       ? createModelMatrixV2(localNode, bounds, false, 0, new Float32Array(16))
       : createModelMatrix(localNode, bounds, false, 0), index * 16);
   });
@@ -854,6 +860,63 @@ export function productionPrimitiveCullMode(node: AuraPrimitiveNode, opacity: nu
   return node.primitive === "plane" || node.material?.doubleSided === true || opacity < 0.999 ? "none" : "back";
 }
 
+const PRIMITIVE_BLEND_MODES: ReadonlySet<string> = new Set(["opaque", "alpha", "premultiplied", "additive", "multiply"]);
+
+/**
+ * S5-WP19-04: the authored alpha and render-state fields of `material.pbr/metal`
+ * (`alphaMode`, `alphaCutoff`, `blend`, `depthWrite`) lower into the primitive's
+ * render state and `u_alphaCutoff`. Without any of them the state is derived from
+ * opacity exactly as before. `blend` wins over `alphaMode`; an explicit
+ * `depthWrite: true` on a blended material is an authored opt-in.
+ */
+export function productionPrimitiveRenderState(node: AuraPrimitiveNode, opacity: number): {
+  blend: boolean; depthWrite: boolean; cullMode: "none" | "back";
+  blendMode?: NonNullable<NonNullable<AuraPrimitiveNode["material"]>["blend"]>; blendedDepthWrite?: "allow";
+} {
+  const spec = node.material;
+  const blendMode = spec?.blend;
+  if (blendMode !== undefined && !PRIMITIVE_BLEND_MODES.has(blendMode)) {
+    throw new RangeError(`material blend must be one of ${[...PRIMITIVE_BLEND_MODES].join(", ")} (received ${String(blendMode)})`);
+  }
+  const blended = blendMode !== undefined ? blendMode !== "opaque"
+    : spec?.alphaMode !== undefined ? spec.alphaMode === "blend"
+      : opacity < 0.999;
+  const depthWrite = spec?.depthWrite ?? !blended;
+  return {
+    blend: blended,
+    ...(blendMode === undefined ? {} : { blendMode }),
+    depthWrite,
+    ...(blended && depthWrite ? { blendedDepthWrite: "allow" as const } : {}),
+    cullMode: productionPrimitiveCullMode(node, opacity)
+  };
+}
+
+/**
+ * S5-WP19-04: KHR_materials_specular / KHR_materials_dispersion factors of
+ * `material.pbr/metal`. `undefined` when none is authored (defaults unchanged).
+ */
+export function productionPrimitiveSpecularOptions(spec: AuraPrimitiveNode["material"]): {
+  specularFactor?: number; specularColorFactor?: readonly [number, number, number]; dispersion?: number;
+} | undefined {
+  if (spec?.specularIntensity === undefined && spec?.specularColor === undefined && spec?.dispersion === undefined) return undefined;
+  return {
+    ...(spec.specularIntensity === undefined ? {} : { specularFactor: clamp01(spec.specularIntensity) }),
+    ...(spec.specularColor === undefined ? {} : { specularColorFactor: colorToLinearRgb(spec.specularColor) }),
+    ...(spec.dispersion === undefined ? {} : { dispersion: Math.max(0, spec.dispersion) })
+  };
+}
+
+/** glTF MASK semantics: `alphaCutoff` (default 0.5) discards below it; `alphaCutoff` alone implies mask. */
+export function productionPrimitiveAlphaCutoff(node: AuraPrimitiveNode): number {
+  const spec = node.material;
+  const cutoff = spec?.alphaCutoff;
+  if (cutoff !== undefined && (!Number.isFinite(cutoff) || cutoff < 0)) {
+    throw new RangeError(`material alphaCutoff must be a finite number >= 0 (received ${String(cutoff)})`);
+  }
+  const masked = spec?.alphaMode === "mask" || (spec?.alphaMode === undefined && cutoff !== undefined);
+  return masked ? cutoff ?? 0.5 : 0;
+}
+
 export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial {
   const materialSpec = node.material;
   if (materialSpec?.kind === "depth-preview") {
@@ -882,8 +945,8 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
    * is represented by that shader. This makes the one-draw claim real without silently dropping
    * clearcoat/transmission/etc. (those continue to render correctly via expansion).
    */
-  if (node.instances && !declaresExtension && transmission === 0 && thicknessRange === undefined && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined) {
-    return new InstancedPBRMaterial({
+  if (node.instances && !declaresExtension && transmission === 0 && thicknessRange === undefined && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined && productionPrimitiveSpecularOptions(materialSpec) === undefined) {
+    const instanced = new InstancedPBRMaterial({
       name: `a3d-production-instanced-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
       baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
       metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
@@ -897,14 +960,13 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
       envMapIntensity,
       // threejs-parity L7/SR-02: forward the frozen `AuraMaterialSpec.fog` opt-out.
       fog: materialSpec?.fog,
-      renderState: {
-        blend: opacity < 0.999,
-        depthWrite: opacity >= 0.999,
-        cullMode: productionPrimitiveCullMode(node, opacity)
-      }
+      renderState: productionPrimitiveRenderState(node, opacity)
     });
+    const instancedCutoff = productionPrimitiveAlphaCutoff(node);
+    if (instancedCutoff > 0) instanced.setParameter("u_alphaCutoff", instancedCutoff);
+    return instanced;
   }
-  return new PBRMaterial({
+  const lit = new PBRMaterial({
     name: `a3d-production-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
     baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
     metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
@@ -929,16 +991,16 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     ...(materialSpec?.ior === undefined ? {} : { ior: Math.max(1, materialSpec.ior) }),
     ...(materialSpec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(materialSpec.attenuationColor) } : {}),
     ...(materialSpec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, materialSpec.attenuationDistance) }),
+    ...productionPrimitiveSpecularOptions(materialSpec),
     environmentIntensity,
     envMapIntensity,
     // threejs-parity L7/SR-02: forward the frozen `AuraMaterialSpec.fog` opt-out.
     fog: materialSpec?.fog,
-    renderState: {
-      blend: opacity < 0.999,
-      depthWrite: opacity >= 0.999,
-      cullMode: productionPrimitiveCullMode(node, opacity)
-    }
+    renderState: productionPrimitiveRenderState(node, opacity)
   });
+  const cutoff = productionPrimitiveAlphaCutoff(node);
+  if (cutoff > 0) lit.setParameter("u_alphaCutoff", cutoff);
+  return lit;
 }
 
 /**

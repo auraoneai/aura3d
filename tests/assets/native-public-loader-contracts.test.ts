@@ -76,12 +76,14 @@ describe("native public loader contracts", () => {
     vi.stubGlobal("createImageBitmap", decode);
     const loader = new ImageBitmapLoader({ flipY: true, premultiplyAlpha: "none" }).setWithCredentials(true).setRequestHeader({ "X-Test": "image" });
     expect(await loader.loadAsync("https://example.test/image.png", undefined, { integrity })).toBe(bitmap);
-    expect(fetchMock.mock.calls[0][1]).toMatchObject({ credentials: "include", headers: { "X-Test": "image" } });
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ credentials: "include" });
+    expect(new Headers(fetchMock.mock.calls[0][1]!.headers).get("x-test")).toBe("image");
     expect(decode.mock.calls[0][1]).toMatchObject({ imageOrientation: "flipY", premultiplyAlpha: "none" });
     loader.setOptions({ imageOrientation: "none" });
     await loader.loadAsync("https://example.test/image.png", undefined, { credentials: undefined, headers: undefined });
     expect(decode.mock.calls[1][1]).toMatchObject({ imageOrientation: "none" });
-    expect(fetchMock.mock.calls[1][1]).toMatchObject({ credentials: "include", headers: { "X-Test": "image" } });
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ credentials: "include" });
+    expect(new Headers(fetchMock.mock.calls[1][1]!.headers).get("x-test")).toBe("image");
     expect(close).not.toHaveBeenCalled();
   });
 

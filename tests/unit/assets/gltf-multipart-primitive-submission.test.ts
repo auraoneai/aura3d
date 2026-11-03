@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { GLTFLoader } from "../../../packages/assets/src/GLTFLoader";
+import { LoadContext } from "../../../packages/assets/src/LoadContext";
 
 /**
  * Every scene-reachable mesh node must produce a submitted primitive.
@@ -41,7 +42,8 @@ const EXPECTED_PARTS = ["body", "wheelFrontL", "wheelFrontR", "wheelBackL", "whe
 async function loadFixture() {
   const base64 = readFileSync(FIXTURE).toString("base64");
   const url = `data:model/gltf-binary;base64,${base64}`;
-  return new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  // A real LoadContext: 5.0 loaders also read per-URL request policy (requestOptionsFor) and abort signals from it.
+  return new GLTFLoader().load({ url }, new LoadContext());
 }
 
 describe("multi-part glTF: every scene-reachable node produces a primitive", () => {

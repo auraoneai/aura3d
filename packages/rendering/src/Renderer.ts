@@ -1,4 +1,4 @@
-import type { TemporalHistory } from "./TemporalHistory";
+import type { TemporalFrameOptions, TemporalHistory } from "./TemporalHistory";
 import type { VelocityCoverage } from "./forward/Velocity";
 import { collectEnvironmentBackground, collectEnvironmentFog, collectEnvironmentLighting } from "./renderer/Background";
 import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, culledCastersReachingView, disposeBatchPlanCacheFor, explicitCullingFrustum, hasNoBatchSensitiveHooks } from "./renderer/CullingBatching";
@@ -4017,7 +4017,7 @@ export class Renderer {
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
         const temporal = withRendererQrProofAccess(this.device, this.#rendererFlagOwner, this.temporalHistory, this.activeViewId, this.authoredFrameId, "prepare",
-          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
+          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
         temporalPrevVp = temporal.v2?.previous;
         if (temporal.v2) this.temporalViews.set(this.activeTemporalReportId, { motionSource: temporal.v2.motionSource, unsupportedMotion: [...temporal.v2.unsupportedMotion], coverage: { ...temporal.v2.coverage } });
         // PRD-03 §8.6 (flag-on): generated programs project through the
@@ -4875,7 +4875,7 @@ export class Renderer {
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
         const temporal = withRendererQrProofAccess(this.device, this.#rendererFlagOwner, this.temporalHistory, this.activeViewId, this.authoredFrameId, "prepare",
-          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
+          () => this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess!.temporal, ...rendererOwnedMotionOptions(postprocess!.temporal!, forwardCamera), depthNear: postprocess!.temporal!.depthNear ?? toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)?.near ?? 0, viewId: this.activeViewId, frameId: this.authoredFrameId, jitter: Boolean(postprocess!.taa), ...((temporalAutoReset || this.activeCameraCut) ? { reset: true } : {}) }));
         temporalPrevVp = temporal.v2?.previous;
         if (temporal.v2) this.temporalViews.set(this.activeTemporalReportId, { motionSource: temporal.v2.motionSource, unsupportedMotion: [...temporal.v2.unsupportedMotion], coverage: { ...temporal.v2.coverage } });
         // PRD-03 §8.6 (flag-on): generated programs project through the
@@ -6336,6 +6336,17 @@ function resolveForwardCameraMatrices(camera: {
   // A shader-only pair can deliberately describe a custom material camera.
   // Do not silently promote an inconsistent pair to the generated frame.
   return { view: camera.viewMatrix, projection: camera.projectionMatrix, consistent: false };
+}
+
+/**
+ * WP-06: unless the caller borrows its own motion inputs, the renderer owns and
+ * renders each view's velocity and reactive surfaces, and hands the physical
+ * projection to the history so previous depth is exact under any convention.
+ */
+function rendererOwnedMotionOptions(temporal: TemporalFrameOptions, camera: ReturnType<typeof resolveForwardCameraMatrices>): Pick<TemporalFrameOptions, "motion" | "projection"> {
+  if (temporal.velocity || temporal.reactive || temporal.velocityMrtWritable || temporal.expectedPreviousDepth !== undefined) return {};
+  const projection = camera.consistent ? camera.projection : undefined;
+  return { motion: temporal.motion ?? "renderer", ...(temporal.projection ? {} : projection ? { projection: Float32Array.from(projection) } : {}) };
 }
 
 /** The projection of a consistent forward raster camera; an identity-policy frame rasterizes with identity matrices. */

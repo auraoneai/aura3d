@@ -1,11 +1,12 @@
 /** Source provenance inventory and post-freeze offline-network analysis. */
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { assertCandidateIdentity, type AcceptanceGate, type CandidateIdentity } from "../performance/native-benchmark";
-import { collectDependencyGraph, type DependencyGraphReport } from "./dependency-graph";
-import { collectSourceEvidence, type SourceEvidenceReport, type SourceFingerprint, type SourceProvenance } from "./source-evidence";
+import { collectDependencyGraph, type DependencyGraphReport, type VirtualInstallProfile } from "./dependency-graph";
+import { collectSourceEvidence, parseProvenanceRecord, type SourceCandidateClassReview, type SourceEvidenceReport, type SourceFingerprint,
+  type SourceProvenance, type SourceReviewCandidate } from "./source-evidence";
 import { inspectRuntimeNetwork, type RuntimeNetworkEvent, type RuntimeNetworkReport } from "./runtime-network";
 
 interface ReleasePlan {
@@ -17,8 +18,13 @@ interface SourceAuditOptions {
   root: string;
   planPath: string;
   installProfiles?: string[];
+  /** Standalone external comparison harnesses excluded from shipped profiles. */
+  externalHarnesses?: string[];
+  /** Install-time packed consumer profiles derived from the validated candidate plan. */
+  consumerProfiles?: (plan: ReleasePlan) => VirtualInstallProfile[];
   sourcePaths?: string[];
   provenance?: Readonly<Record<string, SourceProvenance>>;
+  classReviews?: readonly SourceCandidateClassReview[];
   fingerprints?: readonly SourceFingerprint[];
 }
 interface SourceAuditReport {
@@ -29,6 +35,9 @@ interface SourceAuditReport {
   dependencies: DependencyGraphReport;
   source: SourceEvidenceReport;
   unresolvedReviewCandidates: number;
+  /** New candidates in the reviewed scope (equations, fingerprints, recorded files) without a disposition; any fails. */
+  unreviewedGatedCandidates: number;
+  unreviewedGatedSample: Array<Pick<SourceReviewCandidate, "path" | "kind" | "detail" | "line">>;
   unreviewedFileCount: number;
   independence: "not-established";
   unlockedProfiles: string[];
@@ -57,6 +66,7 @@ interface BrowserAuditReport {
 }
 
 const hashPattern = /^[a-f0-9]{64}$/;
+export const defaultProvenanceRecord = "docs/prds/aura3d-native-provenance-record.json";
 const sha256 = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 
 // Public and fixture trees can contain runtime inputs outside decoder folders,
@@ -69,24 +79,27 @@ export const defaultSourceAuditPaths = Object.freeze([
 
 /** Do not interpret a fingerprint candidate as an authorship finding. */
 export function summarizeSourceEvidence(dependencies: DependencyGraphReport, source: SourceEvidenceReport): {
-  status: SourceAuditReport["status"]; unresolvedReviewCandidates: number; unreviewedFileCount: number;
+  status: SourceAuditReport["status"]; unresolvedReviewCandidates: number; unreviewedGatedCandidates: number;
+  unreviewedGatedSample: SourceAuditReport["unreviewedGatedSample"]; unreviewedFileCount: number;
   independence: "not-established"; unlockedProfiles: string[]; unprojectedProfiles: string[];
 } {
-  const records = new Map(source.files.map((file) => [file.path, file]));
-  const unresolvedReviewCandidates = source.findings.filter((finding) => {
-    // A digest-bound human disposition resolves a candidate unless it says the material still needs replacement.
-    if (finding.review) return finding.review.disposition === "replacement-needed";
-    const record = records.get(finding.path);
-    return !record || record.replacementStatus === "unreviewed" || record.replacementStatus === "replacement-needed";
-  }).length;
+  const recorded = new Set(source.files.filter((file) => file.replacementStatus !== "unreviewed").map((file) => file.path));
+  // Only an explicit recorded disposition resolves a candidate, and not one that says the material still needs replacement.
+  const unresolved = source.findings.filter((finding) => !finding.review || finding.review.disposition === "replacement-needed");
+  const unresolvedReviewCandidates = unresolved.length;
+  const gated = unresolved.filter((finding) => !finding.review && (finding.kind === "standardized-equation" || finding.kind === "fingerprint" ||
+    recorded.has(finding.path) || recorded.has(finding.path.split("#", 1)[0]!)));
+  const unreviewedGatedCandidates = Math.max(gated.length, source.candidateReview?.gatedUnreviewed ?? 0);
+  const unreviewedGatedSample = gated.slice(0, 200).map(({ path, kind, detail, line }) => ({ path, kind, detail, ...(line !== undefined ? { line } : {}) }));
   const neededReplacement = source.files.filter((file) => file.replacementStatus === "replacement-needed").length;
   const unreviewedFileCount = source.files.filter((file) => file.replacementStatus === "unreviewed").length;
   const unlockedProfiles = dependencies.installProfiles.filter((profile) => !profile.lockfile).map((profile) => profile.path);
   // An unlocked profile stays a review item unless its workspace-lock projection resolved every dependency.
   const projected = new Set((dependencies.projectedProfiles ?? []).filter((profile) => profile.complete).map((profile) => profile.path));
   const unprojectedProfiles = unlockedProfiles.filter((path) => !projected.has(path));
-  return { status: dependencies.findings.length || neededReplacement ? "failed" : unresolvedReviewCandidates || unprojectedProfiles.length ? "review-required" : "scan-complete",
-    unresolvedReviewCandidates, unreviewedFileCount, independence: "not-established", unlockedProfiles, unprojectedProfiles };
+  return { status: dependencies.findings.length || neededReplacement || unreviewedGatedCandidates ? "failed"
+      : unresolvedReviewCandidates || unprojectedProfiles.length ? "review-required" : "scan-complete",
+    unresolvedReviewCandidates, unreviewedGatedCandidates, unreviewedGatedSample, unreviewedFileCount, independence: "not-established", unlockedProfiles, unprojectedProfiles };
 }
 
 /** Determine active published scaffolds from the actual create-aura3d catalog. */
@@ -106,6 +119,38 @@ export function activeTemplateProfiles(root: string): string[] {
   });
 }
 
+/**
+ * Every install profile the source pass must prove engine-free, plus the
+ * external comparison harnesses recorded as excluded (S5-WP19-07 decision):
+ * root workspace (always scanned with its lock), every create-aura3d template,
+ * every root template and app project with a manifest, and marketing.
+ * `apps/showcase-kits` and `benchmarks/*` are standalone three.js/Babylon
+ * comparison harnesses outside the workspace and lockfile; they are never
+ * installed, packed or shipped and so are recorded, not profiled.
+ */
+export const externalComparisonHarnessRoots = Object.freeze(["apps/showcase-kits", "benchmarks"]);
+export function installProfileInventory(root: string): { profiles: string[]; externalHarnesses: string[] } {
+  const base = resolve(root);
+  const isHarness = (path: string) => externalComparisonHarnessRoots.some((harness) => path === harness || path.startsWith(`${harness}/`));
+  const children = (directory: string): string[] => existsSync(resolve(base, directory))
+    ? readdirSync(resolve(base, directory), { withFileTypes: true }).filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+      .map((entry) => `${directory}/${entry.name}`).filter((path) => existsSync(resolve(base, path, "package.json"))).sort()
+    : [];
+  const profiles = [
+    ...activeTemplateProfiles(root), ...children("packages/create-aura3d/templates"), ...children("templates"),
+    ...children("apps").filter((path) => !isHarness(path)), ...(existsSync(resolve(base, "marketing/package.json")) ? ["marketing"] : [])
+  ];
+  const externalHarnesses = [
+    ...(existsSync(resolve(base, "apps/showcase-kits")) ? ["apps/showcase-kits"] : []), ...children("benchmarks")
+  ];
+  return { profiles: [...new Set(profiles)], externalHarnesses };
+}
+
+/** Packed consumer projects: one synthesized manifest per consumer-matrix cell, over the candidate archives. */
+export function packedConsumerProfiles(cells: readonly { id: string }[], manifestFor: (cell: { id: string }) => Record<string, unknown>): VirtualInstallProfile[] {
+  return cells.map((cell) => ({ path: `packed-consumer/${cell.id}`, manifest: manifestFor(cell) }));
+}
+
 /** The loader must validate source identity and every archive before returning. */
 export function runSourceAudit(options: SourceAuditOptions, loadPlan: (root: string, path: string) => ReleasePlan | null): SourceAuditReport {
   if (!options.planPath) throw new Error("Source audit requires a validated candidate release plan");
@@ -119,9 +164,13 @@ export function runSourceAudit(options: SourceAuditOptions, loadPlan: (root: str
     throw new Error("Candidate archive inventory is missing, invalid or duplicated");
   }
   const payloads = archives.map((archive) => archive.path);
-  const dependencies = collectDependencyGraph(options.root, { payloads, installProfiles: options.installProfiles });
+  const harnesses = new Set(options.externalHarnesses ?? []);
+  const shipped = (options.installProfiles ?? []).filter((path) => !harnesses.has(path));
+  if (shipped.length !== (options.installProfiles ?? []).length) throw new Error("An external comparison harness may not be a shipped install profile");
+  const dependencies = collectDependencyGraph(options.root, { payloads, installProfiles: shipped,
+    virtualProfiles: options.consumerProfiles?.(plan), externalHarnesses: options.externalHarnesses });
   const source = collectSourceEvidence(options.root, { paths: options.sourcePaths ?? defaultSourceAuditPaths,
-    payloads, provenance: options.provenance, fingerprints: options.fingerprints });
+    payloads, provenance: options.provenance, classReviews: options.classReviews, fingerprints: options.fingerprints });
   const summary = summarizeSourceEvidence(dependencies, source);
   return { schema: "aura3d.native-runtime-audit/1", phase: "source", ...summary,
     candidate: { sourceSha256: plan.source.inputDigest!, lockfileSha256: plan.source.lockfileSha256, candidatePlan: plan.reference, archives },
@@ -130,6 +179,7 @@ export function runSourceAudit(options: SourceAuditOptions, loadPlan: (root: str
       "The scan covers only the selected workspace roots and candidate archives as present in this checkout or staged snapshot, not other checkouts or deployment outputs.",
       "Git-ignored public or fixture files can be copied by site builds but omitted from staged source; per-file hashes do not establish inclusion in the candidate source manifest, archives, or deployed outputs.",
       "Unlocked profiles are projected onto the root pnpm lock (dependencies.projectedProfiles); a registry install can resolve their ranges differently, so the projection is review evidence rather than an install receipt.",
+      "Install profiles cover the root workspace, every create-aura3d and root template, every app project and marketing, plus one synthesized packed-consumer profile per consumer-matrix cell; apps/showcase-kits and benchmarks/* are recorded external comparison harnesses (dependencies.externalHarnesses), excluded from shipped profiles.",
       "Runtime network capture has not run in the source phase; browser acceptance requires the global gate."] };
 }
 
@@ -198,13 +248,20 @@ async function main(): Promise<void> {
     const release = await import(pathToFileURL(resolve(root, "tools/release/exact-release-plan.mjs")).href) as {
       loadValidatedReleasePlan(root: string, path: string): ReleasePlan | null;
     };
-    const profiles = [...activeTemplateProfiles(root), ...(existsSync(resolve(root, "marketing/package.json")) ? ["marketing"] : []), ...(values.get("--install-profile") ?? [])];
-    const provenancePath = get("--provenance");
+    const inventory = installProfileInventory(root);
+    const profiles = [...inventory.profiles, ...(values.get("--install-profile") ?? [])];
+    const matrix = await import(pathToFileURL(resolve(root, "tools/native-consumer-matrix/index.ts")).href) as {
+      matrixCells(): { id: string }[]; projectManifest(root: string, cell: { id: string }, plan: unknown): Record<string, unknown>;
+    };
+    // The reviewed provenance record applies by default so recorded dispositions resolve their candidates.
+    const provenancePath = get("--provenance") ?? (existsSync(resolve(root, defaultProvenanceRecord)) ? defaultProvenanceRecord : undefined);
     const fingerprintsPath = get("--fingerprints");
-    const provenance = provenancePath ? JSON.parse(readFileSync(resolve(root, provenancePath), "utf8")) as Record<string, SourceProvenance> : undefined;
+    const record = provenancePath ? parseProvenanceRecord(JSON.parse(readFileSync(resolve(root, provenancePath), "utf8"))) : undefined;
     const fingerprints = fingerprintsPath ? JSON.parse(readFileSync(resolve(root, fingerprintsPath), "utf8")) as SourceFingerprint[] : undefined;
     result = runSourceAudit({ root, planPath: get("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN ?? "",
-      installProfiles: [...new Set(profiles)], provenance, fingerprints }, release.loadValidatedReleasePlan);
+      installProfiles: [...new Set(profiles)], externalHarnesses: inventory.externalHarnesses,
+      consumerProfiles: (plan) => packedConsumerProfiles(matrix.matrixCells(), (cell) => matrix.projectManifest(root, cell, plan)),
+      provenance: record?.provenance, classReviews: record?.classReviews, fingerprints }, release.loadValidatedReleasePlan);
   } else if (get("--phase") === "browser") {
     const module = await import(pathToFileURL(resolve(root, "tools/native-capability-gate/index.mjs")).href) as {
       validateAcceptanceGate(input: { root: string; gatePath: string; sourceReport: string }): BrowserAcceptanceGate | Promise<BrowserAcceptanceGate>;

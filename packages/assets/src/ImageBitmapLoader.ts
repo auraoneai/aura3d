@@ -1,6 +1,7 @@
 import { mergeAssetRequestOptions, redactAssetUrl, validateAssetMaxBytes, type AssetRequestOptions } from "./AssetLoader";
 import { MAX_BROWSER_IMAGE_BYTES, assertBrowserImageDimensions, inspectBrowserImageDimensions } from "./BrowserImageDimensions";
 import { AssetPolicyError, fetchBytes, type AuraLoaderProgress } from "./LoaderFetch";
+import { LoadContext } from "./LoadContext";
 
 export interface ImageBitmapLoaderOptions {
   /** Used only when imageOrientation was not explicitly supplied. */
@@ -21,6 +22,8 @@ export class ImageBitmapLoader {
   path = "";
   withCredentials = false;
   requestHeader: Record<string, string> = {};
+  /** Request contract defaults (credentials, headers, origin policy, integrity, maxBytes, cancellation) applied to every fetch. */
+  requestOptions: ImageBitmapLoadRequest = {};
   options: Required<Omit<ImageBitmapLoaderOptions, "flipY" | "requireInspectableDimensions">> & { flipY: boolean };
   private explicitOrientation: ImageOrientation | undefined;
   private requireInspectableDimensions: boolean;
@@ -39,6 +42,7 @@ export class ImageBitmapLoader {
   setPath(value: string): this { this.path = value; return this; }
   setWithCredentials(value: boolean): this { this.withCredentials = value; return this; }
   setRequestHeader(value: Record<string, string>): this { this.requestHeader = { ...value }; return this; }
+  setRequestOptions(value: ImageBitmapLoadRequest): this { this.requestOptions = value; return this; }
 
   setOptions(options: ImageBitmapLoaderOptions): this {
     if (Object.hasOwn(options, "imageOrientation")) this.explicitOrientation = options.imageOrientation;
@@ -59,9 +63,12 @@ export class ImageBitmapLoader {
     onError?: (error: unknown) => void,
     request: ImageBitmapLoadRequest = {}
   ): Promise<ImageBitmap> {
+    const loaderSignal = this.requestOptions.signal;
     const pending = this.loadAsync(url, onProgress, request).then((bitmap) => {
       try {
+        // Ownership transfers only to a caller whose request is still live.
         throwIfAborted(request.signal);
+        throwIfAborted(loaderSignal);
         onLoad?.(bitmap);
         return bitmap;
       } catch (error) {
@@ -79,15 +86,19 @@ export class ImageBitmapLoader {
     const options = { ...this.options };
     const requireInspectableDimensions = this.requireInspectableDimensions;
     const imageOrientation = this.explicitOrientation ?? (options.flipY ? "flipY" : "from-image");
-    const policy = mergeAssetRequestOptions({
-      credentials: this.withCredentials ? "include" : "same-origin",
-      headers: this.requestHeader
-    }, request);
+    // Same layering as FileLoader/DataTextureLoader: loader headers, then
+    // loader request defaults, then per-call headers, merged per header name.
+    const headers = new Headers(this.requestHeader);
+    new Headers(this.requestOptions.headers).forEach((value, name) => headers.set(name, value));
+    new Headers(request.headers).forEach((value, name) => headers.set(name, value));
+    const defaults = mergeAssetRequestOptions({ credentials: this.withCredentials ? "include" : "same-origin" }, this.requestOptions);
+    const policy = { ...mergeAssetRequestOptions(defaults, request), headers };
     validateAssetMaxBytes(policy.maxBytes);
-    const buffer = await fetchBytes(resolved, request.signal, onProgress, {
+    const signal = new LoadContext({ signal: this.requestOptions.signal }).signalFor(request.signal);
+    const buffer = await fetchBytes(resolved, signal, onProgress, {
       ...policy, maxBytes: Math.min(MAX_BROWSER_IMAGE_BYTES, policy.maxBytes ?? MAX_BROWSER_IMAGE_BYTES)
     });
-    throwIfAborted(request.signal);
+    throwIfAborted(signal);
     if (!inspectBrowserImageDimensions(buffer, resolved) && requireInspectableDimensions) {
       throw new AssetPolicyError(`Image format cannot be preflighted for dimensions: ${redactAssetUrl(resolved)}`);
     }
@@ -96,9 +107,9 @@ export class ImageBitmapLoader {
       colorSpaceConversion: options.colorSpaceConversion,
       premultiplyAlpha: options.premultiplyAlpha,
       imageOrientation
-    }), request.signal);
+    }), signal);
     try {
-      throwIfAborted(request.signal);
+      throwIfAborted(signal);
       assertBrowserImageDimensions(bitmap.width, bitmap.height, resolved);
     } catch (error) {
       closeBitmap(bitmap);

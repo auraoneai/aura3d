@@ -87,7 +87,7 @@ async function loadCanonicalManifest(url: string, context: LoadContext, options:
   const signal = context.signalFor(options.signal);
   const policy = mergeAssetRequestOptions(context.requestOptionsFor(url), options);
   const bytes = await fetchBytes(url, signal, options.onProgress
-    ? ({ loaded, total }) => options.onProgress!({ url, phase: "document", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) })
+    ? ({ loaded, total }) => { if (!signal?.aborted) options.onProgress!({ url, phase: "document", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) }); }
     : undefined, { ...policy, maxBytes: policy.maxBytes ?? 1024 * 1024 });
   context.throwIfAborted(url);
   if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");

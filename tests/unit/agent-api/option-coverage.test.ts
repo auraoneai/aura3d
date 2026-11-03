@@ -156,8 +156,16 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
   }
 }
 
+/**
+ * Observations exercised by the dedicated S5-WP19-04 probe suite
+ * (tests/qr/prd15/compiler/optionProbes.test.ts: compiled render items, the
+ * v2 bloom pipeline, toon pass uniforms, actor/instance model matrices and the
+ * live fog) or by tests/unit/agent-api/pointer-interaction-target.test.ts.
+ */
+const DEDICATED_OBSERVATION = /^(renderItem\.|bloom\.v2\.|toon\.(uniform\.|fragment$|order$)|model\.(matrix|instanceMatrices)$|fog\.live\.|interaction\.pointerTarget$)/;
+
 describe("typed option probes and real consumers", () => {
-  const rows = OPTION_COVERAGE_ROWS.filter((row) => row.disposition === "runtime");
+  const rows = OPTION_COVERAGE_ROWS.filter((row) => row.disposition === "runtime" && !DEDICATED_OBSERVATION.test(row.observation ?? ""));
   it("registers a useful set of consumer probes", () => { expect(rows.length).toBeGreaterThan(30); });
   it.each(rows.map((row) => [`${row.builder}.${row.field}`, row] as const))("%s reaches its named consumer", (_name, row) => {
     expect(row.observation).toBeTruthy();
@@ -177,8 +185,9 @@ describe("typed option probes and real consumers", () => {
 
   it("rejects unsupported shape parameters with actionable options", () => {
     const row = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported" && r.builder === "primitives.plane")!;
-    const pointer = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported" && r.builder === "interactions.pointer")!;
-    expect(pointer.reason).toContain("interactions.hover({ target })");
+    // interactions.pointer({ target }) gained a runtime consumer (pointer-interaction-target.test.ts).
+    const pointer = OPTION_COVERAGE_ROWS.find((r) => r.builder === "interactions.pointer" && r.field === "target")!;
+    expect(pointer.disposition).toBe("runtime");
     expect(row.reason).toContain("size");
     expect(() => primitives.plane({ params: row.probeValueB as never })).toThrow(/Supported params: widthSegments, heightSegments/);
   });

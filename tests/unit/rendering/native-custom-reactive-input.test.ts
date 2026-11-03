@@ -167,7 +167,9 @@ describe("caller-supplied reactive inputs for WebGL2 HDR custom passes", () => {
   it("accepts reactive in the public builder and preserves rejection of unknown inputs", () => {
     const pass = postEffectBuilders.shaderPass({ glsl: "void main() {}", inputs: ["color", "reactive"] });
     expect(pass.inputs).toEqual(["color", "reactive"]);
-    expect(() => postEffectBuilders.shaderPass({ glsl: "void main() {}", inputs: ["normal"] as never })).toThrow(/input/);
+    // 5.0 accepts the depth-reconstructed "normal" input (WP06-01).
+    expect(postEffectBuilders.shaderPass({ glsl: "void main() {}", inputs: ["normal"] }).inputs).toEqual(["normal"]);
+    expect(() => postEffectBuilders.shaderPass({ glsl: "void main() {}", inputs: ["albedo"] as never })).toThrow(/input/);
   });
 
   it("leaves existing color-only source and bindings unchanged", () => {

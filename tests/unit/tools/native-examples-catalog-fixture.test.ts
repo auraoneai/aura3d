@@ -134,7 +134,8 @@ describe("source-backed native example catalog fixture", () => {
     expect(source).toContain('const CERTIFIED_CLIP = "Walk_Loop"');
     expect(source).toContain('app.camera?.use(camera.rigs.shoulder({ target: "hero", collision: true }))');
     expect(source).toContain("heroNode.setPosition(position.x, position.y, position.z).setRotation(0, yaw, 0)");
-    expect(source).toContain("right:0;top:0;width:50%;height:100%");
+    // The inert right-half look pad that covered the canvas was removed.
+    expect(source).not.toContain("look-pad");
     for (const spec of [
       'name: "walkable ground", size: [30, 0.1, 30], position: [0, -0.05, 0]',
       'name: "distance marker north", size: [0.4, 1.4, 0.4], position: [0, 0.7, -6]',

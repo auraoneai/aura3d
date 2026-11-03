@@ -1,4 +1,62 @@
 {
+  "$candidateClassReviews": [
+    {
+      "kind": "standardized-equation",
+      "detail": "sRGB transfer function (IEC 61966-2-1)",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "0.04045 / 0.0031308 are the breakpoints of the IEC 61966-2-1 sRGB piecewise transfer function. Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "BT.709 luminance coefficients (ITU-R BT.709)",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "0.2126 / 0.7152 / 0.0722 are the ITU-R BT.709 relative-luminance weights. Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "BT.601 luma coefficients (ITU-R BT.601)",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "0.299 / 0.587 / 0.114 are the ITU-R BT.601 luma weights. Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "Schlick Fresnel approximation (Schlick 1994)",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "pow(1 - x, 5) is Schlick's 1994 Fresnel approximation; the same quintic also appears as the standard ease-out/horizon falloff polynomial (e.g. packages/math/src/Easing.ts, sky.glsl.ts), equally a published formula. Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "Golden ratio (1 + sqrt 5) / 2",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "The golden ratio is a mathematical constant (Fibonacci/golden-angle sampling). Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "Radical inverse base 2 (Van der Corput / Hammersley)",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "2^-32 scaling and the 0x55555555/0x33333333 bit-reversal masks are the standard base-2 radical inverse used for Hammersley sequences (Van der Corput 1935; Warren, Hacker's Delight). Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "CIE D65 white point chromaticity",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "x = 0.3127, y = 0.3290 is the CIE standard illuminant D65 chromaticity (CIE 15). Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    },
+    {
+      "kind": "standardized-equation",
+      "detail": "Numerical Recipes linear congruential generator",
+      "disposition": "standardized-equation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "1664525 / 1013904223 are the published Numerical Recipes LCG parameters, used for deterministic seeded randomness. Standardized equation: the scanner pattern matches only the published constants/formula, which every correct implementation shares; authorship of surrounding code is reviewed separately through file records and text/provenance candidates. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+    }
+  ],
   "packages/rendering/src/geometry/Support.ts": {
     "sha256": "ed5e32ccb412a27321e1bb191ac3dba89ab385f8c302cf932a7c4dbf80a513e6",
     "license": "MIT (Aura3D package license)",
@@ -65,7 +123,7 @@
         "kind": "text-reference",
         "detail": "three",
         "disposition": "false-positive",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "English word in an error message ('at least three vertices'), not an engine reference."
       }
     ]
@@ -115,7 +173,7 @@
         "kind": "text-reference",
         "detail": "three",
         "disposition": "false-positive",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "English word in a comment ('all three inputs'), not an engine reference."
       }
     ]
@@ -134,7 +192,7 @@
         "kind": "text-reference",
         "detail": "three",
         "disposition": "false-positive",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "English word in an error message ('three linked edges'), not an engine reference."
       }
     ]
@@ -180,8 +238,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three.js",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -198,14 +264,37 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       },
       {
         "kind": "standardized-equation",
+        "detail": "sRGB transfer function (IEC 61966-2-1)",
         "disposition": "standardized-equation",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "sRGB transfer (IEC 61966-2-1), BT.709 luminance and D65 chromaticity constants are published standards shared by any implementation."
+      },
+      {
+        "kind": "standardized-equation",
+        "detail": "BT.709 luminance coefficients (ITU-R BT.709)",
+        "disposition": "standardized-equation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "sRGB transfer (IEC 61966-2-1), BT.709 luminance and D65 chromaticity constants are published standards shared by any implementation."
+      },
+      {
+        "kind": "standardized-equation",
+        "detail": "CIE D65 white point chromaticity",
+        "disposition": "standardized-equation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "sRGB transfer (IEC 61966-2-1), BT.709 luminance and D65 chromaticity constants are published standards shared by any implementation."
       }
     ]
@@ -222,8 +311,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -240,8 +337,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -258,8 +363,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "THREE",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -276,8 +389,23 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three.js",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -294,8 +422,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three.js",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -312,8 +448,23 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three.js",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -330,8 +481,9 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -348,8 +500,9 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -366,8 +519,9 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -384,8 +538,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -402,8 +564,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -420,8 +590,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "THREE",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -438,8 +616,16 @@
     "candidateReviews": [
       {
         "kind": "text-reference",
+        "detail": "three",
         "disposition": "licensed-notice",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "text-reference",
+        "detail": "three.js",
+        "disposition": "licensed-notice",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
       }
     ]
@@ -565,8 +751,9 @@
     "candidateReviews": [
       {
         "kind": "embedded-data",
+        "detail": "Large numeric table requires provenance review",
         "disposition": "independent-implementation",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-04 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "Aura-generated sheen directional-albedo preintegration (16 x 16, roughness x N.V); not copied from any engine."
       }
     ]
@@ -593,8 +780,9 @@
     "candidateReviews": [
       {
         "kind": "provenance-reference",
+        "detail": "view = lookAt along +n with up derived from the face basis (vx is \"down\" on the face).",
         "disposition": "false-positive",
-        "reviewer": "AI agent review, Aura3D 5.0 WP-04 lane, 2026-11-02 (owner countersign pending)",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "'derived from the face basis' describes Aura's own cube-face basis, not an external source."
       }
     ]

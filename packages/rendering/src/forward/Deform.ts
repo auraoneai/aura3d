@@ -267,7 +267,9 @@ function activeDirectionMorphs(item: RenderItem): { normals: boolean; tangents: 
     if (!target) throw new RenderDeviceError("Morph target is missing", "MORPH_TARGET_CONTRACT", { label: item.label, targetIndex });
     for (const channel of ["normals", "tangents"] as const) {
       const deltas = target[channel];
-      if (deltas === undefined) continue;
+      // An empty channel is absent (glTF targets without NORMAL/TANGENT, as in
+      // applyMorphTargets and the morph texture packer).
+      if (deltas === undefined || (Array.isArray(deltas) && deltas.length === 0)) continue;
       if (!deltas || deltas.length !== vertexCount) {
         throw new RenderDeviceError(`Active morph ${channel} require one delta per source vertex`, "MORPH_TARGET_CONTRACT", {
           label: item.label, targetIndex, vertexCount, deltaCount: deltas?.length ?? 0

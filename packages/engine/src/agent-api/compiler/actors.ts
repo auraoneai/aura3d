@@ -8,8 +8,9 @@ import type { GLTFootPlantingConfig } from "@aura3d/assets/browser";
 import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { Mat4 } from "@aura3d/scene";
 import type { ProductionImportedAssetRenderMetadata, RenderItem } from "@aura3d/rendering";
+import { computeSkinnedGeometryBounds } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
-import { AURA_UNCLAMPED_MORPH_WEIGHTS_TAG, createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
+import { AURA_DEFORMED_BOUNDS_EVIDENCE_TAG, AURA_UNCLAMPED_MORPH_WEIGHTS_TAG, createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
 import { model } from "../nodes/model.js";
 import { resolveAnimationSeconds } from "./animation.js";
 import { scene } from "../nodes/scene.js";
@@ -204,6 +205,49 @@ function submittedActorWorldBounds(items: readonly RenderItem[]): AuraRuntimeNod
 
 const IDENTITY_MATRIX: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
+/**
+ * Posed world bounds for the submitted frame: skinned items use the CPU-skinned
+ * envelope of their current joint palette under `modelMatrix` (the same space
+ * renderer culling uses); unskinned items keep their submitted static bounds.
+ * Only computed for nodes tagged `aura:evidence-deformed-bounds`.
+ */
+function deformedBoundsEvidence(items: readonly RenderItem[]): { readonly deformedBounds?: AuraRuntimeNodeBounds } {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  const staticItems: RenderItem[] = [];
+  for (const item of items) {
+    if (item.instanceCount === 0) continue;
+    if (!item.skinning || !item.geometry) { staticItems.push(item); continue; }
+    const local = computeSkinnedGeometryBounds(item.geometry, item.skinning);
+    if (!validBound(local.min, local.max)) return {};
+    const model = affineMatrix(item.modelMatrix);
+    if (!model) return {};
+    const center = local.min.map((value, axis) => value + (local.max[axis]! - value) / 2);
+    const half = local.min.map((value, axis) => (local.max[axis]! - value) / 2);
+    if (!includeTransformedBounds(min, max, center, half, model)) return {};
+  }
+  if (staticItems.length > 0) {
+    const fixed = submittedActorWorldBounds(staticItems);
+    if (!fixed) return {};
+    for (let axis = 0; axis < 3; axis += 1) {
+      min[axis] = Math.min(min[axis]!, fixed.min[axis]!);
+      max[axis] = Math.max(max[axis]!, fixed.max[axis]!);
+    }
+  }
+  if (!min.every(Number.isFinite) || !max.every(Number.isFinite)) return {};
+  const size: AuraVec3 = [max[0]! - min[0]!, max[1]! - min[1]!, max[2]! - min[2]!];
+  return {
+    deformedBounds: {
+      kind: "aura-runtime-node-bounds",
+      min: [min[0]!, min[1]!, min[2]!],
+      max: [max[0]!, max[1]!, max[2]!],
+      center: [min[0]! + size[0] / 2, min[1]! + size[1] / 2, min[2]! + size[2] / 2],
+      size,
+      radius: Math.hypot(size[0] / 2, size[1] / 2, size[2] / 2)
+    }
+  };
+}
+
 function validBound(min: readonly number[] | undefined, max: readonly number[] | undefined): boolean {
   return Array.isArray(min) && Array.isArray(max) && min.length === 3 && max.length === 3
     && min.every(Number.isFinite) && max.every(Number.isFinite)
@@ -295,6 +339,7 @@ function createRuntimeEvidenceFromTypedGLBActor(
     // Use submitted undeformed mesh bounds where available. A missing or
     // malformed submission retains the previous loaded/manifest fallback.
     bounds: runtimeModelWorldBounds(node, actor, renderItems),
+    ...(node.runtime?.tags?.includes(AURA_DEFORMED_BOUNDS_EVIDENCE_TAG) ? deformedBoundsEvidence(renderItems) : {}),
     renderItemCount: renderItems.length,
     skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
     morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,

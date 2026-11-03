@@ -9,6 +9,17 @@ import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../..
 import { particles } from "./particles.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
+import { ignoredOptionsNote } from "./optionDiagnostics.js";
+
+/**
+ * Fields scene fog reads: the legacy compile (`density`, `color`, `intensity`)
+ * and the C-21 height-fog spec copied by `LiveAtmosphere` (`specFromNode`).
+ */
+export const FOG_OPTION_KEYS: readonly string[] = [
+  "name", "mode", "color", "density", "heightDensity", "heightFalloff", "heightReference", "start", "maxOpacity",
+  "near", "far", "absorption", "sunInscatter", "anisotropy", "ambientScale", "affectsBackground",
+  "backgroundDistance", "transitionSeconds", "legacyOpacityCap", "intensity"
+];
 
 /**
  * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,
@@ -142,7 +153,10 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
           effect: "fog",
           ...(options.density !== undefined ? { density: options.density as number } : {}),
           ...(options.color !== undefined ? { color: options.color as string } : {}),
-          intensity: options.intensity
+          intensity: options.intensity,
+          // S5-WP19-04: the shared effect option type offers particle/post/transform
+          // fields that scene fog never reads; record them as OPTION_IGNORED.
+          ...ignoredOptionsNote("effects.fog", options, FOG_OPTION_KEYS)
         },
         options as Readonly<Record<string, unknown>>
       )

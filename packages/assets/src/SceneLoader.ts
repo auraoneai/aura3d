@@ -1,6 +1,6 @@
 import { AnimationClip, type SerializedAnimationClip } from "@aura3d/animation";
 import { Renderable, Scene } from "@aura3d/scene";
-import { mergeAssetRequestOptions, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
+import { mergeAssetRequestOptions, redactAssetMessage, redactAssetUrl, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
 import { fetchBytes } from "./LoaderFetch";
 
@@ -35,14 +35,24 @@ export class SceneLoader implements AssetLoader<NativeSceneAsset> {
     const url = context.resolve(request.url);
     const signal = context.signalFor(request.signal);
     const policy = mergeAssetRequestOptions(context.requestOptionsFor(url), request);
+    // Progress belongs to the requesting owner and stops once it aborts.
     const bytes = await fetchBytes(url, signal, request.onProgress
-      ? ({ loaded, total }) => request.onProgress!({ url, phase: "document", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) })
+      ? ({ loaded, total }) => { if (!signal?.aborted) request.onProgress!({ url, phase: "document", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) }); }
       : undefined, { ...policy, maxBytes: policy.maxBytes ?? 64 * 1024 * 1024 });
     if (signal?.aborted) throw signal.reason ?? new DOMException("Scene load aborted", "AbortError");
+    const safeUrl = redactAssetUrl(url);
     let parsed: unknown;
     try { parsed = JSON.parse(new TextDecoder().decode(bytes)); }
-    catch (error) { throw new Error("Invalid scene JSON", { cause: error }); }
-    validateScene(parsed);
+    catch (error) {
+      // Parser messages can quote document content; keep only a redacted summary.
+      const detail = error instanceof Error ? error.name : "Error";
+      throw new Error(`Invalid scene JSON for ${safeUrl}`, { cause: new Error(redactAssetMessage(detail, url)) });
+    }
+    try { validateScene(parsed); }
+    catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`${redactAssetMessage(detail, url)} (${safeUrl})`);
+    }
     const descriptor = parsed as {
       readonly nodes?: readonly NativeSceneNodeDescriptor[];
       readonly animations?: readonly SerializedAnimationClip[];

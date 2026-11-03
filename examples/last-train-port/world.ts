@@ -8,13 +8,12 @@
  * normals input, audit D-08); day/night re-aims the lights and moves the lighting runtime's environment intensity
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
-import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
+import { AuraNodeBuilder, camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef, type AuraSceneNode } from "@aura3d/engine";
 import { BANDS, HDRI_URL, bandFor, lightningFlash, storminess, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
 import { LanternSky } from "./lanterns";
 import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
-import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION } from "./lights";
-import { probes } from "@aura3d/engine/lanes";
+import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION, type StationProbe } from "./lights";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
@@ -24,6 +23,20 @@ import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
 
 type Scene = ReturnType<typeof scene>;
+
+/**
+ * A parallax-corrected reflection probe node on the public surface: the `kind: "probe"` literal the renderer's probe
+ * handler compiles (the same fields and defaults as the internal `probes.reflection` builder, which the published
+ * `@aura3d/engine` root does not export). Captured once.
+ */
+function stationReflectionProbe(p: StationProbe, resolution: 64 | 128 | 256, blendDistance: number): AuraNodeBuilder<AuraSceneNode> {
+  return new AuraNodeBuilder<AuraSceneNode>({
+    kind: "probe",
+    probe: "reflection",
+    name: p.name,
+    options: { name: p.name, position: p.position, box: p.box, resolution, update: "once", blendDistance, priority: 0, intensity: 1 }
+  } as unknown as AuraSceneNode);
+}
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
 export function lehmer(seed: number): () => number {
@@ -301,7 +314,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
     b.add(lights.spot({ name: HEADLAMP_ID, position: pose.position, target: pose.target, angle: 0.42, penumbra: 0.55, distance: 70, decay: 2, intensity: row.practicals.headlamp, color: HEADLAMP_COLOR, shadow: false }).runtime({ id: HEADLAMP_ID }));
   }
   // GU47 LT-08: six station box probes, captured once (inert until the runtime installs the probe face renderer: handoff E-B)
-  if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(probes.reflection({ name: p.name, position: p.position, box: p.box, resolution: STATION_PROBE_RESOLUTION, update: "once", blendDistance: 2 }));
+  if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(stationReflectionProbe(p, STATION_PROBE_RESOLUTION, 2));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
   if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.8, thickness: 0.1, intensity: 1, lights: "shadowed" }));

@@ -14,6 +14,7 @@ import type { TemporalFrameId, TemporalIdentity, TemporalResetReason } from "./c
 import { temporalJitter } from "./TemporalMath";
 import { isTrustedQrFlags } from "./contracts/core";
 import { transferPackedLoopMember } from "./batching/BatchMembers";
+import { OBJECT_MOTION_SHADER, objectMotionDrawList, renderObjectMotion } from "./renderer/ObjectMotionPass";
 import { getRenderTargetTextureOwner, type Texture } from "./Texture";
 
 export interface TemporalFrameOptions {
@@ -45,6 +46,20 @@ export interface TemporalFrameOptions {
   readonly expectedPreviousDepth?: "velocity-alpha";
   /** Only true if this draw's forward target actually contains writable velocity/reactive MRTs. */
   readonly velocityMrtWritable?: boolean;
+  /**
+   * `"renderer"`: this view owns and renders its object velocity (with exact
+   * previous linear depth in alpha) and reactive surfaces from the prepared
+   * draw list, instead of borrowing caller-populated inputs. Exclusive with
+   * `velocity`, `reactive`, `velocityMrtWritable` and `expectedPreviousDepth`.
+   * WebGPU keeps its explicit temporal-v2 refusal.
+   */
+  readonly motion?: "renderer";
+  /**
+   * Physical (unjittered) projection matching `viewProjection`. The view
+   * commits it with the view-projection so the next frame can recover the
+   * previous view-space depth exactly under any depth convention.
+   */
+  readonly projection?: Float32Array | readonly number[];
 }
 
 /** GPU-only bindings. History and output are owned by this view; other optional inputs are borrowed. */
@@ -72,6 +87,8 @@ export interface TemporalV2Frame {
   readonly reactive?: RenderTarget;
   /** Present only for a validated, caller-populated expected-depth input. */
   readonly expectedPreviousDepth?: "velocity-alpha";
+  /** Velocity alpha holds exact previous linear depth written by the view's own motion pass. */
+  readonly previousDepth?: "object-velocity";
   readonly motionSource: "camera" | "object";
   readonly unsupportedMotion: readonly string[];
   readonly reconstruction: "spatial" | "temporal";
@@ -94,6 +111,8 @@ interface ViewState {
   deviceGeneration?: number;
   targets?: [RenderTarget, RenderTarget, RenderTarget];
   linZTargets?: [RenderTarget, RenderTarget];
+  /** Renderer-owned object velocity (rgba32f) and reactive (rgba8) surfaces. */
+  motionTargets?: [RenderTarget, RenderTarget];
   previous: Map<TemporalIdentity, Float32Array>;
   framePrevious: Map<TemporalIdentity, Float32Array>;
   pending: Map<TemporalIdentity, Float32Array>;
@@ -124,6 +143,7 @@ interface ViewState {
     readonly frameTime: number;
     readonly velocityMrtWritable: boolean;
     readonly expectedPreviousDepth?: "velocity-alpha";
+    readonly motion?: "renderer";
     readonly reset: boolean;
   };
 }
@@ -857,11 +877,34 @@ function samePlanOptions(a: TemporalFrameOptions, b: TemporalFrameOptions, view:
     (mode !== "temporal" || ((a.outputWidth ?? width) === (b.outputWidth ?? width) && (a.outputHeight ?? height) === (b.outputHeight ?? height))) &&
     (a.frameTime ?? 1 / 60) === (b.frameTime ?? 1 / 60) && (a.depthNear ?? 0) === (b.depthNear ?? 0) &&
     a.velocity === b.velocity && a.reactive === b.reactive && Boolean(a.velocityMrtWritable) === Boolean(b.velocityMrtWritable) &&
-    a.expectedPreviousDepth === b.expectedPreviousDepth;
+    a.expectedPreviousDepth === b.expectedPreviousDepth && a.motion === b.motion && sameOptionalMatrix(a.projection, b.projection);
 }
 
 const TEMPORAL_PLAN_OPTION_KEYS = ["sceneKey", "reset", "jitter", "frameTime", "depthNear", "viewId", "frameId", "reconstruction",
-  "outputWidth", "outputHeight", "velocity", "reactive", "velocityMrtWritable", "expectedPreviousDepth"] as const;
+  "outputWidth", "outputHeight", "velocity", "reactive", "velocityMrtWritable", "expectedPreviousDepth", "motion", "projection"] as const;
+function sameOptionalMatrix(a: ArrayLike<number> | undefined, b: ArrayLike<number> | undefined): boolean {
+  if (a === undefined || b === undefined) return a === b;
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) if (!Object.is(a[index], b[index])) return false;
+  return true;
+}
+
+/** Validate the renderer-owned motion opt-in before any history mutation. */
+function rendererOwnedMotion(device: RenderDevice, options: TemporalFrameOptions): boolean {
+  const motion = ownData(options, "motion");
+  if (motion === undefined) return false;
+  if (motion !== "renderer") throw new RenderDeviceError("Unknown temporal motion source", "TEMPORAL_INVALID_INPUT", { motion });
+  if (options.velocity || options.reactive || options.velocityMrtWritable || options.expectedPreviousDepth !== undefined) {
+    throw new RenderDeviceError("Renderer-owned motion replaces borrowed velocity, reactive and expected-depth inputs", "TEMPORAL_INVALID_INPUT");
+  }
+  const projection = ownData(options, "projection") as Float32Array | readonly number[] | undefined;
+  if (projection !== undefined && (projection.length !== 16 || !Array.from(projection).every(Number.isFinite))) {
+    throw new RenderDeviceError("Temporal projection must be a finite mat4", "TEMPORAL_INVALID_MATRIX");
+  }
+  // The native WebGPU path keeps its stable temporal-v2 refusal.
+  return device.kind !== "webgpu";
+}
+
 function copyPlanOptions(options: TemporalFrameOptions): TemporalFrameOptions {
   if (!options || typeof options !== "object" || ![Object.prototype, null].includes(Object.getPrototypeOf(options))) {
     throw new RenderDeviceError("Temporal planning requires plain frame options", "TEMPORAL_PLAN_UNSUPPORTED");
@@ -961,7 +1004,7 @@ export class TemporalHistory {
   private disposing = false;
   private readonly library = new ShaderLibrary();
   private pass?: ForwardPass;
-  constructor() { this.library.register(velocityShader); }
+  constructor() { this.library.register(velocityShader); this.library.register(OBJECT_MOTION_SHADER); }
 
   /** Track asynchronous target transfers for the owning renderer's lifetime. */
   retainRendererDevice(device: RenderDevice): () => void { return retainTemporalTransferTracker(device); }
@@ -1054,7 +1097,7 @@ export class TemporalHistory {
   get [resourceDisposalPending](): boolean {
     return this.disposing || [...this.views.values()].some(state =>
       state.preparing || state.releasing || state.retired.size > 0 || state.materials.length > 0
-      || state.targets !== undefined || state.linZTargets !== undefined);
+      || state.targets !== undefined || state.linZTargets !== undefined || state.motionTargets !== undefined);
   }
 
   /**
@@ -1172,10 +1215,11 @@ export class TemporalHistory {
 
   private release(state: ViewState): void {
     if (state.releasing) throw new RenderDeviceError("Temporal view cleanup is in progress", "TEMPORAL_VIEW_BUSY");
-    const resources = [...state.retired.keys(), ...state.materials, ...(state.targets ?? []), ...(state.linZTargets ?? [])];
+    const resources = [...state.retired.keys(), ...state.materials, ...(state.targets ?? []), ...(state.linZTargets ?? []), ...(state.motionTargets ?? [])];
     state.materials = [];
     state.targets = undefined;
     state.linZTargets = undefined;
+    state.motionTargets = undefined;
     state.renderItems = [];
     const errors = this.retireResources(state, resources, true);
     if (state.retired.size === 0) {
@@ -1406,6 +1450,7 @@ export class TemporalHistory {
   prepare(device: RenderDevice, width: number, height: number, items: readonly RenderItem[], viewProjection: Float32Array | readonly number[] | undefined, options: TemporalFrameOptions): TemporalGpuBindings {
     if (ownData(options, "expectedPreviousDepth") !== undefined) options = copyPlanOptions(options);
     dimensions(width, height);
+    rendererOwnedMotion(device, options);
     const key = options.viewId ?? defaultView;
     const frameId = options.frameId ?? Symbol("aura.temporal.frame");
     if ((typeof key === "number" && !Number.isFinite(key)) || (typeof frameId === "number" && !Number.isFinite(frameId))) {
@@ -1481,7 +1526,8 @@ export class TemporalHistory {
     if (mode === "temporal" && !v2) throw new RenderDeviceError("Temporal reconstruction requires the v2 temporal path", "TEMPORAL_RECONSTRUCTION_UNSUPPORTED");
     if (options.velocity && options.velocity === options.reactive) throw new RenderDeviceError("Velocity and reactive inputs must not alias", "TEMPORAL_INVALID_INPUT");
     if (options.velocityMrtWritable && (!options.velocity || !options.reactive)) throw new RenderDeviceError("Writable velocity MRT requires velocity and reactive inputs", "TEMPORAL_INVALID_INPUT");
-    if (mode === "temporal" && (!options.velocity || !options.reactive)) {
+    const ownedMotion = v2 && rendererOwnedMotion(device, options);
+    if (mode === "temporal" && !ownedMotion && (!options.velocity || !options.reactive)) {
       throw new RenderDeviceError("Temporal reconstruction requires populated object velocity and reactive inputs", "TEMPORAL_RECONSTRUCTION_INPUTS_MISSING");
     }
     if (options.frameTime !== undefined && (!Number.isFinite(options.frameTime) || options.frameTime <= 0)) {
@@ -1512,10 +1558,11 @@ export class TemporalHistory {
         || !settings || settings.viewProjection.length !== vp.length || !settings.viewProjection.every((value, i) => value === vp[i])
         || settings.frameTime !== (options.frameTime ?? 1 / 60) || settings.velocityMrtWritable !== Boolean(options.velocityMrtWritable)
         || settings.expectedPreviousDepth !== options.expectedPreviousDepth
+        || settings.motion !== (ownedMotion ? "renderer" : undefined)
         || settings.reset !== Boolean(options.reset)
         || cached.velocity.width !== width || cached.velocity.height !== height || cached.history.width !== outWidth || cached.history.height !== outHeight
-        || (cached.v2 && (cached.v2.reactive !== options.reactive
-          || cached.velocity !== (options.velocity ?? state.targets?.[0])))) {
+        || (cached.v2 && (cached.v2.reactive !== (options.reactive ?? (ownedMotion ? state.motionTargets?.[1] : undefined))
+          || cached.velocity !== (options.velocity ?? (ownedMotion ? state.motionTargets?.[0] : state.targets?.[0]))))) {
         throw new RenderDeviceError("Repeated temporal frame changed its view or attachments", "TEMPORAL_FRAME_CONFLICT");
       }
       if (expectedDepth) assertExpectedPreviousDepthBindingsCurrent(cached, device, width, height);
@@ -1572,14 +1619,15 @@ export class TemporalHistory {
     state.frameItems = frameItems;
     state.frameObjects = frameObjects;
     state.frameSettings = { viewProjection: Array.from(viewProjection ?? identityMat4()), frameTime: options.frameTime ?? 1 / 60,
-      velocityMrtWritable: Boolean(options.velocityMrtWritable), expectedPreviousDepth: options.expectedPreviousDepth, reset: Boolean(options.reset) };
+      velocityMrtWritable: Boolean(options.velocityMrtWritable), expectedPreviousDepth: options.expectedPreviousDepth,
+      ...(ownedMotion ? { motion: "renderer" as const } : {}), reset: Boolean(options.reset) };
     state.cached = undefined;
     state.framePrevious = state.previous;
     state.pending.clear();
     let result: TemporalGpuBindings;
     try {
       result = copyTemporalBindings(v2
-        ? this.prepareV2(state, width, height, items, viewProjection, options, frameId, mode)
+        ? this.prepareV2(state, width, height, items, viewProjection, options, frameId, mode, ownedMotion)
         : this.prepareLegacy(state, device, width, height, items, viewProjection, options));
       state.cached = result;
       if (expectedDepth) rememberExpectedDepthBinding(result, expectedDepth, key, frameId,
@@ -1619,7 +1667,7 @@ export class TemporalHistory {
     if (expectedDepth) this.bump(options.viewId ?? defaultView);
     try {
       const pass = sameItems ? cached : cached.v2
-        ? this.prepareV2(state, width, height, items, viewProjection, options, frameId, mode)
+        ? this.prepareV2(state, width, height, items, viewProjection, options, frameId, mode, state.frameSettings?.motion === "renderer")
         : this.prepareLegacy(state, device, width, height, items, viewProjection, options);
       // The draw list may change, but every pass reads the frame-start history
       // and writes the same output even if a standalone caller already committed.
@@ -1736,17 +1784,20 @@ export class TemporalHistory {
     return { velocity: targets[0], history: targets[1], historyOutput: targets[2], historyValid: state.valid, historyFrames: state.valid ? state.frame : 0, renderItems: state.renderItems };
   }
 
-  private prepareV2(state: ViewState, width: number, height: number, items: readonly RenderItem[], viewProjection: Float32Array | readonly number[] | undefined, options: TemporalFrameOptions, frameId: TemporalFrameId, mode: "spatial" | "temporal"): TemporalGpuBindings {
+  private prepareV2(state: ViewState, width: number, height: number, items: readonly RenderItem[], viewProjection: Float32Array | readonly number[] | undefined, options: TemporalFrameOptions, frameId: TemporalFrameId, mode: "spatial" | "temporal", ownedMotion = false): TemporalGpuBindings {
     const targets = state.targets!;
     const depth = state.linZTargets!;
     const vp = Float32Array.from(viewProjection ?? identityMat4());
     const jitter = state.cached?.v2?.jitterClip ?? (options.jitter ? this.jitter(width, height) : ([0, 0] as const));
-    const cam = state.velocity.prepare(vp, jitter, frameId);
+    const projection = options.projection === undefined ? undefined : Float32Array.from(options.projection);
+    const cam = state.velocity.prepare(vp, jitter, frameId, projection);
     state.currentJitter = jitter;
-    // Dilation currently carries current linear depth only. Comparing it to
-    // previous depth is approximate under camera/object depth motion until a
-    // producer supplies the expected previous linear depth per pixel.
-    const unsupported = new Set<string>(options.expectedPreviousDepth === "velocity-alpha" ? [] : ["previous-depth-approximation"]);
+    // Without a producer of the expected previous linear depth per pixel,
+    // dilation carries current linear depth only and comparing it to previous
+    // depth is approximate under camera/object depth motion. The view's own
+    // motion pass writes the exact value when both projections are known.
+    const exactOwnedDepth = ownedMotion && cam.projection !== undefined && cam.previousProjection !== undefined;
+    const unsupported = new Set<string>(options.expectedPreviousDepth === "velocity-alpha" || exactOwnedDepth ? [] : ["previous-depth-approximation"]);
     state.renderItems = items.map(item => {
       const base = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
       // Camera-only velocity cannot represent deformation. The built-in MRT
@@ -1754,12 +1805,13 @@ export class TemporalHistory {
       // weights and per-instance matrices from the scoped VelocityHistory);
       // eight-influence instanced skins have no attribute slots left for
       // previous instance matrices and stay reactive.
-      const rigidApproximation = !options.velocity;
-      const mrtInstanceSlots = !options.velocityMrtWritable || !item.skinning?.extraInfluences;
+      // The renderer-owned motion pass deforms the previous pose itself.
+      const rigidApproximation = !options.velocity && !ownedMotion;
+      const mrtInstanceSlots = ownedMotion || !options.velocityMrtWritable || !item.skinning?.extraInfluences;
       if (rigidApproximation && item.skinning) unsupported.add("skinning-motion");
       if (rigidApproximation && item.morphTargets?.length) unsupported.add("morph-motion");
       if ((rigidApproximation || !mrtInstanceSlots) && item.instanceTransforms?.length) unsupported.add("instance-motion");
-      if (!options.reactive && (item.writesReactive || base?.renderState.blend)) unsupported.add("transparent-reactive");
+      if (!options.reactive && !ownedMotion && (item.writesReactive || base?.renderState.blend)) unsupported.add("transparent-reactive");
       const unjittered = Float32Array.from(item.modelViewProjectionMatrix
         ?? multiplyMat4(Array.from(vp) as Mat4, Array.from(item.modelMatrix ?? identityMat4()) as Mat4));
       if (unjittered.length !== 16 || !unjittered.every(Number.isFinite)) throw new RenderDeviceError("Temporal transform must be finite mat4", "TEMPORAL_INVALID_MATRIX");
@@ -1775,17 +1827,56 @@ export class TemporalHistory {
       transferPackedLoopMember(item, result);
       return result;
     });
-    if (!options.velocity && state.velocity.coverage.moving > 0) unsupported.add("object-motion");
+    let motionTargets: [RenderTarget, RenderTarget] | undefined;
+    if (ownedMotion) {
+      const device = state.device!;
+      motionTargets = this.ensureMotionTargets(state, device, width, height);
+      const retiring = state.materials;
+      state.materials = [];
+      const failures = this.retireResources(state, retiring);
+      if (failures.length) throw new AggregateError(failures, "Failed to retire temporal motion materials");
+      // Engine batch carriers draw their logical members, each reprojected
+      // with its own previous model under its lifetime identity.
+      const drawList = objectMotionDrawList(items, state.renderItems, member => state.velocity.prepareItem(member, false));
+      const motion = renderObjectMotion(device, this.library, motionTargets[0], motionTargets[1], drawList,
+        { matrices: cam, jitterClip: jitter }, width, height);
+      state.materials.push(...motion.materials);
+      for (const reason of motion.unsupported) unsupported.add(reason);
+    } else if (!options.velocity && state.velocity.coverage.moving > 0) unsupported.add("object-motion");
+    const reactive = options.reactive ?? motionTargets?.[1];
     return {
-      velocity: options.velocity ?? targets[0], history: targets[1], historyOutput: targets[2],
+      velocity: options.velocity ?? motionTargets?.[0] ?? targets[0], history: targets[1], historyOutput: targets[2],
       historyValid: state.valid, historyFrames: state.valid ? state.frame : 0, renderItems: state.renderItems,
       v2: { jittered: cam.jittered, unjittered: cam.unjittered, previous: cam.previous,
         linZ: depth[0], linZOutput: depth[1], jitterClip: jitter, previousJitterClip: state.previousJitter,
-        frameTime: options.frameTime ?? 1 / 60, depthNear: options.depthNear ?? 0, ...(options.reactive ? { reactive: options.reactive } : {}),
+        frameTime: options.frameTime ?? 1 / 60, depthNear: options.depthNear ?? 0, ...(reactive ? { reactive } : {}),
         ...(options.expectedPreviousDepth === "velocity-alpha" ? { expectedPreviousDepth: "velocity-alpha" as const } : {}),
-        motionSource: options.velocity ? "object" : "camera", unsupportedMotion: [...unsupported],
+        ...(exactOwnedDepth ? { previousDepth: "object-velocity" as const } : {}),
+        motionSource: options.velocity || motionTargets ? "object" : "camera", unsupportedMotion: [...unsupported],
         reconstruction: mode, coverage: state.velocity.coverage }
     };
+  }
+
+  /** Allocate or reuse this view's render-sized motion surfaces. */
+  private ensureMotionTargets(state: ViewState, device: RenderDevice, width: number, height: number): [RenderTarget, RenderTarget] {
+    const existing = state.motionTargets;
+    if (existing && existing.every(liveTarget) && existing.every(target => target.width === width && target.height === height)) return existing;
+    if (existing) {
+      state.motionTargets = undefined;
+      const failures = this.retireResources(state, existing);
+      if (failures.length) throw new AggregateError(failures, "Failed to retire temporal motion targets");
+    }
+    const made: RenderTarget[] = [];
+    try {
+      made.push(device.createRenderTarget({ width, height, format: "rgba32f", depth: true, sampleCount: 1, label: "renderer-temporal-object-velocity" }));
+      made.push(device.createRenderTarget({ width, height, format: "rgba8", depth: true, sampleCount: 1, label: "renderer-temporal-reactive" }));
+    } catch (error) {
+      const failures = this.retireResources(state, made);
+      if (failures.length) throw new AggregateError([error, ...failures], "Failed to allocate and retire temporal motion targets");
+      throw error;
+    }
+    state.motionTargets = made as [RenderTarget, RenderTarget];
+    return state.motionTargets;
   }
 
   /**

@@ -38,7 +38,13 @@ describe("glTF animation corpus fixture", () => {
       "tip-joint.rotation:quaternion",
       "character-root.translation:vector3"
     ]);
-    expect(clip?.tracks[0]?.sample(0.5)).toEqual([0, 0, 0.7071067690849304, 0.7071067690849304]);
+    // The keyframe stores float32 sqrt(1/2) (0.7071067690849304); 5.0 quaternion
+    // tracks return unit-length samples (AnimationTrack.sample normalizes).
+    const rotation = clip?.tracks[0]?.sample(0.5) as number[];
+    expect(rotation.slice(0, 2)).toEqual([0, 0]);
+    expect(rotation[2]).toBeCloseTo(Math.SQRT1_2, 15);
+    expect(rotation[3]).toBe(rotation[2]);
+    expect(Math.hypot(...rotation)).toBeCloseTo(1, 15);
     expect(clip?.tracks[1]?.sample(0.5)).toEqual([0.5, 0, 0]);
 
     const scene = asset.createScene();

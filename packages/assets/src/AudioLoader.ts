@@ -1,4 +1,4 @@
-import { mergeAssetRequestOptions, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
+import { mergeAssetRequestOptions, redactAssetMessage, redactAssetUrl, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
 import { fetchBytes } from "./LoaderFetch";
 
@@ -40,15 +40,23 @@ export class AudioLoader implements AssetLoader<AudioAsset> {
     const url = context.resolve(request.url);
     const signal = context.signalFor(request.signal);
     const policy = mergeAssetRequestOptions(context.requestOptionsFor(url), request);
+    // Progress belongs to the requesting owner: nothing is reported once its
+    // signal has aborted, even if transport bytes are still draining.
     const bytes = await fetchBytes(url, signal, request.onProgress
-      ? ({ loaded, total }) => request.onProgress!({ url, phase: "buffer", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) })
+      ? ({ loaded, total }) => { if (!signal?.aborted) request.onProgress!({ url, phase: "buffer", loadedBytes: loaded, ...(total !== undefined ? { totalBytes: total } : {}) }); }
       : undefined, { ...policy, maxBytes: policy.maxBytes ?? 64 * 1024 * 1024 });
     throwIfAborted(signal);
     // decodeAudioData itself is not abortable. Reject promptly and drop any late
     // result instead of transferring ownership to a cancelled subscriber.
     const byteLength = bytes.byteLength;
-    const decoding = Promise.resolve(this.audioContext.decodeAudioData(bytes));
-    const buffer = await abortableDecode(decoding, signal);
+    let buffer: AudioBuffer;
+    try {
+      const decoding = Promise.resolve().then(() => this.audioContext.decodeAudioData(bytes));
+      buffer = await abortableDecode(decoding, signal);
+    } catch (error) {
+      if (signal?.aborted) throw signal.reason ?? new DOMException("Audio load aborted", "AbortError");
+      throw redactedDecodeError(error, url);
+    }
     throwIfAborted(signal);
     request.onProgress?.({ url, phase: "complete", loadedBytes: byteLength, totalBytes: byteLength });
     return { url, buffer };
@@ -57,6 +65,17 @@ export class AudioLoader implements AssetLoader<AudioAsset> {
 
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw signal.reason ?? new DOMException("Audio load aborted", "AbortError");
+}
+
+/** Decoder diagnostics never carry signed query strings, credentials or inline data. */
+function redactedDecodeError(error: unknown, url: string): Error {
+  let detail = "[error details unavailable]";
+  let name = "Error";
+  try { if (error instanceof Error) { detail = String(error.message); name = String(error.name); } else if (error !== undefined) detail = String(error); }
+  catch { /* A hostile cause cannot mask the decode failure. */ }
+  const cause = new Error(redactAssetMessage(detail, url));
+  cause.name = redactAssetMessage(name, url).slice(0, 128);
+  return new Error(`Audio decode failed for ${redactAssetUrl(url)}`, { cause });
 }
 
 function abortableDecode<T>(decoding: Promise<T>, signal?: AbortSignal): Promise<T> {

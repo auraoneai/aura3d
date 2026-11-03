@@ -407,7 +407,10 @@ const INSTANCED_MODEL_OPTION_KEYS: readonly string[] = [
 ];
 
 /** `instances.<primitive>` / `instances.custom` read the primitive options plus these. */
-const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget", "wind"];
+// S5-WP19-04: `transforms` / `colors` become the node's instances; a raw
+// `instances` / `instanceColors` option would be overwritten, so it is OPTION_IGNORED.
+const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget", "wind"]
+  .filter((key) => key !== "instances" && key !== "instanceColors");
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {

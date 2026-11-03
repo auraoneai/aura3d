@@ -51,7 +51,28 @@ export interface DependencyFinding {
   readonly name: string;
   readonly edge: DependencyEdge;
   /** A lock entry may be stale or unreachable and requires review. */
-  readonly disposition: "declared-dependency" | "lock-review" | "override-review" | "projected-dependency";
+  readonly disposition: "declared-dependency" | "lock-review" | "override-review" | "projected-dependency" | "harness-installed";
+}
+
+/**
+ * An install profile that exists only at install time, such as a packed
+ * consumer project whose manifest is synthesized from the candidate archives.
+ */
+export interface VirtualInstallProfile {
+  readonly path: string;
+  readonly manifest: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * A standalone external comparison harness (for example a three.js or Babylon
+ * benchmark). It is inventoried but excluded from shipped profiles; it fails the
+ * audit if the workspace or the root lock would install it.
+ */
+export interface ExternalHarnessRecord {
+  readonly path: string;
+  readonly declaredEngines: readonly string[];
+  readonly workspaceMember: boolean;
+  readonly locked: boolean;
 }
 
 /**
@@ -86,6 +107,8 @@ export interface DependencyGraphReport {
   readonly installProfiles: { readonly path: string; readonly lockfile: string | null; readonly lockVersion: string | null }[];
   /** One projection per supplied install profile that has no lockfile. */
   readonly projectedProfiles?: ProjectedProfileGraph[];
+  /** External comparison harnesses recorded as excluded from every shipped profile. */
+  readonly externalHarnesses?: ExternalHarnessRecord[];
   readonly payloadEntries: { readonly container: string; readonly path: string; readonly sha256: string; readonly size: number }[];
   readonly edges: DependencyEdge[];
   readonly findings: DependencyFinding[];
@@ -97,6 +120,10 @@ export interface DependencyGraphOptions {
   readonly payloads?: readonly string[];
   /** Standalone installation directories outside the root pnpm workspace. */
   readonly installProfiles?: readonly string[];
+  /** Install-time profiles (packed consumer projects); projected like unlocked profiles. */
+  readonly virtualProfiles?: readonly VirtualInstallProfile[];
+  /** Standalone external comparison harness directories excluded from shipped profiles. */
+  readonly externalHarnesses?: readonly string[];
   readonly prohibitedPackages?: readonly string[];
 }
 
@@ -217,6 +244,16 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
     }
   }
 
+  for (const virtual of options.virtualProfiles ?? []) {
+    if (!virtual || typeof virtual.path !== "string" || !/^[\w@./:-]+$/.test(virtual.path) || installProfiles.some((item) => item.path === virtual.path)) {
+      throw new Error(`Invalid or duplicate virtual install profile: ${String(virtual?.path)}`);
+    }
+    const manifest = object(virtual.manifest, `virtual profile ${virtual.path}`);
+    addManifest(manifest, `${virtual.path}/package.json`, "profile", manifests, edges);
+    installProfiles.push({ path: virtual.path, lockfile: null, lockVersion: null });
+    unlockedManifests.push({ path: virtual.path, manifest });
+  }
+
   for (const supplied of options.payloads ?? []) {
     const path = resolve(base, supplied);
     if (lstatSync(path).isSymbolicLink()) throw new Error(`Payload may not be a symlink: ${path}`);
@@ -245,6 +282,31 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
   }
 
   const prohibited = new Set(options.prohibitedPackages ?? DEFAULT_PROHIBITED_PACKAGES);
+  const externalHarnesses: ExternalHarnessRecord[] = [];
+  const harnessFindings: DependencyFinding[] = [];
+  for (const supplied of options.externalHarnesses ?? []) {
+    const directory = resolve(base, supplied);
+    const path = displayPath(base, directory);
+    if (path === "." || path.startsWith("..") || isAbsolute(path)) throw new Error(`External harness must be inside the repository: ${supplied}`);
+    if (installProfiles.some((item) => item.path === path || item.path.startsWith(`${path}/`))) {
+      throw new Error(`External comparison harness may not also be an install profile: ${path}`);
+    }
+    const manifestPath = join(directory, "package.json");
+    const declaredEngines = new Set<string>();
+    if (existsSync(manifestPath)) {
+      const manifest = readJson(manifestPath);
+      for (const field of dependencyFields) {
+        for (const name of Object.keys(optionalObject(manifest[field]) ?? {})) if (prohibited.has(name)) declaredEngines.add(name);
+      }
+    }
+    const workspaceMember = manifestPaths.has(manifestPath);
+    const locked = lock.edges.some((edge) => edge.source === "lock-importer" && (edge.owner === path || edge.owner.startsWith(`${path}/`)));
+    externalHarnesses.push({ path, declaredEngines: [...declaredEngines].sort(), workspaceMember, locked });
+    if (workspaceMember || locked) {
+      harnessFindings.push({ name: [...declaredEngines][0] ?? path, disposition: "harness-installed",
+        edge: makeEdge("manifest", `${path}/package.json`, "packageIdentity", path, "") });
+    }
+  }
   const projectedProfiles = unlockedManifests.map(({ path, manifest }) =>
     projectProfile(path, manifest, lock.edges, manifests.filter((entry) => entry.source === "workspace"), prohibited));
   const projectedFindings: DependencyFinding[] = projectedProfiles.flatMap((profile) => profile.prohibited.map((name) => ({
@@ -258,12 +320,14 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
       name, edge,
       disposition: edge.source === "override" ? "override-review" : edge.source.startsWith("lock-") || edge.source === "npm-lock-package" ? "lock-review" : "declared-dependency"
     }));
-  }).concat(projectedFindings);
+  }).concat(projectedFindings, harnessFindings);
   return {
-    files, manifests, lockPackages, lockSnapshots, npmLockPackages, installProfiles, projectedProfiles, payloadEntries, edges, findings,
+    files, manifests, lockPackages, lockSnapshots, npmLockPackages, installProfiles, projectedProfiles, externalHarnesses, payloadEntries, edges, findings,
     limitations: [
       "Lock entries include all snapshots and may include unreachable or platform-specific packages.",
       "Standalone profiles and payloads are inspected only when supplied; unlocked profiles get only a workspace-lock projection, which a registry install can resolve differently.",
+      "Virtual (packed consumer) profiles are synthesized manifests projected onto the root lock; workspace packages stand in for their packed archives, which are scanned separately as payloads.",
+      "External comparison harnesses are inventoried only; they fail the audit if the workspace or root lock would install them, and their own engine dependencies are recorded, not findings.",
       "Source, generated code and runtime requests need separate audits.",
       "Package-name matches are review evidence and absence of a match does not establish independent authorship."
     ]
@@ -538,8 +602,18 @@ function registryTarballName(value: string | null): string | null {
 
 function installedPackageName(path: string): string | null {
   if (path === "") return null;
-  const parts = path.split("/");
+  let parts = path.split("/");
+  // npm records a local `file:` dependency outside the project as a leading
+  // `../` link-target node (for example "../.."); it is a package, not an
+  // installed location, so only the remaining segments must be normal names.
+  let leading = 0;
+  while (leading < parts.length && parts[leading] === "..") leading++;
+  if (leading > 0) {
+    parts = parts.slice(leading);
+    if (!parts.length) return null;
+  }
   if (parts.some((part) => part === ".." || part === "." || part === "") || path.includes("\\")) throw new Error(`Unsafe npm lock package path ${path}`);
+  if (leading > 0 && parts.includes("node_modules")) throw new Error(`Unsafe npm lock package path ${path}`);
   const index = parts.lastIndexOf("node_modules");
   if (index < 0) return null; // An npm workspace package outside node_modules.
   if (index + 1 >= parts.length) throw new Error(`Unsupported npm lock package path ${path}`);

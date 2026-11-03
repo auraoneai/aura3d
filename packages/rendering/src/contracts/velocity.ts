@@ -27,6 +27,14 @@ export interface TemporalCameraMatrices {
   readonly unjittered: Float32Array;
   /** Previous committed frame's unjittered clip-space view-projection. */
   readonly previous: Float32Array;
+  /** Current physical (unjittered) projection, when the caller supplied it. */
+  readonly projection?: Float32Array;
+  /**
+   * Projection of the previous committed frame (the current one on a first
+   * frame). With `previous` it recovers previous view-space depth exactly,
+   * independent of the standard, reversed or logarithmic depth convention.
+   */
+  readonly previousProjection?: Float32Array;
   /** Previous committed signed linear-Z surface, if provided by this history. */
   readonly linZ?: RenderTarget;
   /** Current signed linear-Z output; promoted to linZ on commit. */

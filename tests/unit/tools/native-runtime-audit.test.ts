@@ -65,8 +65,8 @@ describe("native implementation source evidence", () => {
       ["src/random.ts", "Numerical Recipes linear congruential generator"]
     ]);
     expect(equations.every((finding) => finding.line === 1 && finding.review === undefined)).toBe(true);
-    expect(report.candidateReview).toEqual({ candidates: 4, reviewed: 0, unreviewed: 4, byDisposition: {} });
-    expect(report.limitations.join(" ")).toContain("only a recorded human disposition classifies them");
+    expect(report.candidateReview).toEqual({ candidates: 4, reviewed: 0, unreviewed: 4, byDisposition: {}, gatedUnreviewed: 4 });
+    expect(report.limitations.join(" ")).toContain("only a recorded reviewer disposition classifies them");
   });
 
   it("applies digest-bound human candidate dispositions and validates them", () => {

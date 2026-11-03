@@ -1256,6 +1256,9 @@ export function runV2HdrStages(
     ? captureCustomReactiveInput(host, temporal, source.width, source.height, frameContext)
     : undefined;
   const expectedDepth = captureExpectedDepthInput(host, temporal, source.width, source.height, frameContext);
+  // Exact previous linear depth in velocity.a: a validated borrowed input, or
+  // the view's own renderer-owned motion pass.
+  const exactPreviousDepth = Boolean(expectedDepth) || temporal?.v2?.previousDepth === "object-velocity";
   const assertExpectedDepth = (outputs: readonly RenderTarget[] = []): void => {
     if (expectedDepth) assertExpectedDepthInput(host, expectedDepth, outputs);
   };
@@ -1424,14 +1427,14 @@ export function runV2HdrStages(
     }
     // §8.6: closest-depth 3×3 velocity for the silhouette-correct reprojection.
     assertExpectedDepth();
-    velocityLease = scratch.acquire({ width: w, height: h, format: expectedDepth ? "rgba32f" : "rgba16f", samples: 1, depth: false });
+    velocityLease = scratch.acquire({ width: w, height: h, format: exactPreviousDepth ? "rgba32f" : "rgba16f", samples: 1, depth: false });
     dilatedVelocity = velocityLease.target;
     const dilateProg = program(state, gl, "velocity-dilate", VELOCITY_DILATE_GLSL);
     draw(host, state, dilateProg, asGlTarget(dilatedVelocity), [asGlTarget(temporal.velocity).colorHandle, asGlTarget(linZFull!).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(dilateProg, "u_velocity"), 0);
       g.uniform1i(g.getUniformLocation(dilateProg, "u_linearDepth"), 1);
-      g.uniform1i(g.getUniformLocation(dilateProg, "u_hasExpectedDepth"), expectedDepth ? 1 : 0);
-      if (expectedDepth) g.uniform1f(g.getUniformLocation(dilateProg, "u_depthNear"), temporal.v2!.depthNear);
+      g.uniform1i(g.getUniformLocation(dilateProg, "u_hasExpectedDepth"), exactPreviousDepth ? 1 : 0);
+      if (exactPreviousDepth) g.uniform1f(g.getUniformLocation(dilateProg, "u_depthNear"), temporal.v2!.depthNear);
     }, expectedDepth ? () => assertExpectedDepth([dilatedVelocity!]) : undefined);
     assertExpectedDepth();
   }
@@ -1686,7 +1689,7 @@ export function runV2HdrStages(
       g.uniform1i(g.getUniformLocation(taaProg, "u_linZPrev"), 3);
       g.uniform1i(g.getUniformLocation(taaProg, "u_reactive"), 4);
       g.uniform1i(g.getUniformLocation(taaProg, "u_hasReactive"), temporal.v2!.reactive ? 1 : 0);
-      g.uniform1i(g.getUniformLocation(taaProg, "u_hasExpectedDepth"), expectedDepth ? 1 : 0);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_hasExpectedDepth"), exactPreviousDepth ? 1 : 0);
       g.uniform2f(g.getUniformLocation(taaProg, "u_jitterUv"), temporal.v2!.jitterClip[0] * 0.5, temporal.v2!.jitterClip[1] * 0.5);
       const previousJitter = temporal.v2!.previousJitterClip ?? [0, 0];
       g.uniform2f(g.getUniformLocation(taaProg, "u_previousJitterUv"), previousJitter[0] * 0.5, previousJitter[1] * 0.5);

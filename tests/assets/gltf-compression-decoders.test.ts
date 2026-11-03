@@ -504,10 +504,12 @@ describe("glTF compression decoder hooks", () => {
     const asset = await new GLTFLoader().load({ url: dataGLTF(twoTexturedMaterialsGLTF()) }, context());
     let disposedGeometryCount = 0;
     const disposedTextureLabels: string[] = [];
+    // Count through to the real dispose: 5.0 cleanup verifies `disposed` (a getter
+    // that is true only after Geometry's own retirement completes) after each call.
+    const realGeometryDispose = Geometry.prototype.dispose;
     const geometryDispose = vi.spyOn(Geometry.prototype, "dispose").mockImplementation(function disposeSpy(this: Geometry) {
       disposedGeometryCount += 1;
-      this.vertexBuffer.dispose();
-      this.indexBuffer?.dispose();
+      realGeometryDispose.call(this);
     });
     const textureDispose = vi.spyOn(Texture.prototype, "dispose").mockImplementation(function disposeSpy(this: Texture) {
       disposedTextureLabels.push(this.label);

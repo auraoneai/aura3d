@@ -121,6 +121,35 @@ supports resize, and deterministically disposes both owned targets. Stereo
 composition is not part of this pass catalog and is no longer listed in the
 composer capability report. SMAA is explicitly unsupported.
 
+### Renderer-owned motion inputs (5.0)
+
+When TAA, temporal reconstruction or motion blur is active and the caller
+borrows no `velocity`, `reactive` or expected-depth input, the `Renderer`
+passes `motion: "renderer"` and the camera's physical projection to its
+per-view `TemporalHistory`. Each view then owns two render-sized surfaces
+(`renderer-temporal-object-velocity`, `rgba32f`; `renderer-temporal-reactive`,
+`rgba8`) and renders them from the prepared draw list before the forward pass
+(`packages/rendering/src/renderer/ObjectMotionPass.ts`):
+
+- velocity `.rg` is current-minus-previous unjittered motion, `.a` the exact
+  previous linear view depth of the same surface point, from the committed
+  previous projection (`inverse(previousProjection) * previousClip`), so it is
+  independent of the standard, reversed or logarithmic depth convention; `3e38`
+  where there is no previous surface. Background pixels carry camera-only
+  reprojection of the view ray;
+- the previous pose is exact for rigid, instanced (per-instance previous
+  matrices), skinned (previous joint palette) and morphed (previous weights)
+  content; engine batch carriers draw each logical member with its own
+  previous model under its lifetime identity;
+- reactive is 1 under transparent or particle coverage and where a deformed
+  object has history but no previous-pose correspondence.
+
+The frame reports `motionSource: "object"`. `previous-depth-approximation`
+remains in `unsupportedMotion` only when the camera supplies no projection
+(a bare view-projection). WebGPU keeps the stable
+`WEBGPU_TEMPORAL_V2_UNSUPPORTED` refusal. Histories, surfaces and per-draw
+materials are retired with the view.
+
 ### Caller-supplied previous depth for temporal resolve
 
 The lower-level `Renderer` temporal options accept the explicit opt-in

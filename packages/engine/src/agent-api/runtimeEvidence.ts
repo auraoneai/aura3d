@@ -43,6 +43,7 @@ export function createRuntimeNodeImportedAssetEvidence(
     activeMorphTargets: { ...(input.activeMorphTargets ?? {}) },
     missingMorphTargets: [...(input.missingMorphTargets ?? [])],
     ...(input.bounds ? { bounds: isRuntimeNodeEvidenceBounds(input.bounds) ? input.bounds : calculateRuntimeNodeBounds(input.bounds) } : {}),
+    ...(input.deformedBounds ? { deformedBounds: input.deformedBounds } : {}),
     renderItemCount: input.renderItemCount ?? 0,
     skinnedRenderItemCount: input.skinnedRenderItemCount ?? 0,
     morphRenderItemCount: input.morphRenderItemCount ?? 0,
@@ -104,6 +105,15 @@ export function cloneRuntimeImportedAssetEvidence(evidence: AuraRuntimeNodeImpor
           max: [...evidence.bounds.max]
         }
       : undefined,
+    ...(evidence.deformedBounds ? {
+      deformedBounds: {
+        ...evidence.deformedBounds,
+        center: [...evidence.deformedBounds.center],
+        size: [...evidence.deformedBounds.size],
+        min: [...evidence.deformedBounds.min],
+        max: [...evidence.deformedBounds.max]
+      }
+    } : {}),
     diagnostics: evidence.diagnostics.map((diagnostic) => ({ ...diagnostic }))
   };
 }
@@ -124,6 +134,8 @@ export function sanitizeRuntimeMorphWeight(weight: number): number {
  * weights still sanitize to 0.
  */
 export const AURA_UNCLAMPED_MORPH_WEIGHTS_TAG = "aura:morph-unclamped";
+/** Runtime tag: publish per-frame posed (skinned) world bounds as `importedAssetEvidence().deformedBounds`. */
+export const AURA_DEFORMED_BOUNDS_EVIDENCE_TAG = "aura:evidence-deformed-bounds";
 
 export function sanitizeRuntimeMorphWeightUnclamped(weight: number): number {
   return Number.isFinite(weight) ? weight : 0;

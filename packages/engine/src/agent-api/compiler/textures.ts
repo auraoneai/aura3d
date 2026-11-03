@@ -17,7 +17,7 @@ export { decodeProductionImageFallback, PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS, pr
 import type { AssetRequestOptions } from "@aura3d/assets/browser";
 import { AuraRuntimeError } from "./errors.js";
 import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { createProductionPrimitiveMaterial, productionPrimitiveCullMode, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
+import { createProductionPrimitiveMaterial, productionPrimitiveAlphaCutoff, productionPrimitiveRenderState, productionPrimitiveSpecularOptions, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
 import { primitive } from "../nodes/primitives.js";
 import { assertSdfTextMaterialSupported, rootSdfFontAtlas, text3D } from "../nodes/text3d.js";
 import { compileSdfTextSnapshot } from "./text.js";
@@ -1380,13 +1380,10 @@ export async function upgradeProductionPrimitiveResource(
       ...(spec?.ior === undefined ? {} : { ior: Math.max(1, spec.ior) }),
       ...(spec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(spec.attenuationColor) } : {}),
       ...(spec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, spec.attenuationDistance) }),
+      ...productionPrimitiveSpecularOptions(spec),
       environmentIntensity: scalars.environmentIntensity,
       envMapIntensity: scalars.envMapIntensity,
-      renderState: {
-        blend: scalars.opacity < 0.999,
-        depthWrite: scalars.opacity >= 0.999,
-        cullMode: productionPrimitiveCullMode(node, scalars.opacity)
-      },
+      renderState: productionPrimitiveRenderState(node, scalars.opacity),
       // threejs-parity ST-01 (L4): a live handle's sampler/transform wins over the
       // declarative default — three binds each `Texture`'s own sampling state, so
       // `handle.wrapS`/`minFilter`/`repeat`/`offset`/`rotation`/`center` carry the
@@ -1432,6 +1429,8 @@ export async function upgradeProductionPrimitiveResource(
         }
         : {})
     });
+    const texturedCutoff = productionPrimitiveAlphaCutoff(node);
+    if (texturedCutoff > 0) upgradedMaterial.setParameter("u_alphaCutoff", texturedCutoff);
     let currentGeneration = true;
     try { currentGeneration = isCurrentGeneration?.() ?? true; } catch { currentGeneration = false; }
     if (resource.material !== expectedMaterial || resource.materialSpec !== spec || expectedMaterial.disposed || signal?.aborted || !currentGeneration) {

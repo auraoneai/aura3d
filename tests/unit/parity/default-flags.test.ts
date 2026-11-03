@@ -116,8 +116,23 @@ describe("which parity flags are read by engine code", () => {
     expect([...readBy.keys()].sort()).toEqual(["A3D_PARITY_BATCHING", "A3D_PARITY_LINES"]);
   });
 
-  it("LINES is read only by the line/points/sprite compiler; BATCHING only by the batched node", () => {
-    expect([...new Set(readBy.get("A3D_PARITY_LINES"))].sort()).toEqual(["packages/engine/src/agent-api/compiler/lines.ts"]);
-    expect([...new Set(readBy.get("A3D_PARITY_BATCHING"))].sort()).toEqual(["packages/engine/src/agent-api/nodes/batched.ts"]);
+  it("LINES is read only by the line/points/sprite compiler and the renderer's sprite guards; BATCHING by the batched node and the renderer's combined-draw path", () => {
+    // 5.0 sprite validation reads LINES too: Renderer.ts assertSpriteFrameCamera
+    // checks generated-sprite camera matrices only when LINES is on, and the
+    // ForwardPass.ts clipped-sprite guard refuses a clipped sprite unless the
+    // LINES-gated generated billboard path is active. Neither renders anything.
+    expect([...new Set(readBy.get("A3D_PARITY_LINES"))].sort()).toEqual([
+      "packages/engine/src/agent-api/compiler/lines.ts",
+      "packages/rendering/src/ForwardPass.ts",
+      "packages/rendering/src/Renderer.ts"
+    ]);
+    // 5.0 native combined draws: the batched node's packed rows are executed by
+    // the renderer's multi-draw plan (ForwardPass.ts) and its BATCHING-gated
+    // shader features (ParityBatchDraw.ts); all three require the flag on.
+    expect([...new Set(readBy.get("A3D_PARITY_BATCHING"))].sort()).toEqual([
+      "packages/engine/src/agent-api/nodes/batched.ts",
+      "packages/rendering/src/ForwardPass.ts",
+      "packages/rendering/src/batching/shaders/ParityBatchDraw.ts"
+    ]);
   });
 });

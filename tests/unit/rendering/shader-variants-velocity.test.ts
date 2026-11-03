@@ -24,7 +24,9 @@ describe("prd03.velocity — shader variants (PRD-03 Phase 4)", () => {
     expect(velocityFeature.id).toBe("prd03.velocity");
     expect(velocityFeature.flag).toBe("A3D_QR_POST");
     expect(velocityFeature.chunks).toEqual(ALL_CHUNKS.map((c) => c.name));
-    expect(velocityFeature.defines("velocity")).toEqual({ [VELOCITY_MRT.define]: true });
+    // A3D_VELOCITY enables the deform chunks' previous-pose inputs (ed5a52d58).
+    expect(velocityFeature.defines("velocity")).toEqual({ [VELOCITY_MRT.define]: true, A3D_VELOCITY: true });
+    expect(velocityFeature.defines("velocity-instanced")).toEqual({ [VELOCITY_MRT.define]: true, A3D_VELOCITY: true, A3D_VELOCITY_PREVIOUS_INSTANCE: true });
   });
 
   it("ChunkHarness composes the full program with AURA_VELOCITY at location 1 and reactive at 2", () => {

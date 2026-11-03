@@ -396,7 +396,9 @@ describe("glTF asset inspection", () => {
       { url: createDefaultMaterialGltfUrl(), type: "gltf" },
       new LoadContext()
     );
-    const resources = await createGLTFRenderResources(asset);
+    // The glTF-spec default (white, roughness 1) is the materialsR185 path; flag-off
+    // deliberately uses a neutral gray fallback (createDefaultGLTFMaterial, a19e0fd72).
+    const resources = await createGLTFRenderResources(asset, { materialsR185: true });
     try {
       const report = inspectGLTFAsset(asset, resources);
       const geometry = resources.geometryLibrary.get("default-material-mesh");

@@ -787,6 +787,8 @@ function createProductionRuntimeRendererInputOwned(
             : prd01ModelMatrixCache?.modelMatrix(instancedPrimitiveModelNode(currentState.node, cache), resource.bounds, false, time) ?? createModelMatrix(instancedPrimitiveModelNode(currentState.node, cache), resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
+      // S5-WP19-04: the actor path always forwarded receiveShadow; primitives dropped it.
+      receiveShadow: currentState.node.receiveShadow,
       includeInAutoFrame: false,
       // threejs-parity L7/SG-09: spec parity fields ride the item so layer
       // gating, frustumCulled=false, and renderOrder sorting reach the draw.

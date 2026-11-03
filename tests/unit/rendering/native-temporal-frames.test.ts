@@ -3,10 +3,15 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { identityMat4 } from "@aura3d/scene";
+import { identityMat4, multiplyMat4, perspectiveMat4 } from "@aura3d/scene";
 import "../../../packages/rendering/src/lanes/prd03";
 import "../../../packages/rendering/src/lanes/prd06";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
+import { Material } from "../../../packages/rendering/src/Material";
+import { VertexBuffer } from "../../../packages/rendering/src/VertexBuffer";
+import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
+import { rememberBatchMembers } from "../../../packages/rendering/src/batching/BatchMembers";
+import { OBJECT_MOTION_SHADER, deformObjectMotionGeometry } from "../../../packages/rendering/src/renderer/ObjectMotionPass";
 import { MockRenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
@@ -777,6 +782,13 @@ describe("temporal reconstruction math and native GPU bindings", () => {
     expect(new DataView(webgpuTaaResolveUniforms(frame).buffer).getInt32(4, true)).toBe(0);
     expect(new DataView(webgpuTaaResolveUniforms(supported).buffer).getInt32(4, true)).toBe(1);
     expect(consumeTaaHistoryWritten(scopeId, "view", 2)).toBe(true);
+    // Renderer-owned motion: exact previous depth in velocity.a reaches dilation and the resolve.
+    expect(uniforms.get("u_hasExpectedDepth")!.every(value => value === 0)).toBe(true);
+    const ownedDepthStart = uniforms.get("u_hasExpectedDepth")!.length;
+    const owned = { ...supported, v2: { ...supported.v2!, motionSource: "object" as const, previousDepth: "object-velocity" as const } };
+    runV2HdrStages(host, source, pipeline, camera, owned, postContext);
+    expect(uniforms.get("u_hasExpectedDepth")!.slice(ownedDepthStart)).toEqual([1, 1]);
+    expect(consumeTaaHistoryWritten(scopeId, "view", 2)).toBe(true);
     failResolve = true;
     expect(() => runV2HdrStages(host, source, pipeline, camera, supported, postContext)).toThrow("resolve failed");
     expect(consumeTaaHistoryWritten(scopeId, "view", 2)).toBe(false);
@@ -926,5 +938,147 @@ describe("temporal reconstruction math and native GPU bindings", () => {
     expect(() => disposeNativePostEffects(host)).not.toThrow();
     expect(() => disposeNativePostEffects(host)).not.toThrow();
     postDiagnostics.resetScope(scopeId); owner.dispose(); source.dispose(); ldr.dispose(); device.dispose();
+  });
+});
+
+describe("renderer-owned object motion", () => {
+  const translate = (x: number, y = 0, z = 0) => { const out = id(); out[12] = x; out[13] = y; out[14] = z; return out; };
+  const mul = (a: ArrayLike<number>, b: ArrayLike<number>) => Float32Array.from(multiplyMat4(Array.from(a) as never, Array.from(b) as never));
+  const apply = (m: ArrayLike<number>, p: readonly number[]) => [0, 1, 2, 3].map(r => m[r]! * p[0]! + m[4 + r]! * p[1]! + m[8 + r]! * p[2]! + m[12 + r]! * (p[3] ?? 1));
+  const skinned = () => {
+    const buffer = new VertexBuffer(VertexFormat.P3J4W4, 3);
+    [[0, 0, 0], [1, 0, 0], [0, 1, 0]].forEach((p, v) => {
+      buffer.setAttribute(v, "position", p); buffer.setAttribute(v, "joints", [0, 1, 0, 0]); buffer.setAttribute(v, "weights", [0.5, 0.5, 0, 0]);
+    });
+    return new Geometry(buffer, null, "triangles");
+  };
+
+  it("compiles the motion program and deforms the current and previous pose independently", () => {
+    const executable = spawnSync("glslangValidator", ["--version"], { stdio: "ignore" });
+    if (!executable.error) {
+      const dir = mkdtempSync(join(tmpdir(), "aura-object-motion-"));
+      try {
+        for (const [stage, ext] of [["vertex", "vert"], ["fragment", "frag"]] as const) {
+          const path = join(dir, `motion.${ext}`);
+          writeFileSync(path, OBJECT_MOTION_SHADER[stage]);
+          const compiled = spawnSync("glslangValidator", ["-S", ext, path], { encoding: "utf8" });
+          expect(compiled.status, compiled.stdout + compiled.stderr).toBe(0);
+        }
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    }
+    if (process.env.A3D_REQUIRE_GLSLANG === "1") expect(executable.error).toBeUndefined();
+    // Morph (weights 0.5 now, 0.25 before) then skin (joint 1 moved +2 x now, +1 x before).
+    const geometry = skinned();
+    const palette = new Float32Array([...id(), ...translate(2)]);
+    const previousPalette = new Float32Array([...id(), ...translate(1)]);
+    const morphTargets = [{ positions: [[0, 0, 4], [0, 0, 4], [0, 0, 4]] as [number, number, number][] }];
+    const deformed = deformObjectMotionGeometry({ geometry, skinning: { jointCount: 2, matrices: palette }, morphTargets, morphWeights: [0.5] },
+      { previousMorphWeights: Float32Array.of(0.25), previousJointMatrices: previousPalette })!;
+    const data = Array.from(deformed.vertexBuffer.floats);
+    // vertex 1: rest (1,0,0); current: +z 2, skin x + 0.5*2; previous: +z 1, x + 0.5*1.
+    expect(data.slice(6, 12)).toEqual([2, 0, 2, 1.5, 0, 1]);
+    expect(data.slice(0, 6)).toEqual([1, 0, 2, 0.5, 0, 1]);
+    deformed.dispose(); geometry.dispose();
+  });
+
+  it("commits the previous projection with the view-projection and clears it on reset", () => {
+    const history = new VelocityHistory();
+    const first = Float32Array.from(perspectiveMat4(1, 1, 0.5, 50));
+    const second = Float32Array.from(perspectiveMat4(0.8, 1, 0.5, 50, { mode: "reversed" }));
+    const a = history.prepare(id(), [0, 0], 1, first);
+    expect(Array.from(a.previousProjection!)).toEqual(Array.from(first));
+    history.commit(1);
+    const b = history.prepare(id(), [0, 0], 2, second);
+    expect(Array.from(b.projection!)).toEqual(Array.from(second));
+    expect(Array.from(b.previousProjection!)).toEqual(Array.from(first));
+    expect(() => history.prepare(id(), [0, 0], 2, first)).toThrow(/projection/);
+    history.commit(2);
+    history.reset("camera-cut");
+    expect(Array.from(history.prepare(id(), [0, 0], 3, first).previousProjection!)).toEqual(Array.from(first));
+    expect(history.prepare(id(), [0, 0], 3, first).previous).toEqual(id());
+  });
+
+  it("owns per-view velocity and reactive surfaces with exact previous depth for every content kind", () => {
+    const device = new MockRenderDevice(); setRendererQrFlags(v2Flags, device);
+    device.beginFrame(8, 8);
+    const owner = new TemporalHistory();
+    const projection = Float32Array.from(perspectiveMat4(1, 1, 0.25, Infinity, { mode: "reversed", clipRange: "zero-to-one" }));
+    const view0 = translate(0, 0, -5), view1 = translate(-0.5, 0, -6);
+    const keys = { rigid: {}, instanced: {}, skinned: {}, glass: {} };
+    const glass = new Material({ shaderKey: "unlit", renderState: { blend: true, depthWrite: false } });
+    const skin = skinned();
+    const scene = (x: number, joint: number) => [
+      { geometry: triangle, label: "same", modelMatrix: translate(x), temporalObjectKey: keys.rigid },
+      { geometry: triangle, label: "same", temporalObjectKey: keys.instanced, instanceTransforms: new Float32Array([...translate(x), ...translate(-x)]) },
+      { geometry: skin, label: "same", temporalObjectKey: keys.skinned, skinning: { jointCount: 2, matrices: new Float32Array([...id(), ...translate(joint)]) } },
+      { geometry: triangle, label: "glass", temporalObjectKey: keys.glass, material: glass }
+    ];
+    const options = (frameId: number) => ({ viewId: "left", frameId, reconstruction: "temporal" as const, motion: "renderer" as const,
+      projection, outputWidth: 8, outputHeight: 8, depthNear: 0.25 });
+    const vp0 = mul(projection, view0), vp1 = mul(projection, view1);
+    try {
+      const o1 = options(1);
+      const firstItems = scene(0, 0);
+      const first = owner.prepare(device, 8, 8, firstItems, vp0, o1);
+      expect(first.velocity.label).toBe("renderer-temporal-object-velocity");
+      expect(first.v2!.reactive!.label).toBe("renderer-temporal-reactive");
+      expect(first.v2!.motionSource).toBe("object");
+      expect(first.v2!.previousDepth).toBe("object-velocity");
+      expect(first.v2!.unsupportedMotion).toEqual([]);
+      // A repeated pass of the same frame keeps the same owned surfaces.
+      expect(owner.prepare(device, 8, 8, firstItems, vp0, o1).velocity).toBe(first.velocity);
+      owner.commit("left", 1);
+      const second = owner.prepare(device, 8, 8, scene(1, 2), vp1, options(2));
+      expect(second.velocity).toBe(first.velocity);
+      expect(second.v2!.reactive).toBe(first.v2!.reactive);
+      expect(second.historyValid).toBe(true);
+      expect(temporalCanAccumulate(true, second.v2!.unsupportedMotion)).toBe(true);
+      // Previous linear depth of the rigid triangle's origin: view0 at z = -5 => 5.
+      const velocityMaterials = (owner as unknown as { views: Map<unknown, { materials: Material[] }> }).views.get("left")!.materials
+        .filter(material => material.getParameter("u_a3dMotionPass") === 0);
+      const rigid = velocityMaterials.find(material => material.getParameter("u_a3dMotionDeformed") === 0
+        && Array.from(material.getParameter("u_a3dMotionCurrent") as Float32Array).every((value, index) =>
+          Math.abs(value - mul(vp1, translate(1))[index]!) < 1e-5))!;
+      expect(rigid.getParameter("u_a3dMotionExactDepth")).toBe(1);
+      const previousView = rigid.getParameter("u_a3dMotionPreviousView") as Float32Array;
+      const viewPoint = apply(previousView, [0, 0, 0]);
+      expect(-viewPoint[2]! / viewPoint[3]!).toBeCloseTo(5, 4);
+      // The skinned draw reprojects its previous palette (joint moved 0 -> 2).
+      expect(velocityMaterials.some(material => material.getParameter("u_a3dMotionDeformed") === 1)).toBe(true);
+      // Views are isolated and retire their own surfaces.
+      const right = owner.prepare(device, 8, 8, scene(0, 0), vp0, { ...o1, viewId: "right" });
+      expect(right.velocity).not.toBe(first.velocity);
+      owner.disposeView("right");
+      expect(right.velocity.disposed).toBe(true);
+      expect(first.velocity.disposed).toBe(false);
+      expect(() => owner.prepare(device, 8, 8, [], vp1, { ...o1, frameId: 3, velocity: first.velocity }))
+        .toThrow(/replaces borrowed/);
+    } finally {
+      owner.dispose(); skin.dispose(); device.dispose();
+    }
+  });
+
+  it("reprojects batched members with their own previous transforms", () => {
+    const device = new MockRenderDevice(); setRendererQrFlags(v2Flags, device);
+    device.beginFrame(8, 8);
+    const owner = new TemporalHistory();
+    const memberKeys = [{}, {}];
+    const carrier = (x: number) => {
+      const members = memberKeys.map((key, index) => ({ geometry: triangle, label: "member", modelMatrix: translate(x * (index + 1)), temporalObjectKey: key }));
+      const batch = { geometry: triangle, label: "batch", temporalObjectKey: memberKeys };
+      rememberBatchMembers(batch, members);
+      return batch;
+    };
+    try {
+      owner.prepare(device, 8, 8, [carrier(0)], id(), { viewId: "b", frameId: 1, motion: "renderer", projection: id() });
+      owner.commit("b", 1);
+      owner.prepare(device, 8, 8, [carrier(1)], id(), { viewId: "b", frameId: 2, motion: "renderer", projection: id() });
+      const velocity = (owner as unknown as { views: Map<unknown, { materials: Material[] }> }).views.get("b")!.materials
+        .filter(material => material.getParameter("u_a3dMotionPass") === 0);
+      // Each member's current transform is paired with its own previous one (both were at the origin).
+      const currents = velocity.map(material => (material.getParameter("u_a3dMotionCurrent") as Float32Array)[12]).sort();
+      expect(currents).toEqual([1, 2]);
+      for (const material of velocity) expect((material.getParameter("u_a3dMotionPrevious") as Float32Array)[12]).toBe(0);
+    } finally { owner.dispose(); device.dispose(); }
   });
 });
