@@ -110,45 +110,80 @@ describe("actor material pointer bindings", () => {
     }
   });
 
+  // A whole-model replacement over a textured slot must sample (declare) or
+  // supply every authored map; transformed maps cannot be carried at all.
   it.each([
-    { kind: "map-scalar", required: false, replacement: "missing" },
-    { kind: "map-scalar", required: false, replacement: "foreign" },
-    { kind: "map-scalar", required: true, replacement: "missing" },
-    { kind: "map-scalar", required: true, replacement: "foreign" },
-    { kind: "texture-transform", required: false, replacement: "missing" },
-    { kind: "texture-transform", required: false, replacement: "foreign" },
-    { kind: "texture-transform", required: true, replacement: "missing" },
-    { kind: "texture-transform", required: true, replacement: "foreign" }
-  ] as const)("rejects $replacement custom maps for $kind pointers (required=$required)", async ({ kind, required, replacement }) => {
-    const foreignMap = texture();
-    const custom = replacement === "missing"
-      ? new PBRMaterial({ name: "override" })
-      : new TexturedPBRMaterial({ name: "override", normalTexture: foreignMap, occlusionTexture: foreignMap });
+    { kind: "map-scalar", required: false },
+    { kind: "map-scalar", required: true },
+    { kind: "texture-transform", required: false },
+    { kind: "texture-transform", required: true }
+  ] as const)("rejects a custom material that drops authored maps for $kind pointers (required=$required)", async ({ kind, required }) => {
+    const custom = new PBRMaterial({ name: "override" });
     const factory = vi.fn(() => custom);
     try {
-      if (replacement === "foreign") {
-        expect((custom.getParameter("u_normalTexture") as TextureBinding).texture).toBe(foreignMap);
-        expect((custom.getParameter("u_occlusionTexture") as TextureBinding).texture).toBe(foreignMap);
-      } else {
-        expect(custom.getParameter("u_normalTexture")).toBeUndefined();
-        expect(custom.getParameter("u_occlusionTexture")).toBeUndefined();
-      }
+      expect(custom.getParameter("u_normalTexture")).toBeUndefined();
+      expect(custom.getParameter("u_occlusionTexture")).toBeUndefined();
       await expect(createTypedGLBActor({
-        id: `custom-pointer-${kind}-${required}-${replacement}`,
+        id: `custom-pointer-${kind}-${required}-missing`,
         asset: { url: animatedGltfUrl({ kind, required }), format: "gltf" }, width: 8, height: 8,
         imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([128, 128, 255, 255]), colorSpace: "linear" }),
         customMaterialFactory: factory, shareTextures: false
       })).rejects.toMatchObject({
         code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED",
-        message: expect.stringContaining("custom replacements cannot preserve authored texture maps or alpha coverage")
+        message: kind === "texture-transform"
+          ? expect.stringContaining("with a texture transform, which a custom shader binding cannot carry")
+          : expect.stringContaining("does not declare texture2d uniform(s) normalTexture, occlusionTexture")
       });
-      expect(factory).not.toHaveBeenCalled();
-      expect(custom.disposed).toBe(false);
+      // A transformed map is rejected while planning, before any material is created.
+      expect(factory).toHaveBeenCalledTimes(kind === "texture-transform" ? 0 : 1);
+    } finally {
+      custom.dispose();
+    }
+  });
+
+  it("rejects caller-supplied replacement maps when the overridden pointer tracks are required", async () => {
+    const foreignMap = texture();
+    const custom = new TexturedPBRMaterial({ name: "override", normalTexture: foreignMap, occlusionTexture: foreignMap });
+    try {
+      await expect(createTypedGLBActor({
+        id: "custom-pointer-map-scalar-required-foreign",
+        asset: { url: animatedGltfUrl({ kind: "map-scalar", required: true }), format: "gltf" }, width: 8, height: 8,
+        imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([128, 128, 255, 255]), colorSpace: "linear" }),
+        customMaterialFactory: () => custom, shareTextures: false
+      })).rejects.toThrow(/Required KHR_animation_pointer binding unavailable.*imported-material-overridden/);
+      expect(custom.disposed).toBe(true);
       expect(foreignMap.disposed).toBe(false);
     } finally {
       custom.dispose();
       foreignMap.dispose();
     }
+  });
+
+  it("accepts caller-supplied replacement maps over authored maps and reports the optional pointer tracks overridden", async () => {
+    const foreignMap = texture();
+    const custom = new TexturedPBRMaterial({ name: "override", normalTexture: foreignMap, occlusionTexture: foreignMap });
+    const actor = await createTypedGLBActor({
+      id: "custom-pointer-map-scalar-optional-foreign",
+      asset: { url: animatedGltfUrl({ kind: "map-scalar", required: false }), format: "gltf" }, width: 8, height: 8,
+      imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([128, 128, 255, 255]), colorSpace: "linear" }),
+      customMaterialFactory: () => custom, shareTextures: false
+    });
+    try {
+      const items = actor.collectRenderItems();
+      expect(items).toHaveLength(1);
+      expect(items[0]!.material).toBe(custom);
+      // Caller-supplied maps are kept, never overwritten by the authored ones.
+      expect((custom.getParameter("u_normalTexture") as TextureBinding).texture).toBe(foreignMap);
+      expect((custom.getParameter("u_occlusionTexture") as TextureBinding).texture).toBe(foreignMap);
+      for (const track of actor.pipeline.asset.animations[0]!.tracks) {
+        expect(actor.animation.inspectTrackBinding(track)).toMatchObject({ status: "unavailable", reason: "imported-material-overridden" });
+      }
+    } finally {
+      actor.dispose();
+    }
+    expect(custom.disposed).toBe(true);
+    expect(foreignMap.disposed).toBe(false);
+    foreignMap.dispose();
   });
 
   it("does not claim guarded imported material tracks apply when a texture-free actor draws a custom material", async () => {

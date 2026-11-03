@@ -374,12 +374,39 @@ export class ProjectSceneRuntime<Host extends ProjectSceneHost = ProjectSceneHos
     });
   }
 
-  /** Only decoded, live project textures are exposed; asset metadata is not a texture. */
+  /**
+   * Only decoded, live project textures are exposed; asset metadata is not a
+   * texture. Textures the live device holds that no project asset owns
+   * (render targets, shadow maps, generated lookups) follow as runtime-only
+   * entries with stable per-handle identifiers.
+   */
   getInspectableTextures(): readonly InspectableTexture[] {
-    const direct = [...this.textureAssets].flatMap(([id, entry]) => entry.texture && !entry.texture.disposed ? [{ id, texture: entry.texture }] : []);
+    const direct = [...this.textureAssets].flatMap(([id, entry]) => entry.texture && !entry.texture.disposed ? [{ id, texture: entry.texture, origin: "asset" as const }] : []);
     const embedded = [...this.meshAssets].flatMap(([assetId, entry]) => [...(entry.resources?.textureLibrary ?? [])]
-      .flatMap(([key, texture]) => texture.disposed ? [] : [{ id: embeddedTextureId(assetId, key), texture }]));
-    return [...direct, ...embedded];
+      .flatMap(([key, texture]) => texture.disposed ? [] : [{ id: embeddedTextureId(assetId, key), texture, origin: "asset" as const }]));
+    const owned = new Set<Texture>([...direct, ...embedded].map((entry) => entry.texture));
+    for (const entry of this.textureAssets.values()) if (entry.linearTexture) owned.add(entry.linearTexture);
+    return [...direct, ...embedded, ...this.runtimeOnlyTextures(owned)];
+  }
+
+  private runtimeTextureIds?: WeakMap<Texture, string>;
+  private nextRuntimeTextureId?: number;
+
+  private runtimeOnlyTextures(owned: ReadonlySet<Texture>): InspectableTexture[] {
+    let live: readonly Texture[] = [];
+    try { live = this.renderer?.device.getLiveTextures?.() ?? []; } catch { return []; }
+    return live.flatMap((texture) => {
+      if (texture.disposed || owned.has(texture)) return [];
+      const ids = this.runtimeTextureIds ??= new WeakMap<Texture, string>();
+      let id = ids.get(texture);
+      if (!id) {
+        const next = this.nextRuntimeTextureId ?? 1;
+        this.nextRuntimeTextureId = next + 1;
+        id = `${RUNTIME_TEXTURE_PREFIX}${next}`;
+        ids.set(texture, id);
+      }
+      return [{ id, texture, origin: "runtime" as const }];
+    });
   }
 
   textureInspectionState(): { readonly status: "loading" | "ready" | "error"; readonly message?: string } {
@@ -392,6 +419,12 @@ export class ProjectSceneRuntime<Host extends ProjectSceneHost = ProjectSceneHos
 
   textureResourceState(id: string): TextureResourceState | null {
     const entry = this.textureAssets.get(id);
+    if (!entry && id.startsWith(RUNTIME_TEXTURE_PREFIX)) {
+      const texture = this.getInspectableTextures().find((candidate) => candidate.id === id)?.texture;
+      // Listed by the device itself, so it is a live device allocation.
+      return texture ? { status: "ready", gpuResident: true, message: "Runtime-only texture created by the renderer, not a project asset." }
+        : { status: "unloaded", message: "This runtime texture has been released by the renderer." };
+    }
     if (!entry) {
       const assetId = embeddedTextureAssetId(id);
       const mesh = assetId ? this.meshAssets.get(assetId) : undefined;
@@ -701,6 +734,8 @@ function createQuadGeometry(): Geometry {
 function textureAssetKey(asset: EditorAssetRecord): string {
   return JSON.stringify([asset.uri, asset.cacheKey ?? null, asset.revision ?? 1]);
 }
+
+const RUNTIME_TEXTURE_PREFIX = "runtime:";
 
 function embeddedTextureId(assetId: string, key: string): string {
   return `gltf-texture:${encodeURIComponent(assetId)}:${encodeURIComponent(key)}`;

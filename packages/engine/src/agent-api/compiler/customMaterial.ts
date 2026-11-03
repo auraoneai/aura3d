@@ -352,6 +352,9 @@ export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: 
     else if (isAuraTextureRef(value)) binding = bindingForTextureRef(value, name);
     // Placeholder until `upgradeCustomMaterialTextures` loads the asset's url.
     else if (type === "texture2d" && isAssetTextureRef(value)) binding = new TextureBinding({ name, texture: null, required: false });
+    // An empty declaration samples the neutral fallback; on an imported model
+    // slot it receives the slot's authored map of the same name.
+    else if (type === "texture2d" && (value === undefined || value === null)) binding = new TextureBinding({ name, texture: null, required: false });
     if (!binding) invalidSpec("material.custom", `uniform "${name}" (${type}) expects a TextureBinding, a texture handle or a Texture${type === "texture2d" ? ", or a texture asset ref" : ""}`);
     const texture = binding.texture;
     if (!texture && type !== "texture2d") invalidSpec("material.custom", `uniform "${name}" requires a bound ${type} texture`);

@@ -1060,6 +1060,12 @@ function modelBoundsCollider(node: AuraModelNode): { readonly shape: ReturnType<
     if (metadata?.center !== undefined) {
       throw new RangeError("MODEL_COLLIDER_INVALID_BOUNDS: bounds center requires metadata size or min/max.");
     }
+    if (node.asset.bounds === undefined || node.asset.bounds === null) {
+      // Never default to unit bounds: a guessed box would collide where nothing is drawn.
+      const error = new RangeError(`MODEL_COLLIDER_MISSING_BOUNDS: model '${node.asset.id}' has no asset bounds or bounds metadata; add bounds to the asset (aura3d assets inspect) or declare an explicit physics shape.`);
+      Object.assign(error, { code: "MODEL_COLLIDER_MISSING_BOUNDS" });
+      throw error;
+    }
     size = vector(node.asset.bounds, "asset bounds", true);
   }
   const normalize = shouldNormalizeModelNode(node);

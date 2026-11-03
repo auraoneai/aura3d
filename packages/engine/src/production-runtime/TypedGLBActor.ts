@@ -44,6 +44,7 @@ export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } 
 import {
   consolidateStaticMeshes,
   PortableShaderMaterial,
+  TextureBinding,
   type Material,
   type MeshConsolidationInput,
   type MeshConsolidationResult,
@@ -462,6 +463,89 @@ interface CustomSlotPlanEntry {
   readonly rule: ModelCustomMaterialSlotOverride;
   readonly skinned: Set<ActorRenderable["renderable"]>;
   hasInstanceColors: boolean;
+  /** Authored-map uniform names (`u_<slot>Texture`) of the source material, mapped to bindability. */
+  readonly authoredMaps: ReadonlyMap<string, boolean>;
+}
+
+type GLTFSourceMaterial = ProductionGLTFRenderPipeline["asset"]["materials"][number];
+type GLTFSourceTextureInfo = NonNullable<GLTFSourceMaterial["baseColorTexture"]>;
+
+/**
+ * Authored glTF maps a custom slot shader can sample. Each map binds to the
+ * shader uniform of the same name the imported PBR material uses (declare
+ * `baseColorTexture` in `material.custom.uniforms` as `texture2d` with no value
+ * to receive the slot's authored base-colour map; it resolves to
+ * `u_baseColorTexture`). Specular-glossiness maps have no portable binding.
+ */
+const AUTHORED_SLOT_MAPS: readonly { readonly uniform: string; readonly texture: (material: GLTFSourceMaterial) => GLTFSourceTextureInfo | undefined }[] = [
+  { uniform: "u_baseColorTexture", texture: (material) => material.baseColorTexture },
+  { uniform: "u_metallicRoughnessTexture", texture: (material) => material.metallicRoughnessTexture },
+  { uniform: "u_normalTexture", texture: (material) => material.normalTexture },
+  { uniform: "u_occlusionTexture", texture: (material) => material.occlusionTexture },
+  { uniform: "u_emissiveTexture", texture: (material) => material.emissiveTexture },
+  { uniform: "u_diffuseRoughnessTexture", texture: (material) => material.diffuseRoughness?.texture },
+  { uniform: "u_bumpTexture", texture: (material) => material.bump?.texture },
+  { uniform: "u_clearcoatTexture", texture: (material) => material.clearcoat?.texture },
+  { uniform: "u_clearcoatRoughnessTexture", texture: (material) => material.clearcoat?.roughnessTexture },
+  { uniform: "u_clearcoatNormalTexture", texture: (material) => material.clearcoat?.normalTexture },
+  { uniform: "u_transmissionTexture", texture: (material) => material.transmission?.texture },
+  { uniform: "u_diffuseTransmissionTexture", texture: (material) => material.diffuseTransmission?.texture },
+  { uniform: "u_diffuseTransmissionColorTexture", texture: (material) => material.diffuseTransmission?.colorTexture },
+  { uniform: "u_volumeThicknessTexture", texture: (material) => material.volume?.thicknessTexture },
+  { uniform: "u_specularTexture", texture: (material) => material.specular?.texture },
+  { uniform: "u_specularColorTexture", texture: (material) => material.specular?.colorTexture },
+  { uniform: "u_sheenColorTexture", texture: (material) => material.sheen?.colorTexture },
+  { uniform: "u_sheenRoughnessTexture", texture: (material) => material.sheen?.roughnessTexture },
+  { uniform: "u_anisotropyTexture", texture: (material) => material.anisotropy?.texture },
+  { uniform: "u_iridescenceTexture", texture: (material) => material.iridescence?.texture },
+  { uniform: "u_iridescenceThicknessTexture", texture: (material) => material.iridescence?.thicknessTexture }
+];
+
+/**
+ * The authored maps a custom slot must either sample or explicitly replace.
+ * A shader only receives the map itself, so a map that needs a second UV set
+ * or a KHR_texture_transform can be kept only by replacing it.
+ */
+function authoredSlotMaps(material: GLTFSourceMaterial, name: string, replaceTextures: boolean): ReadonlyMap<string, boolean> {
+  if (!replaceTextures && (material.pbrSpecularGlossiness?.diffuseTexture || material.pbrSpecularGlossiness?.specularGlossinessTexture)) {
+    throw unsupportedCustomModelMaterial(`slot '${name}' has specular-glossiness maps, which a custom shader cannot bind; replace them with a materialOverrides slot rule and replaceTextures: true`);
+  }
+  // uniform -> whether the map can be bound (false: it can only be replaced).
+  const maps = new Map<string, boolean>();
+  for (const entry of AUTHORED_SLOT_MAPS) {
+    const info = entry.texture(material);
+    if (!info) continue;
+    const bindable = info.texCoord === 0 && info.transform === undefined;
+    if (!replaceTextures && !bindable) {
+      throw unsupportedCustomModelMaterial(`slot '${name}' map ${entry.uniform.slice(2)} uses TEXCOORD_${info.texCoord}${info.transform ? " with a texture transform" : ""}, which a custom shader binding cannot carry; replace it with a materialOverrides slot rule and replaceTextures: true`);
+    }
+    maps.set(entry.uniform, bindable);
+  }
+  return maps;
+}
+
+/**
+ * Copy the replaced imported material's live authored-map bindings into the
+ * slot shader. Only a changed binding is written, so steady frames do not
+ * bump the material revision; a variant switch rebinds the variant's maps.
+ */
+function bindAuthoredSlotTextures(material: Material, authored: RenderItem["material"] | undefined, uniforms: readonly string[] | undefined): void {
+  if (!uniforms || !authored) return;
+  const base = ("baseMaterial" in authored ? authored.baseMaterial : authored) as Material;
+  for (const uniform of uniforms) {
+    const source = base.getParameter(uniform);
+    // A failed authored decode is already a load issue; keep the previous
+    // binding (or the neutral fallback) rather than failing every frame.
+    if (!(source instanceof TextureBinding) || !source.texture) continue;
+    const current = material.getParameter(uniform);
+    if (current instanceof TextureBinding && current.texture === source.texture) continue;
+    material.setParameter(uniform, new TextureBinding({ name: uniform, texture: source.texture, sampler: source.sampler, required: false }));
+  }
+}
+
+/** Declared `texture2d` uniforms of a custom slot material, by name. */
+function declaredTextureUniforms(material: Material): ReadonlySet<string> {
+  return new Set(material.uniformSchema.filter((uniform) => uniform.kind === "texture2d").map((uniform) => uniform.name));
 }
 
 /**
@@ -497,12 +581,12 @@ function planCustomMaterialSlots(
         throw unsupportedCustomModelMaterial(`the imported material slot '${candidate.name}' is ambiguous`);
       }
       const source = candidate.index === undefined ? definitions[0] : pipeline.asset.materials[candidate.index];
-      if (source && (source.alphaMode !== "OPAQUE" || hasAuthoredMaterialTextures(source, winner.replaceTextures))) {
-        throw unsupportedCustomModelMaterial(`slot '${candidate.name}' cannot preserve its authored texture maps or alpha coverage`);
+      if (source && source.alphaMode !== "OPAQUE") {
+        throw unsupportedCustomModelMaterial(`slot '${candidate.name}' cannot preserve its authored alpha coverage`);
       }
       let entry = plan.get(candidate.name);
       if (!entry) {
-        entry = { rule: winner, skinned: new Set(), hasInstanceColors: false };
+        entry = { rule: winner, skinned: new Set(), hasInstanceColors: false, authoredMaps: source ? authoredSlotMaps(source, candidate.name, winner.replaceTextures) : new Map() };
         plan.set(candidate.name, entry);
       }
       if (entry.rule !== winner) throw unsupportedCustomModelMaterial(`slot '${candidate.name}' has inconsistent selectors`);
@@ -677,9 +761,6 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
   if (options.customMaterialOverrides?.length && (options.deduplicateIdenticalMaterials || options.consolidateStaticMeshes)) {
     throw unsupportedCustomModelMaterial("per-slot replacements require distinct, unconsolidated imported materials");
   }
-  if (options.customMaterialFactory && options.materialVariant !== undefined) {
-    throw unsupportedCustomModelMaterial("an imported material variant cannot be visible under a whole-model custom replacement");
-  }
   const format = options.asset.format?.toLowerCase();
   if (!options.formatRegistry && format && format !== "glb" && format !== "gltf") {
     throw new Error(`No native model adapter is installed for format "${options.asset.format}"`);
@@ -744,7 +825,7 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
       ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
       // Capture the authored bindings first. Loading directly with a variant
       // makes the loader's binding snapshot use the variant as the default.
-      ...(options.materialVariant !== undefined && !options.customMaterialOverrides?.length ? { materialVariant: options.materialVariant } : {}),
+      ...(options.materialVariant !== undefined && !options.customMaterialOverrides?.length && !options.customMaterialFactory ? { materialVariant: options.materialVariant } : {}),
       ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
       ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
       ...(options.retainTextureResidencySources ? { retainTextureResidencySources: true } : {}),
@@ -769,6 +850,8 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
   let customMaterial: Material | undefined;
   const scopedMaterials = new Map<string, Material>();
   const ownedScopedMaterials = new Set<Material>();
+  /** Declared uniforms each slot material samples from the replaced authored material. */
+  const authoredSlotBindings = new Map<Material, readonly string[]>();
   let customSlotPlan: Map<string, CustomSlotPlanEntry> | undefined;
   let animationForCleanup: GLTFSceneAnimationRuntime | undefined;
   let customSkinnedSourceCount = 0;
@@ -860,7 +943,27 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
   if (isActorAnimationContextDisposed(animationContext) || request.signal?.aborted) {
     throw request.signal?.aborted ? request.signal.reason ?? actorLoadCancelled() : actorLoadCancelled();
   }
-  if (options.customMaterialFactory) {
+  // A whole-model shader over a textured or variant-bearing unskinned model is
+  // one slot rule matching every authored material: each slot (and variant)
+  // receives its own material instance with that slot's authored maps bound.
+  // Every authored map must be declared by the shader; to drop maps instead,
+  // use materialOverrides: [{ target: /.*/, material, replaceTextures: true }].
+  const routeWholeModelAsSlots = options.customMaterialFactory !== undefined &&
+    !pipeline.resources.scene.collectRenderables().some(({ renderable }) => Boolean(renderable.skinning)) &&
+    (options.materialVariant !== undefined ||
+      pipeline.resources.renderableBindings.some((binding) => binding.materialVariants.length > 0) ||
+      pipeline.asset.materials.some((material) => hasAuthoredMaterialTextures(material)));
+  const wholeModelFactory = routeWholeModelAsSlots ? undefined : options.customMaterialFactory;
+  const customSlotRules: readonly ModelCustomMaterialSlotOverride[] | undefined = routeWholeModelAsSlots
+    ? [{ target: () => true, factory: options.customMaterialFactory!, replaceTextures: false }]
+    : options.customMaterialOverrides;
+  if (wholeModelFactory && options.materialVariant !== undefined) {
+    throw unsupportedCustomModelMaterial("an imported material variant cannot be visible under a skinned whole-model custom replacement; target the skinned slot with materialOverrides");
+  }
+  if (routeWholeModelAsSlots && (options.deduplicateIdenticalMaterials || options.consolidateStaticMeshes)) {
+    throw unsupportedCustomModelMaterial("a textured or variant whole-model replacement requires distinct, unconsolidated imported materials");
+  }
+  if (wholeModelFactory) {
     assertSkinnedCustomSourceContract(pipeline);
     customSkinnedSourceCount = collectSkinnedSourceItems().length;
     if (typedOverrides.length > 0 || renderStateOverrides.length > 0 || options.tint) {
@@ -869,8 +972,11 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
       throw error;
     }
   }
-  if (options.customMaterialOverrides?.length) {
-    for (const rule of options.customMaterialOverrides) {
+  if (routeWholeModelAsSlots && (typedOverrides.length > 0 || renderStateOverrides.length > 0 || options.tint)) {
+    throw unsupportedCustomModelMaterial("PBR overrides and tint cannot be applied to a custom shader");
+  }
+  if (customSlotRules?.length) {
+    for (const rule of customSlotRules) {
       if (!rule || typeof rule.target !== "function" || typeof rule.factory !== "function" || typeof rule.replaceTextures !== "boolean") {
         throw unsupportedCustomModelMaterial("invalid custom material slot selector or factory");
       }
@@ -878,7 +984,7 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
     if (options.tint || renderStateOverrides.length > 0) {
       throw unsupportedCustomModelMaterial("tint and render-state overrides cannot be combined with custom slots");
     }
-    customSlotPlan = planCustomMaterialSlots(pipeline, options.customMaterialOverrides);
+    customSlotPlan = planCustomMaterialSlots(pipeline, customSlotRules);
     for (const name of customSlotPlan.keys()) {
       if (typedOverrides.some((override) => !override.target || override.target(name))) {
         throw unsupportedCustomModelMaterial(`PBR overrides overlap custom slot '${name}'`);
@@ -902,7 +1008,7 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
   // Arbitrary custom vertex programs do not automatically apply the palette.
   // Only certified, paired graph programs pass the checks below; all other
   // combinations fail instead of silently drawing the bind pose.
-  if (options.customMaterialFactory || customSlotPlan) {
+  if (wholeModelFactory || customSlotPlan) {
     if (parentSignal?.aborted) throw parentSignal.reason ?? actorLoadCancelled();
     textureAbort = new AbortController();
     parentSignal?.addEventListener("abort", forwardTextureAbort, { once: true });
@@ -918,8 +1024,8 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
         ...(customTextureMaxDimension !== undefined ? { maxDimension: customTextureMaxDimension } : {}),
         adoptTextureWork
       };
-      if (options.customMaterialFactory) {
-        customMaterial = options.customMaterialFactory({
+      if (wholeModelFactory) {
+        customMaterial = wholeModelFactory({
           ...context,
           skinned: pipeline.resources.scene.collectRenderables().some(({ renderable }) => Boolean(renderable.skinning))
         });
@@ -931,6 +1037,22 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
         }
         ownedScopedMaterials.add(material);
         scopedMaterials.set(name, material);
+        // Never accept and ignore an authored map: it must be sampled through a
+        // declared uniform or explicitly replaced.
+        const declared = declaredTextureUniforms(material);
+        const missing = [...entry.authoredMaps.keys()].filter((uniform) => !declared.has(uniform));
+        if (missing.length > 0 && !entry.rule.replaceTextures) {
+          throw unsupportedCustomModelMaterial(`custom slot '${name}' does not declare texture2d uniform(s) ${missing.map((uniform) => uniform.slice(2)).join(", ")} for its authored maps; declare them, or replace them with materialOverrides: [{ target, material, replaceTextures: true }]`);
+        }
+        // Bind authored maps only into declarations the caller left empty.
+        const userBound = (uniform: string): boolean =>
+          Boolean((material.getParameter(uniform) as { readonly texture?: unknown } | undefined)?.texture);
+        const autoBound = [...entry.authoredMaps].filter(([uniform]) => declared.has(uniform) && !userBound(uniform));
+        const unbindable = autoBound.filter(([, bindable]) => !bindable).map(([uniform]) => uniform.slice(2));
+        if (unbindable.length > 0) {
+          throw unsupportedCustomModelMaterial(`custom slot '${name}' declares ${unbindable.join(", ")}, whose authored map needs a second UV set or texture transform the binding cannot carry`);
+        }
+        if (autoBound.length > 0) authoredSlotBindings.set(material, autoBound.map(([uniform]) => uniform));
         if (entry.hasInstanceColors || entry.rule.requiresInstanceColors) assertCustomInstanceColors(material);
       }
     } finally {
@@ -1281,6 +1403,7 @@ async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<
         if (!name) return item;
         const material = scopedMaterials.get(name);
         if (!material || material.disposed) throw unsupportedCustomModelMaterial(`custom slot '${name}' is unavailable`);
+        bindAuthoredSlotTextures(material, item.material, authoredSlotBindings.get(material));
         assertSkinnedCustomPrograms(material, [item]);
         if (item.instanceColors?.length) assertCustomInstanceColors(material);
         return { ...item, material };

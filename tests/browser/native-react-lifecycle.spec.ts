@@ -42,10 +42,21 @@ interface Snapshot {
   readonly calls: Readonly<Record<string, number>>;
   readonly currentAppId: number | null;
   readonly sceneBackgrounds: readonly string[];
+  /** webgl2 getContext acquisitions, counted before any app exists (includes StrictMode's discarded mount). */
+  readonly contextAcquisitions: number;
+  readonly glObjectsCreated: number;
+  /** GL objects created and not yet deleted on contexts that are still alive. */
+  readonly liveGlObjects: number;
+  readonly retiredCount: number;
+  readonly pendingRetirements: number;
+  readonly retirementFailures: readonly string[];
+  /** Preload flights whose loader signal was aborted. */
+  readonly abortedFlights: readonly string[];
 }
 
 interface BrowserHarness {
   snapshot(): Snapshot;
+  settleRetirements(): Promise<void>;
   update(): void;
   start(mode: "shared" | "failure" | "late"): void;
   resolve(mode: "shared" | "late"): void;
@@ -171,13 +182,14 @@ const descriptors = {
 const securityContext = {};
 const calls = { shared: 0, failure: 0, late: 0 };
 const pending = {};
+const flightSignals = {};
 const success = (name) => ({ ok: true, loaded: [name], failed: [] });
 const loaders = {
-  shared: () => { calls.shared++; return new Promise((resolve) => { pending.shared = () => resolve(success("shared")); }); },
+  shared: (_descriptors, options) => { calls.shared++; flightSignals.shared = options?.signal; return new Promise((resolve) => { pending.shared = () => resolve(success("shared")); }); },
   failure: () => { calls.failure++; return Promise.resolve(calls.failure === 1
     ? { ok: false, loaded: [], failed: [{ id: "failure", message: "deliberate preload failure" }] }
     : success("failure")); },
-  late: () => { calls.late++; return new Promise((resolve) => { pending.late = () => resolve(success("late")); }); }
+  late: (_descriptors, options) => { calls.late++; flightSignals.late = options?.signal; return new Promise((resolve) => { pending.late = () => resolve(success("late")); }); }
 };
 class Boundary extends React.Component {
   constructor(props) { super(props); this.state = { error: null }; }
@@ -223,7 +235,20 @@ function App() {
     const id = ++harness.nextAppId;
     harness.currentAppId = id;
     const dispose = app.dispose.bind(app);
-    app.dispose = () => { harness.disposedCount++; if (harness.currentAppId === id) harness.currentAppId = null; dispose(); };
+    app.dispose = () => {
+      harness.disposedCount++;
+      if (harness.currentAppId === id) harness.currentAppId = null;
+      dispose();
+      // Renderer-owned GPU retirement is asynchronous; track it until it settles.
+      harness.pendingRetirements++;
+      const retired = typeof app.whenDisposed === "function"
+        ? Promise.resolve().then(() => app.whenDisposed())
+        : Promise.reject(new Error("packed AuraApp lacks whenDisposed()"));
+      retired.then(
+        () => { harness.pendingRetirements--; harness.retiredCount++; },
+        (error) => { harness.pendingRetirements--; harness.retirementFailures.push(String(error && error.message || error)); }
+      );
+    };
     const setScene = app.setScene.bind(app);
     app.setScene = (scene) => { harness.sceneBackgrounds.push(scene.toJSON().background); return setScene(scene); };
     // step() is synchronous: a premature callback produces zero draw calls.
@@ -256,6 +281,36 @@ const tree = () => h(StrictMode, null, h(App));
 function browserEntry(glbHash: string): string {
   return `${sharedEntry(glbHash)}
 import { hydrateRoot, createRoot } from "react-dom/client";
+// Installed before hydration, so every app the adapter creates is counted,
+// including StrictMode's first mount that is disposed before onReady.
+const nativeGetContext = HTMLCanvasElement.prototype.getContext;
+let contextAcquisitions = 0;
+HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+  const context = nativeGetContext.call(this, type, ...args);
+  if (type === "webgl2" && context) contextAcquisitions++;
+  return context;
+};
+const glLedger = new Map();
+let glObjectsCreated = 0;
+for (const kind of ["Buffer", "Texture", "Program", "Shader", "VertexArray", "Framebuffer", "Renderbuffer", "Query", "Sampler", "TransformFeedback"]) {
+  const proto = WebGL2RenderingContext.prototype;
+  const create = proto["create" + kind];
+  const remove = proto["delete" + kind];
+  proto["create" + kind] = function(...args) {
+    const handle = create.apply(this, args);
+    if (handle) {
+      if (!glLedger.has(this)) glLedger.set(this, new Set());
+      glLedger.get(this).add(handle);
+      glObjectsCreated++;
+    }
+    return handle;
+  };
+  proto["delete" + kind] = function(handle, ...args) {
+    if (handle) glLedger.get(this)?.delete(handle);
+    return remove.call(this, handle, ...args);
+  };
+}
+const liveGlObjects = () => [...glLedger].reduce((total, [gl, handles]) => total + (gl.isContextLost() ? 0 : handles.size), 0);
 const nativeAdd = HTMLCanvasElement.prototype.addEventListener;
 const nativeRemove = HTMLCanvasElement.prototype.removeEventListener;
 const listeners = new Map();
@@ -292,14 +347,25 @@ const harness = window.__auraReactTest = {
   controls: null, readyCount: 0, disposedCount: 0, failed: [], caught: [], readyProofs: [],
   serverCanvas, hydrationReusedCanvas: false, pointer: [], frames: 0, duplicateFrames: 0,
   currentAnimationTick: null, lastFrameTick: null, currentAppId: null, nextAppId: 0, sceneBackgrounds: [],
+  retiredCount: 0, pendingRetirements: 0, retirementFailures: [],
   snapshot: () => ({
     version: React.version, readyCount: harness.readyCount, disposedCount: harness.disposedCount,
     failed: [...harness.failed], caught: [...harness.caught], readyProofs: [...harness.readyProofs], hydrationReusedCanvas: harness.hydrationReusedCanvas,
     pointer: [...harness.pointer], frameCount: harness.frames, duplicateFrames: harness.duplicateFrames,
     livePointerListeners: [...listeners.values()].reduce((total, byType) => total + [...byType.values()].reduce((n, set) => n + set.size, 0), 0),
     pendingAnimationFrames: scheduled.size, calls: { ...calls }, currentAppId: harness.currentAppId,
-    sceneBackgrounds: [...harness.sceneBackgrounds]
+    sceneBackgrounds: [...harness.sceneBackgrounds],
+    contextAcquisitions, glObjectsCreated, liveGlObjects: liveGlObjects(),
+    retiredCount: harness.retiredCount, pendingRetirements: harness.pendingRetirements,
+    retirementFailures: [...harness.retirementFailures],
+    abortedFlights: Object.keys(flightSignals).filter((name) => flightSignals[name]?.aborted)
   }),
+  settleRetirements: async () => {
+    // Await asynchronous cleanup: every disposed app's retirement and any GL deletes queued behind it.
+    for (let attempt = 0; attempt < 600 && (harness.pendingRetirements > 0 || liveGlObjects() > 0); attempt++) {
+      await new Promise((done) => setTimeout(done, 50));
+    }
+  },
   update: () => harness.controls.update(),
   start: (mode) => harness.controls.start(mode),
   resolve: (mode) => { if (!pending[mode]) throw Error("missing pending loader " + mode); pending[mode](); },
@@ -415,6 +481,20 @@ async function snapshot(page: Page): Promise<Snapshot> {
   return page.evaluate(() => (window as unknown as { __auraReactTest: BrowserHarness }).__auraReactTest.snapshot());
 }
 
+/** After an unmount, await async cleanup and assert every created renderer and its GPU objects retired. */
+async function expectRetired(page: Page): Promise<Snapshot> {
+  await page.evaluate(() => (window as unknown as { __auraReactTest: BrowserHarness }).__auraReactTest.settleRetirements());
+  const settled = await snapshot(page);
+  expect(settled.retirementFailures).toEqual([]);
+  expect(settled.pendingRetirements).toBe(0);
+  expect(settled.retiredCount).toBe(settled.disposedCount);
+  expect(settled.disposedCount).toBe(settled.readyCount);
+  // StrictMode's discarded first mount never reaches onReady; its resources are covered by the GL ledger.
+  expect(settled.contextAcquisitions).toBeGreaterThanOrEqual(settled.readyCount);
+  expect(settled.liveGlObjects).toBe(0);
+  return settled;
+}
+
 async function invoke(page: Page, action: "update" | "retry" | "unmount" | "remount" | "dispatchDetached"): Promise<void> {
   await page.evaluate(async (name) => {
     await (window as unknown as { __auraReactTest: BrowserHarness }).__auraReactTest[name]();
@@ -452,6 +532,10 @@ test.describe("packed React adapter hydration and lifecycle", () => {
         expect(initial.readyProofs[0]?.error).toBeUndefined();
         expect(initial.readyProofs[0]?.drawCalls).toBeGreaterThan(0);
         expect(initial.duplicateFrames).toBe(0);
+        // The resource ledger was installed before the adapter created any app.
+        expect(initial.contextAcquisitions).toBeGreaterThanOrEqual(1);
+        expect(initial.glObjectsCreated).toBeGreaterThan(0);
+        expect(initial.liveGlObjects).toBeGreaterThan(0);
 
         // Updating scene props and callback closures must retain the app and use the latest handlers.
         await invoke(page, "update");
@@ -489,8 +573,7 @@ test.describe("packed React adapter hydration and lifecycle", () => {
           await invoke(page, "unmount");
           await expect.poll(async () => (await snapshot(page)).livePointerListeners).toBe(0);
           await expect.poll(async () => (await snapshot(page)).pendingAnimationFrames).toBe(0);
-          const stopped = await snapshot(page);
-          expect(stopped.disposedCount).toBe(stopped.readyCount);
+          const stopped = await expectRetired(page);
           await invoke(page, "dispatchDetached");
           expect((await snapshot(page)).pointer).toEqual(stopped.pointer);
           await invoke(page, "remount");
@@ -503,7 +586,9 @@ test.describe("packed React adapter hydration and lifecycle", () => {
         await invoke(page, "unmount");
         await expect.poll(async () => (await snapshot(page)).livePointerListeners).toBe(0);
         await expect.poll(async () => (await snapshot(page)).pendingAnimationFrames).toBe(0);
-        const beforeLate = await snapshot(page);
+        // The abandoned preload flight is cancelled, and the app's renderer resources are retired.
+        await expect.poll(async () => (await snapshot(page)).abortedFlights).toContain("late");
+        const beforeLate = await expectRetired(page);
         await page.evaluate(() => (window as unknown as { __auraReactTest: BrowserHarness }).__auraReactTest.resolve("late"));
         await page.waitForTimeout(100);
         const afterLate = await snapshot(page);
@@ -512,6 +597,8 @@ test.describe("packed React adapter hydration and lifecycle", () => {
         expect(afterLate.livePointerListeners).toBe(0);
         expect(afterLate.pendingAnimationFrames).toBe(0);
         expect(afterLate.duplicateFrames).toBe(0);
+        expect(afterLate.liveGlObjects).toBe(0);
+        expect(afterLate.abortedFlights).not.toContain("shared");
         expect(hydrationErrors).toEqual([]);
         expect(pageErrors.filter((error) => !/asset preload failed/i.test(error))).toEqual([]);
       } finally {
@@ -539,6 +626,7 @@ test.describe("packed React adapter hydration and lifecycle", () => {
         await invoke(page, "unmount");
         await expect.poll(async () => (await snapshot(page)).livePointerListeners).toBe(0);
         await expect.poll(async () => (await snapshot(page)).pendingAnimationFrames).toBe(0);
+        await expectRetired(page);
       } finally {
         await server.close();
       }

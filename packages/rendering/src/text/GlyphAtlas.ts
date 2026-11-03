@@ -74,10 +74,31 @@ export class GlyphAtlas {
   get size(): number { return this.records.size; }
   get disposed(): boolean { return this.closed; }
   get data(): Uint8Array { return this.pixels.slice(); }
+  /** Live, read-only view of the atlas bytes for synchronous CPU sampling; never mutate or retain it. */
+  get view(): Readonly<Uint8Array> { this.assertOpen(); return this.pixels; }
 
   has(key: string): boolean {
     this.assertOpen();
     return this.records.has(key);
+  }
+
+  /** Add a reference to a resident entry without supplying its pixels again. */
+  retain(key: string): GlyphAtlasEntry | undefined {
+    this.assertOpen();
+    const record = this.records.get(key);
+    if (!record) return undefined;
+    record.refs += 1;
+    record.used = ++this.clock;
+    return record.entry;
+  }
+
+  /** Remove an unreferenced entry and clear its pixels; referenced entries are kept. */
+  evictKey(key: string): boolean {
+    this.assertOpen();
+    const record = this.records.get(key);
+    if (!record || record.refs > 0) return false;
+    this.evict(record);
+    return true;
   }
 
   acquire(key: string, bitmap: GlyphBitmap): GlyphAtlasEntry {

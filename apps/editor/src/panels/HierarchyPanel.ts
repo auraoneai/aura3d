@@ -91,6 +91,17 @@ export class HierarchyPanel {
         }
       }
     });
+    // Keyboard reparenting on a focused row control: Alt+ArrowRight nests the
+    // node under its previous sibling, Alt+ArrowLeft moves it up to its
+    // grandparent. Both run the same undoable reparent command as drag/drop.
+    this.element.addEventListener("keydown", (event) => {
+      if (!event.altKey || event.ctrlKey || event.metaKey || (event.key !== "ArrowRight" && event.key !== "ArrowLeft")) return;
+      const row = (event.target as HTMLElement).closest?.<HTMLElement>(".hierarchy-row");
+      const nodeId = row?.dataset.nodeId;
+      if (!nodeId || nodeId === "root") return;
+      event.preventDefault();
+      void this.keyboardReparent(nodeId, event.key === "ArrowRight" ? "indent" : "outdent");
+    });
     this.element.addEventListener("dragstart", (event) => {
       const row = (event.target as HTMLElement).closest<HTMLElement>(".hierarchy-row");
       const nodeId = row?.dataset.nodeId;
@@ -168,7 +179,7 @@ export class HierarchyPanel {
     this.list.innerHTML = descriptors.map((node) => `
       <div class="hierarchy-row ${node.selected ? "is-selected" : ""}" data-node-id="${escapeHtml(node.id)}" draggable="${node.id === "root" ? "false" : "true"}" style="padding-left:${node.depth * 12}px">
         ${node.id === "root" ? "<span></span>" : `<input type="checkbox" data-action="toggle-select-node" data-node-id="${escapeHtml(node.id)}" aria-label="Multi-select ${escapeHtml(node.name)}" ${selected.has(String(node.id)) ? "checked" : ""}>`}
-        <button data-action="select-node" data-node-id="${escapeHtml(node.id)}">${escapeHtml(node.name)}</button>
+        <button data-action="select-node" data-node-id="${escapeHtml(node.id)}"${node.id === "root" ? "" : ` aria-keyshortcuts="Alt+ArrowRight Alt+ArrowLeft" title="Alt+Right: nest under previous sibling. Alt+Left: move up one level."`}>${escapeHtml(node.name)}</button>
         ${node.id === "root" ? "" : `<input data-action="rename-node" data-node-id="${escapeHtml(node.id)}" value="${escapeHtml(node.name)}" aria-label="Rename ${escapeHtml(node.name)}">`}
         ${node.id === "root" ? "" : `<button data-action="move-node-up" data-node-id="${escapeHtml(node.id)}" aria-label="Move ${escapeHtml(node.name)} up">Up</button><button data-action="move-node-down" data-node-id="${escapeHtml(node.id)}" aria-label="Move ${escapeHtml(node.name)} down">Down</button><button data-action="duplicate-node" data-node-id="${escapeHtml(node.id)}" aria-label="Duplicate ${escapeHtml(node.name)}">Duplicate</button><button data-action="reparent-node" data-node-id="${escapeHtml(node.id)}" aria-label="Move ${escapeHtml(node.name)} to scene root">Root</button><button data-action="delete-node" data-node-id="${escapeHtml(node.id)}" aria-label="Delete ${escapeHtml(node.name)}">Delete</button>`}
       </div>
@@ -206,6 +217,33 @@ export class HierarchyPanel {
     this.shell.projectFromScene();
     this.shell.addConsoleMessage("info", "Deleted hierarchy node.");
     this.shell.refresh();
+  }
+
+  /** Resolve a keyboard indent/outdent into a reparent target, reporting why a move is not possible. */
+  async keyboardReparent(nodeId: string, direction: "indent" | "outdent"): Promise<void> {
+    const scene = this.shell.scene;
+    const node = scene.getNodeById(nodeId);
+    const parent = node?.parent;
+    if (!node || node === scene.root || !parent) return;
+    if (direction === "outdent") {
+      if (parent === scene.root) {
+        this.error.textContent = "";
+        this.status.textContent = `${node.name} is already at the scene root.`;
+        return;
+      }
+      const grandparent = parent.parent ?? scene.root;
+      await this.reparent(nodeId, grandparent === scene.root ? null : grandparent.id);
+      return;
+    }
+    const siblings = parent.children;
+    const index = siblings.indexOf(node);
+    const previous = index > 0 ? siblings[index - 1] : undefined;
+    if (!previous) {
+      this.error.textContent = "";
+      this.status.textContent = `${node.name} has no previous sibling to nest under.`;
+      return;
+    }
+    await this.reparent(nodeId, previous.id);
   }
 
   private async reparent(nodeId: string, parentId: string | null): Promise<void> {

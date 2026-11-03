@@ -17,6 +17,7 @@ export class ProfilerPanel {
     const source = this.shell.viewport?.frameInspectionSource?.();
     const frame = source ? new FrameInspector(source).capture() : null;
     const gpuFrameTime = frame?.gpuTimeMs == null ? "Unavailable" : `${frame.gpuTimeMs} ms`;
+    const renderCpuTime = frame?.cpuTimeMs == null || frame.status === "error" ? "Unavailable" : `${frame.cpuTimeMs.toFixed(2)} ms`;
     // A failed viewport attempt may leave the editor-runtime counters from the
     // preceding frame. Do not present them as measurements of the failed one.
     const drawCalls = frame?.status === "error" ? "Unavailable" : diagnostics.drawCalls;
@@ -25,6 +26,7 @@ export class ProfilerPanel {
       <div class="panel-title"><span>Profiler</span></div>
       <dl class="metrics">
         <dt>Frame time (CPU)</dt><dd data-metric="frame-time" data-status="${hasFrameTimeSample ? "measured" : "unavailable"}" title="Elapsed viewport preparation and synchronous render submission; not GPU timing.">${frameTime}</dd>
+        <dt>Render CPU (whole frame)</dt><dd data-metric="render-cpu-time" title="Renderer-measured render call: admission, shadow, graph, contributor, post, output and native-device phases.">${renderCpuTime}</dd>
         <dt>GPU time (whole frame)</dt><dd data-metric="gpu-frame-time">${gpuFrameTime}</dd>
         <dt>Draw calls</dt><dd data-metric="draw-calls">${drawCalls}</dd>
         <dt>Triangles</dt><dd data-metric="triangles">${triangles}</dd>
@@ -34,6 +36,7 @@ export class ProfilerPanel {
         <dt>Resource diagnostics</dt><dd data-metric="resource-diagnostics">${diagnostics.resourceWarnings.length} warnings</dd>
         <dt>Mode</dt><dd data-metric="mode">${this.shell.runtime.mode}</dd>
       </dl>
+      ${framePhases(frame)}
       ${gpuViewTimings(frame)}
       <div class="diagnostics-list" data-role="diagnostics-list">
         ${diagnostics.resources?.map((resource) => `<span data-status="${resource.status}">${resource.kind}: ${resource.label}</span>`).join("") ?? ""}
@@ -43,6 +46,15 @@ export class ProfilerPanel {
       </div>
     `;
   }
+}
+
+function framePhases(frame: FrameInspectionSnapshot | null): string {
+  const passes = frame?.passes ?? [];
+  const rows = passes.slice(0, 24).map((pass) =>
+    `<span data-phase="${escapeHtml(pass.name)}" data-status="${pass.status ?? "completed"}">${escapeHtml(pass.name)}: ${pass.cpuTimeMs === null ? "Unavailable" : `${pass.cpuTimeMs.toFixed(2)} ms`} CPU, ${pass.drawCalls ?? "unknown"} draws</span>`);
+  if (!rows.length) rows.push("<span>No recorded frame phases.</span>");
+  if (passes.length > 24) rows.push("<span>Additional phases omitted.</span>");
+  return `<div class="diagnostics-list" data-role="frame-phases" aria-label="Frame phases">${rows.join("")}</div>`;
 }
 
 function gpuViewTimings(frame: FrameInspectionSnapshot | null): string {

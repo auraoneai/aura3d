@@ -142,10 +142,12 @@ describe("bidi formatting at wrapped line boundaries", () => {
     ["left-to-right isolate", "\u2066", "\u2069"],
     ["right-to-left isolate", "\u2067", "\u2069"],
     ["first-strong isolate", "\u2068", "\u2069"]
-  ] as const)("rejects a %s crossing a wrap but allows it wholly within one line", (_name, open, close) => {
+  ] as const)("carries a %s across a wrap by closing and reopening it, and leaves it intact within one line", (_name, open, close) => {
     const spanning = `${open}ABCD${close}`;
     for (const explicit of ["auto", "ltr", "rtl"] as const) {
-      expect(() => shapeText(spanning, { font, maxWidth: 2, direction: explicit }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
+      const wrapped = shapeText(spanning, { font, maxWidth: 2, direction: explicit }, formattingMeasureContext());
+      expect(wrapped.lines.map((line) => line.text)).toEqual([`${open}AB${close}`, `${open}CD${close}`]);
+      expect(wrapped.lines.map((line) => line.width)).toEqual([2, 2]);
     }
     const contained = `${open}AB${close} CD`;
     const result = shapeText(contained, { font, maxWidth: 2 }, formattingMeasureContext());
@@ -154,10 +156,13 @@ describe("bidi formatting at wrapped line boundaries", () => {
   });
 
   it("tracks isolates and embeddings independently, including nested and unmatched controls", () => {
-    // The PDF inside the isolate cannot close its surrounding embedding.
-    expect(() => shapeText("\u202A\u2067A\u202C\u2069 B\u202C", { font, maxWidth: 1 }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
+    // The PDF inside the isolate cannot close its surrounding embedding, so the
+    // embedding is closed at the wrap and reopened on the next line.
+    expect(shapeText("\u202A\u2067A\u202C\u2069 B\u202C", { font, maxWidth: 1 }, formattingMeasureContext()).lines.map((line) => line.text))
+      .toEqual(["\u202A\u2067A\u202C\u2069\u202C", "\u202AB\u202C"]);
     // An unmatched PDI cannot close an enclosing embedding either.
-    expect(() => shapeText("\u202AA\u2069 B\u202C", { font, maxWidth: 1 }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
+    expect(shapeText("\u202AA\u2069 B\u202C", { font, maxWidth: 1 }, formattingMeasureContext()).lines.map((line) => line.text))
+      .toEqual(["\u202AA\u2069\u202C", "\u202AB\u202C"]);
     // PDI discards the embedding opened inside its isolate before the wrap.
     const closed = shapeText("\u2067\u202AA\u2069 B C", { font, maxWidth: 1 }, formattingMeasureContext());
     expect(closed.lines.map((line) => line.text)).toEqual(["\u2067\u202AA\u2069", "B", "C"]);
@@ -167,19 +172,25 @@ describe("bidi formatting at wrapped line boundaries", () => {
     const closes = "\u2069".repeat(200);
     const deep = shapeText(`${opens}A${closes} B`, { font, maxWidth: 1 }, formattingMeasureContext());
     expect(deep.lines.map((line) => line.text)).toEqual([`${opens}A${closes}`, "B"]);
-    expect(() => shapeText(`${opens}A B${closes}`, { font, maxWidth: 1 }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
+    // Nested scopes are reopened outermost first and closed innermost first.
+    const nested = shapeText("\u202B\u2066A B\u2069\u202C", { font, maxWidth: 1 }, formattingMeasureContext());
+    expect(nested.lines.map((line) => line.text)).toEqual(["\u202B\u2066A\u2069\u202C", "\u202B\u2066B\u2069\u202C"]);
+    const deepSpan = shapeText(`${opens}A B${closes}`, { font, maxWidth: 1 }, formattingMeasureContext());
+    expect(deepSpan.lines.map((line) => line.text)).toEqual([`${opens}A${closes}`, `${opens}B${closes}`]);
   });
 
-  it("resets scope at paragraph breaks and does not reject an unclosed scope on the last line", () => {
+  it("resets scope at paragraph breaks and leaves an unclosed scope open on the last line", () => {
     const paragraphs = shapeText("\u202EAB\nCD", { font, maxWidth: 2 }, formattingMeasureContext());
     expect(paragraphs.lines.map((line) => line.text)).toEqual(["\u202EAB", "CD"]);
     const trailingSpace = shapeText("\u2066AB  ", { font, maxWidth: 2 }, formattingMeasureContext());
     expect(trailingSpace.lines.map((line) => line.text)).toEqual(["\u2066AB"]);
-    expect(() => shapeText("\u2066AB CD", { font, maxWidth: 2 }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
-    expect(() => shapeText("\u2066AB \u2069", { font, maxWidth: 2 }, formattingMeasureContext())).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
+    expect(shapeText("\u2066AB CD", { font, maxWidth: 2 }, formattingMeasureContext()).lines.map((line) => line.text))
+      .toEqual(["\u2066AB\u2069", "\u2066CD"]);
+    expect(shapeText("\u2066AB \u2069", { font, maxWidth: 2 }, formattingMeasureContext()).lines.map((line) => line.text))
+      .toEqual(["\u2066AB\u2069"]);
   });
 
-  it("measures and paints the same logical runs, and rejects before painting unsafe wraps", () => {
+  it("measures and paints the same logical runs, including wraps through an isolate", () => {
     const measured: { text: string; direction: string }[] = [];
     const painted: { text: string; direction: string }[] = [];
     let reads = 0;
@@ -205,9 +216,10 @@ describe("bidi formatting at wrapped line boundaries", () => {
     expect(painted).toEqual([{ text: "\u2067AB\u2069", direction: "rtl" }, { text: "CD", direction: "rtl" }]);
     for (const line of painted) expect(measured).toContainEqual(line);
     painted.length = 0;
-    const priorReads = reads;
-    expect(() => createDynamicSdfText("\u2067ABCD\u2069", { font, size: 1, rasterSize: 16, maxWidth: 1 })).toThrow(/AURA_TEXT_BIDI_WRAP_UNSUPPORTED/);
-    expect(painted).toEqual([]);
-    expect(reads).toBe(priorReads);
+    // A wrapped isolate paints each line inside its own reopened isolate.
+    const wrapped = createDynamicSdfText("\u2067ABCD\u2069", { font, size: 1, rasterSize: 16, maxWidth: 1 });
+    expect(wrapped.layout.quads.map((quad) => quad.glyph)).toEqual(["\u2067AB\u2069", "\u2067CD\u2069"]);
+    expect(painted).toEqual([{ text: "\u2067AB\u2069", direction: "ltr" }, { text: "\u2067CD\u2069", direction: "ltr" }]);
+    expect(reads).toBeGreaterThan(0);
   });
 });

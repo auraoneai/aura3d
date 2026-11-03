@@ -114,3 +114,46 @@ describe("Renderer per-view GPU inspection", () => {
     renderer.dispose();
   });
 });
+
+describe("Renderer frame inspection phases (S5-WP17-01)", () => {
+  it.each(["sync", "async"] as const)("records the shadow-map and post-process phases it ran and times the whole render call (%s)", async (mode) => {
+    const { DirectionalLight, identityMat4 } = await import("@aura3d/scene");
+    const { PBRMaterial } = await import("../../../packages/rendering/src/PBRMaterial");
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
+    const geometry = Geometry.litCube(1);
+    const material = new PBRMaterial();
+    const sun = new DirectionalLight("inspected-sun");
+    sun.castsShadow = true;
+    const source = {
+      cameraPolicy: "identity" as const,
+      renderItems: [{ geometry, material, label: "caster" }],
+      shadow: { light: sun, size: 8, lightMatrix: identityMat4() },
+      postprocess: { execution: "auto" as const, toneMapping: { operator: "linear" as const } }
+    };
+    try {
+      if (mode === "sync") renderer.render(source); else await renderer.renderAsync(source);
+      const capture = renderer.getFrameInspection()!;
+      const names = capture.passes.map((pass) => pass.name);
+      expect(names).toContain("shadow-maps");
+      expect(names).toContain("post-process");
+      expect(names.indexOf("shadow-maps")).toBeLessThan(names.indexOf("post-process"));
+      const shadow = capture.passes.find((pass) => pass.name === "shadow-maps")!;
+      expect(shadow).toMatchObject({ status: "completed", reads: ["scene.shadowCasters"], writes: ["shadow.map"] });
+      expect(shadow.drawCalls).toBeGreaterThan(0);
+      const phaseCpu = capture.passes.reduce((total, pass) => total + (pass.cpuTimeMs ?? 0), 0);
+      expect(capture.cpuTimeMs).not.toBeNull();
+      expect(capture.cpuTimeMs!).toBeGreaterThanOrEqual(phaseCpu - 1e-6);
+      expect(capture.gpuTimeMs).toBeNull();
+    } finally {
+      renderer.dispose(); geometry.dispose(); material.dispose();
+    }
+  });
+
+  it("marks a render that threw incomplete even though its observed phases were recorded", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8 });
+    expect(() => renderer.render(makeSource(() => { throw new Error("draw failed"); }))).toThrow("draw failed");
+    expect(renderer.getFrameInspection()).toMatchObject({ complete: false });
+    expect(renderer.getFrameInspection()!.cpuTimeMs).toBeGreaterThanOrEqual(0);
+    renderer.dispose();
+  });
+});

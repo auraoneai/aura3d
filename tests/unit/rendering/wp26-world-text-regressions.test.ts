@@ -107,7 +107,8 @@ describe("WP-26 world-text source regressions", () => {
       expect(box.top).toBeGreaterThanOrEqual(0);
       expect(box.bottom).toBeLessThanOrEqual(box.height);
     }
-    expect(node.text3D?.sdfDynamic?.layout.quads.map((quad) => quad.glyph)).toEqual(["אב", "", "A"]);
+    // Each run's ink box is its own retained atlas entry; the empty line needs none.
+    expect(node.text3D?.sdfDynamic?.layout.quads.map((quad) => quad.glyph)).toEqual(["אב", "A"]);
   });
 
   it("rejects unreasonable measured ink bounds before resizing or reading the canvas", () => {

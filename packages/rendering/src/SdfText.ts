@@ -1,6 +1,6 @@
-import { GlyphAtlas } from "./text/GlyphAtlas.js";
+import { GlyphAtlas, type GlyphAtlasEntry, type GlyphBitmap } from "./text/GlyphAtlas.js";
 import { shapeText, type TextDirection, type TextMeasureContext } from "./text/TextShaper.js";
-import type { LoadedFont } from "./text/FontLoader.js";
+import { onLoadedFontDisposed, type LoadedFont } from "./text/FontLoader.js";
 
 /**
  * SDF world text for the rendering package (muse3jsparity-PRD G1).
@@ -17,7 +17,8 @@ import type { LoadedFont } from "./text/FontLoader.js";
  *
  * - The built-in fallback supports exactly `A-Z 0-9 space - .` (see
  *   `SDF_SUPPORTED_GLYPHS`), reporting other characters. Loaded fonts use the
- *   platform's native text shaper and are rasterized as complete runs.
+ *   platform's native text shaper; each shaped run is rasterized once into the
+ *   retained, bounded {@link LoadedFontGlyphAtlas} and reused across labels.
  * - Not troika-three-text parity and not TextGeometry parity. The claim label
  *   is `production-runtime` SDF text, proven by `textPixelBacked` diagnostics.
  * - Not DOM text. DOM labels (`labels.*` / `ui.*`) stay the accessible
@@ -432,6 +433,12 @@ export interface DynamicSdfTextOptions {
   readonly style?: SdfTextStyle;
   /** Raster resolution per em, bounded to 16..256. Default 64. */
   readonly rasterSize?: number;
+  /**
+   * Retained atlas that stores the shaped runs. Defaults to the process-wide
+   * shared loaded-font atlas, which is released once every font it holds has
+   * been disposed and its entries are purged.
+   */
+  readonly glyphAtlas?: LoadedFontGlyphAtlas;
 }
 
 /** A snapshot suitable for the existing texture and quad compiler. */
@@ -440,17 +447,212 @@ export interface DynamicSdfText {
   readonly image: SdfTextRasterImage;
 }
 
+export interface LoadedFontGlyphAtlasOptions {
+  /** Atlas width in pixels, a multiple of 8 within 64..4096. Default 2048. */
+  readonly width?: number;
+  /** Atlas height in pixels, a multiple of 8 within 64..4096. Default 2048. */
+  readonly height?: number;
+  /** Maximum resident shaped runs, 1..16384. Default 1024. */
+  readonly maxEntries?: number;
+}
+
+export interface LoadedFontGlyphAtlasStats {
+  readonly width: number;
+  readonly height: number;
+  readonly entries: number;
+  readonly maxEntries: number;
+  /** Runs served from resident atlas pixels without rasterizing. */
+  readonly hits: number;
+  /** Runs rasterized and written into the atlas. */
+  readonly misses: number;
+  /** Resident runs removed by LRU pressure or because their font was disposed. */
+  readonly evictions: number;
+  readonly fontSets: number;
+  readonly disposed: boolean;
+}
+
+interface RunMetrics {
+  /** Box origin relative to the pen position and the line's middle baseline, in raster pixels. */
+  readonly offsetX: number;
+  readonly offsetY: number;
+  readonly fontSet: string;
+}
+
+interface FontSetRecord { readonly fonts: readonly LoadedFont[]; readonly keys: Set<string> }
+
 /**
- * Shape complete Unicode runs using the browser text engine, place their
- * coverage in a bounded temporary atlas, and copy the result into a retained
- * label texture snapshot. Keeping each run intact preserves contextual glyph
- * substitution, bidi, kerning, ligatures and platform font fallback.
+ * Retained, dynamically updated atlas for loaded-font text. Entries are
+ * platform-shaped runs (one logical line as passed to `fillText`) stored as
+ * signed-distance bytes in a bounded {@link GlyphAtlas}. Canvas2D does not
+ * expose glyph IDs or positioned glyph output, so a run is the smallest unit
+ * that preserves contextual substitution, ligatures, kerning, bidi reordering
+ * and platform fallback. Identical runs are rasterized once and then reused
+ * across labels and text updates; new runs are written into free space,
+ * evicting least-recently-used unreferenced runs under pressure, and a label
+ * whose own runs cannot all be resident fails with an explicit error.
+ * Runs of a disposed font are purged; {@link dispose} releases every byte.
+ */
+export class LoadedFontGlyphAtlas {
+  private readonly atlas: GlyphAtlas;
+  private readonly metrics = new Map<string, RunMetrics>();
+  private readonly fontSets = new Map<string, FontSetRecord>();
+  private readonly maxEntries: number;
+  private hits = 0;
+  private misses = 0;
+  private evictions = 0;
+
+  constructor(options: LoadedFontGlyphAtlasOptions = {}) {
+    const width = options.width ?? 2048;
+    const height = options.height ?? 2048;
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 64 || height < 64) {
+      throw new RangeError("Aura3D loaded-font glyph atlas dimensions must be multiples of 8 within 64..4096.");
+    }
+    this.maxEntries = options.maxEntries ?? 1024;
+    this.atlas = new GlyphAtlas({ width, height, maxEntries: this.maxEntries });
+  }
+
+  get disposed(): boolean { return this.atlas.disposed; }
+
+  stats(): LoadedFontGlyphAtlasStats {
+    const open = !this.atlas.disposed;
+    return {
+      width: this.atlas.width, height: this.atlas.height, entries: open ? this.atlas.size : 0,
+      maxEntries: this.maxEntries,
+      hits: this.hits, misses: this.misses, evictions: this.evictions, fontSets: this.fontSets.size, disposed: !open
+    };
+  }
+
+  /** Remove every resident run whose font handle has been disposed. Returns the number purged. */
+  purgeDisposedFonts(): number {
+    if (this.atlas.disposed) return 0;
+    let purged = 0;
+    for (const [id, set] of this.fontSets) {
+      if (!set.fonts.some((font) => font.disposed)) continue;
+      for (const key of set.keys) {
+        if (this.atlas.evictKey(key)) purged += 1;
+        this.metrics.delete(key);
+      }
+      this.fontSets.delete(id);
+    }
+    this.evictions += purged;
+    return purged;
+  }
+
+  dispose(): void {
+    if (this.atlas.disposed) return;
+    this.metrics.clear();
+    this.fontSets.clear();
+    this.atlas.dispose();
+  }
+
+  /** @internal Retain a resident run for the duration of one label composition. */
+  retainRun(key: string): { readonly entry: GlyphAtlasEntry; readonly metrics: RunMetrics } | undefined {
+    const metrics = this.metrics.get(key);
+    if (!metrics) return undefined;
+    const entry = this.atlas.retain(key);
+    if (!entry) {
+      // The bounded atlas evicted this run under LRU pressure.
+      this.metrics.delete(key);
+      this.fontSets.get(metrics.fontSet)?.keys.delete(key);
+      this.evictions += 1;
+      return undefined;
+    }
+    this.hits += 1;
+    return { entry, metrics };
+  }
+
+  /** @internal Write a newly rasterized run and retain it. */
+  addRun(key: string, fonts: readonly LoadedFont[], fontSet: string, bitmap: GlyphBitmap, offsetX: number, offsetY: number): GlyphAtlasEntry {
+    const before = this.atlas.size;
+    let entry: GlyphAtlasEntry;
+    try { entry = this.atlas.acquire(key, bitmap); }
+    catch (error) {
+      if (error instanceof RangeError) {
+        throw new RangeError(`AURA_TEXT_GLYPH_ATLAS_FULL: the loaded-font glyph atlas cannot hold every run of this label (${error.message})`);
+      }
+      throw error;
+    }
+    // Any shortfall in resident count is LRU eviction of unreferenced runs.
+    const evicted = before + 1 - this.atlas.size;
+    if (evicted > 0) this.evictions += evicted;
+    this.misses += 1;
+    this.metrics.set(key, { offsetX, offsetY, fontSet });
+    let set = this.fontSets.get(fontSet);
+    if (!set) { set = { fonts: [...fonts], keys: new Set() }; this.fontSets.set(fontSet, set); }
+    set.keys.add(key);
+    if (this.metrics.size > this.atlas.size * 2 + 64) this.pruneMetrics();
+    return entry;
+  }
+
+  /** @internal */
+  releaseRun(key: string): void { if (!this.atlas.disposed) this.atlas.release(key); }
+
+  /** @internal Distance bytes for synchronous sampling during composition. */
+  distanceSource(): Omit<SdfDistanceSource, "cellResolution" | "spreadPixels"> {
+    return { width: this.atlas.width, height: this.atlas.height, distances: this.atlas.view, distanceScale: 1 / 255 };
+  }
+
+  /** @internal */
+  get empty(): boolean { return this.atlas.disposed || (this.atlas.size === 0 && this.fontSets.size === 0); }
+
+  private pruneMetrics(): void {
+    for (const [key, metrics] of this.metrics) {
+      if (this.atlas.has(key)) continue;
+      this.metrics.delete(key);
+      this.fontSets.get(metrics.fontSet)?.keys.delete(key);
+    }
+    for (const [id, set] of this.fontSets) if (!set.keys.size) this.fontSets.delete(id);
+  }
+}
+
+let sharedLoadedFontAtlas: LoadedFontGlyphAtlas | undefined;
+
+/** Diagnostics for the process-wide shared loaded-font atlas, or undefined when none is resident. */
+export function sharedLoadedFontGlyphAtlasStats(): LoadedFontGlyphAtlasStats | undefined {
+  return sharedLoadedFontAtlas?.stats();
+}
+
+function acquireSharedLoadedFontAtlas(): LoadedFontGlyphAtlas {
+  if (!sharedLoadedFontAtlas || sharedLoadedFontAtlas.disposed) sharedLoadedFontAtlas = new LoadedFontGlyphAtlas();
+  return sharedLoadedFontAtlas;
+}
+
+/** Final release of the shared atlas once every font it held is disposed. */
+function releaseSharedLoadedFontAtlasIfUnused(): void {
+  const atlas = sharedLoadedFontAtlas;
+  if (!atlas) return;
+  atlas.purgeDisposedFonts();
+  if (atlas.empty) { atlas.dispose(); sharedLoadedFontAtlas = undefined; }
+}
+// Disposing a loaded font purges its runs at once instead of at the next label.
+onLoadedFontDisposed(releaseSharedLoadedFontAtlasIfUnused);
+
+const fontHandleIds = new WeakMap<LoadedFont, number>();
+let nextFontHandleId = 0;
+function fontHandleIdentity(font: LoadedFont): number {
+  let id = fontHandleIds.get(font);
+  if (id === undefined) { id = ++nextFontHandleId; fontHandleIds.set(font, id); }
+  return id;
+}
+
+const MAX_RUN_EDGE = 2048;
+const MAX_LABEL_EDGE = 2048;
+
+/**
+ * Shape complete Unicode runs using the browser text engine, resolve each run
+ * from the retained loaded-font glyph atlas (rasterizing only runs that are not
+ * resident), and compose a label texture snapshot from the atlas entries.
+ * Keeping each run intact preserves contextual glyph substitution, bidi,
+ * kerning, ligatures and platform font fallback.
  */
 export function createDynamicSdfText(text: string, options: DynamicSdfTextOptions): DynamicSdfText {
   const size = options.size ?? 1;
   const rasterSize = options.rasterSize ?? 64;
   if (!Number.isFinite(size) || size <= 0 || !Number.isInteger(rasterSize) || rasterSize < 16 || rasterSize > 256) {
     throw new RangeError("Aura3D dynamic text size must be positive and rasterSize must be an integer within 16..256.");
+  }
+  if (options.glyphAtlas !== undefined && (!(options.glyphAtlas instanceof LoadedFontGlyphAtlas) || options.glyphAtlas.disposed)) {
+    throw new Error("Aura3D dynamic text glyphAtlas must be an undisposed LoadedFontGlyphAtlas.");
   }
   const style = normalizeStyle(options.style ?? {});
   const scale = rasterSize / size;
@@ -469,92 +671,108 @@ export function createDynamicSdfText(text: string, options: DynamicSdfTextOption
     ...(options.direction === undefined ? {} : { direction: options.direction }),
     ...(options.maxLines === undefined ? {} : { maxLines: options.maxLines })
   }, ctx as unknown as TextMeasureContext);
+  const fonts = [options.font, ...(options.fallbackFonts ?? [])];
   const pad = Math.ceil(rasterSize * 0.3);
   const inkMargin = Math.max(2, Math.ceil(rasterSize / 8));
-  let left = 0;
-  let right = shaped.width;
-  let top = 0;
-  let bottom = shaped.height;
-  shaped.lines.forEach((line, index) => {
-    if (!line.text.trim()) return;
-    ctx.direction = line.direction;
-    ctx.textAlign = line.direction === "rtl" ? "right" : "left";
-    const metrics = ctx.measureText(line.text);
-    const anchor = line.direction === "rtl" ? shaped.width : 0;
-    const baseline = (index + 0.5) * shaped.lineHeight;
-    if (Number.isFinite(metrics.actualBoundingBoxLeft) && Number.isFinite(metrics.actualBoundingBoxRight)) {
-      left = Math.min(left, anchor - metrics.actualBoundingBoxLeft);
-      right = Math.max(right, anchor + metrics.actualBoundingBoxRight);
-    }
-    if (Number.isFinite(metrics.actualBoundingBoxAscent) && Number.isFinite(metrics.actualBoundingBoxDescent)) {
-      top = Math.min(top, baseline - metrics.actualBoundingBoxAscent - inkMargin);
-      bottom = Math.max(bottom, baseline + metrics.actualBoundingBoxDescent + inkMargin);
-    }
-  });
-  const width = Math.max(1, Math.ceil(right - left) + 2 * pad);
-  const height = Math.max(1, Math.ceil(bottom - top));
-  const originX = pad - left;
-  const originY = -top;
-  const boundaries = Array.from({ length: shaped.lines.length + 1 }, (_, index) =>
-    index === 0 ? 0 : index === shaped.lines.length ? height : Math.max(0, Math.min(height, Math.floor(originY + index * shaped.lineHeight))));
-  const rowHeight = Math.max(...shaped.lines.map((_line, index) => boundaries[index + 1]! - boundaries[index]!));
-  const atlasWidth = Math.ceil((width + 2) / 8) * 8;
-  const atlasRowHeight = Math.ceil((rowHeight + 2) / 8) * 8;
-  const atlasHeight = atlasRowHeight * shaped.lines.length;
-  if (width > 2048 || height > 2048 || atlasWidth > 4096 || atlasHeight > 4096 || atlasWidth * atlasHeight > 4_194_304 ||
-      width * height * shaped.lines.length > 16_777_216) {
-    throw new RangeError("Aura3D loaded-font label exceeds its bounded raster/atlas size.");
-  }
-  canvas.width = width;
-  canvas.height = height;
-  // Resizing resets context state.
-  ctx.font = shaped.font;
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "white";
-  if ("fontKerning" in ctx) ctx.fontKerning = "normal";
-  if ("letterSpacing" in ctx) ctx.letterSpacing = `${shaped.letterSpacing}px`;
-  shaped.lines.forEach((line, index) => {
-    ctx.direction = line.direction;
-    ctx.textAlign = line.direction === "rtl" ? "right" : "left";
-    ctx.fillText(line.text, originX + (line.direction === "rtl" ? shaped.width : 0), originY + (index + 0.5) * shaped.lineHeight);
-  });
-  const source = ctx.getImageData(0, 0, width, height).data;
-  const atlas = new GlyphAtlas({ width: atlasWidth, height: atlasHeight, maxEntries: shaped.lines.length });
-  const quads: SdfTextQuad[] = [];
+  const spread = Math.max(2, rasterSize / 8);
+  // Handle identity (not only the family name) scopes reuse to these exact
+  // font objects; the shaped font string carries the raster size.
+  const fontSet = `${fonts.map(fontHandleIdentity).join(",")}|${shaped.font}|${shaped.letterSpacing}|${shaped.lineHeight}`;
+  const owned = options.glyphAtlas === undefined;
+  const store = options.glyphAtlas ?? acquireSharedLoadedFontAtlas();
+  store.purgeDisposedFonts();
+  const retained: string[] = [];
+  const placed: { readonly glyph: string; readonly entry: GlyphAtlasEntry; readonly x0: number; readonly y0: number }[] = [];
+  const prepareContext = (direction: "ltr" | "rtl"): void => {
+    ctx.font = shaped.font;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.direction = direction;
+    ctx.fillStyle = "white";
+    if ("fontKerning" in ctx) ctx.fontKerning = "normal";
+    if ("letterSpacing" in ctx) ctx.letterSpacing = `${shaped.letterSpacing}px`;
+  };
   try {
     shaped.lines.forEach((line, index) => {
-      const top = boundaries[index]!;
-      const bottom = boundaries[index + 1]!;
-      if (bottom <= top) return;
-      const pixels = new Uint8Array(width * (bottom - top));
-      for (let y = top; y < bottom; y += 1) for (let x = 0; x < width; x += 1) pixels[(y - top) * width + x] = source[(y * width + x) * 4 + 3] ?? 0;
-      if (!line.text.trim() && !pixels.some((value) => value !== 0)) return;
-      const entry = atlas.acquire(`run-${index}`, { width, height: bottom - top, data: textDistanceField(pixels, width, bottom - top, Math.max(2, rasterSize / 8)) });
-      const y0 = (height - bottom) / scale;
-      const y1 = (height - top) / scale;
-      quads.push({ glyph: line.text, corners: [0, y0, width / scale, y0, width / scale, y1, 0, y1],
-        uv: [entry.uv[0], entry.uv[3], entry.uv[2], entry.uv[1]] });
-      atlas.release(entry.key);
+      if (!line.text.trim()) return;
+      const key = `${fontSet}|${line.direction}|${line.text}`;
+      let run = store.retainRun(key);
+      if (!run) {
+        prepareContext(line.direction);
+        const metrics = ctx.measureText(line.text);
+        let left = 0;
+        let right = line.width;
+        let top = -shaped.lineHeight / 2;
+        let bottom = shaped.lineHeight / 2;
+        if (Number.isFinite(metrics.actualBoundingBoxLeft) && Number.isFinite(metrics.actualBoundingBoxRight)) {
+          left = Math.min(left, -metrics.actualBoundingBoxLeft);
+          right = Math.max(right, metrics.actualBoundingBoxRight);
+        }
+        if (Number.isFinite(metrics.actualBoundingBoxAscent) && Number.isFinite(metrics.actualBoundingBoxDescent)) {
+          top = Math.min(top, -metrics.actualBoundingBoxAscent - inkMargin);
+          bottom = Math.max(bottom, metrics.actualBoundingBoxDescent + inkMargin);
+        }
+        const width = Math.max(1, Math.ceil(right - left) + 2 * pad);
+        const height = Math.max(1, Math.ceil(bottom - top) + 2 * pad);
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width > MAX_RUN_EDGE || height > MAX_RUN_EDGE) {
+          throw new RangeError("Aura3D loaded-font label exceeds its bounded raster/atlas size.");
+        }
+        canvas.width = width;
+        canvas.height = height;
+        // Resizing resets context state.
+        prepareContext(line.direction);
+        const originX = pad - left;
+        const originY = pad - top;
+        ctx.fillText(line.text, originX, originY);
+        const source = ctx.getImageData(0, 0, width, height).data;
+        const alpha = new Uint8Array(width * height);
+        for (let i = 0; i < alpha.length; i += 1) alpha[i] = source[i * 4 + 3] ?? 0;
+        const entry = store.addRun(key, fonts, fontSet, { width, height, data: textDistanceField(alpha, width, height, spread) }, -originX, -originY);
+        run = { entry, metrics: { offsetX: -originX, offsetY: -originY, fontSet } };
+      }
+      retained.push(key);
+      const penX = line.direction === "rtl" ? shaped.width - line.width : 0;
+      const middle = (index + 0.5) * shaped.lineHeight;
+      placed.push({ glyph: line.text, entry: run.entry, x0: penX + run.metrics.offsetX, y0: middle + run.metrics.offsetY });
     });
-    if (!quads.length) throw new Error("Aura3D loaded-font text produced no visible glyphs.");
+    if (!placed.length) throw new Error("Aura3D loaded-font text produced no visible glyphs.");
+    let minX = 0;
+    let maxX = shaped.width;
+    let minY = 0;
+    let maxY = shaped.height;
+    for (const item of placed) {
+      minX = Math.min(minX, item.x0);
+      maxX = Math.max(maxX, item.x0 + item.entry.width);
+      minY = Math.min(minY, item.y0);
+      maxY = Math.max(maxY, item.y0 + item.entry.height);
+    }
+    const width = Math.max(1, Math.ceil(maxX - minX));
+    const height = Math.max(1, Math.ceil(maxY - minY));
+    if (width > MAX_LABEL_EDGE || height > MAX_LABEL_EDGE) throw new RangeError("Aura3D loaded-font label exceeds its bounded raster/atlas size.");
+    const quads: SdfTextQuad[] = placed.map((item) => {
+      const x0 = (item.x0 - minX) / scale;
+      const x1 = (item.x0 - minX + item.entry.width) / scale;
+      const y0 = (height - (item.y0 - minY + item.entry.height)) / scale;
+      const y1 = (height - (item.y0 - minY)) / scale;
+      return { glyph: item.glyph, corners: [x0, y0, x1, y0, x1, y1, x0, y1], uv: [item.entry.uv[0], item.entry.uv[3], item.entry.uv[2], item.entry.uv[1]] };
+    });
     const layout: SdfTextLayout = {
       kind: "aura-sdf-text-layout", text, quads, glyphCount: quads.length,
       unsupportedCharacters: [], glyphCoverage: "platform-unverified", widthWorld: width / scale, heightWorld: height / scale,
       method: "sdf-atlas-quad", style
     };
-    const snapshot: SdfFontAtlas = {
-      kind: "aura-sdf-font-atlas", width: atlas.width, height: atlas.height,
-      distances: Float32Array.from(atlas.data, (value) => value / 255), glyphs: {}, glyphCount: quads.length,
-      cellResolution: rasterSize / GLYPH_ROWS, padding: pad, spreadPixels: Math.max(2, rasterSize / 8)
-    };
-    const image = rasterizeSdfTextLabelImage(layout, snapshot, {
+    const source: SdfDistanceSource = { ...store.distanceSource(), cellResolution: rasterSize / GLYPH_ROWS, spreadPixels: spread };
+    const image = rasterizeFromDistanceSource(layout, source, {
       texelsPerWorldUnit: scale,
       ...(style.outlineWidthEm ? { outline: [1, 0.85, 0.6, 1] as const } : {}),
       ...(style.glowRadiusEm ? { glow: [0.5, 0.8, 1, 1] as const } : {}),
       ...(style.shadowOffsetEm ? { shadow: [0, 0, 0, 1] as const } : {})
-    });
+    }, true);
     return { layout, image };
-  } finally { atlas.dispose(); }
+  } finally {
+    for (const key of retained) store.releaseRun(key);
+    if (owned) releaseSharedLoadedFontAtlasIfUnused();
+  }
 }
 
 function createTextCanvas(): OffscreenCanvas | HTMLCanvasElement {
@@ -614,6 +832,31 @@ export function rasterizeSdfTextLabelImage(
   atlas: SdfFontAtlas,
   options: SdfTextRasterOptions = {}
 ): SdfTextRasterImage {
+  return rasterizeFromDistanceSource(layout, atlas, options, false);
+}
+
+/** Minimal distance-field view sampled by the label rasterizer. */
+interface SdfDistanceSource {
+  readonly width: number;
+  readonly height: number;
+  /** Normalized distances (0 outside .. 1 inside) after multiplying by `distanceScale`. */
+  readonly distances: ArrayLike<number>;
+  readonly distanceScale?: number;
+  readonly cellResolution: number;
+  readonly spreadPixels: number;
+}
+
+/**
+ * `union` takes the maximum signed distance over every overlapping quad; loaded-font
+ * run boxes carry SDF padding and may overlap their neighbours. The built-in
+ * layout keeps its first-quad rule.
+ */
+function rasterizeFromDistanceSource(
+  layout: SdfTextLayout,
+  atlas: SdfDistanceSource,
+  options: SdfTextRasterOptions,
+  union: boolean
+): SdfTextRasterImage {
   const scale = options.texelsPerWorldUnit ?? 64;
   if (!Number.isFinite(scale) || scale <= 0) {
     throw new Error("Aura3D SDF raster texelsPerWorldUnit must be positive.");
@@ -640,7 +883,7 @@ export function rasterizeSdfTextLabelImage(
       const lx = (x + 0.5) / scale;
       const ly = layout.heightWorld - (y + 0.5) / scale;
       const [r, g, b, a] = shadeSdfTexel(
-        lx, ly, layout, atlas, style, { fill, outline, glow, shadow, outlineWidthEm, glowRadiusEm, shadowOffset }
+        lx, ly, layout, atlas, style, { fill, outline, glow, shadow, outlineWidthEm, glowRadiusEm, shadowOffset }, union
       );
       const offset = (y * width + x) * 4;
       const alphaByte = Math.round(a * 255);
@@ -674,25 +917,26 @@ function shadeSdfTexel(
   lx: number,
   ly: number,
   layout: SdfTextLayout,
-  atlas: SdfFontAtlas,
+  atlas: SdfDistanceSource,
   style: SdfTextResolvedStyle,
-  colors: SdfShadeColors
+  colors: SdfShadeColors,
+  union: boolean
 ): SdfTextRgba {
   // Back-to-front composite over transparent: shadow, glow, outline, fill.
   let out: [number, number, number, number] = [0, 0, 0, 0];
   if (colors.shadow && colors.shadowOffset) {
-    const silhouette = sampleLayoutCoverage(lx + colors.shadowOffset[0], ly + colors.shadowOffset[1], layout, atlas, style);
+    const silhouette = sampleLayoutCoverage(lx + colors.shadowOffset[0], ly + colors.shadowOffset[1], layout, atlas, style, union);
     out = overPremultiplied(out, colors.shadow, silhouette * colors.shadow[3] * (style.shadowOpacity ?? 0.45));
   }
   if (colors.glow && colors.glowRadiusEm > 0) {
-    const inside = sampleLayoutSignedEm(lx, ly, layout, atlas);
+    const inside = sampleLayoutSignedEm(lx, ly, layout, atlas, union);
     if (inside !== undefined && inside < 0.02) {
       const reach = Math.max(0, 1 + (inside - 0.02) / colors.glowRadiusEm);
       const glowAlpha = Math.min(1, reach) * colors.glow[3];
       if (glowAlpha > 0) out = overPremultiplied(out, colors.glow, glowAlpha * 0.75);
     }
   }
-  const signedEm = sampleLayoutSignedEm(lx, ly, layout, atlas);
+  const signedEm = sampleLayoutSignedEm(lx, ly, layout, atlas, union);
   if (signedEm !== undefined) {
     if (colors.outline && colors.outlineWidthEm > 0) {
       const band = sampleSdfCoverage(signedEm + colors.outlineWidthEm, style.smoothingEm)
@@ -720,8 +964,10 @@ function sampleLayoutSignedEm(
   lx: number,
   ly: number,
   layout: SdfTextLayout,
-  atlas: SdfFontAtlas
+  atlas: SdfDistanceSource,
+  union = false
 ): number | undefined {
+  let best: number | undefined;
   for (const quad of layout.quads) {
     const x0 = quad.corners[0]!;
     const x1 = quad.corners[2]!;
@@ -736,24 +982,27 @@ function sampleLayoutSignedEm(
     const v = quad.uv[1]! + v01 * (quad.uv[3]! - quad.uv[1]!);
     const d01 = sampleAtlasBilinear(atlas, u, v);
     const signedPx = (d01 - 0.5) * 2 * atlas.spreadPixels;
-    return signedPx / Math.max(1, cellHeightPx);
+    const signedEm = signedPx / Math.max(1, cellHeightPx);
+    if (!union) return signedEm;
+    if (best === undefined || signedEm > best) best = signedEm;
   }
-  return undefined;
+  return best;
 }
 
 function sampleLayoutCoverage(
   lx: number,
   ly: number,
   layout: SdfTextLayout,
-  atlas: SdfFontAtlas,
-  style: SdfTextResolvedStyle
+  atlas: SdfDistanceSource,
+  style: SdfTextResolvedStyle,
+  union = false
 ): number {
-  const signedEm = sampleLayoutSignedEm(lx, ly, layout, atlas);
+  const signedEm = sampleLayoutSignedEm(lx, ly, layout, atlas, union);
   if (signedEm === undefined) return 0;
   return sampleSdfCoverage(signedEm, style.smoothingEm);
 }
 
-function sampleAtlasBilinear(atlas: SdfFontAtlas, u: number, v: number): number {
+function sampleAtlasBilinear(atlas: SdfDistanceSource, u: number, v: number): number {
   const x = Math.min(atlas.width - 1, Math.max(0, u * atlas.width - 0.5));
   const y = Math.min(atlas.height - 1, Math.max(0, v * atlas.height - 0.5));
   const x0 = Math.floor(x);
@@ -767,7 +1016,7 @@ function sampleAtlasBilinear(atlas: SdfFontAtlas, u: number, v: number): number 
     const b = atlas.distances[yy * atlas.width + x1] ?? 0;
     return a + (b - a) * fx;
   };
-  return row(y0) + (row(y1) - row(y0)) * fy;
+  return (row(y0) + (row(y1) - row(y0)) * fy) * (atlas.distanceScale ?? 1);
 }
 
 function normalizeRasterColor(value: SdfTextRgba | undefined, name: string, fallback?: SdfTextRgba): SdfTextRgba {

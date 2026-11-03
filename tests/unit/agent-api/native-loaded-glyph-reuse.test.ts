@@ -335,8 +335,9 @@ describe("loaded-font snapshot reuse integration", () => {
     const scope = createBuiltinGlyphAtlasScope(rootSdfFontAtlas());
     const firstNode = text3D("AV fi\nمرحبا", { font, rasterSize: 32, sdfGlyphAtlas: "shared" }).toJSON();
     const secondNode = text3D("AV fi\nمرحبا", { font, rasterSize: 32, sdfGlyphAtlas: "shared" }).toJSON();
-    expect(measured).toEqual(["AV fi", "مرحبا", "AV fi", "مرحبا", "AV fi", "مرحبا", "AV fi", "مرحبا"]);
-    expect(painted).toEqual(["AV fi", "مرحبا", "AV fi", "مرحبا"]);
+    // The second label shapes its lines but reuses both retained atlas runs.
+    expect(measured).toEqual(["AV fi", "مرحبا", "AV fi", "مرحبا", "AV fi", "مرحبا"]);
+    expect(painted).toEqual(["AV fi", "مرحبا"]);
     const first = createSdfTextPrimitiveResource(firstNode, () => {}, scope)!;
     const revision = scope.texture.revision;
     const second = createSdfTextPrimitiveResource(secondNode, () => {}, scope)!;

@@ -132,7 +132,7 @@ describe("admitted world fonts", () => {
     expect(texture.dispose).toHaveBeenCalledOnce();
   });
 
-  it("produces distinct multiline SDF quads from native-shaped text and releases its temporary atlas", () => {
+  it("produces distinct multiline SDF quads from native-shaped text", () => {
     vi.stubGlobal("OffscreenCanvas", MockCanvas);
     const result = createDynamicSdfText("مرحبا\n你好", { font: font(), size: 1, rasterSize: 32 });
     expect(result.layout.quads).toHaveLength(2);

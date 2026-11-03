@@ -80,6 +80,8 @@ const outputChannels = ["color", "normal", "roughness", "metalness", "emissive",
 export class ShaderGraphPanel {
   readonly element = document.createElement("section");
   private error = "";
+  /** Visible progress for an import that is still reading/decoding. */
+  private pending: string | null = null;
   private selectedOperation = "";
   private selectedType = "";
   private resourceName = "";
@@ -150,7 +152,7 @@ export class ShaderGraphPanel {
               </select></label>`).join("")}
           </fieldset>
           <fieldset><legend>Resources</legend>
-            <label>Import texture (2D image) <input type="file" accept="image/*" data-graph-import-texture aria-label="Import texture"></label>
+            <label>Import texture (2D image) <input type="file" accept="image/*" data-graph-import-texture aria-label="Import texture" ${this.pending ? 'disabled aria-busy="true"' : ""}></label>
             <label>Name <input data-resource-name aria-label="Resource name" value="${escapeHtml(this.resourceName)}"></label>
             <label>Kind <select data-resource-kind aria-label="Resource kind"><option value="uniform" ${this.resourceKind === "uniform" ? "selected" : ""}>Uniform</option><option value="texture2d" ${this.resourceKind === "texture2d" ? "selected" : ""}>Texture 2D</option><option value="texture3d" ${this.resourceKind === "texture3d" ? "selected" : ""}>Texture 3D</option><option value="depth2d" ${this.resourceKind === "depth2d" ? "selected" : ""}>Depth texture 2D</option></select></label>
             ${this.resourceKind === "uniform" ? `<label>Type <select data-resource-type aria-label="Resource type">${["f32", "i32", "u32", "bool", "vec2", "vec3", "vec4"].map((type) => `<option value="${type}" ${this.resourceType === type ? "selected" : ""}>${type}</option>`).join("")}</select></label>` : ""}
@@ -162,7 +164,7 @@ export class ShaderGraphPanel {
           </fieldset>` : `
           <p class="muted">${state.status === "unsupported" ? "Shader graph editing is unavailable for this material." : "No graph is assigned to the selected material."}</p>
           <button type="button" data-graph-action="create" ${state.status === "unsupported" ? "disabled" : ""}>Create graph</button>`}
-        <div role="status" aria-live="polite" data-role="graph-status">${escapeHtml(statusText(state.status))}</div>
+        <div role="status" aria-live="polite" data-role="graph-status"${this.pending ? ' data-state="loading" aria-busy="true"' : ""}>${escapeHtml(this.pending ?? statusText(state.status))}</div>
         <div role="alert" data-role="graph-diagnostics">${diagnostics.map((entry) => `<p>${escapeHtml(entry.severity ?? "error")}: ${entry.nodeId ? `${escapeHtml(entry.nodeId)}: ` : ""}${escapeHtml(entry.message)}</p>`).join("")}</div>
         ${state.inspection ? inspectionMarkup(state.inspection) : ""}
       </div>`;
@@ -190,7 +192,10 @@ export class ShaderGraphPanel {
     const input = event.target as HTMLInputElement | HTMLSelectElement;
     if (input instanceof HTMLInputElement && input.hasAttribute("data-graph-import-texture")) {
       const file = input.files?.[0];
-      if (file) void this.run(() => this.controller.importTexture(file));
+      if (file) {
+        if (this.pending) return;
+        void this.run(() => this.controller.importTexture(file), `Importing texture ${file.name || "image"}…`);
+      }
       return;
     }
     if (input.hasAttribute("data-graph-operation")) {
@@ -245,14 +250,20 @@ export class ShaderGraphPanel {
     }
   }
 
-  private async run(action: () => void | Promise<void>): Promise<void> {
+  private async run(action: () => void | Promise<void>, pending?: string): Promise<void> {
     const focused = document.activeElement instanceof HTMLElement && this.element.contains(document.activeElement)
       ? focusKey(document.activeElement) : null;
     this.error = "";
+    if (pending) {
+      this.pending = pending;
+      this.render();
+    }
     try {
       await action();
     } catch (error) {
-      this.error = errorMessage(error);
+      this.error = pending ? `${pending.replace(/…$/, "")} failed: ${errorMessage(error)}` : errorMessage(error);
+    } finally {
+      if (pending) this.pending = null;
     }
     this.render();
     if (focused) {

@@ -4,6 +4,8 @@ import type { Texture, TextureCubeFace } from "@aura3d/rendering";
 export interface InspectableTexture {
   readonly id: string;
   readonly texture: Texture;
+  /** `runtime`: held by the live device but owned by no project asset (targets, shadow maps). */
+  readonly origin?: "asset" | "runtime";
 }
 
 export interface TextureResourceState {
@@ -161,7 +163,7 @@ export class TextureInspectorPanel {
       for (const entry of textures) {
         const option = document.createElement("option");
         option.value = entry.id;
-        option.textContent = entry.texture.label || entry.id;
+        option.textContent = `${entry.texture.label || entry.id}${entry.origin === "runtime" ? " (runtime)" : ""}`;
         option.selected = entry.id === selectedId;
         select.append(option);
       }
@@ -177,6 +179,7 @@ export class TextureInspectorPanel {
       const metrics = document.createElement("dl");
       metrics.className = "metrics";
       appendMetric(metrics, "State", texture.disposed ? "Disposed" : resource?.status ?? "Unknown");
+      appendMetric(metrics, "Origin", selected.origin === "runtime" ? "Runtime-only (renderer allocation)" : "Project asset");
       appendMetric(metrics, "Dimensions", `${texture.width} × ${texture.height}${texture.dimension === "3d" ? ` × ${texture.depth}` : ""}`);
       appendMetric(metrics, "Dimension", texture.dimension);
       appendMetric(metrics, "Format", texture.format);

@@ -249,6 +249,82 @@ describe("React asset resource cancellation races", () => {
   });
 });
 
+describe("React asset resource default unsignalled interest", () => {
+  function suspendedUnsignalled(resource: AuraAssetResource): Promise<AuraAssetPreloadEvidence> {
+    try { resource.read(); } catch (value) {
+      if (value instanceof Promise) return value as Promise<AuraAssetPreloadEvidence>;
+      throw value;
+    }
+    throw new Error("Expected a suspended asset read.");
+  }
+
+  it("bounds an abandoned unsignalled read, keeps its lookup owned until then, and permits retry", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const loader = vi.fn<AuraAssetPreloadFn>((_descriptors, options) => {
+      signals.push(options!.signal);
+      return new Promise<AuraAssetPreloadEvidence>(() => undefined); // A stalled request.
+    });
+    const context = {};
+    const abandonedDescriptors = [{ id: "abandoned", url: "/abandoned.glb" }];
+    const abandoned = resourceForDescriptors(abandonedDescriptors, loader, context);
+    const churn: AuraAssetResource[] = [];
+    try {
+      // An uncommitted Suspense render calls read() with no signal and never commits cleanup.
+      const wait = suspendedUnsignalled(abandoned);
+      expect(suspendedUnsignalled(abandoned)).toBe(wait);
+      const settled = expect(wait).rejects.toMatchObject({ name: "TimeoutError" });
+      // While its work is live, cache pressure neither evicts nor cancels the owned entry.
+      for (let index = 0; index < 160; index++) {
+        churn.push(resourceForDescriptors([{ id: `idle-${index}`, url: `/idle-${index}` }], loader, context));
+      }
+      expect(resourceForDescriptors(abandonedDescriptors, loader, context)).toBe(abandoned);
+      expect(signals[0]?.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(29_999);
+      expect(signals[0]?.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      await settled;
+      // The interest ended: the stalled flight is cancelled and left as a retryable failure.
+      expect(signals[0]?.aborted).toBe(true);
+      expect(() => abandoned.read()).toThrow(expect.objectContaining({ name: "TimeoutError" }));
+      expect(loader).toHaveBeenCalledOnce();
+      const retry = abandoned.retry({ signal: new AbortController().signal });
+      void retry.catch(() => undefined);
+      expect(loader).toHaveBeenCalledTimes(2);
+      expect(signals[1]?.aborted).toBe(false);
+    } finally {
+      abandoned.dispose();
+      for (const resource of churn) resource.dispose();
+      vi.useRealTimers();
+    }
+  });
+
+  it("a retained owner suspends the unsignalled deadline and releasing it resumes the bound", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    const loader = vi.fn<AuraAssetPreloadFn>((_descriptors, options) => {
+      signals.push(options!.signal);
+      return new Promise<AuraAssetPreloadEvidence>(() => undefined);
+    });
+    const resource = createAuraAssetResource(descriptors, loader);
+    try {
+      const wait = suspendedUnsignalled(resource);
+      const settled = expect(wait).rejects.toMatchObject({ name: "TimeoutError" });
+      const release = resource.retain();
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(signals[0]?.aborted).toBe(false);
+      release();
+      await vi.advanceTimersByTimeAsync(30_000);
+      await settled;
+      expect(signals[0]?.aborted).toBe(true);
+      expect(loader).toHaveBeenCalledOnce();
+    } finally {
+      resource.dispose();
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("React frame subscriber lifecycle", () => {
   it("does not invoke a subscriber released earlier in the same frame", () => {
     let dispatch: ((frame: AuraFrameInfo) => void) | undefined;

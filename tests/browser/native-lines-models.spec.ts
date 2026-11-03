@@ -38,7 +38,7 @@ function modelFixture(): Buffer {
 const glb = modelFixture();
 const digest = createHash("sha256").update(glb).digest("hex");
 const fixture = `
-import { camera, createAuraApp, defineAuraAssets, lines, material, model, scene } from "@aura3d/engine";
+import { camera, createAuraApp, defineAuraAssets, lines, material, model, raycast, scene } from "@aura3d/engine";
 const stage = document.querySelector("#stage");
 const assets = defineAuraAssets({ square: { type: "model", format: "glb", url: "/native-model-options.glb", hash: "sha256-${digest}", bounds: [2,2,0.01] } });
 const cameraFor = () => camera.orthographic({ position: [0, 0, 5], target: [0, 0, 0], orthographicSize: 2, near: 0.1, far: 20 });
@@ -49,15 +49,15 @@ async function pixels(app) {
   const context = canvas.getContext("2d"); if (!context) throw new Error("2D readback unavailable");
   context.drawImage(image, 0, 0); image.close();
   const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
-  let red = 0, blue = 0, purple = 0, colored = 0;
+  let red = 0, blue = 0, purple = 0, colored = 0, redX = 0;
   for (let i = 0; i < data.length; i += 4) {
     const [r,g,b] = [data[i],data[i+1],data[i+2]];
-    if (r > 40 && r > 1.3*b && r > 1.3*g) red++;
+    if (r > 40 && r > 1.3*b && r > 1.3*g) { red++; redX += (i / 4) % canvas.width; }
     if (b > 40 && b > 1.3*r && b > 1.3*g) blue++;
     if (r > 40 && b > 40 && g < Math.min(r,b)*0.7) purple++;
     if (Math.max(r,g,b) > 40) colored++;
   }
-  return { red, blue, purple, colored, drawCalls: app.diagnostics().drawCalls, errors: app.diagnostics().errors };
+  return { red, blue, purple, colored, redCenterX: red ? redX / red : -1, drawCalls: app.diagnostics().drawCalls, errors: app.diagnostics().errors };
 }
 async function draw(node, options = {}) {
   stage.replaceChildren(); stage.style.width = (options.width || 192) + "px"; stage.style.height = (options.height || 192) + "px";
@@ -66,7 +66,61 @@ async function draw(node, options = {}) {
     scene: scene({ camera: cameraFor(), background: "#000000" }).add(node) });
   try { await app.ready(); return await pixels(app); } finally { await app.disposeAsync(); }
 }
+// Real pointer and keyboard input: a raycast picks the imported model, a drag
+// moves it in world units, keys nudge and hide it; pixels prove each change.
+let interactive;
+async function interact() {
+  stage.replaceChildren(); stage.style.width = "192px"; stage.style.height = "192px";
+  const app = createAuraApp(stage, { autoStart: false, resize: false, pixelRatio: 1,
+    qualityRebuild: { flags: ["A3D_PARITY_LINES"], allowUrlFlags: false },
+    scene: scene({ camera: cameraFor(), background: "#000000" }).add(model(assets.square, { scaleMode: "world" }).runtime({ id: "square" })) });
+  await app.ready();
+  const canvas = stage.querySelector("canvas");
+  if (!canvas) throw new Error("app did not mount a canvas");
+  canvas.tabIndex = 0;
+  const handle = app.nodes.require("square");
+  const state = { hits: [], misses: 0, keys: [], x: 0, visible: true, drag: undefined, listeners: 0 };
+  const ndcOf = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    return [((event.clientX - rect.left) / rect.width) * 2 - 1, 1 - ((event.clientY - rect.top) / rect.height) * 2];
+  };
+  const pick = (event) => raycast({ camera: { position: [0, 0, 5], target: [0, 0, 0], orthographicSize: 2, aspect: 1, near: 0.1, far: 20 }, ndc: ndcOf(event) },
+    { handles: [handle], mode: "mesh", firstHitOnly: true })[0];
+  const down = (event) => {
+    const hit = pick(event);
+    if (!hit) { state.misses++; return; }
+    state.hits.push(String(hit.nodeId ?? hit.nodeName));
+    canvas.setPointerCapture?.(event.pointerId);
+    state.drag = { pointerId: event.pointerId, clientX: event.clientX, x: state.x };
+  };
+  const move = (event) => {
+    if (!state.drag || event.pointerId !== state.drag.pointerId) return;
+    // An orthographic size of 2 spans 4 world units across the canvas height.
+    state.x = state.drag.x + (event.clientX - state.drag.clientX) * 4 / canvas.getBoundingClientRect().height;
+    handle.setPosition(state.x, 0, 0);
+  };
+  const up = (event) => { if (state.drag?.pointerId === event.pointerId) state.drag = undefined; };
+  const key = (event) => {
+    state.keys.push(event.key);
+    if (event.key === "ArrowLeft") { state.x -= 0.5; handle.setPosition(state.x, 0, 0); }
+    if (event.key === "h") { state.visible = !state.visible; handle.setVisible(state.visible); }
+  };
+  const bindings = [["pointerdown", down], ["pointermove", move], ["pointerup", up], ["pointercancel", up], ["keydown", key]];
+  for (const [type, listener] of bindings) { canvas.addEventListener(type, listener); state.listeners++; }
+  interactive = { app, canvas, state, bindings };
+}
 window.__auraNativeLinesModels = {
+  interactStart: interact,
+  interactFrame: async () => ({ ...(await pixels(interactive.app)), hits: [...interactive.state.hits], misses: interactive.state.misses,
+    keys: [...interactive.state.keys], x: interactive.state.x }),
+  interactStop: async () => {
+    const { app, canvas, state, bindings } = interactive;
+    for (const [type, listener] of bindings) { canvas.removeEventListener(type, listener); state.listeners--; }
+    await app.disposeAsync();
+    if (typeof app.whenDisposed === "function") await app.whenDisposed();
+    interactive = undefined;
+    return { listeners: state.listeners, termination: app.renderTermination?.()?.state };
+  },
   line: (world, dashed, dpr) => draw(lines.fat({ points: [[-1.4,0,0],[0,0,0],[1.4,0,0]], colors: ["#ff0000", "#ffffff", "#0000ff"],
     width: world ? 0.16 : 8, worldUnits: world, ...(dashed ? { dashed: true, dashSize: 0.3, gapSize: 0.2 } : {}),
     material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }), { dpr }),
@@ -104,8 +158,13 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await server?.close(); });
 
-type Frame = { red: number; blue: number; purple: number; colored: number; drawCalls: number; errors: string[] };
-type Fixture = { line(world: boolean, dashed: boolean, dpr: number): Promise<Frame>; model(kind: string): Promise<Frame>; mutate(): Promise<{ before: Frame; after: Frame }> };
+type Frame = { red: number; blue: number; purple: number; colored: number; redCenterX: number; drawCalls: number; errors: string[] };
+type InteractionFrame = Frame & { hits: string[]; misses: number; keys: string[]; x: number };
+type Fixture = {
+  line(world: boolean, dashed: boolean, dpr: number): Promise<Frame>; model(kind: string): Promise<Frame>; mutate(): Promise<{ before: Frame; after: Frame }>;
+  interactStart(): Promise<void>; interactFrame(): Promise<InteractionFrame>;
+  interactStop(): Promise<{ listeners: number; termination?: string }>;
+};
 
 test("world and pixel width lines show gradients and continuous dashes", async ({ page }) => {
   await page.goto(`${origin}native-lines-models.html`);
@@ -136,4 +195,54 @@ test("imported variant and custom shader change visible model pixels", async ({ 
   expect(result.base.red).toBeGreaterThan(300);
   expect(result.variant.blue).toBeGreaterThan(300);
   expect(result.custom.purple).toBeGreaterThan(300);
+});
+
+test("pointer picking, dragging and keyboard input change the imported model's pixels and tear down", async ({ page }) => {
+  await page.goto(`${origin}native-lines-models.html`);
+  await page.waitForFunction(() => Boolean((window as unknown as { __auraNativeLinesModels?: unknown }).__auraNativeLinesModels));
+  const fixtureCall = <K extends keyof Fixture>(name: K) => page.evaluate(async (key) =>
+    (window as unknown as { __auraNativeLinesModels: Record<string, () => Promise<unknown>> }).__auraNativeLinesModels[key](), name);
+  await fixtureCall("interactStart");
+  const canvas = page.locator("#stage canvas");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("model canvas has no layout box");
+  const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const frame = async () => await fixtureCall("interactFrame") as InteractionFrame;
+
+  const base = await frame();
+  expect(base.errors).toEqual([]);
+  expect(base.red).toBeGreaterThan(300);
+  expect(base.redCenterX).toBeGreaterThan(box.width / 2 - 8);
+  expect(base.redCenterX).toBeLessThan(box.width / 2 + 8);
+
+  // A press outside the square misses; a press on it is picked by the mesh raycast.
+  await page.mouse.click(box.x + 6, box.y + 6);
+  expect((await frame()).misses).toBe(1);
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x + 48, center.y, { steps: 4 });
+  await page.mouse.up();
+  const dragged = await frame();
+  expect(dragged.hits).toEqual(["square"]);
+  expect(dragged.x).toBeCloseTo(48 * 4 / box.height, 2);
+  // 48 CSS pixels of drag moves the rendered square by the same distance.
+  expect(dragged.redCenterX - base.redCenterX).toBeGreaterThan(36);
+  expect(dragged.redCenterX - base.redCenterX).toBeLessThan(60);
+
+  // Keyboard input on the focused canvas nudges, then hides, the model.
+  await canvas.focus();
+  await page.keyboard.press("ArrowLeft");
+  const nudged = await frame();
+  expect(nudged.keys).toEqual(["ArrowLeft"]);
+  expect(dragged.redCenterX - nudged.redCenterX).toBeGreaterThan(16);
+  expect(dragged.redCenterX - nudged.redCenterX).toBeLessThan(32);
+  await page.keyboard.press("h");
+  const hidden = await frame();
+  expect(hidden.keys).toEqual(["ArrowLeft", "h"]);
+  expect(hidden.red).toBe(0);
+  for (const sample of [dragged, nudged, hidden]) expect(sample.errors).toEqual([]);
+
+  const teardown = await fixtureCall("interactStop") as { listeners: number; termination?: string };
+  expect(teardown.listeners).toBe(0);
+  expect(teardown.termination).toBe("disposed");
 });

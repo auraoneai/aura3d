@@ -26,12 +26,19 @@ export interface AuraModelMaterialOverride {
    * Replace the named imported material slots with a custom shader. A target is
    * required; matches follow the currently selected glTF material variant.
    * Runtime handle updates cannot install shaders (which may load textures).
+   *
+   * Authored maps of a textured slot (and of each of its variant materials)
+   * bind to a `texture2d` uniform of the same name the imported PBR material
+   * uses, declared without a value: `baseColorTexture`, `metallicRoughnessTexture`,
+   * `normalTexture`, `occlusionTexture`, `emissiveTexture`, ... (`u_` prefix
+   * optional). Every authored map must be declared unless `replaceTextures` is
+   * set; otherwise loading fails with `MODEL_CUSTOM_MATERIAL_UNSUPPORTED`.
    */
   readonly material?: AuraMaterialSpec;
   /**
-   * With `material`, explicitly replace authored base-color and
-   * metallic-roughness maps rather than retaining them. Other imported maps and
-   * alpha coverage cannot currently be transferred to a custom shader.
+   * With `material`, explicitly replace any authored map the shader does not
+   * declare rather than requiring it to be sampled (declared maps still bind).
+   * Alpha-masked or blended slots cannot currently be replaced.
    */
   readonly replaceTextures?: boolean;
   readonly color?: AuraColor; readonly colorMode?: "multiply" | "replace";

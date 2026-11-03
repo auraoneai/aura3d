@@ -36,6 +36,13 @@ export interface FontLoadOptions {
 
 const DEFAULT_MAX_BYTES = 16 * 1024 * 1024;
 let nextFamilyId = 0;
+const disposeListeners = new Set<(font: LoadedFont) => void>();
+
+/** @internal Retained text caches release a font's resources when its handle is disposed. */
+export function onLoadedFontDisposed(listener: (font: LoadedFont) => void): () => void {
+  disposeListeners.add(listener);
+  return () => { disposeListeners.delete(listener); };
+}
 
 /**
  * Register admitted OpenType/TrueType/WOFF bytes. Font decoding is performed by
@@ -88,7 +95,7 @@ export async function loadFont(asset: FontAsset, options: FontLoadOptions = {}):
   await face.load();
   platform.fonts.add(face);
   let disposed = false;
-  return {
+  const handle: LoadedFont = {
     family,
     metadata: { ...metadata },
     get disposed() { return disposed; },
@@ -96,8 +103,12 @@ export async function loadFont(asset: FontAsset, options: FontLoadOptions = {}):
       if (disposed) return;
       platform.fonts.delete(face);
       disposed = true;
+      for (const listener of [...disposeListeners]) {
+        try { listener(handle); } catch { /* cache release must not prevent font disposal */ }
+      }
     }
   };
+  return handle;
 }
 
 function browserFontPlatform(): FontLoaderPlatform {

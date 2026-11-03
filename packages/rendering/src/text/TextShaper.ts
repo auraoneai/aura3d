@@ -48,9 +48,13 @@ const MAX_MEASURED_UNITS = 1_048_576;
  * entire line (not individual code points), preserving kerning, ligatures,
  * contextual substitution and the browser's Unicode bidi/fallback behavior.
  * Painting must likewise call fillText once per returned line. Separate Canvas
- * runs cannot carry bidi formatting state across wraps, so wraps through open
- * embeddings, overrides or isolates are rejected. Even other wrapped text is
- * resolved per line by the platform, not by a paragraph-wide bidi layout.
+ * runs do not share bidi formatting state, so a wrap through an open
+ * embedding, override or isolate closes the open scopes at the end of the line
+ * (PDF/PDI, innermost first) and reopens the same initiators, in order, at the
+ * start of the next line. Each wrapped line therefore resolves the explicit
+ * embedding levels (UAX #9 X1-X10) its characters had in the paragraph; the
+ * reordering of each line (L1-L4) is then performed by the platform. Text that
+ * does not wrap is passed through unchanged.
  */
 export function shapeText(text: string, options: TextShapingOptions, context: TextMeasureContext): ShapedText {
   if (typeof text !== "string" || text.length === 0 || text.length > MAX_TEXT_UNITS) {
@@ -114,47 +118,66 @@ export function shapeText(text: string, options: TextShapingOptions, context: Te
   // Unicode Bidi_Class=B boundaries define paragraphs. CRLF is one boundary;
   // just as for LF, the separator is not included in the platform text run.
   for (const paragraph of text.split(/\r\n|[\n\r\u001c-\u001e\u0085\u2029]/)) {
-    const firstLine = lines.length;
     const direction = options.direction === "rtl" || options.direction === "ltr" ? options.direction : detectDirection(paragraph);
     context.direction = direction;
     if (maxWidth === Infinity || paragraph === "") { emit(paragraph, direction); continue; }
-    // Track formatting scopes over the actual emitted logical lines. A stack
-    // of enclosing embedding counts makes PDF local to its isolate, while PDI
-    // discards all embeddings within the isolate it closes. Formatting controls
-    // are not whitespace and survive the existing trimming unchanged. The input
-    // limit bounds both this scan and the stack of nested isolates.
-    let embeddingDepth = 0;
-    const parentEmbeddingDepths: number[] = [];
-    const emitWrapped = (line: string): void => {
-      if (lines.length > firstLine && (embeddingDepth > 0 || parentEmbeddingDepths.length > 0)) {
-        throw new Error("AURA_TEXT_BIDI_WRAP_UNSUPPORTED: a bidi embedding, override or isolate crosses a wrapped line.");
-      }
-      emit(line, direction);
-      for (const char of line) {
+    // Track explicit formatting scopes over the logical lines. PDF closes only
+    // the innermost embedding/override inside the current isolate; PDI closes
+    // the innermost isolate and every embedding opened inside it; unmatched
+    // terminators are ignored. Formatting controls are not whitespace and
+    // survive trimming. The input limit bounds this scan and the scope stack.
+    const scopes: { readonly initiator: string; readonly isolate: boolean }[] = [];
+    const advanceScopes = (content: string): void => {
+      for (const char of content) {
         const cp = char.charCodeAt(0);
-        if (cp === 0x202a || cp === 0x202b || cp === 0x202d || cp === 0x202e) embeddingDepth += 1;
-        else if (cp === 0x202c) { if (embeddingDepth > 0) embeddingDepth -= 1; }
-        else if (cp >= 0x2066 && cp <= 0x2068) { parentEmbeddingDepths.push(embeddingDepth); embeddingDepth = 0; }
-        else if (cp === 0x2069 && parentEmbeddingDepths.length > 0) embeddingDepth = parentEmbeddingDepths.pop()!;
+        if (cp === 0x202a || cp === 0x202b || cp === 0x202d || cp === 0x202e) scopes.push({ initiator: char, isolate: false });
+        else if (cp >= 0x2066 && cp <= 0x2068) scopes.push({ initiator: char, isolate: true });
+        else if (cp === 0x202c) { if (scopes.length && !scopes[scopes.length - 1]!.isolate) scopes.pop(); }
+        else if (cp === 0x2069) {
+          let index = scopes.length - 1;
+          while (index >= 0 && !scopes[index]!.isolate) index -= 1;
+          if (index >= 0) scopes.length = index;
+        }
       }
+    };
+    const openers = (): string => scopes.map((scope) => scope.initiator).join("");
+    const closers = (): string => scopes.map((scope) => (scope.isolate ? "\u2069" : "\u202c")).reverse().join("");
+    // Logical line contents and the scope state that opens each of them.
+    const pending: { readonly prefix: string; readonly content: string; suffix: string }[] = [];
+    const pushLine = (content: string): void => {
+      if (lines.length + pending.length >= maxLines) throw new RangeError("Aura3D text exceeds maxLines.");
+      // Scopes still open after the previous line are closed at its end.
+      if (pending.length) pending[pending.length - 1]!.suffix = closers();
+      pending.push({ prefix: openers(), content, suffix: "" });
+      advanceScopes(content);
     };
     // Word segmentation respects Unicode boundaries; an overlong word falls
     // back to grapheme segmentation so combining marks and emoji stay intact.
     let current = "";
+    const fits = (value: string): boolean => measure(openers() + value) <= maxWidth;
     for (const word of joinedSegments(paragraph, "word")) {
-      if (measure(current + word) <= maxWidth) { current += word; continue; }
+      if (fits(current + word)) { current += word; continue; }
       const line = current.replace(/[ \t\u1680\u2000-\u2006\u2008-\u200a\u205f\u3000]+$/u, "");
-      if (line) emitWrapped(line);
-      current = "";
+      // A line of only bidi controls is never emitted; it opens the next one.
+      const carry = isFormattingOnly(line) ? line : "";
+      if (line && !carry) pushLine(line);
+      current = carry;
       const remaining = word.replace(/^[ \t\u1680\u2000-\u2006\u2008-\u200a\u205f\u3000]+/u, "");
       if (!remaining) continue;
-      if (measure(remaining) <= maxWidth) { current = remaining; continue; }
+      if (fits(current + remaining)) { current += remaining; continue; }
       for (const cluster of joinedSegments(remaining, "grapheme")) {
-        if (current && measure(current + cluster) > maxWidth) { emitWrapped(current); current = ""; }
+        if (current && !isFormattingOnly(current) && !fits(current + cluster)) { pushLine(current); current = ""; }
         current += cluster;
       }
     }
-    if (current || lines.length === firstLine) emitWrapped(current);
+    if (current && pending.length && isFormattingOnly(current)) {
+      // Trailing controls close scopes on the last visible line instead of adding an empty one.
+      const last = pending[pending.length - 1]!;
+      pending[pending.length - 1] = { ...last, content: last.content + current };
+      advanceScopes(current);
+    } else if (current || pending.length === 0) pushLine(current);
+    // An unclosed scope on the paragraph's last line ends with the paragraph.
+    for (const line of pending) emit(line.prefix + line.content + line.suffix, direction);
   }
   return { lines, width: Math.max(0, ...lines.map((line) => line.width)), height: lines.length * lineHeight, lineHeight, font, letterSpacing: spacing };
 }
@@ -170,6 +193,10 @@ function joinedSegments(text: string, granularity: "word" | "grapheme"): string[
     lastCode = part.charCodeAt(part.length - 1);
   }
   return result;
+}
+
+function isFormattingOnly(text: string): boolean {
+  return /^[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]*$/.test(text);
 }
 
 function isNoBreakJoiner(code: number): boolean {

@@ -596,4 +596,68 @@ describe("native interaction controls", () => {
     control.dispose();
     expect(cam.near).toBe(1);
   });
+
+  it("drives marquee selection from connected pointer events into committed selection state", () => {
+    const element = new PointerTarget();
+    const blur = new EventTarget();
+    const root = new SceneNode();
+    const center = bounded("center");
+    const other = bounded("other");
+    other.transform.setPosition(2.5, 0, 0);
+    root.addChild(center);
+    root.addChild(other);
+    const selection = new SelectionBox(camera(), root);
+    const events: { type: string; start: { x: number; y: number }; end: { x: number; y: number }; selected: readonly unknown[] }[] = [];
+    selection.subscribe((event) => events.push({
+      type: event.type, start: event.start, end: event.end, selected: event.selection.map((hit) => hit.object)
+    }));
+    const shift = { held: true };
+    const disconnect = selection.connect(element.element, { shouldStart: () => shift.held, blurTarget: blur });
+    expect(element.listenerCount).toBe(5);
+
+    // Content box is 200px at (100, 50): client (190..210, 140..160) is NDC +/-0.1, world +/-0.4.
+    element.pointer("pointerdown", 1, 190, 140);
+    expect(element.captured.has(1)).toBe(true);
+    expect(selection.marquee).toEqual({ pointerId: 1, start: { x: 190, y: 140 }, end: { x: 190, y: 140 } });
+    element.pointer("pointermove", 1, 205, 155);
+    element.pointer("pointermove", 2, 300, 300); // Another contact never moves this marquee.
+    expect(selection.marquee?.end).toEqual({ x: 205, y: 155 });
+    element.pointer("pointerup", 1, 210, 160);
+    expect(element.captured.has(1)).toBe(false);
+    expect(selection.marquee).toBeNull();
+    expect(selection.selection).toEqual([{ object: center }]);
+    expect(events.map((event) => event.type)).toEqual(["marqueestart", "marqueemove", "marqueeend"]);
+    expect(events[0].selected).toEqual([]);
+    expect(events[2]).toMatchObject({ start: { x: 190, y: 140 }, end: { x: 210, y: 160 }, selected: [center] });
+
+    // A cancelled or blurred gesture leaves the committed selection unchanged.
+    events.length = 0;
+    element.pointer("pointerdown", 3, 250, 140);
+    element.pointer("pointermove", 3, 290, 160);
+    element.pointer("pointercancel", 3, 290, 160);
+    element.pointer("pointerdown", 4, 250, 140);
+    blur.dispatchEvent(new Event("blur"));
+    element.pointer("pointerup", 4, 290, 160);
+    expect(events.map((event) => event.type)).toEqual(["marqueestart", "marqueemove", "marqueecancel", "marqueestart", "marqueecancel"]);
+    expect(selection.selection).toEqual([{ object: center }]);
+    expect(element.captured.size).toBe(0);
+
+    // The interaction mode gate keeps ordinary presses from starting a marquee.
+    shift.held = false;
+    element.pointer("pointerdown", 5, 250, 140);
+    expect(selection.marquee).toBeNull();
+    shift.held = true;
+
+    // Client (250..290) is NDC 0.5..0.9, world 2..3.6: the next commit replaces the selection.
+    element.pointer("pointerdown", 6, 290, 160);
+    element.pointer("pointerup", 6, 250, 140);
+    expect(selection.selection).toEqual([{ object: other }]);
+
+    disconnect();
+    expect(element.listenerCount).toBe(0);
+    element.pointer("pointerdown", 7, 190, 140);
+    expect(selection.marquee).toBeNull();
+    selection.dispose();
+    expect(selection.selection).toEqual([]);
+  });
 });

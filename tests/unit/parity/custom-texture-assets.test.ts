@@ -317,7 +317,6 @@ describe("upgradeCustomMaterialTextures — asset refs on custom materials (R-26
 
   it.each([
     [{ textured: true }, /authored texture maps/],
-    [{ textured: true, unskinned: true }, /authored texture maps/],
     [{ alphaMask: true }, /alpha coverage/],
     [{ alphaBlend: true }, /alpha coverage/],
     [{ duplicateMaterialNames: true }, /single authored material slot/],
@@ -332,6 +331,22 @@ describe("upgradeCustomMaterialTextures — asset refs on custom materials (R-26
       customMaterialFactory: factory
     })).rejects.toThrow(reason);
     expect(factory).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unskinned textured whole-model shader that does not sample the authored map, and disposes it", async () => {
+    // S5-WP26-03: textured unskinned models are admitted per slot; a shader that
+    // would silently drop the authored map is created, checked, then released.
+    const document = animatedSkinDocument({ textured: true, unskinned: true });
+    stubSkinModel(document);
+    const created: ReturnType<typeof createCustomShaderMaterial>[] = [];
+    const factory = vi.fn(() => { const shader = createCustomShaderMaterial(publicMaterial.node({ graph: skinGraph }).custom!); created.push(shader); return shader; });
+    await expect(createTypedGLBActor({
+      asset: skinAsset(document), id: "unsafe-unskinned", width: 64, height: 64,
+      imageDecoder: async () => ({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }),
+      customMaterialFactory: factory
+    })).rejects.toThrow(/MODEL_CUSTOM_MATERIAL_UNSUPPORTED.*does not declare texture2d uniform\(s\) baseColorTexture/);
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(created.every((shader) => shader.disposed)).toBe(true);
   });
 
   it("rejects an oversized authored skin even when the loader omits its palette", async () => {
@@ -447,7 +462,7 @@ describe("upgradeCustomMaterialTextures — asset refs on custom materials (R-26
     } finally { unregister(); }
   });
 
-  it("rejects an authored variant before load and leaves runtime material bindings untouched", async () => {
+  it("rejects an authored variant under a skinned whole-model shader before acquiring it and leaves runtime material bindings untouched", async () => {
     const document = animatedSkinDocument({ variants: true });
     const fetchMock = stubSkinModel(document);
     const assets = defineAuraAssets({
@@ -459,8 +474,9 @@ describe("upgradeCustomMaterialTextures — asset refs on custom materials (R-26
     await expect(createTypedGLBActor({
       asset: skinAsset(document), id: "variant-preload", width: 64, height: 64,
       customMaterialFactory: factory, materialVariant: "alternate"
-    })).rejects.toThrow(/MODEL_CUSTOM_MATERIAL_UNSUPPORTED.*variant/);
-    expect(fetchMock).not.toHaveBeenCalled();
+    })).rejects.toThrow(/MODEL_CUSTOM_MATERIAL_UNSUPPORTED.*variant cannot be visible under a skinned whole-model/);
+    // Skinning is known only after parsing; the shader is still never acquired.
+    expect(fetchMock).toHaveBeenCalled();
     expect(factory).not.toHaveBeenCalled();
 
     const actor = await createTypedGLBActor({
