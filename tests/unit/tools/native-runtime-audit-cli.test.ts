@@ -42,6 +42,11 @@ describe("native runtime audit orchestration", () => {
     expect(summarizeSourceEvidence(graph(), clean).status).toBe("scan-complete");
     const unlocked = { ...graph(), installProfiles: [{ path: "template", lockfile: null, lockVersion: null }] };
     expect(summarizeSourceEvidence(unlocked, clean)).toMatchObject({ status: "review-required", unlockedProfiles: ["template"] });
+    const projection = { path: "template", resolution: "workspace-lock-projection" as const, directFields: [], nodes: [], edgeCount: 0, unresolved: [], prohibited: [] };
+    expect(summarizeSourceEvidence({ ...unlocked, projectedProfiles: [{ ...projection, complete: true }] }, clean))
+      .toMatchObject({ status: "scan-complete", unlockedProfiles: ["template"], unprojectedProfiles: [] });
+    expect(summarizeSourceEvidence({ ...unlocked, projectedProfiles: [{ ...projection, complete: false, unresolved: [{ owner: "template", name: "x", specifier: "1" }] }] }, clean))
+      .toMatchObject({ status: "review-required", unprojectedProfiles: ["template"] });
   });
 
   it("validates the gate and source report before opening runtime observations", async () => {

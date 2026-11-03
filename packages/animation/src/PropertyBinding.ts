@@ -1,3 +1,18 @@
+/**
+ * Track-path resolution for animation property bindings.
+ *
+ * Provenance (reviewed 2026-11-02, WP-11/WP-29): this module replaced an
+ * earlier explicitly attributed port (revision 3fbf87c45). The parser is a
+ * single-pass character scanner with escapes and quoted accessors instead of
+ * the earlier regular-expression grammar; node lookup is an iterative,
+ * cycle-guarded depth-first search with UUID precedence; binding resolution
+ * uses prototype-safe own/accessor lookup with kind-tagged dispatch. Retained
+ * on purpose as the documented 4.x compatibility contract: the public names
+ * (`parseTrackName`, `sanitizeNodeName`, `findNode`, `Composite`,
+ * `nCachedObjects_`, `subscribe_`), the `node.object[index].property[index]`
+ * path shape and the reserved delimiter set `[ ] . : /`. Review evidence and
+ * the digest-bound record: docs/prds/aura3d-native-provenance-record.json.
+ */
 import type { AnimationValue } from "./Keyframe.js";
 
 /** A track's optional hierarchy prefix, node, object and property selectors. */

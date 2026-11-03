@@ -2,7 +2,7 @@
   "schema": "aura3d.native-capability-ledger/1",
   "roadmap": {
     "path": "docs/prds/aura3d-native-capability-roadmap.md",
-    "sha256": "sha256:fc2ffc24bf93b6d6cc9040391b0391fd8d9a08ad7be373e7fb8e68d28dab8e72"
+    "sha256": "sha256:f568b929eb59e943bee2a1033efffd533bf785be89efa64f488b6c2794829e8d"
   },
   "baseline": {
     "commit": "efcc434604f9ba0437f4832fae6082283bc4c373",
@@ -98699,24 +98699,24 @@
         "evidence": [],
         "provenance": [
           {
-            "source": "packages/math/src/three/index.ts: self-described external-reference implementation; review and independent replacement pending",
-            "license": "MIT notice retained in existing source",
-            "digest": "sha256:18ef8d6711aedad82bc13b43346ecc2a1dbdc3a9b8bca51ca5c1667f4dd23584"
+            "source": "packages/math/src/three/index.ts: reference-following mutable compatibility entry; replacementStatus third-party-licensed, owner WP-29 / WP-01 (math); not yet independently replaced; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
+            "license": "MIT (three.js authors notice retained)",
+            "digest": "sha256:fe168076fb805d4e884eb1f3322a36e05cf39bfea5b8785b16f52de7777778a5"
           },
           {
-            "source": "packages/math/src/ShapeUtils.ts: source states it includes vendored triangulation and external utility material; independent replacement pending",
-            "license": null,
-            "digest": "sha256:b42b96e38f97037d0a2c3d6a7430e77ac763eb3a232c0b900e5cb0f4c2ba5e68"
+            "source": "packages/math/src/ShapeUtils.ts: wrapper over independent/PolygonTriangulation.ts; replacementStatus independent, owner WP-29 (repair_math_triangulation); 2.0% token containment vs the 2de1ba18a vendored version; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
+            "license": "MIT (Aura3D)",
+            "digest": "sha256:378adef06bdaf89021739e67719d0868e55767b9cfb1f6d2185e06df042d1e27"
           },
           {
-            "source": "packages/math/src/ConvexHull.ts: source labels hull internals as a verbatim port; independent replacement pending",
-            "license": null,
-            "digest": "sha256:bc7987dbfc349e6798fce5371db51aada64cd31126bf20057b55fcec962efb7f"
+            "source": "packages/math/src/ConvexHull.ts: rewritten hull; replacementStatus independent, owner WP-29 (repair_math_hull); 7.9% token containment vs the 2de1ba18a verbatim port, shared runs are the public 4.x face-graph declarations; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
+            "license": "MIT (Aura3D)",
+            "digest": "sha256:61f3e462a0a2627eab9be4a83d946ba4547af51e4b88451c2e470d04a5d311d9"
           },
           {
-            "source": "packages/math/src/OBB.ts: source labels its overlap implementation as a verbatim port; independent replacement pending",
-            "license": null,
-            "digest": "sha256:037ca686439c705410eb2aac4bb00af352069c3335ad34477588558eb2411f81"
+            "source": "packages/math/src/OBB.ts: re-export of independent/OrientedBox.ts; replacementStatus independent, owner WP-29 (repair_math_obb); 5.9% token containment of OrientedBox.ts vs the 2de1ba18a port; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
+            "license": "MIT (Aura3D)",
+            "digest": "sha256:f6f5b67844e9c069ff92c39001a680eab2fce738a42ec10da6044573587c8a46"
           }
         ]
       },
@@ -99034,7 +99034,13 @@
           }
         ],
         "evidence": [],
-        "provenance": []
+        "provenance": [
+          {
+            "source": "docs/prds/aura3d-native-provenance-record.json: digest-bound per-file record (sha256, license, owner, replacementStatus, reviewEvidence, candidateReviews) for 29 files: G27 math files, WP-13 geometry rewrites, WP-11 property binding, @aura3d/math/three; consumed by tools/native-runtime-audit --provenance and checked by tests/unit/tools/native-provenance-record.test.ts; agent review 2026-11-02, owner countersign pending",
+            "license": null,
+            "digest": "sha256:ee6eb4ea4d2ac990f71d951d6f774dc34db1995f5989fb863d65f92e660962ca"
+          }
+        ]
       },
       "acceptance": {
         "status": "not-run",

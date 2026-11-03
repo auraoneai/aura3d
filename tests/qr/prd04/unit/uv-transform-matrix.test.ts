@@ -2,6 +2,11 @@
  * Check the KHR_texture_transform T·R·S contract against independently
  * calculated UV points. The fixtures below are original arithmetic examples;
  * their expected values do not depend on another rendering implementation.
+ *
+ * Rotation convention: the declared Aura3D contract (uvTransformMatrix,
+ * TextureBinding.transformUV and the generated shaders) rotates a UV point by
+ * R = [[cos, -sin], [sin, cos]], i.e. counter-clockwise in a frame with u to
+ * the right and v up. Scale is applied first, then rotation, then offset.
  */
 import { describe, expect, it } from "vitest";
 import { uvTransformMatrix } from "../../../../packages/rendering/src/materials/features";
@@ -35,7 +40,7 @@ function applySteps(
 	const y = uv[1] * scale[1];
 	const cosine = Math.cos(rotation);
 	const sine = Math.sin(rotation);
-	return [x * cosine + y * sine + offset[0], y * cosine - x * sine + offset[1], 1];
+	return [x * cosine - y * sine + offset[0], x * sine + y * cosine + offset[1], 1];
 }
 
 function expectPointClose(actual: number[], expected: number[], label: string): void {
@@ -60,13 +65,15 @@ describe("uvTransformMatrix (PRD-04 P3-3)", () => {
 	});
 
 	it("applies non-uniform scaling before rotation and translation", () => {
-		// (0.25, 0.75) -> (0.5, 0.375) -> (0.375, -0.5)
-		// -> (0.625, -0.9). Reversing scale and rotation yields a different point.
+		// Scale (2, 0.5): (0.25, 0.75) -> (0.5, 0.375). A quarter turn maps
+		// (x, y) -> (-y, x): -> (-0.375, 0.5). Offset (0.25, -0.4): -> (-0.125, 0.1).
+		// Rotating before scaling would give (-1.25, -0.275) instead.
 		const matrix = uvTransformMatrix([0.25, -0.4], Math.PI / 2, [2, 0.5]);
-		expectPointClose(applyMatrix(matrix, [0.25, 0.75]), [0.625, -0.9, 1], "quarter turn");
+		expectPointClose(applyMatrix(matrix, [0.25, 0.75]), [-0.125, 0.1, 1], "quarter turn");
 		expectPointClose(applyMatrix(matrix, [0, 0]), [0.25, -0.4, 1], "origin");
-		expectPointClose(applyMatrix(matrix, [1, 0]), [0.25, -2.4, 1], "U basis");
-		expectPointClose(applyMatrix(matrix, [0, 1]), [0.75, -0.4, 1], "V basis");
+		// U basis: (1, 0) -> (2, 0) -> (0, 2) -> (0.25, 1.6); V basis: (0, 1) -> (0, 0.5) -> (-0.5, 0) -> (-0.25, -0.4).
+		expectPointClose(applyMatrix(matrix, [1, 0]), [0.25, 1.6, 1], "U basis");
+		expectPointClose(applyMatrix(matrix, [0, 1]), [-0.25, -0.4, 1], "V basis");
 	});
 
 	it("handles negative and zero scales with a negative rotation", () => {

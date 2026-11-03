@@ -43,6 +43,13 @@ export type {
 } from "../agent-api/geometry/UVAtlas.js";
 export { createMeshSurfaceSampler, MeshSurfaceSampler } from "../agent-api/geometry/MeshSurfaceSampler.js";
 export type { AuraMeshSurfaceSample, AuraMeshSurfaceSamplerOptions } from "../agent-api/geometry/MeshSurfaceSampler.js";
+export { dequantizeAuraGeometry, quantizeAuraGeometry } from "../agent-api/geometry/MeshCompression.js";
+export type {
+  AuraGeometryQuantizeOptions,
+  AuraGeometryUncompressedField,
+  AuraQuantizedGeometry,
+  AuraQuantizedStream
+} from "../agent-api/geometry/MeshCompression.js";
 export { AuraTopologyValidationError, validateAuraGeometryTopology } from "../agent-api/geometry/TopologyValidation.js";
 export type {
   AuraTopologyDegenerateFace,

@@ -1,8 +1,24 @@
 /**
  * Native contour extrusion.
  *
- * The earlier implementation was a three.js geometry port. The provenance
- * and compatibility of the current rewrite remain under review.
+ * Provenance (reviewed 2026-11-02, WP-13/WP-29): this file replaced an
+ * earlier geometry port and contains no code carried over from it. It is
+ * built from the following documented methods and public contracts:
+ * - corner offsets use the miter bisector (n_a + n_b) / (1 + n_a . n_b) of the
+ *   two edge normals, clamped to length sqrt(2) so acute corners stay bounded;
+ * - bevel layers follow a quarter-ellipse profile (thickness cos(a),
+ *   offset + size sin(a)) for a in [0, pi/2);
+ * - path sweeps place the ring in the curve's rotation-minimizing frame
+ *   (`Curve3Adapter.computeFrenetFrames`);
+ * - the public option defaults (curveSegments 12, steps 1, depth 1, bevel on,
+ *   thickness 0.2, size thickness - 0.1, offset 0, 3 bevel segments), the
+ *   two material groups (caps 0, walls 1) and the planar wall UV rule (use x
+ *   or y along the dominant edge axis, 1 - z across it) are the documented 4.x
+ *   compatibility contract that existing scenes rely on.
+ * Equivalent-contract coverage: tests/unit/parity/geometry-counts.test.ts,
+ * tests/unit/geometry/native-independent-extrusion.test.ts and
+ * tests/unit/agent-api/native-independent-extrusion-scene.test.ts. Record:
+ * docs/prds/aura3d-native-provenance-record.json.
  */
 import { Vector3 } from "@aura3d/math";
 import { independentExtrude } from "./IndependentExtrude";

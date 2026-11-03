@@ -1,18 +1,22 @@
 /**
  * threejs-parity AD-15 (P2): `lights.lensFlare` — three's `Lensflare`.
- * Placement math is pinned to three's own source
- * (examples/jsm/objects/Lensflare.js `onBeforeRender`), and the per-frame
- * runtime is exercised for real render items.
+ * Placement expectations are derived from the reflection-line geometry
+ * below (no external engine source is read), and the per-frame runtime is
+ * exercised for real render items, including its element budgets.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { camera, lights, scene } from "../../../packages/engine/src";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors";
-import { createLensFlareGlowPixels, createProductionLensFlares } from "../../../packages/engine/src/agent-api/compiler/lensFlare";
+import {
+  MAX_LENS_FLARE_GLOW_SIZE,
+  MAX_LENS_FLARE_SCENE_ELEMENTS,
+  createLensFlareGlowPixels,
+  createProductionLensFlares
+} from "../../../packages/engine/src/agent-api/compiler/lensFlare";
 import {
   DEFAULT_LENS_FLARE_ELEMENTS,
+  MAX_LENS_FLARE_ELEMENTS,
   isAuraLensFlareNode,
   lensFlareSpriteTransform,
   lensFlareVisibility,
@@ -33,30 +37,24 @@ function seeded(seed: number): () => number {
   };
 }
 
-describe("placement math is pinned to three's Lensflare.js", () => {
-  const source = readFileSync(join(process.cwd(), "node_modules/three/examples/jsm/objects/Lensflare.js"), "utf8");
-
-  it("three still places elements with the formula this port implements", () => {
-    expect(source).toContain("const vecX = - positionScreen.x * 2;");
-    expect(source).toContain("const vecY = - positionScreen.y * 2;");
-    expect(source).toContain("screenPosition' ].value.x = positionScreen.x + vecX * element.distance;");
-    expect(source).toContain("screenPosition' ].value.y = positionScreen.y + vecY * element.distance;");
-    expect(source).toContain("size = element.size / viewport.w;");
-  });
-
-  it("matches three's formula on 500 seeded lights x element layouts", () => {
+// Independent derivation (no external engine source): a lens flare ghost lies
+// on the line through the light's screen position L and the optical centre.
+// Parameterising that line by distance d gives P(d) = L + 2d(C - L) with the
+// centre C = 0, i.e. P(d) = L * (1 - 2d): d = 0 on the light, 0.5 on the centre and
+// 1 mirrored through it. Sprite height in NDC is the pixel size over the
+// viewport height in pixels.
+describe("placement follows the optical-centre reflection line", () => {
+  it("places every element at L * (1 - 2d) with NDC size px / viewport height on 500 seeded layouts", () => {
     const random = seeded(0xf1a2e);
     for (let i = 0; i < 500; i += 1) {
       const lightNdc: [number, number] = [random() * 2 - 1, random() * 2 - 1];
       const height = 200 + Math.floor(random() * 1800);
       const elements = Array.from({ length: 1 + Math.floor(random() * 6) }, () => ({ size: 8 + random() * 800, distance: random() * 2 - 0.5 }));
       const placed = placeLensFlareElements(lightNdc, elements, height);
-      // three (Lensflare.js:286-303), transcribed:
-      const vecX = -lightNdc[0] * 2;
-      const vecY = -lightNdc[1] * 2;
       elements.forEach((element, index) => {
-        expect(placed[index]!.ndc[0]).toBeCloseTo(lightNdc[0] + vecX * element.distance, 12);
-        expect(placed[index]!.ndc[1]).toBeCloseTo(lightNdc[1] + vecY * element.distance, 12);
+        const along = 1 - 2 * element.distance;
+        expect(placed[index]!.ndc[0]).toBeCloseTo(lightNdc[0] * along, 12);
+        expect(placed[index]!.ndc[1]).toBeCloseTo(lightNdc[1] * along, 12);
         expect(placed[index]!.sizeNdc).toBeCloseTo(element.size / height, 12);
         expect(placed[index]!.sizePx).toBe(element.size);
       });
@@ -193,6 +191,9 @@ describe("lights.lensFlare builder", () => {
     expect(bad({ edgeFade: 2 })).toMatch(/edgeFade/);
     expect(bad({ intensity: -1 })).toMatch(/intensity/);
     expect(bad({ light: "" })).toMatch(/light/);
+    const element = { size: 10, distance: 0 };
+    expect(bad({ elements: Array.from({ length: MAX_LENS_FLARE_ELEMENTS + 1 }, () => element) })).toMatch(/at most 64/);
+    expect(lights.lensFlare({ elements: Array.from({ length: MAX_LENS_FLARE_ELEMENTS }, () => element) }).toJSON()).toMatchObject({ kind: "lensflare" });
   });
 });
 
@@ -331,6 +332,64 @@ describe("production lens flare runtime", () => {
     const source = makeSource();
     expect(flares.prepare(source, snapshot, registry({ visible: false }), 0, 1, 600)).toBe(source);
     flares.dispose();
+  });
+
+  describe("element budget", () => {
+    const element = { size: 40, distance: 0.3 };
+    const many = (flareCount: number, perFlare: number) => {
+      let builder = scene().camera(camera.perspective({ position: [0, 0, 10], target: [0, 0, 0], fov: 60 }));
+      for (let i = 0; i < flareCount; i += 1) {
+        builder = builder.add(lights.lensFlare({ position: [0, 0, 0], elements: Array.from({ length: perFlare }, () => element) }));
+      }
+      return builder.toJSON();
+    };
+    const lensFlareError = (run: () => unknown): string => {
+      try {
+        run();
+      } catch (error) {
+        expect(error).toBeInstanceOf(AuraRuntimeError);
+        expect((error as AuraRuntimeError).code).toBe("invalid-lens-flare");
+        return (error as AuraRuntimeError).message;
+      }
+      return expect.unreachable("should have thrown");
+    };
+
+    it("pins the per-flare, per-scene and glow-texture bounds", () => {
+      expect(MAX_LENS_FLARE_ELEMENTS).toBe(64);
+      expect(MAX_LENS_FLARE_SCENE_ELEMENTS).toBe(1024);
+      expect(MAX_LENS_FLARE_GLOW_SIZE).toBe(1024);
+      expect(lensFlareError(() => createLensFlareGlowPixels(MAX_LENS_FLARE_GLOW_SIZE + 1))).toMatch(/glow pixel size/);
+      expect(lensFlareError(() => createLensFlareGlowPixels(0))).toMatch(/glow pixel size/);
+    });
+
+    it("rejects a serialized node that bypasses the builder limit before allocating any item", () => {
+      const flares = createProductionLensFlares(() => undefined);
+      const snapshot = flareScene({ position: [0, 0, 0] });
+      const oversized = {
+        ...snapshot,
+        nodes: snapshot.nodes.map((node) => node.kind === "lensflare" ? { ...node, elements: Array.from({ length: MAX_LENS_FLARE_ELEMENTS + 1 }, () => element) } : node)
+      } as typeof snapshot;
+      expect(lensFlareError(() => flares.prepare(makeSource(), oversized, undefined, 0, 1, 600))).toMatch(/at most 64/);
+      // The failed frame left no partial records: a valid frame still draws exactly its own elements.
+      expect(itemsOf(flares.prepare(makeSource(), snapshot, undefined, 0, 1, 600) as never)).toHaveLength(1 + DEFAULT_LENS_FLARE_ELEMENTS.length);
+      flares.dispose();
+    });
+
+    it("accepts exactly the scene budget and rejects one flare beyond it", () => {
+      const flares = createProductionLensFlares(() => undefined);
+      const perFlare = MAX_LENS_FLARE_ELEMENTS;
+      const atBudget = MAX_LENS_FLARE_SCENE_ELEMENTS / perFlare;
+      expect(itemsOf(flares.prepare(makeSource(), many(atBudget, perFlare), undefined, 0, 1, 600) as never)).toHaveLength(1 + MAX_LENS_FLARE_SCENE_ELEMENTS);
+      expect(lensFlareError(() => flares.prepare(makeSource(), many(atBudget + 1, perFlare), undefined, 0, 1, 600))).toMatch(/at most 1024 elements in total/);
+      flares.dispose();
+    });
+
+    it("shrinks retained element records when a later frame authors fewer elements", () => {
+      const flares = createProductionLensFlares(() => undefined);
+      expect(itemsOf(flares.prepare(makeSource(), many(2, MAX_LENS_FLARE_ELEMENTS), undefined, 0, 1, 600) as never)).toHaveLength(1 + 2 * MAX_LENS_FLARE_ELEMENTS);
+      expect(itemsOf(flares.prepare(makeSource(), many(1, 1), undefined, 0, 1, 600) as never)).toHaveLength(2);
+      flares.dispose();
+    });
   });
 
   it("dispose is idempotent and a disposed runtime passes the source through", () => {

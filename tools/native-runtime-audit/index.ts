@@ -32,6 +32,7 @@ interface SourceAuditReport {
   unreviewedFileCount: number;
   independence: "not-established";
   unlockedProfiles: string[];
+  unprojectedProfiles: string[];
   limitations: string[];
 }
 interface NetworkObservation {
@@ -69,18 +70,23 @@ export const defaultSourceAuditPaths = Object.freeze([
 /** Do not interpret a fingerprint candidate as an authorship finding. */
 export function summarizeSourceEvidence(dependencies: DependencyGraphReport, source: SourceEvidenceReport): {
   status: SourceAuditReport["status"]; unresolvedReviewCandidates: number; unreviewedFileCount: number;
-  independence: "not-established"; unlockedProfiles: string[];
+  independence: "not-established"; unlockedProfiles: string[]; unprojectedProfiles: string[];
 } {
   const records = new Map(source.files.map((file) => [file.path, file]));
   const unresolvedReviewCandidates = source.findings.filter((finding) => {
+    // A digest-bound human disposition resolves a candidate unless it says the material still needs replacement.
+    if (finding.review) return finding.review.disposition === "replacement-needed";
     const record = records.get(finding.path);
     return !record || record.replacementStatus === "unreviewed" || record.replacementStatus === "replacement-needed";
   }).length;
   const neededReplacement = source.files.filter((file) => file.replacementStatus === "replacement-needed").length;
   const unreviewedFileCount = source.files.filter((file) => file.replacementStatus === "unreviewed").length;
   const unlockedProfiles = dependencies.installProfiles.filter((profile) => !profile.lockfile).map((profile) => profile.path);
-  return { status: dependencies.findings.length || neededReplacement ? "failed" : unresolvedReviewCandidates || unlockedProfiles.length ? "review-required" : "scan-complete",
-    unresolvedReviewCandidates, unreviewedFileCount, independence: "not-established", unlockedProfiles };
+  // An unlocked profile stays a review item unless its workspace-lock projection resolved every dependency.
+  const projected = new Set((dependencies.projectedProfiles ?? []).filter((profile) => profile.complete).map((profile) => profile.path));
+  const unprojectedProfiles = unlockedProfiles.filter((path) => !projected.has(path));
+  return { status: dependencies.findings.length || neededReplacement ? "failed" : unresolvedReviewCandidates || unprojectedProfiles.length ? "review-required" : "scan-complete",
+    unresolvedReviewCandidates, unreviewedFileCount, independence: "not-established", unlockedProfiles, unprojectedProfiles };
 }
 
 /** Determine active published scaffolds from the actual create-aura3d catalog. */
@@ -123,7 +129,7 @@ export function runSourceAudit(options: SourceAuditOptions, loadPlan: (root: str
     limitations: ["Source scan and fingerprint matches are leads for human or ledger review, not proof of authorship; absence of matches does not prove independence.",
       "The scan covers only the selected workspace roots and candidate archives as present in this checkout or staged snapshot, not other checkouts or deployment outputs.",
       "Git-ignored public or fixture files can be copied by site builds but omitted from staged source; per-file hashes do not establish inclusion in the candidate source manifest, archives, or deployed outputs.",
-      "Unlocked profiles reveal declared dependencies but their complete transitive graphs remain unverified.",
+      "Unlocked profiles are projected onto the root pnpm lock (dependencies.projectedProfiles); a registry install can resolve their ranges differently, so the projection is review evidence rather than an install receipt.",
       "Runtime network capture has not run in the source phase; browser acceptance requires the global gate."] };
 }
 

@@ -13,6 +13,32 @@ export interface SourceProvenance {
   readonly owner: string | null;
   readonly replacementStatus: ReplacementStatus;
   readonly reviewEvidence: readonly string[];
+  /** Human dispositions for this file's review candidates (matched by kind and, when given, detail). */
+  readonly candidateReviews?: readonly SourceCandidateReview[];
+}
+
+/**
+ * How a human reviewer classified a review candidate. A disposition is a
+ * recorded judgement, not something the scanner can infer:
+ * - standardized-equation: a published formula or constant that any correct
+ *   implementation shares (for example a colour-transfer constant);
+ * - compatibility-contract: public API names, defaults or conventions kept for
+ *   documented compatibility, not implementation text;
+ * - independent-implementation: reviewed and found independently authored;
+ * - licensed-notice: third-party material kept under its retained notice;
+ * - false-positive: the match does not concern implementation provenance;
+ * - replacement-needed: the candidate identifies material still to replace.
+ */
+export type CandidateDisposition = "standardized-equation" | "compatibility-contract" | "independent-implementation" |
+  "licensed-notice" | "false-positive" | "replacement-needed";
+
+export interface SourceCandidateReview {
+  readonly kind: SourceReviewCandidate["kind"];
+  /** Exact finding detail; omit to cover every finding of this kind in the file. */
+  readonly detail?: string;
+  readonly disposition: CandidateDisposition;
+  readonly reviewer: string;
+  readonly note: string;
 }
 
 export interface SourceEntry {
@@ -52,15 +78,26 @@ export interface SourceEvidenceFile {
 
 export interface SourceReviewCandidate {
   readonly path: string;
-  readonly kind: "package-import" | "text-reference" | "source-map-reference" | "fingerprint" | "embedded-data" | "invalid-source-map" | "missing-source-map-content" | "bundled-source" | "license-notice" | "provenance-reference";
+  readonly kind: "package-import" | "text-reference" | "source-map-reference" | "fingerprint" | "embedded-data" | "invalid-source-map" | "missing-source-map-content" | "bundled-source" | "license-notice" | "provenance-reference" | "standardized-equation";
   readonly detail: string;
   readonly line?: number;
+  /** Present only when a digest-bound provenance record supplies a human disposition. */
+  readonly review?: { readonly disposition: CandidateDisposition; readonly reviewer: string; readonly note: string };
+}
+
+/** Counts of review candidates with and without a recorded human disposition. */
+export interface SourceCandidateReviewSummary {
+  readonly candidates: number;
+  readonly reviewed: number;
+  readonly unreviewed: number;
+  readonly byDisposition: Readonly<Partial<Record<CandidateDisposition, number>>>;
 }
 
 export interface SourceEvidenceReport {
   readonly schema: "aura3d.native-source-evidence/1";
   readonly files: SourceEvidenceFile[];
   readonly findings: SourceReviewCandidate[];
+  readonly candidateReview: SourceCandidateReviewSummary;
   readonly limitations: readonly string[];
   readonly workspaceRoots?: readonly string[];
   readonly checkedSymlinkAliases?: readonly { path: string; target: string; scannedAs: string }[];
@@ -87,6 +124,27 @@ const soundPackLinks = new Map([
   ["apps/showcase-pips-big-leap/public/packs", "../../../assets/packs"]
 ]);
 const maxSourceFileBytes = 128 * 1024 * 1024;
+const candidateKinds: readonly SourceReviewCandidate["kind"][] = ["package-import", "text-reference", "source-map-reference", "fingerprint",
+  "embedded-data", "invalid-source-map", "missing-source-map-content", "bundled-source", "license-notice", "provenance-reference", "standardized-equation"];
+const dispositions: readonly CandidateDisposition[] = ["standardized-equation", "compatibility-contract", "independent-implementation",
+  "licensed-notice", "false-positive", "replacement-needed"];
+
+/**
+ * Published formulas and constants that independent implementations of the
+ * same standard necessarily share. A match is classified as a
+ * standardized-equation review candidate so a reviewer can record that the
+ * shared text comes from the standard; it never proves copying or independence.
+ */
+const standardizedEquations: readonly { readonly id: string; readonly pattern: RegExp }[] = [
+  { id: "sRGB transfer function (IEC 61966-2-1)", pattern: /\b0\.04045\b|\b0\.0031308\b/ },
+  { id: "BT.709 luminance coefficients (ITU-R BT.709)", pattern: /\b0\.2126\d*\b[\s\S]{0,80}\b0\.7152\d*\b[\s\S]{0,80}\b0\.0722\d*\b/ },
+  { id: "BT.601 luma coefficients (ITU-R BT.601)", pattern: /\b0\.299\b[\s\S]{0,80}\b0\.587\b[\s\S]{0,80}\b0\.114\b/ },
+  { id: "Schlick Fresnel approximation (Schlick 1994)", pattern: /\bpow\s*\(\s*(?:1(?:\.0*)?|one)\s*-\s*[^,()]+(?:\([^()]*\))?[^,()]*,\s*5(?:\.0*)?\s*\)/ },
+  { id: "Golden ratio (1 + sqrt 5) / 2", pattern: /\b1\.6180339887\d*\b|\(\s*1\s*\+\s*Math\.sqrt\(\s*5\s*\)\s*\)\s*\/\s*2\b/ },
+  { id: "Radical inverse base 2 (Van der Corput / Hammersley)", pattern: /\b2\.3283064365386963e-10\b|0x55555555[\s\S]{0,200}0x33333333/i },
+  { id: "CIE D65 white point chromaticity", pattern: /\b0\.3127\b[\s\S]{0,40}\b0\.329\d*\b/ },
+  { id: "Numerical Recipes linear congruential generator", pattern: /\b1664525\b[\s\S]{0,80}\b1013904223\b/ }
+];
 const maxDecodedBytes = 16 * 1024 * 1024;
 const maxEmbeddedEntries = 10000;
 
@@ -202,9 +260,19 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
   const prohibited = options.prohibitedPackages ?? DEFAULT_PROHIBITED_PACKAGES;
   if (!Array.isArray(prohibited) || prohibited.some((name) => typeof name !== "string" || !name || name.length > 200)) throw new Error("Invalid prohibited package name");
   let virtualCount = 0;
+  const reviews = new Map<string, readonly SourceCandidateReview[]>();
   for (const entry of entries) inspect(entry, 0);
+  for (let index = 0; index < findings.length; index += 1) {
+    const finding = findings[index]!;
+    const review = reviews.get(finding.path)?.find((item) => item.kind === finding.kind && (item.detail === undefined || item.detail === finding.detail));
+    if (review) findings[index] = { ...finding, review: { disposition: review.disposition, reviewer: review.reviewer, note: review.note } };
+  }
+  const byDisposition: Partial<Record<CandidateDisposition, number>> = {};
+  for (const finding of findings) if (finding.review) byDisposition[finding.review.disposition] = (byDisposition[finding.review.disposition] ?? 0) + 1;
+  const reviewedCount = findings.filter((finding) => finding.review).length;
   return {
     schema: "aura3d.native-source-evidence/1", files, findings,
+    candidateReview: { candidates: findings.length, reviewed: reviewedCount, unreviewed: findings.length - reviewedCount, byDisposition },
     limitations: [
       "Text, import, source-map and supplied fingerprint matches are review candidates; neither a match nor its absence proves authorship or copying.",
       "Only selected source paths, checked alias targets and supplied packed payloads are inspected; generated build outputs, installed packages and network activity need their own supplied evidence.",
@@ -214,7 +282,9 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
       "Other symlinks and oversized files are rejected. Encoded and source-map content is bounded and cannot establish the origin of arbitrary compressed or encrypted data.",
       "Percent-encoded non-source-map data URLs and dynamically constructed payloads are not decoded; inspect their actual bytes separately.",
       "License, copyright, attribution and bundled-source references are review candidates, not verified ownership or license determinations.",
-      "License, owner, replacement status and review evidence are unverified unless explicitly supplied and bound to the current file digest."
+      "License, owner, replacement status and review evidence are unverified unless explicitly supplied and bound to the current file digest.",
+      "Standardized-equation matches mark published formulas and constants that independent implementations share; they are review candidates, and only a recorded human disposition classifies them.",
+      "Candidate dispositions are human judgements bound to the reviewed file digest; the scanner applies but never infers them."
     ]
   };
 
@@ -238,6 +308,15 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
         (["independent", "third-party-licensed"].includes(supplied.replacementStatus) && (!supplied.owner || !supplied.license)))) {
       throw new Error(`Invalid provenance record for ${entry.path}`);
     }
+    if (supplied?.candidateReviews !== undefined) {
+      if (!Array.isArray(supplied.candidateReviews) || !supplied.candidateReviews.every((review) => review && typeof review === "object" &&
+          candidateKinds.includes(review.kind) && dispositions.includes(review.disposition) &&
+          (review.detail === undefined || (typeof review.detail === "string" && review.detail.length > 0)) &&
+          typeof review.reviewer === "string" && review.reviewer.trim().length > 0 && typeof review.note === "string" && review.note.trim().length > 0)) {
+        throw new Error(`Invalid candidate review for ${entry.path}`);
+      }
+      reviews.set(entry.path, supplied.candidateReviews);
+    }
     const text = decodeText(bytes);
     const sourceKind = entry.sourceKind ?? classify(entry.path, text);
     files.push({ path: entry.path, scope: entry.scope ?? "workspace", sha256, size: bytes.length, sourceKind,
@@ -260,6 +339,7 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
     }
     findReferences(entry.path, text, prohibited, findings);
     findProvenanceCandidates(entry.path, text, findings);
+    if (sourceKind !== "source-map") findStandardizedEquations(entry.path, text, findings);
     if (sourceKind === "source-map") inspectMap(entry, text, depth);
     if (depth < 3) {
       inspectEncoded(entry, text, depth);
@@ -470,6 +550,13 @@ function findProvenanceCandidates(path: string, text: string, findings: SourceRe
     }
     offset = end + 1;
     lineNumber++;
+  }
+}
+
+function findStandardizedEquations(path: string, text: string, findings: SourceReviewCandidate[]): void {
+  for (const equation of standardizedEquations) {
+    const match = equation.pattern.exec(text);
+    if (match) findings.push({ path, kind: "standardized-equation", detail: equation.id, line: lineAt(text, match.index) });
   }
 }
 

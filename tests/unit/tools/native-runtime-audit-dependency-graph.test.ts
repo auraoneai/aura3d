@@ -44,6 +44,66 @@ describe("native dependency graph", () => {
     expect(report.limitations.join(" ")).toContain("does not establish independent authorship");
   });
 
+  it("projects an unlocked profile onto the root lock and workspace importers, transitively", () => {
+    const root = fixture();
+    writeJson(root, "package.json", { name: "root", devDependencies: { bundler: "^2.0.0" } });
+    write(root, "pnpm-workspace.yaml", "packages:\n  - 'packages/*'\n");
+    writeJson(root, "packages/engine/package.json", { name: "@example/engine", dependencies: { "@example/math": "workspace:*", helper: "1.0.0" } });
+    writeJson(root, "packages/math/package.json", { name: "@example/math" });
+    write(root, "pnpm-lock.yaml", [
+      "lockfileVersion: '9.0'",
+      "importers:",
+      "  .:",
+      "    devDependencies:",
+      "      bundler:",
+      "        specifier: ^2.0.0",
+      "        version: 2.1.0",
+      "  packages/engine:",
+      "    dependencies:",
+      "      '@example/math':",
+      "        specifier: workspace:*",
+      "        version: link:../math",
+      "      helper:",
+      "        specifier: 1.0.0",
+      "        version: 1.0.0(peer@3.0.0)",
+      "  packages/math: {}",
+      "packages:",
+      "  bundler@2.1.0: {}",
+      "  helper@1.0.0: {}",
+      "  leaf@1.0.0: {}",
+      "  three@1.2.0: {}",
+      "snapshots:",
+      "  bundler@2.1.0:",
+      "    dependencies:",
+      "      leaf: 1.0.0",
+      "  helper@1.0.0(peer@3.0.0):",
+      "    dependencies:",
+      "      leaf: 1.0.0",
+      "    optionalDependencies:",
+      "      renderer: three@1.2.0",
+      "  leaf@1.0.0: {}",
+      "  three@1.2.0: {}",
+      ""
+    ].join("\n"));
+    writeJson(root, "templates/scaffold/package.json", {
+      name: "scaffold",
+      dependencies: { "@example/engine": "5.0.0" },
+      devDependencies: { bundler: "^2.0.0", missing: "^9.0.0" },
+      peerDependencies: { optionalPeer: "^1.0.0" },
+      peerDependenciesMeta: { optionalPeer: { optional: true } }
+    });
+    writeJson(root, "templates/clean/package.json", { name: "clean", dependencies: { "@example/math": "5.0.0" } });
+
+    const report = collectDependencyGraph(root, { installProfiles: ["templates/scaffold", "templates/clean"] });
+    const [scaffold, clean] = report.projectedProfiles!;
+    expect(scaffold).toMatchObject({ path: "templates/scaffold", resolution: "workspace-lock-projection", complete: false, prohibited: ["three"] });
+    expect(scaffold!.nodes).toEqual(["bundler@2.1.0", "helper@1.0.0(peer@3.0.0)", "importer:packages/engine", "importer:packages/math", "leaf@1.0.0", "three@1.2.0"]);
+    expect(scaffold!.unresolved).toEqual([{ owner: "templates/scaffold", name: "missing", specifier: "^9.0.0" }]);
+    expect(clean).toMatchObject({ path: "templates/clean", nodes: ["importer:packages/math"], unresolved: [], prohibited: [], complete: true });
+    expect(report.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "projected-dependency" }));
+    expect(report.limitations.join(" ")).toContain("workspace-lock projection");
+  });
+
   it("inspects every file and nested package manifest in a supplied packed payload without extracting it", () => {
     const root = fixture();
     writeJson(root, "package.json", { name: "consumer" });

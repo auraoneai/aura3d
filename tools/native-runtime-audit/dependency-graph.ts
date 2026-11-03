@@ -51,7 +51,30 @@ export interface DependencyFinding {
   readonly name: string;
   readonly edge: DependencyEdge;
   /** A lock entry may be stale or unreachable and requires review. */
-  readonly disposition: "declared-dependency" | "lock-review" | "override-review";
+  readonly disposition: "declared-dependency" | "lock-review" | "override-review" | "projected-dependency";
+}
+
+/**
+ * Transitive graph for a standalone profile without its own lockfile, projected
+ * onto the root pnpm lock: each direct dependency resolves to a workspace
+ * importer (by package name) or to the version the root lock already pins for
+ * that name; traversal then follows importer links and lock snapshots. It is
+ * offline and deterministic, but a registry install may resolve ranges to
+ * different versions, so it is review evidence, not an install receipt.
+ */
+export interface ProjectedProfileGraph {
+  readonly path: string;
+  readonly resolution: "workspace-lock-projection";
+  /** Direct dependency fields followed from the profile manifest. */
+  readonly directFields: readonly DependencyField[];
+  /** Reached nodes: `importer:<path>` for workspace packages, otherwise lock snapshot keys. */
+  readonly nodes: readonly string[];
+  readonly edgeCount: number;
+  /** Direct or transitive dependencies with no projected resolution. */
+  readonly unresolved: readonly { readonly owner: string; readonly name: string; readonly specifier: string }[];
+  /** Prohibited package names reached anywhere in the projection. */
+  readonly prohibited: readonly string[];
+  readonly complete: boolean;
 }
 
 export interface DependencyGraphReport {
@@ -61,6 +84,8 @@ export interface DependencyGraphReport {
   readonly lockSnapshots: string[];
   readonly npmLockPackages: NpmLockPackage[];
   readonly installProfiles: { readonly path: string; readonly lockfile: string | null; readonly lockVersion: string | null }[];
+  /** One projection per supplied install profile that has no lockfile. */
+  readonly projectedProfiles?: ProjectedProfileGraph[];
   readonly payloadEntries: { readonly container: string; readonly path: string; readonly sha256: string; readonly size: number }[];
   readonly edges: DependencyEdge[];
   readonly findings: DependencyFinding[];
@@ -118,6 +143,7 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
   const payloadEntries: { container: string; path: string; sha256: string; size: number }[] = [];
   const npmLockPackages: NpmLockPackage[] = [];
   const installProfiles: { path: string; lockfile: string | null; lockVersion: string | null }[] = [];
+  const unlockedManifests: { path: string; manifest: JsonObject }[] = [];
   const rootManifestPath = join(base, "package.json");
   const rootManifest = readJson(rootManifestPath);
   const manifestPaths = new Set<string>([rootManifestPath]);
@@ -169,6 +195,7 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
     if (locks.length > 1) throw new Error(`Multiple lockfiles require an explicit profile choice: ${profileName}`);
     if (!locks.length) {
       installProfiles.push({ path: profileName, lockfile: null, lockVersion: null });
+      unlockedManifests.push({ path: profileName, manifest: readJson(manifestPath) });
       continue;
     }
     const lockPath = locks[0];
@@ -218,6 +245,12 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
   }
 
   const prohibited = new Set(options.prohibitedPackages ?? DEFAULT_PROHIBITED_PACKAGES);
+  const projectedProfiles = unlockedManifests.map(({ path, manifest }) =>
+    projectProfile(path, manifest, lock.edges, manifests.filter((entry) => entry.source === "workspace"), prohibited));
+  const projectedFindings: DependencyFinding[] = projectedProfiles.flatMap((profile) => profile.prohibited.map((name) => ({
+    name, disposition: "projected-dependency" as const,
+    edge: makeEdge("lock-snapshot", `${profile.path} (workspace-lock projection)`, "dependencies", name, "")
+  })));
   const findings = edges.flatMap((edge): DependencyFinding[] => {
     const candidates = new Set([edge.resolvedName, ...(edge.specifierName ? [edge.specifierName] : []),
       ...(edge.source === "override" ? selectorPackages(edge.selector ?? edge.name) : [])]);
@@ -225,16 +258,94 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
       name, edge,
       disposition: edge.source === "override" ? "override-review" : edge.source.startsWith("lock-") || edge.source === "npm-lock-package" ? "lock-review" : "declared-dependency"
     }));
-  });
+  }).concat(projectedFindings);
   return {
-    files, manifests, lockPackages, lockSnapshots, npmLockPackages, installProfiles, payloadEntries, edges, findings,
+    files, manifests, lockPackages, lockSnapshots, npmLockPackages, installProfiles, projectedProfiles, payloadEntries, edges, findings,
     limitations: [
       "Lock entries include all snapshots and may include unreachable or platform-specific packages.",
-      "Standalone profiles and payloads are inspected only when supplied; unlocked profiles do not provide a transitive graph.",
+      "Standalone profiles and payloads are inspected only when supplied; unlocked profiles get only a workspace-lock projection, which a registry install can resolve differently.",
       "Source, generated code and runtime requests need separate audits.",
       "Package-name matches are review evidence and absence of a match does not establish independent authorship."
     ]
   };
+}
+
+const projectedFields: readonly DependencyField[] = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+const installedFields = new Set<DependencyField>(["dependencies", "optionalDependencies"]);
+
+function projectProfile(path: string, manifest: JsonObject, lockEdges: readonly DependencyEdge[], workspace: readonly ManifestInventory[],
+  prohibited: ReadonlySet<string>): ProjectedProfileGraph {
+  const importerByName = new Map<string, string>();
+  for (const entry of workspace) {
+    if (!entry.name) continue;
+    const dir = entry.path === "package.json" ? "." : entry.path.replace(/\/package\.json$/, "");
+    importerByName.set(entry.name, dir);
+  }
+  const outgoing = new Map<string, DependencyEdge[]>();
+  const rootPins = new Map<string, string>();
+  for (const edge of lockEdges) {
+    if (!installedFields.has(edge.field) && !(edge.source === "lock-importer" && edge.field === "devDependencies")) continue;
+    if (edge.source === "lock-importer") {
+      // Workspace dev dependencies are not installed by a consumer, but their pins can resolve a profile's own dev tools.
+      if (edge.resolution && !edge.resolution.startsWith("link:") && (!rootPins.has(edge.resolvedName) || edge.owner === ".")) {
+        rootPins.set(edge.resolvedName, snapshotKey(edge.resolvedName, edge.resolution));
+      }
+      if (!installedFields.has(edge.field)) continue;
+      const key = `importer:${edge.owner}`;
+      outgoing.set(key, [...(outgoing.get(key) ?? []), edge]);
+    } else if (edge.source === "lock-snapshot") {
+      outgoing.set(edge.owner, [...(outgoing.get(edge.owner) ?? []), edge]);
+    }
+  }
+  const nodes = new Set<string>();
+  const unresolved: { owner: string; name: string; specifier: string }[] = [];
+  const reached = new Set<string>();
+  const pending: string[] = [];
+  let edgeCount = 0;
+  const visit = (key: string): void => { if (!nodes.has(key)) { nodes.add(key); pending.push(key); } };
+  for (const field of projectedFields) {
+    const group = manifest[field];
+    if (!group || typeof group !== "object" || Array.isArray(group)) continue;
+    const optionalPeers = field === "peerDependencies" ? manifest.peerDependenciesMeta as JsonObject | undefined : undefined;
+    for (const [name, raw] of Object.entries(group as JsonObject)) {
+      if (optionalPeers && (optionalPeers[name] as JsonObject | undefined)?.optional === true) continue;
+      const specifier = typeof raw === "string" ? raw : "";
+      const actual = aliasName(specifier) ?? name;
+      reached.add(actual);
+      edgeCount++;
+      const importer = importerByName.get(actual);
+      const pinned = rootPins.get(actual);
+      if (importer !== undefined) visit(`importer:${importer}`);
+      else if (pinned) visit(pinned);
+      else unresolved.push({ owner: path, name: actual, specifier: redactDependencySpecifier(specifier) });
+    }
+  }
+  while (pending.length) {
+    const key = pending.pop()!;
+    for (const edge of outgoing.get(key) ?? []) {
+      if (!installedFields.has(edge.field) || !edge.resolution) continue;
+      edgeCount++;
+      reached.add(edge.resolvedName);
+      if (edge.resolution.startsWith("link:")) {
+        const owner = key.startsWith("importer:") ? key.slice("importer:".length) : ".";
+        const target = join(owner, edge.resolution.slice("link:".length)).split(sep).join("/");
+        visit(`importer:${target}`);
+      } else visit(snapshotKey(edge.resolvedName, edge.resolution));
+    }
+  }
+  return {
+    path, resolution: "workspace-lock-projection", directFields: projectedFields,
+    nodes: [...nodes].sort(), edgeCount, unresolved,
+    prohibited: [...reached].filter((name) => prohibited.has(name)).sort(),
+    complete: unresolved.length === 0
+  };
+}
+
+/** A lock dependency value is either a version (with peer suffixes) or an aliased `name@version`. */
+function snapshotKey(name: string, resolution: string): string {
+  const value = resolution.startsWith("npm:") ? resolution.slice(4) : resolution;
+  const head = value.split("(")[0]!;
+  return packageAndVersion(head) ? value : `${name}@${value}`;
 }
 
 function addManifest(raw: unknown, path: string, source: "workspace" | "profile" | "payload", manifests: ManifestInventory[], edges: DependencyEdge[]): void {

@@ -1,0 +1,447 @@
+{
+  "packages/rendering/src/geometry/Support.ts": {
+    "sha256": "ed5e32ccb412a27321e1bb191ac3dba89ab385f8c302cf932a7c4dbf80a513e6",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Curve3Adapter, rotation-minimizing frames and rotationAxisMatrix rewritten 2026-11-02 from published methods: chord-length arc tables, double-reflection frames (Wang, Juttler, Zheng, Liu, ACM TOG 27(1) 2008), vector form of Rodrigues' rotation formula; triangulation delegates to @aura3d/math independent/PolygonTriangulation.ts.",
+      "Similarity vs the attributed port (fa6d99cd1): rewritten curve/frame/rotation section 10.0% 8-token containment, longest shared run 37 tokens (public Curve method signatures getPointAt/getTangentAt/getPoint); whole file 20.1%, shared runs are Aura-authored mesh plumbing kept from that revision (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/rendering/src/geometry/Support.ts fa6d99cd1).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ]
+  },
+  "packages/rendering/src/geometry/Extrude.ts": {
+    "sha256": "3dc110a3370f5692c8bfd61b266a2af553a225f90caf1c99c6d6ef7a99474a73",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Reviewed 2026-11-02: no code carried from the earlier port; miter-bisector corner offsets, quarter-ellipse bevel profile, rotation-minimizing path frames. Option defaults, cap/wall groups and planar wall UV rule are the documented 4.x compatibility contract (see file header).",
+      "Similarity vs fa6d99cd1: 4.2% containment, longest shared run 57 tokens = the ExtrudeParityParams option declarations (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/rendering/src/geometry/Extrude.ts fa6d99cd1).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ]
+  },
+  "packages/rendering/src/geometry/Shape.ts": {
+    "sha256": "d96dd59b874c9c21a780441bb3022990861e332d7bf1fd49d757af544a48993c",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Similarity vs fa6d99cd1: 2.9% containment, longest shared run 22 tokens (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/rendering/src/geometry/Shape.ts fa6d99cd1).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ]
+  },
+  "packages/rendering/src/geometry/Tube.ts": {
+    "sha256": "531c0e57d17239ca88e5afbd440be67a18d18ff1b42023c5c29b2270592d2da1",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Similarity vs fa6d99cd1: 14.5% containment; longest shared run 61 tokens = imports and the TubeParityParams option declarations (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/rendering/src/geometry/Tube.ts fa6d99cd1).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ]
+  },
+  "packages/rendering/src/geometry/IndependentExtrude.ts": {
+    "sha256": "c8d6ed1acf3650d881da1195d3e1f1925842e6bff210e2ccf470c704f6f061d7",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Created as an independent straight extrusion over the native shape mesh (no earlier revision to compare).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ]
+  },
+  "packages/rendering/src/geometry/IndependentShapeTriangulation.ts": {
+    "sha256": "1028f6dba60f2bf240967c598f17ff7c4eecef9798025559148fe379ed393f03",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Created as an independent ring normalizer/triangulation adapter (no earlier revision to compare).",
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "false-positive",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "English word in an error message ('at least three vertices'), not an engine reference."
+      }
+    ]
+  },
+  "packages/animation/src/PropertyBinding.ts": {
+    "sha256": "4cd4c27f49553a001c42b6e023d185a933ff2743564d71872ed579ee5b39ab97",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-11",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Replaces the explicitly attributed port of revision 3fbf87c45: character-scanner parser (escapes, quoted accessors, Unicode), iterative cycle-guarded findNode with UUID precedence, prototype-safe lookup with kind-tagged dispatch. Public names, path shape and reserved delimiter set are the documented 4.x compatibility contract (see file header).",
+      "Similarity vs 3fbf87c45: 16.8% 8-token containment; the longest shared runs (183, 75, 73, 65 tokens) are the exported ParsedTrackName/PropertyBindingNode/AnimationObjectGroupLike type declarations, the public static members, the Aura-authored fromArray/toArray adapter and the root-alias condition of findNode (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/animation/src/PropertyBinding.ts 3fbf87c45).",
+      "Edge-case tests: tests/unit/animation/native-bindings.test.ts (escaped names, Unicode, indexed bones/morphs, duplicate and missing targets, prototype-safe lookup), tests/unit/animation/native-composite-reentrancy.test.ts."
+    ]
+  },
+  "packages/math/src/ShapeUtils.ts": {
+    "sha256": "378adef06bdaf89021739e67719d0868e55767b9cfb1f6d2185e06df042d1e27",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_triangulation)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Public wrapper only; delegates to packages/math/src/independent/PolygonTriangulation.ts. Earlier vendored triangulation removed.",
+      "Tests: tests/unit/math/native-polygon-triangulation.test.ts."
+    ]
+  },
+  "packages/math/src/independent/PolygonTriangulation.ts": {
+    "sha256": "f9e157a63a316cc55da39932fbfbda5692c07d20db3f799c4997b07c47a6e637",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_triangulation)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Similarity: 2.0% containment vs 2de1ba18a ShapeUtils.ts and 1.4% vs the earcut port in fa6d99cd1 Support.ts (longest runs 31 and 20 tokens) (revision-similarity.ts).",
+      "Tests: tests/unit/math/native-polygon-triangulation.test.ts."
+    ]
+  },
+  "packages/math/src/ConvexHull.ts": {
+    "sha256": "61f3e462a0a2627eab9be4a83d946ba4547af51e4b88451c2e470d04a5d311d9",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_hull)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Replaces the hull labelled as a verbatim port in 2de1ba18a: 7.9% containment, the longest shared runs (70, 66, 65, 59 tokens) are the public 4.x face-graph classes HalfEdge/VertexNode/VertexList/ConvexHullFace and their trivial accessors, kept as the compatibility contract (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/math/src/ConvexHull.ts 2de1ba18a).",
+      "Tests: tests/unit/math/native-convex-hull.test.ts."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "false-positive",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "English word in a comment ('all three inputs'), not an engine reference."
+      }
+    ]
+  },
+  "packages/math/src/independent/ConvexHull.ts": {
+    "sha256": "75fa3233f4e47e8f9b34b33b26d1ff7a7803e0c7be6a2f2682e9dc0e8a2c0ef2",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_hull)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Header records derivation from the declaration-only contract docs/prds/aura3d-independent-math-api.json; 4.8% containment vs 2de1ba18a ConvexHull.ts (longest run 69 tokens).",
+      "Tests: tests/unit/math/native-convex-hull.test.ts."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "detail": "three",
+        "disposition": "false-positive",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "English word in an error message ('three linked edges'), not an engine reference."
+      }
+    ]
+  },
+  "packages/math/src/OBB.ts": {
+    "sha256": "f6f5b67844e9c069ff92c39001a680eab2fce738a42ec10da6044573587c8a46",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_obb)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Re-export only; implementation in packages/math/src/independent/OrientedBox.ts. The earlier verbatim overlap port is removed."
+    ]
+  },
+  "packages/math/src/independent/OrientedBox.ts": {
+    "sha256": "302ed764ecd854f0fa1912000d9838c6b617786e6fd07f6b2aa859e3752ded71",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-29 (repair_math_obb)",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "5.9% containment vs 2de1ba18a OBB.ts (longest run 44 tokens) (revision-similarity.ts).",
+      "Tests: tests/unit/math/native-oriented-box.test.ts."
+    ]
+  },
+  "packages/engine/src/agent-api/geometry/MeshCompression.ts": {
+    "sha256": "c49cfb9e7fbbf0d3ea42b0e9521d4f57d4e29120bf499e1dc33b1a03cf15c69d",
+    "license": "MIT (Aura3D package license)",
+    "owner": "WP-13",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Authored 2026-11-02 for S5-WP13-02 (range quantization, signed-normalized normals, index narrowing); no reference implementation consulted.",
+      "Tests: tests/unit/geometry/native-mesh-contracts.test.ts."
+    ]
+  },
+  "packages/math/src/three/Box3.ts": {
+    "sha256": "d739c69aeda70eae32345457196897621d71cc79b2a47ef4a99f7e970fd31f49",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Color.ts": {
+    "sha256": "ac406bc233d8903ebc2526fa47a20298aa0cfc34367eb2cc5e96210ae70cb1f7",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      },
+      {
+        "kind": "standardized-equation",
+        "disposition": "standardized-equation",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "sRGB transfer (IEC 61966-2-1), BT.709 luminance and D65 chromaticity constants are published standards shared by any implementation."
+      }
+    ]
+  },
+  "packages/math/src/three/Euler.ts": {
+    "sha256": "33e6e8ba8e797c93e5603546d9fde6061c78b99bc32d38df2bae805407dc2c34",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Frustum.ts": {
+    "sha256": "ad5ac472c4ebc95a72e34f6b7188dc16574564cf7a7f78c281e921eef93bd4b9",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Matrix3.ts": {
+    "sha256": "921e87f22c41a17d2deb96f7d596114050ea4a25734afae3eb4b4acdaed2a1b3",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Matrix4.ts": {
+    "sha256": "a3164511ab309d53f73381867837b14dd8e65ab331fd87b4ead0e547c1fa302a",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Plane.ts": {
+    "sha256": "6f38ef998bd94553023434b5e41c7ae5c8e85547e64373ddf9c6f4ca8c347030",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Quaternion.ts": {
+    "sha256": "1b3875bc34777118d8742e4d537d8e7f7e0277977426398b293f029fe90b04dd",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Ray.ts": {
+    "sha256": "f19bdf1506b1964c92ff4c8b45675ffc19859c110919ff95a5c0102df46ec976",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Sphere.ts": {
+    "sha256": "f0fdee3d5c080842d214554829e31cc60001a2ecb6f661dfe5576053af93e5b3",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Triangle.ts": {
+    "sha256": "2a8a498201efbf8d01bddb263e0e7f69d8e733742dc4a789b43d1f94560fc39f",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Vector2.ts": {
+    "sha256": "b667ce04c7f1015f4898c7f697478322f72d21ed0c92f217224b13aca643f352",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Vector3.ts": {
+    "sha256": "660f99862f19b1eecb2e0198ccd02ddabdc307d62722df9e61fa1d7ae0c56df6",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/Vector4.ts": {
+    "sha256": "1db5ad944a949abf31ba2e61353ceea7cfe0a2683b57876447d09798fef4fe08",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  },
+  "packages/math/src/three/index.ts": {
+    "sha256": "fe168076fb805d4e884eb1f3322a36e05cf39bfea5b8785b16f52de7777778a5",
+    "license": "MIT (three.js authors; notice retained in packages/math/src/three/index.ts)",
+    "owner": "WP-29 / WP-01 (math)",
+    "replacementStatus": "third-party-licensed",
+    "reviewEvidence": [
+      "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "text-reference",
+        "disposition": "licensed-notice",
+        "reviewer": "AI agent review, Aura3D 5.0 WP-29 lane, 2026-11-02 (owner countersign pending)",
+        "note": "Compatibility documentation for the reference-following @aura3d/math/three subpath; method bodies follow three.js r185 under the MIT notice retained in index.ts."
+      }
+    ]
+  }
+}

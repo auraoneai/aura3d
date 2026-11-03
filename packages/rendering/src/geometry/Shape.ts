@@ -1,8 +1,9 @@
 /**
  * Native planar shape generation.
  *
- * This implementation is independently authored. Historical attribution for
- * the separate shared geometry adapters remains in `Support.ts`.
+ * This implementation is independently authored. The shared geometry
+ * adapters in `Support.ts` were independently replaced on 2026-11-02 (record:
+ * docs/prds/aura3d-native-provenance-record.json).
  */
 import type { ParityMesh } from "./Support";
 import { normalizeIndependentShapeRings, triangulateIndependentShape, type IndependentShapePoint } from "./IndependentShapeTriangulation";

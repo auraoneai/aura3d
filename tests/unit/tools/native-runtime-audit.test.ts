@@ -49,6 +49,51 @@ describe("native implementation source evidence", () => {
     ]));
   });
 
+  it("classifies published formulas as standardized-equation review candidates, never as proof", () => {
+    const report = inspectSourceEntries([
+      source("src/color.ts", "export const toLinear = (c: number) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;\n"),
+      source("src/luma.ts", "export const luma = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;\n"),
+      source("src/fresnel.glsl.ts", "export const f = `vec3 F = F0 + (1.0 - F0) * pow(1.0 - VoH, 5.0);`;\n"),
+      source("src/random.ts", "let s = 1; export const next = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0);\n"),
+      source("src/plain.ts", "export const half = 0.5; export const scale = pow(2.0, 5.0);\n")
+    ]);
+    const equations = report.findings.filter((finding) => finding.kind === "standardized-equation");
+    expect(equations.map(({ path, detail }) => [path, detail])).toEqual([
+      ["src/color.ts", "sRGB transfer function (IEC 61966-2-1)"],
+      ["src/luma.ts", "BT.709 luminance coefficients (ITU-R BT.709)"],
+      ["src/fresnel.glsl.ts", "Schlick Fresnel approximation (Schlick 1994)"],
+      ["src/random.ts", "Numerical Recipes linear congruential generator"]
+    ]);
+    expect(equations.every((finding) => finding.line === 1 && finding.review === undefined)).toBe(true);
+    expect(report.candidateReview).toEqual({ candidates: 4, reviewed: 0, unreviewed: 4, byDisposition: {} });
+    expect(report.limitations.join(" ")).toContain("only a recorded human disposition classifies them");
+  });
+
+  it("applies digest-bound human candidate dispositions and validates them", () => {
+    const entry = source("src/color.ts", "// Ported from upstream source: example\nexport const k = 0.04045;\n");
+    const sha256 = createHash("sha256").update(entry.bytes).digest("hex");
+    const base = { sha256, license: "MIT", owner: "WP-29", replacementStatus: "independent" as const, reviewEvidence: ["review notes"] };
+    const candidateReviews = [
+      { kind: "standardized-equation" as const, disposition: "standardized-equation" as const, reviewer: "WP-29 reviewer", note: "IEC 61966-2-1 threshold" },
+      { kind: "provenance-reference" as const, detail: "unrelated detail", disposition: "false-positive" as const, reviewer: "WP-29 reviewer", note: "does not match" }
+    ];
+    const report = inspectSourceEntries([entry], { provenance: { [entry.path]: { ...base, candidateReviews } } });
+    expect(report.findings).toContainEqual(expect.objectContaining({ kind: "standardized-equation", review: { disposition: "standardized-equation", reviewer: "WP-29 reviewer", note: "IEC 61966-2-1 threshold" } }));
+    // A review with a non-matching detail leaves the candidate unreviewed.
+    expect(report.findings.find((finding) => finding.kind === "provenance-reference")?.review).toBeUndefined();
+    expect(report.candidateReview).toMatchObject({ candidates: 2, reviewed: 1, unreviewed: 1, byDisposition: { "standardized-equation": 1 } });
+    for (const invalid of [
+      [{ ...candidateReviews[0]!, reviewer: " " }],
+      [{ ...candidateReviews[0]!, disposition: "looks-fine" }],
+      [{ ...candidateReviews[0]!, kind: "unknown-kind" }],
+      [{ ...candidateReviews[0]!, note: "" }],
+      "not-an-array"
+    ]) {
+      expect(() => inspectSourceEntries([entry], { provenance: { [entry.path]: { ...base, candidateReviews: invalid as never } } })).toThrow(/Invalid candidate review/);
+    }
+    expect(() => inspectSourceEntries([source(entry.path, "changed 0.04045")], { provenance: { [entry.path]: { ...base, candidateReviews } } })).toThrow(/Stale provenance digest/);
+  });
+
   it("binds reviewed records to exact bytes and rejects missing review evidence", () => {
     const entry = source("src/value.ts", "export const x = 1;");
     const sha256 = createHash("sha256").update(entry.bytes).digest("hex");

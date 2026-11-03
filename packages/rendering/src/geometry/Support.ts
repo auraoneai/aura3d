@@ -1,11 +1,13 @@
 /**
  * Geometry support routines for the native primitive builders.
  *
- * Attribution: the curve adapter and axis-rotation helper retain portions of
- * an earlier three.js port. The previous triangulation code was based on
- * Mapbox earcut 3.0.2 (ISC). Provenance and applicable notices for the current
- * implementations remain under review until independent replacement is
- * verified.
+ * Provenance (reviewed 2026-11-02, WP-13/WP-29): the curve adapter, frame
+ * transport and axis rotation were rewritten from the cited published methods
+ * (chord-length arc tables, double-reflection rotation-minimizing frames,
+ * Rodrigues' rotation formula), replacing portions of an earlier port.
+ * Triangulation delegates to `@aura3d/math`'s independent polygon
+ * triangulator; no earlier earcut-derived code remains in this file. See
+ * docs/prds/aura3d-native-provenance-record.json.
  */
 import {
   CatmullRomCurve3,
@@ -213,94 +215,164 @@ export function triangulateShape(contour: readonly Point2[], holes: readonly (re
   return mathTriangulateShape(toMathPoints(contour), holes.map(toMathPoints));
 }
 
-/** Rodrigues rotation about a unit axis, in column-major storage. */
-export function rotationAxisMatrix(axis: Vector3, angle: number): Matrix4 {
-  const x = axis.x, y = axis.y, z = axis.z, c = Math.cos(angle), s = Math.sin(angle), t = 1 - c;
-  return new Matrix4([
-    c + x * x * t, y * x * t + z * s, z * x * t - y * s, 0,
-    x * y * t - z * s, c + y * y * t, z * y * t + x * s, 0,
-    x * z * t + y * s, y * z * t - x * s, c + z * z * t, 0,
-    0, 0, 0, 1
-  ]);
-}
+type Triple = [number, number, number];
 const clamp = (x: number, a: number, b: number): number => Math.min(b, Math.max(a, x));
-/** Adapts a point sampler to the public Curve contract. */
+const dot3 = (a: Triple, b: Triple): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross3 = (a: Triple, b: Triple): Triple => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const triple = (v: Vector3): Triple => [v.x, v.y, v.z];
+const vector = (v: Triple): Vector3 => new Vector3(v[0], v[1], v[2]);
+function unit(v: Triple): Triple | undefined {
+  const length = Math.hypot(v[0], v[1], v[2]);
+  return Number.isFinite(length) && length > 1e-12 ? [v[0] / length, v[1] / length, v[2] / length] : undefined;
+}
+/** Reflect `v` in the plane through the origin whose normal is `n` (`n·n = nn`). */
+function reflect(v: Triple, n: Triple, nn: number): Triple {
+  const k = 2 * dot3(n, v) / nn;
+  return [v[0] - k * n[0], v[1] - k * n[1], v[2] - k * n[2]];
+}
+/** Rotate `v` about unit axis `k` by `angle` (vector form of Rodrigues' rotation formula). */
+function rotateAbout(v: Triple, k: Triple, angle: number): Triple {
+  const c = Math.cos(angle), s = Math.sin(angle), along = dot3(k, v) * (1 - c), kv = cross3(k, v);
+  return [v[0] * c + kv[0] * s + k[0] * along, v[1] * c + kv[1] * s + k[1] * along, v[2] * c + kv[2] * s + k[2] * along];
+}
+
+/** Rotation by `angle` about a unit `axis`, as a column-major matrix built from rotated basis vectors. */
+export function rotationAxisMatrix(axis: Vector3, angle: number): Matrix4 {
+  const k: Triple = [axis.x, axis.y, axis.z];
+  const x = rotateAbout([1, 0, 0], k, angle), y = rotateAbout([0, 1, 0], k, angle), z = rotateAbout([0, 0, 1], k, angle);
+  return new Matrix4([...x, 0, ...y, 0, ...z, 0, 0, 0, 0, 1]);
+}
+
+/** Parameter step used for finite-difference tangents. */
+const TANGENT_STEP = 1e-4;
+
+/**
+ * Adapts a point sampler `t -> point` (t in [0, 1]) to the public Curve
+ * contract.
+ *
+ * - Arc length is the cumulative chord length of `arcLengthDivisions` uniform
+ *   parameter samples; arc-length fractions are inverted by interpolating that
+ *   monotone table.
+ * - Tangents are normalized finite differences of the sampler.
+ * - Frames are rotation-minimizing frames computed with the double-reflection
+ *   method (Wang, Juttler, Zheng and Liu, "Computation of Rotation Minimizing
+ *   Frames", ACM Transactions on Graphics 27(1), 2008). On closed curves the
+ *   residual twist between the last and first normal is spread linearly along
+ *   the curve so the seam frames coincide.
+ */
 export class Curve3Adapter implements Curve<Vector3> {
   readonly arcLengthDivisions = 200;
   closed = false;
   isCatmullRomCurve3 = false;
-  private cached?: number[];
+  private table?: number[];
   constructor(private readonly sampler: (t: number) => Vector3) {}
+
   getPoint(t: number): Vector3 { return this.sampler(clamp(t, 0, 1)); }
   getPointAt(u: number): Vector3 { return this.getPoint(this.getUtoTmapping(u)); }
-  getTangent(t: number): Vector3 { return this.getPoint(clamp(t + 1e-4, 0, 1)).subtract(this.getPoint(clamp(t - 1e-4, 0, 1))).normalize(); }
+  getTangent(t: number): Vector3 {
+    const at = clamp(t, 0, 1);
+    // A closed curve wraps, so its seam gets a central rather than one-sided difference.
+    const before = this.closed && at - TANGENT_STEP < 0 ? at - TANGENT_STEP + 1 : Math.max(0, at - TANGENT_STEP);
+    const after = this.closed && at + TANGENT_STEP > 1 ? at + TANGENT_STEP - 1 : Math.min(1, at + TANGENT_STEP);
+    const a = this.getPoint(before), b = this.getPoint(after);
+    const direction = unit([b.x - a.x, b.y - a.y, b.z - a.z]);
+    return direction ? vector(direction) : new Vector3(0, 0, 0);
+  }
   getTangentAt(u: number): Vector3 { return this.getTangent(this.getUtoTmapping(u)); }
   getPoints(divisions = 5): Vector3[] {
-    const n = Math.max(1, Math.floor(divisions));
-    return Array.from({ length: n + 1 }, (_, i) => this.getPoint(i / n));
+    const count = Math.max(1, Math.floor(divisions));
+    const points: Vector3[] = [];
+    for (let i = 0; i <= count; i += 1) points.push(this.getPoint(i / count));
+    return points;
   }
   getSpacedPoints(divisions = 5): Vector3[] {
-    const n = Math.max(1, Math.floor(divisions));
-    return Array.from({ length: n + 1 }, (_, i) => this.getPointAt(i / n));
+    const count = Math.max(1, Math.floor(divisions));
+    const points: Vector3[] = [];
+    for (let i = 0; i <= count; i += 1) points.push(this.getPointAt(i / count));
+    return points;
   }
-  getLength(): number { const lengths = this.getLengths(); return lengths[lengths.length - 1]!; }
+  getLength(): number { const table = this.getLengths(); return table[table.length - 1]!; }
   getLengths(divisions = this.arcLengthDivisions): number[] {
-    const n = Math.max(1, Math.floor(divisions));
-    if (this.cached?.length === n + 1) return this.cached;
-    const lengths = [0];
+    const count = Math.max(1, Math.floor(divisions));
+    if (this.table && this.table.length === count + 1) return this.table;
+    const table = new Array<number>(count + 1);
+    table[0] = 0;
     let previous = this.getPoint(0);
-    for (let i = 1; i <= n; i += 1) {
-      const current = this.getPoint(i / n);
-      lengths.push(lengths[i - 1]! + current.distanceTo(previous));
+    for (let i = 1; i <= count; i += 1) {
+      const current = this.getPoint(i / count);
+      table[i] = table[i - 1]! + Math.hypot(current.x - previous.x, current.y - previous.y, current.z - previous.z);
       previous = current;
     }
-    this.cached = lengths;
-    return lengths;
+    this.table = table;
+    return table;
   }
-  updateArcLengths(): void { this.cached = undefined; }
+  updateArcLengths(): void { this.table = undefined; }
   getUtoTmapping(u: number): number {
-    const lengths = this.getLengths(), n = lengths.length - 1;
-    const target = clamp(u, 0, 1) * lengths[n]!;
-    if (lengths[n] === 0) return clamp(u, 0, 1);
-    let lo = 0, hi = n;
-    while (lo + 1 < hi) { const mid = Math.floor((lo + hi) / 2); if (lengths[mid]! < target) lo = mid; else hi = mid; }
-    const span = lengths[hi]! - lengths[lo]!;
-    return (lo + (span > 0 ? (target - lengths[lo]!) / span : 0)) / n;
+    const fraction = clamp(u, 0, 1);
+    const table = this.getLengths(), last = table.length - 1, total = table[last]!;
+    if (!(total > 0)) return fraction;
+    const target = fraction * total;
+    // Find the last sample whose cumulative length does not exceed the target.
+    let low = 0, high = last;
+    while (high - low > 1) {
+      const middle = (low + high) >> 1;
+      if (table[middle]! <= target) low = middle; else high = middle;
+    }
+    const span = table[low + 1]! - table[low]!;
+    const local = span > 0 ? clamp((target - table[low]!) / span, 0, 1) : 0;
+    return (low + local) / last;
   }
   computeFrenetFrames(segments: number, closed = false): FrenetFrame {
-    const n = Math.max(1, Math.floor(segments));
-    const tangents = Array.from({ length: n + 1 }, (_, i) => this.getTangentAt(i / n));
-    for (let i = 0; i <= n; i += 1) if (tangents[i]!.length() < 1e-12) tangents[i] = i ? tangents[i - 1]! : new Vector3(0, 0, 1);
-    if (closed) {
-      // One-sided derivative estimates on a closed sampler disagree slightly
-      // at the seam. Use their common direction before transporting the frame.
-      const seam = tangents[0]!.add(tangents[n]!).normalize();
-      if (seam.length() > 0) tangents[0] = seam;
-      tangents[n] = tangents[0]!;
+    const count = Math.max(1, Math.floor(segments));
+    const points: Triple[] = [], tangents: Triple[] = [];
+    for (let i = 0; i <= count; i += 1) {
+      points.push(triple(this.getPointAt(i / count)));
+      const direction = unit(triple(this.getTangentAt(i / count)));
+      tangents.push(direction ?? (i > 0 ? tangents[i - 1]! : [0, 0, 1]));
     }
+    if (closed) {
+      // The seam tangent of a closed curve is a central difference across t = 0 / 1.
+      const a = this.getPoint(1 - TANGENT_STEP), b = this.getPoint(TANGENT_STEP);
+      tangents[0] = unit([b.x - a.x, b.y - a.y, b.z - a.z]) ?? tangents[0]!;
+      tangents[count] = tangents[0]!;
+      points[count] = points[0]!;
+    }
+    // Initial normal: the coordinate axis least aligned with the first
+    // tangent, made orthogonal to it (ties resolve x, then y, then z).
     const first = tangents[0]!;
-    const axes = [new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)];
-    axes.sort((a, b) => Math.abs(first.dot(a)) - Math.abs(first.dot(b)));
-    const normal0 = first.cross(axes[0]!).cross(first).normalize();
-    const normals = [normal0], binormals = [first.cross(normal0).normalize()];
-    for (let i = 1; i <= n; i += 1) {
-      const axis = tangents[i - 1]!.cross(tangents[i]!);
-      const sine = axis.length(), cosine = clamp(tangents[i - 1]!.dot(tangents[i]!), -1, 1);
-      let normal = normals[i - 1]!;
-      if (sine > 1e-12) normal = normal.transformMatrix4(rotationAxisMatrix(axis.divideScalar(sine), Math.atan2(sine, cosine)));
-      else if (cosine < 0) normal = normal.negate();
-      normal = normal.subtract(tangents[i]!.multiplyScalar(normal.dot(tangents[i]!))).normalize();
-      normals.push(normal);
-      binormals.push(tangents[i]!.cross(normal).normalize());
+    const axes: Triple[] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    let seed = axes[0]!;
+    for (const axis of axes) if (Math.abs(dot3(first, axis)) < Math.abs(dot3(first, seed))) seed = axis;
+    const along = dot3(seed, first);
+    const normals: Triple[] = [unit([seed[0] - along * first[0], seed[1] - along * first[1], seed[2] - along * first[2]])!];
+    for (let i = 0; i < count; i += 1) {
+      const step: Triple = [points[i + 1]![0] - points[i]![0], points[i + 1]![1] - points[i]![1], points[i + 1]![2] - points[i]![2]];
+      const stepSquared = dot3(step, step);
+      let normal = normals[i]!, tangent = tangents[i]!;
+      // First reflection maps the frame across the bisecting plane of the
+      // chord; the second aligns the reflected tangent with the next tangent.
+      if (stepSquared > 1e-24) {
+        normal = reflect(normal, step, stepSquared);
+        tangent = reflect(tangent, step, stepSquared);
+      }
+      const next = tangents[i + 1]!;
+      const correction: Triple = [next[0] - tangent[0], next[1] - tangent[1], next[2] - tangent[2]];
+      const correctionSquared = dot3(correction, correction);
+      if (correctionSquared > 1e-24) normal = reflect(normal, correction, correctionSquared);
+      // Remove rounding drift so each normal stays orthogonal to its tangent.
+      const drift = dot3(normal, next);
+      normals.push(unit([normal[0] - drift * next[0], normal[1] - drift * next[1], normal[2] - drift * next[2]]) ?? normals[i]!);
     }
     if (closed) {
-      const angle = Math.atan2(first.dot(normals[n]!.cross(normal0)), clamp(normals[n]!.dot(normal0), -1, 1));
-      for (let i = 1; i <= n; i += 1) {
-        normals[i] = normals[i]!.transformMatrix4(rotationAxisMatrix(tangents[i]!, angle * i / n)).normalize();
-        binormals[i] = tangents[i]!.cross(normals[i]!).normalize();
-      }
+      const start = normals[0]!, end = normals[count]!;
+      const twist = Math.atan2(dot3(first, cross3(end, start)), clamp(dot3(end, start), -1, 1));
+      for (let i = 1; i <= count; i += 1) normals[i] = unit(rotateAbout(normals[i]!, tangents[i]!, twist * i / count)) ?? normals[i]!;
     }
-    return { tangents, normals, binormals };
+    return {
+      tangents: tangents.map(vector),
+      normals: normals.map(vector),
+      binormals: tangents.map((tangent, i) => vector(unit(cross3(tangent, normals[i]!)) ?? [0, 0, 0]))
+    };
   }
 }
 type Vec3Like = Vector3 | readonly [number, number, number] | { readonly x: number; readonly y: number; readonly z: number };

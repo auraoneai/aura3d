@@ -152,13 +152,13 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP10-01 | Parse all named splat formats; validate layouts | FINISH-5.0 | Public scene compiler must construct splat loader with KSPLAT and packed-PLY decoders (or bundled Aura3D codec) so all named formats parse on integrated path. |
+| S5-WP10-01 | Parse all named splat formats; validate layouts | FINISH-5.0 | Public scene compiler must construct splat loader with KSPLAT and packed-PLY decoders (or bundled Aura3D codec) so all named formats parse on integrated path. **DONE 2026-11-02:** bundled independent KSPLAT 0.1 (levels 0-2) and chunk-quantized PLY codecs (`packages/assets/src/loaders/SplatCodecs.ts`) are the GaussianSplatLoader default, so compileScene's loader parses all named formats; native-splat-loader.test.ts 60/61 (1 glTF AssetManager de-dup failure identical on HEAD); third-party-file interop unverified. |
 
 ### WP-11
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP11-01 | Replace attributed property-binding code; edge-case tests | FINISH-5.0 | Establish independent authorship/provenance record for property-binding rewrite (WP-29 provenance record). |
+| S5-WP11-01 | Replace attributed property-binding code; edge-case tests | FINISH-5.0 | Establish independent authorship/provenance record for property-binding rewrite (WP-29 provenance record). | **DONE 2026-11-02:** PropertyBinding.ts provenance header + record entry (independent; 16.8% token containment vs attributed 3fbf87c45, shared runs are exported declarations/compat contract); native-bindings tests 15 pass. Agent review; owner countersign pending.
 | S5-WP11-02 | Align core, pose and asset playback: signed time, warp, sync | FINISH-5.0 | Verify-only: run existing cross-path playback suites in ACR source pass; fix any divergence. |
 | S5-WP11-03 | Verify visible deformed pixels, not animation state alone | FINISH-5.0 | Browser harness: remove hard-coded cameraStable; add subject region/mask so changed pixels are attributed to deformation. |
 
@@ -173,8 +173,8 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 
 | ID | Task (≤15 words) | Label | Remaining work (≤30 words, concrete files/symbols) |
 | --- | --- | --- | --- |
-| S5-WP13-01 | Independently replace attributed geometry implementations | FINISH-5.0 | Finish rewriting remaining Support port portions and general Extrude; restore equivalent-contract receipts. |
-| S5-WP13-02 | Every named mesh utility/modifier; preserve groups/attributes; path bevels | FINISH-5.0 | Implement topology-validation/compression and mesh-memory contracts; close general extrusion provenance (S5-WP13-01). |
+| S5-WP13-01 | Independently replace attributed geometry implementations | FINISH-5.0 | Finish rewriting remaining Support port portions and general Extrude; restore equivalent-contract receipts. | **DONE 2026-11-02:** Support.ts curve adapter/RMF frames/axis rotation rewritten from published methods (double reflection, Rodrigues), attribution replaced by provenance header; Extrude.ts reviewed (4.2% token containment vs port, API declarations only); 63 geometry contract tests pass incl. new tests/unit/geometry/native-curve-frames.test.ts; record docs/prds/aura3d-native-provenance-record.json.
+| S5-WP13-02 | Every named mesh utility/modifier; preserve groups/attributes; path bevels | FINISH-5.0 | Implement topology-validation/compression and mesh-memory contracts; close general extrusion provenance (S5-WP13-01). | **DONE 2026-11-02:** quantizeAuraGeometry/dequantizeAuraGeometry (MeshCompression.ts, geometry-tools subpath) + topology-validation and memory-estimate contract tests in tests/unit/geometry/native-mesh-contracts.test.ts (8 pass); extrusion provenance closed with S5-WP13-01.
 | S5-WP13-03 | Seeded deterministic weighted surface sampling | FINISH-5.0 | Verify-only: run existing deterministic/statistical tests in source pass; rendered sample scenario Phase B. |
 | S5-WP13-04 | UV charts with channel, seams, density, gutter; feed lightmap baker | EXPERIMENTAL-5.0 | Ship generated-atlas baking experimental; add generated-atlas (`buildUVAtlas`) browser lighting scene for Phase B. |
 
@@ -190,7 +190,7 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 | --- | --- | --- | --- |
 | S5-WP15-01 | Every named specialized object/generator/editing tool as opt-in module | FINISH-5.0 | Expose specialized surfaces beyond mirror in scene API; glass refraction self-captures; apply isosurface material groups as separate materials in scene draw. |
 | S5-WP15-02 | Reuse existing terrain, sky, water, scatter facilities | FINISH-5.0 | Verify-only: run existing terrain/sky/scatter suites in source pass. |
-| S5-WP15-03 | Bound memory/polygons, seeds, undo data, invalid inputs, teardown | FINISH-5.0 | Add element budget to lens-flare (elements array allocates material+item each) with budget test. |
+| S5-WP15-03 | Bound memory/polygons, seeds, undo data, invalid inputs, teardown | FINISH-5.0 | Add element budget to lens-flare (elements array allocates material+item each) with budget test. | **DONE 2026-11-02:** element budgets (64/flare, 1024/scene, glow 1024) pinned by 4 new tests in tests/unit/parity/lens-flare.test.ts (28 pass); test no longer reads three's Lensflare.js.
 
 ### WP-16
 
@@ -299,7 +299,7 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 | --- | --- | --- | --- |
 | S5-WP26-01 | Licensed fonts, shaping, kerning, RTL, fallback, wrapping, dynamic atlas | FINISH-5.0 | Implement retained dynamically updated glyph atlas; support wrapping through open bidi scope. **DONE 2026-11-02:** retained bounded `LoadedFontGlyphAtlas` (LRU, `AURA_TEXT_GLYPH_ATLAS_FULL`, purge on font dispose; entries are whole shaped runs to keep ligatures/kerning/bidi) is the default for `createDynamicSdfText`; wrapping closes/reopens open bidi embeddings/isolates per line in `TextShaper.ts` — 5 text suites 86/86 pass, rendering tsc clean. |
 | S5-WP26-02 | Wide/dashed lines in world/screen units, gradients, clipping, errors | FINISH-5.0 | Verify-only: run line diagnostic suites in source pass; rendered output Phase B. |
-| S5-WP26-03 | Custom materials on imported slots; model LOD/collider options | FINISH-5.0 | Per-slot custom shader selection; accept textured authored + variant; bounds colliders apply model scale and error on missing bounds; behavioral collider test. |
+| S5-WP26-03 | Custom materials on imported slots; model LOD/collider options | FINISH-5.0 | Per-slot custom shader selection; accept textured authored + variant; bounds colliders apply model scale and error on missing bounds; behavioral collider test. **DONE 2026-11-02:** per-slot custom shader + authored-map binding by uniform name (coded `MODEL_CUSTOM_MATERIAL_UNSUPPORTED` for undeclared/UV1/transformed maps and alpha-mask/blend slots) + whole-model/slot variants incl. runtime `setMaterialVariant` in `TypedGLBActor.ts`; bounds collider applies scale and throws `MODEL_COLLIDER_MISSING_BOUNDS`; behavioral raycast/drop test — 6 files 100/100, engine tsc clean. |
 | S5-WP26-04 | Request geometry/type changes from owners; verify pixels, interaction, teardown | FINISH-5.0 | Browser spec must assert pointer/keyboard interaction; owner-request bookkeeping dropped. **DONE 2026-11-02:** `tests/browser/native-lines-models.spec.ts` adds real `page.mouse`/`page.keyboard` input: mesh raycast pick vs miss, 48 px drag moves the imported model's red-pixel centroid, ArrowLeft nudges and `h` hides it, then listeners removed and termination `disposed` (source only; typechecks clean). |
 
 ### WP-27
@@ -323,7 +323,7 @@ Named-defect rows added below: 7 (`S5-DEF-01`..`S5-DEF-07`, all FINISH-5.0), giv
 | --- | --- | --- | --- |
 | S5-WP29-01 | Enumerate dependency graph; no external 3D engines in installs/runtimes | FINISH-5.0 | Produce transitive graph for lockless scaffold profiles; packed-runtime audit in source pass; confirm private showcase `three` not a required install. |
 | S5-WP29-02 | Scan source, artifacts, maps, workers, payloads, network; offline consumer | FINISH-5.0 | Run archive scan on packed candidate in ACR source pass; offline consumer runs via ACR instead of custody restore. |
-| S5-WP29-03 | Per-file hash, license, owner, replacement status, review evidence | FINISH-5.0 | Refresh stale hashes (ShapeUtils, ConvexHull, OBB); complete WP-29 provenance record fields for G27 files. |
+| S5-WP29-03 | Per-file hash, license, owner, replacement status, review evidence | FINISH-5.0 | Refresh stale hashes (ShapeUtils, ConvexHull, OBB); complete WP-29 provenance record fields for G27 files. | **DONE 2026-11-02:** G27 ledger digests refreshed (three/index, ShapeUtils, ConvexHull, OBB) and digest-bound record docs/prds/aura3d-native-provenance-record.json (29 files: sha256, license, owner, replacementStatus, reviewEvidence, candidateReviews) checked by tests/unit/tools/native-provenance-record.test.ts.
 | S5-WP29-04 | Treat text/equation/fingerprint hits as review candidates | FINISH-5.0 | Add standardized-equation review classification to scanner; record human review of candidates. |
 | S5-WP29-05 | Keep notices until replaced; independent test fixtures and goldens | FINISH-5.0 | Fix rewritten UV fixture rotation-direction mismatch with implementation; replace reference-generated math/shader goldens. |
 
