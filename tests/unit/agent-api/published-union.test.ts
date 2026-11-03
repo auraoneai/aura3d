@@ -26,9 +26,17 @@ describe("published union (PRD-15 T1.4)", () => {
   // single program avoids paying module resolution twice over the (now much
   // larger) union surface.
   it("in-repo and published \".\" export identical name sets", { timeout: 30000 }, () => {
+    // Resolve `@aura3d/*` through the workspace source `paths` (as vitest's aliases do), not through
+    // package exports to `dist/*.d.ts`: the 5.0 source-pass unit stage runs before `pnpm build`, and
+    // a stale local dist would compare the barrels against old declarations.
+    const base = ts.readConfigFile(join(root, "tsconfig.base.json"), ts.sys.readFile);
+    if (base.error) throw new Error(ts.flattenDiagnosticMessageText(base.error.messageText, "\n"));
+    const { paths } = ts.parseJsonConfigFileContent(base.config, ts.sys, root).options;
     const program = ts.createProgram({
       rootNames: [ENGINE_INDEX, AGENT_API_INDEX],
       options: {
+        baseUrl: root,
+        paths,
         target: ts.ScriptTarget.ESNext,
         module: ts.ModuleKind.ESNext,
         moduleResolution: ts.ModuleResolutionKind.Bundler,

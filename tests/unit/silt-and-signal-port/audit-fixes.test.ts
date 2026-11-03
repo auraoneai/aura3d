@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CHAPTERS } from "../../../examples/silt-and-signal-port/chapters-data";
 import { mergeInput, objectiveHint, pageFlags } from "../../../examples/silt-and-signal-port/controls";
 import { JOURNEY_KEY, clearJourney, journeyTotals, ratingOf, readJourney, writeChapter, type StorageLike } from "../../../examples/silt-and-signal-port/journey";
@@ -9,6 +9,10 @@ import { chaseEyeBlocked, clearChaseEye, createChaseClearance } from "../../../e
 import { buildWorld, MAX_RINGS } from "../../../examples/silt-and-signal-port/world";
 import { mapBloomOptionsV2, validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import type { AuraEffectNode } from "../../../packages/engine/src/agent-api/nodes/types";
+
+// Several cases below build whole chapter worlds (~0.5-1.4 s each locally); the 5.0 ACR source pass is
+// several times slower and hit the 5 s default (STACK_TRACE_ERROR). Assertions are unchanged.
+vi.setConfig({ testTimeout: 60_000 });
 
 /** Regression tests for the live-games audit rows of Duneglide (docs/audits/sections/game-24-silt-and-signal-port.md). */
 

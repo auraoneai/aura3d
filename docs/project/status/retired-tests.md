@@ -381,3 +381,147 @@ ignored by `/fixtures/*`, so both cases fail in the source pass (`ENOENT …/stu
 legitimately obtainable and neither three.js-derived nor a deleted feature, so neither retirement rule applies.
 Owner choice: (1) track the 2k/8k files through LFS (`.gitattributes` + un-ignore, as §3a did for Khronos files), or
 (2) run the case only where the corpus is present (acceptance), recorded as a deferral.
+
+## 10. `tests/unit` tools/apps/asset-index/CLI/engine/physics cases (ACR unit shard 5, candidate `4639e868c`, shard-5 lane)
+
+Already fixed by later commits (no change in this pass): `agent-eval/sandbox.test.ts` (Git-free listing,
+`ae90591e5`), `tools/external-candidate-package-audit.test.ts` (tracked `tests/reports/**` staged, `ae90591e5`).
+
+### 10a. Retired (deleted feature)
+
+| Test / case | Reason | Replacement coverage |
+|---|---|---|
+| `tests/unit/apps/reported-route-defects.test.ts` › `showcase-skyline-runner` (3 cases) and `showcase-turbo-drift-circuit` (3 cases) describe blocks | Both routes were retired in 4.0.1 (`docs/project/showcase/apps-classification.md`); the file failed at collection reading `apps/showcase-skyline-runner/src/main.ts`. Same routes as §3b/§8a. | The shared solvers keep their own tests (`solvePlatformerMotion`, `VehicleChassis`); the other route blocks in the file are unchanged |
+| `tests/unit/tools/webgpu-docs.test.ts` › 2 content cases | QR-11 Phase 1 (`d7de114d3`, PRD-11 §6.2 freeze) rewrote `docs/rendering/webgpu-fallback.md` and `webgpu-hardware-matrix.md` to the one-line freeze status; the fallback-code walkthrough and real-device write-up were deleted with the CPU rasterizer and facades (pre-existing 4.x failure). | Same file: both pages state the experimental freeze, WebGL2 as the only shipping backend and no visual-parity claim, and neither claims full WebGPU support. Error codes stay covered by `tests/qr/prd11/unit/*` |
+
+### 10b. Rewritten onto the current contract (no live-behavior assertion weakened)
+
+| File › case | Old assertion / input | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/engine/touch-control-binding.test.ts` › both game routes consume the reusable binding | read the two retired routes above | 4.0.1 route retirement | the binding's current game consumers (`examples/heatsink-port`, `examples/roadster-hours-port`) call `bindGameTouchControls({` and define no local `bindHoldControl`/`pulseKey` |
+| `tests/unit/apps/aura-clash-visual-evidence-gate.test.ts` › no primitive skyline backdrop | `src/playable/arena/RenderedArenaStage.ts`, `src/playable/AuraClashArenaApp.ts` | QR-14 T1.10 (`63f95e3a1`): `src/main.ts` is the route-flag dispatcher and boots `src/legacy/main.ts` by default | same assertions on `src/legacy/playable/…` |
+| `tests/unit/apps/blockfall-audio-trigger-map.test.ts` › cues at the observed-event sites | `src/main.ts`, `src/reactor-audio.ts` | QR-14 T1.10: dispatcher in `src/main.ts`, default route `src/legacy/main.ts`, audio moved to `src/gameplay/` (old path is a re-export shim) | same assertions on `src/legacy/main.ts` and `src/gameplay/reactor-audio.ts` |
+| `tests/unit/asset-index/poly-haven-adapter.test.ts` › 4 cases | the fake fetch served only `/assets?t=models` | PRD-05 §6.6 (QR-05, `066ade44f`): the catalog load also lists `t=hdris` and `t=textures` | the fake serves empty HDRI/texture maps; model assertions unchanged; the cache case asserts one catalog load (3 requests, `t=models` once) and none on the second search |
+| `tests/unit/contracts/impl/prd04-lobes.test.ts` › registers all lobes | eleven lobe ids | 5.0 (`26eae82e2`) adds `KHR_materials_diffuse_transmission` (`docs/rendering/material-matrix.md`) | twelve ids including `diffuse-transmission`; every other per-lobe check unchanged |
+| `tests/unit/rendering/native-renderer-post-batch-disposal-retry.test.ts` › retries both failed batch owners and post leases | the failed independent history `dispose` was not retried (1 call after the second `dispose()`) | 5.0 teardown contract (decision record item 3): a failed dispose stays pending until `dispose()` is called again; `Renderer.dispose` retries `temporalCleanupPending`. Same decision as the sibling `native-renderer-device-frame-cleanup-retry.test.ts` (§9) | history retried exactly once (2 calls) and never again; every other count unchanged |
+| `tests/unit/gu47/eh/glb-resource-cache.test.ts` › 4 typed-actor cases | `hash: "sha256-<name>-<n>"` labels; default (same-origin) credentials; read `geometry.vertexBuffer.disposed` after dispose | a typed asset `hash` is the expected document SHA-256 (`TypedGLBActor` `actorRequest`; same as §7b crowd-kit); `docs/migration/4-to-5.md` (AssetRequestOptions): requests that may carry credentials are neither shared nor cached without a `securityContext`; 5.0 `Geometry.vertexBuffer` throws once disposed | the fixture's real SHA-256 (distinct URLs keep keys distinct), `request: { credentials: "omit" }`, and `geometry.disposed` (true only after every buffer retired); all fetch-count and snapshot assertions unchanged |
+| `tests/unit/apps/reported-route-defects.test.ts` › `showcase-blockfall-reactor` (2 cases) | read `src/main.ts` | QR-14 T1.10 dispatcher (above) | same assertions on `src/legacy/main.ts` |
+
+### 10c. Product fixes
+
+- **Aura Clash `readPlayableHudMode`** (`apps/aura-clash-showcase/src/gameplay/combat/clashFeel.ts`): `efd4a6d1a`
+  ("restore pre-pollution 4489da315 scenes") reverted the PRD-09 fix, so `?debug=1` on `/playable/` turned on the
+  training HUD again, and the forbidden-param probe (`tools/quality-rebuild-capture/capture-games.mjs`) records any
+  read of `debug`. Training again keys off `auraTestDriver` or the `/evidence/` path only.
+  `clash-player-feel.test.ts` passes unchanged.
+- **Codemod rows** (`packages/aura3d-cli/src/migrate-three/mappings.ts`): the 5.0 independent geometry generators
+  (`26eae82e2`) no longer reproduce three r185's buffers, but 11 rows (Lathe, Extrude, Shape, TorusKnot, Icosahedron,
+  Tetrahedron, Octahedron, Dodecahedron, RoundedBox, Edges, Wireframe) still said `exact` and "buffers equal three
+  r185's within 1e-5". They are now `approximate` with a note that the buffer layout differs, and their three-derived
+  golden fixture refs are dropped. `Octree` (already `approximate`) claimed box intersection equal to r185; the
+  independent `boxIntersect` resolves the deepest contact first, and the note now says so (fixture ref dropped).
+  `migrate-three-fidelity.test.ts` is unchanged and passes.
+- **`tools/remote-acr/run-acceptance5.sh`**: without a Git checkout, `git rev-parse HEAD` aborted the launcher
+  with a raw git error (exit 128). It now refuses with exit 2 before any provider process ("not a Git checkout";
+  "no Azure work was started"). `native-acceptance5-launcher.test.ts` › stale gate asserts the gate-specific messages
+  where `.git` exists and the not-a-checkout refusal otherwise; exit 2, no run directory and no Azure call are
+  asserted in both.
+- **`tests/browser/example-dev-server.ts`**: dropped the 18 `three`, `three/webgpu`, `three/tsl` and `three/addons/*`
+  entry mappings. S5-WP19-07 removed three from the install and lock graph, so they pointed at missing files
+  (`example-dev-server-entry-points.test.ts`, unchanged).
+
+### 10d. Source-pass environment fixes (assertions unchanged)
+
+- `bunker-zero/textures.test.ts`, `bunker-zero/decal-asset-refs.test.ts`: the `git ls-files`/`git show HEAD:`
+  tracked-and-committed checks run only where `.git` exists (same as `decals.test.ts`, §8). The ACR source pass
+  ships tracked + unignored files only, so the force-added JPEG/PNG exists there only if it is tracked. Hashes,
+  sizes and dimensions are still checked against the bytes on disk.
+- `aura3d-cli/catalog-glb-integrity.test.ts`: lists manifests with `listCandidateFiles`
+  (`tools/remote-acr/source5-files.mjs`) instead of `git ls-files`.
+- `tools/browser-matrix-receipts.test.ts`: the fixture is its own Git checkout. Its child process no longer
+  inherits the source pass's `AURA3D_SOURCE_MANIFEST` (`source5-run.sh`), which pointed it at the staged-manifest
+  identity of `/repo`.
+- `contracts/impl/prd02-generated-shadow-receive.test.ts`: the two `glslangValidator` compile cases are skipped
+  when the validator is absent (the ACR image has none), and they fail when `A3D_REQUIRE_GLSLANG=1`. This follows
+  the `prd02-contact-mask-glsl` convention. Every source assertion still runs.
+- Explicit 60 s budgets for cases that take 1.3–1.5 s locally and hit the 5 s default on the slower shard
+  (`STACK_TRACE_ERROR`): `aura-links-3d/arm-sweep.test.ts` (describe), `heatsink-port/meshes.test.ts` › props, and
+  `silt-and-signal-port/look.test.ts` › DG-L2.
+
+### 10e. Open (not changed)
+
+- `tests/unit/physics/solver-pose-velocity-authority.test.ts` › "a drive topples the pin": the pin stays standing
+  (y 0.73, needs < 0.45). Pose is still mirrored every step. The cause is the 5.0 CCD substep plan
+  (`PhysicsWorld.planContinuousCollisionStep`, `26eae82e2`), which now bounds motion by `v·dt + a·dt²`. That yields
+  one more substep at the impact frame (8 vs 7 at step 36), and the chaotic ball → crate → crate → pin chain no
+  longer reaches the pin. With the old `v·dt` bound and the rest of the current code, the pin falls (y 0.05), as on
+  `main`. No documented 5.0 contract covers this outcome, so the assertion was not changed. It needs an owner or
+  physics-lane decision: either keep the conservative bound and re-author the scenario, or revisit the bound.
+- `tests/unit/tools/docs-version-alignment.test.ts`: `docs/api/public-api.md` still lists 4.7.10. Regenerating it
+  (`pnpm verify:api-docs --write`) is a release-prep step under decision record item 4, and it was not run in this lane.
+
+## 11. `tests/unit` tools/apps/engine/agent-api/port/CLI/asset-index cases (ACR unit shards 3-4, candidate `4639e868c`, other34 lane)
+
+Already fixed by later commits (no change in this pass): `apps/vault-breakers-flipper-spike.test.ts` (hinge limits
+relative to the creation pose, `5590b6840`, §8).
+
+### 11a. Retired (three.js-derived data)
+
+| Test | Reason | Current coverage |
+|---|---|---|
+| `tests/unit/tools/peer-benchmark-report.test.ts` (1 case; file deleted) | Read `benchmark/results/aura3d-106-peer-benchmark-report.json` (release 1.0.9), whose metrics source is the gitignored Aura-vs-three.js side-by-side report (`threeChildren`, `threeNonDarkPixels`) plus regenerated route-health screenshots. A three.js comparison is outside the 5.0 independence rule; comparison numbers live only in `evidence/vs-threejs/RESULTS.md`. | none needed (the committed JSON is now unreferenced) |
+| `tests/unit/tools/production-runtime-visual-quality.test.ts` (1 case; file deleted) | Asserted `tests/reports/production-runtime-gallery/manifest.json` exists; its only producer is `tests/browser/production-runtime-threejs-parity.spec.ts` (Aura-vs-three.js gallery). | none needed |
+
+### 11b. Rewritten onto the current contract (no live-behavior assertion weakened)
+
+| File › case | Old assertion / input | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/asset-index/animation-profile.test.ts` › 2 `validate-animation` cases | fixture outputs were arbitrary bytes named `.glb` | 5.0 `validate-animation` parses every `format: "glb"` output and its external dependencies (`checkGlbDependencies`, `26eae82e2`; S5-WP07-01 / S5-WP28-02) | outputs are minimal well-formed GLB 2.0 containers (header + JSON chunk), one distinct per asset in the episode case; every report assertion unchanged |
+| `tests/unit/apps/blockfall-attract.test.ts` › replays to the pinned score hash | `expected` 155436 / 91 lines / `f807fc7c` | 4.0.1 (`46bca99f1`) retuned `gravityFrames` (`48 - …` → `14 - …`) without regenerating the fixture (pre-existing 4.x failure) | fixture regenerated by its generator `apps/showcase-blockfall-reactor/scripts/write-expert-fixture.ts`: same 1369 events / 2757 frames, `expected` 130282 / 84 lines / `de3e3384` / `aa56d05d`; the generator now writes the moved twin `src/legacy/expert-run-data.ts` (it overwrote the T1.10 shim) |
+| `tests/unit/port-kit-migration/model-assets-equivalence.test.ts` › 5 tables | golden captured before 6 later model additions | GU47 art passes (4.7.x) added `paintPotIsland`, `paletteIsland`, `ionSentryDrone`, `tramEnamel`, `serpentHead`, `kite` | golden regenerated with `UPDATE_MODEL_GOLDEN=1`; diff is additions only, every pre-existing ref byte-identical |
+| `tests/unit/agent-api/public-example-boundary.test.ts` | a `.gltf` literal anywhere except `url`/`colliderUrl`/`source`/`mobile` | `aura3d assets add --download-url/--source-url/--source-page` provenance records (`metadata.provenance`), as admitted in `apps/showcase-aura-fc-3d/src/aura-assets-v2.ts` (GU47 phase 9, `a16ad5bf1`) | also accepts a remote `https?://` literal on a `downloadUrl`/`sourceUrl`/`sourcePage` field; relative or root paths there, and every other position, still fail |
+| `tests/unit/quality-gate/scripts.test.ts` › no missing path | 4 root scripts point at tools QR-12 moved to `tools/_quarantine/` (`4e5f98cf6`; pre-existing on `main`) | the test's documented mechanism: `tools/quality-gate/root-manifest-pending.json` (Q-15-1, #39) | the 4 paths are listed there (reported as `pending-root-manifest`); `tools/script-prune` keeps the scripts for `public-demo-deploy.yml` |
+
+### 11c. Product fixes
+
+- **Rapier sweep normals** (`packages/physics-rapier/src/index.ts`): a sphere cast that starts overlapping now reports
+  `normal = -direction` (Rapier returns an arbitrary penetration axis at time of impact 0), the same contract as the
+  reference query path (`packages/physics/src/Raycast.ts`), and the zero-normal fallback no longer emits `-0`
+  components. `workstream4.physics-animation.test.ts` › raycast / sphere-cast cases pass unchanged.
+- **`PhysicsWorld.sphereCast` radius error** (`packages/physics/src/PhysicsWorld.ts`): restored the 4.x message
+  `sphereCast radius must be a finite positive number.` (5.0 had reworded it).
+- **R8 deletion-safety false positives** (`tools/deletion-safety/index.ts`): `.require(` method calls
+  (`registry.require(id)`) are no longer CommonJS `require`; `export const/let/var` lines are declarations, not
+  binding lists; `register*(…)` arguments count only as whole arguments; and register/registry-table matches are
+  ignored in a file that declares the name itself (`const frame = …; return { frame }`). The tracked-file set uses
+  `listCandidateFiles` (`tools/remote-acr/source5-files.mjs`), so ACR reads the staged manifest instead of treating
+  every untracked report as tracked. The "does not manufacture dependencies" calibration passes unchanged.
+- **Runtime boundary** (`packages/assets/src/{DataTextureLoader,EXRLoader,FileLoader,loaders/TextureLoader}.ts`): doc
+  comments no longer name `THREE.*` APIs, which the product-runtime boundary
+  (`runtime-parity-production-runtime-runtime-boundary.test.ts`) bans in these roots.
+
+### 11d. Source-pass environment fixes (assertions unchanged)
+
+- `aura3d-cli/admission-gates.test.ts` › builder coverage and `bunker-zero/local-assets.test.ts` › tracked check: list
+  files with `listCandidateFiles` instead of `git ls-files` (no `.git` on ACR).
+- `tools/deletion-safety.test.ts` › HEAD-body and history cases: run only where `.git` exists (they prove the `git
+  show`/`git log` fallbacks; the staged source has no history).
+- `create-aura3d/native-install-look-assets.test.ts` › CLI cases: the spawned `tsx` starts in a scratch cwd, so it did
+  not see `tsconfig.base.json` `paths` and resolved `@aura3d/asset-index` (reached through
+  `showcase-spec-compiler`) to its unbuilt `dist/`. The spawn now sets `TSX_TSCONFIG_PATH`, and the three CLI cases
+  have explicit 120 s budgets.
+- `agent-api/published-union.test.ts`: the TypeScript program resolves `@aura3d/*` through `tsconfig.base.json`
+  `paths` (workspace source, as vitest's aliases do) instead of `dist/*.d.ts`, which the unit stage lacks.
+- `silt-and-signal-port/{audit-fixes,lighting-rig}.test.ts`: 60 s file budget (whole-chapter world builds,
+  0.5–1.4 s locally, `STACK_TRACE_ERROR` on ACR).
+- `tools/final-subsystem-ownership.test.ts` (5 cases) moved to `tools/remote-acr/acceptance-evidence-tests.txt`: it
+  reads the gitignored first-party report from `tools/final-subsystem-ownership/index.mjs`, which needs Git history,
+  `npm view` and built output, so it cannot be produced in the source pass (same class as §3c).
+
+### 11e. Open (not changed)
+
+- `tests/unit/quality-gate/scripts.test.ts` › script count ≤ 80: 123 root scripts (120 on `main`). Pre-existing
+  Q-15-1 target, not a 5.0 contract; reducing the root manifest is separate work.
+- `tests/unit/engine/instance-matrices-dense.test.ts` › 18,000 instances ≤ 2 ms per frame: 1.2 ms median locally,
+  5.2 ms on the ACR shard (2 workers on a shared host). The budget was not changed; it needs an owner decision
+  (dedicated perf stage, or a machine-calibrated budget).

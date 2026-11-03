@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { PRACTICAL_COLOR, buildWorld, practicalPositions, rigOf, skySpec, waterSpec } from "../../../examples/silt-and-signal-port/world";
 import { CHAPTER_LOOKS, chapterLook, keyAngleDeg, keyDirection } from "../../../examples/silt-and-signal-port/art/look";
 import { CHAPTERS } from "../../../examples/silt-and-signal-port/chapters-data";
+
+// Several cases below build whole chapter worlds (~0.5-1.4 s each locally); the 5.0 ACR source pass is
+// several times slower and hit the 5 s default (STACK_TRACE_ERROR). Assertions are unchanged.
+vi.setConfig({ testTimeout: 60_000 });
 
 describe("Duneglide lighting rig", () => {
   it("chapter 0 uses the original measured rig (key 2.2, hemisphere 1.05)", () => {

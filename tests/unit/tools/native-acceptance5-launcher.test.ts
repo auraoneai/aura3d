@@ -151,13 +151,16 @@ describe('acceptance5 gate refusal', () => {
     const gateRel = `tests/reports/native-5/unit-gates/${process.pid}-${Date.now()}.json`;
     mkdirSync(join(root, 'tests/reports/native-5/unit-gates'), { recursive: true });
     writeFileSync(join(root, gateRel), gate({ freezeCommit: '0'.repeat(40) }));
+    // The ACR source pass ships no .git: the launcher then refuses before gate binding (nothing to bind to),
+    // so only the refusal and the no-Azure guarantee are observable there.
+    const gitCheckout = existsSync(join(root, '.git'));
     try {
       for (const [gatePath, message] of [['tests/reports/native-5/unit-gates/absent.json', /gate record missing/], [gateRel, /stale gate/]] as const) {
         const runId = `a5-unit-${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
         const child = spawnSync('bash', ['tools/remote-acr/run-acceptance5.sh'], { cwd: root, encoding: 'utf8',
           env: { ...process.env, AZ_WRAPPER: sentinel, RUN_ID: runId, BATCH: '1', AURA3D_CODE_COMPLETE_GATE: gatePath } });
         expect(child.status, child.stderr).toBe(2);
-        expect(child.stderr).toMatch(message);
+        expect(child.stderr).toMatch(gitCheckout ? message : /not a Git checkout/);
         expect(child.stderr).toMatch(/no Azure work was started/);
         expect(existsSync(join(root, 'tests/reports/native-5', runId))).toBe(false);
       }

@@ -123,10 +123,11 @@ describe("aura-clash-showcase — hit timing, spacing and recovery frames", () =
 
 // `showcase-skyline-runner` and `showcase-turbo-drift-circuit` were retired in 4.0.1
 // (`docs/project/showcase/apps-classification.md`); their route-binding cases are retired with them
-// (docs/project/status/retired-tests.md section 9).
+// (docs/project/status/retired-tests.md, "ACR unit shard 5" section).
 
 describe("showcase-blockfall-reactor — complete game-loop verification", () => {
-  const source = routeSource("showcase-blockfall-reactor");
+  // QR-14 T1.10: `src/main.ts` is the route-flag dispatcher; the default (flag-off) route is `src/legacy/main.ts`.
+  const source = routeSource("showcase-blockfall-reactor", "src/legacy/main.ts");
 
   it("publishes observed gameplay proof rather than asserting its own completion", () => {
     expect(source).toContain("observedGameplayProof");

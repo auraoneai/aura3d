@@ -35,7 +35,11 @@ function fixture() {
   execFileSync('git', ['init', '-q'], { cwd: root });
   execFileSync('git', ['add', '.'], { cwd: root });
   execFileSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], { cwd: root });
-  const run = (...args: string[]) => spawnSync(process.execPath, ['tools/release/browser-matrix-receipts.mjs', ...args], { cwd: root, encoding: 'utf8' });
+  // The fixture is its own Git checkout: drop the ACR source pass's staged-manifest identity
+  // (`AURA3D_SOURCE_MANIFEST`, tools/remote-acr/source5-run.sh) so the child uses the fixture's Git identity.
+  const env = { ...process.env };
+  delete env.AURA3D_SOURCE_MANIFEST;
+  const run = (...args: string[]) => spawnSync(process.execPath, ['tools/release/browser-matrix-receipts.mjs', ...args], { cwd: root, encoding: 'utf8', env });
   const reportPath = (shard: keyof typeof shardSpecs) => `tests/reports/browser-matrix/${shard}/browser.json`;
   const mint = (shard: keyof typeof shardSpecs, report = passingReport(shard)) => {
     write(root, reportPath(shard), report);

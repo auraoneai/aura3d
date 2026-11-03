@@ -33,6 +33,13 @@ function gen(partial: Partial<ProgramFeatures>) {
 const dir = mkdtempSync(join(tmpdir(), "a3d-shadow-forward-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
+// Same convention as prd02-contact-mask-glsl.test.ts: the Khronos validator runs wherever it is
+// installed, and lanes that set A3D_REQUIRE_GLSLANG=1 fail when it is missing. The 5.0 ACR image
+// (Dockerfile.playwright, decision record item 1) has no glslang, so there the two compile cases are
+// reported as skipped while every source assertion still runs.
+const glslangAvailable = !spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).error;
+const requireGlslang = process.env.A3D_REQUIRE_GLSLANG === "1";
+
 function validate(name: string, source: string): string {
   const file = join(dir, `${name}.frag`);
   writeFileSync(file, source);
@@ -80,7 +87,7 @@ describe("generated forward program: shadow receive (#1225)", () => {
     expect(tokens(SHADOW_FORWARD_FACTOR_GLSL)).toBe(tokens(core.slice(start, end)));
   });
 
-  it.each([
+  it.skipIf(!glslangAvailable && !requireGlslang).each([
     ["bucketed", ONE_DIR],
     ["clustered", CLUSTERED]
   ] as const)("%s shadowed fragment compiles (glslangValidator)", (name, lights) => {

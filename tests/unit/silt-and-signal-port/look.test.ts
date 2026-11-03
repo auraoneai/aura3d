@@ -37,7 +37,8 @@ describe("GU47 WP-34 look table", () => {
     expect(siltLookMode("?chapter=0&start=1")).toBe("inked");
   });
 
-  it("DG-L2: five day chapters use their catalogue HDRI for IBL only; the two night chapters keep neutral 0.35", () => {
+  // Builds every chapter scene (~1.5 s locally); the slower ACR unit shard exceeded the 5 s default.
+  it("DG-L2: five day chapters use their catalogue HDRI for IBL only; the two night chapters keep neutral 0.35", { timeout: 60_000 }, () => {
     const ids = CHAPTER_LOOKS.map((l) => l.hdri);
     expect(ids).toEqual(["belfast_sunset_puresky", "outdoor-midday", null, "industrial_sunset_puresky", "kloppenheim_02", null, "spruit_sunrise"]);
     for (let c = 0; c < CHAPTER_LOOKS.length; c++) {

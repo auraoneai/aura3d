@@ -1,28 +1,21 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+/**
+ * QR-11 Phase 1 (`d7de114d3`, PRD-11 §6.2 freeze) rewrote both pages to the freeze status line: the
+ * fallback-code walkthrough and the real-device matrix write-up were removed with the WebGPU CPU
+ * rasterizer and facades. The claim boundary those pages carried is what stays checked here:
+ * WebGPU is an experimental probe, WebGL2 is the only shipping backend, and nothing claims full or
+ * visual-parity WebGPU support. (docs/project/status/retired-tests.md, "ACR unit shard 5" section.)
+ */
 describe("WebGPU public fallback docs", () => {
-  it("documents unavailable runtime, missing adapter, device request, and canvas presentation errors", () => {
-    const docs = readFileSync("docs/rendering/webgpu-fallback.md", "utf8");
-
-    expect(docs).toContain("does not silently replace a failed WebGPU request");
-    expect(docs).toContain("WEBGPU_RUNTIME_MISSING");
-    expect(docs).toContain("WEBGPU_ADAPTER_MISSING");
-    expect(docs).toContain("WEBGPU_DEVICE_REQUEST_FAILED");
-    expect(docs).toContain("WEBGPU_CANVAS_CONTEXT_MISSING");
-    expect(docs).toContain("WEBGPU_CANVAS_CONTEXT_INVALID");
-    expect(docs).toContain("does not claim full real-hardware WebGPU support");
-  });
-
-  it("documents real-device matrix evidence separately from injected adapter evidence", () => {
-    const docs = readFileSync("docs/rendering/webgpu-hardware-matrix.md", "utf8");
-
-    expect(docs).toContain("tests/browser/webgpu-real-device.spec.ts");
-    expect(docs).toContain("tests/reports/webgpu-hardware-matrix.json");
-    expect(docs).toContain("uses `navigator.gpu` directly");
-    expect(docs).toContain("they are not real hardware evidence");
-    expect(docs).toContain("Public claims must not say \"full WebGPU support\"");
-    expect(docs).toContain("browser user agent");
-    expect(docs).toContain("operating system platform and release");
-  });
+  for (const page of ["docs/rendering/webgpu-fallback.md", "docs/rendering/webgpu-hardware-matrix.md"]) {
+    it(`${page} states the experimental freeze and makes no full-support claim`, () => {
+      const docs = readFileSync(page, "utf8");
+      expect(docs).toContain("WebGPU is a frozen experimental probe device");
+      expect(docs).toContain("WebGL2 is the only shipping backend");
+      expect(docs).toContain("carries no visual-parity claim");
+      expect(docs).not.toMatch(/full (real-hardware )?WebGPU support(?! is not)/i);
+    });
+  }
 });

@@ -5,6 +5,7 @@
  * same asset loads with 0 GLB fetches. The class is bounded (entries, bytes,
  * least recently kept first) and disposes each kept entry exactly once.
  */
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
@@ -118,9 +119,14 @@ describe("GLB resource cache across a scene swap (typed GLB actors)", () => {
   });
 
   let serial = 0;
+  // A typed asset `hash` is the expected document SHA-256, verified before parse (5.0 TypedGLBActor
+  // `actorRequest`); every asset serves the same bytes, so the URL keeps the cache keys distinct.
+  // 5.0 (docs/migration/4-to-5.md, AssetRequestOptions): requests that may carry browser credentials are
+  // neither shared nor cached without a securityContext, so these cache cases load credential-free.
+  const GLB_HASH = `sha256-${createHash("sha256").update(GLB_BYTES).digest("hex")}`;
   function asset(name: string) {
     serial += 1;
-    return { url: `https://assets.invalid/gu47-eh/${name}-${serial}.glb`, type: "model", format: "glb", hash: `sha256-${name}-${serial}`, sizeBytes: GLB_BYTES.byteLength } as const;
+    return { url: `https://assets.invalid/gu47-eh/${name}-${serial}.glb`, type: "model", format: "glb", hash: GLB_HASH, sizeBytes: GLB_BYTES.byteLength, request: { credentials: "omit" } } as const;
   }
   const load = (a: ReturnType<typeof asset>, id: string, extra: Record<string, unknown> = {}): Promise<TypedGLBActor> =>
     createTypedGLBActor({ asset: a, id, width: 64, height: 64, ...extra });
@@ -136,7 +142,8 @@ describe("GLB resource cache across a scene swap (typed GLB actors)", () => {
     const geometries = first.flatMap((actor) => [...actor.pipeline.resources.geometryLibrary.values()]);
     for (const actor of first) actor.dispose();
     expect(glbResourceCacheSnapshot()).toMatchObject({ entries: 1, kept: 1 });
-    expect(geometries.every((geometry) => (geometry as unknown as { vertexBuffer: { disposed: boolean } }).vertexBuffer.disposed)).toBe(true);
+    // 5.0 Geometry: `vertexBuffer` throws once disposed; `disposed` turns true only after every GPU buffer retired.
+    expect(geometries.every((geometry) => geometry.disposed)).toBe(true);
     expect(first[0]!.pipeline.asset.disposed).toBe(false);
     // Scene 2 mounts the same asset: no fetch at all.
     const second = await Promise.all([load(car, "car-a"), load(car, "car-b")]);

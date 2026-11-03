@@ -23,7 +23,12 @@ function project(name: string, dependencyField = "dependencies"): string {
 function runCli(cwd: string, ...args: string[]) {
   return spawnSync(process.execPath, ["--require", networkGuard, "--import", tsxLoader, cli, ...args], {
     cwd,
-    encoding: "utf8"
+    encoding: "utf8",
+    // tsx reads tsconfig `paths` from the cwd, and these runs start in a scratch directory, so
+    // `@aura3d/*` imports (the CLI reaches `@aura3d/asset-index`) would resolve through package
+    // exports to `dist/`, which the unbuilt 5.0 source-pass unit stage does not have. Point tsx at
+    // the workspace source mapping, as vitest's aliases do.
+    env: { ...process.env, TSX_TSCONFIG_PATH: resolve("tsconfig.base.json") }
   });
 }
 
@@ -154,7 +159,7 @@ describe("install-look-assets command", () => {
     expect(result.targetDir).toBe(targetDir);
     expect(result.template).toBe("cinematic-scene");
     expect(existsSync(join(targetDir, "src/main.ts"))).toBe(true);
-  });
+  }, 120_000);
 
   it("installs into an explicit path and defaults to the current project, with no network needed", () => {
     const targetDir = project("-project with spaces", "devDependencies");
@@ -172,7 +177,7 @@ describe("install-look-assets command", () => {
     const hyphenTarget = runCli(scratch, "install-look-assets", "--", "-project with spaces");
     expect(hyphenTarget.status, hyphenTarget.stderr).toBe(0);
     expect((JSON.parse(hyphenTarget.stdout) as { targetDir: string }).targetDir).toBe(realpathSync(targetDir));
-  });
+  }, 120_000);
 
   it("shows help and rejects unsupported options, extra arguments and invalid targets", () => {
     for (const flag of ["--help", "-h"]) {
@@ -191,5 +196,5 @@ describe("install-look-assets command", () => {
     expect(invalid.status).not.toBe(0);
     expect(invalid.stderr).toMatch(/project|package\.json|dependency/i);
     expect(existsSync(target)).toBe(false);
-  });
+  }, 120_000);
 });

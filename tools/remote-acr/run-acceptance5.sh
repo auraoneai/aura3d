@@ -96,7 +96,10 @@ if [ -z "$BATCH" ] && [ "$BATCH_COUNT" -gt 1 ]; then
 fi
 
 # ---- 1. gate refusal before any provider process -----------------------------
-COMMIT="$(git rev-parse HEAD)"
+# The gate binds a frozen Git commit: without a Git checkout (e.g. the ACR source pass, which ships no
+# .git) there is nothing to bind, so refuse here instead of failing later with a raw git error.
+COMMIT="$(git rev-parse HEAD 2>/dev/null)" \
+  || { echo "FATAL: acceptance refused: not a Git checkout, so the code-complete gate cannot be bound to HEAD; no Azure work was started." >&2; exit 2; }
 TRACKED_CLEAN=1
 [ -z "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ] || TRACKED_CLEAN=0
 BINDING="$(node tools/remote-acr/acceptance5.mjs gate-binding --gate "$AURA3D_CODE_COMPLETE_GATE" --head "$COMMIT" --tracked-clean "$TRACKED_CLEAN")" \

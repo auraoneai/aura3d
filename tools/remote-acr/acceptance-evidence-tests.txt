@@ -16,3 +16,4 @@ tests/unit/tools/visual-review-perceptual-binding.test.ts
 tests/unit/tools/developer-value.test.ts
 tests/unit/tools/honest-public-claims.test.ts
 tests/unit/tools/release-metrics-rollup.test.ts
+tests/unit/tools/final-subsystem-ownership.test.ts

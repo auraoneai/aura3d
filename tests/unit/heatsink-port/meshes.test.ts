@@ -49,7 +49,8 @@ describe("other meshes", () => {
     const ss = track.splits.map((s) => [s.s0, s.s1] as const);
     expect(ss.length).toBe(2);
   });
-  it("props are well formed and non-empty", () => {
+  // Builds every prop mesh (~1.3 s locally); the slower ACR unit shard exceeded the 5 s default.
+  it("props are well formed and non-empty", { timeout: 60_000 }, () => {
     const { rocks, crystals } = buildProps(track);
     check(rocks);
     check(crystals);

@@ -5,20 +5,22 @@
  * document bytes and every sidecar the GLB actually references, and its typed
  * source must carry the same integrity map.
  */
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { checkGlbDependencies } from "../../../packages/aura3d-cli/src/glb-dependency-validation";
 import type { AuraCliAssetEntry } from "../../../packages/aura3d-cli/src/asset-core-types";
+import { listCandidateFiles } from "../../../tools/remote-acr/source5-files.mjs";
 
 const root = resolve(__dirname, "../../..");
 // Synthetic manifest whose model files are intentionally not materialized.
 const SYNTHETIC = new Set(["tests/qr/prd05/fixtures/route-bundle/aura.assets.json"]);
 
 function trackedManifests(): string[] {
-  return execFileSync("git", ["ls-files", "*aura.assets.json"], { cwd: root, encoding: "utf8" })
-    .trim().split("\n").filter((file) => file && !SYNTHETIC.has(file));
+  // Git checkout: tracked files; ACR source pass (no .git): the staged source5 manifest.
+  return listCandidateFiles(root)
+    .filter((file) => file.endsWith("aura.assets.json") && !SYNTHETIC.has(file))
+    .sort();
 }
 
 const digestOf = (value: string | undefined) => value?.replace(/^sha256[-:]/, "").toLowerCase();

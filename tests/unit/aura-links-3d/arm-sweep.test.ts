@@ -31,7 +31,8 @@ const lineDistance = (p: V3, origin: V3, dir: V3): number => {
   return vLen(vCross(rel, d));
 };
 
-describe("Links golfer: both arms stay attached, visible and on the grip in every pose", () => {
+// Each case sweeps the rig through every pose (~1.4 s locally); the slower ACR unit shard exceeded the 5 s default.
+describe("Links golfer: both arms stay attached, visible and on the grip in every pose", { timeout: 60_000 }, () => {
   it("keeps the upper arm and forearm at 80 to 105 percent of rest length, with the elbow in front of the back plane", () => {
     const samples = sweepArms(GLB, PHASES, 10);
     const bad = samples.filter((s) => s.upperRatio < 0.8 || s.upperRatio > 1.05 || s.foreRatio < 0.8 || s.foreRatio > 1.05 || s.elbowBehind < -0.2);
