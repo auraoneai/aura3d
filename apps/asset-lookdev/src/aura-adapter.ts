@@ -18,7 +18,8 @@
  * (`a3d_prd05_debugSampler`, `u_prd05LodLevel`, `u_prd05TexelBand`).
  */
 import type { RenderDevice, RenderShaderProgram, ShaderSources } from "@aura3d/rendering";
-import { Renderer, resolveQrFlags } from "@aura3d/engine";
+import { resolveQrFlags } from "@aura3d/engine";
+import { Renderer } from "@aura3d/engine/renderer";
 import { setRendererQrFlags } from "@aura3d/rendering/lanes";
 import { Material, MaterialInstance, rendererProgramCache } from "@aura3d/rendering";
 import type {

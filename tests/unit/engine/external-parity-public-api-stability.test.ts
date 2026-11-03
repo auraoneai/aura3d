@@ -1,19 +1,18 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import {
-  captureScreenshot,
   createAssetDiagnostics,
   createDiagnosticsPanel,
   createEnvironment,
-  loadAsset,
   workflows
 } from "@aura3d/engine";
+import { captureScreenshot, loadAsset } from "@aura3d/engine-runtime";
 import { A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset } from "@aura3d/apps";
 import { createRenderDiagnostics } from "@aura3d/engine/devtools";
 import { createMaterialVariantController } from "../../../packages/engine/src/agent-api/engineSurface.js";
 import { createCompatibilityReport } from "@aura3d/engine/devtools";
 
-test("ExternalParity root package exposes the developer product API", () => {
+test("ExternalParity developer product API stays reachable from its owning modules", () => {
   expect(typeof createA3DApp).toBe("function");
   expect(typeof loadAsset).toBe("function");
   expect(typeof createEnvironment).toBe("function");
@@ -39,6 +38,12 @@ test("ExternalParity root package exposes the developer product API", () => {
     "scene-showcase",
     "interactive-scene"
   ]);
+});
+
+test("5.0.0 removed the deprecated loadAsset/captureScreenshot/createA3DApp root exports", async () => {
+  // Deprecated in 4.x with no public replacement (createA3DApp -> createAuraApp); migration guide B14.
+  const root = (await import("@aura3d/engine")) as Record<string, unknown>;
+  for (const name of ["loadAsset", "captureScreenshot", "createA3DApp"]) expect(name in root, name).toBe(false);
 });
 
 test("ExternalParity quality presets and environment API expose production defaults", () => {

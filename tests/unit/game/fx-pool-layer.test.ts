@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSceneSnapshot, primitives, scene } from "@aura3d/engine";
+import { primitives, scene } from "@aura3d/engine";
+import { normalizeSceneSnapshot } from "@aura3d/engine-runtime";
 import { createPoolFxLayer, fxPoolNodeName, withFxPool } from "../../../packages/game/src/juice/fxPoolLayer";
 import { FX_PRESETS, fxKindCapacity } from "../../../packages/game/src/juice/fx";
 

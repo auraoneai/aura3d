@@ -251,7 +251,7 @@ function sharedHarness(): string {
 function aura3dBundleSource(): string {
   return `
     import { createAuraApp, scene, primitives, material, camera, lights } from "@aura3d/engine";
-    import { createWebGL2GpuTimingBackend, createCpuFallbackGpuTimingBackend } from "@aura3d/engine/rendering";
+    import { createWebGL2GpuTimingBackend, createCpuFallbackGpuTimingBackend } from "@aura3d/rendering";
     ${sharedHarness()}
     async function runProductionPathBenchmark(canvas, definition) {
       const startupStarted = performance.now();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { createScopedVelocityHistory, velocityHistorySlot, VelocityHistory } from "@aura3d/rendering";
 import { resetTemporalHistory } from "@aura3d/rendering/contracts";
 import { bindVelocityUniforms } from "@aura3d/rendering";

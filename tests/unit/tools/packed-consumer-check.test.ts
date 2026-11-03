@@ -161,7 +161,9 @@ describe("packed consumer check (PRD-15 T1.6)", () => {
     expect(specifiers).toContain("@aura3d/engine/lanes");
     expect(specifierAllowed("@aura3d/engine/lanes", exportsKeys)).toBe(false);
     expect(specifierAllowed("@aura3d/engine", exportsKeys)).toBe(true);
-    expect(specifierAllowed("@aura3d/engine/contracts", exportsKeys)).toBe(true);
+    expect(specifierAllowed("@aura3d/engine/renderer", exportsKeys)).toBe(true);
+    // 4.x legacy subpath removed in 5.0.0 (migration guide B15).
+    expect(specifierAllowed("@aura3d/engine/contracts", exportsKeys)).toBe(false);
   });
 
   it("checkTemplate fails the fixture at the specifier gate before any install", () => {

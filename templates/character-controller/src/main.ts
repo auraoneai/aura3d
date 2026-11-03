@@ -16,7 +16,7 @@ import {
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { createPerformanceGovernor, createTopDownGameRenderPreset } from "@aura3d/engine/production-runtime";
+import { createPerformanceGovernor, createTopDownGameRenderPreset } from "@aura3d/engine/renderer";
 import { createLocomotionKit } from "@aura3d/animation";
 import { assets } from "./aura-assets.js";
 import { defaultCharacterControllerTuning, stepCharacterSpeed, type CharacterControllerState } from "./controller.js";

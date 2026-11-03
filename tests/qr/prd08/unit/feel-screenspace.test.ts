@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { createFeelBus, createScreenOverlay } from "@aura3d/engine/lanes";
-import type { AuraFeelEventSpec } from "@aura3d/engine/contracts";
+import type { AuraFeelEventSpec } from "@aura3d/engine-runtime/contracts";
 
 const HEAVY: AuraFeelEventSpec = {
   screen: { flash: 0.9, chroma: 0.6, radialBlur: 0.4, vignette: 0.5 }

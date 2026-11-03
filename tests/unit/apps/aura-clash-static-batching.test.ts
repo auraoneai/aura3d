@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSideViewGameRenderPreset } from "@aura3d/engine/production-runtime";
+import { createSideViewGameRenderPreset } from "@aura3d/engine/renderer";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 

@@ -61,7 +61,7 @@ describe("CurrentRoutes GLTF animation runtime", () => {
   }, 20000);
 
   it("applies imported morph target tracks from GLB animation data", async () => {
-    const morph = await loadAsset("animated-morph-cube");
+    const morph = await loadKhronosAsset("fixtures/asset-corpus/animated-morph-cube.glb");
     const scene = morph.createScene();
     const runtime = createGLTFSceneAnimationRuntime({
       scene,
@@ -83,7 +83,7 @@ describe("CurrentRoutes GLTF animation runtime", () => {
   });
 
   it("runs the mixer update path so animated routes can advance every frame", async () => {
-    const cesium = await loadAsset("cesium-man-skinned");
+    const cesium = await loadKhronosAsset("fixtures/asset-corpus/cesium-man.glb");
     const binding = createGLTFSceneAnimationMixer({
       scene: cesium.createScene(),
       clips: cesium.animations,
@@ -103,7 +103,7 @@ describe("CurrentRoutes GLTF animation runtime", () => {
   });
 
   it("reports seeked clip time when routes sample a mixer with update(0)", async () => {
-    const cesium = await loadAsset("cesium-man-skinned");
+    const cesium = await loadKhronosAsset("fixtures/asset-corpus/cesium-man.glb");
     const scene = cesium.createScene();
     const binding = createGLTFSceneAnimationMixer({
       scene,
@@ -235,6 +235,15 @@ async function loadAsset(id: string) {
   const asset = manifest.assets.find((entry) => entry.id === id);
   expect(asset).toBeDefined();
   return await new GLTFLoader().load({ url: toGlbDataUri(asset!.localPath), type: "gltf" }, new LoadContext());
+}
+
+/**
+ * Tracked Khronos glTF-Sample-Assets fixtures (source, license and SHA-256 in
+ * fixtures/asset-corpus/khronos-sources.json). The morph and skinned cases used
+ * to resolve these through a never-committed manifest revision.
+ */
+async function loadKhronosAsset(localPath: string) {
+  return await new GLTFLoader().load({ url: toGlbDataUri(localPath), type: "gltf" }, new LoadContext());
 }
 
 function toGlbDataUri(localPath: string): string {

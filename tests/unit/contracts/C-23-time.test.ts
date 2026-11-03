@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { StubTimeController, StubFeelBus } from "@aura3d/engine/contracts";
+import { StubTimeController, StubFeelBus } from "@aura3d/engine-runtime/contracts";
 
 describe("C-23 time controller", () => {
   it("advance returns scaled dt and accumulates simTime", () => {

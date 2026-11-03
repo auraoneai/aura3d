@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { effects, primitives, scene, type AuraApp } from "@aura3d/engine";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { createProductionRuntimePostprocess } from "../../../../packages/engine/src/agent-api/compiler/postprocess";
 import {
   collectPostSection,

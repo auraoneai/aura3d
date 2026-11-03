@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { qrFlagsWithAnimationMixer, resolveQrFlags } from "@aura3d/engine/contracts";
+import { qrFlagsWithAnimationMixer, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { createRegistry, isTrustedQrFlags, type QrFlagName, type QrFlags, type RegistryEntry } from "@aura3d/rendering/contracts";
 
 // Exercise removal without changing the production list, which is currently empty.

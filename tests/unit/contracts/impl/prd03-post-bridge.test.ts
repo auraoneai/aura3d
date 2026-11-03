@@ -21,7 +21,7 @@ import {
 } from "../../../../packages/engine/src/agent-api/postBridge";
 import { QUALITY_TIERS } from "@aura3d/rendering/contracts";
 import { resolvePostTier } from "../../../../packages/rendering/src/post/PostQualityTiers";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 
 /**
  * PRD-03 Phase 2 / §7.1 — the v2 post bridge: per-effect field allowlists,

@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { createFeelBus } from "@aura3d/engine/lanes";
-import type { AuraFeelEventSpec } from "@aura3d/engine/contracts";
+import type { AuraFeelEventSpec } from "@aura3d/engine-runtime/contracts";
 
 const SCREEN_HIT: AuraFeelEventSpec = {
   screen: { flash: 0.8, chroma: 0.5, radialBlur: 0.3, vignette: 0.4 }

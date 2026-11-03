@@ -246,15 +246,14 @@ export function runPackageInstallSmoke(
     viteBuildCommand,
     importedEntrypoints: [
       "@aura3d/engine",
-      "@aura3d/engine/rendering",
+      "@aura3d/engine/renderer",
       "@aura3d/engine/scene",
       "@aura3d/engine/math",
-      "@aura3d/engine/assets",
-      "@aura3d/engine/assets/browser"
+      "@aura3d/engine/assets"
     ],
     smokeAssertions: [
       "root export map resolves",
-      "rendering export map resolves",
+      "renderer export map resolves",
       "scene export map resolves",
       "math export map resolves",
       "assets export map resolves",
@@ -264,7 +263,6 @@ export function runPackageInstallSmoke(
       "all literal JavaScript entrypoints resolve under import and browser conditions",
       "Geometry.litCube creates vertex/index buffers",
       "PBRMaterial can be instantiated",
-      "External parity generated environment lighting validates BRDF LUT and diffuse irradiance resources",
       "clean Vite browser build resolves engine browser export map and browser-safe subpath imports",
       "benchmark helper snippets compile from the packed root public API",
       "packed helper snippets expose performance budgets, character visual QA, mini-golf state, charts, effects, city, solar, product, and physics helpers",
@@ -413,7 +411,7 @@ function smokeSource(packageName: string): string {
 import assert from "node:assert/strict";
 
 const root = await import(${JSON.stringify(packageName)});
-const rendering = await import(${JSON.stringify(`${packageName}/rendering`)});
+const rendering = await import(${JSON.stringify(`${packageName}/renderer`)});
 const scene = await import(${JSON.stringify(`${packageName}/scene`)});
 const math = await import(${JSON.stringify(`${packageName}/math`)});
 const assets = await import(${JSON.stringify(`${packageName}/assets`)});
@@ -436,11 +434,6 @@ const material = new rendering.PBRMaterial({ name: "external-smoke-pbr", baseCol
 assert.equal(material.name, "external-smoke-pbr");
 assert.equal(typeof rendering.Renderer.prototype.renderScene, "function");
 
-const lighting = rendering.createExternalParityEnvironmentLighting("studio");
-assert.equal(lighting.presetId, "aura3d-external-parity-visual-quality-preset");
-assert.equal(lighting.resources.validation.brdfLutTexture, true);
-assert.equal(lighting.resources.validation.diffuseIrradiance, true);
-assert.ok(lighting.resources.specularMipCount >= 4);
 
 assert.equal(typeof root.scene, "function");
 assert.equal(typeof root.prefabs?.physicsPlayground, "function");
@@ -515,8 +508,6 @@ console.log(JSON.stringify({
   cubeVertices: cube.vertexBuffer.vertexCount,
   cubeIndices: cube.indexBuffer.data.length,
   material: material.name,
-  environmentPreset: lighting.preset,
-  specularMipCount: lighting.resources.specularMipCount,
   helperBudgets: helperEvidence.performance.budgets.map((budget) => budget.helper),
   sceneKits: sceneKitCases.map(([name]) => name),
   sceneKitBudgets: sceneKitEvidence.performance.budgets.map((budget) => budget.helper)
@@ -527,13 +518,12 @@ console.log(JSON.stringify({
 function viteSmokeSource(packageName: string): string {
   return `
 import { camera, character, charts, city, collectAuraSceneEvidence, createAuraApp, defineAuraAssets, effects, games, lights, prefabs, scene, sceneKits, timeline } from ${JSON.stringify(packageName)};
-import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from ${JSON.stringify(`${packageName}/rendering`)};
+import { Geometry, PBRMaterial, Renderer } from ${JSON.stringify(`${packageName}/renderer`)};
 import { Scene as CoreScene } from ${JSON.stringify(`${packageName}/scene`)};
-import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets/browser`)};
+import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets`)};
 
 const cube = Geometry.litCube(1);
 const material = new PBRMaterial({ name: "vite-smoke-pbr", baseColor: [0.7, 0.3, 0.2, 1] });
-const lighting = createExternalParityEnvironmentLighting("studio");
 const coreScene = new CoreScene();
 const loader = new GLTFLoader();
 const smokeAssets = defineAuraAssets({
@@ -590,7 +580,6 @@ globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
   createAuraApp: typeof createAuraApp,
   cubeVertices: cube.vertexBuffer.vertexCount,
   material: material.name,
-  environmentPreset: lighting.preset,
   scene: coreScene.root.name,
   loader: typeof loader.load,
   renderer: typeof Renderer,

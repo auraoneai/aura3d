@@ -15,7 +15,7 @@ import type {
   AuraCameraRig,
   AuraCameraSubject,
   AuraCameraProbe
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine-runtime/contracts";
 
 export type V3 = readonly [number, number, number];
 export const ASPECT = 16 / 9;

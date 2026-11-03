@@ -17,7 +17,7 @@ import {
   ui,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
-import { createGame } from "@aura3d/engine/contracts";
+import { createGame } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -599,7 +599,7 @@ function publishEvidence(currentFrame: number): void {
       presented: Boolean(app.camera?.presented())
     },
     events: routeEvents.snapshot().events.map((event) => `${event.type}:${event.label}`),
-    evidence: { entry: "@aura3d/engine + @aura3d/engine/contracts createGame" }
+    evidence: { entry: "@aura3d/engine + @aura3d/engine/game createGame" }
   };
   window.__AURA3D_GAME_SOURCE__ = {
     route: window.location.pathname,

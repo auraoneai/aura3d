@@ -15,7 +15,7 @@ import {
   resetAuthoredPostContext,
   resetSubmittedPostprocess
 } from "../../../../packages/engine/src/agent-api/postBridge";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { QUALITY_TIERS, Renderer, resolvePostAntiAlias } from "@aura3d/rendering";
 
 /**

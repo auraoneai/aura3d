@@ -4,7 +4,7 @@
  * and to the PR 0a stub when the flag is off.
  */
 import { describe, expect, it } from "vitest";
-import { appExtensionsAll, resolveQrFlags, StubTimeController } from "@aura3d/engine/contracts";
+import { appExtensionsAll, resolveQrFlags, StubTimeController } from "@aura3d/engine-runtime/contracts";
 import "@aura3d/engine/lanes";
 import { TimeController } from "@aura3d/engine/lanes";
 

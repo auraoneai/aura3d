@@ -4,7 +4,7 @@ Small interactive scene starter for agent-authored controls, movement, and route
 health checks.
 
 Status: playable starter, not a production game claim. This template uses a
-typed player asset, the `createGame` shell from `@aura3d/engine/contracts`, the
+typed player asset, the `createGame` shell from `@aura3d/engine/game`, the
 public `game.platformer(...)` kit, runtime nodes, DOM HUD evidence, keyboard
 input, reset, scoring, and screenshot tests. Every scene node sits under the
 `outdoor-day` look (`looks.preset`); platforms and collectibles are typed

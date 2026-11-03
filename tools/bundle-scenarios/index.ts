@@ -191,7 +191,7 @@ function auraSourceAlias(): Plugin {
        */
       ["@aura3d/physics/solverless", "packages/physics/src/solverless.ts"],
       ["@aura3d/physics/world", "packages/physics/src/world.ts"],
-      ["@aura3d/engine/rendering/webgpu", "packages/rendering/src/webgpu.ts"],
+      ["@aura3d/rendering/webgpu", "packages/rendering/src/webgpu.ts"],
     ["@aura3d/product-studio", "packages/product-studio/src/index.ts"],
     ["@aura3d/apps", "packages/apps/src/index.ts"],
     ["@aura3d/animation", "packages/animation/src/browser-index.ts"],

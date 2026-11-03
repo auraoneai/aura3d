@@ -9,6 +9,10 @@
  *
  * 01-T1.5: `transform.rotationOrder` and `transform.quaternion` are wired by
  * `compiler/sceneGraph.ts` under A3D_QR_CORE and no longer listed here.
+ *
+ * 5.0: `material.blend` and `material.depthWrite` reach the primitive render
+ * state (`productionPrimitiveRenderState` in `compiler/primitives.ts`, and the
+ * textured upgrade in `compiler/textures.ts`), so they are no longer listed.
  */
 
 export const PRD01_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
@@ -38,14 +42,6 @@ export const PRD01_DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly re
   },
   "primitive.tessellation": {
     reason: "C-07 tessellation fields land with the Phase-1 primitives rebuild (PR B).",
-    ownerPrd: 1
-  },
-  "material.blend": {
-    reason: "C-04 blend modes land in Phase 2; until then only normal alpha compositing is real.",
-    ownerPrd: 1
-  },
-  "material.depthWrite": {
-    reason: "Depth-write override rides the Phase-2 render-state surface; the current pipeline derives it from opacity.",
     ownerPrd: 1
   },
   "material.ior": {

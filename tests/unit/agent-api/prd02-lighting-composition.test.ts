@@ -4,7 +4,7 @@
 // another; ambient is additive and never replaces IBL (F-02-01).
 
 import { describe, expect, it, beforeAll, afterAll, vi } from "vitest";
-import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import {
   collectPrd02Lights,
   prd02LightingOn,

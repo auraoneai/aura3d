@@ -28,7 +28,7 @@ import {
 import { adapterBudgetMs, DEFAULT_CAPTURE_TIMEOUT_MS, waitForFirstDraw } from "../../lib/failfast";
 import { pointSizeToWorld } from "../../../shared/procedural";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
-import type { AuraVfxKind } from "@aura3d/engine/contracts";
+import type { AuraVfxKind } from "@aura3d/engine";
 import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
 
 declare const __AURA3D_VERSION__: string;

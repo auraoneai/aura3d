@@ -25,7 +25,7 @@ registry. That count must stay at zero. A declared edge with no source edge is a
 **over-declaration**: it ships install weight nobody imports. It is reported, not failed.
 
 Subpath specifiers resolve through `tsconfig.base.json` `paths`, not by their prefix.
-`@aura3d/engine/rendering` aliases to `packages/rendering/src/index.ts` — it does **not** resolve
+`@aura3d/engine/scene` aliases to `packages/scene/src/index.ts` — it does **not** resolve
 into `packages/engine`. Attributing it to `engine` would invent cycles that do not exist and hide
 the one that does. Generated code inside template literals is stripped before scanning, because
 `packages/create-aura3d` emits route source containing `import ... from "@aura3d/engine"` as text.

@@ -5,7 +5,7 @@
 // raise the named error for that field. Compile output is not pixel evidence.
 import "@aura3d/engine";
 import { describe, expect, it } from "vitest";
-import { compileScene, updateCompiledScene } from "@aura3d/engine/contracts";
+import { compileScene, updateCompiledScene } from "@aura3d/engine-runtime/contracts";
 import { QUALITY_TIERS } from "@aura3d/rendering";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import type { OptionCoverageRow } from "../../../../packages/engine/src/contracts/compiler";

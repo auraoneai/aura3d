@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { frameContributors, registerFrameContributor, type FrameContributor } from "@aura3d/rendering/contracts";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 
 describe("C-01 FrameGraph", () => {
   it("all-flags-off yields zero contributors", () => {

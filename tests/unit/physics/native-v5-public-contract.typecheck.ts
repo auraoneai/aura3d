@@ -66,7 +66,7 @@ export type V5LegacyDeclarationContracts = [
   Assert<Equal<GameAudioOptions<"hit">, LegacyGameAudioOptions<"hit">>>,
   Assert<Equal<MeshSurfaceQuery, LegacyMeshSurfaceQuery>>,
   Assert<Equal<VehicleSurface, LegacyVehicleSurface>>,
-  Assert<Equal<InstanceType<typeof import("@aura3d/engine/v5").AnimationClip>, InstanceType<typeof import("@aura3d/engine").AnimationClip>>>
+  Assert<Equal<InstanceType<typeof import("@aura3d/engine/v5").AnimationClip>, InstanceType<typeof import("@aura3d/engine/animation").AnimationClip>>>
 ];
 
 // Compile every added type through the versioned entry.

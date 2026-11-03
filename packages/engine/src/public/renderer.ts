@@ -23,7 +23,10 @@ export type { RenderMaterial } from "@aura3d/rendering";
 // `@aura3d/rendering/contracts` (which stamps name/owner/stage metadata).
 export { PortableShaderMaterial, ShaderPreprocessor, registerShaderChunk } from "@aura3d/rendering";
 export type { PortableShaderSources, PortableShaderStagePair, PortableShaderUniform, PortableShaderMaterialOptions } from "@aura3d/rendering";
-export type { RenderTarget, RenderTargetDescriptor, Texture, Sampler } from "@aura3d/rendering";
+export type { RenderTarget, RenderTargetDescriptor } from "@aura3d/rendering";
+// 5.0.0: `Texture` / `Sampler` are values here (procedural IBL and texture authoring), replacing the
+// removed `@aura3d/engine/rendering` subpath for templates.
+export { Texture, Sampler } from "@aura3d/rendering";
 // SH-06 (R-06): value-level render-target factory; `render({ target })` is the consumer.
 export { createRenderTarget } from "./renderTarget.js";
 
@@ -39,3 +42,14 @@ export type { RendererCreateOptions as A3DRendererOptions } from "@aura3d/render
 
 export { A3DScene, analyzeRgbaFrameMotionRegions, createAnimationMaterialStyle, createAnimationRenderPreset, createECSRenderSource } from "../agent-api/index.js";
 export type { A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetOptions, AnimationVisualQualityOptions, ECSRenderLibraries, ECSRenderSourceOptions, FrameBudgetDecision, FrameBudgetInput, FrameMotionRegion, FrameMotionRegionMetrics, ScatterPlan, ScatterPlanOptions } from "../agent-api/index.js";
+
+// 5.0.0: the engine production-runtime SDK (product viewer, glTF/HDR loaders, studio lighting,
+// typed GLB actors, game render presets and the performance governor). Its former subpath
+// `@aura3d/engine/production-runtime` was deprecated in 4.0.0 with this entry as the destination
+// and was removed in 5.0.0 (docs/migration/4-to-5.md, B15).
+export * from "../production-runtime/index.js";
+
+// 5.0.0: stylized (cel) rendering and collected-light types the animation-studio template used
+// through the removed `@aura3d/engine/rendering` subpath.
+export { AnimationToonMaterial, quantizeToonBand } from "@aura3d/rendering";
+export type { CollectedLight } from "@aura3d/rendering";

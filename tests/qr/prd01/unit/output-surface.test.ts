@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createPrd01OutputSurface, readAura3dTonemapQuery } from "../../../../packages/engine/src/lanes/prd01/outputSurface";
 import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "../../../../packages/engine/src/lanes/prd01/diagnostics";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { AuraApp, AuraCreateAppOptions } from "@aura3d/engine";
 
 const PRD01_RENDERER = Symbol.for("a3d.prd01.renderer");

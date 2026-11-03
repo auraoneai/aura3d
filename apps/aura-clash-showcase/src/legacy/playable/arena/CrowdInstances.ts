@@ -1,6 +1,6 @@
 import { instances, model, game, type AuraAssetRef, type AuraApp } from "@aura3d/engine";
 import { sampleCrowdAnimation, type CrowdAnimationAgent } from "@aura3d/animation";
-import { Geometry, InstancedUnlitMaterial, type RenderItem } from "@aura3d/engine/rendering";
+import { Geometry, InstancedUnlitMaterial, type RenderItem } from "@aura3d/rendering";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
 
 /**

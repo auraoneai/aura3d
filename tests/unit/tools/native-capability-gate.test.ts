@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { emitCodeCompleteGate, validateAcceptanceGate, verifyTapInventory, verifyVitestInventory } from '../../../tools/native-capability-gate/index.mjs';
+import { compareScopeOutcomes, emitCodeCompleteGate, parseScopeOutcomes, validateAcceptanceGate, verifyTapInventory, verifyVitestInventory } from '../../../tools/native-capability-gate/index.mjs';
 import { ACCEPTANCE_STAGING_RECORD, createAcceptanceStagingRecord } from '../../../tools/remote-acr/acceptance-staging.mjs';
 import { inspectIndependentNpmConsumer } from '../../../tools/release/portable-npm-lock.mjs';
 import { inspectIndependentPnpmConsumer } from '../../../tools/release/portable-pnpm-lock.mjs';
@@ -634,7 +634,7 @@ function handoffFixture(omit?: string) {
     archives, phaseReports: initialPhaseRefs, retainedReports: retainedRefs() };
   const saveReports = () => putJson(sourceReportsPath, reports);
   saveReports();
-  const emit = () => withIsolatedGit(() => emitCodeCompleteGate({ root, sourceManifest: manifestPath, sourceReports: sourceReportsPath, ledger: ledgerPath, freezeCommit: commit, out: gatePath, owner: 'synthetic-owner' }));
+  const emit = (overrides: Record<string, unknown> = {}) => withIsolatedGit(() => emitCodeCompleteGate({ root, sourceManifest: manifestPath, sourceReports: sourceReportsPath, ledger: ledgerPath, freezeCommit: commit, out: gatePath, owner: 'synthetic-owner', ...overrides }));
   const saveRehashedEvidence = () => {
     planRef = putJson(planPath, plan);
     buildReport.sourceManifestSha256 = manifestRef.sha256;
@@ -1294,6 +1294,73 @@ describe('code-complete outcome inventory', () => {
     expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/unowned or incomplete outcome/);
     writeFileSync(join(f.root, ledgerPath), original);
     expect(validateAcceptanceGate({ root: f.root, gatePath: f.gatePath }).completedOutcomeIds).toEqual(['synthetic-outcome']);
+  });
+});
+
+describe('5.0 scope outcome inventory', () => {
+  // Inline fixtures under tests/reports (not a source input), never the real scope doc.
+  const scopePath = 'tests/reports/native-capabilities/synthetic/scope.md';
+  const header = '| ID | Task | Label | Remaining work |\n| --- | --- | --- | --- |\n';
+  const scopeDoc = (rows: string, defects = '') => `# Synthetic scope\n\n## Counts\n\n| WP | FINISH-5.0 |\n| --- | ---: |\n| WP-00 | 1 |\n\n### WP-00\n\n${header}${rows}${defects ? `\n## Named defects (always FINISH-5.0)\n\n${header}${defects}` : ''}`;
+  const baseRows = '| synthetic-outcome | Synthetic capability | FINISH-5.0 | Verify-only. |\n'
+    + '| S5-EXP-01 | Opt-in path | EXPERIMENTAL-5.0 | Ship experimental; WebGL2 fallback reported. |\n'
+    + '| S5-SUP-01 | Custody runner | SUPERSEDED-PROCESS | Replaced by ACR source pass. |\n';
+  const write = (root: string, text: string, path = scopePath) => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
+
+  it('emits with exact scope set equality, lists experimental and superseded rows, binds the scope digest and keeps the ledger as history', () => {
+    const f = handoffFixture();
+    const text = scopeDoc(baseRows);
+    write(f.root, text);
+    const record = f.emit({ scope: scopePath });
+    expect(record.outcomeSource).toBe('aura3d-5.0-scope');
+    expect(record.scope).toEqual({ path: scopePath, sha256: hash(text) });
+    expect(record.requiredOutcomeIds).toEqual(['synthetic-outcome']);
+    expect(record.completedOutcomeIds).toEqual(['synthetic-outcome']);
+    expect(record.experimentalOutcomes).toEqual([{ id: 'S5-EXP-01', label: 'EXPERIMENTAL-5.0', task: 'Opt-in path', fallback: 'WebGL2 fallback reported.' }]);
+    expect(record.supersededOutcomes).toEqual([{ id: 'S5-SUP-01', label: 'SUPERSEDED-PROCESS', task: 'Custody runner', replacement: 'Replaced by ACR source pass.' }]);
+    expect(record.ledgerRole).toBe('historical-reference');
+    expect(record.inputs).toEqual(expect.arrayContaining([scopePath, 'docs/prds/aura3d-native-capability-ledger.json']));
+    expect(validateAcceptanceGate({ root: f.root, gatePath: f.gatePath }).requiredOutcomeIds).toEqual(['synthetic-outcome']);
+    write(f.root, scopeDoc(`${baseRows}| S5-EXP-02 | Another opt-in | EXPERIMENTAL-5.0 | Later. |\n`));
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/gate field mismatch: scope/);
+  });
+
+  it('rejects a required FINISH or named-defect ID missing from the completed outcomes', () => {
+    const f = handoffFixture();
+    write(f.root, scopeDoc(baseRows, '| S5-DEF-01 | Named defect | FINISH-5.0 | Fix it. |\n'));
+    expect(() => f.emit({ scope: scopePath })).toThrow(/missing \(required but not completed\): S5-DEF-01/);
+    write(f.root, scopeDoc(`${baseRows}| S5-WP01-01 | Second capability | FINISH-5.0 | Code. |\n`));
+    expect(() => f.emit({ scope: scopePath })).toThrow(/missing \(required but not completed\): S5-WP01-01/);
+  });
+
+  it('rejects a completed ID outside the scope required set, including experimental rows', () => {
+    const f = handoffFixture();
+    write(f.root, scopeDoc('| S5-WP01-01 | Capability | FINISH-5.0 | Code. |\n| synthetic-outcome | Opt-in | EXPERIMENTAL-5.0 | Fallback. |\n'));
+    expect(() => f.emit({ scope: scopePath })).toThrow(/extra \(completed but not in scope required set\): synthetic-outcome/);
+    expect(() => compareScopeOutcomes(['a'], ['a', 'b'])).toThrow(/scope required\/completed outcomes differ; extra \(completed but not in scope required set\): b$/);
+    expect(() => compareScopeOutcomes(['a', 'b'], ['a'])).toThrow(/differ; missing \(required but not completed\): b$/);
+    expect(() => compareScopeOutcomes(['a'], ['a', 'a'])).toThrow(/duplicates: a/);
+  });
+
+  it.each([
+    ['a missing scope file', null, /cannot read scope file/],
+    ['no FINISH rows', scopeDoc('| S5-EXP-01 | Opt-in | EXPERIMENTAL-5.0 | Fallback. |\n'), /no FINISH-5\.0 rows/],
+    ['duplicate IDs', scopeDoc(`${baseRows}| S5-EXP-01 | Again | EXPERIMENTAL-5.0 | Fallback. |\n`), /duplicate scope row ID: S5-EXP-01/],
+    ['an unknown label', scopeDoc(`${baseRows}| S5-WP01-01 | Capability | MAYBE-5.0 | Code. |\n`), /unknown scope label for S5-WP01-01/],
+    ['a malformed row ID', scopeDoc(`${baseRows}| not an id | Capability | FINISH-5.0 | Code. |\n`), /malformed scope row ID/],
+    ['a superseded named defect', scopeDoc(baseRows, '| S5-DEF-01 | Defect | SUPERSEDED-PROCESS | Gone. |\n'), /named defect S5-DEF-01 cannot be SUPERSEDED-PROCESS/]
+  ])('fails closed on %s', (_label, text, message) => {
+    const f = handoffFixture();
+    const path = text === null ? 'tests/reports/native-capabilities/synthetic/absent-scope.md' : scopePath;
+    if (text !== null) write(f.root, text);
+    expect(() => f.emit({ scope: path })).toThrow(message);
+    expect(existsSync(join(f.root, f.gatePath))).toBe(false);
+  });
+
+  it('ignores label-less tables and counts named-defect rows as required', () => {
+    const parsed = parseScopeOutcomes(`${scopeDoc(baseRows, '| S5-DEF-01 | Defect | FINISH-5.0 | Fix. |\n')}\n## Acceptance-only rows\n\n| ID | WP | Task | Phase B work |\n| --- | --- | --- | --- |\n| S5-ACC-01 | WP-12 | Device run | Later. |\n`);
+    expect(parsed.required).toEqual(['synthetic-outcome', 'S5-DEF-01']);
+    expect(parsed.rows.map(row => row.id)).not.toContain('S5-ACC-01');
   });
 });
 

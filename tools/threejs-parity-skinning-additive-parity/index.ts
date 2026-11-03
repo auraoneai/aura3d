@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import { computePerspectiveCameraFrame, Geometry, PBRMaterial } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
 import { createAdditiveLayerController, createMaskedAdditiveClips } from "/apps/skinning-additive/src/additiveLayers.ts";

@@ -358,12 +358,34 @@ fixtures/
 !/fixtures/asset-corpus/decoders/LICENSE-zstd.txt
 !/fixtures/asset-corpus/decoders/LICENSE-draco.txt
 !/fixtures/asset-corpus/decoders/LICENSE-meshopt.txt
+# Khronos glTF-Sample-Assets fixtures read by tests/assets and tests/qr (the
+# source pass stages only tracked/unignored files). Pinned upstream bytes,
+# licenses, attribution and SHA-256 in fixtures/asset-corpus/khronos-sources.json;
+# *.glb here is LFS-tracked by .gitattributes.
+!/fixtures/asset-corpus/khronos-sources.json
+!/fixtures/asset-corpus/cesium-man.glb
+!/fixtures/asset-corpus/animated-morph-cube.glb
+!/fixtures/asset-corpus/clear-coat-test.glb
+!/fixtures/asset-corpus/antique-camera.glb
+!/fixtures/asset-corpus/sheen-test-grid.glb
+!/fixtures/asset-corpus/compare-transmission.glb
+!/fixtures/asset-corpus/normal-tangent-mirror-test.glb
+!/fixtures/asset-corpus/materials-variants-shoe.glb
+!/fixtures/asset-corpus/damaged-helmet-draco.glb
+!/fixtures/asset-corpus/damaged-helmet-meshopt.glb
+# Generated workflow fixtures: the external-image PNGs referenced by the tracked
+# *-external.gltf files (byte-identical to the data URIs embedded in the tracked
+# *.gltf siblings); tests/assets/foundation-gltf-loader.test.ts reads them.
+!/fixtures/workflow-assets/
+!/fixtures/workflow-assets/assets/*/image-*.png
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
 # Lane test fixtures that unit/contract tests read (prd03 .cube LUTs, prd05
 # route-bundle + codemod inputs) and the camera-cast codemod fixtures.
 !tests/qr/prd03/fixtures/
 !tests/qr/prd05/fixtures/
+# 01-HANG harness sources built by tests/qr/prd01/unit/hang-program-cache-01hang.test.ts.
+!tests/qr/prd01/unit/fixtures/
 !tools/camera-cast-codemod/fixtures/
 # Lane-owned reference-game fixtures (PRD-09 §10) are tracked sources.
 !packages/game/fixtures/

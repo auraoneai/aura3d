@@ -8,7 +8,7 @@
 
 import { afterEach, describe, expect, it } from "vitest";
 import { createAnimationController } from "@aura3d/engine";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../../../../packages/engine/src/agent-api/RuntimeNodeHandle";
 import {
   QR_EMPTY_FLAGS,

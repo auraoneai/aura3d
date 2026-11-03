@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSideViewGameRenderPreset } from "@aura3d/engine/production-runtime";
+import { createSideViewGameRenderPreset } from "@aura3d/engine/renderer";
 
 describe("production runtime side-view game render preset", () => {
   it("owns reusable stage geometry, particle, and debug-overlay policy", () => {

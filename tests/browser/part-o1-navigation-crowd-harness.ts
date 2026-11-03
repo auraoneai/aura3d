@@ -1,7 +1,6 @@
 import {
   camera,
   createAuraApp,
-  crowds,
   game,
   geometry,
   lights,
@@ -12,6 +11,7 @@ import {
   scene,
   type AuraApp
 } from "@aura3d/engine";
+import { crowds } from "@aura3d/engine-runtime";
 
 import { assets } from "../../src/aura-assets";
 

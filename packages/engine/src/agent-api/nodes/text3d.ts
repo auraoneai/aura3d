@@ -14,7 +14,10 @@ type LiveTextOptions =
   | { readonly kind: "font"; readonly options: DynamicSdfTextOptions; readonly accessibleLabel?: string | false }
   | { readonly kind: "builtin"; readonly options: SdfTextLayoutOptions; readonly extrusion: AuraText3DOptions; readonly accessibleLabel?: string | false };
 const liveTextOptions = new WeakMap<TextDescriptor, LiveTextOptions>();
-const SDF_MATERIAL_OPTIONS = new Set(["name", "color", "roughness", "metallic", "metalness", "emissive", "emissiveIntensity", "opacity", "textureAnisotropy"]);
+// `practical` is the time-of-day classification tag that `material.emissive()`
+// and `material.neon()` set by default; it carries no shader feature, so text
+// built from those presets must not be rejected for it.
+const SDF_MATERIAL_OPTIONS = new Set(["name", "color", "roughness", "metallic", "metalness", "emissive", "emissiveIntensity", "opacity", "textureAnisotropy", "practical"]);
 
 // A glyph can produce up to 35 extruded boxes. Bound opted-in built-in text to
 // 64 uppercased UTF-16 code units (at most 2,240 boxes / 53,760 vertices).

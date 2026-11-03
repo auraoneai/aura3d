@@ -1,4 +1,4 @@
-import { Geometry, UnlitMaterial, type RenderItem } from "@aura3d/engine/rendering";
+import { Geometry, UnlitMaterial, type RenderItem } from "@aura3d/engine/renderer";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
 
 /**

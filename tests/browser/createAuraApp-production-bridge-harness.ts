@@ -3,9 +3,9 @@ import {
   createAuraApp,
   lights,
   model,
-  scene,
-  unsafeModelUrl
+  scene
 } from "@aura3d/engine";
+import { unsafeModelUrl } from "@aura3d/engine-runtime";
 import { assets } from "../../src/aura-assets";
 
 type BridgeMode = "typed-glb" | "forced-fallback" | "quality-profile";

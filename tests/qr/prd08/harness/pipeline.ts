@@ -13,7 +13,7 @@ import {
   createInterpolationStore,
   type FixedStepDriver
 } from "@aura3d/engine/lanes";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { HarnessScene, HarnessVehicleInput } from "./scenes";
 
 export type Vec3 = readonly [number, number, number];

@@ -4,7 +4,7 @@ import {
   createGLTFSceneAnimationRuntime,
   loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
 import * as THREE from "three";

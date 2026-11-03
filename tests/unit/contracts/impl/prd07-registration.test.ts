@@ -3,7 +3,7 @@
 // prd07; with no qr flags resolved, no `prd07.*` frame contributor is active.
 
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { frameContributors } from "@aura3d/rendering/contracts";
 import { particleRenderHookSlot, skyBackgroundSlot } from "@aura3d/rendering/contracts";
 import "@aura3d/engine/lanes";

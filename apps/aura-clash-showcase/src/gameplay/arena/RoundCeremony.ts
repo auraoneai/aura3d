@@ -6,7 +6,7 @@ import {
   VertexBuffer,
   VertexFormat,
   type RenderItem
-} from "@aura3d/engine/rendering";
+} from "@aura3d/rendering";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
 
 /**

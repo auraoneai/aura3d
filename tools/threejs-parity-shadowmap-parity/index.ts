@@ -5,7 +5,7 @@ import {
   computePerspectiveCameraFrame,
   type RenderItem
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import { DirectionalLight, Scene, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 

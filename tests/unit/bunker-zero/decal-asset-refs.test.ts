@@ -5,9 +5,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  decals, defineAuraAssets, material, primitives, upgradeProductionPrimitiveTextures,
-  type AuraAssetRef, type AuraPrimitiveNode
+  decals,
+  defineAuraAssets,
+  material,
+  primitives,
+  type AuraAssetRef,
+  type AuraPrimitiveNode
 } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { PBRMaterial, TextureBinding } from "@aura3d/rendering";
 import { auraAssetRefBrand } from "../../../packages/engine/src/agent-api/nodes/assets";
 import {

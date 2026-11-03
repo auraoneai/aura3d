@@ -5,7 +5,7 @@ import {
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";

@@ -1,5 +1,5 @@
 import { scene } from "@aura3d/engine";
-import { Material } from "@aura3d/engine/rendering";
+import { Material } from "@aura3d/engine/renderer";
 import "./showcaseProofBoot";
 
 function installAuraClashHudPolish(): void {

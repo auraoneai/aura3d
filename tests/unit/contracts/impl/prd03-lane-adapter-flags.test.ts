@@ -44,7 +44,7 @@ describe("flag-on compiler submits the v2 post bag", () => {
   test("plain scene: flag-off legacy bag, flag-on v2 + pipeline", async () => {
     const { createProductionRuntimePostprocess } = await import("../../../../packages/engine/src/agent-api/compiler/postprocess");
     const { recordAuthoredPostContext, resetAuthoredPostContext } = await import("../../../../packages/engine/src/agent-api/postBridge");
-    const { resolveQrFlags } = await import("@aura3d/engine/contracts");
+    const { resolveQrFlags } = await import("@aura3d/engine-runtime/contracts");
     const snapshot = { nodes: [{ kind: "effect", effect: "bloom", intensity: 0.5, threshold: 0.8 }] } as never;
     resetAuthoredPostContext();
     const off = createProductionRuntimePostprocess(snapshot);

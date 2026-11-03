@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import type { AuraCameraSpec, AuraSceneSnapshot } from "@aura3d/engine";
 import { resolveCameraFrame, type AuraRuntimeNodeRegistry, createFromSpecRig, type LegacySpecRigDeps } from "@aura3d/engine/lanes";
-import type { AuraCameraRigContext, AuraCameraPose } from "@aura3d/engine/contracts";
+import type { AuraCameraRigContext, AuraCameraPose } from "@aura3d/engine-runtime/contracts";
 
 import {
   cases,

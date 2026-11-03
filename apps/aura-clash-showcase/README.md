@@ -73,7 +73,7 @@ npm run routes:check
 
 Implemented per `the Aura Clash implementation contract`. Label stays
 `production-runtime` / `development showcase` — never "flagship", no kit claims.
-The `@aura3d/engine/production-runtime` imports remain allowed on this app only.
+The `@aura3d/engine/renderer` production-runtime SDK imports (and its `@aura3d/rendering` internals) remain allowed on this app only; the `@aura3d/engine/production-runtime` subpath was removed in 5.0.0.
 Frame data in `src/playable/combat/auraClashMoveData.ts` stayed byte-identical;
 all proof-object additions are optional fields.
 

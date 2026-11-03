@@ -52,6 +52,6 @@ describe("T6.10 glTF parse equivalence — corpus inspection vs public GLTFLoade
   }
 
   it("rejects non-GLB bytes identically to the loader's document parse", () => {
-    expect(() => inspectCurrentRoutesGlb("fixtures/asset-corpus/manifest.json")).toThrow();
+    expect(() => inspectCurrentRoutesGlb("fixtures/asset-corpus/khronos-sources.json")).toThrow();
   });
 });

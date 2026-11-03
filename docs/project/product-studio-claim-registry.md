@@ -1,6 +1,6 @@
 # Claim Registry
 
-Version: 4.7.10
+Version: 5.0.0
 
 This file is retained because `pnpm verify:claims` reads it as the public claim registry. It is no longer a product-studio milestone roadmap.
 

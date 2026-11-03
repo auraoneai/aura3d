@@ -5,7 +5,7 @@
  * `camera.legacy` forces it).
  */
 import { describe, expect, it } from "vitest";
-import { appExtensionsAll, resolveQrFlags } from "@aura3d/engine/contracts";
+import { appExtensionsAll, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import "@aura3d/engine/lanes";
 
 const ext = () => appExtensionsAll().find((e) => e.id === "prd08.camera");

@@ -118,70 +118,12 @@
     "./geometry-tools": {
       "source": "packages/engine/src/public/geometry-tools.ts",
       "conditions": true
-    }
-  },
-  "deprecated": {
+    },
     "./media-node": {
-      "source": "packages/engine/src/deprecated/media-node.ts",
-      "of": "packages/engine/src/agent-api/media-node.ts",
-      "target": ".",
-      "removeIn": "5.0.0"
-    },
-    "./apps": {
-      "source": "packages/engine/src/deprecated/apps.ts",
-      "of": "packages/apps/src/index.ts",
-      "target": ".",
-      "removeIn": "5.0.0"
-    },
-    "./contracts": {
-      "source": "packages/engine/src/deprecated/contracts.ts",
-      "of": "packages/engine/src/contracts/index.ts",
-      "target": ".",
-      "removeIn": "5.0.0"
-    },
-    "./rendering": {
-      "source": "packages/engine/src/deprecated/rendering.ts",
-      "of": "packages/rendering/src/index.ts",
-      "target": "./renderer",
-      "removeIn": "5.0.0"
-    },
-    "./rendering/production-runtime": {
-      "source": "packages/engine/src/deprecated/rendering-production-runtime.ts",
-      "of": "packages/rendering/src/production-runtime/index.ts",
-      "target": "./renderer",
-      "removeIn": "5.0.0"
-    },
-    "./rendering/webgpu": {
-      "source": "packages/engine/src/deprecated/rendering-webgpu.ts",
-      "of": "packages/rendering/src/webgpu.ts",
-      "target": "./renderer",
-      "removeIn": "5.0.0"
-    },
-    "./production-runtime": {
-      "source": "packages/engine/src/deprecated/production-runtime.ts",
-      "of": "packages/engine/src/production-runtime/index.ts",
-      "target": "./renderer",
-      "removeIn": "5.0.0"
-    },
-    "./advanced-runtime": {
-      "source": "packages/engine/src/deprecated/advanced-runtime.ts",
-      "of": "packages/engine/src/advanced-runtime/index.ts",
-      "target": "./renderer",
-      "removeIn": "5.0.0"
-    },
-    "./assets/browser": {
-      "source": "packages/engine/src/deprecated/assets-browser.ts",
-      "of": "packages/assets/src/browser-index.ts",
-      "target": "./assets",
-      "removeIn": "5.0.0"
-    },
-    "./workflows/production": {
-      "source": "packages/engine/src/deprecated/workflows-production.ts",
-      "of": "packages/workflows/src/production-runtime/index.ts",
-      "target": "./workflows",
-      "removeIn": "5.0.0"
+      "source": "packages/engine/src/agent-api/media-node.ts"
     }
   },
+  "deprecated": {},
   "paths": [
     [
       "@aura3d/assets/importers",
@@ -308,48 +250,6 @@
       "packages/debug/src/helpers.ts"
     ],
     [
-      "@aura3d/engine/rendering/production-runtime",
-      "packages/engine/src/deprecated/rendering-production-runtime.ts"
-    ],
-    [
-      "@aura3d/engine/assets/browser",
-      "packages/engine/src/deprecated/assets-browser.ts"
-    ],
-    [
-      "@aura3d/engine/workflows/production",
-      "packages/engine/src/deprecated/workflows-production.ts"
-    ],
-    [
-      "@aura3d/engine/rendering/webgpu",
-      "packages/engine/src/deprecated/rendering-webgpu.ts",
-      {
-        "vite": false
-      }
-    ],
-    [
-      "@aura3d/engine/rendering",
-      "packages/engine/src/deprecated/rendering.ts"
-    ],
-    [
-      "@aura3d/engine/apps",
-      "packages/engine/src/deprecated/apps.ts"
-    ],
-    [
-      "@aura3d/engine/production-runtime",
-      "packages/engine/src/deprecated/production-runtime.ts"
-    ],
-    [
-      "@aura3d/engine/advanced-runtime",
-      "packages/engine/src/deprecated/advanced-runtime.ts"
-    ],
-    [
-      "@aura3d/engine/contracts",
-      "packages/engine/src/deprecated/contracts.ts",
-      {
-        "browser301": false
-      }
-    ],
-    [
       "@aura3d/engine/lanes",
       "packages/engine/src/lanes/index.ts",
       {
@@ -365,7 +265,7 @@
     ],
     [
       "@aura3d/engine/media-node",
-      "packages/engine/src/deprecated/media-node.ts",
+      "packages/engine/src/agent-api/media-node.ts",
       {
         "vite": false
       }

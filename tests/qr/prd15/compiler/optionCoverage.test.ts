@@ -2,7 +2,7 @@
 // Compile-only results are not rendered or visual evidence.
 import "@aura3d/engine";
 import { describe, expect, it } from "vitest";
-import { compileScene, asRuntimeCompiled } from "@aura3d/engine/contracts";
+import { compileScene, asRuntimeCompiled } from "@aura3d/engine-runtime/contracts";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { scene } from "../../../../packages/engine/src/agent-api/nodes/scene";
 import { primitives } from "../../../../packages/engine/src/agent-api/nodes/primitives";

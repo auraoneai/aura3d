@@ -8,7 +8,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { AnimationPose } from "@aura3d/animation";
 import { createAnimationController } from "@aura3d/engine";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../../../packages/engine/src/agent-api/RuntimeNodeHandle";
 import type { ProductionRuntimeActorEntry } from "../../../packages/engine/src/agent-api/index";
 import {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { PostResources } from "../../../../packages/rendering/src/post/PostResources";
 import type { RenderDevice, RenderTarget } from "../../../../packages/rendering/src/RenderDevice";
 

@@ -16,7 +16,7 @@ import {
   resetSubmittedPostprocess,
   type PostSectionReport
 } from "../../../../packages/engine/src/agent-api/postBridge";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { AuraApp } from "@aura3d/engine";
 
 /**

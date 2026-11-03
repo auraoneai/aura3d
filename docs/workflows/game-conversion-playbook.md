@@ -8,7 +8,7 @@ The loop in one line: **scope, capture a deterministic reference, write a typed 
 
 ## 0. Ground rules for the whole job
 
-- Remote first. Browser suites, builds and anything heavy run on the serverless runner: `RUN_ID=<prefix>-<n> SPECS="tests/browser/<spec>.ts" tools/remote-acr/run.sh`. Useful knobs (see the header of `tools/remote-acr/run.sh`): `CONTEXT_PROFILE=slim|full` (slim is the default and leaves out `public/aura-assets`), `EXTRA_DIRS="apps/showcase-foo"` (dirs added to the build context), `PUBLIC_ASSETS="file.glb ..."`, and the `@headed-xvfb` token in `SPECS` for a headed Chromium under Xvfb. Local Playwright, local Docker and local dev-server runs for heavy work are not allowed.
+- Remote first. Browser suites, builds and anything heavy run on the serverless runner: `RUN_ID=<prefix>-<n> SPECS="tests/browser/<spec>.ts" tools/remote-acr/run.sh`. Useful knobs (see the header of `tools/remote-acr/run.sh`): `CONTEXT_PROFILE=slim|full` (slim is the default and leaves out `public/aura-assets`), `EXTRA_DIRS="apps/<app-dir>"` (dirs added to the build context), `PUBLIC_ASSETS="file.glb ..."`, and the `@headed-xvfb` token in `SPECS` for a headed Chromium under Xvfb. Local Playwright, local Docker and local dev-server runs for heavy work are not allowed.
 - The runner is software WebGL2 (SwiftShader). It proves the page boots, draws and logic matches; it cannot prove a real GPU (section 6).
 - Never run `pnpm` inside a git worktree whose `node_modules` is a symlink to the main checkout (section 7). Call binaries directly: `<main>/node_modules/.bin/vitest`, `.../tsc`, `node --experimental-strip-types tools/...`.
 - Each parallel agent gets its own worktree off `origin/main`, owns disjoint files, and pushes its own commits (section 8).

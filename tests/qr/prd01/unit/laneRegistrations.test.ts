@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // Importing the engine barrel runs the lane index, which is what applies the
 // lane's Phase-0 registrations.
 import "@aura3d/engine/lanes";
-import { appExtensionsAll, DIAGNOSTIC_ONLY_FIELDS, diagnosticsSectionsAll, optionCoverageRows, resolveQrFlags } from "@aura3d/engine/contracts";
+import { appExtensionsAll, DIAGNOSTIC_ONLY_FIELDS, diagnosticsSectionsAll, optionCoverageRows, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { PRD01_SCENE_SPECS } from "../../../../benchmarks/quality-rebuild/scenes/prd01/index";
 
 describe("prd01 lane registrations (Phase 0)", () => {
@@ -32,13 +32,16 @@ describe("prd01 lane registrations (Phase 0)", () => {
       "renderer.strictMount",
       "renderer.debug",
       "primitive.tessellation",
-      "material.blend",
-      "material.depthWrite",
       "material.ior"
     ]) {
       expect(DIAGNOSTIC_ONLY_FIELDS[key], `missing ${key}`).toBeDefined();
       expect(DIAGNOSTIC_ONLY_FIELDS[key]!.ownerPrd).toBe(1);
     }
+  });
+
+  it("5.0: material blend/depthWrite are wired into the primitive render state, not diagnostic-only", () => {
+    expect(DIAGNOSTIC_ONLY_FIELDS["material.blend"]).toBeUndefined();
+    expect(DIAGNOSTIC_ONLY_FIELDS["material.depthWrite"]).toBeUndefined();
   });
 
   it("01-T1.5: rotationOrder/quaternion are wired, not diagnostic-only", () => {

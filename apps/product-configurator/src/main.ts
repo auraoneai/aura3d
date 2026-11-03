@@ -7,7 +7,7 @@ import {
   type A3DProductViewer,
   type A3DProductViewerSettings,
   type A3DRenderResult
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 import { scene } from "./scene";
 import { ui } from "./ui";
 
@@ -95,7 +95,7 @@ async function runProductConfigurator(): Promise<void> {
     appId: scene.appId,
     sceneId: scene.sceneId,
     interactionCount: 0,
-    sdkSurface: "@aura3d/engine/production-runtime"
+    sdkSurface: "@aura3d/engine/renderer"
   };
   publishRuntime(root, loading);
 
@@ -154,7 +154,7 @@ async function runProductConfigurator(): Promise<void> {
       sceneId: scene.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       interactionCount: window.__a3dProductionRuntime?.interactionCount ?? 0,
-      sdkSurface: "@aura3d/engine/production-runtime"
+      sdkSurface: "@aura3d/engine/renderer"
     });
   }
 }
@@ -206,7 +206,7 @@ function createReadyRuntime(
     proof: result.proof,
     proofSummary: result.summary,
     interactionCount: 0,
-    sdkSurface: "@aura3d/engine/production-runtime",
+    sdkSurface: "@aura3d/engine/renderer",
     viewerDiagnostics: viewer.diagnostics()
   };
 }
@@ -234,7 +234,7 @@ function mountProductConfigurator(root: HTMLElement, runtime: A3DProductionRunti
       <span>${metrics ? `${metrics.triangleCount} triangles` : scene.environment.label}</span>
       <span>${metrics ? `${metrics.textureCount} textures` : scene.assets.map((asset) => asset.id).join(", ")}</span>
       <span>${metrics ? `${metrics.renderResolution.width}x${metrics.renderResolution.height} render` : "flagship render target"}</span>
-      <span>${runtime.sdkSurface ?? "@aura3d/engine/production-runtime"}</span>
+      <span>${runtime.sdkSurface ?? "@aura3d/engine/renderer"}</span>
     </section>
     <section class="controls">
       <label>

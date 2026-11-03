@@ -1,7 +1,7 @@
 // apps/aura-clash-showcase/src/main.ts — PRD-14 T1.10 route-flag dispatcher (owner 14).
 // Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-aura-clash`
 // boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL acceptance (§10 step 5).
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_AURA_CLASH" as const;
 const DEFAULT_ON = false;

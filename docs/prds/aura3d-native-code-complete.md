@@ -324,7 +324,7 @@ The validator recomputes required identities and checks the complete report set 
 WP-20 implements `tools/native-capability-gate/index.mjs` and its source tests. The following emission interface is a future requirement; invoke it only after the real source completion and freeze above. The reports manifest enumerates every required check and its passing artifact, with no silent exemptions:
 
 ~~~sh
-node tools/native-capability-gate/index.mjs --phase code-complete --source-manifest "$AURA3D_SOURCE_MANIFEST" --source-reports "$NATIVE_REPORT_DIR/source-reports.json" --ledger docs/prds/aura3d-native-capability-ledger.json --freeze-commit "$NATIVE_FREEZE_COMMIT" --out tests/reports/native-capabilities/code-complete-go.json
+node tools/native-capability-gate/index.mjs --phase code-complete --source-manifest "$AURA3D_SOURCE_MANIFEST" --source-reports "$NATIVE_REPORT_DIR/source-reports.json" --scope docs/prds/aura3d-5.0-scope.md --ledger docs/prds/aura3d-native-capability-ledger.json --freeze-commit "$NATIVE_FREEZE_COMMIT" --out tests/reports/native-capabilities/code-complete-go.json
 ~~~
 
 `NATIVE_FREEZE_COMMIT` must be the actual committed candidate; the checker validates the unchanged tested snapshot binding. It must reject incomplete requirements, mismatched input/archive hashes, missing checks and an uncommitted or different implementation. It must never emit a success record merely because the command was requested.

@@ -1,13 +1,13 @@
 import {
   ProductionRuntimeRenderer
-} from "@aura3d/engine/rendering/production-runtime";
+} from "@aura3d/rendering/production-runtime";
 import {
   createCameraFrame,
   createGroundedStage,
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 const requestedBackend = new URLSearchParams(location.search).get("backend") === "auto" ? "auto" : "webgpu";

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { requireOrSkip } from "../support/requireOrSkip";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { worldDrawPath } from "../../packages/engine/src/production-runtime/world/WorldFramePasses";
 
 /**

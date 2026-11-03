@@ -213,6 +213,74 @@ function verifyLedger(root, ledger, reports) {
   for (const ref of roadmapRequirements(bytes(root, road).toString('utf8'))) if (!refs.has(ref)) fail(`unrepresented roadmap requirement ${ref}`);
   return { required, snapshotSha256: sha256(canonical(outcomes)) };
 }
+// 5.0 fixed scope list (docs/prds/aura3d-5.0-scope.md). Every Markdown table
+// whose header has an `ID` first column and a `Label` column is a scope table;
+// each of its data rows must carry a unique ID and exactly one known label.
+// Tables without a `Label` column (counts, acceptance-only, defect summary) are
+// not outcome rows. Required = every FINISH-5.0 row plus every named-defect row
+// (`*-DEF-n` ID or a row under a "Named defects" heading).
+const SCOPE_LABELS = new Set(['FINISH-5.0', 'EXPERIMENTAL-5.0', 'SUPERSEDED-PROCESS']);
+const SCOPE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
+const scopeCells = line => line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '').split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'));
+export function parseScopeOutcomes(markdown) {
+  if (typeof markdown !== 'string' || !markdown.trim()) fail('scope file is empty');
+  const rows = [], seen = new Set();
+  let header = null, namedDefects = false;
+  for (const [index, line] of markdown.split(/\r?\n/).entries()) {
+    const heading = /^#{1,6}\s+(.*)$/.exec(line);
+    if (heading) { namedDefects = /named defect/i.test(heading[1]); header = null; continue; }
+    if (!line.trim().startsWith('|')) { header = null; continue; }
+    const cells = scopeCells(line);
+    if (cells.every(cell => /^:?-{3,}:?$/.test(cell))) continue;
+    if (!header) {
+      const labelIndex = cells.findIndex(cell => /^label$/i.test(cell));
+      header = { labelIndex, isScope: /^id$/i.test(cells[0]) && labelIndex > 0, count: cells.length,
+        fallbackIndex: cells.findIndex(cell => /^fallback$/i.test(cell)) };
+      continue;
+    }
+    if (!header.isScope) continue;
+    const at = `scope line ${index + 1}`;
+    if (cells.length < header.count) fail(`malformed scope row at ${at}: expected ${header.count} cells`);
+    const id = cells[0];
+    if (!SCOPE_ID.test(id)) fail(`malformed scope row ID at ${at}: ${JSON.stringify(id.slice(0, 80))}`);
+    if (seen.has(id)) fail(`duplicate scope row ID: ${id}`);
+    seen.add(id);
+    const label = cells[header.labelIndex];
+    if (!SCOPE_LABELS.has(label)) fail(`unknown scope label for ${id}: ${JSON.stringify(label.slice(0, 80))}`);
+    const namedDefect = namedDefects || /(?:^|-)DEF-\d+$/.test(id);
+    if (namedDefect && label === 'SUPERSEDED-PROCESS') fail(`named defect ${id} cannot be SUPERSEDED-PROCESS`);
+    const task = cells.slice(1, header.labelIndex).join(' | ');
+    const remaining = cells.slice(header.labelIndex + 1).filter(Boolean).join(' ');
+    if (!task) fail(`scope row ${id} has no task text`);
+    const fallback = header.fallbackIndex > 0 ? (cells[header.fallbackIndex] || null)
+      : (remaining.split(/(?<=[.;])\s+/).filter(clause => /fallback/i.test(clause)).join(' ') || null);
+    rows.push({ id, label, namedDefect, task, remaining, fallback });
+  }
+  if (!rows.some(row => row.label === 'FINISH-5.0')) fail('scope file has no FINISH-5.0 rows');
+  const required = rows.filter(row => row.label === 'FINISH-5.0' || row.namedDefect).map(row => row.id);
+  return {
+    rows, required,
+    experimental: rows.filter(row => row.label === 'EXPERIMENTAL-5.0').map(({ id, label, task, fallback }) => ({ id, label, task, fallback })),
+    superseded: rows.filter(row => row.label === 'SUPERSEDED-PROCESS').map(({ id, label, task, remaining }) => ({ id, label, task, replacement: remaining || null }))
+  };
+}
+export function compareScopeOutcomes(required, completed) {
+  array(required, 'scope required outcome IDs');
+  if (!Array.isArray(completed) || completed.some(id => typeof id !== 'string' || !id)) fail('completed outcome IDs are missing or invalid');
+  const duplicates = completed.filter((id, i) => completed.indexOf(id) !== i);
+  if (duplicates.length) fail(`completed outcome IDs contain duplicates: ${[...new Set(duplicates)].join(', ')}`);
+  const missing = required.filter(id => !completed.includes(id)), extra = completed.filter(id => !required.includes(id));
+  if (missing.length || extra.length) {
+    fail(`scope required/completed outcomes differ${missing.length ? `; missing (required but not completed): ${missing.join(', ')}` : ''}${extra.length ? `; extra (completed but not in scope required set): ${extra.join(', ')}` : ''}`);
+  }
+}
+function verifyScope(root, scopePath, reports) {
+  let scope;
+  try { scope = parseScopeOutcomes(bytes(root, scopePath).toString('utf8')); }
+  catch (error) { fail(error.message.replace(/^native capability gate: /, '')); }
+  compareScopeOutcomes(scope.required, reports.completedOutcomeIds);
+  return { required: scope.required, snapshotSha256: sha256(canonical(scope.rows)), experimental: scope.experimental, superseded: scope.superseded };
+}
 // The source job may have run in a different filesystem root. Its recorded root
 // is used only to interpret the paths inside the retained Vitest JSON, never to
 // read files on this machine.
@@ -859,10 +927,20 @@ function verifyDeferredAcceptance(root, manifest, reports) {
   if (!assets?.expectedFiles?.includes(EXTERNAL_CODEC_SOURCE_TEST) || !assets.discoveredFiles?.includes(EXTERNAL_CODEC_SOURCE_TEST)) fail('external codec source test was not executed');
   return { deferredAcceptanceTests: expected, deferredReplayTests: replay, deferredExternalCodecTests: externalCodec };
 }
-function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof, gateBytes = null) {
+function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof, gateBytes = null, scopePath = undefined) {
   root = resolve(root);
-  const sourceManifest = asRef(root, sourceManifestPath), sourceReports = asRef(root, sourceReportsPath), ledgerRef = asRef(root, ledgerPath);
-  const manifest = readJson(root, sourceManifest.path), reports = readJson(root, sourceReports.path), ledger = readJson(root, ledgerRef.path);
+  const scoped = scopePath !== undefined && scopePath !== null;
+  let scopeRef = null;
+  if (scoped) {
+    nonempty(scopePath, 'scope path');
+    try { scopeRef = asRef(root, scopePath); }
+    catch (error) { fail(`cannot read scope file ${scopePath}: ${error.message.replace(/^native capability gate: /, '')}`); }
+  }
+  // With a 5.0 scope file the ledger is optional historical reference only.
+  const sourceManifest = asRef(root, sourceManifestPath), sourceReports = asRef(root, sourceReportsPath);
+  const ledgerRef = scoped && (ledgerPath === undefined || ledgerPath === null) ? null : asRef(root, ledgerPath);
+  const manifest = readJson(root, sourceManifest.path), reports = readJson(root, sourceReports.path), ledger = ledgerRef ? readJson(root, ledgerRef.path) : null;
+  if (scoped && ledger && ledger.schema !== 'aura3d.native-capability-ledger/1') fail('unsupported ledger');
   let omitted = NO_OMISSIONS;
   if (gateBytes === null) {
     // Emission always binds the complete checkout.
@@ -875,11 +953,16 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
   verifyCommitProof(root, proof, manifest, omitted);
   const reportPaths = verifyReports(root, reports, sourceManifest, manifest, fingerprint);
   const { deferredAcceptanceTests, deferredReplayTests, deferredExternalCodecTests } = verifyDeferredAcceptance(root, manifest, reports);
-  const outcome = verifyLedger(root, ledger, reports);
+  const outcome = scoped ? verifyScope(root, scopeRef.path, reports) : verifyLedger(root, ledger, reports);
   const candidatePlan = reports.candidatePlan;
   const phaseReports = reports.phaseReports;
-  const inputs = [...new Set([sourceManifest.path, sourceReports.path, ledgerRef.path, ledger.roadmap.path, ...paths, ...reportPaths])].sort();
-  return { sourceManifest, sourceReports, ledger: ledgerRef, roadmap: ledger.roadmap, freezeCommit: proof.commit, testedOrigin: manifest.origin,
+  const inputs = [...new Set([sourceManifest.path, sourceReports.path, ...(scoped ? [scopeRef.path] : []),
+    ...(ledgerRef ? [ledgerRef.path] : []), ...(ledger?.roadmap?.path ? [ledger.roadmap.path] : []), ...paths, ...reportPaths])].sort();
+  const outcomeBinding = scoped
+    ? { outcomeSource: 'aura3d-5.0-scope', scope: scopeRef, experimentalOutcomes: outcome.experimental, supersededOutcomes: outcome.superseded,
+      ...(ledgerRef ? { ledger: ledgerRef, ledgerRole: 'historical-reference', roadmap: ledger.roadmap ?? null } : {}) }
+    : { ledger: ledgerRef, roadmap: ledger.roadmap };
+  return { sourceManifest, sourceReports, ...outcomeBinding, freezeCommit: proof.commit, testedOrigin: manifest.origin,
     sourceInputDigest: manifest.inputDigest, lockfileSha256: manifest.lockfileSha256, runId: reports.runId, candidatePlan,
     sourceInventory: reports.sourceInventory, buildHandoff: reports.buildHandoff, portableInputs: reports.portableInputs, resumeRebuild: reports.resumeRebuild,
     archives: reports.archives, retainedReports: reports.retainedReports, sourceConsumerReport: phaseReports.sourceConsumerReport, matrixSourceReport: phaseReports.matrixSourceReport,
@@ -890,10 +973,10 @@ function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof
     deferredAcceptanceTests, deferredReplayTests, deferredExternalCodecTests,
     acceptance: 'not-run', commitProof: proof, inputs };
 }
-export function emitCodeCompleteGate({ root = process.cwd(), sourceManifest, sourceReports, ledger, freezeCommit, out, owner }) {
+export function emitCodeCompleteGate({ root = process.cwd(), sourceManifest, sourceReports, ledger, scope, freezeCommit, out, owner }) {
   root = resolve(root); nonempty(owner, 'integration owner');
   const proof = createCommitProof(root, nonempty(freezeCommit, 'freeze commit'));
-  const result = evaluate(root, sourceManifest, sourceReports, ledger, proof);
+  const result = evaluate(root, sourceManifest, sourceReports, ledger, proof, null, scope);
   const actualInputs = git(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard').toString().split('\0').filter(isSourceInput);
   equalSet([...new Set(actualInputs)], readJson(root, sourceManifest).files.map(x => x.path), 'working source inventory');
   const record = { schema: 'aura3d.native-code-complete/1', status: 'CODE_COMPLETE_GO', createdAt: new Date().toISOString(), owner, ...result };
@@ -908,7 +991,10 @@ export function validateAcceptanceGate({ root = process.cwd(), gatePath, sourceR
   if (record.schema !== 'aura3d.native-code-complete/1' || record.status !== 'CODE_COMPLETE_GO'
       || typeof record.owner !== 'string' || !record.owner.trim()
       || typeof record.createdAt !== 'string' || !Number.isFinite(Date.parse(record.createdAt))) fail('invalid gate record');
-  const result = evaluate(root, record.sourceManifest?.path, record.sourceReports?.path, record.ledger?.path, record.commitProof, gateBytes);
+  if (record.outcomeSource !== undefined && (record.outcomeSource !== 'aura3d-5.0-scope' || !record.scope?.path)) fail('invalid gate record');
+  const result = evaluate(root, record.sourceManifest?.path, record.sourceReports?.path, record.ledger?.path, record.commitProof, gateBytes,
+    record.outcomeSource === 'aura3d-5.0-scope' ? record.scope.path : undefined);
+  for (const key of Object.keys(record)) if (!['schema', 'status', 'createdAt', 'owner'].includes(key) && !(key in result)) fail(`gate field mismatch: ${key}`);
   for (const [key, value] of Object.entries(result)) if (canonical(record[key]) !== canonical(value)) fail(`gate field mismatch: ${key}`);
   if (sourceReport && ![record.sourceConsumerReport.path, record.matrixSourceReport.path, record.examplesSourceReport.path].includes(sourceReport)) fail('selected source report is not bound to this gate');
   return record;
@@ -922,14 +1008,14 @@ function cli() {
   }
   const phase = options['--phase'];
   const allowed = phase === 'acceptance' ? ['--phase', '--gate', '--source-report', '--list-inputs']
-    : phase === 'code-complete' ? ['--phase', '--source-manifest', '--source-reports', '--ledger', '--freeze-commit', '--out', '--owner'] : [];
+    : phase === 'code-complete' ? ['--phase', '--source-manifest', '--source-reports', '--ledger', '--scope', '--freeze-commit', '--out', '--owner'] : [];
   if (!allowed.length || Object.keys(options).some(x => !allowed.includes(x))) fail('invalid phase or argument');
   if (phase === 'acceptance') {
     const record = validateAcceptanceGate({ gatePath: options['--gate'], sourceReport: options['--source-report'] });
     process.stdout.write(options['--list-inputs'] ? `${JSON.stringify([...new Set([options['--gate'], ...record.inputs])].sort())}\n` : 'CODE_COMPLETE_GO validated\n');
   } else {
     emitCodeCompleteGate({ sourceManifest: options['--source-manifest'], sourceReports: options['--source-reports'], ledger: options['--ledger'],
-      freezeCommit: options['--freeze-commit'], out: options['--out'], owner: options['--owner'] || process.env.NATIVE_INTEGRATION_OWNER });
+      scope: options['--scope'], freezeCommit: options['--freeze-commit'], out: options['--out'], owner: options['--owner'] || process.env.NATIVE_INTEGRATION_OWNER });
     process.stdout.write('CODE_COMPLETE_GO emitted\n');
   }
 }

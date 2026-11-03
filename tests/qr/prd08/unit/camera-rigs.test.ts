@@ -13,7 +13,7 @@ import {
   createFollow2dRig,
   createFromSpecRig
 } from "@aura3d/engine/lanes";
-import type { AuraCameraRigContext, AuraCameraSubject } from "@aura3d/engine/contracts";
+import type { AuraCameraRigContext, AuraCameraSubject } from "@aura3d/engine-runtime/contracts";
 import { cameraYawOf, dist3, project, run, subjectAt, wrapPi, type V3 } from "./rigTestKit.js";
 
 describe("R-1 chase", () => {

@@ -22,6 +22,7 @@ import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat";
 import { WebGL2Buffer, WebGL2Device, WebGL2ShaderProgram } from "../../../../packages/rendering/src/WebGL2Device";
 import { WebGL2Counters } from "../../../../packages/rendering/src/webgl2/Counters";
 import { WebGL2DrawCallBinder, canMultiDraw } from "../../../../packages/rendering/src/webgl2/MultiDraw";
+import { WebGL2SamplerRegistry } from "../../../../packages/rendering/src/webgl2/Samplers";
 import { flushMultiDrawQueue, submitDraw } from "../../../../packages/rendering/src/forward/DrawSubmit";
 import { cullBatchHints, excludeBatchedBvhItems, mergeBatchBounds } from "../../../../packages/rendering/src/performance/BVH";
 
@@ -96,7 +97,7 @@ function fakeHost(withMultiDraw: boolean): FakeHost {
     counters: new WebGL2Counters(),
     buffers: new Set<WebGL2Buffer>(),
     shaders: new Set<WebGL2ShaderProgram>(),
-    lifecycle: { assertFrame: () => undefined, readError: () => null },
+    lifecycle: { assertFrame: () => undefined, readError: () => null, effectiveScissor: () => null },
     errorCheckMode: "frame",
     activeRenderTarget: null,
     maxVertexAttributes: 16,
@@ -113,15 +114,17 @@ function shader(host: Record<string, unknown>, uniforms: string[] = []): WebGL2S
   return program;
 }
 
-function buffer(host: Record<string, unknown>, id: number): WebGL2Buffer {
-  const b = new WebGL2Buffer(id, "vertex", 64, 0, {} as WebGLBuffer, host.gl as never);
+function buffer(host: Record<string, unknown>, id: number, byteLength = 64): WebGL2Buffer {
+  const b = new WebGL2Buffer(id, "vertex", byteLength, 0, {} as WebGLBuffer, host.gl as never);
   (host.buffers as Set<WebGL2Buffer>).add(b);
   return b;
 }
 
 function commands(host: Record<string, unknown>, program: WebGL2ShaderProgram, n: number): DrawCommand[] {
   const vb = buffer(host, 1);
-  const ib = buffer(host, 2);
+  // The shared index buffer holds every member's 36 uint16 indices: the
+  // device rejects a draw range past the end of its index buffer.
+  const ib = buffer(host, 2, n * 36 * 2);
   const shared = { texture: "draw-data" };
   return Array.from({ length: n }, (_, i) => ({
     label: `m${i}`, topology: "triangles", vertexBuffer: vb, vertexFormat: VertexFormat.P3, vertexCount: 24,
@@ -178,12 +181,28 @@ describe("#94 invalidateGpuObjects", () => {
     const draws = commands(host, shader(host), 1);
     binder.draw(draws[0]!);
     expect(binder.vertexArrayCache.size).toBe(1);
-    const invalidate = vi.fn();
-    host.stateCache = new Proxy({}, { get: (_t, prop) => (prop === "invalidate" ? invalidate : (...a: unknown[]) => (a.at(-1) as () => void)?.()) });
-    WebGL2Device.prototype.invalidateGpuObjects.call({ host } as never);
+    const invalidateTextureHandles = vi.fn();
+    host.textureRegistry = { invalidateTextureHandles };
+    // The sampler unit shadow is reset as a dependent of the state cache
+    // (e22c4cb7e), so the cache double notifies its invalidation listeners and
+    // the host carries a real sampler registry registered on it.
+    const listeners: (() => void)[] = [];
+    const invalidate = vi.fn(() => { for (const listener of listeners) listener(); });
+    host.stateCache = new Proxy({}, { get: (_t, prop) => (prop === "invalidate" ? invalidate : prop === "onInvalidate" ? (listener: () => void) => { listeners.push(listener); } : (...a: unknown[]) => (a.at(-1) as () => void)?.()) });
+    const registry = new WebGL2SamplerRegistry(host as never);
+    registry.activeTextureUnitIndex = 3;
+    registry.textureUnitBindings.set(0, {} as WebGLTexture);
+    host.samplers = registry;
+    // 5.0: invalidation also drops the device's static-unlit/generated mirrors,
+    // so the device double carries those (empty) caches alongside the host.
+    const device = Object.assign(Object.create(WebGL2Device.prototype) as object, {
+      host, staticUnlitBufferMirrors: new Map(), staticGeneratedUniformMirrors: new Map(), staticGeneratedPairPrograms: new Map()
+    });
+    WebGL2Device.prototype.invalidateGpuObjects.call(device as never);
     expect(binder.vertexArrayCache.size).toBe(0);
     expect(invalidate).toHaveBeenCalledTimes(1);
-    const samplers = host.samplers as { activeTextureUnitIndex: number; textureUnitBindings: Map<string, unknown> };
+    expect(invalidateTextureHandles).toHaveBeenCalledTimes(1);
+    const samplers = host.samplers as WebGL2SamplerRegistry;
     expect(samplers.activeTextureUnitIndex).toBe(-1);
     expect(samplers.textureUnitBindings.size).toBe(0);
     const creates = (host.counters as WebGL2Counters).vertexArrayCreateCount;
@@ -216,7 +235,12 @@ describe("#181 DrawSubmit multi-draw fast path + BVH batch cull", () => {
     submitDraw(device, pipeline, geometry, 1, range, { item, vertexBuffer: {} as never, indexBuffer: undefined, drawRange: range, uniforms: new Map(), instanceBinding: { count: 1 } });
   }
 
-  it("defers consecutive members into one multi-draw and keeps order around plain draws", () => {
+  // 5.0 contract: forward submission no longer defers multi-draw members (a
+  // deferred run could execute an earlier draw after a later callback and
+  // bypass a public device.draw override; see batch-multidraw.test.ts and
+  // native-static-batch-fallbacks.test.ts). Packed batches go through
+  // submitMultiDrawBatch; submitDraw issues every member in order.
+  it("submits marked members in order between plain draws without deferring them", () => {
     const device = fakeDevice();
     const drawData = { id: "dd" };
     submit(device, "plain-a");
@@ -224,17 +248,17 @@ describe("#181 DrawSubmit multi-draw fast path + BVH batch cull", () => {
     submit(device, "m1", { mode: "multi-draw", drawIndex: 1, drawData });
     submit(device, "m2", { mode: "multi-draw", drawIndex: 2, drawData });
     submit(device, "plain-b");
-    expect(device.draws.map((c) => c.label)).toEqual(["plain-a", "plain-b"]);
-    expect(device.multi.map((run) => run.map((c) => c.label))).toEqual([["m0", "m1", "m2"]]);
+    expect(device.draws.map((c) => c.label)).toEqual(["plain-a", "m0", "m1", "m2", "plain-b"]);
+    expect(device.multi).toHaveLength(0);
     expect(flushMultiDrawQueue(device)).toBe(0);
   });
 
-  it("loop-mode members and a trailing single member draw normally", () => {
+  it("loop-mode members and a trailing single member draw immediately", () => {
     const device = fakeDevice();
     submit(device, "loop", { mode: "loop", drawIndex: 0 });
     submit(device, "solo", { mode: "multi-draw", drawIndex: 0, drawData: {} });
-    expect(flushMultiDrawQueue(device)).toBe(1);
     expect(device.draws.map((c) => c.label)).toEqual(["loop", "solo"]);
+    expect(flushMultiDrawQueue(device)).toBe(0);
     expect(device.multi).toHaveLength(0);
   });
 

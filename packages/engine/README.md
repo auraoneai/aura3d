@@ -66,6 +66,7 @@ three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and too
 - **Assets you can trust.** Every model is typed, hashed and licensed; in production an unverified model doesn't draw.
 - **The game stack included.** HUD, touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
 - **Built for AI coding agents.** `llms.txt`, 14 skills and compiled recipes ship with every new project.
+- **Measured on the published 4.5.0 package.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors, and the 16 option-coverage tests pass, so an option either takes effect or raises `OPTION_IGNORED`. Software WebGL2 on a remote runner, one run, median of 3 cold loads for the first frame; not GPU numbers ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md)).
 
 Porting an existing three.js project: [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md).
 
@@ -87,7 +88,13 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 | `@aura3d/debug` | Diagnostics and the runtime safety net |
 | `@aura3d/product-studio`, `@aura3d/apps`, `@aura3d/workflows`, `@aura3d/react`, `@aura3d/editor-runtime` | Product viewers, app presets, workflows, React host, editor runtime |
 
-`@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering` and `/contracts` are deprecated subpaths; new code uses the root.
+The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering`, `/contracts` and six more) were removed in 5.0.0; use the root, `@aura3d/engine/renderer`, `/assets` or `/workflows` ([migration guide](https://github.com/auraoneai/aura3d/blob/main/docs/migration/4-to-5.md)).
+
+## What is still not resolved
+
+- **WebGPU and XR — `prototype`.** Browser and physical-device support for the new rendering paths and physical XR sessions still needs candidate-specific verification. Mock devices and injected sessions do not establish hardware support.
+- **Additional asset formats — `prototype`.** Supported variants, codecs and device formats are limited. A parser or recognized extension alone does not prove that a typed asset renders; see [native asset formats](https://github.com/auraoneai/aura3d/blob/main/docs/api/native-formats.md).
+- **Capability breadth and release checks — `roadmap`.** Renderer, asset, animation, interaction and distribution work remains open in the [native capability roadmap](https://github.com/auraoneai/aura3d/blob/main/docs/prds/aura3d-native-capability-roadmap.md). Source tests do not replace packed-consumer, browser, visual or device checks, and evidence from an earlier candidate does not certify a changed build.
 
 ## Claims and verification
 
@@ -101,6 +108,23 @@ Every public claim follows [`docs/agents/claims-and-boundaries.md`](https://gith
 - [`docs/aura3d-vs-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md) and [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md): why Aura3D over three.js, and how to port
 - [`docs/workflows/game-conversion-playbook.md`](https://github.com/auraoneai/aura3d/blob/main/docs/workflows/game-conversion-playbook.md): turning a browser game into an Aura3D game
 - Site: https://aura3d.auraone.ai
+
+## Production Deployment (Cloudflare Pages)
+
+**Cloudflare Pages is the canonical production host (prefer Cloudflare over Vercel; do not deploy to Vercel).**
+
+- **`aura3d` (`https://aura3d.auraone.ai` / `https://aura3d.pages.dev`):**
+  ```bash
+  source ~/.config/auraone/cloudflare-env.sh
+  pnpm build && pnpm --dir marketing build
+  wrangler pages deploy marketing/dist --project-name aura3d --branch main
+  ```
+- **`aura3d-wonder-world` (`https://veer.auraone.ai` / `https://aura3d-wonder-world.pages.dev`):**
+  ```bash
+  source ~/.config/auraone/cloudflare-env.sh
+  bash apps/veer-wonder-world/tools/deploy-build.sh
+  wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main
+  ```
 
 ## Contributing
 

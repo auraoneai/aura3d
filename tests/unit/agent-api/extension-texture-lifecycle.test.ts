@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { defineAuraAssets, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
+import { defineAuraAssets } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { PBRMaterial } from "@aura3d/rendering";
 
 const assets = defineAuraAssets({ map: { type: "texture", format: "png", url: "/map.png", hash: "fixture" }, missing: { type: "texture", format: "png", url: "/missing.png", hash: "missing" } });

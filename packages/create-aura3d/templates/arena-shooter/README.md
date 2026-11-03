@@ -16,7 +16,7 @@ npm test         # route-health + playable + screenshot
 
 ## How it composes the engine
 
-- `createGame({ id, target, scene })` from `@aura3d/engine/contracts` (C-24) mounts
+- `createGame({ id, target, scene })` from `@aura3d/engine/game` (C-24) mounts
   the route; `auraGame.ready()` publishes `__AURA3D_ROUTE_READY__`.
 - `looks.preset("space")` supplies the space backdrop, key light and grade —
   no ambient/fill or background overrides; the scene adds a gloss deck, emissive

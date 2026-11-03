@@ -51,7 +51,7 @@ export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateC
 export { MAX_WEBGPU_SKINNING_JOINTS, decideSkinningPalettePath } from "./WebGPUSkinningLimits";
 export type { SkinningCpuFallbackReason, SkinningPaletteDecision } from "./WebGPUSkinningLimits";
 /*
- * WS-2.2 — TYPE-ONLY. The value moved to `./webgpu` (`@aura3d/engine/rendering/webgpu`).
+ * WS-2.2 — TYPE-ONLY. The value moved to `./webgpu` (`@aura3d/rendering/webgpu`).
  *
  * A value re-export here is a static graph edge, so every consumer of this barrel downloaded the
  * ~74 KB WebGPU device even when it only ever asked for `webgl2` — silently undoing the deliberate

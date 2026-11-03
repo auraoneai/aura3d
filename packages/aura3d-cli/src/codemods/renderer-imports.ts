@@ -71,6 +71,53 @@ const RENDERER_EXPORTS = new Set([
   "RendererTimingDiagnostics", "ScenePickHit", "ScenePickOptions"
 ]);
 
+/**
+ * 5.0.0: `@aura3d/engine/renderer` re-exports the whole engine production-runtime SDK
+ * (`packages/engine/src/production-runtime/index.ts`), so every name imported from the removed
+ * `@aura3d/engine/production-runtime` subpath moves to the renderer entry.
+ */
+const ENGINE_PRODUCTION_RUNTIME_EXPORTS = new Set([
+  "A3DAnimationActionOptions", "A3DAnimationController", "A3DAnimationControllerOptions",
+  "A3DAnimationControllerSnapshot", "A3DCameraFrame", "A3DCameraFrameOptions", "A3DDirectionalLightOptions",
+  "A3DExampleParityTargetId", "A3DFirstPersonControls", "A3DFrameRenderResult",
+  "A3DGltfRendererInputOptions", "A3DGltfScene", "A3DGltfSceneOptions", "A3DGroundedStage",
+  "A3DGroundedStageDiagnostics", "A3DGroundedStageOptions", "A3DGroundedStageSettings", "A3DHdrEnvironment",
+  "A3DHdrEnvironmentOptions", "A3DImportedAnimationRuntime", "A3DMapControls",
+  "A3DNavigationControlsOptions", "A3DNavigationControlsSnapshot", "A3DOrbitControls",
+  "A3DOrbitControlsOptions", "A3DOrbitControlsSnapshot", "A3DPhysicsBodyOptions",
+  "A3DPhysicsConstraintOptions", "A3DPhysicsScene", "A3DPhysicsSceneOptions", "A3DPhysicsSceneSnapshot",
+  "A3DPhysicsStepOptions", "A3DPointerLockControls", "A3DProductViewer",
+  "A3DProductViewerBackgroundDiagnostics", "A3DProductViewerCameraDiagnostics", "A3DProductViewerOptions",
+  "A3DProductViewerSettings", "A3DProductViewerStageDiagnostics", "A3DProductionSceneOptions",
+  "A3DRenderOptions", "A3DRenderResult", "A3DRenderer", "A3DRendererOptions", "A3DStudioLightingOptions",
+  "A3DTrackballControls", "A3DVec3", "A3DViewport", "A3D_THREEJS_EXAMPLE_PARITY_TARGETS",
+  "AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE", "DEFAULT_GAME_GOVERNOR_SETTINGS",
+  "DEFAULT_GAME_PER_PASS_COST_MODEL", "GameAppRuntime", "GameAppRuntimeEvidence",
+  "GameAppRuntimeLoopOptions", "GameAppRuntimeOptions", "GameAppRuntimePerformanceBudgetOptions",
+  "GameAppRuntimePerformanceSnapshot", "GameAppRuntimeResize", "GameAppRuntimeStatus",
+  "GamePerFramePerfTelemetry", "GamePerPassCostModel", "GamePerformanceGovernor",
+  "GamePerformanceGovernorMode", "GamePerformanceGovernorSettings", "GameRenderPreset",
+  "RootGpuParticleWorkloadOptions", "RootRenderSourceBridge", "SideViewGameBudgetedFeature",
+  "SideViewGamePerformanceBudget", "SideViewGameRenderPreset", "SideViewGameRenderPresetOptions",
+  "TopDownGameRenderPreset", "TopDownGameRenderPresetOptions", "TypedGLBActor", "TypedGLBActorAsset",
+  "TypedGLBActorEvidence", "TypedGLBActorOptions", "TypedGLBActorTintOptions",
+  "TypedGLBActorTransformOptions", "a3dRenderResult", "attachRootRenderSource",
+  "collectTypedGLBActorRenderItems", "createAnimationController", "createCameraFrame",
+  "createDirectionalLight", "createFirstPersonControls", "createGLBActorAnimationMaterialResolver",
+  "createGameAppRuntime", "createGroundedStage", "createImportedAnimationRuntime", "createMapControls",
+  "createOrbitControls", "createPerformanceGovernor", "createPhysicsScene", "createPointerLockControls",
+  "createProductViewer", "createProductionRenderOptions", "createRootParticleWorkload",
+  "createSideViewGameRenderPreset", "createStudioLighting", "createTopDownGameRenderPreset",
+  "createTrackballControls", "createTypedGLBActor", "createTypedGLBActorEvidence",
+  "estimateGamePerPassCostTotal", "gamePresetMeasuredPasses", "loadGltfScene", "loadHdrEnvironment",
+  "productionAssets", "productionRendering"
+]);
+
+/** Is `name` imported from `spec` available on `./renderer`? */
+function onRenderer(spec: string, name: string): boolean {
+  return RENDERER_EXPORTS.has(name) || (spec === "@aura3d/engine/production-runtime" && ENGINE_PRODUCTION_RUNTIME_EXPORTS.has(name));
+}
+
 const RENAMES = new Map([
   ["A3DRenderer", "Renderer"],
   ["A3DRendererOptions", "RendererOptions"]
@@ -179,12 +226,12 @@ export function createRendererImportsCodemod(): {
             const renamed = RENAMES.get(origName) ?? origName;
             const alias = el.name.text;
             const text = renamed === alias ? renamed : `${renamed} as ${alias}`;
-            if (RENDERER_EXPORTS.has(renamed)) {
+            if (onRenderer(spec, renamed)) {
               moved.push(el.isTypeOnly ? `type ${text}` : text);
               rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: origName, mapping: "exact", target });
             } else {
               kept.push(el.isTypeOnly ? `type ${origName === alias ? origName : `${origName} as ${alias}`}` : origName === alias ? origName : `${origName} as ${alias}`);
-              rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: origName, mapping: "none", note: `not exported by ${target}; stays on deprecated subpath ${spec}` });
+              rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: origName, mapping: "none", note: `not exported by ${target}; ${spec} was removed in 5.0.0, migrate this name by hand` });
             }
           }
           if (!moved.length) continue;
@@ -229,12 +276,12 @@ export function createRendererImportsCodemod(): {
           // Plain `import { A3DRenderer }` becomes `import { Renderer }` and
           // local usages are renamed in pass 3; an explicit `as` alias is kept.
           const text = alias === origName ? renamed : renamed === alias ? renamed : `${renamed} as ${alias}`;
-          if (RENDERER_EXPORTS.has(renamed)) {
+          if (onRenderer(spec, renamed)) {
             moved.push(el.isTypeOnly ? `type ${text}` : text);
             rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: `import ${origName}`, mapping: "exact", target });
           } else {
             kept.push(el.isTypeOnly ? `type ${origName === alias ? origName : `${origName} as ${alias}`}` : origName === alias ? origName : `${origName} as ${alias}`);
-            rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: `import ${origName}`, mapping: "none", note: `not exported by ${target}; stays on deprecated subpath ${spec}` });
+            rows.push({ file: fileName, line: lineOf(sf, el.getStart(sf)), construct: `import ${origName}`, mapping: "none", note: `not exported by ${target}; ${spec} was removed in 5.0.0, migrate this name by hand` });
           }
         }
 

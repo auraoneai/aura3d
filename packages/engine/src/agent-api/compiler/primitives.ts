@@ -868,10 +868,12 @@ const PRIMITIVE_BLEND_MODES: ReadonlySet<string> = new Set(["opaque", "alpha", "
  * render state and `u_alphaCutoff`. Without any of them the state is derived from
  * opacity exactly as before. `blend` wins over `alphaMode`; an explicit
  * `depthWrite: true` on a blended material is an authored opt-in.
+ * `alphaToCoverage: true` requests MSAA alpha-to-coverage for a masked material.
  */
 export function productionPrimitiveRenderState(node: AuraPrimitiveNode, opacity: number): {
   blend: boolean; depthWrite: boolean; cullMode: "none" | "back";
   blendMode?: NonNullable<NonNullable<AuraPrimitiveNode["material"]>["blend"]>; blendedDepthWrite?: "allow";
+  alphaToCoverage?: true;
 } {
   const spec = node.material;
   const blendMode = spec?.blend;
@@ -887,6 +889,10 @@ export function productionPrimitiveRenderState(node: AuraPrimitiveNode, opacity:
     ...(blendMode === undefined ? {} : { blendMode }),
     depthWrite,
     ...(blended && depthWrite ? { blendedDepthWrite: "allow" as const } : {}),
+    // Same request the glTF MASK path makes (`renderStateForGLTFMaterial`): the
+    // `prd04.alphaToCoverage` feature honours it for a masked material
+    // (`u_alphaCutoff` > 0) on an MSAA tier and ignores it otherwise.
+    ...(spec?.alphaToCoverage === true ? { alphaToCoverage: true as const } : {}),
     cullMode: productionPrimitiveCullMode(node, opacity)
   };
 }

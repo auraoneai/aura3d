@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { camera } from "@aura3d/engine";
-import { stubCameraRigFactories } from "@aura3d/engine/contracts";
+import { stubCameraRigFactories } from "@aura3d/engine-runtime/contracts";
 import "@aura3d/engine/lanes";
 import { ASPECT, NO_PROBE, subjectAt, type V3 } from "./rigTestKit.js";
 

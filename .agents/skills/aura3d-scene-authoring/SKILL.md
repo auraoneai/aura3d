@@ -81,8 +81,8 @@ look renders flat on a void.
    createAuraApp("#app", { scene: promptPlanToScene(plan), diagnostics: { overlay: true } });
    ```
 
-   `compilePromptPlan` is deprecated with no replacement (removed in 5.0.0): do
-   not use it in new code.
+   `compilePromptPlan` is superseded by `compilePromptPlanV2` (still exported in
+   5.0.0 for 1-argument callers): do not use it in new code.
 5. Judge the first frame, not the build. Repair from `kit.diagnostics`, the
    console warnings and `aura3d look lint` output; each warning names its cause.
    `prefabs.*` return node arrays, so mount them with `scene().addMany(...)`.

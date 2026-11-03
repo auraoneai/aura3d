@@ -344,6 +344,7 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   pbr("material.pbr", "alphaCutoff", 0.2, 0.7, "renderItem.material.u_alphaCutoff"),
   pbr("material.pbr", "blend", "alpha", "additive", "renderItem.material.renderState.blendMode"),
   pbr("material.pbr", "depthWrite", true, false, "renderItem.material.renderState.depthWrite"),
+  pbr("material.pbr", "alphaToCoverage", false, true, "renderItem.material.renderState.alphaToCoverage"),
   pbr("material.pbr", "specularIntensity", 0.2, 0.8, "renderItem.material.u_specularFactor"),
   pbr("material.pbr", "specularColor", "#ff0000", "#00ff00", "renderItem.material.u_specularColorFactor"),
   pbr("material.pbr", "dispersion", 0.1, 0.8, "renderItem.material.u_dispersion"),
@@ -351,6 +352,7 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   metal("material.metal", "alphaCutoff", 0.2, 0.7, "renderItem.material.u_alphaCutoff"),
   metal("material.metal", "blend", "alpha", "additive", "renderItem.material.renderState.blendMode"),
   metal("material.metal", "depthWrite", true, false, "renderItem.material.renderState.depthWrite"),
+  metal("material.metal", "alphaToCoverage", false, true, "renderItem.material.renderState.alphaToCoverage"),
   metal("material.metal", "specularIntensity", 0.2, 0.8, "renderItem.material.u_specularFactor"),
   metal("material.metal", "specularColor", "#ff0000", "#00ff00", "renderItem.material.u_specularColorFactor"),
   metal("material.metal", "dispersion", 0.1, 0.8, "renderItem.material.u_dispersion"),
@@ -377,8 +379,8 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   modelInstances("instances.model", "targetMaxDimension", 1, 3, "model.instanceMatrices"),
   fog("effects.fog", "heightFalloff", 0.1, 0.4, "fog.live.heightFalloff"),
   fog("effects.fog", "heightReference", 0, 5, "fog.live.heightReference"),
-  // The shared effect option type declares `mode` as the anti-alias mode; scene fog reads the C-21 fog mode.
-  fog("effects.fog", "mode", "exp2" as never, "height" as never, "fog.live.mode"),
+  // `effects.fog` types `mode` as the C-21 fog mode (`AuraHeightFogSpec.mode`).
+  fog("effects.fog", "mode", "exp2", "height", "fog.live.mode"),
   fog("effects.fog", "intensity", 0.2, 0.8, "fog.live.maxOpacity"),
   primitive("primitives.box", "lod", { levels: [{ name: "near", primitive: "box" }] }, { levels: [{ name: "near", primitive: "sphere" }] }, "renderItem.geometry.vertexCount"),
   primitive("primitives.capsule", "lod", { levels: [{ name: "near", primitive: "box" }] }, { levels: [{ name: "near", primitive: "sphere" }] }, "renderItem.geometry.vertexCount"),

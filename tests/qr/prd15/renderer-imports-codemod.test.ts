@@ -63,10 +63,12 @@ describe("renderer-imports codemod (PRD-15 T2.11)", () => {
     expect(code).toContain("rendererFeatureReport(r)");
     expect(code).toContain("rendererShadowReport(r)");
     expect(code).toContain("Renderer.create({} as RendererOptions)");
-    // production-runtime names not on ./renderer stay on the deprecated subpath
-    expect(code).toContain('import { createProductViewer } from "@aura3d/engine/production-runtime";');
+    // 5.0.0: ./renderer re-exports the engine production-runtime SDK and the subpath is removed,
+    // so production-runtime names move too and nothing is left on the removed subpath.
+    expect(code).toContain('import { createProductViewer } from "@aura3d/engine/renderer";');
+    expect(code).not.toContain("@aura3d/engine/production-runtime");
     expect(rows.some((r) => r.construct === "A3DRenderer" && r.mapping === "exact")).toBe(true);
-    expect(rows.some((r) => r.mapping === "none" && r.construct.includes("createProductViewer"))).toBe(true);
+    expect(rows.some((r) => r.mapping === "exact" && r.construct.includes("createProductViewer"))).toBe(true);
   });
 
   it("does not rewrite zero-arg viewer.renderFrame() (non-renderer receiver guard)", () => {

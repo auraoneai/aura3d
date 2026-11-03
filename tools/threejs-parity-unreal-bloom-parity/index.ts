@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Geometry, UnlitMaterial } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import * as THREE from "three";
 import { EffectComposer } from "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "/node_modules/three/examples/jsm/postprocessing/RenderPass.js";

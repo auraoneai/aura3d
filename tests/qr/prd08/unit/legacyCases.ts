@@ -7,7 +7,7 @@
 import type { AuraCameraSpec, AuraSceneSnapshot } from "@aura3d/engine";
 import type { AuraRuntimeNodeRegistry } from "@aura3d/engine/lanes";
 import type { LegacySpecRigDeps } from "@aura3d/engine/lanes";
-import type { AuraCameraRigContext } from "@aura3d/engine/contracts";
+import type { AuraCameraRigContext } from "@aura3d/engine-runtime/contracts";
 
 type V3 = readonly [number, number, number];
 const v3 = (x: number, y: number, z: number): V3 => [x, y, z];

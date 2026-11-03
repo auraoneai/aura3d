@@ -137,7 +137,7 @@ export function classifyRouteMount(path: string, source: string): {
         violation: { path, reason: `A3DRenderer subordinate mount outside apps/ (scope: ${scope})` },
       };
     }
-    mounts.push({ bucket: "advanced-subordinate", detail: "A3DRenderer via @aura3d/engine/advanced-runtime" });
+    mounts.push({ bucket: "advanced-subordinate", detail: "A3DRenderer via @aura3d/engine/renderer" });
   }
   if (BARE_CORE_MOUNT.test(code)) {
     if (scope !== "apps") {

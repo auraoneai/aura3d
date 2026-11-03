@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 import { Scene, SceneNode, identityMat4 } from "@aura3d/scene";
 import { createGLTFSceneAnimationRuntime } from "../../../../packages/assets/src";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { ProductionRuntimeActorEntry } from "../../../../packages/engine/src/agent-api/index";
 import {
   resetQrAnimationFlags,

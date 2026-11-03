@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { attachRootRenderSource as productionRuntimeAttach } from "@aura3d/engine/production-runtime";
+import { attachRootRenderSource as productionRuntimeAttach } from "@aura3d/engine/renderer";
 import { attachRootRenderSource, type RootRenderSourceBridge, type TypedGLBActor } from "@aura3d/engine";
 import {
   xr,

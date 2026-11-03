@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 // Engine root import binds lane barrels (lanes/prd15.ts → compilerSlot.provide).
 import "@aura3d/engine";
-import { DIAGNOSTIC_ONLY_FIELDS, compileScene, updateCompiledScene } from "@aura3d/engine/contracts";
+import { DIAGNOSTIC_ONLY_FIELDS, compileScene, updateCompiledScene } from "@aura3d/engine-runtime/contracts";
 import type { MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { createProductionRuntimeCollectedLights } from "../../../packages/engine/src/agent-api/compiler/observations";

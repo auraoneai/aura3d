@@ -174,7 +174,6 @@ describe("registerPrd04OptionCoverage (P2-14)", () => {
 
   it("keeps only the still-unconsumed diagnostic-only fields", () => {
     expect(Object.keys(DIAGNOSTIC_ONLY_PRD04_FIELDS).sort()).toEqual([
-      "material.alphaToCoverage",
       "material.doubleSided",
       "material.unlit"
     ]);

@@ -188,6 +188,19 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
   const gateClasses = new Map<string, string>(gates.routes.map((entry: any) => [`apps/${entry.id}`, entry.releaseClass]));
   const references = new Set<string>();
   const publicReferences = new Set<string>();
+  // Published game URLs can use a public slug (`/apps/chroma-roll/`) that is
+  // not a source directory. The site catalog maps each slug to its source
+  // folder; resolve such a mention to that folder instead of a missing example.
+  const routeAliases = new Map<string, string>();
+  const siteCatalogFile = resolve(root, "tools/site/games.catalog.json");
+  if (existsSync(siteCatalogFile)) {
+    for (const entry of readJson(siteCatalogFile).games ?? []) {
+      const slug = typeof entry?.url === "string" ? /^\/apps\/([a-z0-9][a-z0-9-]*)\/$/.exec(entry.url)?.[1] : undefined;
+      if (!slug || typeof entry.appFolder !== "string" || slug === entry.appFolder) continue;
+      if (existsSync(resolve(root, "apps", slug)) || !existsSync(resolve(root, "apps", entry.appFolder))) continue;
+      routeAliases.set(`apps/${slug}`, `apps/${entry.appFolder}`);
+    }
+  }
   // Route tiers use public documentation and retained spec/gate file references. Scan source
   // directly: source-job images intentionally need not contain Git metadata.
   for (const base of ["docs", "tests/browser", "tests/unit", "tools", "packages", "README.md", "llms.txt"]) {
@@ -204,7 +217,8 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
         : /(?<![\w/.-])(?:\/|(?:\.{1,2}\/)+)?(apps|examples)\/([a-z0-9][a-z0-9-]*)\/[a-zA-Z0-9_.-]+/g;
       for (const match of text.matchAll(pattern)) {
         if (match[2]!.endsWith("-")) continue; // prose globs such as apps/showcase-*
-        const route = `${match[1]}/${match[2]}`;
+        const mentioned = `${match[1]}/${match[2]}`;
+        const route = routeAliases.get(mentioned) ?? mentioned;
         references.add(route);
         const docPath = portable(relative(root, file));
         // Include the documentation hub and the reader-facing sections it links.

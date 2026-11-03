@@ -1,8 +1,47 @@
 # Changelog
 
-Version: 4.7.10
+Version: 5.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.0.0 (unreleased)
+
+The native-capability release. Aura3D is a standalone browser 3D engine with its own renderer, and 5.0.0 widens what that renderer, its asset pipeline and its runtime do natively, across the 33 work packages of the [native capability roadmap](docs/prds/aura3d-native-capability-roadmap.md) and the fixed [5.0 scope list](docs/prds/aura3d-5.0-scope.md). Upgrade every `@aura3d/*` package together, then follow the [4.x to 5.0 migration guide](docs/migration/4-to-5.md). WebGL2 remains the default backend. Everything listed under "Experimental" is opt-in with a documented fallback, and browser, GPU and device evidence for it is still pending.
+
+### Breaking changes
+
+Full table with before/after and actions: [migration guide, section 4](docs/migration/4-to-5.md#4-breaking-changes).
+
+- **Root `createGame` throws** `AuraGameMigrationError` (`CREATE_GAME_ROOT_UNAVAILABLE`) instead of returning a headless stub. Import it from `@aura3d/engine/game` (B1).
+- **Wider public types.** `AuraApp`, `AuraRuntimeNodeHandle` and `AuraRuntimeNodeSnapshot` gained required members (readiness, pivot, text); diagnostics, asset-type, model-format and material unions widened. Hand-written mocks and exhaustive switches need updating (B2, B3).
+- **Renderer options are validated.** `renderer.backend` is typed `"webgl2" | "webgpu" | "auto"` and invalid values throw; `qualityProfile: "experimental-webgpu"` now requests WebGPU (B4, B5). Strict-mount failures reject with a redacted `Error` carrying `code` (B6).
+- **`@aura3d/react` (experimental):** `onReady` fires after renderer readiness, failures reach `onError` or the nearest error boundary, shared custom loaders need a `securityContext`, `Scene` renders its children (B7 to B9). Its `@aura3d/engine` peer is now `^5.0.0`.
+- **Game shell loading screen.** `game.shell.setLoadingProgress()` and `track()` drive a real loading screen and validate their inputs (B10).
+- **Scoped temporal history.** The module-global temporal history is gone: `setTemporalHistoryImpl` and `VelocitySurface.history` are removed and `resetTemporalHistory` needs an explicit target (B11 to B13).
+- **Deprecated 4.x root values removed.** The 38 root values deprecated in 4.x with a 5.0.0 removal notice are gone from `@aura3d/engine`; each has a documented replacement or was an internal helper (B14). The nine deprecated type-only root exports stay.
+- **Legacy subpaths removed.** `@aura3d/engine/{production-runtime,advanced-runtime,rendering,rendering/webgpu,rendering/production-runtime,assets/browser,workflows/production,contracts,apps}` are removed. `@aura3d/engine/renderer` now carries the production-runtime SDK (product viewer, glTF and HDR loaders, studio lighting, typed GLB actors, game render presets, performance governor). `@aura3d/engine/media-node` stays as the supported Node-only media entry (B15). `aura3d codemod renderer-imports` rewrites the renderer subpaths.
+
+### Engine and renderer
+
+- **Readiness, lifecycle and isolation:** typed success, failure and cancellation from `app.readiness()` / `app.readyStrict()`; renderer mount failures that leave caller canvases intact; cancellable disposal across loaders, workers and GPU resources; strict WebGPU retirement (resources complete only after their fence resolves).
+- **Asset transport:** request policy, credentials and cache partitioning for model, texture, audio, scene and bitmap loads; size and pixel limits; decoder registration for native formats; app-owned cancellation linked into typed GLB actors.
+- **Rendering:** native reversed and logarithmic camera depth; per-view velocity and reactive targets with exact previous depth; draw-state, transparency and color-pipeline fidelity (including a reported output color space); physical material lobes on independent shader code; independent DFG lookup and spherical-harmonic environment data; lookAt applied to models and primitives (composed with pivot); a `"normal"` input for HDR custom post passes (WebGL2).
+- **Geometry, physics and runtime:** geometry correctness and scene queries, pivot-aware physics, world text and line rendering, frame-loop and game-runtime maturity, performance and memory profiling.
+
+### Experimental (opt-in, with fallback)
+
+WebGPU backend and native WebGPU deferred, meshlet and visibility-buffer drawing paths; worker-owned rendering; WGSL compute; wide-gamut (`display-p3`) output; photometric (IES) lights and projected spot images; clustered lights, probe grids and voxel GI; Gaussian splats and scalar volumes; clipping planes; shader graph; new importers (PLY, STL, 3MF, IES, Gaussian splat) and exporters (OBJ, STL, EXR); the staged `@aura3d/engine/v5` entry. Each one's opt-in and fallback are in [migration guide, section 6](docs/migration/4-to-5.md#6-new-opt-in-features-experimental).
+
+### Packages
+
+- Every published package is 5.0.0, including `@aura3d/addons` (new optional package: spatial DOM and vector output, stereo/ASCII/outline outputs, marching cubes, generators, sculpt, tube and fracture tools, `WorkerPool`) and `create-aura3d`.
+- New subpaths: `@aura3d/engine/{scatter,worker,lighting,geometry-tools,shader-graph-runtime,v5/math/hull}`, `@aura3d/rendering/{lighting,volumetrics,shader-graph}`, `@aura3d/assets/{importers,exporters}`, `@aura3d/debug/helpers`; `@aura3d/engine/math` gains a CommonJS condition.
+- Templates import only current entries: `character-controller` and `animation-studio` use `@aura3d/engine/renderer`; `arena-shooter` imports `createGame` from `@aura3d/engine/game`.
+
+### Known limits
+
+- The release candidate is not frozen. Source checks, the packed-consumer matrix and browser, visual and device acceptance run once on the remote runner before publication ([decision record](docs/prds/aura3d-native-code-complete.md)).
+- Experimental paths have source and mock-device tests only; no real-GPU or device result is claimed.
 
 ## 4.7.10 (2026-11-02)
 

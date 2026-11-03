@@ -124,44 +124,6 @@
       "file": "packages/debug/src/helpers.ts"
     },
     {
-      "name": "@aura3d/engine/rendering/production-runtime",
-      "file": "packages/engine/src/deprecated/rendering-production-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/assets/browser",
-      "file": "packages/engine/src/deprecated/assets-browser.ts"
-    },
-    {
-      "name": "@aura3d/engine/workflows/production",
-      "file": "packages/engine/src/deprecated/workflows-production.ts"
-    },
-    {
-      "name": "@aura3d/engine/rendering/webgpu",
-      "file": "packages/engine/src/deprecated/rendering-webgpu.ts",
-      "devOnly": true
-    },
-    {
-      "name": "@aura3d/engine/rendering",
-      "file": "packages/engine/src/deprecated/rendering.ts"
-    },
-    {
-      "name": "@aura3d/engine/apps",
-      "file": "packages/engine/src/deprecated/apps.ts"
-    },
-    {
-      "name": "@aura3d/engine/production-runtime",
-      "file": "packages/engine/src/deprecated/production-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/advanced-runtime",
-      "file": "packages/engine/src/deprecated/advanced-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/contracts",
-      "file": "packages/engine/src/deprecated/contracts.ts",
-      "browser301": false
-    },
-    {
       "name": "@aura3d/engine/lanes",
       "file": "packages/engine/src/lanes/index.ts",
       "browser301": false
@@ -173,7 +135,7 @@
     },
     {
       "name": "@aura3d/engine/media-node",
-      "file": "packages/engine/src/deprecated/media-node.ts",
+      "file": "packages/engine/src/agent-api/media-node.ts",
       "devOnly": true
     },
     {
@@ -702,68 +664,12 @@
       "source": "packages/engine/src/public/geometry-tools.ts",
       "dist": "./dist/engine/public/geometry-tools.js",
       "conditions": true
-    }
-  ],
-  "deprecated": [
+    },
     {
       "name": "./media-node",
-      "target": ".",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/media-node.ts"
-    },
-    {
-      "name": "./apps",
-      "target": ".",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/apps.ts"
-    },
-    {
-      "name": "./contracts",
-      "target": ".",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/contracts.ts"
-    },
-    {
-      "name": "./rendering",
-      "target": "./renderer",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/rendering.ts"
-    },
-    {
-      "name": "./rendering/production-runtime",
-      "target": "./renderer",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/rendering-production-runtime.ts"
-    },
-    {
-      "name": "./rendering/webgpu",
-      "target": "./renderer",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/rendering-webgpu.ts"
-    },
-    {
-      "name": "./production-runtime",
-      "target": "./renderer",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/production-runtime.ts"
-    },
-    {
-      "name": "./advanced-runtime",
-      "target": "./renderer",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/advanced-runtime.ts"
-    },
-    {
-      "name": "./assets/browser",
-      "target": "./assets",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/assets-browser.ts"
-    },
-    {
-      "name": "./workflows/production",
-      "target": "./workflows",
-      "removeIn": "5.0.0",
-      "stub": "packages/engine/src/deprecated/workflows-production.ts"
+      "source": "packages/engine/src/agent-api/media-node.ts",
+      "dist": "./dist/engine/agent-api/media-node.js"
     }
-  ]
+  ],
+  "deprecated": []
 }

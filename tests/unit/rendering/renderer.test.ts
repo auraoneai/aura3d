@@ -43,6 +43,7 @@ import {
   type WebGPUDeviceLike,
   type WebGPULike,
   type WebGPUSamplerDescriptorLike,
+  type ShaderSources,
   type UniformValue
 } from "../../../packages/rendering/src";
 /*
@@ -216,15 +217,16 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("renders high-level WebGPU sources into explicit offscreen render targets for deterministic readback", async () => {
+  it("routes high-level sources into explicit offscreen render targets", async () => {
+    // Replaces the retired WebGPU variant (QR-11 Phase 1 removed the WebGPU CPU
+    // rasterizer and synchronous readPixels); the routing contract is backend-neutral.
     const renderer = await Renderer.create({
-      backend: "webgpu",
-      webgpu: createFakeWebGPU(),
+      backend: "mock",
       width: 16,
       height: 16,
       clearColor: [0, 0, 0, 1]
     });
-    const target = renderer.device.createRenderTarget({ width: 16, height: 16, label: "renderer-explicit-webgpu-target" });
+    const target = renderer.device.createRenderTarget({ width: 16, height: 16, label: "renderer-explicit-reference-target" });
 
     const diagnostics = renderer.render({
       renderItems: [{
@@ -236,8 +238,9 @@ describe("Renderer", () => {
     });
 
     expect(diagnostics.drawCalls).toBe(1);
-    expect(renderer.device.captureState().get("renderTarget")).toBe("renderer-explicit-webgpu-target");
-    expect(Array.from(renderer.device.readPixels(8, 8, 1, 1))).toEqual([230, 51, 26, 255]);
+    const draws = (renderer.device as MockRenderDevice).getDrawViewStates();
+    expect(draws.at(-1)?.destination).toBe("render-target");
+    expect(renderer.device.getRenderTarget?.()).toBe(target);
     target.dispose();
     renderer.dispose();
   });
@@ -554,14 +557,17 @@ describe("Renderer", () => {
     expect(Array.from(fused)).toEqual(Array.from(sequential));
   });
 
-  it("runs renderer-owned HDR tone mapping before byte-space grading passes", async () => {
+  it("runs renderer-owned mock reference HDR tone mapping before byte-space grading passes", async () => {
+    // Replaces the retired WebGPU variant, which read the result through the
+    // removed synchronous WebGPU readFloatPixels path.
     const renderer = await Renderer.create({
-      backend: "webgpu",
-      webgpu: createFakeWebGPU(),
+      backend: "mock",
       width: 2,
       height: 1,
       clearColor: [2.5, 0.5, 0.125, 1]
     });
+
+    (renderer.device.info.capabilities as string[]).push("hdr-render-targets");
 
     renderer.render({
       renderItems: [],
@@ -2623,7 +2629,7 @@ describe("Renderer", () => {
     });
   });
 
-  it("creates a WebGPU render device through an injected adapter and verifies resources, readback, and diagnostics", async () => {
+  it("creates a WebGPU render device through an injected adapter and verifies resources, reflection, and diagnostics", async () => {
     const fakeGpu = createFakeWebGPU();
     const device = await createRenderDevice({ backend: "webgpu", webgpu: fakeGpu });
 
@@ -2641,7 +2647,8 @@ describe("Renderer", () => {
       label: "unit-shader",
       marker: "@aura3d-shader:unit",
       vertex: "// @aura3d-shader:unit\nin vec3 position; uniform mat4 modelViewProjection;",
-      fragment: "// @aura3d-shader:unit\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:unit\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     expect(shader.reflection.attributes.has("position")).toBe(true);
     expect(shader.reflection.uniforms.has("modelViewProjection")).toBe(true);
@@ -2654,7 +2661,8 @@ describe("Renderer", () => {
     device.draw({ label: "webgpu-triangle", topology: "triangles", vertexBuffer: buffer, vertexCount: 3, shader });
     device.endFrame();
 
-    expect(Array.from(device.readPixels(0, 0, 1, 1))).toEqual([51, 102, 153, 255]);
+    // QR-11 Phase 1: synchronous WebGPU readback is removed; async readback is the contract.
+    expect(() => device.readPixels(0, 0, 1, 1)).toThrowError(expect.objectContaining({ code: "WEBGPU_SYNC_READBACK_UNSUPPORTED" }));
     expect(device.captureState().get("renderTarget")).toBe("offscreen");
     expect(device.getDiagnostics()).toMatchObject({
       drawCalls: 1,
@@ -2715,255 +2723,6 @@ describe("Renderer", () => {
     });
   });
 
-  it("rasterizes a WebGPU triangle into an offscreen render target for deterministic readback", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const vertices = new Float32Array([
-      -0.8, -0.8, 0,
-      0.8, -0.8, 0,
-      0, 0.8, 0
-    ]);
-    const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
-    const shader = device.createShaderProgram({
-      label: "raster-shader",
-      marker: "@aura3d-shader:raster",
-      vertex: "// @aura3d-shader:raster\nin vec3 position;",
-      fragment: "// @aura3d-shader:raster\nuniform vec4 u_color;"
-    });
-    const target = device.createRenderTarget({ width: 16, height: 16, label: "webgpu-raster-target" });
-    device.setRenderTarget(target);
-    device.beginFrame(16, 16);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      topology: "triangles",
-      vertexBuffer: buffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map([["u_color", [0.1, 0.8, 0.2, 1]]])
-    });
-    device.endFrame();
-
-    expect(Array.from(device.readPixels(8, 8, 1, 1))).toEqual([26, 204, 51, 255]);
-    device.dispose();
-  });
-
-  it("modulates WebGPU offscreen raster output with vertex colors", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const format = new VertexFormat([
-      { semantic: "position", components: 3, offset: 0 },
-      { semantic: "color", components: 4, offset: 12 }
-    ], 28);
-    const vertices = new Float32Array([
-      -0.8, -0.8, 0, 0.25, 0.5, 1, 0.5,
-      0.8, -0.8, 0, 0.25, 0.5, 1, 0.5,
-      0, 0.8, 0, 0.25, 0.5, 1, 0.5
-    ]);
-    const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
-    const shader = device.createShaderProgram({
-      label: "vertex-color-raster-shader",
-      marker: "@aura3d-shader:vertex-color-raster",
-      vertex: "// @aura3d-shader:vertex-color-raster\nin vec3 position; in vec4 a_color;",
-      fragment: "// @aura3d-shader:vertex-color-raster\nuniform vec4 u_color; in vec4 v_vertexColor;"
-    });
-    const target = device.createRenderTarget({ width: 16, height: 16, label: "webgpu-vertex-color-target" });
-    device.setRenderTarget(target);
-    device.beginFrame(16, 16);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      topology: "triangles",
-      vertexBuffer: buffer,
-      vertexFormat: format,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map([["u_color", [0.4, 0.4, 0.4, 1]]])
-    });
-    device.endFrame();
-
-    expect(Array.from(device.readPixels(8, 8, 1, 1))).toEqual([26, 51, 102, 128]);
-    device.dispose();
-  });
-
-  it("rasterizes WebGPU line and point topologies into deterministic offscreen readback", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const lineVertices = new Float32Array([
-      -0.75, 0, 0,
-      0.75, 0, 0
-    ]);
-    const pointVertices = new Float32Array([
-      0, 0.65, 0
-    ]);
-    const lineBuffer = device.createBuffer("vertex", lineVertices.byteLength, lineVertices);
-    const pointBuffer = device.createBuffer("vertex", pointVertices.byteLength, pointVertices);
-    const shader = device.createShaderProgram({
-      label: "webgpu-line-point-raster-shader",
-      marker: "@aura3d-shader:webgpu-line-point-raster",
-      vertex: "// @aura3d-shader:webgpu-line-point-raster\nin vec3 position;",
-      fragment: "// @aura3d-shader:webgpu-line-point-raster\nuniform vec4 u_color;"
-    });
-    const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-line-point-raster-target" });
-
-    device.setRenderTarget(target);
-    device.beginFrame(32, 32);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      label: "webgpu-line-raster",
-      topology: "lines",
-      vertexBuffer: lineBuffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 2,
-      shader,
-      uniforms: new Map([["u_color", [0.9, 0.2, 0.1, 1]]])
-    });
-    device.draw({
-      label: "webgpu-point-raster",
-      topology: "points",
-      vertexBuffer: pointBuffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 1,
-      shader,
-      uniforms: new Map([["u_color", [0.1, 0.35, 1, 1]]])
-    });
-    device.endFrame();
-
-    expect(Array.from(device.readPixels(16, 16, 1, 1))).toEqual([230, 51, 26, 255]);
-    expect(Array.from(device.readPixels(16, 5, 1, 1))).toEqual([26, 89, 255, 255]);
-    expect(device.getDiagnostics().drawCalls).toBe(2);
-    device.dispose();
-  });
-
-  it("rasterizes WebGPU instanced triangles into deterministic offscreen readback", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const vertices = new Float32Array([
-      -0.25, -0.25, 0,
-      0.25, -0.25, 0,
-      0, 0.25, 0
-    ]);
-    const transforms = new Float32Array([
-      ...translationMatrix(-0.45, 0, 0),
-      ...translationMatrix(0.45, 0, 0)
-    ]);
-    const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
-    const shader = device.createShaderProgram({
-      label: "webgpu-instanced-raster-shader",
-      marker: "@aura3d-shader:webgpu-instanced-raster",
-      vertex: "// @aura3d-shader:webgpu-instanced-raster\nin vec3 position; uniform mat4 u_instanceMatrices[64]; uniform float u_instanceCount;",
-      fragment: "// @aura3d-shader:webgpu-instanced-raster\nuniform vec4 u_baseColor;"
-    });
-    const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-instanced-raster-target" });
-
-    device.setRenderTarget(target);
-    device.beginFrame(32, 32);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      label: "webgpu-instanced-raster",
-      topology: "triangles",
-      vertexBuffer: buffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map<string, UniformValue>([
-        ["u_baseColor", [0.2, 0.8, 0.3, 1]],
-        ["u_instanceMatrices", transforms],
-        ["u_instanceCount", 2]
-      ]),
-      instanceCount: 2
-    });
-    device.endFrame();
-
-    expect(device.getDiagnostics().drawCalls).toBe(1);
-    expect(Array.from(device.readPixels(9, 17, 1, 1))).toEqual([51, 204, 77, 255]);
-    expect(Array.from(device.readPixels(23, 17, 1, 1))).toEqual([51, 204, 77, 255]);
-    expect(Array.from(device.readPixels(16, 17, 1, 1))).toEqual([0, 0, 0, 255]);
-    device.dispose();
-  });
-
-  it("applies WebGPU model-view-projection matrices in deterministic offscreen readback", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const vertices = new Float32Array([
-      -0.35, -0.35, 0,
-      0.35, -0.35, 0,
-      0, 0.35, 0
-    ]);
-    const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
-    const shader = device.createShaderProgram({
-      label: "webgpu-mvp-raster-shader",
-      marker: "@aura3d-shader:webgpu-mvp-raster",
-      vertex: "// @aura3d-shader:webgpu-mvp-raster\nin vec3 position; uniform mat4 u_modelViewProjection;",
-      fragment: "// @aura3d-shader:webgpu-mvp-raster\nuniform vec4 u_color;"
-    });
-    const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-mvp-raster-target" });
-
-    device.setRenderTarget(target);
-    device.beginFrame(32, 32);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      label: "webgpu-mvp-raster",
-      topology: "triangles",
-      vertexBuffer: buffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map<string, UniformValue>([
-        ["u_color", [0.2, 0.45, 0.95, 1]],
-        ["u_modelViewProjection", translationMatrix(0.45, 0, 0)]
-      ])
-    });
-    device.endFrame();
-
-    expect(Array.from(device.readPixels(16, 17, 1, 1))).toEqual([0, 0, 0, 255]);
-    expect(Array.from(device.readPixels(23, 17, 1, 1))).toEqual([51, 115, 242, 255]);
-    device.dispose();
-  });
-
-  it("applies WebGPU depth testing in deterministic offscreen readback", async () => {
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: createFakeWebGPU() });
-    const nearVertices = new Float32Array([
-      -0.65, -0.65, -0.5,
-      0.65, -0.65, -0.5,
-      0, 0.65, -0.5
-    ]);
-    const farVertices = new Float32Array([
-      -0.65, -0.65, 0.5,
-      0.65, -0.65, 0.5,
-      0, 0.65, 0.5
-    ]);
-    const nearBuffer = device.createBuffer("vertex", nearVertices.byteLength, nearVertices);
-    const farBuffer = device.createBuffer("vertex", farVertices.byteLength, farVertices);
-    const shader = device.createShaderProgram({
-      label: "webgpu-depth-raster-shader",
-      marker: "@aura3d-shader:webgpu-depth-raster",
-      vertex: "// @aura3d-shader:webgpu-depth-raster\nin vec3 position;",
-      fragment: "// @aura3d-shader:webgpu-depth-raster\nuniform vec4 u_color;"
-    });
-    const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-depth-raster-target" });
-
-    device.setRenderTarget(target);
-    device.beginFrame(32, 32);
-    device.clear([0, 0, 0, 1]);
-    device.draw({
-      label: "webgpu-depth-near",
-      topology: "triangles",
-      vertexBuffer: nearBuffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map([["u_color", [0.1, 0.8, 0.2, 1]]])
-    });
-    device.draw({
-      label: "webgpu-depth-far",
-      topology: "triangles",
-      vertexBuffer: farBuffer,
-      vertexFormat: VertexFormat.P3,
-      vertexCount: 3,
-      shader,
-      uniforms: new Map([["u_color", [0.9, 0.1, 0.1, 1]]])
-    });
-    device.endFrame();
-
-    expect(Array.from(device.readPixels(16, 17, 1, 1))).toEqual([25, 204, 51, 255]);
-    device.dispose();
-  });
-
   it("submits a native WebGPU render pass when the device exposes pipeline APIs", async () => {
     const native = createNativeFakeWebGPU();
     const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
@@ -2977,7 +2736,8 @@ describe("Renderer", () => {
       label: "native-webgpu",
       marker: "@aura3d-shader:native-webgpu",
       vertex: "// @aura3d-shader:native-webgpu\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-target" });
 
@@ -3003,8 +2763,8 @@ describe("Renderer", () => {
 
     expect(device.getDiagnostics().nativeSubmissions).toBe(1);
     expect(native.device.shaderModules.map((module) => module.code)).toEqual([
-      expect.stringContaining("u_draw.modelViewProjection * vec4<f32>(position, 1.0)"),
-      expect.stringContaining("@group(0) @binding(0)")
+      passthroughWgsl().webgpu.vertex,
+      passthroughWgsl().webgpu.fragment
     ]);
     expect(native.device.pipelines[0]).toMatchObject({
       label: "native-webgpu-pipeline",
@@ -3029,15 +2789,12 @@ describe("Renderer", () => {
         drawCalls: [{ kind: "draw", count: 3 }]
       })
     ]);
-    expect(native.device.bindGroups).toHaveLength(1);
-    expect(native.device.uniformWrites[0]?.slice(0, 16)).toEqual(translationMatrix(0.25, 0, 0));
-    expect(native.device.uniformWrites[0]?.slice(16, 20).map(round3)).toEqual([0.35, 0.45, 0.55, 1]);
     expect(native.device.submissions.length).toBeGreaterThanOrEqual(1);
     device.dispose();
   });
 
   it("propagates imported texture sampler quality into native WebGPU sampled-texture bindings", async () => {
-    const native = createNativeFakeWebGPU();
+    const native = withExplicitLayouts(createNativeFakeWebGPU());
     const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
     const vertices = new Float32Array([
       -0.5, -0.5, 0, 0, 0,
@@ -3053,7 +2810,8 @@ describe("Renderer", () => {
       label: "native-webgpu-textured",
       marker: "@aura3d-shader:native-webgpu-textured",
       vertex: "// @aura3d-shader:native-webgpu-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
-      fragment: "// @aura3d-shader:native-webgpu-textured\nuniform sampler2D u_baseColorTexture;"
+      fragment: "// @aura3d-shader:native-webgpu-textured\nuniform sampler2D u_albedo;",
+      ...portableTexturedWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-textured-target" });
     const texture = new Texture({ width: 2, height: 2, colorSpace: "srgb", data: new Uint8Array([
@@ -3085,7 +2843,7 @@ describe("Renderer", () => {
       uniforms: new Map<string, UniformValue>([
         ["u_modelViewProjection", translationMatrix(0, 0, 0)],
         ["u_color", [1, 1, 1, 1]],
-        ["u_baseColorTexture", new TextureBinding({ name: "u_baseColorTexture", texture, sampler, expectedColorSpace: "srgb" })]
+        ["u_albedo", new TextureBinding({ name: "u_albedo", texture, sampler, expectedColorSpace: "srgb" })]
       ])
     });
     device.endFrame();
@@ -3184,7 +2942,7 @@ describe("Renderer", () => {
   });
 
   it("preserves half-float HDR sampled textures in native WebGPU bindings", async () => {
-    const native = createNativeFakeWebGPU();
+    const native = withExplicitLayouts(createNativeFakeWebGPU());
     const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
     const vertices = new Float32Array([
       -0.5, -0.5, 0, 0, 0,
@@ -3200,7 +2958,8 @@ describe("Renderer", () => {
       label: "native-webgpu-hdr-textured",
       marker: "@aura3d-shader:native-webgpu-hdr-textured",
       vertex: "// @aura3d-shader:native-webgpu-hdr-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
-      fragment: "// @aura3d-shader:native-webgpu-hdr-textured\nuniform sampler2D u_baseColorTexture;"
+      fragment: "// @aura3d-shader:native-webgpu-hdr-textured\nuniform sampler2D u_albedo;",
+      ...portableTexturedWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-hdr-textured-target", format: "rgba16f" });
     const hdrTexture = new Texture({
@@ -3240,7 +2999,7 @@ describe("Renderer", () => {
       uniforms: new Map<string, UniformValue>([
         ["u_modelViewProjection", translationMatrix(0, 0, 0)],
         ["u_color", [1, 1, 1, 1]],
-        ["u_baseColorTexture", new TextureBinding({ name: "u_baseColorTexture", texture: hdrTexture, expectedColorSpace: "linear" })]
+        ["u_albedo", new TextureBinding({ name: "u_albedo", texture: hdrTexture, expectedColorSpace: "linear" })]
       ])
     });
     device.endFrame();
@@ -3275,7 +3034,8 @@ describe("Renderer", () => {
       label: "native-webgpu-depth",
       marker: "@aura3d-shader:native-webgpu-depth",
       vertex: "// @aura3d-shader:native-webgpu-depth\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-depth\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-depth\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const depthTarget = device.createRenderTarget({ width: 8, height: 8, label: "native-depth-target" });
     const colorOnlyTarget = device.createRenderTarget({ width: 8, height: 8, label: "native-color-only-target", depth: false });
@@ -3312,7 +3072,7 @@ describe("Renderer", () => {
 
     expect(native.device.textureDescriptors).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "native-depth-target", format: "rgba8unorm" }),
-      expect.objectContaining({ label: "native-depth-target-depth", format: "depth24plus" }),
+      expect.objectContaining({ label: "native-depth-target-depth", format: "depth24plus-stencil8" }),
       expect.objectContaining({ label: "native-color-only-target", format: "rgba8unorm" })
     ]));
     expect(native.device.textureDescriptors).not.toEqual(expect.arrayContaining([
@@ -3320,7 +3080,7 @@ describe("Renderer", () => {
     ]));
     expect(native.device.pipelines[0]).toMatchObject({
       depthStencil: {
-        format: "depth24plus",
+        format: "depth24plus-stencil8",
         depthWriteEnabled: true,
         depthCompare: "less-equal"
       }
@@ -3351,7 +3111,8 @@ describe("Renderer", () => {
       label: "native-webgpu-msaa",
       marker: "@aura3d-shader:native-webgpu-msaa",
       vertex: "// @aura3d-shader:native-webgpu-msaa\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-msaa\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-msaa\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const target = device.createRenderTarget({
       width: 8,
@@ -3402,7 +3163,8 @@ describe("Renderer", () => {
       label: "native-webgpu-clear-tracking",
       marker: "@aura3d-shader:native-webgpu-clear-tracking",
       vertex: "// @aura3d-shader:native-webgpu-clear-tracking\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-clear-tracking\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-clear-tracking\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const first = device.createRenderTarget({ width: 8, height: 8, label: "native-clear-first" });
     const second = device.createRenderTarget({ width: 8, height: 8, label: "native-clear-second" });
@@ -3447,7 +3209,8 @@ describe("Renderer", () => {
       label: "native-webgpu-readback",
       marker: "@aura3d-shader:native-webgpu-readback",
       vertex: "// @aura3d-shader:native-webgpu-readback\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-readback\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-readback\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-readback-target" });
 
@@ -3497,7 +3260,8 @@ describe("Renderer", () => {
       label: "native-webgpu-hdr",
       marker: "@aura3d-shader:native-webgpu-hdr",
       vertex: "// @aura3d-shader:native-webgpu-hdr\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-hdr\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-hdr\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-hdr-target", format: "rgba16f" });
 
@@ -3507,7 +3271,7 @@ describe("Renderer", () => {
     device.setRenderTarget(target);
     device.beginFrame(8, 8);
     device.clear([2.5, 0.5, 0.125, 1]);
-    expect(Array.from(device.readFloatPixels(4, 4, 1, 1))).toEqual([2.5, 0.5, 0.125, 1]);
+    expect(() => device.readFloatPixels(4, 4, 1, 1)).toThrowError(expect.objectContaining({ code: "WEBGPU_SYNC_READBACK_UNSUPPORTED" }));
     await expect(device.readFloatPixelsAsync?.(4, 4, 1, 1)).resolves.toEqual(new Float32Array([2.5, 0.5, 0.125, 1]));
     device.draw({
       label: "native-hdr-triangle",
@@ -3652,7 +3416,8 @@ describe("Renderer", () => {
       label: "native-webgpu-indexed",
       marker: "@aura3d-shader:native-webgpu-indexed",
       vertex: "// @aura3d-shader:native-webgpu-indexed\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-indexed\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-indexed\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-indexed-target" });
 
@@ -3688,7 +3453,8 @@ describe("Renderer", () => {
       label: "native-webgpu-indexed-limited",
       marker: "@aura3d-shader:native-webgpu-indexed-limited",
       vertex: "// @aura3d-shader:native-webgpu-indexed-limited\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-indexed-limited\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-indexed-limited\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
     const limitedTarget = limitedDevice.createRenderTarget({ width: 8, height: 8, label: "native-indexed-limited-target" });
 
@@ -3713,54 +3479,6 @@ describe("Renderer", () => {
     limitedDevice.dispose();
   });
 
-  it.each([{ components: 3, textured: false }, { components: 4, textured: false }, { components: 3, textured: true }, { components: 4, textured: true }] as const)("binds generated vertex color $components components, textured=$textured, with material RGBA modulation", async ({ components, textured }) => {
-    const native = createNativeFakeWebGPU();
-    const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
-    const colorOffset = textured ? 20 : 12;
-    const baseFormat = textured ? new VertexFormat([{ semantic: "position", components: 3, offset: 0 }, { semantic: "uv", components: 2, offset: 12 }]) : VertexFormat.P3;
-    const format = new VertexFormat([
-      { semantic: "position", components: 3, offset: 0 },
-      ...baseFormat.attributes.filter(attribute => attribute.semantic === "uv"),
-      { semantic: "color", components, offset: colorOffset, shaderLocation: 4 }
-    ]);
-    const values = new Float32Array(3 * (colorOffset / 4 + components));
-    const buffer = device.createBuffer("vertex", values.byteLength, values);
-    const shader = device.createShaderProgram({
-      label: "native-basic-color", marker: "@aura3d-shader:native-basic-color",
-      vertex: `// @aura3d-shader:native-basic-color\nlayout(location = 0) in vec3 a_position; layout(location = 4) in vec${components} a_color; ${textured ? "layout(location = 2) in vec2 a_uv;" : ""}`,
-      fragment: `// @aura3d-shader:native-basic-color\nuniform vec4 u_baseColor; ${textured ? "uniform sampler2D u_baseColorTexture;" : ""}`
-    });
-    const texture = new Texture({ width: 1, height: 1, data: new Uint8Array([128, 192, 64, 128]) });
-    const uniforms = new Map<string, UniformValue>([["u_baseColor", [0.5, 0.75, 0.25, 0.5]]]);
-    if (textured) uniforms.set("u_baseColorTexture", new TextureBinding({ name: "u_baseColorTexture", texture }));
-    const target = device.createRenderTarget({ width: 8, height: 8 });
-    device.setRenderTarget(target);
-    device.beginFrame(8, 8);
-    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: format, vertexCount: 3, shader,
-      uniforms });
-    device.endFrame();
-    expect(native.device.shaderModules[0]?.code).toContain(`@location(4) vertexColor: vec${components}<f32>`);
-    expect(native.device.shaderModules[0]?.code).toContain(components === 3 ? "output.color = vec4<f32>(vertexColor, 1.0);" : "output.color = vertexColor;");
-    expect(native.device.shaderModules[1]?.code).toContain(textured ? "return u_draw.color * textureSample(u_texture, u_textureSampler, input.uv) * input.color;" : "return u_draw.color * input.color;");
-    expect(native.device.pipelines[0]).toMatchObject({ vertex: { buffers: [{ arrayStride: colorOffset + components * 4,
-      attributes: [{ shaderLocation: 0, offset: 0, format: "float32x3" }, ...(textured ? [{ shaderLocation: 2, offset: 12, format: "float32x2" }] : []), { shaderLocation: 4, offset: colorOffset, format: `float32x${components}` }] }] } });
-    expect(native.device.uniformWrites.some(write => write.slice(16, 20).every((value, index) => value === [0.5, 0.75, 0.25, 0.5][index]))).toBe(true);
-    expect(textured ? device.getDiagnostics().nativeGeneratedTextureSubmissions : device.getDiagnostics().nativeGeneratedBasicSubmissions).toBe(1);
-    // The same declared-color shader also accepts ordinary P3 geometry with
-    // opaque white vertex color, without changing the colored pipeline.
-    device.beginFrame(8, 8);
-    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: baseFormat, vertexCount: 3, shader, uniforms });
-    expect(native.device.shaderModules[2]?.code).toContain("output.color = vec4<f32>(1.0);");
-    expect(native.device.shaderModules[2]?.code).not.toContain("@location(4) vertexColor");
-    expect(native.device.pipelines[1]).toMatchObject({ vertex: { module: { label: "native-basic-color-vertex-default-color" } } });
-    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: format, vertexCount: 3, shader, uniforms });
-    expect(native.device.pipelines).toHaveLength(2);
-    expect(native.device.shaderModules).toHaveLength(3);
-    device.endFrame();
-    device.dispose();
-    texture.dispose();
-  });
-
   it("configures a WebGPU canvas surface and submits native render passes to the current texture", async () => {
     const native = createNativeFakeWebGPU();
     const canvas = createFakeWebGPUCanvas();
@@ -3775,7 +3493,8 @@ describe("Renderer", () => {
       label: "native-webgpu-canvas",
       marker: "@aura3d-shader:native-webgpu-canvas",
       vertex: "// @aura3d-shader:native-webgpu-canvas\nin vec3 position;",
-      fragment: "// @aura3d-shader:native-webgpu-canvas\nuniform vec4 color;"
+      fragment: "// @aura3d-shader:native-webgpu-canvas\nuniform vec4 color;",
+      ...passthroughWgsl()
     });
 
     expect(device.info.capabilities).toEqual(expect.arrayContaining(["native-render-pipeline", "canvas-surface"]));
@@ -3804,10 +3523,6 @@ describe("Renderer", () => {
       fragment: {
         targets: [{ format: "bgra8unorm" }]
       }
-    });
-    expect(native.device.bindGroups[0]).toMatchObject({
-      label: "native-canvas-triangle-draw-bind-group",
-      entries: [{ binding: 0 }]
     });
     expect(canvas.context.currentTextureViews).toEqual([1]);
     expect(native.device.renderPasses).toEqual([
@@ -4194,6 +3909,41 @@ function createMorphStressGeometry(vertexCount: number): Geometry {
   }
   const indices = Array.from({ length: vertexCount }, (_, index) => index);
   return new Geometry(vertices, new IndexBuffer(indices, vertexCount), "points");
+}
+
+/**
+ * Real WGSL for device-level native-pass contract cases. Since QR-11 Phase 1
+ * (d7de114d3) a GLSL-only program without a WGSL program throws
+ * WGSL_PROGRAM_MISSING, so these cases supply the WGSL stage explicitly; the
+ * GLSL stages stay for reflection.
+ */
+function passthroughWgsl(): { readonly webgpu: { readonly vertex: string; readonly fragment: string } } {
+  return {
+    webgpu: {
+      vertex: "@vertex fn vs_main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> { return vec4<f32>(position, 1.0); }",
+      fragment: "@fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(1.0, 1.0, 1.0, 1.0); }"
+    }
+  };
+}
+
+/** Adds the explicit bind-group/pipeline layout APIs portable texture bindings require. */
+function withExplicitLayouts<T extends { device: object }>(native: T): T {
+  Object.assign(native.device, {
+    createBindGroupLayout: (descriptor: unknown) => ({ descriptor }),
+    createPipelineLayout: (descriptor: unknown) => ({ descriptor })
+  });
+  return native;
+}
+
+/** Portable-binding WGSL sampling one 2D texture bound as `u_albedo`. */
+function portableTexturedWgsl(): Pick<ShaderSources, "portableBindings" | "webgpu"> {
+  return {
+    portableBindings: [{ name: "u_albedo", kind: "texture2d" }],
+    webgpu: {
+      vertex: "/* @aura3d-bindings */\nstruct VsOut { @builtin(position) position: vec4<f32>, @location(0) uv: vec2<f32> };\n@vertex fn vs_main(@location(0) position: vec3<f32>, @location(2) uv: vec2<f32>) -> VsOut { var out: VsOut; out.position = vec4<f32>(position, 1.0); out.uv = uv; return out; }",
+      fragment: "/* @aura3d-bindings */\n@fragment fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> { return textureSample(u_albedoTexture, u_albedoSampler, uv); }"
+    }
+  };
 }
 
 function translationMatrix(x: number, y: number, z: number): readonly number[] {

@@ -137,7 +137,7 @@ default app backend (that belongs to PRD 11 / `A3D_QR_WEBGPU`).
 | `three` core exports | 441 |
 | `three/webgpu` exports | **629** |
 | `three/tsl` exports | 638 |
-| `examples/jsm` files / dirs | 425 / 36 |
+| `three/examples/jsm` files / dirs | 425 / 36 |
 | `postprocessing/*Pass.js` | 29 |
 
 ### 2.2 What the games run
@@ -320,7 +320,7 @@ codemod row). The "Remaining work" column is what §5 and §6 implement.
 | Promoting WebGPU to the default app backend | Owned by PRD 11 / `A3D_QR_WEBGPU`; this PRD only requires that WGSL paths exist where `PortableShaderMaterial` already accepts them |
 | `CSS2DRenderer` / `CSS3DRenderer` | DOM overlays are the app's job; `labels` covers 3D labels |
 | FBX, MMD, Collada, USDZ, 3MF, VOX, PLY, STL loaders | No shortlisted game uses them; convert offline |
-| `examples/jsm/effects` | Superseded by SH-03 |
+| `three/examples/jsm/effects` | Superseded by SH-03 |
 | Full TSL compiler | Only the probe-gated subset (SH-01) |
 | `WebGLRenderer` internals (`getContext`, extensions, programs) | Driver leakage breaks ports |
 | Runtime GLSL→WGSL translation | A second compiler with its own failure modes |
@@ -1066,7 +1066,7 @@ SR-03, SR-05, SG-09, SG-11, AD-16; L10-04, L10-05; public-api docs.
 | **R-15** | L4 | S | ST-05: only the plain GLB is checked against three on real bytes; Draco/Meshopt use capture stubs, KTX2 only a flag | `tests/unit/parity/gltf-decoders.test.ts`; `tests/fixtures/gltf/` | Three real compressed GLBs (Draco, Meshopt, KTX2) decoded by both loaders; vertex and index counts equal |
 | **R-16** | L10 | S | L10-03: no test enforces "every mapping target exists in `aura.exports.json`". Stale notes at `CLI/migrate-three/mappings.ts:186-187` (AU-01 and AU-02 were fixed) | `tests/unit/aura3d-cli/`; `mappings.ts` | New test resolves every `engineImport` against the export manifest and fails on a missing name. Notes corrected |
 | **R-17** | all | per lane | §7.3 step 3 never run: all six `A3D_PARITY_*` flags are `"dev"` (`R/contracts/flags.state.ts:51-56`), so e.g. `instances.mesh` throws in a default app | `R/contracts/flags.state.ts` | Per lane, flip to `default-on` only after its browser fixtures pass on the remote runner **and** the LPIPS-vs-three gate shows 0 regressions. Record the CI run ID next to each flip |
-| **R-18** | L9 | S | Regressions outside the parity suite. `audio-context-ownership.test.ts` fails: 3 new `AudioContext` owners (`CLI/.../prd09/codemods/audio-wrapper.ts`, `apps/showcase-heatsink/src/main.ts`, `apps/showcase-heatsink-v2/src/main.ts`) plus a reference to the deleted `apps/aura-clash-showcase/...`. `loop-engine.test.ts` fails: `occlusionHz(0)` = 20400 after `9c8761647` changed the formula (`SpatialVoice.ts:39`) | those files; `tests/unit/audio/*` | Owners use `AudioContextManager` or are enumerated; the deleted path is removed from the test; `occlusionHz` test matches the intended formula. `pnpm vitest run tests/unit/audio` green |
+| **R-18** | L9 | S | Regressions outside the parity suite. `audio-context-ownership.test.ts` fails: 3 new `AudioContext` owners (`CLI/.../prd09/codemods/audio-wrapper.ts`, `apps/showcase-heatsink/src/main.ts`, `showcase-heatsink-v2/src/main.ts` (V2 folder since deleted in `0eb09bd68`)) plus a reference to the deleted `apps/aura-clash-showcase/...`. `loop-engine.test.ts` fails: `occlusionHz(0)` = 20400 after `9c8761647` changed the formula (`SpatialVoice.ts:39`) | those files; `tests/unit/audio/*` | Owners use `AudioContextManager` or are enumerated; the deleted path is removed from the test; `occlusionHz` test matches the intended formula. `pnpm vitest run tests/unit/audio` green |
 | **R-19** | L10 | M | L10-06: the golden input is a hand-written stand-in, not the real Strange Orbit module | `tests/unit/aura3d-cli/migrate-three.test.ts`; `tests/fixtures/crayon/strange-orbit/` | Real captured module (19 KB) migrated with 0 `TODO(a3d-migrate)` in game logic |
 | **R-20** | ports | L | Phase exits A–D (§7.2) never attempted | per-game ports | As in §7.2. Phase A needs R-01 first; B needs R-03/R-04/R-10 and flag flips (R-17) for SHADING/BATCHING |
 | **R-21** | L10 | S | `cameras` exported with no entry in `root-export-dispositions.json` | `docs/architecture/root-export-dispositions.json` | Entry added; `check:public-api` green |
@@ -1303,7 +1303,7 @@ The owner clarified that "the previous 15 games" are the fifteen playable cards 
 
 > **Superseded by v12:** G1, G3 and the route swap are done (§10 4.1.0 additions; `evidence/aura-slam/G3-RECHECK.md`, `evidence/aura-slam/NATIVE-RENDER.md`, `evidence/live-413/README.md`). The "not live", "Not yet met" and "Live game today" statements below describe the state at 4.1.1 and are kept as history; Phase 2 screens are still deferred.
 
-**Goal (owner):** convert the live game fully onto the library, prove it behaves and renders the same, extract what is reusable, then swap the route. The live route still serves the original game; the native game is the wrapper `apps/showcase-aura-slam` (no registered route) built from `examples/aura-slam/`. Architecture and the typed module contract are in `docs/aura-slam/ARCHITECTURE.md`.
+**Goal (owner):** convert the live game fully onto the library, prove it behaves and renders the same, extract what is reusable, then swap the route. The live route still serves the original game; the native game was the wrapper app `showcase-aura-slam` (no registered route; dropped as a duplicate in `eaae18553`) built from `examples/aura-slam/`. Architecture and the typed module contract are in `docs/aura-slam/ARCHITECTURE.md`.
 
 **Baseline (`d1c6730c6`, `evidence/aura-slam/`).** The original simulation is already pure and deterministic (`match-engine.js`, `physics.js`, `strokes.js`, `player-pose.js` have no DOM, clock or `Math.random`), so the port is transcription. Six scenarios (autoplay beginner/hard, beginner/moon, club/grass, pro/clay, legend/hard, and a scripted 286-key manual run) x two independent sessions gave **identical digests, step counts and events (zero variance)**, repeated in a separate remote run. 27 reference frames with metrics were recorded (8 states at 1280x720 and 640x360, 6 venues, 3 mobile). Gotcha the port reproduces: autoplay, serve-phase movement and the toss-apex assist swing live inside the Aura3D adapter's `render()` call, not in the simulation, so one extra render advances game logic.
 

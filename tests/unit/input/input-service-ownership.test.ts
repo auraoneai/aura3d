@@ -26,20 +26,24 @@ const ROOT = process.cwd();
  * an entry is a claim that the stream is genuinely separate from the mounted app's.
  */
 const LEGITIMATE_KEYBOARD_OWNERS: Readonly<Record<string, string>> = {
-  "packages/engine/src/agent-api/GameRuntime.ts":
-    "THE runtime input service. `createGameInput` owns keyboard state for a mounted Aura3D application: action mapping, buffering, combos, axes, pointer, gamepad, replay.",
+  "packages/engine/src/agent-api/GameRuntimeCore.ts":
+    "THE runtime input service. `createGameInput` owns keyboard state for a mounted Aura3D application: action mapping, buffering, combos, axes, pointer, gamepad, replay. (5.0 moved the implementation from GameRuntime.ts, now a compatibility entry that re-exports this core.)",
+  "packages/engine/src/agent-api/app/workerRuntime.ts":
+    "Worker-renderer page bridge. A worker has no DOM, so the page side forwards raw key phases/codes to the worker over the input channel without interpreting them; the worker-hosted app's runtime input service is still the only interpreter.",
+  "packages/engine/src/agent-api/controls/TouchControls.ts":
+    "On-screen touch overlay auto-hide: any keyboard press hides the touch buttons (capture phase, never consumed or mapped to an action). Presentation of the overlay, not gameplay input.",
+  "packages/audio/src/synth/SynthCueBank.ts":
+    "Opt-in audio mute shortcut on the audio host (`muteKey`, `false` disables it). It toggles master mute only, ignores modified keys and form fields, and never feeds an action map.",
+  "packages/game/src/components.ts":
+    "Results-menu roving focus: the listener is scoped to the menu element and stops propagation, so menu navigation keys never reach the gameplay stream while the menu is open.",
+  "packages/game/src/session/lifecycle.ts":
+    "Game session pause/resume keys (`pauseKeys`). Lifecycle control of the session itself, outside any action map; it only pauses or releases the session and never interprets gameplay actions.",
   "packages/input/src/InputSystem.ts":
     "Standalone device layer for consumers that are NOT a mounted app. `packages/controls` (Orbit/Map/Drag/FirstPerson/Fly/PointerLock) and the camera-control apps consume `InputSnapshot` as a DATA TYPE rather than as a competing service. Verified by measurement: no file in packages/, apps/ or examples/ imports both this and game.input().",
-  "packages/editor-runtime/src/StaticExportRuntime.ts":
-    "An exported static build hosts a scene inside its own page shell, so its shortcut stream is separate from the hosted app's gameplay input.",
   "packages/editor-runtime/src/TimelineUI.ts":
     "Editor timeline scrubbing shortcuts. Editor chrome, not the hosted scene: the two must not share an action map or a spacebar would both play the timeline and jump the character.",
   "packages/create-aura3d/templates/character-controller/src/main.ts":
     "Scaffold template, shipped for a developer to copy and own. Deliberately plain listeners so the generated project is readable without first learning the input service.",
-  "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts":
-    "Standalone scaffold template whose generated application owns its keyboard stream; it is never mounted beside the engine game.input service in one application.",
-  "packages/create-aura3d/templates/racing-starter/src/main.ts":
-    "Standalone scaffold template whose generated application owns its keyboard stream; it is never mounted beside the engine game.input service in one application.",
   "packages/create-aura3d/templates/animation-studio/studio/src/App.tsx":
     "As above: scaffold template source, owned by the developer once generated."
 };

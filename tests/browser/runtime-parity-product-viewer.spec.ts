@@ -293,7 +293,7 @@ test.describe("runtime parity flagship product viewer comparison", () => {
       pixelStats,
       metrics,
       publicSdkImports: {
-        usesProductionRuntime: templateSource.includes("@aura3d/engine/production-runtime"),
+        usesProductionRuntime: templateSource.includes("@aura3d/engine/renderer"),
         usesLoadGltfScene: templateSource.includes("loadGltfScene"),
         usesLoadHdrEnvironment: templateSource.includes("loadHdrEnvironment"),
         usesCreateProductViewer: templateSource.includes("createProductViewer")

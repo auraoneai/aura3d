@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   blendSkyBandColor,
@@ -274,46 +273,11 @@ describe("the composition Skyline actually ships is auditable from its own artif
    * These read the retained route-primary probe -- the same artifact the route gate consumes -- so a regression in
    * the shipped frame fails here rather than being invisible until someone looks at a screenshot.
    */
-  const PROBE_PATH = "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json";
-
-  interface RouteProbe {
-    readonly pass?: boolean;
-    readonly failures?: readonly string[];
-    readonly compositionProbe?: {
-      readonly subjectClipped?: boolean;
-      readonly subjectReadabilityScore?: number;
-      readonly subjectPixels?: number;
-    };
-    readonly primitivePrimaryCandidates?: readonly string[];
-  }
-
-  function probe(): RouteProbe {
-    return JSON.parse(readFileSync(PROBE_PATH, "utf8")) as RouteProbe;
-  }
-
-  it("keeps the hero readable and unclipped in the shipped frame", () => {
-    const report = probe();
-    expect(report.compositionProbe?.subjectClipped).toBe(false);
-    expect(report.compositionProbe?.subjectPixels ?? 0).toBeGreaterThan(2_000);
-    expect(report.compositionProbe?.subjectReadabilityScore ?? 0).toBeGreaterThan(35);
-  });
-
-  it("passes its own route gate with the composition layer active", () => {
-    // Composition set dressing must not have cost the route its gate; this is the end-to-end guard.
-    const report = probe();
-    expect(report.failures ?? []).toEqual([]);
-    expect(report.pass).toBe(true);
-  });
-
-  it("ships no primitive stand-in as a primary subject", () => {
-    /*
-     * The repository bans primitive-only primary subjects, and two earlier attempts at this composition used
-     * primitive silhouettes that read as silos and floating lozenges. The shipped version uses typed assets, so
-     * the probe's primitive-candidate list must be empty.
-     */
-    expect(probe().primitivePrimaryCandidates ?? []).toEqual([]);
-  });
-
+  /*
+   * The three cases that read the retained route-primary probe for showcase-skyline-runner were retired: the route
+   * was retired in 4.0.1 (no app source, probe cannot be regenerated) and the probe is gitignored, so the 5.0 source
+   * pass cannot read it. See docs/project/status/retired-tests.md. The planner-level cases below remain.
+   */
   it("populates all three declared depth layers in the shipped configuration", () => {
     /*
      * Reproduce the route's own spec shape and assert every layer is populated. A composition that silently

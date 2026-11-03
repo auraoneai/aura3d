@@ -1,5 +1,6 @@
 import { Renderer, A3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@aura3d/engine/renderer";
-import { A3DAppLifecycle } from "@aura3d/engine";
+// A3DAppLifecycle left the public root in 5.0.0 (internal helper, no public replacement); this in-repo demo keeps it.
+import { A3DAppLifecycle } from "@aura3d/engine-runtime";
 import type { Quat, Vec3 } from "@aura3d/scene";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#viewport");

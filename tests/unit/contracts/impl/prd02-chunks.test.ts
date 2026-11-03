@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { shaderChunk } from "@aura3d/rendering/contracts";
-import { lookLint } from "@aura3d/engine/contracts";
+import { lookLint } from "@aura3d/engine-runtime/contracts";
 import "@aura3d/rendering/lanes"; // registers the six C-02 chunks
 import "@aura3d/engine/lanes";    // registers look/ambient-flattens
 import { buildChunkHarnessProgram } from "../../../../packages/rendering/src/contracts/testing/ChunkHarness";

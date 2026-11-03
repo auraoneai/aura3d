@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { resolveEnvironment } from "@aura3d/engine/contracts";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveEnvironment } from "@aura3d/engine-runtime/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 
 describe("C-09 environment resolution", () => {
   it("with no registered sources falls back to legacy", () => {

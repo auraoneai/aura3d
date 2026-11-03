@@ -31,49 +31,34 @@ export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRn
 // Skinned and typed GLB actors: attach them to the app render loop (docs/api/skinned-actors.md).
 export { attachRootRenderSource } from "../agent-api/index.js";
 export type { RootRenderSourceBridge, TypedGLBActor } from "../agent-api/index.js";
-// ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in 5.0.0; each names its destination) ──
+// ── Former deprecated union (§6.6 step 3). The deprecated root values were removed in 5.0.0
+// (docs/migration/4-to-5.md, B14); what remains here is live or type-only. ──
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { createScatterRandom, mergeStatic, mergeStaticByKey, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance } from "../agent-api/index.js";
 export type { AuraMergeStaticOptions, AuraScatterAlongPathOptions, AuraScatterArea, AuraScatterExclusion, AuraScatterInAreaOptions, AuraScatterPoint, AuraScatterRange, AuraScatterSide, AuraStaticPart } from "../agent-api/index.js";
 export type { A3DEnvironment } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Removal from the root planned for 5.0.0. */
-export { A3DRenderer } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { A3DAppLifecycle } from "../agent-api/index.js";
 
 export { AnimationAction } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/animation`. Removal from the root planned for 5.0.0. */
-export { AnimationClip } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/animation`. Removal from the root planned for 5.0.0. */
-export { AnimationLayer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/animation`. Removal from the root planned for 5.0.0. */
-export { AnimationMixer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/animation`. Removal from the root planned for 5.0.0. */
-export { AnimationTrack } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export type { AuraColor } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraCreateAppOptions } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraCreateGameAppOptions } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
+/** @deprecated Use `@aura3d/engine/devtools`. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraDiagnosticsOverlay } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraEffectNode } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraLightNode } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraModelOptions } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { AuraNodeBuilder } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraPerformanceQuality } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraPrimitiveNode } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
-export { captureAuraAppScreenshot } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { captureScreenshot } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { character } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
@@ -82,86 +67,26 @@ export { collectAuraSceneEvidence } from "../agent-api/index.js";
 export { collectPromptAnimationEvidence } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { compilePromptPlan } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { compositeMetallicRoughnessPixels } from "../agent-api/index.js";
-/** @deprecated Use `createAuraApp`. Removal from the root planned for 5.0.0. */
-export { createA3DApp } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { createAnimationController } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
-export { createAssetCompatibilityReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/workflows`. Removal from the root planned for 5.0.0. */
-export { createAssetViewerWorkflow } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { createCaptionTimingProof } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { createExternalParityEnvironmentPipeline } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { createGameAppRuntime } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/workflows`. Removal from the root planned for 5.0.0. */
-export { createInteractiveSceneWorkflow } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/workflows`. Removal from the root planned for 5.0.0. */
-export { createProductConfiguratorWorkflow } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { createProductionPrimitiveTextureIntent } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { crowds } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { decals } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { describeProductionSpotShadow } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { editor } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { evaluatePromptAnimationPublishReadiness } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
-export { gameAssetValidation } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export type { GamePlatformerEvent } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { CharacterAssemblyValidationReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/assets`. Removal from the root planned for 5.0.0. */
-export { GLTFLoader } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { inspectAsset } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/assets`. Removal from the root planned for 5.0.0. */
-export { inspectGLTFAsset } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { listExternalParityEnvironmentTargets } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { loadAsset } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/assets`. Removal from the root planned for 5.0.0. */
-export { loadRenderableAsset } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { meshVehicleSurface } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { mipChainBytesCoarseToFine } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { navigation } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { normalizeSceneSnapshot } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { normalizeTextureBudgetBytes } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
-export { quaterniusGameReadyFighterValidationContract } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Removal from the root planned for 5.0.0. */
-export { Renderer } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { resolveProductionRuntimeShadowTuning } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { resolveProductionShadowCasterIndex } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { sky } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { summarizeExternalParityGLTFCorpus } from "../agent-api/index.js";
-/** @deprecated Use typed `model(assets.x)`; raw model URLs are rejected in public examples. Removal from the root planned for 5.0.0. */
-export { unsafeModelUrl } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Removal from the root planned for 5.0.0. */
-export { upgradeProductionPrimitiveTextures } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { validatePlatformerMotion } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Removal from the root planned for 5.0.0. */
-export { validateQuaterniusGameReadyFighterAsset } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.
 export { water } from "../agent-api/index.js";
 // Live public path (not deprecated): documented and used by shipped templates, games or skills.

@@ -15,7 +15,7 @@
 // frame `dt` + fighter state.
 
 import { createSpringChain, type SpringChain, type Vec3 } from "@aura3d/animation";
-import type { TypedGLBActor } from "@aura3d/engine/production-runtime";
+import type { TypedGLBActor } from "@aura3d/engine/renderer";
 
 const LEGS: ReadonlyArray<{ readonly side: "left" | "right"; readonly chain: readonly [string, string, string]; readonly knee: string; readonly foot: string }> = [
   { side: "left", chain: ["thigh_l", "calf_l", "foot_l"], knee: "calf_l", foot: "foot_l" },

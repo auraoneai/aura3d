@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defineAuraAssets, lights, material, primitives, scene as buildScene, upgradeProductionPrimitiveTextures, type AuraSceneNode } from "@aura3d/engine";
+import { defineAuraAssets, lights, material, primitives, scene as buildScene, type AuraSceneNode } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import { createAuraRuntimeNodeRegistry } from "../../../../packages/engine/src/agent-api/app/runtimeNodes";
 import { CompiledSceneImpl, type MountSceneCompileContext } from "../../../../packages/engine/src/agent-api/compiler/compileScene";

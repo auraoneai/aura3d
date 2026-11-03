@@ -1,6 +1,6 @@
 # Skinned and typed GLB actors in the app render loop
 
-`cloneSkinned(asset, count, options)` returns typed GLB actors (`TypedGLBActor`). To draw them every frame, hand them to the app through `attachRootRenderSource`. Both are exported from the `@aura3d/engine` root, so a game needs no deprecated `@aura3d/engine/production-runtime` import.
+`cloneSkinned(asset, count, options)` returns typed GLB actors (`TypedGLBActor`). To draw them every frame, hand them to the app through `attachRootRenderSource`. Both are exported from the `@aura3d/engine` root, so a game needs no `@aura3d/engine/production-runtime` import (that subpath was removed in 5.0.0).
 
 ```ts
 import { attachRootRenderSource, cloneSkinned, type TypedGLBActor } from "@aura3d/engine";
@@ -21,4 +21,4 @@ const bridge = attachRootRenderSource(canvas, {
 
 ## Status
 
-Moved to the root in 4.1.3. The `@aura3d/engine/production-runtime` copy stays until the 5.0.0 removal of the deprecated subpaths. Used by `examples/saiyan-snake-way-port`, `examples/ninja-runner-port` and `examples/parity-animation`.
+Moved to the root in 4.1.3. The `@aura3d/engine/production-runtime` copy was removed with that subpath in 5.0.0; the production-runtime SDK is also on `@aura3d/engine/renderer`. Used by `examples/saiyan-snake-way-port`, `examples/ninja-runner-port` and `examples/parity-animation`.

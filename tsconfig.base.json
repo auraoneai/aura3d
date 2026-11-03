@@ -94,33 +94,6 @@
       "@aura3d/debug/helpers": [
         "packages/debug/src/helpers.ts"
       ],
-      "@aura3d/engine/rendering/production-runtime": [
-        "packages/engine/src/deprecated/rendering-production-runtime.ts"
-      ],
-      "@aura3d/engine/assets/browser": [
-        "packages/engine/src/deprecated/assets-browser.ts"
-      ],
-      "@aura3d/engine/workflows/production": [
-        "packages/engine/src/deprecated/workflows-production.ts"
-      ],
-      "@aura3d/engine/rendering/webgpu": [
-        "packages/engine/src/deprecated/rendering-webgpu.ts"
-      ],
-      "@aura3d/engine/rendering": [
-        "packages/engine/src/deprecated/rendering.ts"
-      ],
-      "@aura3d/engine/apps": [
-        "packages/engine/src/deprecated/apps.ts"
-      ],
-      "@aura3d/engine/production-runtime": [
-        "packages/engine/src/deprecated/production-runtime.ts"
-      ],
-      "@aura3d/engine/advanced-runtime": [
-        "packages/engine/src/deprecated/advanced-runtime.ts"
-      ],
-      "@aura3d/engine/contracts": [
-        "packages/engine/src/deprecated/contracts.ts"
-      ],
       "@aura3d/engine/lanes": [
         "packages/engine/src/lanes/index.ts"
       ],
@@ -128,7 +101,7 @@
         "packages/assets/src/index.ts"
       ],
       "@aura3d/engine/media-node": [
-        "packages/engine/src/deprecated/media-node.ts"
+        "packages/engine/src/agent-api/media-node.ts"
       ],
       "@aura3d/engine/scene/math": [
         "packages/scene/src/MathTypes.ts"

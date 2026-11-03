@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { legacyPathForContextualPath } from "../../../tools/naming-taxonomy/contextualAliases";
-import { AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE, A3D_THREEJS_EXAMPLE_PARITY_TARGETS, productionAssets, createAnimationController, createCameraFrame, createDirectionalLight, createFirstPersonControls, createImportedAnimationRuntime, createGroundedStage, createMapControls, createOrbitControls, createPhysicsScene, createPointerLockControls, createProductionRenderOptions, createProductViewer, createStudioLighting, createTrackballControls, loadGltfScene, loadHdrEnvironment, type A3DGltfScene } from "@aura3d/engine/production-runtime";
+import { AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE, A3D_THREEJS_EXAMPLE_PARITY_TARGETS, productionAssets, createAnimationController, createCameraFrame, createDirectionalLight, createFirstPersonControls, createImportedAnimationRuntime, createGroundedStage, createMapControls, createOrbitControls, createPhysicsScene, createPointerLockControls, createProductionRenderOptions, createProductViewer, createStudioLighting, createTrackballControls, loadGltfScene, loadHdrEnvironment, type A3DGltfScene } from "@aura3d/engine/renderer";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 import { Renderable, Scene } from "@aura3d/scene";
 import { A3DRenderer } from "@aura3d/engine/renderer";
@@ -518,7 +518,7 @@ describe("RuntimeParity production public SDK", () => {
           && typeof createTrackballControls === "function"
           && typeof createPointerLockControls === "function"
           && typeof createProductViewer === "function",
-        evidence: "@aura3d/engine/production-runtime exports renderer, GLTF, HDR, scene-composition, orbit/first-person/map/trackball/pointer-lock controls, and viewer APIs."
+        evidence: "@aura3d/engine/renderer exports the production-runtime SDK: renderer, GLTF, HDR, scene-composition, orbit/first-person/map/trackball/pointer-lock controls, and viewer APIs."
       },
       {
         id: "no-three-runtime-delegation",
@@ -537,7 +537,7 @@ describe("RuntimeParity production public SDK", () => {
       },
       {
         id: "template-uses-public-sdk",
-        pass: templateSource.includes("@aura3d/engine/production-runtime")
+        pass: templateSource.includes("@aura3d/engine/renderer")
           && templateSource.includes("loadGltfScene")
           && templateSource.includes("loadHdrEnvironment")
           && templateSource.includes("createProductViewer"),
@@ -557,7 +557,7 @@ describe("RuntimeParity production public SDK", () => {
           && typeof createMapControls === "function"
           && typeof createTrackballControls === "function"
           && typeof createPointerLockControls === "function",
-        evidence: "@aura3d/engine/production-runtime exposes native camera/navigation control factories without Three.js runtime imports."
+        evidence: "@aura3d/engine/renderer exposes native camera/navigation control factories without Three.js runtime imports."
       },
       {
         id: "public-sdk-frame-render-api",
@@ -575,7 +575,7 @@ describe("RuntimeParity production public SDK", () => {
           && typeof createProductionRenderOptions === "function"
           && engineSource.includes("export function createProductionRenderOptions")
           && engineSource.includes("createGroundedStage(options.asset.resources.bounds"),
-        evidence: "@aura3d/engine/production-runtime exposes native light, stage, camera-frame, and production render-option helpers, and the flagship viewer uses the public grounded-stage helper."
+        evidence: "@aura3d/engine/renderer exposes native light, stage, camera-frame, and production render-option helpers, and the flagship viewer uses the public grounded-stage helper."
       },
       {
         id: "external-consumer-render-proof",

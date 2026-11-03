@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { lights, text3D } from "@aura3d/engine";
 import {
   describeProductionSpotShadow,
-  lights,
   mipChainBytesCoarseToFine,
   normalizeTextureBudgetBytes,
   resolveProductionShadowCasterIndex,
-  resolveProductionRuntimeShadowTuning,
-  text3D
-} from "@aura3d/engine";
+  resolveProductionRuntimeShadowTuning
+} from "@aura3d/engine-runtime";
 import { describeTextureStreamingResidency } from "../../../packages/engine/src/agent-api/compiler/primitives.js";
 
 /** muse3jsparity-PRD G1/N1/M2 scene-contract bridge units (pure legs). */

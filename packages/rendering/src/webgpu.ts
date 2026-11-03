@@ -16,7 +16,7 @@
  *
  * `WebGPUDevice` is a documented public export and WS-2.8 requires low-level escape hatches to stay
  * reachable — a developer writing a custom WebGPU path must still be able to construct one. So it
- * moves to `@aura3d/engine/rendering/webgpu`, and the barrel keeps only the **type**, which erases at
+ * moves to `@aura3d/rendering/webgpu`, and the barrel keeps only the **type**, which erases at
  * build time. Nothing is removed from the public surface; one import specifier changes, recorded in
  * `MIGRATION-1.6.md`.
  */

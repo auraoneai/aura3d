@@ -5,7 +5,7 @@ import {
   createSideViewGameRenderPreset,
   createTypedGLBActor,
   type TypedGLBActor
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 import {
   consolidateStaticMeshes,
   createLightingRig,
@@ -17,7 +17,7 @@ import {
   type RenderDeviceDiagnostics,
   type RenderItem,
   type RenderSource
-} from "@aura3d/engine/rendering";
+} from "@aura3d/rendering";
 import { composeMat4, PointLight, quatFromEuler, type Mat4 } from "@aura3d/scene";
 import { fighterInertializedWeights, sampleClipEvents } from "@aura3d/animation";
 import {

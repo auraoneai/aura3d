@@ -19,7 +19,7 @@ http://127.0.0.1:5181/apps/advanced-examples-gallery/#product-configurator
 
 ```ts
 import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 
 const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");

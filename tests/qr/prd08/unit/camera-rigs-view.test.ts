@@ -14,7 +14,7 @@ import {
   createTopDownRig,
   type AuraOrbitRig
 } from "@aura3d/engine/lanes";
-import type { AuraCameraSubject } from "@aura3d/engine/contracts";
+import type { AuraCameraSubject } from "@aura3d/engine-runtime/contracts";
 import { ASPECT, NO_PROBE, project, run, subjectAt, type V3 } from "./rigTestKit.js";
 
 describe("R-5 shoulder — parity with createShoulderCamera", () => {

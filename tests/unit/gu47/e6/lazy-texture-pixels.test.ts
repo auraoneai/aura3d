@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { defineAuraAssets, TextureHandle, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
+import { defineAuraAssets, TextureHandle } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { PBRMaterial, Texture, TextureBinding } from "@aura3d/rendering";
 import * as pngDecoder from "../../../../packages/engine/src/agent-api/PngTexturePixels";
 import {

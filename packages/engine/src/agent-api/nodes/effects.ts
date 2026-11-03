@@ -6,6 +6,7 @@ import { effects } from "../nodes/effects.composite.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
 import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
+import type { AuraHeightFogSpec } from "../../contracts/atmosphere.js";
 import { particles } from "./particles.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
@@ -28,6 +29,12 @@ export const FOG_OPTION_KEYS: readonly string[] = [
  * `withEmitterOptions` — identical to the §6.2 emitter-option pattern above.
  */
 type VfxNodeOptions = Omit<AuraEffectNode, "kind" | "effect"> & Record<string, unknown>;
+/**
+ * Scene fog options: `mode` is the C-21 fog mode read by scene fog
+ * (`AuraHeightFogSpec.mode`), not the anti-alias mode the shared effect node
+ * declares for `effects.antiAlias`.
+ */
+type FogNodeOptions = Omit<AuraEffectNode, "kind" | "effect" | "mode"> & { readonly mode?: AuraHeightFogSpec["mode"] } & Record<string, unknown>;
 
 /**
  * Lane effect kinds ("trail", "lightCone", "auroraRibbon", "meshParticles")
@@ -145,7 +152,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * maxOpacity 1). Flag-off compile reads `?? 0.12`/`?? "#9fb7d9"` so the
    * uniforms are unchanged.
    */
-  fog: (options: VfxNodeOptions = {}) =>
+  fog: (options: FogNodeOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>(
       withEmitterOptions(
         {

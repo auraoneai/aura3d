@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { instances, material, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
+import { instances, material } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { InstancedPBRMaterial, TexturedPBRMaterial } from "@aura3d/rendering";
 import { assets } from "../../browser/fixtures/c1-extension/assets";
 

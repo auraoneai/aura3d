@@ -7,13 +7,16 @@
  *     `lowerModelMaterialOverrides` into `TypedGLBActorOptions.materialOverrides` (P2-3).
  *   - `model.variant` — wired flag-on into `TypedGLBActorOptions.materialVariant` (P2-3/P2-1).
  *
- * Still unconsumed (kept): alpha-to-coverage, double-sided, unlit.
+ *   - `material.alphaToCoverage` — 5.0 (S5-WP19-04): `material.pbr/metal` lower it into the
+ *     primitive render state (`productionPrimitiveRenderState`), which the `prd04.alphaToCoverage`
+ *     shader feature reads for masked materials on MSAA tiers.
+ *
+ * Still unconsumed (kept): double-sided, unlit.
  */
 import { registerOptionCoverage } from "../../contracts/compiler.js";
 
 /** Remaining lane-04 diagnostic-only fields — mirrors the contract map's owner-4 entries. */
 export const DIAGNOSTIC_ONLY_PRD04_FIELDS: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
-  "material.alphaToCoverage": { reason: "C-15: MSAA alpha-to-coverage is PRD 04's", ownerPrd: 4 },
   "material.doubleSided": { reason: "C-15: double-sided pipeline variant is PRD 04's", ownerPrd: 4 },
   "material.unlit": { reason: "C-15: unlit lobe is PRD 04's", ownerPrd: 4 }
 };

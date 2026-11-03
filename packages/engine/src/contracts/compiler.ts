@@ -86,7 +86,6 @@ export const DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: 
   "transform.rotationOrder": { reason: "C-06: composeWorldMatrix stub lowers to ZYX", ownerPrd: 1 },
   "transform.quaternion": { reason: "C-06: composeWorldMatrix stub lowers to euler", ownerPrd: 1 },
   "light.power": { reason: "C-10: lumen conversion is PRD 02's", ownerPrd: 2 },
-  "material.alphaToCoverage": { reason: "C-15: MSAA alpha-to-coverage is PRD 04's", ownerPrd: 4 },
   "material.doubleSided": { reason: "C-15: double-sided pipeline variant is PRD 04's", ownerPrd: 4 },
   "material.unlit": { reason: "C-15: unlit lobe is PRD 04's", ownerPrd: 4 },
   "model.materialOverrides": { reason: "C-15: override seam is PRD 04's", ownerPrd: 4 },

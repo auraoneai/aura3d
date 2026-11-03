@@ -8,7 +8,6 @@
     "baseUrl": "../..",
     "paths": {
       "@aura3d/engine": ["dist/engine/agent-api/index.d.ts"],
-      "@aura3d/engine/rendering": ["dist/rendering/index.d.ts"],
       "@aura3d/engine/scene": ["dist/scene/index.d.ts"]
     },
     "strict": true,

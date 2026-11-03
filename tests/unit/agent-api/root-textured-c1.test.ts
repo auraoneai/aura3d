@@ -1,9 +1,6 @@
 import { describe, expect, test } from "vitest";
-import {
-  compositeMetallicRoughnessPixels,
-  createProductionPrimitiveTextureIntent,
-  defineAuraAssets
-} from "@aura3d/engine";
+import { defineAuraAssets } from "@aura3d/engine";
+import { compositeMetallicRoughnessPixels, createProductionPrimitiveTextureIntent } from "@aura3d/engine-runtime";
 
 const textures = defineAuraAssets({
   checker: { type: "texture", format: "png", url: "/tests/browser/fixtures/c1-checker.png", hash: "99496e5e0a5e216a" },

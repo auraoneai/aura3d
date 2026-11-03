@@ -9,7 +9,7 @@ import {
 
 const ROOT_ROUTE = `import { createAuraApp } from "@aura3d/engine";
 const app = createAuraApp("#app", { scene });`;
-const ADVANCED_ROUTE = `import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+const ADVANCED_ROUTE = `import { A3DRenderer } from "@aura3d/engine/renderer";
 const renderer = await A3DRenderer.create();`;
 const BARE_CORE_ROUTE = `import { Renderer } from "@aura3d/rendering";
 const renderer = await Renderer.create();`;
@@ -70,7 +70,7 @@ describe("T1a assertNoUndocumentedRendererMount", () => {
 
   test("the repo's own @aura3d/assets GLTFLoader is legitimate surface", () => {
     const content = `import { GLTFLoader, LoadContext } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 const asset = await new GLTFLoader().load({ url }, new LoadContext());
 const renderer = await A3DRenderer.create();`;
     expect(classifyRouteMount("apps/loader-demo/src/main.ts", content).violation).toBeNull();
@@ -78,7 +78,7 @@ const renderer = await A3DRenderer.create();`;
 
   test("headless root logic mounts claim no pixels", () => {
     const content = `import { createGameApp } from "@aura3d/engine";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 const gameApp = createGameApp(null, { scene });
 const renderer = await A3DRenderer.create({ canvas });`;
     const result = classifyRouteMount("apps/arena/src/app.ts", content);

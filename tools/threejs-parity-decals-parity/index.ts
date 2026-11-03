@@ -10,7 +10,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, normalizeVec3, type Vec3 } from "@aura3d/scene";
 import { placeDecalFromPointer, seededDecals, type DecalPlacement } from "../../apps/decals/src/decalPlacement";
 import * as THREE from "three";

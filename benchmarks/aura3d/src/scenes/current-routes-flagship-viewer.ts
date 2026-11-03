@@ -3,7 +3,7 @@ import {
   loadGltfScene,
   loadHdrEnvironment,
   type A3DProductViewer
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 
 export interface CurrentFlagshipViewerSceneConfig {
   readonly id: "flagship-viewer";
@@ -39,7 +39,7 @@ export interface CurrentFlagshipRenderResult {
   readonly status: "ready";
   readonly renderer: {
     readonly backend: "webgl2" | "webgpu";
-    readonly sdkSurface: "@aura3d/engine/production-runtime";
+    readonly sdkSurface: "@aura3d/engine/renderer";
     readonly drawCalls: number;
     readonly triangles: number;
     readonly textures: number;
@@ -193,7 +193,7 @@ export async function renderA3DFlagshipViewer(
       status: "ready",
       renderer: {
         backend: viewer.renderer.device.kind === "webgpu" ? "webgpu" : "webgl2",
-        sdkSurface: "@aura3d/engine/production-runtime",
+        sdkSurface: "@aura3d/engine/renderer",
         drawCalls: result.proof.diagnostics.drawCalls,
         triangles: Math.max(0, Math.floor(asset.metadata.indexCount / 3)),
         textures: result.proof.diagnostics.textures ?? 0,

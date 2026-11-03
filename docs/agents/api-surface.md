@@ -47,19 +47,19 @@ React apps use `@aura3d/react` around the same root API.
 
 Members of each namespace (for example `effects.bloom`, `camera.orbit`, `ui.slider`) are listed in `root-exports.md`.
 
-## Do not use these (deprecated at the root, removed in 5.0.0)
+## Do not use these in new code
 
 | Do not use | Use instead |
 |---|---|
 | `createGame` from `@aura3d/engine` | The root export throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything. Import `createGame` from `@aura3d/engine/game` |
 | `compilePromptPlan` | `compilePromptPlanV2` |
-| `collectAuraSceneEvidence`, `captureAuraAppScreenshot`, `createAssetCompatibilityReport` | `@aura3d/engine/devtools` |
+| `collectAuraSceneEvidence`, `captureAuraAppScreenshot`, `createAssetCompatibilityReport` | `@aura3d/engine/devtools` (the last two left the root in 5.0.0) |
 | `character.*` | `characters`, `AnimationController`, `prefabs.lowPolyHumanoid` |
-| `unsafeModelUrl`, `loadAsset`, `GLTFLoader` | Typed assets and `model(assets.name)`. `unsafeModelUrl` is banned in public examples |
+| `unsafeModelUrl`, `loadAsset`, `GLTFLoader` | Typed assets and `model(assets.name)`. All three left the root in 5.0.0 ([migration guide](../migration/4-to-5.md), B14) |
 | `createDiagnosticsPanel`, `createEnvironment` | `app.diagnostics()`, `environments.*` |
 | `sky`, `water`, `weather`, `workflows` | Marked deprecated with no replacement at the root; check `root-exports.md` before teaching them |
 
-Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals or `@aura3d/engine/production-runtime` internals to make a public example look better. If a feature needs internals, the right output is a library task or a roadmap item, not route-local workaround code.
+Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals or `@aura3d/engine/renderer` production-runtime internals to make a public example look better. If a feature needs internals, the right output is a library task or a roadmap item, not route-local workaround code.
 
 ## Asset-safe pattern
 

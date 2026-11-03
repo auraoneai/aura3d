@@ -8,7 +8,7 @@ import {
   type GLTFRenderResources
 } from "@aura3d/assets";
 import { probeCompressedTextureCapabilities } from "@aura3d/rendering/lanes";
-import { A3DRenderer } from "@aura3d/engine";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {

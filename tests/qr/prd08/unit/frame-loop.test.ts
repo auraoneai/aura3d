@@ -3,7 +3,7 @@
  * Flag-off invariants are covered by tests/unit/engine/fixed-step-determinism.test.ts.
  */
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { createFrameLoop, type FrameLoopTick } from "@aura3d/engine/lanes";
 
 const loopFlags = resolveQrFlags({ options: ["camera.loop"] });

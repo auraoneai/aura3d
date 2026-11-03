@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { composeWorldMatrix, parseAuraColor, eulerToQuaternion } from "@aura3d/engine/contracts";
+import { composeWorldMatrix, parseAuraColor, eulerToQuaternion } from "@aura3d/engine-runtime/contracts";
 
 describe("C-06 scene graph", () => {
   const I = Float32Array.from([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);

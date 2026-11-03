@@ -1,4 +1,4 @@
-import { runProductionExample } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows";
 
 void runProductionExample({
   appId: "production-runtime-template-webgpu-starter",

@@ -11,8 +11,8 @@ import {
   FEEL_PRESET_EVENTS,
   feelPresets
 } from "@aura3d/engine/lanes";
-import type { AuraFeelEventSpec } from "@aura3d/engine/contracts";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import type { AuraFeelEventSpec } from "@aura3d/engine-runtime/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { FrameContributorContext, RenderItem } from "@aura3d/rendering/contracts";
 
 const HIT_HEAVY: AuraFeelEventSpec = {

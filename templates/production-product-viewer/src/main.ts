@@ -1,4 +1,4 @@
-import { createProductViewer, loadGltfScene, loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { createProductViewer, loadGltfScene, loadHdrEnvironment } from "@aura3d/engine/renderer";
 
 const canvas = document.getElementById("viewport");
 const metrics = document.getElementById("metrics");

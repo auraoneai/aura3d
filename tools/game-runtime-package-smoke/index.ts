@@ -55,11 +55,15 @@ const requiredRootGameImports = [
   "createAuraApp",
   "createAnimationController",
   "game",
-  "gameAssetValidation",
   "lights",
   "model",
+  "scene"
+] as const;
+
+/** Fighter asset validation left the root in 5.0.0; the consumer imports it from `@aura3d/engine/devtools`. */
+const requiredDevtoolsGameImports = [
+  "gameAssetValidation",
   "quaterniusGameReadyFighterValidationContract",
-  "scene",
   "validateQuaterniusGameReadyFighterAsset"
 ] as const;
 
@@ -98,7 +102,7 @@ const sourceCompleteExpectationGates = [
   {
     id: "external-consumer-public-root-api",
     status: "source-complete-when-present",
-    requiredImports: [...requiredRootGameImports],
+    requiredImports: [...requiredRootGameImports, ...requiredDevtoolsGameImports],
     requiredSourceUses: [...requiredGameRuntimeSourceUses],
     forbiddenPatterns: forbiddenConsumerPatterns.map(({ name }) => name)
   },
@@ -158,13 +162,15 @@ const mainSource = `import {
   createAuraApp,
   createAnimationController,
   game,
-  gameAssetValidation,
   lights,
   model,
-  quaterniusGameReadyFighterValidationContract,
-  scene,
-  validateQuaterniusGameReadyFighterAsset
+  scene
 } from "@aura3d/engine";
+import {
+  gameAssetValidation,
+  quaterniusGameReadyFighterValidationContract,
+  validateQuaterniusGameReadyFighterAsset
+} from "@aura3d/engine/devtools";
 import { assets } from "./aura-assets";
 
 declare global {

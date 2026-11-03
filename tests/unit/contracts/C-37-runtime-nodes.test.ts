@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import "@aura3d/engine";
-import { compileScene, updateCompiledScene, registerNodeHandleExtension } from "@aura3d/engine/contracts";
+import { compileScene, updateCompiledScene, registerNodeHandleExtension } from "@aura3d/engine-runtime/contracts";
 import type { MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";

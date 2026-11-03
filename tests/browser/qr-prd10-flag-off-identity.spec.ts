@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import { resolveEnvironment } from "../../packages/engine/src/contracts/environment";
 import { nodeHandlerFor } from "../../packages/engine/src/contracts/compiler";
 import { lookLint } from "../../packages/engine/src/contracts/looks";

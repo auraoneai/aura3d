@@ -7,7 +7,7 @@
 
 import { afterEach, describe, expect, it } from "vitest";
 import type { AnimationPose } from "@aura3d/animation";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import {
   ANIMATION_EMPTY_POSE,
   consumePendingEmptyPoseRejection,

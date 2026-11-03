@@ -1,4 +1,4 @@
-import { createStudioLighting } from "@aura3d/engine/production-runtime";
+import { createStudioLighting } from "@aura3d/engine/renderer";
 import { createLightingRig, type CollectedLight } from "@aura3d/rendering";
 import type { SceneFrame } from "./sceneBuilderPrimitives";
 

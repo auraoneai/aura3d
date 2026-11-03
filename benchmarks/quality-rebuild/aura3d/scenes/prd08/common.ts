@@ -49,7 +49,7 @@ import {
   type AuraCameraProbe,
   type AuraCameraRig,
   type AuraCameraSubject
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine-runtime/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec } from "../../../shared/types";
 import type { MotionDriver } from "../../../motion/subject-scripts";
 import { scenes as motionScenes } from "../../../motion/scenes";

@@ -20,6 +20,20 @@ const restoredLegacyValues = [
   "upgradeProductionPrimitiveTextures", "validateQuaterniusGameReadyFighterAsset", "workflows"
 ] as const;
 
+/** Deprecated 4.x root values removed from `@aura3d/engine` in 5.0.0 (docs/migration/4-to-5.md B14). */
+const removedFromLegacyRoot = new Set<string>([
+  "A3DAppLifecycle", "A3DRenderer", "AnimationClip", "AnimationLayer", "AnimationMixer", "AnimationTrack",
+  "GLTFLoader", "Renderer", "captureAuraAppScreenshot", "captureScreenshot", "compositeMetallicRoughnessPixels",
+  "createA3DApp", "createAssetCompatibilityReport", "createAssetViewerWorkflow", "createExternalParityEnvironmentPipeline",
+  "createGameAppRuntime", "createInteractiveSceneWorkflow", "createProductConfiguratorWorkflow",
+  "createProductionPrimitiveTextureIntent", "crowds", "describeProductionSpotShadow", "gameAssetValidation",
+  "inspectAsset", "inspectGLTFAsset", "listExternalParityEnvironmentTargets", "loadAsset", "loadRenderableAsset",
+  "meshVehicleSurface", "mipChainBytesCoarseToFine", "normalizeSceneSnapshot", "normalizeTextureBudgetBytes",
+  "quaterniusGameReadyFighterValidationContract", "resolveProductionRuntimeShadowTuning",
+  "resolveProductionShadowCasterIndex", "summarizeExternalParityGLTFCorpus", "unsafeModelUrl",
+  "upgradeProductionPrimitiveTextures", "validateQuaterniusGameReadyFighterAsset"
+]);
+
 function legacyRootValueNames(): string[] {
   const path = "packages/engine/src/public/index.ts";
   const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest, true);
@@ -184,7 +198,17 @@ describe("versioned isolated physics entry", () => {
       const legacy = await import("../../../packages/engine/src/public/index.js");
       const legacyGame = await import("../../../packages/game/src/index.js");
 
-      for (const name of restoredLegacyValues) expect(v5[name], name).toBe(legacy[name]);
+      const legacyValues = legacy as unknown as Record<string, unknown>;
+      for (const name of restoredLegacyValues) {
+        if (removedFromLegacyRoot.has(name)) {
+          // 5.0.0 removed these deprecated names from the legacy root (migration guide B14);
+          // the staged v5 entry is unchanged.
+          expect(legacyValues[name], name).toBeUndefined();
+          expect(v5[name], name).toBeDefined();
+        } else {
+          expect(v5[name], name).toBe(legacyValues[name]);
+        }
+      }
       expect(v5.physics).not.toBe(legacy.physics);
       expect(v5.createGame).not.toBe(legacy.createGame);
 

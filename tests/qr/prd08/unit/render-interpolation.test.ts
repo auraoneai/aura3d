@@ -2,7 +2,7 @@
  * L-4 FixedStepDriver + L-7 InterpolationStore (PRD-08 §6.4/§6.5).
  */
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import {
   createFixedStepDriver,
   createInterpolationStore,

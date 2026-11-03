@@ -86,7 +86,7 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 | `@aura3d/debug` | Diagnostics and the runtime safety net |
 | `@aura3d/product-studio`, `@aura3d/apps`, `@aura3d/workflows`, `@aura3d/react`, `@aura3d/editor-runtime` | Product viewers, app presets, workflows, React host, editor runtime |
 
-`@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering` and `/contracts` are deprecated subpaths; new code uses the root.
+The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering`, `/contracts` and six more) were removed in 5.0.0; use the root, `@aura3d/engine/renderer`, `/assets` or `/workflows` ([migration guide](https://github.com/auraoneai/aura3d/blob/main/docs/migration/4-to-5.md)).
 
 ## What is still not resolved
 

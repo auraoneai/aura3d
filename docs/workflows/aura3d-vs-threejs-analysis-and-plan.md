@@ -126,8 +126,8 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 | `packages/engine/src/public/index.ts` | MODIFY | Move deprecated exports behind subpaths (4.2) |
 | `packages/debug/src/fault-injection/**`, `tests/unit/fault-injection/**` | CREATE | Fault suite for Pillar C |
 | `apps/showcase-index/index.html` and generator under `tools/showcase-port-pages/` | MODIFY | Per-game metrics and evidence badges from `evidence/` |
-| `apps/showcase-safety/**` | CREATE | Public fault-injection demo page |
-| `apps/playground/**` | CREATE | Live editor with share link and agent-fix |
+| new `showcase-safety` app under `apps/` (not yet created) | CREATE | Public fault-injection demo page |
+| new `playground` app under `apps/` (not yet created) | CREATE | Live editor with share link and agent-fix |
 | `tools/bench-vs-threejs/**`, `BUNDLE_SIZES.md` | MODIFY | Re-run on fixed build; add TTFP and first-try suites |
 | `evidence/scorecard/**`, `docs/workflows/aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md` | MODIFY/CREATE | Generated scorecard; refresh rows each release |
 
@@ -138,7 +138,7 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 - **WP-3 Bundle.** Per-module size report; lazy or subpath-only animation, audio, physics, devtools, legacy post and WebGPU; stage targets in section 5; gate in `BUNDLE_SIZES.md`.
 - **WP-4 Frame cost.** Status: partly landed (`a816facf6`: cube 666 to 50 ms, 18,000-instance forest 38 s to 6.4 s per frame on software GL); cascade selection and shadow batching open. Cascade selection, shadow batching, named profiles; re-bench against a packed 4.1.3 tarball.
 - **WP-5 Post chain.** PostGraph migration; luma regression test; ships in 4.2.0.
-- **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; `apps/showcase-safety`.
+- **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; a new `showcase-safety` app (not yet created).
 - **WP-7 Real-GPU lane.** Hardware runner under the serverless-first policy, or the owner's M4 Max checklist (Drift world, Silt rings, Last Train Enter/E/W, native Tennis); record under `evidence/real-gpu/`.
 - **WP-8 Independent authoring trial.** Fresh agent, no repo context, `llms.txt` plus types only, five scenes in both libraries; replaces RESULTS section 13; repeat after WP-1 and WP-2.
 - **WP-9 One-command game.** `aura3d new game`; TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.

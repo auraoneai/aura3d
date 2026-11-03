@@ -1,13 +1,13 @@
 # Support policy
 
-Version: 4.7.10
+Version: 5.0.0
 
-Current release: Aura3D 4.7.10. The next release, carrying the
-native-capability work, will be Aura3D 5.0.0.
+Current release: Aura3D 5.0.0, the major release carrying the
+native-capability work ([4.x to 5.0 migration guide](../migration/4-to-5.md)).
 
 This policy applies to the package versions and export maps in a release, not
 just to files present in a source checkout. The current source release line is
-Aura3D **4.7.10**, as recorded in the package manifests and changelog. The latest
+Aura3D **5.0.0**, as recorded in the package manifests and changelog. The latest
 published patch in the current release line is the supported maintenance
 release. Older releases are superseded; update to that patch before reporting
 an issue when practical. The immediately preceding supported release is retained
@@ -48,7 +48,8 @@ Stable APIs are deprecated with a notice, replacement or migration path, and
 intended removal version. Removal in a major release requires a deprecation in
 a published release of a prior major: a notice introduced in 5.x, for example,
 cannot justify removal in 5.0.0. APIs remain available through the major in
-which they were deprecated, including the already announced 5.0.0 removals.
+which they were deprecated. The 4.x root values and legacy subpaths announced
+for removal in 5.0.0 were removed in 5.0.0 ([migration guide](../migration/4-to-5.md), B14 and B15).
 Other incompatible major changes also require a recorded migration. Renamed
 scaffolder template aliases are a separately documented CLI exception: their
 warning states removal in the next minor. Experimental surfaces and unsupported

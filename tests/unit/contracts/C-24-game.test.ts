@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { C24_GAME_SLOT } from "@aura3d/game";
-import { createGame as stubCreateGame } from "@aura3d/engine/contracts";
+import { createGame as stubCreateGame } from "@aura3d/engine-runtime/contracts";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 
 /**

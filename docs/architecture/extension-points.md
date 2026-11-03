@@ -6,8 +6,9 @@ Aura3D's public surface has two layers, and both are supported:
   `labels`, `game`. Most developers never leave it.
 - **`@aura3d/rendering`** — the primary low-level package. Devices, renderers, geometry,
   materials, shader modules, and passes are published with declarations.
-- **`@aura3d/engine/rendering`** — a compatibility export of the same renderer surface from
-  the root package. New low-level integrations should prefer `@aura3d/rendering`.
+- **`@aura3d/engine/renderer`** — the curated renderer surface of the root package (the 4.x
+  `@aura3d/engine/rendering` compatibility export was removed in 5.0.0). Low-level integrations
+  that need the full surface use `@aura3d/rendering`.
 
 The second layer is not an accident of packaging. **An engine a developer cannot go beneath is a
 framework they will eventually have to abandon.** Every hatch below is a published entry point, and
@@ -72,7 +73,7 @@ Aura3D applies semantic versioning to those exported names and TypeScript
 signatures: a 2.0 patch may fix behavior without intentionally breaking the
 contract; a minor may add optional capabilities; removing or incompatibly
 changing an exported contract requires a major version and migration notes.
-The root `@aura3d/engine/rendering` compatibility entry follows the same rule.
+The root `@aura3d/engine/renderer` entry follows the same rule.
 
 The guarantee does not cover `packages/*/src/*`, unexported class fields,
 backend-native WebGL/WebGPU objects discovered by casting, generated `dist/`

@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 import { describe, expect, test } from "vitest";
-import { createProductionPrimitiveTextureIntent, defineAuraAssets, material } from "@aura3d/engine";
+import { defineAuraAssets, material } from "@aura3d/engine";
+import { createProductionPrimitiveTextureIntent } from "@aura3d/engine-runtime";
 import type { AuraMaterialSpec } from "@aura3d/engine";
 
 const textures = defineAuraAssets({

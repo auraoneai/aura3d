@@ -51,7 +51,7 @@ const plan = definePromptPlan({
 createAuraApp("#app", { scene: promptPlanToScene(plan), diagnostics: { overlay: true } });
 ```
 
-`compilePromptPlan` is deprecated with no replacement (removed in 5.0.0): do not use it in new code. A compiling app is not done; the screenshot must visibly satisfy the prompt. If it is weak, run the look-dev loop (`aura3d-art-direction`) and fix the single biggest issue.
+`compilePromptPlan` is superseded by `compilePromptPlanV2` (still exported in 5.0.0 for 1-argument callers): do not use it in new code. A compiling app is not done; the screenshot must visibly satisfy the prompt. If it is weak, run the look-dev loop (`aura3d-art-direction`) and fix the single biggest issue.
 
 ## Scene kits
 

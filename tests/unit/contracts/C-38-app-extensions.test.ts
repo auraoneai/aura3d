@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { registerAppExtension, appExtensionsAll } from "@aura3d/engine/contracts";
+import { registerAppExtension, appExtensionsAll } from "@aura3d/engine-runtime/contracts";
 
 describe("C-38 app extensions", () => {
   it("registered extension is enumerable", () => {

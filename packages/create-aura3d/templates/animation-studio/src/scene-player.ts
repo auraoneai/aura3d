@@ -14,10 +14,10 @@
  */
 
 import { Renderer, TextureBinding as EngineTextureBinding } from "@aura3d/engine/renderer";
-import { createPerformanceGovernor, createSideViewGameRenderPreset, createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
+import { createPerformanceGovernor, createSideViewGameRenderPreset, createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/renderer";
 import { createCameraPathFromPreset, sampleCameraPath, type CameraPath } from "@aura3d/engine";
 // I1 clean-room correctness: import the rendering/scene PRIMITIVES from the engine's own subpaths
-// (`@aura3d/engine/rendering` / `@aura3d/engine/scene`) — the SAME copy the Renderer uses — NOT
+// (`@aura3d/engine/renderer` / `@aura3d/engine/scene`) — the SAME copy the Renderer uses — NOT
 // the standalone `@aura3d/rendering` / `@aura3d/scene` packages. In a clean-room (tarball) install
 // those standalone packages are a SECOND copy of the rendering code, so a `Geometry`/`PBRMaterial`/
 // `TextureBinding` built from them is a DIFFERENT class than the renderer's, and the renderer's
@@ -25,7 +25,7 @@ import { createCameraPathFromPreset, sampleCameraPath, type CameraPath } from "@
 // `MaterialBindingError` ("u_environmentMapTexture must be texture2d"). Importing through the engine
 // gives ONE shared copy, so the bindings match. (In the monorepo these resolve to the same deduped
 // dist either way, so this never changes the monorepo render.)
-import { Geometry, PBRMaterial, type CollectedLight, type RenderItem, type RenderSource } from "@aura3d/engine/rendering";
+import { Geometry, PBRMaterial, type CollectedLight, type RenderItem, type RenderSource } from "@aura3d/engine/renderer";
 import { bakeSetHdri, type BakedHdri } from "./procedural-hdri";
 import { composeMat4, multiplyMat4, perspectiveMat4, PointLight, quatFromEuler, type Mat4 } from "@aura3d/engine/scene";
 import {
@@ -414,7 +414,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   let CelMaterial: CelCtor | undefined;
   if (inShaderCel) {
     try {
-      const mod = (await import("@aura3d/engine/rendering")) as unknown as { AnimationToonMaterial?: CelCtor };
+      const mod = (await import("@aura3d/engine/renderer")) as unknown as { AnimationToonMaterial?: CelCtor };
       CelMaterial = mod.AnimationToonMaterial;
       if (!CelMaterial) console.warn("[scene-player] inShaderCel (stylized default) requested but AnimationToonMaterial absent from the build; falling back to PBR.");
       else console.info("[scene-player] inShaderCel ON (stylized default): non-glow set pieces use AnimationToonMaterial.");

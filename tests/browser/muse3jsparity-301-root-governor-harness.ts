@@ -1,5 +1,6 @@
-import { camera, createAuraApp, createGameAppRuntime, distanceLod, lights, material, primitives, scene, type AuraPerformanceQuality } from '@aura3d/engine';
-import { attachRootRenderSource, createRootParticleWorkload } from '@aura3d/engine/production-runtime';
+import { camera, createAuraApp, distanceLod, lights, material, primitives, scene, type AuraPerformanceQuality } from '@aura3d/engine';
+import { createGameAppRuntime } from '@aura3d/engine/renderer';
+import { attachRootRenderSource, createRootParticleWorkload } from '@aura3d/engine/renderer';
 
 // Only createAuraApp owns a renderer. Particles explicitly use production-runtime
 // geometry with CPU simulation and native root draws; this is not GPU compute proof.

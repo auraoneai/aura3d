@@ -22,7 +22,7 @@
 // a SECOND copy, so a `TextureBinding` built from it is a different class than the renderer's and is
 // rejected by `MaterialBinding.bind` (`value instanceof TextureBinding`). Going through the engine
 // keeps the baked HDRI's binding the same class as the renderer's, so IBL binds across the install.
-import { Sampler, Texture, TextureBinding } from "@aura3d/engine/rendering";
+import { Sampler, Texture, TextureBinding } from "@aura3d/engine/renderer";
 import type { EnvironmentHdriSpec, Vec3 } from "./episode-document";
 
 export const HDRI_WIDTH = 1024;

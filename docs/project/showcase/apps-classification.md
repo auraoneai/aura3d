@@ -66,7 +66,6 @@ still not be a public release candidate.
 | `showcase-mech-hangar` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and mech evidence are historical. |
 | `showcase-meshy-relic-pilot` | prototype | Meshy CLI asset-pipeline prototype with a typed relic collection loop; private-generation rights and collision claims remain unproven, so it is not public showcase material. |
 | `aura-clash-showcase` | development showcase | Development showcase multiplayer arena fighter. |
-| `neon-corridor-strike` | library demo | Neon corridor speed runner demo. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 The retained `docs/project/showcase-launch-evidence.json` carries a 2026-09-08
@@ -226,6 +225,7 @@ directly. Revisit only if that launch evidence is regenerated without these refe
 | `wow-webgpu-render-target` | retained lower-level WebGPU evidence |
 | `wow-webgpu-triangle` | retained lower-level WebGPU evidence |
 | `wow-common` | support-only shared code; not a route |
+| `showcase-port-shared` | support-only shared code; not a route. Provides the port pages' `diag.ts` diagnostics panel and `quickbar.css`; it has no `index.html` or `package.json`. |
 | `common` | support-only shared code; not a route. Provides `src/runtime.ts` and `src/styles.css` to 25 `apps/*` routes and has no `index.html`. |
 
 These routes may remain only when their READMEs and route labels name the exact

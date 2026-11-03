@@ -4,7 +4,7 @@ import {
   createGLTFSceneAnimationRuntime,
   loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import {
   Geometry,
   PBRMaterial,

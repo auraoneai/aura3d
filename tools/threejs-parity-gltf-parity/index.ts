@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 import { computePerspectiveCameraFrame } from "@aura3d/rendering";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";

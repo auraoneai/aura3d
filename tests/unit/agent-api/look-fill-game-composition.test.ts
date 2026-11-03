@@ -11,7 +11,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import "@aura3d/engine/lanes"; // registers the C-09 environment sources
 import type { AuraLightNode, AuraSceneSnapshot } from "@aura3d/engine";
 import { lights, looks, scene } from "../../../packages/engine/src/agent-api/index";

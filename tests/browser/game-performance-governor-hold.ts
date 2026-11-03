@@ -25,7 +25,7 @@ import {
   createPerformanceGovernor,
   createSideViewGameRenderPreset,
   type GamePerFramePerfTelemetry
-} from "@aura3d/engine/production-runtime";
+} from "@aura3d/engine/renderer";
 
 const DEGRADE_ORDER = ["resolutionScale", "particleScale", "lodBias", "shadowSize"] as const;
 

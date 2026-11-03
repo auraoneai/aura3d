@@ -14,7 +14,7 @@ import {
 } from "../../../../packages/rendering/src/shaders/camera-fade.glsl.js";
 import { buildChunkHarnessProgram } from "../../../../packages/rendering/src/contracts/testing/ChunkHarness.js";
 import { createCinematicBarsLayer, createLetterboxContributor, createCameraController } from "@aura3d/engine/lanes";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine-runtime/contracts";
 import type { FrameContributorContext, RenderItem } from "@aura3d/rendering/contracts";
 import { registerPostPass } from "../../../../packages/rendering/src/contracts/post.js";
 

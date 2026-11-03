@@ -5,7 +5,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { decals, defineAuraAssets, material, primitives, upgradeProductionPrimitiveTextures } from "@aura3d/engine";
+import { decals, defineAuraAssets, material, primitives } from "@aura3d/engine";
+import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { TextureBinding } from "@aura3d/rendering";
 import { createProductionRuntimePrimitiveEntries } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import {

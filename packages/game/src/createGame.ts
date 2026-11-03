@@ -1,5 +1,6 @@
 /** Legacy C-24 implementation binding. The core accepts entry-owned dependencies. */
-import { createGameApp, normalizeSceneSnapshot, StubTimeController, createGameAudio } from "@aura3d/engine";
+import { createGameApp, StubTimeController, createGameAudio } from "@aura3d/engine";
+import { normalizeSceneSnapshot } from "@aura3d/engine-runtime";
 import { bindFeelSound } from "@aura3d/engine/lanes";
 import {
   createGameImplWithGameApp,

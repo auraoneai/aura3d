@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { A3DAppLifecycle, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
+import { Geometry, PBRMaterial } from "@aura3d/engine/renderer";
+// A3DAppLifecycle left the public surface in 5.0.0 (internal helper, no replacement).
+import { A3DAppLifecycle } from "@aura3d/engine-runtime";
 import { a3dRendererEvidence } from "../../../packages/engine/src/agent-api/devtools/rendererReports.js";
 import { MockRenderDevice } from "@aura3d/rendering";
 import { Renderer as AdvancedRenderer } from "@aura3d/rendering";
@@ -12,7 +14,7 @@ describe("ThreejsParity threejsParity public runtime", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders a scene graph through @aura3d/engine/advanced-runtime without hand-built RenderItem arrays", async () => {
+  it("renders a scene graph through @aura3d/engine/renderer without hand-built RenderItem arrays", async () => {
     const scene = new A3DScene();
     const floor = scene.createRenderableMesh({
       name: "floor",

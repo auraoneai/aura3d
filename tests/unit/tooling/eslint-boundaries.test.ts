@@ -75,16 +75,15 @@ describe("aura3d-boundaries/no-upward-package-import", () => {
     expect(messages).toEqual([]);
   });
 
-  it("attributes deprecated collapsed subpaths to engine, not their old package", async () => {
-    // PRD-15 T5.6: `@aura3d/engine/rendering` is a deprecated subpath stub living in
-    // packages/engine, so the boundary rule must now report it as an upward import of
-    // engine — exactly what the deprecation is meant to surface.
+  it("reports a 4.x legacy subpath removed in 5.0.0 instead of attributing it by prefix", async () => {
+    // PRD-15 T5.6 deprecated `@aura3d/engine/rendering`; 5.0.0 removed it (migration guide B15),
+    // so it has no tsconfig path and must not silently resolve to `engine` by prefix.
     const messages = await lintAs(
       "packages/assets/src/Probe.ts",
       `import { WebGL2Device } from "@aura3d/engine/rendering";\nexport const x = WebGL2Device;\n`,
       "no-upward-package-import"
     );
-    expect(messages.map((m) => m.messageId)).toEqual(["upward"]);
+    expect(messages.map((m) => m.messageId)).toEqual(["unresolved"]);
   });
 
   it("reports an unknown @aura3d specifier rather than silently passing it", async () => {

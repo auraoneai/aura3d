@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
-import { createSideViewGameRenderPreset } from "@aura3d/engine/production-runtime";
+import { createSideViewGameRenderPreset } from "@aura3d/engine/renderer";
 import { holdKey, loadAuraClashArena, readAuraClashProof } from "./helpers/auraClashArenaHarness";
 
 /**
