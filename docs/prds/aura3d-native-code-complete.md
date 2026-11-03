@@ -71,7 +71,7 @@ this record wins.
      `^5.0.0`; bump every manifest (incl. `@aura3d/addons`, at 4.7.1) with
      `tools/release/prepare-version.mjs 5.0.0`; regenerate
      `docs/api/public-api.md` (`pnpm verify:api-docs --write`); replace the
-     hard-fail custody line in `package.json` `check:release`.
+     hard-fail custody line in `package.json` `check:release`. Re-pin `antique-camera.glb` to the official Khronos digest (`ae8969…`, 17.5 MB, `fixtures/asset-corpus/khronos-sources.json`) in `tests/assets/corpus/gltf-corpus.manifest.json`, `benchmarks/quality-rebuild/shared/assets.ts` and the `templates/production-*` manifests (they pin an unknown 32 MB `7480f9…`).
    - **d. Release:** publish 5.0.0 to npm (deprecating prior versions), tag,
      GitHub release, deploy `aura3d` and `aura3d-wonder-world` to Cloudflare
      Pages, verify live URLs and rollback.
