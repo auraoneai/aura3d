@@ -39,11 +39,11 @@ const parse = (text = INVENTORY) => parseInventory(text, { readInclude: () => '#
 describe('acceptance5 inventory', () => {
   it('parses groups, settings, overrides and includes', () => {
     const inv = parse();
-    expect(inv.groups.map(g => [g.id, g.kind])).toEqual([['core', 'browser'], ['lane', 'browser'], ['ev', 'evidence'], ['skip', 'excluded']]);
+    expect(inv.groups.map((g: { id: string; kind: string }) => [g.id, g.kind])).toEqual([['core', 'browser'], ['lane', 'browser'], ['ev', 'evidence'], ['skip', 'excluded']]);
     expect(inv.groups[0].entries[1]).toEqual({ path: 'tests/browser/native-b.spec.ts', tests: 12 });
     expect(inv.groups[0].entries[2]).toEqual({ path: 'tests/browser/native-c.spec.ts', tests: 1, secondsPerTest: 50 });
     expect(inv.groups[1].configDir).toBe('tests/qr/prd04');
-    expect(inv.groups[2].entries.map(e => e.path)).toEqual(['tests/unit/a.test.ts', 'tests/unit/b.test.ts']);
+    expect(inv.groups[2].entries.map((e: { path: string }) => e.path)).toEqual(['tests/unit/a.test.ts', 'tests/unit/b.test.ts']);
   });
 
   it('rejects unsupported projects/configs, missing reasons, wrong paths and duplicates', () => {
@@ -61,15 +61,15 @@ describe('acceptance5 inventory', () => {
     const inv = parse();
     expect(() => validateInventory(inv, { exists: () => true, nativeSpecs: ['tests/browser/native-a.spec.ts', 'tests/browser/native-z.spec.ts'] }))
       .toThrow(/native-z/);
-    expect(() => validateInventory(inv, { exists: p => p !== 'tests/unit/b.test.ts', nativeSpecs: [] })).toThrow(/missing tests\/unit\/b/);
+    expect(() => validateInventory(inv, { exists: (p: string) => p !== 'tests/unit/b.test.ts', nativeSpecs: [] })).toThrow(/missing tests\/unit\/b/);
   });
 
   it('the committed inventory parses and covers every native spec in this checkout', () => {
     const root = new URL('../../../', import.meta.url).pathname;
     const inv = parseInventory(readFileSync(join(root, 'tools/remote-acr/acceptance5-inventory.txt'), 'utf8'),
-      { readInclude: p => readFileSync(join(root, p), 'utf8') });
+      { readInclude: (p: string) => readFileSync(join(root, p), 'utf8') });
     const natives = readdirSync(join(root, 'tests/browser')).filter(n => /^native-.+\.spec\.ts$/.test(n)).map(n => `tests/browser/${n}`);
-    expect(validateInventory(inv, { exists: p => existsSync(join(root, p)), nativeSpecs: natives })).toBe(true);
+    expect(validateInventory(inv, { exists: (p: string) => existsSync(join(root, p)), nativeSpecs: natives })).toBe(true);
   });
 
   it('estimates tests statically, counting templated titles twice', () => {
@@ -82,12 +82,12 @@ describe('acceptance5 shard and batch planning', () => {
   const estimate = () => 3;
   it('sizes shards by estimated seconds, capped at one shard per file', () => {
     const { shards, warnings } = planShards(parse(), { runId: 'r1', estimate, budgetSeconds: 900 });
-    const core = shards.filter(s => s.group === 'core');
+    const core = shards.filter((s: { group: string }) => s.group === 'core');
     // (3 + 12) * 100 + 50 = 1550 s -> 2 shards
-    expect(core.map(s => s.shard)).toEqual(['1/2', '2/2']);
+    expect(core.map((s: { shard: string | null }) => s.shard)).toEqual(['1/2', '2/2']);
     expect(core[0].runId).toBe('r1-core-1of2');
-    expect(shards.find(s => s.group === 'lane')).toMatchObject({ shard: null, config: 'tests/qr/prd04/playwright.config.ts', configDir: 'tests/qr/prd04' });
-    expect(warnings.some(w => w.includes('native-b'))).toBe(true);
+    expect(shards.find((s: { group: string }) => s.group === 'lane')).toMatchObject({ shard: null, config: 'tests/qr/prd04/playwright.config.ts', configDir: 'tests/qr/prd04' });
+    expect(warnings.some((w: string) => w.includes('native-b'))).toBe(true);
     const tiny = planShards(parseInventory('[group g]\nproject = chromium-automation\nseconds-per-test = 1000\nreason = r\ntests/browser/a.spec.ts'),
       { runId: 'r1', estimate: () => 10 });
     expect(tiny.shards).toHaveLength(1);
@@ -216,7 +216,7 @@ describe('acceptance5 result classification', () => {
       { fullName: 'asserts', status: 'failed', failureMessages: ['expected 1 to be 2'] },
       { fullName: 'ok', status: 'passed' }, { fullName: 'todo', status: 'pending' }] }] });
     expect(files[0].file).toBe('tests/unit/a.test.ts');
-    expect(files[0].tests.map(x => x.status)).toEqual(['no-data', 'failed', 'passed', 'skipped']);
+    expect(files[0].tests.map((x: { status: string }) => x.status)).toEqual(['no-data', 'failed', 'passed', 'skipped']);
   });
 });
 
@@ -242,13 +242,13 @@ describe('acceptance5 report merge', () => {
       shards: { 'g-1of2': { rc: 1, exits: { playwright: 1, upload: 0 }, report }, 'g-2of2': { rc: 1, exits: {}, report: null }, 'h-1of1': { notStarted: 'SAS window' } },
       evidence: { files: [{ file: 'tests/unit/a.test.ts', tests: [{ title: 't', status: 'passed', reason: null }] }], fetch: { conflicts: [] } },
     }], { generatedAt: 'now' });
-    const a = merged.specs.find(s => s.spec === 'tests/browser/native-a.spec.ts')!;
+    const a = merged.specs.find((s: { spec: string }) => s.spec === 'tests/browser/native-a.spec.ts')!;
     expect(a).toMatchObject({ status: 'failed', passed: 1, failed: 1, hardware: { software: 1, physical: 0, unverified: 1 } });
-    const b = merged.specs.find(s => s.spec === 'tests/browser/native-b.spec.ts')!;
+    const b = merged.specs.find((s: { spec: string }) => s.spec === 'tests/browser/native-b.spec.ts')!;
     expect(b).toMatchObject({ status: 'no-data', 'no-data': 1 });
     expect(b.tests[0].reason).toMatch(/g-2of2/);
-    expect(merged.specs.find(s => s.spec === 'tests/browser/native-c.spec.ts')!.status).toBe('no-data');
-    expect(merged.evidence.map(e => [e.file, e.status])).toEqual([['tests/unit/a.test.ts', 'passed'], ['tests/unit/b.test.ts', 'no-data']]);
+    expect(merged.specs.find((s: { spec: string }) => s.spec === 'tests/browser/native-c.spec.ts')!.status).toBe('no-data');
+    expect(merged.evidence.map((e: { file: string; status: string }) => [e.file, e.status])).toEqual([['tests/unit/a.test.ts', 'passed'], ['tests/unit/b.test.ts', 'no-data']]);
     expect(merged.status).toBe('failed');
     expect(merged.totals).toEqual({ passed: 2, failed: 1, skipped: 0, unsupported: 0, 'no-data': 3 });
     expect(merged.excluded).toEqual([{ group: 'x', reason: 'not run', entries: ['tests/qr/prd14/browser/'] }]);

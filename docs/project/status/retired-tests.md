@@ -186,3 +186,31 @@ or string-only): the other 35 `tests/unit` candidates, `tests/assets/{gltf-100-c
 historical inventory; the retired renderer, Skyline and head-to-head assertions
 above will appear as removed against it. This document is their retirement
 record.
+
+## 5. `tests/qr` renderer/asset cases rewritten onto 5.0 contracts (source pass 2026-11-02)
+
+No case below was dropped; each assertion of the old behavior was replaced by
+an assertion of the current contract that superseded it.
+
+| File › case | Old assertion | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/qr/prd11/unit/renderer-profile-freeze.test.ts` › 2 cases | `experimental-webgpu` throws `AuraMigrationError` ("frozen by PRD 11") | `docs/migration/4-to-5.md` B5; CHANGELOG 5.0.0 "Renderer options are validated" | profile resolves; backend request is `webgpu` with `allowFallback: false` (`auto` → fallback on) |
+| `tests/qr/prd05/unit/aura-decoders-plugin.test.ts` › dev middleware traversal case | traversal/malformed/directory requests under `/aura-decoders/` fall through to `next()` | S5-IMP-16 (decoder plugin dev/build/static-base agreement); `tests/unit/assets/native-decoder-deployment.test.ts` "rejects traversal, missing files and methods" | under the prefix: traversal/malformed → 400, directory → 404, never `next()` and no body; other prefixes still pass through |
+| `tests/qr/prd05/unit/c16-texture-upload-consumer.test.ts` › 4 flag-off / no-provider cases | flag off uploads an sRGB ASTC texture under the linear constant; bc7 throws `UNSUPPORTED_COMPRESSED_FORMAT`; no-provider sRGB DXT1 uploads as linear DXT1 | 5.0 uploads always use the colour-space-correct `resolveCompressedTextureFormatReal` (26eae82e2), as the default-flag `tests/unit/rendering/native-bc1-image.test.ts` asserts | sRGB ASTC → `COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR` in every mode; bc7 without BPTC or fallback → "not supported and no RGBA8 fallback"; sRGB DXT1 without `s3tc_srgb` → RGBA8 fallback; new linear-ASTC case |
+| `tests/qr/prd04/unit/lobes-visual.test.ts` › 4 "lobe textures are sampled" cases | literal `texture( u_<slot>Texture, v_uv )` | per-slot KHR_texture_transform / texCoord UVs (`A3D_LOBE_UV_<SLOT>`, 26eae82e2; glTF 2.0 textureInfo) | sampler read through `A3D_LOBE_UV_<SLOT>`, which is defined from `v_uv` |
+| `tests/qr/prd04/unit/materials-lobe-route.test.ts` › "srgb targets stay legacy" | a sheen material on an sRGB direct target draws with legacy pbr-direct | ForwardPass "explicit sRGB output selects the generator's encode variant" (`PROGRAM_OUTPUT_SRGB_FEATURE`, 26eae82e2) | lobe-free and `-core_generator` stay legacy; new case: sRGB target draws a generated program carrying the sheen lobe and a different (encode) fragment than linear |
+| `tests/qr/prd04/unit/gltf-image-colorspace-intent.test.ts` › tangent-derivative-fallback | a TEXCOORD_1 normal map on a mesh without set-0 UVs reports `tangent-derivative-fallback` | S5-IMP-09 multiple UV sets (26eae82e2): such meshes now get a tangent attribute. **Product fix in this pass:** that tangent was generated from the empty set 0; `GLTFRenderResources.ts` now generates it from the normal map's `texCoord` set | no fallback issue, and the generated tangents equal those of the same UVs authored as set 0 (fails without the fix); flag-off / with-UVs no-issue checks kept |
+| `tests/qr/prd07/unit/prd07-C-21.test.ts` › "horizon beats zenith" | horizon luminance > zenith at a 65° sun | independent Preetham, Shirley & Smits 1999 sky replaced the three.js r185 Sky.js port (`PreethamSky.ts`, 26eae82e2; 5.0 independence rule) — the paper's circumsolar term makes the zenith brighter here | luminance ratios to zenith match the paper's Perez F(θ,γ) with the published T-dependent coefficients within 3% |
+| `tests/qr/prd07/unit/fountain-plume.test.ts` › non-fountain mapping | `swirl` with `radius` has no `spawnRadius` | 72945ca70 (4.0.1): `radius` sets the spawn disc for every emitter (pre-existing 4.x failure) | `swirl` + `radius` → `spawnRadius` = radius with swirl spread; no `radius` → none |
+
+Harness-only fixes (assertions unchanged): `tests/qr/prd07/unit/frame-graph-paths.test.ts`
+(the "legacy" variant now passes `-core`; `A3D_QR_CORE` is default-on since
+4b7a636a1, so it silently resolved to the v2 path; guarded by a new flag
+assertion), `tests/qr/prd06/unit/depth-feature.test.ts` (real `Geometry`
+instead of a partial mock without `getAttributeBuffer`),
+`tests/qr/prd08/unit/loop-arm-idle.test.ts` (imports the chase rig, which
+registers on import per the S19 rig registry), and
+`tests/qr/prd07/unit/standalone-shader-validity.test.ts` (explicit 60 s budget
+for ~250 sequential `glslangValidator` spawns; the check still runs whenever
+the tool is on PATH and all variants compile).
+
