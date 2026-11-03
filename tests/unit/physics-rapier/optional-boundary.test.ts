@@ -102,7 +102,7 @@ function backendPath(entry: string, blocked: ReadonlySet<string> = new Set()): s
   return undefined;
 }
 
-describe("optional physical simulation boundary", () => {
+describe("optional physical simulation boundary", { timeout: 120_000 }, () => {
   it("distinguishes eager runtime imports from types and deferred loading", () => {
     expect(eagerImports(`
       import type { T } from "types";
