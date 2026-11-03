@@ -38,7 +38,7 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
     environment: { kind: "hdri", background: false },
     models: [
       vehicle("hero"),
-      vehicle("roadster_rush_apexRivalInterceptor"),
+      vehicle("roadsterRushSkyCar"),
       { ...vehicle("skycar-far"), textures: 1 },
       ...["sedan", "hatch", "suv", "taxi", "van", "pickup", "boxtruck", "bus", "carrier"].map(vehicle),
       { ...vehicle("traffic-far-lod"), textures: 1 }

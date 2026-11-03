@@ -45,7 +45,7 @@ export default defineArtDirection({
   framing: { rig: "chase", subjectHeightFraction: [0.1, 0.24], fovDeg: [56, 66], mobile: "both" },
   assets: [
     { role: "hero", assetKey: "hero", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "enemy", assetKey: "roadster_rush_apexRivalInterceptor", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "roadsterRushSkyCar", maxTriangles: 60000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "skycar-far", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 512 },
     { role: "vehicle", assetKey: "sedan", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "vehicle", assetKey: "hatch", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },

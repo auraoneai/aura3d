@@ -25,22 +25,7 @@ const definitions = {
   roadsterRushBus: glb("roadsterRushBus.9fd16d90.glb", "1618d848bbe68977143b2dab6012fa02f25b169fcd14fe0e4c528503eb1f6168", [2.6, 3.16, 12.22], 664780),
   roadsterRushCarrier: glb("roadsterRushCarrier.de50f36f.glb", "73ce0880680c5b12a4e3855bc26e8a1cd939d78c1ec6244a5e71e2360bcd04a3", [2.61, 2.98, 16.12], 664780),
   roadsterRushPlayerCar: glb("roadsterRushPlayerCar.c7f9617d.glb", "e97ea46a364607f0e45cca7bcb8e95b5f909d62a427447f18822647747e0953e", [2.23, 1.27, 4.3], 2260208),
-  roadsterRushSkyCar: glb("roadsterRushSkyCar.295dcba7.glb", "b60183eae657d723efa31ffd8e0fad85962cf1b06c1d99b78250d369db406ce7", [2.23, 1.27, 4.3], 2260276),
-  // GU47 wave 1 AO-A2: WP-36 Meshy text-to-3d interceptor (rights: assets/meshy/provenance/apex-rival-interceptor.rights.json),
-  // baked to the sky car's axes (long axis z, nose +z, wheels on y = 0), simplified 74,196 -> 55,632 triangles (meshopt, error
-  // 1e-3) to stay inside the enemy-role cap in art/direction.ts; this file lives in the app's public/aura-assets
-  roadster_rush_apexRivalInterceptor: {
-    ...glb("roadster_rush_apexRivalInterceptor.glb", "4dd98d7d18ccfa215e24d64430604c48eb17007ad48c39945725ca5a44a5e535", [1.119, 0.571, 1.903], 3292540),
-    metadata: {
-      animations: [],
-      provenance: {
-        sourcePath: "public/aura-assets/roadster_rush_apexRivalInterceptor.glb",
-        outputPath: "public/aura-assets/roadster_rush_apexRivalInterceptor.glb",
-        source: "meshy text-to-3d (GU47 WP-36 roadster-rush/apexRivalInterceptor, task 01a1990e-f595-706f-93f0-9646a8855d21)",
-        license: "Meshy generated asset (paid API, plan terms at generation time)"
-      }
-    }
-  } as unknown as ModelAsset,
+  roadsterRushSkyCar: glb("roadsterRushSkyCar.295dcba7.glb", "b60183eae657d723efa31ffd8e0fad85962cf1b06c1d99b78250d369db406ce7", [2.23, 1.27, 4.3], 2260276)
   // GU47 AO-A1: the borrowed showcaseModernBuildingOne skyline is retired; the glass towers are src/render/towers.ts
 } as const;
 

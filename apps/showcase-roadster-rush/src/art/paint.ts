@@ -35,11 +35,7 @@ export function apexHeroPaint(retextured = true): readonly AuraModelMaterialOver
   return [paintOverride(retextured ? null : APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.6 })];
 }
 
-/**
- * Sky-lane rival: graphite with the reserved rival red on the rim (AO-A2). GU47 wave 1: the WP-36 interceptor
- * (apexRivalInterceptor) is already charcoal with tangerine trims in its base map, so it takes the clearcoat values and the
- * rival-red rim but no tint; `?models=0` (the showcase sky car) still gets the graphite multiply tint.
- */
-export function apexRivalPaint(interceptor = false): readonly AuraModelMaterialOverride[] {
-  return [paintOverride(interceptor ? null : APEX_RIVAL_TINT, { color: APEX_PALETTE.rival, power: 2.5, intensity: 1.2 })];
+/** Sky-lane rival: graphite with the reserved rival red on the rim (AO-A2 interim). */
+export function apexRivalPaint(): readonly AuraModelMaterialOverride[] {
+  return [paintOverride(APEX_RIVAL_TINT, { color: APEX_PALETTE.rival, power: 2.5, intensity: 1.2 })];
 }

@@ -728,9 +728,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   // 5. Sky-lane traffic: lethal, so every sky car in the window gets a slot (audit RR-1)
   s.addMany([
     instances
-      // AO-A2 (GU47 wave 1): the WP-36 interceptor, fitted to the old sky car's 4.3 m length (nose toward +z like the old car,
-      // same pool, same draw); the far pool keeps the old sky car's far LOD. `?models=0` keeps the tinted showcase sky car.
-      .model(meshyVehicles.enabled ? assets.roadster_rush_apexRivalInterceptor : assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, materialOverrides: apexRivalPaint(meshyVehicles.enabled), transforms: parked(POOL_CAPACITY.skyCar) })
+      // AO-A2 interim: graphite paint with the rival-red rim until the WP-36 interceptor (ducted fans, far LOD) replaces the asset
+      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, materialOverrides: apexRivalPaint(), transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
     // sky cars beyond 90 m: the far LOD, no shadow
     instances
