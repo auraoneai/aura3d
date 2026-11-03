@@ -188,15 +188,17 @@ describe("worker renderer disposal failures", () => {
     f.host.dropTypes.add("dispose");
     const disposal = f.app.dispose();
     let completed = false;
-    void disposal.then(() => { completed = true; });
+    void disposal.then(() => { completed = true; }, () => { completed = true; });
     await vi.advanceTimersByTimeAsync(24);
     expect(completed).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
-    await expect(disposal).resolves.toBeUndefined();
+    // 5.0: forced termination without a cleanup acknowledgement is reported.
+    await expect(disposal).rejects.toMatchObject({ code: "dispose-timeout", severity: "terminal" });
     const request = f.host.sent.find((message) => message.type === "dispose");
     expect(request).toBeDefined();
     f.host.emit("message", { data: { type: "result", id: request!.id } });
     expect([f.host.terminated, f.host.listenerCount()]).toEqual([1, 0]);
+    await expect(f.app.dispose()).rejects.toMatchObject({ code: "dispose-timeout" });
     await f.stop();
   });
 

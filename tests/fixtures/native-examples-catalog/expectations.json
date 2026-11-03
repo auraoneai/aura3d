@@ -10,14 +10,14 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" }
       ],
       "regions": [
         {
@@ -43,14 +43,14 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" }
       ],
       "regions": [
         {
@@ -76,14 +76,14 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" }
       ],
       "regions": [
         {
@@ -109,14 +109,14 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" }
       ],
       "regions": [
         {
@@ -142,14 +142,14 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "ae55fd043e9d6d5b379fd8cf7bcdf24b69c50a2d81df6a07a84afe359fd90b8f" },
         { "path": "packages/engine/src/public/index.ts", "sha256": "48ec2c773cf9a2c3c522a164247578cb2d01cc24270fe47b8e00d938642bb757" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
@@ -440,7 +440,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "regions": [
         {
@@ -472,7 +472,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "regions": [
         {
@@ -504,7 +504,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "regions": [
         {
@@ -536,7 +536,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "sourceDependencies": [
         {
@@ -574,7 +574,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "examples/native-capabilities/index.ts",
-        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
       },
       "regions": [
         {
@@ -592,6 +592,71 @@
               "blue": [0, 115],
               "minFraction": 0.02,
               "maxFraction": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:worker-render",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the typed-model case: the worker-render scenario authors the same normalized subject, look and camera, so the same subject region and texture-color ranges apply; no reference capture. Worker execution, rendered color, framing and asset loading remain unverified.",
+      "subject": "Textured barbarian model rendered by the dedicated render worker",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "e253deee17af8628df17380d57e33bc1f35db7eabb95341f13e12cd423ba1dfa" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 450,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:interchange-export",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the custom-geometry case: the interchange-export scenario places the same authored triangle, material and camera and also exports it to binary glTF; no reference capture. Rendered color, framing, asset loading and the browser export remain unverified.",
+      "subject": "Authored orange triangle beside the textured barbarian model, also exported to GLB",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "a636d38fd2297988a6a10693528106b38ab1d3bac2e735191eaefaf311bf6a46"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 660,
+          "y": 275,
+          "width": 200,
+          "height": 230,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange indexed triangle",
+              "red": [130, 255],
+              "green": [45, 210],
+              "blue": [0, 115],
+              "minFraction": 0.05,
+              "maxFraction": 0.6
             }
           ]
         }

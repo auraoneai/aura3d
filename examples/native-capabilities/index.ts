@@ -26,6 +26,8 @@ import {
   type AuraAssetRef,
   type SceneQueryHit
 } from "@aura3d/engine";
+import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { exportGLTF, type AuraExportResult, type AuraExportScene } from "@aura3d/assets/exporters";
 
 /** Each entry describes a separately mounted scenario, not a support claim. */
 export const NATIVE_CAPABILITY_SCENARIOS = [
@@ -38,7 +40,9 @@ export const NATIVE_CAPABILITY_SCENARIOS = [
   { id: "controls", purpose: "Orbit around a named model" },
   { id: "bounds-query", purpose: "A conservative scene-bounds ray query" },
   { id: "world-text", purpose: "Bounded uppercase extruded text" },
-  { id: "physics", purpose: "A bound sphere body falling onto a static box" }
+  { id: "physics", purpose: "A bound sphere body falling onto a static box" },
+  { id: "worker-render", purpose: "The same typed scene rendered by a dedicated render worker" },
+  { id: "interchange-export", purpose: "Export authored geometry and material to GLB with loss warnings" }
 ] as const;
 
 export type NativeCapabilityScenarioId = (typeof NATIVE_CAPABILITY_SCENARIOS)[number]["id"];
@@ -51,6 +55,8 @@ export interface NativeCapabilityScenarioOptions {
   readonly animationClip?: string;
   /** Set false for a caller-controlled `app.step()` loop in a test harness. */
   readonly autoStart?: boolean;
+  /** worker-render only: supply a custom worker; defaults to the packaged render worker. */
+  readonly createWorker?: () => Worker;
 }
 
 /**
@@ -113,15 +119,37 @@ export async function mountNativeCapabilityScenario(
       .physics({ type: "dynamic", shape: "sphere", radius: 0.3, mass: 1, restitution: 0 }));
   }
 
+  if (id === "interchange-export") {
+    stage.add(geometry.custom(EXPORT_TRIANGLE, { name: "export-sample", material: material.pbr({ color: "#d88a4a", roughness: 0.6 }) }).position(1, 0.05, 0));
+  }
+
   const app = createAuraApp(options.target, {
     ...looks.appOptions("product-studio"),
     scene: stage,
     autoStart: options.autoStart ?? true,
-    strict: true,
-    ...(id === "physics" ? { physics: { bindNodes: true } } : {})
+    // Worker apps report strict failures through readyStrict(); the strict
+    // option itself is a main-thread renderer option.
+    ...(id === "worker-render" ? {} : { strict: true }),
+    ...(id === "physics" ? { physics: { bindNodes: true } } : {}),
+    // No silent main-thread fallback: an unsupported worker is reported as an error.
+    ...(id === "worker-render" ? { worker: { createWorker: options.createWorker ?? createWorkerRendererWorker, fallback: "error" as const } } : {})
   });
   if (id === "physics") {
     app.onFrame(({ dt }) => { app.physics.step(dt); });
+  }
+  if (id === "worker-render" && app.execution?.active !== "worker") {
+    app.dispose();
+    throw new Error(`The worker-render scenario requires worker execution; active: ${String(app.execution?.active)}.`);
+  }
+  if (id === "interchange-export") {
+    // Export is independent of rendering; fail the scenario if it does not
+    // produce a binary glTF rather than reporting a mounted-but-unexported app.
+    const exported = exportNativeScenarioGlb();
+    const bytes = exported.data instanceof Uint8Array ? exported.data : undefined;
+    if (!bytes || exported.mimeType !== "model/gltf-binary" || new TextDecoder().decode(bytes.subarray(0, 4)) !== "glTF") {
+      app.dispose();
+      throw new Error("The interchange-export scenario did not produce a binary glTF.");
+    }
   }
   try {
     await app.readyStrict();
@@ -165,4 +193,35 @@ export function queryNativeScenarioBounds(app: AuraApp): SceneQueryHit | undefin
     { origin: [-1, 0.8, 6], direction: [0, 0, -1] },
     { nodes: app.scene.nodes }
   );
+}
+
+const EXPORT_POSITIONS = new Float32Array([-0.7, 0, 0, 0.7, 0, 0, 0, 1.4, 0]);
+const EXPORT_NORMALS = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+const EXPORT_TRIANGLE = geometry.define({
+  positions: EXPORT_POSITIONS,
+  normals: EXPORT_NORMALS,
+  indices: [0, 1, 2],
+  bounds: { min: [-0.7, 0, 0], max: [0.7, 1.4, 0] }
+});
+
+/**
+ * Export the interchange-export scenario's authored triangle and material as
+ * a binary glTF. The exporter returns structured warnings for anything it
+ * could not represent; inspect them instead of assuming a lossless round trip.
+ */
+export function exportNativeScenarioGlb(): AuraExportResult {
+  const exportScene: AuraExportScene = {
+    roots: [0],
+    nodes: [{ name: "export-sample", mesh: 0, translation: [1, 0.05, 0] }],
+    meshes: [{ name: "export-sample", primitives: [{
+      attributes: { POSITION: { values: EXPORT_POSITIONS, itemSize: 3 }, NORMAL: { values: EXPORT_NORMALS, itemSize: 3 } },
+      indices: new Uint16Array([0, 1, 2]),
+      mode: "triangles",
+      material: 0
+    }] }],
+    materials: [{ name: "export-sample", baseColor: [0.69, 0.25, 0.06, 1], metallic: 0, roughness: 0.6 }],
+    metersPerUnit: 1,
+    upAxis: "Y"
+  };
+  return exportGLTF(exportScene, { binary: true });
 }

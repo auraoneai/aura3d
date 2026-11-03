@@ -296,6 +296,21 @@ raycast(input, options?)            // SR-03 — input is a world ray
   // { origin, direction, maxDistance? } or an NDC pick { camera, ndc };
   // options: targets? | nodes?, firstHitOnly?, recursive?, layers?,
   //          near?, far? → hits nearest-first (AABB targets)
+  // mode: "mesh" tests submitted triangles. A target whose GPU positions
+  //   come from a vertex program the CPU cannot reproduce (uncertified
+  //   custom/portable shader, shader displacement or wind, or a custom
+  //   program with skinning, draw hooks, MVP override, instance-rate
+  //   streams or a geometry matrix) is excluded with the stable code
+  //   SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED. options.unsupported:
+  //   "skip" (default) omits it; "error" throws SceneQueryError
+  //   (error.code, error.exclusion {code,nodeName,nodeId?,reason});
+  //   a callback receives each exclusion and the target is skipped.
+  //   Position-certified compiled custom programs are queried exactly.
+  // batched hits: batchMemberId is a never-reused lifetime ID;
+  //   batchMemberSlot is the addInstance index (reused after
+  //   deleteInstance, three.js BatchedMesh parity). Pass the hit object
+  //   to setMatrixAt/setColorAt/... to reject a stale member; a bare
+  //   number always addresses the current occupant of that index.
 raycastFirst(input, options?)       // nearest-hit shorthand
 
 // SH-06 — @aura3d/engine/renderer: RenderTarget (type) +

@@ -170,4 +170,26 @@ describe("native depth of field through the public renderer", () => {
       expect(f.passes.some(pass => pass.draws > 0)).toBe(false);
     } finally { f.close(); }
   });
+
+  it.each([false, true])("refuses multiview native depth of field with a stable code before any view draws (async=%s)", async asynchronous => {
+    const f = await fixture();
+    const begin = vi.spyOn(f.renderer.device, "beginNativeDepthOfFieldFrame" as never);
+    try {
+      const views = [
+        { id: "left", viewport: { x: 0, y: 0, width: 4, height: 8 }, camera: f.camera },
+        { id: "right", viewport: { x: 4, y: 0, width: 4, height: 8 }, camera: f.camera }
+      ];
+      const input = { source: f.source, views };
+      if (asynchronous) {
+        await expect(f.renderer.renderAsync(input)).rejects.toMatchObject({ code: "NATIVE_DOF_MULTIVIEW_UNSUPPORTED" });
+      } else {
+        expect(() => f.renderer.render(input)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_MULTIVIEW_UNSUPPORTED" }));
+      }
+      expect(begin).not.toHaveBeenCalled();
+      expect(f.passes.some(pass => pass.draws > 0)).toBe(false);
+      // A view that disables postprocessing does not request native DoF.
+      const plain = { source: f.source, views: views.map(view => ({ ...view, postprocess: false as const })) };
+      expect(() => f.renderer.render(plain)).not.toThrow();
+    } finally { f.close(); }
+  });
 });

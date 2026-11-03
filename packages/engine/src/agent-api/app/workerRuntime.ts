@@ -69,9 +69,11 @@ export interface AuraWorkerRenderer {
   step(deltaSeconds: number, time?: number): Promise<AuraWorkerFrameResult>;
   screenshotAsync(): Promise<AuraScreenshot>;
   /**
-   * Request teardown and terminate the worker. Cleanup or transport failures
-   * reject; if the acknowledgement times out, forced termination still resolves.
-   * Repeated calls share the same pending or settled result.
+   * Request teardown and terminate the worker. Resolves only after the worker
+   * acknowledges cleanup. Cleanup or transport failures reject; if the
+   * acknowledgement times out the worker is force-terminated (listeners and
+   * pending requests are still released) and the promise rejects with code
+   * `dispose-timeout`. Repeated calls share the same pending or settled result.
    */
   dispose(): Promise<void>;
   disposeStrict(): Promise<void>;
@@ -347,7 +349,7 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
       }
       catch (error) {
         pending.delete(id); outstanding.delete(id); cleanup(); releaseTextureReservation(id);
-        const actual = error instanceof Error ? error : new Error(String(error));
+        const actual = error instanceof Error ? error : new Error(formatDiagnosticError(error));
         // A structured-clone/transfer failure does not post the replacement,
         // so the worker still owns its previous scene. Other transport errors
         // do not establish that the worker is usable and remain terminal.
@@ -454,8 +456,14 @@ export function createWorkerRenderer(options: AuraWorkerRendererOptions): AuraWo
         finish();
         if (error === undefined) resolveDisposal(); else rejectDisposal(error);
       };
-      // Timeout continues to resolve after forced termination, as before.
-      const timer = setTimeout(() => { strictDisposalFailure ??= new AuraWorkerError("Worker teardown was not acknowledged before termination.", "dispose-timeout"); settle(); }, timeoutMs);
+      // 5.0: forced termination after a timeout is not a clean teardown. The
+      // worker is still terminated and its listeners released, but dispose()
+      // rejects with the same dispose-timeout error disposeStrict() reports.
+      const timer = setTimeout(() => {
+        const timeout = new AuraWorkerError("Worker teardown was not acknowledged before termination.", "dispose-timeout");
+        strictDisposalFailure ??= timeout;
+        settle(timeout);
+      }, timeoutMs);
       void send({ type: "dispose" }).then(
         () => settle(disposalFailure),
         (error: unknown) => settle(disposalFailure ?? error)

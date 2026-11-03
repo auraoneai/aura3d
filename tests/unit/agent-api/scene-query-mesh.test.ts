@@ -555,6 +555,35 @@ describe("exact scene queries", () => {
     }
   });
 
+  it("reports arbitrary vertex-program exclusions with a stable code (skip, callback, error)", () => {
+    const custom = publicMaterial.custom({
+      glsl: { vertex: "void main() { gl_Position = vec4(position + vec3(0.0, 0.0, 2.0), 1.0); }", fragment: "out vec4 color; void main() { color = vec4(1.0); }" }
+    });
+    const excluded = node("displaced", { material: custom, runtime: { id: "displaced" } });
+    const plain = node("plain", { position: [0, 0, -1] });
+    const seen: unknown[] = [];
+    const hits = publicRaycast(ray, { nodes: [excluded, plain], mode: "mesh", unsupported: (exclusion) => seen.push(exclusion) });
+    expect(hits.map((hit) => hit.nodeName)).toEqual(["plain"]);
+    expect(seen).toEqual([{ code: "SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED", nodeName: "displaced", nodeId: "displaced",
+      reason: "authored custom program has no submitted position certificate" }]);
+    expect(publicRaycast(ray, { nodes: [excluded, plain], mode: "mesh" }).map((hit) => hit.nodeName)).toEqual(["plain"]);
+    expect(() => publicRaycast(ray, { nodes: [plain, excluded], mode: "mesh", unsupported: "error" }))
+      .toThrowError(expect.objectContaining({ name: "SceneQueryError", code: "SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED" }));
+    // Bounds mode never consults the vertex program.
+    expect(publicRaycast(ray, { nodes: [excluded], mode: "bounds", unsupported: "error" })).toHaveLength(1);
+
+    const handle = createRuntimeNodeHandle(node("wind", { runtime: { id: "wind" } }) as never, { id: "wind" });
+    const geometry = Geometry.triangle();
+    try {
+      setRuntimeQueryRenderItems(handle, [{ geometry, label: "prd10.wind:grass" }]);
+      expect(() => publicRaycast({ origin: [0, 0, 5], direction: [0, 0, -1] }, { handles: [handle], mode: "mesh", unsupported: "error" }))
+        .toThrow(/SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED: wind .*displaces positions/);
+      expect(() => publicRaycast(ray, { nodes: [plain], mode: "mesh", unsupported: "strict" as never })).toThrow(/SCENE_QUERY_INVALID_OPTION/);
+    } finally {
+      geometry.dispose();
+    }
+  });
+
   it("keeps mirrored non-indexed UV1, custom streams and transformed morph deltas aligned", () => {
     const spec = {
       ...triangle, indices: [],

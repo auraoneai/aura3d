@@ -458,7 +458,9 @@ export function createWorkerRootApp(
       mounting = true;
       failure = undefined;
       termination = undefined;
-      currentScene = nextSnapshot;
+      // app.scene keeps the mounted snapshot until the worker acknowledges the
+      // replacement (onCommit, then markReady publish it); a rejected or
+      // superseded request never becomes visible as the current scene.
       diagnostics = nextDiagnostics;
       diagnostics.backend = backend;
       publishTermination({ state: "superseded", revision: previousRevision }, false);
@@ -471,6 +473,7 @@ export function createWorkerRootApp(
               mountedSceneRevision = sceneVersion;
               mountedScene = nextSnapshot;
               mountedDiagnostics = nextDiagnostics;
+              if (!disposed && serial === sceneSerial) currentScene = nextSnapshot;
             }
           });
         } catch (error) {

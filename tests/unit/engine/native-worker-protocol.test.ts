@@ -223,7 +223,8 @@ describe("worker-owned rendering protocol", () => {
     const pending = [app.ready, ...Array.from({ length: 127 }, () => app.setInput({ pointers: [], keys: [], timestamp: 0 }))];
     const results = Promise.allSettled(pending);
     await expect(app.setInput({ pointers: [], keys: [], timestamp: 0 })).rejects.toMatchObject({ code: "queue-full", severity: "recoverable" });
-    await app.dispose();
+    // Termination still happens, but an unacknowledged teardown is reported.
+    await expect(app.dispose()).rejects.toMatchObject({ code: "dispose-timeout", severity: "terminal" });
     expect((await results).every((result) => result.status === "rejected")).toBe(true);
     expect([host.terminated, host.count()]).toEqual([1, 0]);
     expect(host.messages.at(-1).type).toBe("dispose");

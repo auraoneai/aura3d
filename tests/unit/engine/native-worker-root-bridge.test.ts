@@ -224,7 +224,13 @@ describe("worker-backed root-app integration contracts", () => {
     expect(timer.callbacks.size).toBe(1);
     timer.tick(3000);
     await flush();
-    expect(f.render).toHaveBeenLastCalledWith(3000);
+    // 5.0 bounded render clock: wall-clock time spent paused/hidden does not
+    // advance rendered animation. The first resumed frame continues from the
+    // explicit manual step; later frames advance by the bounded frame delta.
+    expect(f.render).toHaveBeenLastCalledWith(2000);
+    timer.tick(3016);
+    await flush();
+    expect(f.render).toHaveBeenLastCalledWith(2016);
     await f.app.pause();
     f.lose();
     f.restore();
@@ -322,16 +328,18 @@ describe("worker-backed root-app integration contracts", () => {
     await f.app.dispose();
   });
 
-  it("reports unacknowledged teardown to strict root disposal while retaining legacy dispose semantics", async () => {
+  it("reports unacknowledged teardown to both strict and normal disposal after forced termination", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     const f = fixture({ timeout: 25 });
     await f.app.ready;
     f.host.dropped.add("dispose");
     const strict = f.app.disposeStrict();
     const rejected = expect(strict).rejects.toMatchObject({ code: "dispose-timeout", severity: "terminal" });
-    const legacy = f.app.dispose();
+    const normal = f.app.dispose();
     await vi.advanceTimersByTimeAsync(25);
-    await Promise.all([rejected, expect(legacy).resolves.toBeUndefined()]);
+    // 5.0: a forced-termination timeout is never reported as clean cleanup.
+    await Promise.all([rejected, expect(normal).rejects.toMatchObject({ code: "dispose-timeout", severity: "terminal" })]);
+    await expect(f.app.dispose()).rejects.toMatchObject({ code: "dispose-timeout" });
     expect(f.host.terminated).toBe(1);
     expect(f.host.count()).toBe(0);
     await f.stop();

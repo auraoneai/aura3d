@@ -543,7 +543,11 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
     return this.state.addGeometry(geometry);
   }
 
-  /** Allocate a slot and return its state-scoped, non-reusable member ID. */
+  /**
+   * Allocate a slot and return its public instance index. A deleted index may
+   * be returned again for a new member; query hits carry a never-reused
+   * lifetime `batchMemberId` (resolve it with getSlotForMemberId).
+   */
   addInstance(geometryId: number): number {
     return this.state.addInstance(geometryId);
   }
@@ -570,8 +574,9 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
   }
 
   /**
-   * Numeric IDs are scoped to this handle's batch state. Pass a query hit,
-   * captured reference or packed-loop member to check state identity too.
+   * A number is the public instance index from addInstance. Pass a query hit,
+   * captured reference or packed-loop member to also check state and member
+   * lifetime (rejected once that member was deleted, even if its index was reused).
    */
   setMatrixAt(index: AuraBatchedMemberTarget, matrix: Float32Array | readonly number[] | { readonly elements: ArrayLike<number> }): this {
     this.state.setMatrixAt(index, matrix);

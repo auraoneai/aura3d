@@ -12,6 +12,7 @@ import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { rendererProgramCache } from "../../../packages/rendering/src/renderer/qrSubFlags";
 import { MockRenderDevice, MockRenderTarget, RenderDeviceError, type DrawCommand, type MockDrawViewState, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
+import { Renderable, Scene } from "@aura3d/scene";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
 import { createDefaultShaderLibrary } from "../../../packages/rendering/src/ShaderLibrary";
 import { DeferredPipeline } from "../../../packages/rendering/src/webgpu/DeferredPipeline";
@@ -278,6 +279,29 @@ describe("Renderer view isolation", () => {
     expect(seen.frames[0]!.map((draw) => draw.command.label)).toEqual(["left-visible"]);
     expect(seen.frames[1]!.map((draw) => draw.command.label)).toEqual(["right-visible"]);
     renderer.dispose();
+  });
+
+  it("frustum-culls Scene renderables independently for matrix-only views (no Camera instance)", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    const graph = new Scene();
+    for (const [name, x] of [["scene-left", 0], ["scene-right", 3]] as const) {
+      const node = graph.createNode(name);
+      graph.root.addChild(node);
+      node.transform.setPosition(x, 0, 0);
+      node.renderable = new Renderable({ geometry: "geometry:cube", material: "material:unlit" });
+    }
+    const geometry = Geometry.cube(0.5), material = new UnlitMaterial();
+    try {
+      const diagnostics = renderer.render({ source: { scene: graph, geometryLibrary: { "geometry:cube": geometry },
+        materialLibrary: { "material:unlit": material }, cameraPolicy: "require" }, views: [
+        { camera: viewCamera(0), viewport: rect(0, 0, 50, 50) },
+        { camera: viewCamera(3), viewport: rect(50, 0, 50, 50) }
+      ] });
+      expect(seen.frames[0]!.map((draw) => draw.command.label)).toEqual(["scene-left"]);
+      expect(seen.frames[1]!.map((draw) => draw.command.label)).toEqual(["scene-right"]);
+      expect(diagnostics).toBeDefined();
+    } finally { renderer.dispose(); geometry.dispose(); material.dispose(); }
   });
 
   it("sorts transparent items from each view's camera position", async () => {
@@ -755,11 +779,27 @@ describe("production views from authored camera nodes (SC-01)", () => {
     renderer.dispose();
   });
 
-  it("only the first multi-view node is honoured, with a warning", async () => {
-    const { renderer, surfaces, snapshot, warnings } = await build([cameras.stereo(), cameras.stereo({ name: "second" })]);
+  // 5.0 contract (WP-02): every authored camera group is honoured in scene
+  // order with independent per-view matrices; 4.x kept only the first group
+  // and warned CAMERA_VIEWS_MULTIPLE. Groups need distinct names.
+  it("honours every multi-view node in authored order with independent eye matrices", async () => {
+    const { renderer, surfaces, snapshot, warnings } = await build([
+      cameras.stereo({ eyeSeparation: 0.2, focus: 6 }), cameras.stereo({ name: "second", eyeSeparation: 0.6, focus: 6 })
+    ]);
     const views = surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 2, { width: 100, height: 50 }).views!;
-    expect(views).toHaveLength(2);
-    expect(warnings.some((w) => w.startsWith("CAMERA_VIEWS_MULTIPLE"))).toBe(true);
+    expect(views).toHaveLength(4);
+    expect(new Set(views.map((view) => view.id)).size).toBe(4);
+    expect(views.slice(0, 2).every((view) => String(view.id).startsWith("camera-stereo:"))).toBe(true);
+    expect(views.slice(2).every((view) => String(view.id).startsWith("second:"))).toBe(true);
+    expect(views.map((view) => view.cameraPosition![0]).map((x) => Number(x.toFixed(5)))).toEqual([-0.1, 0.1, -0.3, 0.3]);
+    expect(warnings.some((w) => w.startsWith("CAMERA_VIEWS_MULTIPLE"))).toBe(false);
+    renderer.dispose();
+  });
+
+  it("rejects multiple camera groups without distinct names before any capture", async () => {
+    const { renderer, surfaces, snapshot } = await build([cameras.stereo(), cameras.stereo()]);
+    expect(() => surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 2, { width: 100, height: 50 }))
+      .toThrow(/CAMERA_VIEWS_GROUP_ID/);
     renderer.dispose();
   });
 

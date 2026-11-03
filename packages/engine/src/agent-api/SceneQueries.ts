@@ -52,13 +52,55 @@ export interface SceneQueryHit {
   readonly instanceId?: number;
   /** Identifies the batch whose member was hit. */
   readonly batchId?: string;
-  /** Identity of this member's lifetime, scoped to its originating batch state. */
+  /**
+   * Never-reused lifetime identity of the member, scoped to its originating
+   * batch state. Equal to the addInstance index until that index is recycled;
+   * pass the hit itself (not this number) to lifetime-check a mutation.
+   */
   readonly batchMemberId?: string | number;
   /** Opaque state identity for lifetime-checked mutation; not serializable. */
   readonly batchStateToken?: object;
-  /** Reusable slot at query time; validate the lifetime before later mutation. */
+  /** Public instance index (addInstance return) at query time; may be reused later. */
   readonly batchMemberSlot?: number;
   readonly barycentric?: readonly [number, number, number];
+}
+
+/** Stable code for a mesh-mode target whose vertex program the CPU cannot reproduce. */
+export const SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED = "SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED" as const;
+
+/**
+ * A mesh-mode target that was excluded because the GPU positions come from a
+ * vertex program the CPU query cannot reproduce (an uncertified custom or
+ * portable shader, a shader-displaced or wind-animated item, or a custom
+ * program combined with skinning, draw hooks, MVP overrides, instance-rate
+ * streams or a geometry matrix). Only position-certified compiled custom
+ * programs are queried exactly.
+ */
+export interface SceneQueryExclusion {
+  readonly code: typeof SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED;
+  readonly nodeName: string | undefined;
+  readonly nodeId?: string;
+  readonly reason: string;
+}
+
+/** Thrown by mesh-mode `raycast` when `unsupported: "error"` meets an excluded target. */
+export class SceneQueryError extends RangeError {
+  readonly code: SceneQueryExclusion["code"];
+  readonly exclusion: SceneQueryExclusion;
+  constructor(exclusion: SceneQueryExclusion) {
+    super(`${exclusion.code}: ${exclusion.nodeName ?? exclusion.nodeId ?? "target"} cannot be queried exactly (${exclusion.reason}).`);
+    this.name = "SceneQueryError";
+    this.code = exclusion.code;
+    this.exclusion = exclusion;
+  }
+}
+
+// raycast is synchronous; the active sink receives exclusions for that call only.
+let activeExclusionSink: ((exclusion: SceneQueryExclusion) => void) | undefined;
+
+function excludeVertexProgram(nodeName: string | undefined, nodeId: string | undefined, reason: string): [] {
+  activeExclusionSink?.({ code: SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED, nodeName, ...(nodeId === undefined ? {} : { nodeId }), reason });
+  return [];
 }
 
 /**
@@ -425,6 +467,14 @@ export interface SceneRaycastOptions {
   readonly near?: number;
   /** Maximum hit distance (three's `Raycaster.far`). */
   readonly far?: number;
+  /**
+   * Mesh mode only: what to do with a target whose vertex program cannot be
+   * reproduced on the CPU (code `SCENE_QUERY_VERTEX_PROGRAM_UNSUPPORTED`).
+   * `"skip"` (default) omits it, `"error"` throws a {@link SceneQueryError}
+   * before any hit is returned, and a callback receives each exclusion while
+   * the target is skipped.
+   */
+  readonly unsupported?: "skip" | "error" | ((exclusion: SceneQueryExclusion) => void);
 }
 
 /**
@@ -442,6 +492,22 @@ export function raycast(
   const ray = "ndc" in input ? rayFromCameraNdc(input.camera, input.ndc) : input;
   if (!ray) return [];
   if (options.mode !== undefined && options.mode !== "bounds" && options.mode !== "mesh") throw new RangeError("SCENE_QUERY_INVALID_OPTION: mode must be bounds or mesh.");
+  const unsupported = options.unsupported ?? "skip";
+  if (unsupported !== "skip" && unsupported !== "error" && typeof unsupported !== "function") {
+    throw new RangeError("SCENE_QUERY_INVALID_OPTION: unsupported must be skip, error or a callback.");
+  }
+  const previousSink = activeExclusionSink;
+  activeExclusionSink = unsupported === "skip" ? undefined
+    : unsupported === "error" ? (exclusion) => { throw new SceneQueryError(exclusion); }
+    : unsupported;
+  try {
+    return raycastWithOptions(ray, options);
+  } finally {
+    activeExclusionSink = previousSink;
+  }
+}
+
+function raycastWithOptions(ray: SceneRay, options: SceneRaycastOptions): readonly SceneQueryHit[] {
   const near = options.near ?? 0;
   const far = Math.min(options.far ?? Number.POSITIVE_INFINITY, ray.maxDistance ?? Number.POSITIVE_INFINITY);
   if (!Number.isFinite(near) || near < 0) throw new RangeError("SCENE_QUERY_INVALID_OPTION: near must be finite and non-negative.");
@@ -561,7 +627,9 @@ function queryNodeMesh(node: AuraSceneNode, world: Float32Array, origin: AuraVec
   }
   // Before a submitted material exists there is no compiler-issued proof:
   // authored custom programs, including batched ones, remain unqueryable.
-  if ((node.kind === "primitive" || node.kind === "batched") && (node.material?.kind === "custom" || node.material?.custom)) return [];
+  if ((node.kind === "primitive" || node.kind === "batched") && (node.material?.kind === "custom" || node.material?.custom)) {
+    return excludeVertexProgram(node.name, nodeId, "authored custom program has no submitted position certificate");
+  }
   if (node.kind === "model") {
     // A model with no loaded and submitted geometry is not a mesh hit.
     return [];
@@ -670,14 +738,22 @@ function intersectRenderItem(item: RenderItem, nodeName: string | undefined, nod
     || (typeof material.shaderKey === "string" && material.shaderKey.startsWith("aura3d/portable/")));
   // Only the actual submitted adapter material can prove its vertex program;
   // an instance can override frame uniforms independently of the base material.
-  if (customShader && (item.material !== material || !hasPositionQueryCertificate(material))) return [];
-  if (item.instanceAttributes?.length || item.label?.startsWith("prd10.wind:")) return [];
+  if (customShader && (item.material !== material || !hasPositionQueryCertificate(material))) {
+    return excludeVertexProgram(nodeName, nodeId, "custom program is not position-certified");
+  }
+  if (item.instanceAttributes?.length || item.label?.startsWith("prd10.wind:")) {
+    return excludeVertexProgram(nodeName, nodeId, "vertex program displaces positions");
+  }
   if (customShader && (item.skinning || item.onBeforeRender || item.modelViewProjectionMatrix !== undefined
-    || (item.instanceTransforms && item.geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance")))) return [];
+    || (item.instanceTransforms && item.geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance")))) {
+    return excludeVertexProgram(nodeName, nodeId, "custom program combined with skinning, draw hooks, MVP override or instance-rate streams");
+  }
   let cullMode: "none" | "front" | "back" | undefined;
   if (customShader && material) {
     const cull = Object.getOwnPropertyDescriptor(material.renderState, "cullMode");
-    if (!cull || !("value" in cull) || !["none", "front", "back"].includes(cull.value)) return [];
+    if (!cull || !("value" in cull) || !["none", "front", "back"].includes(cull.value)) {
+      return excludeVertexProgram(nodeName, nodeId, "custom program has no fixed cull mode");
+    }
     cullMode = cull.value;
   } else cullMode = material?.renderState.cullMode;
   const side: QuerySide = cullMode === "none" ? "double" : cullMode === "front" ? "back" : "front";
@@ -686,7 +762,9 @@ function intersectRenderItem(item: RenderItem, nodeName: string | undefined, nod
   if (!model || !geometryMatrix) return [];
   // The certified program reads model/MVP, not u_geometryMatrix. Do not apply
   // an unrepresented geometry transform or pretend it was applied by the GPU.
-  if (customShader && geometryMatrix.some((value, index) => value !== (index % 5 === 0 ? 1 : 0))) return [];
+  if (customShader && geometryMatrix.some((value, index) => value !== (index % 5 === 0 ? 1 : 0))) {
+    return excludeVertexProgram(nodeName, nodeId, "custom program ignores the geometry matrix");
+  }
   const finish = (hits: SceneQueryHit[]): SceneQueryHit[] => {
     if (!customShader || !material) return hits;
     try {

@@ -22,9 +22,16 @@ export type AuraBatchedGeometryInput = Geometry | AuraBuiltinPrimitive | AuraCus
 export type AuraBatchedMeshMode = "auto" | "multi-draw" | "loop" | "instanced";
 
 /**
- * A numeric member ID is scoped to this batch state and is never reused.
- * A query hit or captured loop member also carries state identity, so it can
- * be checked against a replacement state with the same batch ID.
+ * Member identity has two layers (5.0 contract, BatchedMesh parity):
+ * - A numeric target is the dense public instance index returned by
+ *   `addInstance`. `deleteInstance` frees it and a later `addInstance` may
+ *   return the same index for a new member.
+ * - The lifetime ID carried by a query hit (`batchMemberId`) or captured loop
+ *   member (`batchMemberLifetimeId`) is scoped to this batch state and is
+ *   never reused, so a hit or reference object passed back to a mutation is
+ *   rejected once the member it named has been deleted, even if its index
+ *   was recycled. Object references also carry state identity, so they can be
+ *   checked against a replacement state with the same batch ID.
  */
 export interface AuraBatchedMemberReference {
   readonly batchId?: string;
@@ -50,11 +57,11 @@ export interface BatchedLoopMemberSnapshot {
   readonly batchId: string;
   readonly stateVersion: number;
   readonly nodeId?: string;
-  /** Identity of this member's lifetime, matching query hits and addInstance. */
+  /** Public instance index returned by addInstance (reusable after deleteInstance). */
   readonly batchMemberId: number;
-  /** Reusable dense storage slot; never a public member identity. */
+  /** Dense storage slot; equal to the public instance index. */
   readonly batchMemberSlot: number;
-  /** Compatibility alias for the member's lifetime identity. */
+  /** Never-reused lifetime identity, matching the query hit `batchMemberId`. */
   readonly batchMemberLifetimeId: number;
   /** Stable for this mount and live slot lifetime; replaced on slot reuse. */
   readonly temporalObjectKey: object;
@@ -471,7 +478,7 @@ export class BatchedMeshState {
         batchId: this.id,
         stateVersion,
         ...(nodeId === undefined ? {} : { nodeId }),
-        batchMemberId: batchMemberLifetimeId,
+        batchMemberId: slot,
         batchMemberSlot: slot,
         batchMemberLifetimeId,
         temporalObjectKey,
@@ -564,9 +571,10 @@ export class BatchedMeshState {
         if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < this.capacity) return index;
         throw new RangeError(`instance index ${index} out of capacity ${this.capacity}.`);
       }
-      const slot = this.getSlotForMemberId(index);
-      if (slot !== undefined && this.slotLifetimes[slot] !== undefined) return slot;
-      throw new RangeError(`BATCH_MEMBER_ID_NOT_LIVE: member ID ${index} is no longer live in this batch.`);
+      // Numeric targets are the public instance index returned by addInstance.
+      if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < this.capacity &&
+          this.alive[index] === 1 && this.slotLifetimes[index] !== undefined) return index;
+      throw new RangeError(`BATCH_MEMBER_ID_NOT_LIVE: member index ${String(index)} is not live in this batch.`);
     }
     if (this.instanced || index === null || typeof index !== "object") {
       throw new RangeError("BATCH_MEMBER_ID_INVALID: member reference does not belong to this batch.");
@@ -584,17 +592,22 @@ export class BatchedMeshState {
     if (temporalObjectKey !== undefined && loopMemberId === undefined) {
       throw new RangeError("BATCH_MEMBER_ID_INVALID: loop member does not belong to this batch.");
     }
-    const memberId = loopMemberId ?? batchMemberId;
-    if (memberId === undefined ||
-        (batchMemberId !== undefined && batchMemberId !== memberId) ||
-        (batchMemberLifetimeId !== undefined && batchMemberLifetimeId !== memberId)) {
+    // Query hits name the lifetime in batchMemberId; loop members carry it in
+    // batchMemberLifetimeId (or their temporal key) and use batchMemberId for
+    // the public instance index. Either way the lifetime decides liveness.
+    const slotKeyed = temporalObjectKey !== undefined || batchMemberLifetimeId !== undefined;
+    const memberId = loopMemberId ?? batchMemberLifetimeId ?? batchMemberId;
+    if (typeof memberId !== "number" ||
+        (batchMemberLifetimeId !== undefined && batchMemberLifetimeId !== memberId) ||
+        (!slotKeyed && batchMemberId !== undefined && batchMemberId !== memberId)) {
       throw new RangeError("BATCH_MEMBER_ID_INVALID: inconsistent member reference.");
     }
     const slot = this.getSlotForMemberId(memberId);
     if (slot === undefined || this.slotLifetimes[slot] === undefined) {
       throw new RangeError("BATCH_MEMBER_ID_NOT_LIVE: member reference is no longer live.");
     }
-    if (batchMemberSlot !== undefined && batchMemberSlot !== slot) {
+    if ((batchMemberSlot !== undefined && batchMemberSlot !== slot) ||
+        (slotKeyed && batchMemberId !== undefined && batchMemberId !== slot)) {
       throw new RangeError("BATCH_MEMBER_ID_INVALID: inconsistent member reference.");
     }
     return slot;
@@ -629,7 +642,7 @@ export class BatchedMeshState {
     this.liveCount += 1;
     this.version += 1;
     this.boundsCache = null;
-    return this.queryMemberIds[slot]!;
+    return slot;
   }
 
   deleteInstance(target: AuraBatchedMemberTarget): void {
