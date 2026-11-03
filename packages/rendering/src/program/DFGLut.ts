@@ -46,7 +46,7 @@ export function dfgLutTexture(): Texture {
     format: "rgba16f",
     colorSpace: "linear",
     data: dfgLutRgba16f(),
-    label: "a3d-dfg-lut-r185"
+    label: "a3d-dfg-lut"
   });
   return texture;
 }

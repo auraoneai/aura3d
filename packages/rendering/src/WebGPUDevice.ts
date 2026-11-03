@@ -6386,7 +6386,8 @@ export class WebGPUDevice implements RenderDevice {
                 ...args.views.map((view, index) => ({ binding: 2 + index, resource: view }))]
         });
         const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
-        const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView, loadOp: "load", storeOp: "store" }] });
+        const pass = encoder.beginRenderPass({ label: `${args.label}-pass`, colorAttachments: [{ view: targetView,
+          ...(args.targetViewOverride === undefined ? nativeColorSlice(target) : {}), loadOp: "load", storeOp: "store" }] });
         pass.setPipeline(pipeline);
         pass.setBindGroup?.(0, group);
         pass.draw(3, 1, 0);

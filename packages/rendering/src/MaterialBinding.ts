@@ -166,7 +166,7 @@ export class MaterialBinding {
     const warnings: string[] = [];
 
     // 01-DFG: every generated program with the lane-01 brdf chunk samples the
-    // renderer-owned r185 DFG LUT (one texture, uploaded once per device).
+    // renderer-owned Aura DFG LUT (DFGLutData.ts; one texture, uploaded once per device).
     if (shader.reflection.uniforms.has("u_dfgLut")) {
       uniforms.set("u_dfgLut", dfgLutBinding());
     }

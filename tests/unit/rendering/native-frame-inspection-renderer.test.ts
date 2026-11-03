@@ -64,6 +64,17 @@ describe("Renderer per-view GPU inspection", () => {
     renderer.dispose();
   });
 
+  it("reports a null whole-frame GPU time with an explicit reason when the device has no timer queries", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 32, height: 16 });
+    renderer.render(makeSource());
+    const capture = renderer.getFrameInspection()!;
+    expect(capture.gpuTimeMs).toBeNull();
+    expect(capture.gpuTimeReason).toBe("Mock device has no GPU timer queries");
+    expect(capture.gpuViewTiming).toMatchObject({ wholeFrameGpuStatus: "unavailable", wholeFrameGpuReason: "Mock device has no GPU timer queries" });
+    expect(capture.cpuTimeMs).toBeGreaterThanOrEqual(0);
+    renderer.dispose();
+  });
+
   it.each(["sync", "async"] as const)("updates the correct earlier render when a query settles (%s)", async (mode) => {
     const { renderer, backend } = await createTimedRenderer();
     const source = makeSource();

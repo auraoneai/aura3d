@@ -50,7 +50,7 @@ describe("transmission frame-graph binding", () => {
         return {
           id: ++id, label: d.label ?? "source", width: d.width, height: d.height,
           colorTexture: texture, disposed: false,
-          dispose() { this.disposed = true; texture.dispose(); }
+          dispose() { (this as { disposed: boolean }).disposed = true; texture.dispose(); }
         } as RenderTarget;
       },
       createBuffer: () => ({ dispose() {} }),

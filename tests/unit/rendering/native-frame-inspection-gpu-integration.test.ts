@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { FrameStats } from "../../../packages/rendering/src/quality/FrameStats";
-import { FrameInspectionTiming } from "../../../packages/rendering/src/quality/FrameInspectionTiming";
+import {
+  FrameInspectionTiming, attachFrameInspectionCancel, bindFrameInspectionView, closeFrameInspectionView,
+  commitFrameInspectionView, pauseFrameInspectionRange
+} from "../../../packages/rendering/src/quality/FrameInspectionTiming";
+import { gpuTimingUnavailableReason } from "../../../packages/rendering/src/quality/DeviceProbe";
 import { createWebGL2GpuTimingBackend } from "../../../packages/rendering/src/RendererTiming";
 import type {
   RendererGpuScopedResult,
@@ -167,5 +171,165 @@ describe("frame inspection with existing query-backed FrameStats", () => {
     gl.ready = true;
     expect(timing.snapshot(frame)?.views).toEqual([{ viewId: "main", gpuTimeMs: 1 }]);
     expect(gl.queries.size).toBe(0);
+  });
+});
+
+/**
+ * WebGL2 + EXT_disjoint_timer_query_webgl2 without usable timestamps, so every
+ * range is a TIME_ELAPSED query. Enforces the spec: beginQuery while another
+ * TIME_ELAPSED query is active is an INVALID_OPERATION (thrown here).
+ */
+class TimeElapsedGl {
+  readonly QUERY_RESULT = 0x8866;
+  readonly QUERY_RESULT_AVAILABLE = 0x8867;
+  readonly TIME_ELAPSED_EXT = 0x88bf;
+  readonly GPU_DISJOINT_EXT = 0x8fbb;
+  readonly created: object[] = [];
+  readonly durationsNs = new Map<object, number>();
+  active: object | null = null;
+  maxActive = 0;
+  ready = false;
+  disjoint = false;
+  constructor(private readonly withExtension = true) {}
+  getExtension(name: string): unknown {
+    return this.withExtension && name === "EXT_disjoint_timer_query_webgl2"
+      ? { TIME_ELAPSED_EXT: this.TIME_ELAPSED_EXT, GPU_DISJOINT_EXT: this.GPU_DISJOINT_EXT }
+      : null;
+  }
+  createQuery(): object { const query = { id: this.created.length }; this.created.push(query); return query; }
+  deleteQuery(): void {}
+  beginQuery(target: number, query: object): void {
+    if (target !== this.TIME_ELAPSED_EXT) throw new Error("unexpected target");
+    if (this.active) throw new Error("INVALID_OPERATION: a TIME_ELAPSED query is already active");
+    this.active = query;
+    this.maxActive = Math.max(this.maxActive, 1);
+  }
+  endQuery(target: number): void {
+    if (target !== this.TIME_ELAPSED_EXT || !this.active) throw new Error("INVALID_OPERATION: no active query");
+    this.active = null;
+  }
+  getParameter(name: number): boolean { return name === this.GPU_DISJOINT_EXT ? this.disjoint : false; }
+  getQueryParameter(query: object, name: number): number | boolean {
+    if (name === this.QUERY_RESULT_AVAILABLE) return this.ready;
+    return this.durationsNs.get(query) ?? 0;
+  }
+  /** Assign `ms` to the queries in creation order. */
+  settle(ms: readonly number[], offset = 0): void {
+    ms.forEach((value, index) => this.durationsNs.set(this.created[offset + index]!, value * 1_000_000));
+    this.ready = true;
+  }
+}
+
+function timedView(timing: FrameInspectionTiming, stats: FrameStats, frame: ReturnType<FrameInspectionTiming["begin"]>, viewId: string, cancel = false) {
+  // Mirrors the production producer order: Renderer binds the view, the
+  // prd11 collect contributor pauses the frame range then starts the view
+  // query, and its after-output pass ends it and commits the sample.
+  const blackboard = {};
+  expect(bindFrameInspectionView(blackboard, timing, frame, viewId)).toBe(true);
+  pauseFrameInspectionRange(blackboard);
+  const handle = stats.beginTracked(1);
+  const binding = attachFrameInspectionCancel(blackboard, () => stats.cancelTracked(handle));
+  if (cancel) { closeFrameInspectionView(blackboard); return; }
+  const sample = stats.endTracked(handle)!;
+  expect(commitFrameInspectionView(blackboard, sample, stats, binding)).toBe(true);
+}
+
+describe("whole-frame GPU timing from consecutive view and non-view ranges (S5-WP17-01)", () => {
+  it("never nests TIME_ELAPSED queries and reports a frame total covering every view", () => {
+    const gl = new TimeElapsedGl();
+    const stats = new FrameStats(8, createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext));
+    const timing = new FrameInspectionTiming();
+    const frame = timing.begin(1, stats, "unused");
+    timedView(timing, stats, frame, "left");
+    timedView(timing, stats, frame, "right");
+    timing.end(frame);
+
+    expect(gl.active).toBeNull();
+    expect(gl.maxActive).toBe(1);
+    // range, left, range, right, range
+    expect(gl.created).toHaveLength(5);
+    expect(timing.snapshot(frame)).toMatchObject({ wholeFrameGpuTimeMs: null, wholeFrameGpuStatus: "pending" });
+
+    gl.settle([0.5, 2, 0.25, 3, 1]);
+    const snapshot = timing.snapshot(frame)!;
+    expect(snapshot.views).toEqual([{ viewId: "left", gpuTimeMs: 2 }, { viewId: "right", gpuTimeMs: 3 }]);
+    expect(snapshot.wholeFrameGpuStatus).toBe("measured");
+    expect(snapshot.wholeFrameGpuTimeMs).toBeCloseTo(6.75, 9);
+    const viewSum = snapshot.views.reduce((sum, view) => sum + view.gpuTimeMs!, 0);
+    expect(snapshot.wholeFrameGpuTimeMs!).toBeGreaterThanOrEqual(viewSum);
+    expect(snapshot.wholeFrameGpuReason).toBeUndefined();
+  });
+
+  it("times a frame with no timed view as one range", () => {
+    const gl = new TimeElapsedGl();
+    const stats = new FrameStats(8, createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext));
+    const timing = new FrameInspectionTiming();
+    const frame = timing.begin(1, stats, "unused");
+    // A bound view whose timing contributor never ran is covered by the frame range.
+    expect(bindFrameInspectionView({}, timing, frame, "single")).toBe(true);
+    timing.end(frame);
+    expect(gl.created).toHaveLength(1);
+    gl.settle([4]);
+    expect(timing.snapshot(frame)).toMatchObject({ wholeFrameGpuTimeMs: 4, wholeFrameGpuStatus: "measured",
+      views: [{ viewId: "single", gpuTimeMs: null }] });
+  });
+
+  it("discards a frame whose queries were invalidated by GPU_DISJOINT_EXT and measures the next one", () => {
+    const gl = new TimeElapsedGl();
+    const stats = new FrameStats(8, createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext));
+    const timing = new FrameInspectionTiming();
+    const first = timing.begin(1, stats, "unused");
+    timedView(timing, stats, first, "main");
+    timing.end(first);
+    gl.settle([1, 2, 1]);
+    gl.disjoint = true;
+    const discarded = timing.snapshot(first)!;
+    expect(discarded.wholeFrameGpuTimeMs).toBeNull();
+    expect(discarded.wholeFrameGpuStatus).toBe("discarded");
+    expect(discarded.wholeFrameGpuReason).toMatch(/GPU_DISJOINT_EXT/);
+    expect(discarded.views).toEqual([{ viewId: "main", gpuTimeMs: null }]);
+
+    gl.disjoint = false;
+    gl.ready = false;
+    const second = timing.begin(2, stats, "unused");
+    timedView(timing, stats, second, "main");
+    timing.end(second);
+    gl.settle([0.5, 1.5, 0.5], 3);
+    expect(timing.snapshot(second)).toMatchObject({ wholeFrameGpuTimeMs: 2.5, wholeFrameGpuStatus: "measured",
+      views: [{ viewId: "main", gpuTimeMs: 1.5 }] });
+    // The discarded frame never becomes measured later.
+    expect(timing.snapshot(first)?.wholeFrameGpuTimeMs).toBeNull();
+    expect(gl.maxActive).toBe(1);
+  });
+
+  it("does not report a frame total when a view query was cancelled mid-frame", () => {
+    const gl = new TimeElapsedGl();
+    const stats = new FrameStats(8, createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext));
+    const timing = new FrameInspectionTiming();
+    const frame = timing.begin(1, stats, "unused");
+    timedView(timing, stats, frame, "main", true);
+    timing.end(frame);
+    expect(gl.active).toBeNull();
+    gl.settle([1, 1, 1]);
+    expect(timing.snapshot(frame)).toMatchObject({ wholeFrameGpuTimeMs: null, wholeFrameGpuStatus: "discarded",
+      wholeFrameGpuReason: expect.stringMatching(/cancelled/) });
+  });
+
+  it("reports null with an explicit reason when EXT_disjoint_timer_query_webgl2 is absent", () => {
+    const gl = new TimeElapsedGl(false);
+    const stats = new FrameStats(8, createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext));
+    expect(stats.gpuTimingSupported).toBe(false);
+    const device = { info: { backend: "webgl2" } } as unknown as Parameters<typeof gpuTimingUnavailableReason>[0];
+    const reason = gpuTimingUnavailableReason(device);
+    expect(reason).toBe("EXT_disjoint_timer_query_webgl2 unavailable");
+    const timing = new FrameInspectionTiming();
+    const frame = timing.begin(1, stats, reason);
+    timedView(timing, stats, frame, "main");
+    timing.end(frame);
+    expect(gl.created).toHaveLength(0);
+    expect(timing.snapshot(frame)).toMatchObject({ wholeFrameGpuTimeMs: null, wholeFrameGpuStatus: "unavailable",
+      wholeFrameGpuReason: "EXT_disjoint_timer_query_webgl2 unavailable", views: [{ viewId: "main", gpuTimeMs: null }] });
+    const webgpu = { info: { backend: "webgpu" } } as unknown as Parameters<typeof gpuTimingUnavailableReason>[0];
+    expect(gpuTimingUnavailableReason(webgpu)).toMatch(/WebGPU timestamp-query/);
   });
 });

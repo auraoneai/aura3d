@@ -77,6 +77,12 @@ function compile(node: AuraSceneNode) {
   return { item: out.items[0]!, dispose: () => handler.dispose!(node as never) };
 }
 
+// Root render sources attach only to a DOM canvas (isHtmlCanvas); a bare
+// { width, height } object is treated as a worker canvas and has none.
+function htmlCanvas(width: number, height: number): HTMLCanvasElement {
+  return { width, height, getBoundingClientRect: () => ({ width, height, left: 0, top: 0 }) } as unknown as HTMLCanvasElement;
+}
+
 describe("line, point and sprite clipping propagation", () => {
   it("retains live material groups across scene snapshots and disposes only compiler resources", () => {
     const group = clipping.material({ planes: [[0, 1, 0, -2]], space: "local", combine: "union", clipShadows: true });
@@ -192,7 +198,7 @@ describe("line, point and sprite clipping propagation", () => {
       const local = clipping.material({ planes: [[0, 2, 0, -6], [0, 0, 1, 1]], space: "local", combine: "union" });
       const snapshot = scene({ clipping: global }).add(makeNode({ clipping: local })).toJSON();
       const compiled = compile(snapshot.nodes[0]!);
-      const canvas = { width: 800, height: 400 } as HTMLCanvasElement;
+      const canvas = htmlCanvas(800, 400);
       const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [compiled.item] } });
       const device = new CaptureDevice();
       setRendererQrFlags(flags, device);
@@ -566,7 +572,7 @@ describe("line, point and sprite clipping propagation", () => {
       children: [sprites.sprite({ center: [0.2, 0.8], spriteRotation: 0.4, material: { clipping: local } })]
     }).toJSON();
     const compiled = compile(snapshot.nodes[0]!);
-    const canvas = { width: 800, height: 400 } as HTMLCanvasElement;
+    const canvas = htmlCanvas(800, 400);
     const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [compiled.item] } });
     const input = createProductionRuntimeRendererInput(snapshot, canvas, [], [], 0, undefined, new Set(), { color: [0, 0, 0], intensity: 0 }, []);
     const device = new CaptureDevice();
@@ -616,7 +622,7 @@ describe("line, point and sprite clipping propagation", () => {
       children: [sprites.sprite({ center: [0.2, 0.8], spriteRotation: 0.4, material: { clipping: local } })]
     }).toJSON();
     const compiled = compile(snapshot.nodes[0]!);
-    const canvas = { width: 800, height: 400 } as HTMLCanvasElement;
+    const canvas = htmlCanvas(800, 400);
     const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [compiled.item] } });
     const input = createProductionRuntimeRendererInput(snapshot, canvas, [], [], 0, undefined, new Set(), { color: [0, 0, 0], intensity: 0 }, []);
     const device = new CaptureDevice();
@@ -674,7 +680,7 @@ describe("line, point and sprite clipping propagation", () => {
         position: [2, -1, -3], rotation: [0.1, 0.2, 0.3], scale: [2, 3, 1], material: { clipping: local } })]
     }).toJSON();
     const compiled = compile(snapshot.nodes[0]!);
-    const canvas = { width: 800, height: 400 } as HTMLCanvasElement;
+    const canvas = htmlCanvas(800, 400);
     const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [compiled.item] } });
     const input = createProductionRuntimeRendererInput(snapshot, canvas, [], [], 0, undefined, new Set(), { color: [0, 0, 0], intensity: 0 }, []);
     const device = new CaptureDevice();

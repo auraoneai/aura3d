@@ -9,13 +9,13 @@
  * `independentExpected` — independently derived from the cited publications
  * and specifications in binary64; no value is produced by running another
  * engine's GLSL. Table-backed cases sample the same 16x16 split-sum table the
- * shader reads (bilinearRG over DFG_LUT_R185), exactly as the CPU oracle test
+ * shader reads (bilinearRG over DFG_LUT), exactly as the CPU oracle test
  * does. Bound: <=1e-3 relative or absolute (2e-3 absolute floor for the
  * table-backed cases — half-float hardware filtering of that table).
  */
 import { PRD04_SHADER_CHUNKS } from "/packages/rendering/src/shaders/physical/index.js";
 import { BRDF_R185_SHIM_CHUNK } from "/tests/qr/prd04/shims/brdf_r185.glsl.js";
-import { DFG_LUT_R185, DFG_LUT_SIZE } from "/tests/qr/prd04/oracles/dfg-lut-r185.js";
+import { DFG_LUT, DFG_LUT_SIZE } from "/tests/qr/prd04/oracles/dfg-lut.js";
 import { INDEPENDENT_BSDF_CASES, bilinearRG, independentExpected, type IndependentCase } from "/tests/qr/prd04/oracles/independent-bsdf-goldens.js";
 import type { ShaderChunk } from "/packages/rendering/src/contracts/program.js";
 
@@ -59,7 +59,7 @@ interface GoldenCase {
 }
 
 /** Same split-sum table sampler as tests/qr/prd04/unit/r185-oracle.test.ts. */
-const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT_R185, DFG_LUT_SIZE, roughness, nv);
+const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT, DFG_LUT_SIZE, roughness, nv);
 
 /** Expected grid for one case, enumerated argorder[0]-fastest like the shader's decode. */
 function expectedValues(c: IndependentCase): (number | null)[] {
@@ -332,7 +332,7 @@ async function main(): Promise<void> {
 	}
 	const dfgTex = gl.createTexture()!;
 	gl.bindTexture(gl.TEXTURE_2D, dfgTex);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, DFG_LUT_SIZE, DFG_LUT_SIZE, 0, gl.RG, gl.FLOAT, DFG_LUT_R185);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, DFG_LUT_SIZE, DFG_LUT_SIZE, 0, gl.RG, gl.FLOAT, DFG_LUT);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

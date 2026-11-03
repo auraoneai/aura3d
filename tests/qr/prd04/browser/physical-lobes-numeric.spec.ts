@@ -3,13 +3,14 @@
  * every lobe's GLSL runs in ChunkHarness over the case input grid on a real
  * GPU context and matches the independently derived expectations of
  * tests/qr/prd04/oracles/independent-bsdf-goldens.ts within 1e-3 (2e-3
- * absolute floor for the table-backed cases — hardware half-float filtering,
- * same bound the CPU oracle test documents).
+ * absolute floor for the cases that read the split-sum table, for hardware
+ * half-float filtering; the CPU oracle test, binary64 on both sides, holds
+ * 1e-6).
  *
- * S5-WP29-05: expectations no longer come from another engine's GLSL
- * evaluated per device class (the former fixtures/bsdf/r185-golden*.json);
- * they are computed on the page from the cited publications, the same
- * derivation tests/qr/prd04/unit/r185-oracle.test.ts holds the CPU oracle to.
+ * Expectations are computed on the page from the cited publications, the same
+ * derivation tests/qr/prd04/unit/r185-oracle.test.ts holds the CPU oracle to;
+ * the split-sum table is Aura3D's own integration (oracles/dfg-lut.ts). No
+ * value comes from another engine.
  */
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";

@@ -225,15 +225,23 @@ Phase B browser evidence; Display-P3 output remains experimental.
   allocates one color volume and returns a per-slice child in `layerTargets`
   (WebGL2 `framebufferTextureLayer` on `TEXTURE_3D`; Mock device). 3D targets
   are color-only, single-sample, single-mip and single-attachment; other
-  combinations are refused. WebGPU refuses 3D targets
-  (`UNSUPPORTED_RENDER_TARGET_FEATURE`) because per-slice attachments need a
-  `depthSlice` in every pass encoder.
+  combinations are refused. WebGPU allocates one `dimension: "3d"` texture;
+  every slice child renders through the same one-mip 3d view and each pass
+  (draw, clear, bundle) sets the color attachment's `depthSlice` to the
+  child's slice. Borrowed native surfaces refuse 3D slices
+  (`WEBGPU_SURFACE_3D_UNSUPPORTED`); `readPixelsAsync` on an active slice
+  copies from that slice, while `readRenderTarget` stays 2D-only.
 - WebGPU `cube` and `2d-array` targets use one native array texture (plus a
   depth array unless `depth: false`), sampled through a cube/2d-array view;
   each `layerTargets[i]` renders through a single-layer 2D view. Children
   borrow the parent's leases; only the parent retires native textures, behind
-  the retirement fence. Layered WebGPU targets are single-sample and single-mip;
-  depth-only and comparison targets remain WebGL2-only.
+  the retirement fence. Layered WebGPU targets are single-sample and single-mip.
+- WebGPU `depthOnly` targets (2D, cube or 2d-array) allocate only the depth
+  texture (sampleable as `depthTexture`); passes carry no color attachment and
+  pipelines have `fragment.targets: []`. Color clears, uploads, readback,
+  presentation and native surfaces refuse them (`RENDER_TARGET_DEPTH_ONLY`;
+  attachment-identity copies/reads report `INVALID_RENDER_ATTACHMENT`).
+  `depthCompare` targets remain WebGL2-only.
 - WebGPU `copyRenderTarget`, `resolveRenderTarget` and `readRenderTarget`
   follow the WebGL2 contract: targets stay device-owned, an abort before
   submission leaves the destination untouched, an abort after submission only
@@ -252,6 +260,16 @@ Phase B browser evidence; Display-P3 output remains experimental.
   any non-abort GPU failure, reported in `sortBackend`/`sortFallbackReason`.
   The sorter treats a rejected `device.lost` notification as unconfirmed loss
   and keeps submitted buffers until a successful fence.
+- Engine opt-in: `gaussianSplat(asset, { gpuSort: true })` creates one
+  `NativeGpuSort` per node on WebGPU and calls
+  `GaussianSplatRenderer.enableGpuSort`. Synchronous frames reuse a GPU order
+  only when it was computed for exactly the same view, projection, model,
+  camera and viewport (one GPU sort in flight at a time); every other frame is
+  CPU-sorted. Non-WebGPU devices, devices without compute and any GPU failure
+  keep the CPU sort for that renderer and report the reason in each frame's
+  `sortFallbackReason` and in `renderer.gpuSortStatus`
+  (`{ requested, lastBackend, fallbackReason? }`; per cloud on the compiled
+  scene as `splatSortStatus`). Default is `false` (CPU sort).
 
 ## Evidence needed before promotion
 

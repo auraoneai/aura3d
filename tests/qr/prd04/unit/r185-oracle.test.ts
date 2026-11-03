@@ -7,10 +7,11 @@
  * which had been produced by evaluating another engine's GLSL on a GPU; no
  * value here comes from running or reading another 3D engine.
  *
- * The file keeps its historical name because the oracle (and the r185-named
- * split-sum table it samples) keep theirs. The 16x16 split-sum table is input
- * data to the oracle; it is bounded separately against an independent
- * quadrature of the same integral (last describe block).
+ * The file keeps its historical name. The 16x16 split-sum table the oracle
+ * samples (oracles/dfg-lut.ts) is Aura3D's own integration (generateDfgLut in
+ * packages/rendering/src/program/DFGLutData.ts); it is input data to the oracle
+ * and is bounded separately against an independent quadrature of the same
+ * integral (last describe block).
  *
  * PRD-04 P1-3 tolerance: <= 1e-4. Both sides are now CPU binary64, so every
  * case, including the table-backed ones (same table, independently written
@@ -19,7 +20,7 @@
  */
 import { describe, expect, it } from "vitest";
 import * as ref from "../oracles/physical-bsdf-reference";
-import { DFG_LUT_R185, DFG_LUT_SIZE } from "../oracles/dfg-lut-r185";
+import { DFG_LUT, DFG_LUT_SIZE } from "../oracles/dfg-lut";
 import {
 	INDEPENDENT_BSDF_CASES,
 	bilinearRG,
@@ -113,7 +114,7 @@ function evaluate(c: GoldenCase, args: Record<string, number>): number[] {
 	}
 }
 
-const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT_R185, DFG_LUT_SIZE, roughness, nv);
+const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT, DFG_LUT_SIZE, roughness, nv);
 
 describe("BSDF oracle vs independently derived values (PRD-04 P1-3, S5-WP29-05)", () => {
 	it("case grid is complete and every case has an oracle dispatch", () => {
@@ -171,23 +172,25 @@ describe("BSDF oracle vs independently derived values (PRD-04 P1-3, S5-WP29-05)"
 });
 
 describe("split-sum table sampled by the oracle vs an independent quadrature", () => {
-	// dfg-lut-r185.ts is input data (16x16 RG, texel centres). Each texel is
-	// re-integrated independently (Heitz height-correlated G2, Schlick (1-VH)^5,
-	// 256 x 256 Gauss-Legendre/midpoint quadrature; native-reference-environment-clean.ts).
-	// Measured agreement: <= 2e-3 for N.V >= 0.28 (rows 4..15); the four
-	// grazing rows (N.V <= 0.22) differ by up to 1.44e-2 in A, where the
-	// table's own estimator is least accurate. The bounds below are those
-	// measurements, not a claim about which estimator a renderer should use.
+	// dfg-lut.ts is input data (16x16 RG binary16, texel centres; Aura's
+	// 4096-point Hammersley integration). Each texel is re-integrated
+	// independently (Heitz height-correlated G2, Schlick (1-VH)^5, 256 x 256
+	// Gauss-Legendre/midpoint quadrature; native-reference-environment-clean.ts).
+	// Measured agreement (2026-11-02): <= 2.07e-3 for N.V >= 0.28 (rows 4..15,
+	// <= 1.55e-3 from row 5; binary16 half-ulp near 1 is 2.4e-4); the four
+	// grazing rows (N.V <= 0.22) differ by up to 1.17e-2, where Monte Carlo
+	// estimators are least accurate. The bounds below are those measurements,
+	// not a claim about which estimator a renderer should use.
 	it("every texel agrees with the independent integral within the measured bounds", () => {
 		const n = DFG_LUT_SIZE;
 		const failures: string[] = [];
 		for (let j = 0; j < n; j++) {
-			const bound = j >= 4 ? 2e-3 : 1.5e-2;
+			const bound = j >= 4 ? 2.1e-3 : 1.2e-2;
 			for (let i = 0; i < n; i++) {
 				const [a, b] = independentSplitSumTexel(i, j, n);
 				const t = (j * n + i) * 2;
-				const da = Math.abs(a - DFG_LUT_R185[t]!);
-				const db = Math.abs(b - DFG_LUT_R185[t + 1]!);
+				const da = Math.abs(a - DFG_LUT[t]!);
+				const db = Math.abs(b - DFG_LUT[t + 1]!);
 				if (da > bound || db > bound) failures.push(`texel(${i},${j}) dA=${da.toExponential(2)} dB=${db.toExponential(2)} bound=${bound}`);
 			}
 		}

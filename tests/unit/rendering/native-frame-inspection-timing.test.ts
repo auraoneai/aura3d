@@ -54,6 +54,8 @@ describe("per-view frame-inspection GPU timing", () => {
       frameNumber: 1,
       coverage: "view-collect-through-after-output",
       wholeFrameGpuTimeMs: null,
+      wholeFrameGpuStatus: "unavailable",
+      wholeFrameGpuReason: "No frame timer-query owner was supplied",
       closed: true,
       truncated: false,
       views: [

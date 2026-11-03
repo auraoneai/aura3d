@@ -3,11 +3,11 @@
  * (PRD-04 §14 P1-3).
  *
  * Every function is a JS transcription of the same math the GLSL chunks
- * evaluate (and of the r185 GLSL the golden JSON was rendered with). The unit
+ * evaluate. The unit
  * test replays the golden's parameter grid through these functions and
- * asserts ≤1e-4 relative error against GPU-evaluated three r185 GLSL.
+ * holds it to independently derived expectations (independent-bsdf-goldens.ts).
  */
-import { DFG_LUT_R185, DFG_LUT_SIZE } from "./dfg-lut-r185";
+import { DFG_LUT, DFG_LUT_SIZE } from "./dfg-lut";
 
 export const PI = Math.PI;
 export const RECIPROCAL_PI = 1 / PI;
@@ -80,7 +80,7 @@ export function brdfLambert(diffuseColor: Vec3): Vec3 {
 	return mul3(diffuseColor, RECIPROCAL_PI);
 }
 
-// --- DFG LUT sampling (r185 DFGLUTData.js; LINEAR + CLAMP_TO_EDGE) ----------
+// --- DFG LUT sampling (Aura DFGLutData.ts via dfg-lut.ts; LINEAR + CLAMP_TO_EDGE)
 
 export function a3dDFG(roughness: number, dotNX: number): [number, number] {
 	// GL_LINEAR sampling of the 16x16 RG16F LUT at (roughness, dotNX).
@@ -93,7 +93,7 @@ export function a3dDFG(roughness: number, dotNX: number): [number, number] {
 		const cx = Math.min(Math.max(x, 0), n - 1);
 		const cy = Math.min(Math.max(y, 0), n - 1);
 		const i = (cy * n + cx) * 2;
-		return [DFG_LUT_R185[i], DFG_LUT_R185[i + 1]];
+		return [DFG_LUT[i], DFG_LUT[i + 1]];
 	};
 	const c00 = texel(x0, y0), c10 = texel(x0 + 1, y0);
 	const c01 = texel(x0, y0 + 1), c11 = texel(x0 + 1, y0 + 1);

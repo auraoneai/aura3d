@@ -30,10 +30,13 @@
  * zero, or trig; one pow per view and one per direct light suffice when the
  * caller caches parameters and the view weight. The constant 0.98 leaves a 2%
  * real-arithmetic reserve; it is not an established f32 error bound. The
- * renderer preview rejects nonuniform environment/probe/lightmap modes and
- * other layered lobes because irradiance alone cannot resolve this BRDF's
- * directional response. Arbitrary illumination, WGSL compilation, GPU
- * precision, timing and visual appearance remain unvalidated.
+ * renderer preview accepts sheen together with other layered lobes and with
+ * nonuniform environment, probe, volume and lightmap sources: for nonuniform
+ * sources it applies the exact uniform-light albedo to the substrate's
+ * cosine-weighted irradiance (occluded like the substrate), an approximation
+ * because irradiance alone cannot resolve this BRDF's directional response.
+ * WGSL compilation, GPU precision, timing and visual appearance are validated
+ * only by the browser/GPU acceptance runs.
  */
 export const A3D_PRD04_SHEEN_FAST_WGSL = /* wgsl */ `
 fn a3dFastSheenExponent(roughness: f32) -> f32 {

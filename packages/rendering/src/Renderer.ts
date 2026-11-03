@@ -1776,7 +1776,13 @@ export class Renderer {
       clearTaaHistoryWrites(this.viewScopeId, viewId);
       try { this.temporalHistory.reset("explicit-reset", viewId); } catch {}
       this.lastTemporalCameraPosition.delete(viewId);
+      // Releasing the view's resources must not erase the aborted frame's
+      // transmission report; it stays observable as inactive.
+      const transmission = this.transmissionViews.get(viewId);
       try { this.releasePostEffectView(viewId); } catch {}
+      if (transmission?.frameId === frame.id) {
+        this.transmissionViews.set(viewId, { ...transmission, diagnostics: { ...transmission.diagnostics, targetActive: false, mipCount: 0 } });
+      }
     }
     if (!this.renderingAuthoredPass || finishingPass) {
       try { this.retireViewTargets(frame.initialViewIds); } catch {}

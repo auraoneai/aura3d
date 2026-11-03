@@ -14,7 +14,7 @@ import { LanternSky } from "./lanterns";
 import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION } from "./lights";
-import { probes } from "@aura3d/engine";
+import { probes } from "@aura3d/engine/lanes";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";

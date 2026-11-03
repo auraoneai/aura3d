@@ -123,17 +123,28 @@ export function documentedOptionReferences(markdown: string, file: string): Docu
 export function readOptionProbeSummaries(sourceText: string): OptionProbeSummary[] {
   const source = ts.createSourceFile(OUT_FILE, sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const helpers = new Set<string>();
+  const unsupportedHelpers = new Set<string>();
   const rows: OptionProbeSummary[] = [];
   const literal = (node: ts.Node | undefined): string | undefined => node && ts.isStringLiteral(node) ? node.text : undefined;
   const visit = (node: ts.Node): void => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression) && node.initializer.expression.text === "forOptions") {
       helpers.add(node.name.text);
     }
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression) && node.initializer.expression.text === "unsupportedFor") {
+      unsupportedHelpers.add(node.name.text);
+    }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && helpers.has(node.expression.text)) {
       const builder = literal(node.arguments[0]);
       const field = literal(node.arguments[1]);
       const observation = literal(node.arguments[4]);
       if (builder && field) rows.push({ builder, field, disposition: "runtime", observation });
+    }
+    // `unsupportedFor<T>()` helpers: builder, field, A, B, observation (the
+    // runtime error code), then the actionable reason.
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && unsupportedHelpers.has(node.expression.text)) {
+      const builder = literal(node.arguments[0]);
+      const field = literal(node.arguments[1]);
+      if (builder && field) rows.push({ builder, field, disposition: "unsupported", observation: literal(node.arguments[4]), reason: literal(node.arguments[5]) });
     }
     if (ts.isObjectLiteralExpression(node)) {
       const fields = new Map<string, string>();

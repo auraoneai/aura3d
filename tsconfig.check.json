@@ -41,8 +41,7 @@
     // absolute URLs ("/benchmarks/...", "/tests/qr/prd04/shims/*.glsl.js")
     // that only Vite resolves, or (prd07/browser) declare per-spec Window
     // globals that collide with their harness declarations in one program.
-    // tests/qr/prd04/browser/r185-golden.ts and harness/prd04-capture.ts also
-    // import the external comparison engine.
+    // harness/prd04-capture.ts also imports the external comparison scenes.
     "tests/qr/prd04/browser",
     "tests/qr/prd04/harness",
     "tests/qr/prd07/browser",
