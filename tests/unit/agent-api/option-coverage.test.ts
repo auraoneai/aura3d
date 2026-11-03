@@ -121,7 +121,7 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
   }
   if (row.observation?.startsWith("hemisphere.")) {
     const resolved = collectPrd02Lights(scene().add(node).toJSON()).hemisphere[0]!;
-    return resolved[row.field === "skyColor" ? "skyColor" : row.field === "groundColor" ? "groundColor" : "intensity"];
+    return resolved[row.observation.slice("hemisphere.".length) as "skyColor" | "groundColor" | "intensity" | "name" | "direction"];
   }
   if (row.observation?.startsWith("light.")) {
     const descriptor = physicalLightDescriptor(node, node.name ?? "studio");
@@ -147,7 +147,7 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
   const item = [...(input.source.collectRenderItems?.() ?? [])][0]!;
   switch (row.observation) {
     case "primitive.name": return item.label;
-    case "primitive.material.color": return item.material.getParameter("u_baseColor");
+    case "primitive.material.color": return item.material?.getParameter("u_baseColor");
     case "primitive.size": return Array.from(item.modelMatrix as ArrayLike<number>);
     case "primitive.castShadow": return item.castShadow;
     case "instances.transforms": return Array.from(item.instanceTransforms!);

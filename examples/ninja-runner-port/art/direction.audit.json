@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/ninja-runner-port/art/direction.ts",
-  "sourceSha256": "043f6f2dcfc2e5915ae9dca91c235361d9c4b492a965f43603bdc2f22b872ad8",
+  "sourceSha256": "aef4af10f88ba80364e6b402869958a92c56737a71871e54193aec52fa1e5749",
   "id": "showcase-ninja-runner-port",
   "genre": "rhythm-runner",
   "signatureEffect": "scarf-trail: a vermilion scarf ribbon streaming from the runner's upper spine under an indigo woodblock ink outline, the evening sinking with distance.",

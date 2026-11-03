@@ -1,14 +1,15 @@
 # Native example catalog expectations (partial)
 
 `expectations.json` contains independently authored **numeric hypotheses**, not
-screenshots or evidence that a candidate rendered. The 23 entries are derived
+screenshots or evidence that a candidate rendered. The 36 entries are derived
 from the checked-in scene sources and their recorded SHA-256 digests. The
 typed-asset starter also uses the material factors in its existing hashed robot
 GLB; its current asset metadata does not specify a license. No captured frame
 or third-party engine implementation was used to author these expectations.
 
-The regions assume the catalog spec's 1280 × 720 viewport and an unobscured
-full-page canvas. Their centers come from perspective projection of the authored
+The regions assume the catalog spec's 1280 × 720 viewport and, except for the
+framed animation-channel and animation-studio canvases noted below, an
+unobscured full-page canvas. Their centers come from perspective projection of the authored
 world positions and camera; their color bands start with the authored material
 or constant fragment colors and allow for output processing. Fraction bounds
 are intended to reject missing subjects and uniformly filled regions, but
@@ -18,18 +19,17 @@ are source-derived acceptance inputs, **not calibrated or passing results**.
 The dedicated unit tests check the source digests, camera projections, bounded
 bands, and failure on synthetic wrong/absent subjects without launching a browser.
 
-This manifest is deliberately **incomplete**: it contains nine of the 20
-templates, all 10 currently enumerated capability scenarios, and
-the four classified starter examples. Dynamically discovered
-documented examples are not covered. The browser catalog fails
-closed on missing IDs. The separate source inventory tests also require every
-current catalog ID and will fail until independently grounded expectations are
-added; do not fill the remainder with generic background/color checks or mark
-the inventory tests skipped. The catalog can change, so these counts are not a
-substitute for re-running discovery.
+This manifest covers all 20 templates, every currently enumerated capability
+scenario and the four classified starter examples. Dynamically discovered
+documented examples are **not** covered (their inventory test still fails, by
+design). The browser catalog fails closed on missing IDs. The separate source
+inventory tests also require every current catalog ID; do not fill the
+remainder with generic background/color checks or mark the inventory tests
+skipped. The catalog can change, so these counts are not a substitute for
+re-running discovery.
 A pre-reconciliation discovery run reported 88 missing documented examples;
 discovery has since changed, so the current count must be recomputed on the
-source runner. The eleven missing templates are listed below.
+source runner.
 
 The cinematic template entry identifies the recipe's **tilted cyan neon sign**
 at its initial, WebDriver-paused dolly pose. It does not establish that the
@@ -93,54 +93,53 @@ digests were updated. Camera, app-core and compiler-renderer dependencies
 remain in active integration and some digests are still stale. The fixture
 digest test correctly fails until those changes are reviewed and reconciled.
 
-Eleven current template IDs remain without a defensible fixture:
+The eleven templates that previously had no defensible fixture now have
+source-derived entries, grounded by `tests/unit/tools/native-examples-catalog-templates.test.ts`
+(helpers in `native-examples-catalog-template-support.ts`). Each test pins the
+authored builder values in the template source, feeds the real hashed GLB bytes
+(and digest-pinned `Textures/colormap.png` dependencies) through the production
+typed-actor loader and frame-input builder behind an in-memory fetch stub, and
+projects the resulting vertices with the frame's own view-projection (or, for
+game templates, the pose produced by the real camera controller and rig after
+runtime bounds are published). Color bands are checked against an area-weighted
+histogram of the base colors the GLB's own UVs address, never a decoded GPU
+texture or capture:
 
-* `template:architecture-interior` and `template:custom-scene`: the typed hero
-  GLBs (Kenney Modular Dungeon Kit, Kenney Pirate Kit) refer to an absent
-  `Textures/colormap.png`; no byte-verified copy of either kit's colormap exists
-  in the repository or its history. A generic floor, pedestal, or scale cube
-  would not establish the typed subject. Asset ownership needs to resolve the
-  texture.
-* `template:asset-inspector`, `template:character-viewer`, and
-  `template:large-scene`: the typed GLBs' `Textures/colormap.png` is now
-  admitted with a dependency digest (Car Kit and Mini Forest colormaps,
-  byte-identical to textures embedded in provenance-recorded derivatives of the
-  same kits). No source-derived subject expectation has been written yet.
-* `template:animation-studio`: the default live route intentionally mounts an
-  empty neutral placeholder with no characters or props. A floor-color check
-  would not establish a scene; the example document is not the default route.
-* `template:animation-channel`: the canvas is moved into the framed preview and
-  its `#app` has `pointer-events: none`. The catalog's current canvas
-  `elementFromPoint` exposure check cannot identify that canvas. The layout and
-  exposure contract need reconciliation before an honest region is admitted.
-* `template:mini-game`: the hero texture is embedded, and the key and stars
-  now ship the Kenney Platformer Kit `public/aura-assets/Textures/colormap.png`
-  with a typed dependency digest. An in-memory-only source test confirms the
-  typed loader admits both with that digest and still rejects them without it.
-  No source-derived subject expectation has been written for the default scene
-  yet.
-* `template:character-controller`: its player GLB has embedded textures, but
-  the default-on shoulder rig uses collision. A historical unscoped probe hit
-  the hero itself and placed over 90% of sampled skinned vertices in front of
-  the near plane. The current app controller excludes the subject, and the
-  existing `native-camera-character-subject-regression.test.ts` reconstruction
-  with the real GLB, frozen `Walk_Loop`, owner-scoped matrices and scene boxes
-  passes: less than 10% of sampled vertices are in front of the near plane.
-  This does not mount the template or prove browser output. The right-half look
-  pad still intercepts canvas exposure, and subject colors and occlusion remain
-  uncalibrated; resolve those before authoring a region.
-* `template:fighting-game`: the live fighting rig, autonomous rival, runtime
-  transforms and animated typed subjects need independent projection and
-  texture analysis; fixed fallback camera coordinates alone are not a
-  reliable region.
-* `template:premium-product-viewer`: the old extra scale made the ToyCar
-  subpixel after model normalization. The template now fits the asset and
-  frames the car using bounds measured from its transformed GLB nodes. A
-  source test projects unoccluded car vertices across roughly 46% of the
-  frame height, but texture colors, occlusion and rendered appearance have
-  not been independently established. The manifest's untransformed bounds
-  also remain stale. Those facts do not yet justify a subject-color region;
-  the plinth would be a false substitute.
+* `architecture-interior`, `custom-scene`, `asset-inspector`,
+  `character-viewer`, `large-scene`, `premium-product-viewer`: the templates'
+  own mounted scenes (only `createAuraApp` is stubbed). The Dungeon and Pirate
+  kit colormaps are now admitted with dependency digests. The asset-inspector
+  region avoids the bottom-right diagnostics overlay; the large-scene region
+  requires at least six instanced trees and a canopy band that excludes the
+  meadow color; the ToyCar bands exclude the dark-red Fabric below it.
+* `mini-game`: the hero rebuilt with the template's builder values, posed by
+  `follow2d` with its `subjectHeightFraction`; the region sits below the
+  pointer-transparent HUD panel.
+* `character-controller`: **template fix.** The right-half `#look-pad` bound an
+  orbit rig that was never presented through a `bindPointer` method that does
+  not exist, so it did nothing except swallow canvas pointer input. It was
+  removed from both template copies. The subject is posed by the real camera
+  controller's subject-scoped shoulder rig.
+* `fighting-game`: both fighters rebuilt through the template's own
+  `createFighterNode` and framed by the real `rigs.fighting` pose; the region
+  spans both torsos above the bottom HUD. The rival is autonomous and moves after
+  start; the region is a starting-state hypothesis.
+* `animation-channel`: **template fix.** `#app` set `pointer-events: none`,
+  which the canvas inherited, so it was never the hit target. The property was
+  removed (the template has no pointer interaction it was protecting). The
+  region is the authored moon-portal core inside the framed 1232 x 693 preview
+  canvas at (24, 13.5).
+* `animation-studio`: its README and route intentionally play the empty
+  placeholder on first run, so the entry records that state. The placeholder
+  previously rendered a near-uniform grey void that no region could tell apart
+  from a blank canvas; it now carries a self-lit neutral stage mark (a set
+  piece, not cast, props or set dressing) and the region is that mark under the
+  establishing preset on the 960 x 540 canvas. It is not evidence that an
+  episode renders.
+
+All of these remain uncalibrated, source-derived hypotheses: lighting, grades,
+bloom, occlusion by stage geometry, animation and startup transients, and real
+browser layout were not exercised.
 
 These are source-inspection findings and limitations, not claims that any
 template passed or failed in a browser. The controller reconstruction does not
@@ -197,3 +196,43 @@ must evaluate the actual candidate. Correct genuinely inaccurate expectations
 with documented independent reasoning and retain failures; do not bless a
 candidate's screenshot automatically or label source-only tests as browser
 evidence.
+
+## Dependency digest review (2026-11-02, 5.0 lanes)
+
+The digests of `sceneMath.ts` and 19 engine/asset/game files changed by 5.0
+lanes since `26eae82e2` were re-reviewed against the behavior each case relies
+on before refreshing, not rehashed blindly:
+
+* `sceneMath.ts`: `createCameraMatrices` gained a depth-convention argument;
+  the public query view-projection now always uses standard depth. x/y
+  projection is identical in every depth mode, so projected regions are
+  unchanged. `public/index.ts`: additive `bindPointerInteractions` exports only.
+* `nodes/camera.ts`: builders now forward `up`, view offset, film/focal and
+  depth options only when authored and pass the projection mode to clipping
+  validation; defaults (near 0.05, far 100, positions, fov) are unchanged and
+  no cataloged template authors the new options.
+* `camera/rigs/orbit.ts`, `chase.ts`, `rigUtils.ts`, `camera/extension.ts`:
+  subject-scoped collision probes and pointer-capture leases. The catalog's
+  orbit cameras use the default pose and the racing chase rig has no
+  collision, so settled poses are unchanged (the racing reconstruction still
+  matches its recorded pose).
+* `sceneGraph.ts`, `compiler/sceneGraph.ts`, `compiler/primitives.ts`,
+  `compiler/renderInput.ts`, `app/runtimeNodes.ts`: own-node pivot + lookAt
+  composition, scene-graph quaternion/rotationOrder routing, primitive
+  blend/depthWrite/alphaCutoff/specular options, forwarded primitive
+  `receiveShadow`, selective-bloom weights and pivoted physics collider
+  rebuilds. None of the cataloged subjects use lookAt, pivots, quaternions or
+  those material options, so their matrices and default render state are
+  unchanged.
+* `compiler/actors.ts`, `production-runtime/TypedGLBActor.ts`,
+  `assets/src/GLTFRenderResources.ts`: live runtime material for bloom, opt-in
+  deformed-bounds evidence (tagged nodes only), custom-shader slot maps, and
+  external-texture reads through the request contract. The racing GLBs have no
+  external images and the car's material factors are unchanged.
+* `compiler/renderer.ts`, `compiler/compileScene.ts`,
+  `app/createAuraAppCore.ts`, `GameRuntimeCore.ts`, `game/src/createGameCore.ts`:
+  diagnostics (depth convention, frame timing, texture stages), GPU splat sort,
+  in-place primitive bookkeeping, cleanup aggregation and pivot physics
+  syncing. The owner-scoped matrix cache, color policy and frame-input wiring
+  the racing test pins are unchanged, and that reconstruction passes after the
+  refresh.

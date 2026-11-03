@@ -1066,15 +1066,15 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "f5867330c157af0140e71158ca5faea95951fd5d8ccb7c0c8d7633ef5eca1390"
+          "sha256": "70b1d1f48b72f4959431a8640a4893c8f4bbe9bf4f37ecc2f9bafbcb671b1f14"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
-          "sha256": "901afb0a16c3e4c97f75f5252de3e2b1eacd9bb15a9e9b0dcad882ab7ffc8fa1"
+          "sha256": "93f022c9190fc91e094401ea3fa3d6579f1c1baf328be4361ad5af099cc2b683"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "5b42d4b969c7f8346604822328b7a17ed5435086919441d62c23c6a5e6971195"
+          "sha256": "734303c5168b2f6bf0d120fdb4cc87f2f6b27e93b7810b07035151a61ff04f7e"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
@@ -1133,6 +1133,729 @@
               "blue": [0, 85],
               "minFraction": 0.001,
               "maxFraction": 0.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:architecture-interior",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png: the production actor/frame-input path places the room and its vertices are projected with the frame's view-projection; band colors are the colormap texels its own UVs address. No reference capture. Lighting, the interior-warm grade, occlusion and rendered appearance remain unverified.",
+      "subject": "Kenney Modular Dungeon Kit room (typed, colormap-textured) under its orbit camera",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/architecture-interior/src/main.ts",
+        "sha256": "5edc29cf6d36868b767d18b6aa2cf552f14dd24b89c72f27342b0b83288f5497"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/architecture-interior/src/aura-assets.ts",
+          "sha256": "596d4bab5e32322fa2b87bc2f374f66a39cc41c5aab2e9de2ec9c9e63c1e125c"
+        },
+        {
+          "path": "packages/create-aura3d/templates/architecture-interior/index.html",
+          "sha256": "419836ae14a6a26bb1322b02502f6033e4d2076c932edfb0707e0117dc890658"
+        },
+        {
+          "path": "packages/create-aura3d/templates/architecture-interior/public/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+          "sha256": "a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20"
+        },
+        {
+          "path": "packages/create-aura3d/templates/architecture-interior/public/aura-assets/Textures/colormap.png",
+          "sha256": "fc9e729b10296cccc9466ecbb4dac7ea0575e2a0798a72ed94d41b0b8a73d824"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 590,
+          "y": 438,
+          "width": 98,
+          "height": 76,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "blue-grey stone",
+              "red": [90, 200],
+              "green": [90, 200],
+              "blue": [130, 230],
+              "minFraction": 0.05,
+              "maxFraction": 0.9
+            },
+            {
+              "name": "brown wood",
+              "red": [140, 230],
+              "green": [80, 160],
+              "blue": [40, 125],
+              "minFraction": 0.02,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:custom-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png through the production actor/frame-input path and the frame's own view-projection; bands are the hull and sail texels addressed by the GLB UVs, excluding the authored #28506b water. No reference capture. The subject is small at the authored 13 m orbit; lighting, grade and rendered appearance remain unverified.",
+      "subject": "Kenney Pirate Kit medium ship (typed, colormap-textured) on the harbour plane",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/custom-scene/src/main.ts",
+        "sha256": "ad95c4a31ddb2e5b0c82b993455873002fde1375c4d8d790c55be015f06ec220"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/custom-scene/src/aura-assets.ts",
+          "sha256": "5b82ceae3cb1a2a8412fb16c711d46566955b5f04ab55468cf2e6b2012f6d106"
+        },
+        {
+          "path": "packages/create-aura3d/templates/custom-scene/index.html",
+          "sha256": "b5b9b3d1b192fcf443c1619049919fe7dcfb5969a8c4c45eaed240ac1569a466"
+        },
+        {
+          "path": "packages/create-aura3d/templates/custom-scene/public/aura-assets/kenneyPirateKitShipMedium.279ea019.glb",
+          "sha256": "279ea019268f855240c3cebf7616644c8141c20bee617da72eae4733b8e310af"
+        },
+        {
+          "path": "packages/create-aura3d/templates/custom-scene/public/aura-assets/Textures/colormap.png",
+          "sha256": "451e1d7a53b8e76f4b2ee58742e241509fee5f82cf2cee6e3f7aca86ba718abe"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 624,
+          "y": 432,
+          "width": 66,
+          "height": 62,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "tan hull",
+              "red": [170, 255],
+              "green": [100, 190],
+              "blue": [60, 150],
+              "minFraction": 0.05,
+              "maxFraction": 0.9
+            },
+            {
+              "name": "white sails",
+              "red": [180, 255],
+              "green": [180, 255],
+              "blue": [190, 255],
+              "minFraction": 0.01,
+              "maxFraction": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:asset-inspector",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png: body and spoiler vertices projected through the production frame input; bands are the blue-grey panel and orange trim texels of the body mesh. Region avoids the bottom-right diagnostics overlay. No reference capture. Lighting, the product-studio backdrop (which may share grey tones) and rendered appearance remain unverified.",
+      "subject": "Kenney Car Kit sports sedan body (typed, colormap-textured) on the inspection stage",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/asset-inspector/src/main.ts",
+        "sha256": "5d7ff85a3d42fb5295c7988ad769c2a98ff22f0ba76ed25f3041a6660e394b70"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/asset-inspector/src/aura-assets.ts",
+          "sha256": "4bb18696ab26d0ac890f457e1810f11b2321009c397bb5f3ce87208c4eaac277"
+        },
+        {
+          "path": "packages/create-aura3d/templates/asset-inspector/index.html",
+          "sha256": "209acd40cbf132dc6ad9b9aadf78ac97f15137782ac8576768cfa557d77c9da5"
+        },
+        {
+          "path": "packages/create-aura3d/templates/asset-inspector/public/aura-assets/kenneyCarKitSedanSports.2889c428.glb",
+          "sha256": "2889c428ca1dd9c975c3ff760eb8757883490410555ab60b818f712f583826d6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/asset-inspector/public/aura-assets/Textures/colormap.png",
+          "sha256": "f3622a03a20c6696065cae9cbe391351be873508af190c2ebd1d420c055787a5"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 540,
+          "y": 372,
+          "width": 186,
+          "height": 200,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "blue-grey body panels",
+              "red": [60, 150],
+              "green": [60, 150],
+              "blue": [80, 170],
+              "minFraction": 0.03,
+              "maxFraction": 0.85
+            },
+            {
+              "name": "orange trim",
+              "red": [180, 255],
+              "green": [60, 150],
+              "blue": [30, 110],
+              "minFraction": 0.01,
+              "maxFraction": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:character-viewer",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene, the hashed GLB and its digest-pinned Textures/colormap.png through the production actor/frame-input path (bind pose; the idle clip sways it slightly); bands are the leather and green hood/tunic texels the archer's UVs address. No reference capture. Idle motion, lighting, grade and rendered appearance remain unverified.",
+      "subject": "Kenney Mini Forest archer (typed, rigged, colormap-textured) on the pedestal",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/character-viewer/src/main.ts",
+        "sha256": "6870a1421ecdc35756281430924dfdb6fc3aa6227646dddb89747e41e09959bb"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/character-viewer/src/aura-assets.ts",
+          "sha256": "e01a798a753b7af8c4b0027a3895cd6ed3c3c71704ecd8412c0cb64735418e2f"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-viewer/index.html",
+          "sha256": "c6138cace00425fbd54537d8846f70d1726bb72861de465d8c1fe2d945a4f615"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-viewer/public/aura-assets/kenneyMiniForestCharacterArcher.0fd0f92e.glb",
+          "sha256": "0fd0f92e452ffab13529e51037cc804edf6ff3134f6bdd614b7aaea9ae6feb3b"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-viewer/public/aura-assets/Textures/colormap.png",
+          "sha256": "319f1087d8ed50a8794f9a8179f64671d5595f2365fdf3e47ec2d4eb74dba20f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 520,
+          "y": 256,
+          "width": 248,
+          "height": 288,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "brown leather",
+              "red": [110, 215],
+              "green": [60, 130],
+              "blue": [35, 105],
+              "minFraction": 0.02,
+              "maxFraction": 0.7
+            },
+            {
+              "name": "green hood and tunic",
+              "red": [60, 160],
+              "green": [140, 230],
+              "blue": [100, 175],
+              "minFraction": 0.02,
+              "maxFraction": 0.7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:large-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene: the 42 tree instance transforms and the hashed tree GLB (digest-pinned colormap) through the production frame input; at least six instances are centered in the region. The canopy band comes from the tree texels and excludes the authored #3f5a33 meadow. No reference capture. Instance counts, draw calls, shadows and rendered appearance remain unverified.",
+      "subject": "Instanced Kenney Mini Forest trees across the meadow",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/large-scene/src/main.ts",
+        "sha256": "c59a9334d573d8d12572a62ca6b79a9eac4387289d138ac65d639688e5918098"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/large-scene/src/aura-assets.ts",
+          "sha256": "698b6fa92457b1cf1c1d161f6b1115d4da23b52cc4bb384b72d964cd033309f6"
+        },
+        {
+          "path": "packages/create-aura3d/templates/large-scene/index.html",
+          "sha256": "89cd71e4e83aec730adfb9dba101004736770b6e54070eba958c8513cb8b7e32"
+        },
+        {
+          "path": "packages/create-aura3d/templates/large-scene/public/aura-assets/kenneyMiniForestTree.0075d505.glb",
+          "sha256": "0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a"
+        },
+        {
+          "path": "packages/create-aura3d/templates/large-scene/public/aura-assets/Textures/colormap.png",
+          "sha256": "319f1087d8ed50a8794f9a8179f64671d5595f2365fdf3e47ec2d4eb74dba20f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 400,
+          "y": 180,
+          "width": 480,
+          "height": 360,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "tree canopy green",
+              "red": [50, 175],
+              "green": [130, 235],
+              "blue": [95, 180],
+              "minFraction": 0.05,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:premium-product-viewer",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the template's own mounted scene and hashed GLB: ToyCar mesh vertices projected through the production frame input and the authored frameAsset orbit; bands are the embedded base-color texels of the ToyCar mesh (green body, brown wood trim), excluding the dark-red Fabric below it. No reference capture. Clearcoat/sheen/transmission shading, lighting and rendered appearance remain unverified.",
+      "subject": "Khronos ToyCar body (typed GLB) framed by the template's frameAsset camera",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/premium-product-viewer/src/main.ts",
+        "sha256": "f5b0406640ae264495035859070010da453a0d0048ebccb6a8fbeccfb34e22eb"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/premium-product-viewer/src/aura-assets.ts",
+          "sha256": "0ff9b82b1ab3bf4376e855d02d9ee101803c166a494f417107339996d76dce18"
+        },
+        {
+          "path": "packages/create-aura3d/templates/premium-product-viewer/index.html",
+          "sha256": "89bfd19cec4c17bf75275507dd740f45f816422abbfbe0e186cf95d5899beb28"
+        },
+        {
+          "path": "packages/create-aura3d/templates/premium-product-viewer/public/aura-assets/khronosToyCar.01a60862.glb",
+          "sha256": "01a60862de55cd4b9f3acfab0b0def86451800f9c42467fcd61052c16cb9838c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 520,
+          "y": 224,
+          "width": 230,
+          "height": 320,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "green car body",
+              "red": [0, 80],
+              "green": [70, 175],
+              "blue": [0, 100],
+              "minFraction": 0.05,
+              "maxFraction": 0.8
+            },
+            {
+              "name": "brown wood trim",
+              "red": [95, 190],
+              "green": [10, 90],
+              "blue": [0, 70],
+              "minFraction": 0.005,
+              "maxFraction": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:mini-game",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived: the hero node rebuilt with the template's pinned builder values, its hashed GLB through the production frame input, and the follow2d rig posed by the real camera controller from published runtime bounds; region sits below the pointer-transparent HUD panel. Bands are the barbarian texels (skin, red-brown clothing). No reference capture. Startup transients, crates, lighting, grade and rendered appearance remain unverified.",
+      "subject": "KayKit barbarian hero at the level start, framed by the follow2d rig",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/mini-game/src/main.ts",
+        "sha256": "992e0bd3da338b9de0031ea19d873cdcfeaa9b9c3d5dafef71ca3ea6a0e73410"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+          "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/index.html",
+          "sha256": "19e91948a6b80477f5c730d7bb4a681393be0e119a336a0134b3170e7241f2a2"
+        },
+        {
+          "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/follow2d.ts",
+          "sha256": "3fd73eae2c9eb08f564c16c5595a2020178b4daaf3b99da93639ec6d36b9a3c5"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/extension.ts",
+          "sha256": "f68722a23e45f4ce4b4f02103ef2e70efca3a2b7fbf62034ce1dc1bfff5933ba"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 160,
+          "y": 178,
+          "width": 96,
+          "height": 178,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "skin",
+              "red": [190, 255],
+              "green": [140, 230],
+              "blue": [100, 195],
+              "minFraction": 0.01,
+              "maxFraction": 0.6
+            },
+            {
+              "name": "red-brown clothing",
+              "red": [70, 170],
+              "green": [30, 110],
+              "blue": [30, 110],
+              "minFraction": 0.02,
+              "maxFraction": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:character-controller",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived: the hero and collision boxes rebuilt with the template's pinned builder values, the hashed GLB through the production frame input (frozen Walk_Loop), and the shoulder rig posed by the real camera controller with subject-scoped collision. The inert right-half look pad that covered the canvas was removed from the template. Bands are the rig texels, excluding the authored #4a6b3a ground. No reference capture. Lighting, grade and rendered appearance remain unverified.",
+      "subject": "AuraClash player rig (typed, skinned) behind the subject-scoped shoulder rig",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/character-controller/src/main.ts",
+        "sha256": "13a43c9d8b150fd9f53389023c196ed46068664601ed8deb0585a6b1de6da03c"
+      },
+      "sourceDependencies": [
+        {
+          "path": "templates/character-controller/src/main.ts",
+          "sha256": "13a43c9d8b150fd9f53389023c196ed46068664601ed8deb0585a6b1de6da03c"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-controller/src/aura-assets.ts",
+          "sha256": "57d34d778e595214417d52a356bdcf0c024b868b0ad7a24941785b479b83cea5"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-controller/index.html",
+          "sha256": "9995b849b2510a45f42f057ec32865999b3f398945e982e01521b039bfd2eaf0"
+        },
+        {
+          "path": "packages/create-aura3d/templates/character-controller/public/aura-assets/auraclash-player-rig.glb",
+          "sha256": "3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/shoulder.ts",
+          "sha256": "06f6e674d4c0e446d982d4546fbcddb7ee4fb7891629f88bfe55b26cd44ca729"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/extension.ts",
+          "sha256": "f68722a23e45f4ce4b4f02103ef2e70efca3a2b7fbf62034ce1dc1bfff5933ba"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 480,
+          "y": 310,
+          "width": 140,
+          "height": 300,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "leather brown",
+              "red": [85, 160],
+              "green": [45, 95],
+              "blue": [10, 65],
+              "minFraction": 0.005,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "light trim",
+              "red": [170, 255],
+              "green": [180, 255],
+              "blue": [185, 255],
+              "minFraction": 0.005,
+              "maxFraction": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:fighting-game",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived: both fighter nodes rebuilt through the template's own createFighterNode with its pinned start positions, the hashed GLBs through the production frame input (bind pose), and the fighting rig posed by the real camera controller from published bounds; region spans both torsos above the bottom HUD. Bands are each rig's own texels. No reference capture. The autonomous rival moves after start; the neon-dojo stage, animation, lighting and rendered appearance remain unverified.",
+      "subject": "Player and rival AuraClash fighters framed by the fighting rig",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/fighting-game/src/main.ts",
+        "sha256": "910d9d44ca9ba2958d925415267d5219953c1875fdd5b4aee08ce6238d6f7ee3"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/src/game/fighters.ts",
+          "sha256": "339e5196dfa424a21b172f789c8694efbc91f7aa286fe42f03284d4cb2c5a1a1"
+        },
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/src/aura-assets.ts",
+          "sha256": "d561e91e0378abb62b11adc675d6be52bd87714435b64443ca8bdf04be238bd3"
+        },
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/src/styles.css",
+          "sha256": "82d9a640901fac0792095b4fc5c3f040f619e2888231917d476824d8189a0840"
+        },
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/index.html",
+          "sha256": "cfbed0ec49897f6cfdeb39cd4b0b89df814176ca99b328fcad18383a4c3d8702"
+        },
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/public/aura-assets/auraclash-player-rig.glb",
+          "sha256": "3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087"
+        },
+        {
+          "path": "packages/create-aura3d/templates/fighting-game/public/aura-assets/auraclash-rival-rig.glb",
+          "sha256": "c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/fighting.ts",
+          "sha256": "a39c42091e58f6a5be94fe73e46be1da0374575acaa071d9702bdb28d20e6507"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/extension.ts",
+          "sha256": "f68722a23e45f4ce4b4f02103ef2e70efca3a2b7fbf62034ce1dc1bfff5933ba"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 395,
+          "y": 56,
+          "width": 484,
+          "height": 230,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "player leather brown",
+              "red": [85, 160],
+              "green": [45, 95],
+              "blue": [10, 65],
+              "minFraction": 0.002,
+              "maxFraction": 0.5
+            },
+            {
+              "name": "rival dark maroon",
+              "red": [35, 110],
+              "green": [0, 45],
+              "blue": [0, 45],
+              "minFraction": 0.002,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:animation-channel",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from the authored portal sphere, camera and the preview-frame CSS (1232 x 693 canvas at (24, 13.5) at 1280 x 720); #app no longer sets pointer-events: none, so the canvas is the hit target. The band is the authored #7de2ff/#b7f4ff emissive glow, excluding the #0a2941 sky plate. No reference capture. Opacity blending, bloom and rendered appearance remain unverified.",
+      "subject": "Glowing moon portal core in the framed episode preview canvas",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/animation-channel/src/main.ts",
+        "sha256": "50233148ca010f3742465ab4a7335437e2b18b3a3426fe57e818bc3e9218af03"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/animation-channel/src/sample-episode-visual.css",
+          "sha256": "68c6bc83e9f259609aa16ed8bf4e786fb8fb6a04553236562321dd6d2d95a187"
+        },
+        {
+          "path": "packages/create-aura3d/templates/animation-channel/src/sample-episode-visual.ts",
+          "sha256": "ee34d0666e52fc9d3f3c3dcf847567c7b9002e3290a9c4b5163853351d115fe0"
+        },
+        {
+          "path": "packages/create-aura3d/templates/animation-channel/index.html",
+          "sha256": "73e681dbc78277bc8b3e024b37b4455bc8ad6d7e7d3133d551e654e0aca7941f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 592,
+          "y": 210,
+          "width": 96,
+          "height": 96,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "cyan portal glow",
+              "red": [50, 215],
+              "green": [150, 255],
+              "blue": [170, 255],
+              "minFraction": 0.15,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:animation-studio",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Records the template's documented first-run state: with no injected EpisodeDocument the live route plays the empty placeholder (no cast or props). Its self-lit stage mark is projected with the establishing preset path for the placeholder shot on the 960 x 540 canvas centered at (160, 90). No reference capture. Floor shading, cel/PBR style and rendered appearance remain unverified; this is not evidence that an episode renders.",
+      "subject": "Self-lit neutral stage mark of the intended empty first-run placeholder",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/animation-studio/src/render-live-route.ts",
+        "sha256": "44169af629e53a9167706dfc1d4756d54923323dc3fecf6dd217428d27c69f4f"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/animation-studio/src/empty-document.ts",
+          "sha256": "6e7aee36c8a8263889a34374cae3fb14ff0cce9d3fc6b5e09797ff6f979eefe8"
+        },
+        {
+          "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+          "sha256": "b34ad3f44077f532e57ab3b1a7446432c281d1b58562ba6606abccbf6ef7f352"
+        },
+        {
+          "path": "packages/create-aura3d/templates/animation-studio/index.html",
+          "sha256": "d24ca2f11951dcf52b649103b3f729f71c9bf0f4a66572b60da2a7214045dae2"
+        },
+        {
+          "path": "packages/engine/src/agent-api/CameraPresetLibrary.ts",
+          "sha256": "ceb20951107d03fca6420a60653f215d64881df34235a70aaea555c6bf785271"
+        },
+        {
+          "path": "packages/engine/src/agent-api/CameraChoreographer.ts",
+          "sha256": "320ef35c5520c07105f3b07c1a2d76c9eee2218f3ba8ce03670f3f6b4425b482"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 550,
+          "y": 466,
+          "width": 180,
+          "height": 92,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "self-lit stage mark",
+              "red": [125, 250],
+              "green": [125, 250],
+              "blue": [130, 252],
+              "minFraction": 0.15,
+              "maxFraction": 0.9
             }
           ]
         }

@@ -1313,7 +1313,19 @@ describe("source-backed native example catalog fixture", () => {
       "starter-example:camera-path": [[159, 122, 68], [83, 221, 255]],
       "template:cinematic-scene": [[50, 221, 255]],
       "template:postprocess-scene": [[57, 142, 186], [223, 171, 135]],
-      "template:racing-starter": [[255, 189, 0], [255, 0, 0]]
+      "template:racing-starter": [[255, 189, 0], [255, 0, 0]],
+      // Template cases grounded in native-examples-catalog-templates.test.ts.
+      "template:architecture-interior": [[123, 123, 166], [185, 116, 83]],
+      "template:custom-scene": [[234, 145, 104], [220, 220, 233]],
+      "template:asset-inspector": [[103, 103, 124], [244, 103, 67]],
+      "template:character-viewer": [[171, 95, 65], [120, 190, 136]],
+      "template:large-scene": [[100, 177, 137]],
+      "template:premium-product-viewer": [[0, 120, 41], [138, 41, 22]],
+      "template:mini-game": [[246, 190, 153], [110, 60, 60]],
+      "template:character-controller": [[100, 65, 40], [215, 229, 236]],
+      "template:fighting-game": [[100, 65, 40], [70, 20, 15]],
+      "template:animation-channel": [[125, 226, 255]],
+      "template:animation-studio": [[160, 163, 168]]
     };
     const data = fixture();
     expect(new Set(data.cases.map(({ id }) => id))).toEqual(new Set(Object.keys(samples)));

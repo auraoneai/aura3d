@@ -96,7 +96,7 @@ async function renderItem(builder: string, field: string, value: unknown): Promi
   const ctx = mountCtx();
   const owner = {};
   const release = setPrd01ModelMatrixCache(createModelMatrixCache(modelMatrixFor(ctx.flags)), owner);
-  const compiled = await compileScene(snapshot, { ...ctx, runtimeOwner: owner });
+  const compiled = await compileScene(snapshot, { ...ctx, runtimeOwner: owner } as MountSceneCompileContext);
   try {
     const source = updateCompiledScene(compiled, snapshot, undefined as never, 0) as { collectRenderItems?: () => Iterable<unknown>; renderItems?: unknown[] };
     const items = source.collectRenderItems ? [...source.collectRenderItems()] : (source.renderItems ?? []);
@@ -197,7 +197,7 @@ function modelMatrix(field: string, value: unknown): number[] {
 }
 
 function modelInstanceMatrices(field: string, value: unknown): number[] {
-  const node = instances.model(probeAsset, { transforms: [{ position: [1, 0, 0] }], ...(MODEL_BASE[field] ?? {}), [field]: value } as never).toJSON() as AuraModelNode;
+  const node = instances.model(probeAsset, { transforms: [{ position: [1, 0, 0] }], ...(MODEL_BASE[field] ?? {}), [field]: value } as never).toJSON() as unknown as AuraModelNode;
   return Array.from(createProductionModelInstanceTransforms(node.instances!, node, MODEL_BOUNDS, 0), (n) => Math.round(n * 1e4) / 1e4);
 }
 
