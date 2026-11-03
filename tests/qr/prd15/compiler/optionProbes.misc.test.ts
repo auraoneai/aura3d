@@ -114,8 +114,10 @@ const OBSERVERS: Record<string, Observer> = {
     const world = await physics.worldFromSceneAsync(scene().add(node(row, value) as never));
     try {
       const summary = world.snapshot();
-      expect(summary.bodies).toBe(1);
-      expect(summary.colliders).toBe(1);
+      // S5-WP19-04: an instanced node gets one body (and collider) per instance.
+      const expected = row.builder.startsWith("instances.") ? twoInstances.transforms.length : 1;
+      expect(summary.bodies).toBe(expected);
+      expect(summary.colliders).toBe(expected);
       return summary.snapshot.bodies.map(({ id, type, mass }) => {
         const body = world.getBody(id)!;
         return { type, mass, friction: body.friction, restitution: body.restitution };

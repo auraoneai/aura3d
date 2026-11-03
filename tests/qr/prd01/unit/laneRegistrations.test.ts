@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 // lane's Phase-0 registrations.
 import "@aura3d/engine/lanes";
 import { appExtensionsAll, DIAGNOSTIC_ONLY_FIELDS, diagnosticsSectionsAll, optionCoverageRows, resolveQrFlags } from "@aura3d/engine-runtime/contracts";
+import { OPTION_COVERAGE_ROWS } from "../../../../packages/engine/src/agent-api/compiler/optionCoverage";
 import { PRD01_SCENE_SPECS } from "../../../../benchmarks/quality-rebuild/scenes/prd01/index";
 
 describe("prd01 lane registrations (Phase 0)", () => {
@@ -42,6 +43,17 @@ describe("prd01 lane registrations (Phase 0)", () => {
   it("5.0: material blend/depthWrite are wired into the primitive render state, not diagnostic-only", () => {
     expect(DIAGNOSTIC_ONLY_FIELDS["material.blend"]).toBeUndefined();
     expect(DIAGNOSTIC_ONLY_FIELDS["material.depthWrite"]).toBeUndefined();
+  });
+
+  it("5.0 (S5-WP19-04): model lod/collider, instances.model wind and material unlit are wired, not diagnostic-only", () => {
+    for (const key of ["model.lod", "model.collider", "instances.model.wind", "material.unlit"]) {
+      expect(DIAGNOSTIC_ONLY_FIELDS[key], key).toBeUndefined();
+    }
+    // Each now has an A/B option-probe row instead (the typed probe table, S5-WP19-04).
+    const rows = OPTION_COVERAGE_ROWS;
+    for (const [builder, field] of [["model", "lod"], ["model", "collider"], ["instances.model", "wind"], ["material.pbr", "unlit"]] as const) {
+      expect(rows.some((row) => row.builder === builder && row.field === field), `${builder}.${field}`).toBe(true);
+    }
   });
 
   it("01-T1.5: rotationOrder/quaternion are wired, not diagnostic-only", () => {

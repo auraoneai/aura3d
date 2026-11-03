@@ -173,9 +173,9 @@ describe("registerPrd04OptionCoverage (P2-14)", () => {
   });
 
   it("keeps only the still-unconsumed diagnostic-only fields", () => {
+    // 5.0 (S5-WP19-04): `material.unlit` is wired (primitives draw with the unlit materials).
     expect(Object.keys(DIAGNOSTIC_ONLY_PRD04_FIELDS).sort()).toEqual([
-      "material.doubleSided",
-      "material.unlit"
+      "material.doubleSided"
     ]);
     for (const entry of Object.values(DIAGNOSTIC_ONLY_PRD04_FIELDS)) {
       expect(entry.ownerPrd).toBe(4);

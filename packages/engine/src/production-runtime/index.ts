@@ -74,6 +74,7 @@ import { rendererProofCapture } from "../agent-api/devtools/rendererReports.js";
 import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets/browser";
 
 export {
+  awaitTypedGLBActorDisposals,
   collectTypedGLBActorRenderItems,
   createGLBActorAnimationMaterialResolver,
   createTypedGLBActor,

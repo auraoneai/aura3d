@@ -61,8 +61,8 @@ const FIXTURES: Record<string, Uint8Array> = {
     body.extras = { MSFT_screencoverage: [1, 0.1] };
   }),
   // Derived in memory from the committed car: KHR_materials_variants maps the body to
-  // bodyPaint ("paint") or tyreRubber ("rubber"). (The Khronos MaterialsVariantsShoe cannot
-  // be used: its three variant materials share one name, see the report in the lane notes.)
+  // bodyPaint ("paint") or tyreRubber ("rubber"). (The Khronos MaterialsVariantsShoe, whose three
+  // variant materials share one name, has its own test: tests/qr/prd04/unit/gltf-materials-variants-shoe.test.ts.)
   "car-variants": withGlbJson(car, (json) => {
     json.extensionsUsed = [...(json.extensionsUsed ?? []), "KHR_materials_variants"];
     json.extensions = { ...(json.extensions ?? {}), KHR_materials_variants: { variants: [{ name: "paint" }, { name: "rubber" }] } };

@@ -327,17 +327,21 @@ interface ActorDisposalState {
 // Registry-backed loaders may release resources asynchronously. Track their
 // completion per app owner without keeping the app or canvas alive globally.
 const actorDisposals = new WeakMap<object, ActorDisposalState>();
+// Actors created without `runtimeOwner` (direct `createTypedGLBActor` callers)
+// share one bucket that no app drain touches, so owned and ownerless teardown
+// never wait on each other.
+const unownedActorDisposals: ActorDisposalState = { pending: new Set(), failures: [] };
 
 function disposePipeline(pipeline: ProductionGLTFRenderPipeline, owner: object | undefined, track: boolean): void {
   const pending = pipeline.disposeAsync();
-  if (!track || !owner) {
+  if (!track) {
     void pending.catch(() => {});
     return;
   }
-  let state = actorDisposals.get(owner);
+  let state = owner ? actorDisposals.get(owner) : unownedActorDisposals;
   if (!state) {
     state = { pending: new Set(), failures: [] };
-    actorDisposals.set(owner, state);
+    actorDisposals.set(owner!, state);
   }
   const owned = state;
   const observed = pending.catch((error: unknown) => { owned.failures.push(error); });
@@ -345,12 +349,27 @@ function disposePipeline(pipeline: ProductionGLTFRenderPipeline, owner: object |
   void observed.then(() => { owned.pending.delete(observed); });
 }
 
-/** Wait for this owner's registered-format teardowns without affecting other apps. */
-export async function awaitTypedGLBActorDisposals(owner: object): Promise<void> {
-  const state = actorDisposals.get(owner);
+/**
+ * Wait until disposed typed GLB actors have released their registered-format
+ * resources (asynchronous native teardown).
+ *
+ * - `awaitTypedGLBActorDisposals(owner)` drains actors created with that
+ *   `runtimeOwner` (an app passes its own owner), without waiting on other apps.
+ *   A cleanup failure rejects every later drain of that owner.
+ * - `awaitTypedGLBActorDisposals()` drains actors created without a
+ *   `runtimeOwner`, and never waits on owned actors. Their cleanup failures are
+ *   reported once, by the drain that observes them, then cleared.
+ *
+ * Both reject with an `AggregateError` ("Native model cleanup failed") when a
+ * teardown failed; call it after `actor.dispose()`.
+ */
+export async function awaitTypedGLBActorDisposals(owner?: object): Promise<void> {
+  const state = owner === undefined ? unownedActorDisposals : actorDisposals.get(owner);
   if (!state) return;
   while (state.pending.size) await Promise.all([...state.pending]);
-  if (state.failures.length) throw new AggregateError(state.failures, "Native model cleanup failed");
+  if (!state.failures.length) return;
+  const failures = owner === undefined ? state.failures.splice(0) : state.failures;
+  throw new AggregateError(failures, "Native model cleanup failed");
 }
 
 function registryToken(registry: object | undefined): string {

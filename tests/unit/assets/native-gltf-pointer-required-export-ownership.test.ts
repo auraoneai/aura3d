@@ -7,6 +7,7 @@ import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import { inspectExportPointerChannelProvenance, sceneFromGLTFAsset, type AuraExportAttribute, type AuraExportScene } from "../../../packages/assets/src/exporters/ExportContext";
 import { exportGLTF } from "../../../packages/assets/src/exporters/GLTFExporter";
 import {
+  awaitTypedGLBActorDisposals,
   createTypedGLBActor,
   type TypedGLBActor
 } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
@@ -376,6 +377,7 @@ describe("glTF animation-pointer requiredness through export", () => {
       }
     } finally {
       for (const actor of actors) actor.dispose();
+      await awaitTypedGLBActorDisposals();
       loader.dispose(source);
     }
   });
@@ -901,6 +903,7 @@ describe("glTF animation-pointer requiredness through export", () => {
         pointer: "/materials/0/normalTexture/scale", reason: "texture-load-failed"
       });
     } finally {
+      await awaitTypedGLBActorDisposals();
       warn.mockRestore();
       loader.dispose(source);
     }
@@ -928,6 +931,7 @@ describe("glTF animation-pointer requiredness through export", () => {
       }
     } finally {
       for (const actor of actors) actor.dispose();
+      await awaitTypedGLBActorDisposals();
       warn.mockRestore();
       loader.dispose(source);
     }
@@ -965,6 +969,7 @@ describe("glTF animation-pointer requiredness through export", () => {
     } finally {
       for (const actor of actors) actor.dispose();
       unregister();
+      await awaitTypedGLBActorDisposals();
       loader.dispose(source);
     }
   });
@@ -1014,6 +1019,7 @@ describe("glTF animation-pointer requiredness through export", () => {
       }
     } finally {
       actor?.dispose();
+      await awaitTypedGLBActorDisposals();
       runtime.dispose();
       scene.dispose();
       loader.dispose(source);
@@ -1108,6 +1114,7 @@ describe("glTF animation-pointer requiredness through export", () => {
         }
       } finally {
         for (const actor of actors) actor.dispose();
+        await awaitTypedGLBActorDisposals();
         loader.dispose(source);
       }
     }

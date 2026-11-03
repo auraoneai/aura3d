@@ -849,7 +849,7 @@ export function expandInstancePhysicsNodes(node: AuraModelNode | AuraPrimitiveNo
 
 /** Expand every instanced physics node in a flat list into its per-instance nodes. */
 export function expandScenePhysicsInstances(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
-  return nodes.flatMap((node) => (node.kind === "model" || node.kind === "primitive") ? [...(expandInstancePhysicsNodes(node) ?? [node])] : [node]);
+  return nodes.flatMap((node): AuraSceneNode[] => (node.kind === "model" || node.kind === "primitive") ? [...(expandInstancePhysicsNodes(node) ?? [node])] : [node]);
 }
 
 function invertAffineInto(out: Float32Array, m: Float32Array): Float32Array {
