@@ -31,6 +31,9 @@ export function ignoredOptionMessages(nodes: readonly AuraSceneNode[]): readonly
   for (const node of nodes) {
     const notes = (node as { readonly ignoredOptions?: readonly string[] }).ignoredOptions;
     if (notes) for (const message of notes) found.push({ node, message });
+    // S5-WP19-04: options a builder records but the runtime does not apply (`instances.model`).
+    const unapplied = (node as { readonly unappliedOptions?: readonly string[] }).unappliedOptions;
+    if (unapplied) for (const message of unapplied) found.push({ node, message });
   }
   return found;
 }

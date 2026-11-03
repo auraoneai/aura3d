@@ -7,7 +7,7 @@
  */
 import { registerOptionCoverage } from "../../contracts/compiler.js";
 import type { OptionCoverageRow } from "../../contracts/compiler.js";
-import type { AuraModelOptions, AuraPrimitiveOptions, AuraCustomMaterialSpec } from "../nodes/types.js";
+import type { AuraAssetRef, AuraModelOptions, AuraPrimitiveOptions, AuraCustomMaterialSpec } from "../nodes/types.js";
 import type { AuraInstancedModelOptions, AuraInstancedPrimitiveOptions } from "../nodes/instances.js";
 import type { AuraOrbitOptions, interactions } from "../nodes/interactions.js";
 import type { lights } from "../nodes/lights.js";
@@ -61,6 +61,27 @@ const bloomUnsupported = unsupportedFor<NonNullable<Parameters<typeof postEffect
 const instancedIgnored = unsupportedFor<AuraInstancedPrimitiveOptions>();
 const primitiveIgnored = unsupportedFor<AuraPrimitiveOptions>();
 const fogIgnored = unsupportedFor<NonNullable<Parameters<typeof vfxEffectBuilders.fog>[0]>>();
+const pbrUnsupported = unsupportedFor<NonNullable<Parameters<typeof material.pbr>[0]>>();
+const metalUnsupported = unsupportedFor<NonNullable<Parameters<typeof material.metal>[0]>>();
+
+/**
+ * S5-WP19-04: texture-map probes load two tiny generated RGBA PNGs (1x1 and 2x2, stored-deflate,
+ * built by tests/qr/prd15/compiler/optionProbes.textures.test.ts) through the real typed bitmap
+ * path, which verifies these SHA-256 digests against the served bytes.
+ */
+const probeTexture = (id: string, url: string, hash: string): AuraAssetRef<"texture"> =>
+  ({ kind: "aura-asset-ref", id, type: "texture", format: "png", url, hash }) as unknown as AuraAssetRef<"texture">;
+const probeMapA = probeTexture("optionProbeMapA", "/aura-option-probe/map-a.png", "sha256-46c06b2ee975e93747bb46b56cd78b9f08bc36ec9b6297eb7d9d770b0ae42672");
+const probeMapB = probeTexture("optionProbeMapB", "/aura-option-probe/map-b.png", "sha256-37fe5d31abb8cf72e68257616f4127324e87c6da2194bb3b335084419646a6f6");
+const probeClipA = { kind: "aura-clip-group", scope: "material", revision: 0, disposed: false, planes: [[1, 0, 0, 0]], space: "world", combine: "intersection", clipShadows: false, enabled: true } as const;
+const probeClipB = { kind: "aura-clip-group", scope: "material", revision: 0, disposed: false, planes: [[0, 1, 0, -1]], space: "world", combine: "intersection", clipShadows: false, enabled: true } as const;
+const probeCustomA = { glsl: { fragment: "out vec4 outColor; void main(){outColor=vec4(0.25);}" } } as const;
+const probeCustomB = { glsl: { fragment: "out vec4 outColor; void main(){outColor=vec4(0.75);}" } } as const;
+const customGeometryUnsupported = unsupportedFor<Omit<AuraCustomGeometrySpec, "kind">>();
+const modelInstancesIgnored = unsupportedFor<AuraInstancedModelOptions>();
+/** S5-WP19-04: instance batch / variant / lod / wrinkle context for the loaded-GLB actor probes (optionProbes.models.test.ts). */
+const probeInstanceLights = { offset: [0, 1, 0], color: "#ffcc88", power: 10, distance: 5 } as const;
+const probeImpostor = ({ kind: "aura-asset-ref", id: "optionProbeImpostor", type: "texture", format: "png", url: "/aura-assets/option-probe-impostor.png", hash: "sha256-0000000000000000000000000000000000000000000000000000000000000000" }) as unknown as AuraAssetRef<"texture">;
 
 const aMaterial = { color: "#ff0000" } as const;
 const bMaterial = { color: "#00ff00" } as const;
@@ -143,6 +164,93 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   pbr("material.pbr", "metallic", 0.1, 0.9, "pbr.metallic"),
   pbr("material.pbr", "roughness", 0.2, 0.8, "pbr.roughness"),
   metal("material.metal", "color", "#ff0000", "#00ff00", "pbr.color"),
+  // S5-WP19-04 (burn-down 3): material.pbr/metal texture slots (real typed bitmap loads through the
+  // primitive textured upgrade), the unlit route, material label/env/clip/custom routes and the
+  // fields the material never renders (tests/qr/prd15/compiler/optionProbes.textures.test.ts and optionProbes.test.ts).
+  pbr("material.pbr", "texture", probeMapA, probeMapB, "texturedMaterial.u_baseColorTexture"),
+  pbr("material.pbr", "normal", probeMapA, probeMapB, "texturedMaterial.u_normalTexture"),
+  pbr("material.pbr", "roughnessMap", probeMapA, probeMapB, "texturedMaterial.u_metallicRoughnessTexture"),
+  pbr("material.pbr", "metalnessMap", probeMapA, probeMapB, "texturedMaterial.u_metallicRoughnessTexture"),
+  pbr("material.pbr", "occlusionMap", probeMapA, probeMapB, "texturedMaterial.u_occlusionTexture"),
+  pbr("material.pbr", "emissiveMap", probeMapA, probeMapB, "texturedMaterial.u_emissiveTexture"),
+  pbr("material.pbr", "clearcoatMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatTexture"),
+  pbr("material.pbr", "clearcoatRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatRoughnessTexture"),
+  pbr("material.pbr", "clearcoatNormalMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatNormalTexture"),
+  pbr("material.pbr", "sheenColorMap", probeMapA, probeMapB, "texturedMaterial.u_sheenColorTexture"),
+  pbr("material.pbr", "sheenRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_sheenRoughnessTexture"),
+  pbr("material.pbr", "iridescenceMap", probeMapA, probeMapB, "texturedMaterial.u_iridescenceTexture"),
+  pbr("material.pbr", "iridescenceThicknessMap", probeMapA, probeMapB, "texturedMaterial.u_iridescenceThicknessTexture"),
+  pbr("material.pbr", "anisotropyMap", probeMapA, probeMapB, "texturedMaterial.u_anisotropyTexture"),
+  pbr("material.pbr", "diffuseRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_diffuseRoughnessTexture"),
+  pbr("material.pbr", "bumpMap", probeMapA, probeMapB, "texturedMaterial.u_bumpTexture"),
+  pbr("material.pbr", "specularIntensityMap", probeMapA, probeMapB, "texturedMaterial.u_specularTexture"),
+  pbr("material.pbr", "specularColorMap", probeMapA, probeMapB, "texturedMaterial.u_specularColorTexture"),
+  pbr("material.pbr", "transmissionMap", probeMapA, probeMapB, "texturedMaterial.u_transmissionTexture"),
+  pbr("material.pbr", "thicknessMap", probeMapA, probeMapB, "texturedMaterial.u_volumeThicknessTexture"),
+  pbr("material.pbr", "normalScale", 0.5, 1.5, "texturedMaterial.u_normalScale"),
+  pbr("material.pbr", "occlusionStrength", 0.3, 0.9, "texturedMaterial.u_occlusionStrength"),
+  pbr("material.pbr", "clearcoatNormalScale", 0.5, 1.5, "texturedMaterial.u_clearcoatNormalScale"),
+  pbr("material.pbr", "texCoords", { baseColor: 0 }, { baseColor: 1 }, "texturedMaterial.u_baseColorTextureTexCoord"),
+  pbr("material.pbr", "texTransforms", { baseColor: { offset: [0, 0] } }, { baseColor: { offset: [0.25, 0.5] } }, "texturedMaterial.u_baseColorTextureOffset"),
+  pbr("material.pbr", "sampling", { wrap: "repeat" }, { wrap: "clamp" }, "texturedMaterial.u_baseColorTexture.sampler"),
+  pbr("material.pbr", "slotSampling", { baseColor: { wrap: "repeat" } }, { baseColor: { wrap: "mirror" } }, "texturedMaterial.u_baseColorTexture.sampler"),
+  pbr("material.pbr", "textureAnisotropy", 2, 8, "texturedMaterial.u_baseColorTexture.sampler"),
+  pbr("material.pbr", "unlit", false, true, "renderItem.material.shaderKey"),
+  pbr("material.pbr", "name", "mat-a", "mat-b", "renderItem.material.name"),
+  pbr("material.pbr", "envMap", { cubeCamera: "probe-a" }, { cubeCamera: "probe-b" }, "renderItem.cubeCameraEnvMap"),
+  pbr("material.pbr", "clipping", probeClipA, probeClipB, "renderItem.materialClipping"),
+  pbr("material.pbr", "kind", undefined, "custom", "renderItem.material.shaderKey"),
+  pbr("material.pbr", "custom", probeCustomA, probeCustomB, "renderItem.material.shaderKey"),
+  pbr("material.pbr", "physicalWarnings", ["bounded-a"], ["bounded-b"], "materialDiagnostics.warnings"),
+  pbrUnsupported("material.pbr", "depthPreview", { near: 0.1, far: 10, side: "front" }, { near: 1, far: 50, side: "double" }, "compile.DEPTH_PREVIEW_OPTION_UNSUPPORTED", "material.pbr adds PBR fields (color, roughness, metallic) that a depth preview rejects; use material.depth({ near, far }) for depthPreview"),
+  pbrUnsupported("material.pbr", "shader", "solar-sun", "solar-corona", "degradation.option-ignored", "material.pbr does not render \"shader\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  pbrUnsupported("material.pbr", "coreColor", "#fff7ad", "#ffd166", "degradation.option-ignored", "material.pbr does not render \"coreColor\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  pbrUnsupported("material.pbr", "rimColor", "#f97316", "#ff0000", "degradation.option-ignored", "material.pbr does not render \"rimColor\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  pbrUnsupported("material.pbr", "noiseStrength", 0.1, 0.3, "degradation.option-ignored", "material.pbr does not render \"noiseStrength\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  pbrUnsupported("material.pbr", "falloff", 1.5, 3, "degradation.option-ignored", "material.pbr does not render \"falloff\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  pbrUnsupported("material.pbr", "practical", false, true, "degradation.option-ignored", "material.pbr does not render \"practical\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metal("material.metal", "texture", probeMapA, probeMapB, "texturedMaterial.u_baseColorTexture"),
+  metal("material.metal", "normal", probeMapA, probeMapB, "texturedMaterial.u_normalTexture"),
+  metal("material.metal", "roughnessMap", probeMapA, probeMapB, "texturedMaterial.u_metallicRoughnessTexture"),
+  metal("material.metal", "metalnessMap", probeMapA, probeMapB, "texturedMaterial.u_metallicRoughnessTexture"),
+  metal("material.metal", "occlusionMap", probeMapA, probeMapB, "texturedMaterial.u_occlusionTexture"),
+  metal("material.metal", "emissiveMap", probeMapA, probeMapB, "texturedMaterial.u_emissiveTexture"),
+  metal("material.metal", "clearcoatMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatTexture"),
+  metal("material.metal", "clearcoatRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatRoughnessTexture"),
+  metal("material.metal", "clearcoatNormalMap", probeMapA, probeMapB, "texturedMaterial.u_clearcoatNormalTexture"),
+  metal("material.metal", "sheenColorMap", probeMapA, probeMapB, "texturedMaterial.u_sheenColorTexture"),
+  metal("material.metal", "sheenRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_sheenRoughnessTexture"),
+  metal("material.metal", "iridescenceMap", probeMapA, probeMapB, "texturedMaterial.u_iridescenceTexture"),
+  metal("material.metal", "iridescenceThicknessMap", probeMapA, probeMapB, "texturedMaterial.u_iridescenceThicknessTexture"),
+  metal("material.metal", "anisotropyMap", probeMapA, probeMapB, "texturedMaterial.u_anisotropyTexture"),
+  metal("material.metal", "diffuseRoughnessMap", probeMapA, probeMapB, "texturedMaterial.u_diffuseRoughnessTexture"),
+  metal("material.metal", "bumpMap", probeMapA, probeMapB, "texturedMaterial.u_bumpTexture"),
+  metal("material.metal", "specularIntensityMap", probeMapA, probeMapB, "texturedMaterial.u_specularTexture"),
+  metal("material.metal", "specularColorMap", probeMapA, probeMapB, "texturedMaterial.u_specularColorTexture"),
+  metal("material.metal", "transmissionMap", probeMapA, probeMapB, "texturedMaterial.u_transmissionTexture"),
+  metal("material.metal", "thicknessMap", probeMapA, probeMapB, "texturedMaterial.u_volumeThicknessTexture"),
+  metal("material.metal", "normalScale", 0.5, 1.5, "texturedMaterial.u_normalScale"),
+  metal("material.metal", "occlusionStrength", 0.3, 0.9, "texturedMaterial.u_occlusionStrength"),
+  metal("material.metal", "clearcoatNormalScale", 0.5, 1.5, "texturedMaterial.u_clearcoatNormalScale"),
+  metal("material.metal", "texCoords", { baseColor: 0 }, { baseColor: 1 }, "texturedMaterial.u_baseColorTextureTexCoord"),
+  metal("material.metal", "texTransforms", { baseColor: { offset: [0, 0] } }, { baseColor: { offset: [0.25, 0.5] } }, "texturedMaterial.u_baseColorTextureOffset"),
+  metal("material.metal", "sampling", { wrap: "repeat" }, { wrap: "clamp" }, "texturedMaterial.u_baseColorTexture.sampler"),
+  metal("material.metal", "slotSampling", { baseColor: { wrap: "repeat" } }, { baseColor: { wrap: "mirror" } }, "texturedMaterial.u_baseColorTexture.sampler"),
+  metal("material.metal", "textureAnisotropy", 2, 8, "texturedMaterial.u_baseColorTexture.sampler"),
+  metal("material.metal", "unlit", false, true, "renderItem.material.shaderKey"),
+  metal("material.metal", "name", "mat-a", "mat-b", "renderItem.material.name"),
+  metal("material.metal", "envMap", { cubeCamera: "probe-a" }, { cubeCamera: "probe-b" }, "renderItem.cubeCameraEnvMap"),
+  metal("material.metal", "clipping", probeClipA, probeClipB, "renderItem.materialClipping"),
+  metal("material.metal", "kind", undefined, "custom", "renderItem.material.shaderKey"),
+  metal("material.metal", "custom", probeCustomA, probeCustomB, "renderItem.material.shaderKey"),
+  metal("material.metal", "physicalWarnings", ["bounded-a"], ["bounded-b"], "materialDiagnostics.warnings"),
+  metalUnsupported("material.metal", "depthPreview", { near: 0.1, far: 10, side: "front" }, { near: 1, far: 50, side: "double" }, "compile.DEPTH_PREVIEW_OPTION_UNSUPPORTED", "material.metal adds PBR fields (color, roughness, metallic) that a depth preview rejects; use material.depth({ near, far }) for depthPreview"),
+  metalUnsupported("material.metal", "shader", "solar-sun", "solar-corona", "degradation.option-ignored", "material.metal does not render \"shader\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metalUnsupported("material.metal", "coreColor", "#fff7ad", "#ffd166", "degradation.option-ignored", "material.metal does not render \"coreColor\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metalUnsupported("material.metal", "rimColor", "#f97316", "#ff0000", "degradation.option-ignored", "material.metal does not render \"rimColor\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metalUnsupported("material.metal", "noiseStrength", 0.1, 0.3, "degradation.option-ignored", "material.metal does not render \"noiseStrength\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metalUnsupported("material.metal", "falloff", 1.5, 3, "degradation.option-ignored", "material.metal does not render \"falloff\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
+  metalUnsupported("material.metal", "practical", false, true, "degradation.option-ignored", "material.metal does not render \"practical\" (solar shader tags and practical-light scaling are not implemented); remove it (it is reported as OPTION_IGNORED)"),
   // S5-WP19-04: render-item, post-chain and post-pass observations (tests/qr/prd15/compiler/optionProbes.test.ts).
   primitive("primitives.box", "position", [0, 0, 0], [2, 1, -1], "renderItem.modelMatrix"),
   primitive("primitives.box", "rotation", [0, 0, 0], [0, 1.2, 0], "renderItem.modelMatrix"),
@@ -394,6 +502,51 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   instancedIgnored("instances.cylinder", "instances", [{ position: [0, 0, 0] }], [{ position: [2, 1, -1] }], "degradation.option-ignored", "instances.cylinder builds its instances from transforms and colors; remove the \"instances\" option (it is reported as OPTION_IGNORED)"),
   instancedIgnored("instances.cylinder", "instanceColors", ["#ff0000"], ["#00ff00"], "degradation.option-ignored", "instances.cylinder builds its instances from transforms and colors; remove the \"instanceColors\" option (it is reported as OPTION_IGNORED)"),
   modelInstances("instances.model", "lookAt", [0, 0, -5], [5, 0, 0], "model.instanceMatrices"),
+  // S5-WP19-04 (models lane): loaded-GLB actor probes (tests/qr/prd15/compiler/optionProbes.models.test.ts).
+  model("model", "castShadow", true, false, "actor.renderItem.castShadow"),
+  model("model", "receiveShadow", true, false, "actor.renderItem.receiveShadow"),
+  model("model", "frustumCulled", true, false, "actor.renderItem.frustumCulled"),
+  model("model", "renderOrder", 0, 5, "actor.renderItem.renderOrder"),
+  model("model", "layers", 1, 4, "actor.renderItem.layerMask"),
+  model("model", "userData", { tag: "a" }, { tag: "b" }, "actor.renderItem.userData"),
+  model("model", "visible", true, false, "actor.renderItems.count"),
+  model("model", "name", "hero", "villain", "actor.metadata.assetName"),
+  model("model", "hiddenNodeNames", [], ["wheelFrontL"], "actor.renderItems.labels"),
+  model("model", "role", "setDressing", "primaryWorld", "actor.renderItems.labels"),
+  model("model", "materialOverrides", [], [{ target: "bodyPaint", color: "#0000ff" }], "actor.material.u_baseColor"),
+  model("model", "variant", "paint", "rubber", "actor.material.name"),
+  model("model", "wrinkle", { bindings: [{ target: "Cube-morph-1", amount: 1 }] }, { bindings: [{ target: "Cube-morph-1", amount: 2 }] }, "actor.renderItem.wrinkleStrength"),
+  model("model", "physics", { type: "static", shape: "box", halfExtents: [1, 1, 1] }, { type: "dynamic", shape: "box", halfExtents: [1, 1, 1], mass: 2 }, "actor.physicsBodies"),
+  modelInstances("instances.model", "castShadow", true, false, "actor.renderItem.castShadow"),
+  modelInstances("instances.model", "receiveShadow", true, false, "actor.renderItem.receiveShadow"),
+  modelInstances("instances.model", "frustumCulled", true, false, "actor.renderItem.frustumCulled"),
+  modelInstances("instances.model", "renderOrder", 0, 5, "actor.renderItem.renderOrder"),
+  modelInstances("instances.model", "layers", 1, 4, "actor.renderItem.layerMask"),
+  modelInstances("instances.model", "userData", { tag: "a" }, { tag: "b" }, "actor.renderItem.userData"),
+  modelInstances("instances.model", "visible", true, false, "actor.renderItems.count"),
+  modelInstances("instances.model", "name", "hero", "villain", "actor.metadata.assetName"),
+  modelInstances("instances.model", "hiddenNodeNames", [], ["wheelFrontL"], "actor.renderItems.labels"),
+  modelInstances("instances.model", "role", "setDressing", "primaryWorld", "actor.renderItems.labels"),
+  modelInstances("instances.model", "materialOverrides", [], [{ target: "bodyPaint", color: "#0000ff" }], "actor.material.u_baseColor"),
+  modelInstances("instances.model", "variant", "paint", "rubber", "actor.material.name"),
+  modelInstances("instances.model", "wrinkle", { bindings: [{ target: "Cube-morph-1", amount: 1 }] }, { bindings: [{ target: "Cube-morph-1", amount: 2 }] }, "actor.renderItem.wrinkleStrength"),
+  modelInstances("instances.model", "physics", { type: "static", shape: "box", halfExtents: [1, 1, 1] }, { type: "dynamic", shape: "box", halfExtents: [1, 1, 1], mass: 2 }, "actor.physicsBodies"),
+  model("model", "collider", "bounds", false, "actor.physicsBodies"),
+  model("model", "lod", false, { bias: 0.001, crossFadeSeconds: 0 }, "actor.renderItem.lodLevel"),
+  modelInstances("instances.model", "position", [0, 0, 0], [2, 1, -1], "actor.renderItem.instanceTransforms"),
+  modelInstances("instances.model", "colors", ["#ff0000", "#00ff00"], ["#0000ff", "#ffffff"], "actor.renderItem.instanceColors"),
+  modelInstances("instances.model", "instanceColorTarget", "base", "emissive", "actor.material.u_a3dInstanceColorTarget"),
+  modelInstances("instances.model", "material", aMaterial, bMaterial, "actor.material.u_baseColor"),
+  modelInstances("instances.model", "instancingAware", true, false, "actor.runtimeWarnings"),
+  modelInstances("instances.model", "lights", probeInstanceLights, { ...probeInstanceLights, offset: [0, 3, 0] }, "actor.instanceLights"),
+  modelInstances("instances.model", "wind", false, true, "actor.windLabel"),
+  modelInstancesIgnored("instances.model", "collider", "bounds", "auto", "actor.option-ignored", "instances.model builds no collider from \"collider\" (a single bounds collider cannot represent instances; it is reported as OPTION_IGNORED); remove it, or declare physics with an explicit shape"),
+  modelInstancesIgnored("instances.model", "lod", { levels: [{ maxDistance: 10 }] }, { levels: [{ maxDistance: 10 }, { maxDistance: 40 }], hysteresis: 2 }, "actor.option-ignored", "per-instance LOD switching is not implemented, so instances.model \"lod\" is reported as OPTION_IGNORED; remove it, or use model(asset, { lod }) for an imported MSFT_lod chain"),
+  modelInstancesIgnored("instances.model", "maxInstancesPerDraw", 64, 1, "actor.option-ignored", "the renderer draws each mesh's instances in one batch, so instances.model \"maxInstancesPerDraw\" is reported as OPTION_IGNORED; remove it"),
+  modelInstancesIgnored("instances.model", "static", true, false, "actor.option-ignored", "the scatter placements block is never promoted to a world scatter node, so instances.model \"static\" is reported as OPTION_IGNORED; remove it"),
+  modelInstancesIgnored("instances.model", "chunkSize", 16, 64, "actor.option-ignored", "the scatter placements block is never promoted to a world scatter node, so instances.model \"chunkSize\" is reported as OPTION_IGNORED; remove it"),
+  modelInstancesIgnored("instances.model", "shadowLod", "none", "impostor", "actor.option-ignored", "the scatter placements block is never promoted to a world scatter node, so instances.model \"shadowLod\" is reported as OPTION_IGNORED; remove it or use castShadow"),
+  modelInstancesIgnored("instances.model", "impostor", "none", probeImpostor, "actor.option-ignored", "the scatter placements block is never promoted to a world scatter node, so instances.model \"impostor\" is reported as OPTION_IGNORED; remove it"),
   // S5-WP19-04: fields scene fog never reads are recorded as OPTION_IGNORED (an `option-ignored`
   // degradation; strict mounts throw).
   fogIgnored("effects.fog", "alphaOverLife", [1, 0], [0, 1], "degradation.option-ignored", "effects.fog reads only name, mode, color, density, intensity and the C-21 height-fog fields; remove \"alphaOverLife\" (it is reported as OPTION_IGNORED)"),
@@ -544,6 +697,49 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   bloomUnsupported("effects.bloom", "softKnee", 0.1, 0.5, "post.post-field-deprecated", "effects.bloom softKnee is deprecated and ignored on the v2 post chain; use knee"),
   bloomUnsupported("effects.bloom", "shoulder", 0.1, 0.5, "post.post-field-deprecated", "effects.bloom shoulder is deprecated and ignored on the v2 post chain; use knee"),
   bloomUnsupported("effects.bloom", "antiBlowout", false, true, "post.post-field-deprecated", "effects.bloom antiBlowout is deprecated on the v2 post chain; set clampLuminance to cap bright pixels"),
+  // S5-WP19-04 misc lane: consumer.* observations are exercised by tests/qr/prd15/compiler/optionProbes.misc.test.ts.
+  bloom("effects.bloom", "postAuthored", ["intensity"], ["intensity", "threshold"], "bloom.v2.threshold"),
+  bloom("effects.bloom", "name", "bloom", "city bloom", "consumer.environmentPreset"),
+  bloomUnsupported("effects.bloom", "animation", { clip: "float" }, { clip: "orbit" }, "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"animation\" onto the node; remove \"animation\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "position", [0, 0, 0], [1, 2, 3], "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"position\" onto the node; remove \"position\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "pivot", [0, 0, 0], [0.5, 0, 0], "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"pivot\" onto the node; remove \"pivot\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "rotation", [0, 0, 0], [0, 1.2, 0], "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"rotation\" onto the node; remove \"rotation\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "scale", 1, 2, "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"scale\" onto the node; remove \"scale\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "lookAt", [0, 0, -5], [5, 0, 0], "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"lookAt\" onto the node; remove \"lookAt\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "rotationOrder", "XYZ", "ZYX", "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"rotationOrder\" onto the node; remove \"rotationOrder\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "quaternion", [0, 0, 0, 1], [0, 0.7071068, 0, 0.7071068], "post.POST_FIELD_UNSUPPORTED", "effects.bloom accepts only intensity, threshold, knee, scatter, color and clampLuminance on the v2 post chain and does not copy \"quaternion\" onto the node; remove \"quaternion\" (a post effect has no transform or animation)"),
+  bloomUnsupported("effects.bloom", "postIntensity", 0.25, 0.75, "post.POST_FIELD_UNSUPPORTED", "effects.bloom computes \"postIntensity\" itself from intensity and maxIntensity; remove \"postIntensity\" and author intensity"),
+  fog("effects.fog", "name", "haze-a", "haze-b", "consumer.fogActiveNodeId"),
+  primitive("primitives.box", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  primitive("primitives.box", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  primitive("primitives.capsule", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  primitive("primitives.capsule", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  primitive("primitives.cylinder", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  primitive("primitives.cylinder", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  primitive("primitives.plane", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  primitive("primitives.plane", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  primitive("geometry.custom", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  primitive("geometry.custom", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  primitive("geometry.custom", "params", { widthSegments: 1 }, { widthSegments: 3 }, "consumer.lodLevelVertexCount"),
+  instanced("instances.cone", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  instanced("instances.cone", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  instanced("instances.cone", "wind", false, true, "consumer.instanceWindLabel"),
+  instanced("instances.cylinder", "physics", { type: "static", friction: 0.2 }, { type: "static", friction: 0.9 }, "consumer.physicsBody"),
+  instanced("instances.cylinder", "text3D", { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate A" }, { text: "A", glyphCount: 1, unsupportedCharacters: [], method: "extruded-bitmap-glyph-mesh", sdfAccessibleLabel: "crate B" }, "consumer.worldTextLabel"),
+  instanced("instances.cylinder", "wind", false, true, "consumer.instanceWindLabel"),
+  customGeometry("geometry.define", "uvs", [[0, 0], [1, 0], [1, 1], [0, 1]], [[0, 0], [0.5, 0], [0.5, 1], [0, 1]], "consumer.customGeometry.vertexData"),
+  customGeometry("geometry.define", "uv1s", [[0, 0], [1, 0], [1, 1], [0, 1]], [[0, 0], [0.5, 0], [0.5, 1], [0, 1]], "consumer.customGeometry.vertexData"),
+  customGeometry("geometry.define", "colors", ["#ff0000", "#ff0000", "#ff0000", "#ff0000"], ["#00ff00", "#00ff00", "#00ff00", "#00ff00"], "consumer.customGeometry.vertexData"),
+  customGeometry("geometry.define", "attributes", { weight: { itemSize: 1, data: [0, 0.25, 0.5, 1] } }, { weight: { itemSize: 1, data: [1, 0.5, 0.25, 0] } }, "consumer.customGeometry.vertexData"),
+  customGeometry("geometry.define", "drawRange", { start: 0, count: 3 }, { start: 3, count: 3 }, "consumer.customGeometry.drawRange"),
+  customGeometry("geometry.define", "groups", [{ start: 0, count: 6, materialIndex: 0 }], [{ start: 0, count: 3, materialIndex: 0 }, { start: 3, count: 3, materialIndex: 1 }], "consumer.customGeometry.groups"),
+  customGeometry("geometry.define", "morphTargets", [{ name: "lift", positions: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }], [{ name: "lift", positions: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0] }], "consumer.customGeometry.morphTargets"),
+  customGeometry("geometry.define", "topology", "triangles", "points", "consumer.customGeometry.topology"),
+  customGeometryUnsupported("geometry.define", "dynamic", false, true, "geometry.AURA_GEOMETRY_OPTION_UNSUPPORTED", "geometry.define does not read \"dynamic\" (it has no runtime effect); remove it, or build a runtime-mutable spec with geometry.dynamic(spec)"),
+  customMaterial("material.custom", "castShadow", false, true, "consumer.customDepthShader"),
+  customMaterial("material.custom", "patch", { probe_tint: "outColor = vec4(0.25);" }, { probe_tint: "outColor = vec4(0.75);" }, "consumer.customFragment"),
+  customMaterial("material.custom", "uniformAliases", { power: "strength" }, { glow: "strength" }, "consumer.uniformAliasWrite"),
+  hover("interactions.hover", "selected", "crate-a", "crate-b", "consumer.hoverSelections"),
   {
     builder: "primitives.plane", field: "params.radius",
     probeValueA: { widthSegments: 2 }, probeValueB: { radius: 2 }, ownerPrd: 19,

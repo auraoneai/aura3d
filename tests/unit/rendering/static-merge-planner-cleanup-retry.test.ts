@@ -359,7 +359,7 @@ describe("static merge planner cleanup ownership", () => {
       failure.retryCleanup();
       cache.dispose();
       expect(failed.material?.disposed).toBe(true);
-      expect(dispose.mock.instances.filter((material) => material === previousMaterial)).toHaveLength(1);
+      expect(dispose.mock.contexts.filter((material) => material === previousMaterial)).toHaveLength(1);
       expect(stable.disposed).toBe(false);
       expect(failingBase.disposed).toBe(false);
     } finally {

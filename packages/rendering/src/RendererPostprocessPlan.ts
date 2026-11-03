@@ -6,6 +6,7 @@ function postFlagOn(): boolean {
   return rendererQrFlags()?.on("A3D_QR_POST") === true;
 }
 import type { TemporalFrameOptions, TemporalGpuBindings } from "./TemporalHistory";
+import type { OutlineTargetOptions } from "./renderer/OutlineTargets";
 import type {
   BloomOptions,
   ChromaticAberrationOptions,
@@ -48,7 +49,8 @@ export interface RendererPostprocessPlanOptions {
   readonly ssao?: SSAOOptions | false;
   readonly ssr?: SSROptions | false;
   readonly taa?: TAAOptions | RendererTaaOptions | false;
-  readonly outline?: OutlineOptions | boolean;
+  /** GU47 E-E: `targets` limits ink to the named nodes (read by `outlineTargetsOf`). */
+  readonly outline?: (OutlineOptions & Pick<OutlineTargetOptions, "targets">) | boolean;
   readonly fxaa?: FXAAOptions | boolean;
   /** PRD-03 C-13: the assembled v2 pipeline bag (flag-on); also stamps `v2` on the transitional descriptors. */
   readonly pipeline?: unknown;

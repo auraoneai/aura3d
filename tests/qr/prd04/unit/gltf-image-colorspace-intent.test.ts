@@ -79,11 +79,12 @@ describe("imageColorSpaceIntent (P5-1)", () => {
 });
 
 describe("tangent-derivative-fallback (P5-4)", () => {
-  it("fires only when a normal-mapped mesh has no tangent attribute (no set-0 UVs)", async () => {
+  // 5.0 (S5-IMP-09 multiple UV sets, 26eae82e2): a TEXCOORD_1 normal map on a
+  // mesh without set-0 UVs no longer drops to the fragment derivative frame;
+  // the vertex format carries a tangent generated in the normal map's own UV
+  // set (glTF 2.0 normalTextureInfo.texCoord), so no fallback issue is due.
+  it("generates the tangent frame from the normal map's UV set instead of the derivative fallback", async () => {
     const asset = await loadAsset(DAMAGED_HELMET);
-    // The derivative-frame case: the material's textures all sample TEXCOORD_1 while the mesh
-    // has no set-0 UVs — the vertex format drops the tangent attribute and the generated
-    // program must compute the frame in the fragment shader.
     const retarget = (info: { readonly texCoord: number } | undefined) => info ? { ...info, texCoord: 1 } : info;
     const noSet0: GLTFAsset = {
       ...asset,
@@ -103,8 +104,41 @@ describe("tangent-derivative-fallback (P5-4)", () => {
     };
     const decoder = () => ({ width: 1, height: 1, data: new Uint8Array(4).fill(255), colorSpace: "srgb" as const });
     const flagged = await createGLTFRenderResources(noSet0, { materialsR185: true, imageDecoder: decoder });
-    expect(flagged.loadIssues.filter((i) => i.code === "tangent-derivative-fallback").length).toBeGreaterThan(0);
+    expect(flagged.loadIssues.filter((i) => i.code === "tangent-derivative-fallback")).toHaveLength(0);
+    const reference = await createGLTFRenderResources(asset, { materialsR185: true, imageDecoder: decoder });
+    const [moved] = [...flagged.geometryLibrary.values()];
+    const [authored] = [...reference.geometryLibrary.values()];
+    const movedTangents = moved!.getAttributeBuffer("tangent");
+    const authoredTangents = authored!.getAttributeBuffer("tangent");
+    expect(movedTangents.vertexCount).toBe(authoredTangents.vertexCount);
+    // Same UVs, only moved to set 1: the generated frame must be identical.
+    for (let i = 0; i < movedTangents.vertexCount; i += 97) {
+      expect(movedTangents.getAttribute(i, "tangent")).toEqual(authoredTangents.getAttribute(i, "tangent"));
+    }
     flagged.dispose();
+    reference.dispose();
+  });
+
+  it("reports no derivative fallback flag-off, or flag-on with set-0 UVs", async () => {
+    const asset = await loadAsset(DAMAGED_HELMET);
+    const retarget = (info: { readonly texCoord: number } | undefined) => info ? { ...info, texCoord: 1 } : info;
+    const noSet0: GLTFAsset = {
+      ...asset,
+      meshes: asset.meshes.map((mesh) => ({
+        ...mesh,
+        texcoords: [],
+        texcoordSets: [[], mesh.texcoordSets[0] ?? mesh.texcoords]
+      })),
+      materials: asset.materials.map((material) => ({
+        ...material,
+        baseColorTexture: retarget(material.baseColorTexture),
+        metallicRoughnessTexture: retarget(material.metallicRoughnessTexture),
+        normalTexture: retarget(material.normalTexture),
+        occlusionTexture: retarget(material.occlusionTexture),
+        emissiveTexture: retarget(material.emissiveTexture)
+      })) as unknown as GLTFAsset["materials"]
+    };
+    const decoder = () => ({ width: 1, height: 1, data: new Uint8Array(4).fill(255), colorSpace: "srgb" as const });
 
     // Same mesh, flag off: the issue is a lane signal only.
     const unflagged = await createGLTFRenderResources(noSet0, { imageDecoder: decoder });

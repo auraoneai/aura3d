@@ -1783,8 +1783,13 @@ async function createGeometry(
   const renderNormals = needsNormal && mesh.normals.length === 0
     ? generateMeshNormals(mesh.positions, mesh.indices, mesh.topology)
     : mesh.normals;
+  // Generate the tangent frame in the UV space the normal map samples
+  // (glTF 2.0 normalTextureInfo.texCoord). A TEXCOORD_1 normal map on a mesh
+  // without TEXCOORD_0 must not derive tangents from the empty set 0.
+  const tangentTexCoord = material?.normalTexture?.texCoord ?? material?.clearcoat?.normalTexture?.texCoord ?? 0;
+  const tangentTexcoords = tangentTexCoord === 1 && texcoords1.length > 0 ? texcoords1 : texcoords;
   const renderTangents = needsTangent && mesh.tangents.length === 0
-    ? await generateRenderTangents(mesh, texcoords, renderNormals, tangentGeneration)
+    ? await generateRenderTangents(mesh, tangentTexcoords, renderNormals, tangentGeneration)
     : mesh.tangents;
   /*
    * P5-4: `tangent-derivative-fallback` is reported only when a generated program will

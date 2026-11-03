@@ -80,17 +80,25 @@ describe("04-LOBES: iridescence + anisotropy energy and ibl order", () => {
 });
 
 describe("04-LOBES: lobe textures are sampled", () => {
+  // 5.0: every lobe textureInfo samples through its own KHR_texture_transform
+  // UV (glTF 2.0 textureInfo + KHR_texture_transform apply per texture slot;
+  // ProgramGenerator `A3D_LOBE_UV_<SLOT>`, 26eae82e2). The sample must still
+  // read the lobe sampler and derive from the v_uv varying.
   const cases: [string, Record<string, boolean>, string[], string[]][] = [
-    ["clearcoat", { map: true, roughnessMap: true }, ["clearcoat", "clearcoatRoughness"], ["texture( u_clearcoatTexture, v_uv )", "texture( u_clearcoatRoughnessTexture, v_uv )"]],
-    ["sheen", { colorMap: true, roughnessMap: true }, ["sheenColor", "sheenRoughness"], ["texture( u_sheenColorTexture, v_uv )", "texture( u_sheenRoughnessTexture, v_uv )"]],
-    ["iridescence", { map: true, thicknessMap: true }, ["iridescence", "iridescenceThickness"], ["texture( u_iridescenceTexture, v_uv )", "texture( u_iridescenceThicknessTexture, v_uv )"]],
-    ["anisotropy", { map: true }, ["anisotropy"], ["texture( u_anisotropyTexture, v_uv )"]]
+    ["clearcoat", { map: true, roughnessMap: true }, ["clearcoat", "clearcoatRoughness"], ["clearcoat", "clearcoatRoughness"]],
+    ["sheen", { colorMap: true, roughnessMap: true }, ["sheenColor", "sheenRoughness"], ["sheenColor", "sheenRoughness"]],
+    ["iridescence", { map: true, thicknessMap: true }, ["iridescence", "iridescenceThickness"], ["iridescence", "iridescenceThickness"]],
+    ["anisotropy", { map: true }, ["anisotropy"], ["anisotropy"]]
   ];
   for (const [lobe, bits, maps, samples] of cases) {
     it(`${lobe}: map bits define the sampler guard and the UV varying`, () => {
       const out = gen({ lighting: "lit", lights: BUCKETED, extensions: [ext(lobe, bits, maps)], features: { "prd04.tangentFrame": true } });
       expect(out.defines.A3D_NEED_UV0).toBe(true);
-      for (const sample of samples) expect(out.fragment).toContain(sample);
+      for (const slot of samples) {
+        const token = `A3D_LOBE_UV_${slot.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
+        expect(out.fragment).toContain(`texture( u_${slot}Texture, ${token} )`);
+        expect(out.fragment).toContain(`#define ${token} (u_${slot}TextureUvTransform * vec3(v_uv, 1.0)).xy`);
+      }
       for (const bit of Object.keys(bits)) {
         const token = `A3D_LOBE_${lobe.toUpperCase()}_${bit.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
         expect(out.defines[token], token).toBe(true);

@@ -11,6 +11,7 @@ import { Geometry, IndexBuffer, VertexBuffer, VertexFormat } from "../../../pack
 import { mergeStatic } from "../../../packages/engine/src/agent-api/nodes/mergeStatic";
 import { raycast as publicRaycast, material as publicMaterial } from "../../../packages/engine/src/index";
 import { flattenSceneNodesV2 } from "../../../packages/engine/src/agent-api/compiler/sceneGraph";
+import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import type { AuraPrimitiveNode, AuraSceneSnapshot } from "../../../packages/engine/src/agent-api/nodes/types";
 import type { RenderItem, RenderSource } from "@aura3d/rendering";
 
@@ -80,7 +81,7 @@ describe("exact scene queries", () => {
   it("uses current position edits, morph weights and disposes removed handles", () => {
     const geometry = { ...triangle, morphTargets: [{ name: "raise", positions: [0, 0, 1, 0, 0, 1, 0, 0, 1] }] };
     const mesh = node("dynamic", { geometry, runtime: { id: "dynamic" } });
-    const registry = createAuraRuntimeNodeRegistry({ nodes: [mesh] } as AuraSceneSnapshot);
+    const registry = createAuraRuntimeNodeRegistry({ ...scene().toJSON(), nodes: [mesh] });
     const handle = registry.require("dynamic");
     handle.setMorphTarget("raise", 1);
     expect(raycast(ray, { handles: [handle], mode: "mesh" })[0]!.distance).toBeCloseTo(4);
@@ -363,7 +364,7 @@ describe("exact scene queries", () => {
   });
 
   it("keeps flattened anonymous batch identity and bounds at the live member location", () => {
-    const authored = { kind: "batched" as const, maxInstances: 1, geometries: [triangle], instances: [{ position: [4, 0, 0] }] };
+    const authored = { kind: "batched" as const, maxInstances: 1, geometries: [triangle], instances: [{ position: [4, 0, 0] as const }] };
     const group = { kind: "group" as const, position: [3, 0, 0] as const, children: [authored] };
     const [flattened] = flattenNodesWithLineWorldMatrices([group]);
     const atMember = { origin: [7.5, 0.5, 5] as const, direction: [0, 0, -1] as const };

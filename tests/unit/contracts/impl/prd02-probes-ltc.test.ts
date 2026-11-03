@@ -437,7 +437,7 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     kind: "probe", probe: "reflection", name: "lounge",
     options: { position: [1, 1, 1], boxHalfExtents: [2, 2, 2], blendDistance: 1, update: "once" }
   };
-  const ctxFor = (source: Record<string, unknown>): FrameContributorContext => ({
+  const ctxFor = (source: RenderSource): FrameContributorContext => ({
     device: new MockRenderDevice(),
     width: 64, height: 64, frameIndex: 0, timeSeconds: 0,
     camera: null, source, items: [], tier: null,
@@ -446,7 +446,7 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
   }) as unknown as FrameContributorContext;
 
   it("reads `prd02.probes.*` nodes from the compiled source", () => {
-    const ctx = ctxFor({ "prd02.probes.lounge": node, other: 1 });
+    const ctx = ctxFor(probeSource({ "prd02.probes.lounge": node, other: 1 }));
     const nodes = probeNodesFromSource(ctx);
     expect(nodes.map((n) => n.name)).toEqual(["lounge"]);
   });
@@ -778,7 +778,7 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
   });
 
   it("pass publishes probe selection + env/roughness keys on the blackboard", () => {
-    const ctx = ctxFor({ "prd02.probes.lounge": node });
+    const ctx = ctxFor(probeSource({ "prd02.probes.lounge": node }));
     ctx.blackboard.set(PROBE_RENDER_FACE_KEY, flatRenderer);
     const contrib = createPrd02ProbesContributor();
     const [pass] = contrib.passes!("shadows", ctx);

@@ -7,7 +7,7 @@ import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { createDefaultShaderLibrary } from "../../../packages/rendering/src/ShaderLibrary";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
 import { WebGPUDevice, type WebGPUDeviceLike, type WebGPURenderPassDescriptorLike, type WebGPURenderPipelineDescriptorLike } from "../../../packages/rendering/src/WebGPUDevice";
-import type { DrawCommand, RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+import type { DrawCommand, RecursiveUniformValue, RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { FRAME_RESOURCES, type FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph";
 import { PRD01_FORWARD_TARGET } from "../../../packages/rendering/src/renderer/FrameGraph";
@@ -286,7 +286,7 @@ describe("native WebGPU scalar volume", () => {
       expect(draw.renderer).toBeInstanceOf(WebGPUScalarVolumeRenderer);
       expect(draw.modelMatrix[12]).toBeCloseTo(1);
       expect(draw.mode).toEqual({ type: "slice", axis: "y", position: 0.5 });
-      const commands: string[] = [], draws: DrawCommand[] = [], original = f.device.draw.bind(f.device);
+      const commands: string[] = [], draws: DrawCommand<RecursiveUniformValue>[] = [], original = f.device.draw.bind(f.device);
       vi.spyOn(f.device, "draw").mockImplementation(command => { commands.push(command.label ?? ""); draws.push(command); original(command); });
       const present = f.device.presentLdrPostprocess.bind(f.device);
       const presentations = vi.spyOn(f.device, "presentLdrPostprocess").mockImplementation((target, options) => {

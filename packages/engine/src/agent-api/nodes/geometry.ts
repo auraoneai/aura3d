@@ -26,8 +26,19 @@ export const geometry = lazyNamespace(() => ({
    * `itemSize` is the component count, while `stride` and `offset` are in
    * components, relative to the supplied typed-array view. Integer attributes
    * can request normalized conversion before they reach the shader.
+   * S5-WP19-04: `dynamic` is only the marker `geometry.dynamic` sets; nothing
+   * reads it (`handle.setGeometry` accepts any custom geometry), so an authored
+   * `dynamic` is rejected instead of being carried as a silent no-op.
    */
-  define: defineAuraCustomGeometry,
+  define: (spec: Omit<AuraCustomGeometrySpec, "kind">): AuraCustomGeometrySpec => {
+    if (spec && typeof spec === "object" && spec.dynamic !== undefined) {
+      throw Object.assign(new Error(
+        "AURA_GEOMETRY_OPTION_UNSUPPORTED: geometry.define does not read \"dynamic\"; the flag has no runtime effect " +
+        "(handle.setGeometry accepts any custom geometry). Remove it, or build a runtime-mutable spec with geometry.dynamic(spec)."
+      ), { code: "AURA_GEOMETRY_OPTION_UNSUPPORTED", field: "dynamic" });
+    }
+    return defineAuraCustomGeometry(spec);
+  },
   // S5-WP19-04: the positional spec is the geometry; an untyped `geometry` option would be overwritten, so it is reported as OPTION_IGNORED.
   custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) }, {
     builder: "geometry.custom", validKeys: PRIMITIVE_OPTION_KEYS.filter((key) => key !== "geometry"), options

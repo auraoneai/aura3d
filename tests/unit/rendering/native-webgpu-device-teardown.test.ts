@@ -1667,6 +1667,7 @@ describe("WebGPU device post teardown", () => {
         expect(retire.mock.calls.filter(([resource]) => resource === internal.nativeTexture)).toHaveLength(1);
       }
       const count = f.device.getDiagnostics().disposedRenderTargets;
+      if (count === undefined) throw new Error("WebGPU diagnostics must report disposed render targets");
       fail = false;
       f.device.dispose();
       expect(callback).toHaveBeenCalledTimes(entry === "device" ? 3 : 2);

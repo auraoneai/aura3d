@@ -1,9 +1,7 @@
 import { copyFileSync, readFileSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
-// @ts-expect-error -- .mjs tool module without a declaration file
 import { validateRouteReviewRecord } from "../../../tools/showcase-library/showcase-manual-review-gate.mjs";
-// @ts-expect-error -- .mjs tool module without a declaration file
 import { readPngPerceptualSignature } from "../../../tools/showcase-library/png-foreground.mjs";
 
 /**

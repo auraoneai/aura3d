@@ -655,7 +655,7 @@ function checkCompletedOutcomes(root) {
 export function assertNoAcceptanceProcess(command, args = []) {
   const text = [String(command), ...(Array.isArray(args) ? args.map(String) : [])].join(' ').replaceAll('\\', '/');
   assert(!/(?:^|[\s/\"'])(?:playwright|puppeteer|chromium|chromium-browser|chrome|chrome-headless-shell|firefox|webkit|xvfb|webdriver)(?:$|[\s/\"'.:=_-])/i.test(text)
-    && !/(?:^|[\s/\"'=])(?:tests\/(?:browser|visual|acceptance)(?:\/|(?=$|[\s\"'=]))|tools\/remote-acr\/(?:run\.sh|task-run\.sh|historical-acceptance\.mjs|external-codec-run\.mjs)(?=$|[\s\"':=;|&]))/i.test(text),
+    && !/(?:^|[\s/\"'=])(?:tests\/(?:browser|visual|acceptance)(?:\/|(?=$|[\s\"'=]))|tools\/remote-acr\/(?:run\.sh|task-run\.sh|run-acceptance5\.sh|acceptance5-evidence\.sh|historical-acceptance\.mjs|external-codec-run\.mjs)(?=$|[\s\"':=;|&]))/i.test(text),
   'source phase refuses browser or acceptance process');
 }
 function installSourceProcessGuard() {

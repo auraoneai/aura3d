@@ -51,8 +51,15 @@ describe("§11 fountain plume preset", () => {
   it("explicit speed ranges and non-fountain emitters keep their mapping", () => {
     const ranged = lowerEffectNode({ ...fountain, speed: [2, 3] });
     expect(ranged?.type === "emitter" && ranged.emitter.speed).toEqual([2, 3]);
+    // Since 72945ca70 (4.0.1 studio showcases) an authored `radius` sets the
+    // spawn disc for every emitter, not only the fountain plume; the plume
+    // preset (spread/launch speed) stays fountain-only.
     const swirl = lowerEffectNode({ ...fountain, emitter: "swirl" });
-    expect(swirl?.type === "emitter" && swirl.emitter.spawnRadius).toBeUndefined();
+    expect(swirl?.type === "emitter" && swirl.emitter.spawnRadius).toBe(1.2);
+    expect(swirl?.type === "emitter" && swirl.emitter.spread).toBe(0.35);
+    const { radius: _radius, ...noRadius } = fountain;
+    const bare = lowerEffectNode({ ...noRadius, emitter: "swirl" });
+    expect(bare?.type === "emitter" && bare.emitter.spawnRadius).toBeUndefined();
   });
 
   it("hex colours are linearized", () => {

@@ -25,7 +25,9 @@ interface Variant { readonly core: boolean; readonly envBackground: boolean; rea
 
 const VFX = ["vfx", "vfx.sky", "vfx.fog", "vfx.volumetric", "vfx.decals"];
 const writer = (name: string, reads: readonly string[], writes: readonly string[]): RenderPass => ({ name, reads, writes, execute() {} });
-const flagsFor = (core: boolean) => resolveQrFlags({ options: core ? [...VFX, "core"] : VFX, env: {} });
+// A3D_QR_CORE is default-on since 4b7a636a1 (2026-10-11); the legacy variant
+// must turn it off explicitly or it silently resolves to the v2 path.
+const flagsFor = (core: boolean) => resolveQrFlags({ options: core ? [...VFX, "core"] : [...VFX, "-core"], env: {} });
 const device = new MockRenderDevice();
 const depthCopy = new Texture({ label: "depth-copy", width: 4, height: 4, format: "rgba8", data: new Uint8Array(64) });
 const identity = () => new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
@@ -86,6 +88,8 @@ const label = (v: Variant) => `core=${v.core} envBg=${v.envBackground} tier=${v.
 
 describe("prd07 frame passes vs the real Renderer graph (T0-34, #1111)", () => {
   it("compiles in every renderer path × env background × tier", () => {
+    expect(flagsFor(false).on("A3D_QR_CORE")).toBe(false);
+    expect(flagsFor(true).on("A3D_QR_CORE")).toBe(true);
     for (const v of VARIANTS) {
       expect(() => rendererGraph(v).compilePlan(), label(v)).not.toThrow();
     }

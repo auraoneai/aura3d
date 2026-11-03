@@ -6,13 +6,14 @@
  * and Courier has NO `canvasBlankCheck` override.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { evaluateRequiredCondition, GAME_VISUAL_CATEGORY_LIST } from "@aura3d/game/art";
 import type { GameEntryV2 } from "@aura3d/game/art";
 import { GAME_NONVISUAL_CATEGORIES } from "../../../../tools/quality-gate/src/contracts";
 import { validateJsonSchema } from "./helpers/schema";
+import { NON_REBUILD_ROUTES, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const gamesJson = JSON.parse(readFileSync(`${ROOT}tools/quality-rebuild-capture/games.json`, "utf8")) as {
@@ -21,26 +22,12 @@ const gamesJson = JSON.parse(readFileSync(`${ROOT}tools/quality-rebuild-capture/
 };
 const schema = JSON.parse(readFileSync(`${ROOT}tools/quality-rebuild-capture/games.schema.json`, "utf8"));
 
-const EXPECTED_IDS = [
-  "aura-clash-showcase",
-  "showcase-bank-shot",
-  "showcase-blockfall-reactor",
-  "showcase-skyline-runner",
-  "showcase-turbo-drift-circuit",
-  "showcase-siege-golf",
-  "showcase-aurora-lander",
-  "showcase-neon-swarm",
-  "showcase-gravity-post",
-  "showcase-courier-rush",
-  "showcase-pulse-tunnel",
-  "showcase-mech-hangar",
-  "showcase-vault-breakers",
-  "showcase-rooftop-buckets",
-  "showcase-gallery-shift",
-  "showcase-deep-recovery",
-  "showcase-patrol-wing",
-  "showcase-orbital-defense"
-];
+// The 18 PRD-14 games minus the 13 apps deleted in 4.0.1 (46bca99f1, pruned
+// from games.json in 8e6ecef13), plus the later non-rebuild capture routes
+// (644da6651, 479225fd9). See helpers/games.ts.
+const EXPECTED_IDS = [...PRD14_REBUILD_ROUTES, ...NON_REBUILD_ROUTES];
+const REBUILD = new Set<string>(PRD14_REBUILD_ROUTES);
+const rebuildEntries = () => gamesJson.games.filter((g) => REBUILD.has(String(g.id)));
 
 const QUALITY_TIERS = ["low", "medium", "high", "ultra"] as const;
 const ALLOWED_BLANK_OVERRIDES = new Set([
@@ -82,8 +69,27 @@ function routeUrlFlagFor(id: string): string {
 }
 
 describe("T1.13 games.json V2", () => {
-  it("covers exactly the 18 shipped games", () => {
+  it("covers exactly the shipped games", () => {
     expect(gamesJson.games.map((g) => g.id).sort()).toEqual([...EXPECTED_IDS].sort());
+  });
+
+  it("rebuild routes dispatch to a v2 boot; the other routes have neither v2 boot nor route flag", () => {
+    for (const entry of gamesJson.games) {
+      const id = String(entry.id);
+      const appDir = String(entry.appDir ?? entry.id);
+      const boot = `${ROOT}apps/${appDir}/src/v2/boot.ts`;
+      const flags = (entry.qrFlags ?? []) as string[];
+      if (REBUILD.has(id)) {
+        expect(existsSync(boot), `${id} v2 boot`).toBe(true);
+        expect(readFileSync(`${ROOT}apps/${appDir}/src/main.ts`, "utf8"), `${id} main.ts dispatches the route flag`).toContain(routeFlagFor(id));
+      } else {
+        expect(existsSync(boot), `${id} has a v2 boot: add it to PRD14_REBUILD_ROUTES`).toBe(false);
+        expect(flags.filter((f) => f.startsWith("route-")), `${id} route flag`).toEqual([]);
+        for (const f of flags) expect(ENGINE_QR_FLAGS as readonly string[], `${id} qrFlags`).toContain(f);
+        expect(entry.evidenceGlobal, id).toBe("__AURA3D_GAME_EVIDENCE__");
+        expect(typeof entry.readyExpr === "string" && entry.readyExpr.length > 0, `${id} readyExpr`).toBe(true);
+      }
+    }
   });
 
   it("validates every entry against games.schema.json", () => {
@@ -91,8 +97,8 @@ describe("T1.13 games.json V2", () => {
     expect(errors).toEqual([]);
   });
 
-  it("carries the C-35 V2 fields on every entry", () => {
-    for (const entry of gamesJson.games) {
+  it("carries the C-35 V2 fields on every rebuild entry", () => {
+    for (const entry of rebuildEntries()) {
       const v2 = entry as unknown as GameEntryV2;
       const label = String(entry.id);
       expect([0, 1, 2, 3, 4]).toContain(v2.wave);
@@ -126,8 +132,8 @@ describe("T1.13 games.json V2", () => {
     }
   });
 
-  it("carries the FLAG-2 capture-contract fields on every entry", () => {
-    for (const entry of gamesJson.games) {
+  it("carries the FLAG-2 capture-contract fields on every rebuild entry", () => {
+    for (const entry of rebuildEntries()) {
       const label = String(entry.id);
       expect(entry.evidenceGlobal, label).toBe("__AURA3D_GAME_EVIDENCE__");
       expect(entry.readyExpr, label).toBe("window.__AURA3D_GAME__?.state === 'playing'");
@@ -138,8 +144,8 @@ describe("T1.13 games.json V2", () => {
     }
   });
 
-  it("carries the T1.13 overlay fields on every entry", () => {
-    for (const entry of gamesJson.games) {
+  it("carries the T1.13 overlay fields on every rebuild entry", () => {
+    for (const entry of rebuildEntries()) {
       const label = String(entry.id);
       expect(Array.isArray(entry.scenarios), `${label} scenarios[]`).toBe(true);
       expect(Array.isArray(entry.hudSelectors), `${label} hudSelectors[]`).toBe(true);
@@ -151,6 +157,8 @@ describe("T1.13 games.json V2", () => {
   it("parses every requiredConditions expr and references existing shots", () => {
     for (const entry of gamesJson.games) {
       const v2 = entry as unknown as GameEntryV2;
+      if (!REBUILD.has(String(entry.id)) && v2.requiredConditions === undefined) continue;
+      expect(Array.isArray(v2.requiredConditions), `${String(entry.id)} requiredConditions[]`).toBe(true);
       const shots = collectShotIds(entry);
       for (const condition of v2.requiredConditions) {
         expect(shots.has(condition.shot), `${String(entry.id)} shot "${condition.shot}"`).toBe(true);
@@ -174,8 +182,7 @@ describe("T1.13 games.json V2", () => {
     }
   });
 
-  it("leaves Courier Rush with no canvasBlankCheck override (the 0.968+ black frame must fail)", () => {
-    const courier = gamesJson.games.find((g) => g.id === "showcase-courier-rush") as unknown as GameEntryV2;
-    expect(courier.canvasBlankCheck).toBeUndefined();
-  });
+  // Retired: "leaves Courier Rush with no canvasBlankCheck override" — the
+  // showcase-courier-rush app was deleted in 4.0.1 (46bca99f1) and its entry
+  // pruned (8e6ecef13). docs/project/status/retired-tests.md §3b.
 });

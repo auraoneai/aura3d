@@ -35,6 +35,8 @@ interface HeroReady {
 declare global {
   interface Window {
     __PRD06_CHARACTER_HERO_HARNESS__?: { status: "importing" | "running" | "ok" | "error"; engine: string; error?: string };
+    // Published by character-hero-harness.ts (same declaration; the harness is a browser-served root outside this program).
+    __PRD06_CHARACTER_HERO_READY__?: unknown;
   }
 }
 

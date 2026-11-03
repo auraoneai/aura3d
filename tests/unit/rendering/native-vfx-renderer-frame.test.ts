@@ -41,7 +41,7 @@ const noPhysics: PhysicsWorldAccess = {
 };
 const canvas = () => new FakeCanvas() as unknown as HTMLCanvasElement;
 
-type Mounted = { readonly canvas: HTMLCanvasElement; readonly renderer: Renderer; readonly device: MockRenderDevice;
+type Mounted = { readonly canvas: HTMLCanvasElement | OffscreenCanvas; readonly renderer: Renderer; readonly device: MockRenderDevice;
   readonly flags: QrFlags; lose(): void; failManagedLossUnsubscribe(): void };
 let mounted: Mounted[];
 let oldFog: ReturnType<typeof prd07ForwardFog>;

@@ -1,0 +1,15 @@
+version: v1.1.0
+# Aura3D 5.0 acceptance: deferred evidence-reading unit tests, run once after
+# the browser shards (tools/remote-acr/run-acceptance5.sh). ARTIFACTS_SAS comes
+# only from the --values file in the run context; everything else is nonsecret.
+steps:
+  - id: evidence
+    cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}} /repo/tools/remote-acr/acceptance5-evidence.sh
+    workingDirectory: /repo
+    env:
+      - CI=1
+      - AURA3D_RUN_ID={{.Values.RUN_ID}}
+      - AURA3D_CODE_COMPLETE_GATE={{.Values.CODE_COMPLETE_GATE}}
+      - AURA3D_EVIDENCE_PREFIXES={{.Values.EVIDENCE_PREFIXES}}
+      - AURA3D_ARTIFACTS_SAS={{.Values.ARTIFACTS_SAS}}
+    timeout: 1800

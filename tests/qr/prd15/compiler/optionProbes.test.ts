@@ -72,7 +72,10 @@ const BASE: Record<string, Record<string, unknown>> = {
   // a colour target needs instance colours.
   rotationOrder: { rotation: [0.5, 1, 0.3] },
   instanceColors: { instances: [{ position: [0, 0, 0] }, { position: [1, 0, 0] }] },
-  instanceColorTarget: { colors: ["#ff0000", "#00ff00"] }
+  instanceColorTarget: { colors: ["#ff0000", "#00ff00"] },
+  // material.pbr/metal: `kind: "custom"` routes to the portable shader its `custom` spec names.
+  kind: { custom: { glsl: { fragment: "out vec4 outColor; void main(){outColor=vec4(0.5);}" } } },
+  custom: { kind: "custom" }
 };
 
 const NODE_BUILDERS: Record<string, (options: Record<string, unknown>) => unknown> = {

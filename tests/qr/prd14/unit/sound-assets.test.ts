@@ -7,18 +7,19 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { PRD14_REBUILD_APP_DIRS, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const ASSET_IDS = new Set(
   [...readFileSync(join(ROOT, "src/aura-assets.ts"), "utf8").matchAll(/^ {2}"?([A-Za-z0-9]+)"?: \{/gm)].map((m) => m[1]!)
 );
-const games = [...new Set((JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
-  games: { id: string; appDir?: string }[];
-}).games.map((g) => g.appDir ?? g.id))].sort();
+// v2 boots exist only on the PRD-14 rebuild routes (helpers/games.ts).
+const games = PRD14_REBUILD_APP_DIRS;
 
 describe("v2 sound cues reference typed assets, not id strings (T0-29)", () => {
   it("reads the typed asset map", () => {
     expect(ASSET_IDS.size).toBeGreaterThan(100);
+    expect(games).toHaveLength(PRD14_REBUILD_ROUTES.length);
   });
 
   for (const appDir of games) {

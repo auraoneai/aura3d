@@ -27,7 +27,8 @@ import type { AuraGaussianSplatNode } from "../nodes/gaussianSplat.js";
 import { validateGaussianSplatTransformOptions } from "../nodes/gaussianSplat.js";
 import type { AuraScalarVolumeNode } from "../nodes/scalarVolume.js";
 import { validateScalarVolumeNode } from "../nodes/scalarVolume.js";
-import { LoadContext, mergeAssetRequestOptions, type AssetIntegrity, type AssetLoadRequest, type GaussianSplatData } from "@aura3d/assets";
+// Browser entry: the render worker bundles this module, and the "@aura3d/assets" root re-exports Node-only corpus tooling.
+import { LoadContext, mergeAssetRequestOptions, type AssetIntegrity, type AssetLoadRequest, type GaussianSplatData } from "@aura3d/assets/browser";
 import type { ScalarVolumeAsset } from "@aura3d/assets/importers";
 import type { VolumeFrameLease, VolumeRenderer, WebGPUScalarVolumeRenderer } from "@aura3d/rendering/volumetrics";
 import { createProjectedSpotResource, type ProjectedSpotFrameIdentity, type ProjectedSpotFrameLease, type ProjectedSpotResource } from "./projectedSpotResources.js";

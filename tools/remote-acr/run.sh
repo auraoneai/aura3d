@@ -11,6 +11,11 @@
 # Native acceptance uses a preauthorized managed identity and a nonsecret
 # AURA3D_ARTIFACTS_BLOB_URL. The task fails closed if its identity cannot
 # obtain a token; no tokens, SAS URLs or credentials are sent in CLI args.
+# Without an identity-enabled task, AURA3D_ARTIFACT_TRANSPORT=legacy-sas uses
+# the 4.x container-SAS path instead (tools/remote-acr/sas-transport.sh): the
+# same gate and candidate checks run first, the SAS is minted once (<= 2 h,
+# rcwl) and reaches the task only through a --values file in the run context.
+# 5.0 sharded acceptance: tools/remote-acr/run-acceptance5.sh.
 #
 # Usage:
 #   tools/remote-acr/run.sh                 # default parity spec trio
@@ -37,6 +42,7 @@
 #   AURA3D_ARTIFACTS_BLOB_URL   preauthorized Azure Blob container URL
 #   AURA3D_ACR_IDENTITY_TASK    existing identity-enabled ACR Task name
 #   AURA3D_ARTIFACTS_CLIENT_ID  optional managed-identity client UUID
+#   AURA3D_ARTIFACT_TRANSPORT   managed-identity (default) | legacy-sas (browser kind, no identity task)
 #   CONTEXT_PROFILE    slim|full                  (slim) slim omits public/aura-assets
 #                      (~1.4GB of showcase GLBs) and the environment-corpus /
 #                      asset-corpus / advanced-gallery fixture trees (~380MB); the
@@ -86,6 +92,9 @@ AURA3D_EXTERNAL_CODEC_LOCK="${AURA3D_EXTERNAL_CODEC_LOCK:-}"
 AURA3D_EXTERNAL_CODEC_NPM_INPUTS="${AURA3D_EXTERNAL_CODEC_NPM_INPUTS:-}"
 AURA3D_ARTIFACTS_BLOB_URL="${AURA3D_ARTIFACTS_BLOB_URL:-}"
 AURA3D_ACR_IDENTITY_TASK="${AURA3D_ACR_IDENTITY_TASK:-}"
+AURA3D_ARTIFACT_TRANSPORT="${AURA3D_ARTIFACT_TRANSPORT:-managed-identity}"
+case "$AURA3D_ARTIFACT_TRANSPORT" in managed-identity|legacy-sas) ;; *) echo "FATAL: invalid artifact transport." >&2; exit 2;; esac
+ACR_TIMEOUT_ARGS=()
 BUILD="${BUILD:-1}"
 KEEP_IMAGE="${KEEP_IMAGE:-}"
 CONTEXT_PROFILE="${CONTEXT_PROFILE:-slim}"
@@ -182,8 +191,15 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
   elif [ "$AURA3D_ACCEPTANCE_KIND" = external-codec-fixtures ]; then
     node tools/remote-acr/external-codec-run.mjs --phase preflight --gate "$AURA3D_CODE_COMPLETE_GATE" --lock "$AURA3D_EXTERNAL_CODEC_LOCK" --npm-inputs "$AURA3D_EXTERNAL_CODEC_NPM_INPUTS" --run-id "$RUN_ID"
   fi
+  # ACR policy for native jobs: every build/run is bounded at 1800 s.
+  ACR_TIMEOUT_ARGS=(--timeout 1800)
+  if [ "$AURA3D_ARTIFACT_TRANSPORT" = legacy-sas ]; then
+    [ "$AURA3D_ACCEPTANCE_KIND" = browser ] || { echo "FATAL: historical acceptance keeps the managed-identity transport." >&2; exit 2; }
+    [ -z "$AURA3D_ACR_IDENTITY_TASK" ] && [ -z "$AURA3D_ARTIFACTS_BLOB_URL" ] && [ -z "${AURA3D_ARTIFACTS_CLIENT_ID:-}" ] \
+      || { echo "FATAL: legacy-sas transport is only for runs without an identity task or managed-identity container." >&2; exit 2; }
+  else
   [ -n "$AURA3D_ARTIFACTS_BLOB_URL" ] || { echo "FATAL: native acceptance needs an approved managed-identity artifact container." >&2; exit 2; }
-  case "$AURA3D_ACR_IDENTITY_TASK" in ''|*[!a-zA-Z0-9_-]*) echo "FATAL: native acceptance requires an existing identity-enabled ACR task." >&2; exit 2;; esac
+  case "$AURA3D_ACR_IDENTITY_TASK" in ''|*[!a-zA-Z0-9_-]*) echo "FATAL: native acceptance requires an existing identity-enabled ACR task (or AURA3D_ARTIFACT_TRANSPORT=legacy-sas)." >&2; exit 2;; esac
   if [ -n "${AURA3D_ARTIFACTS_CLIENT_ID:-}" ]; then
     AURA3D_ARTIFACTS_CLIENT_ID="$AURA3D_ARTIFACTS_CLIENT_ID" node -e 'if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(process.env.AURA3D_ARTIFACTS_CLIENT_ID)) process.exit(1)'
   fi
@@ -191,6 +207,7 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
     import { parseBlobUrl } from "./tools/remote-acr/upload-artifacts.mjs";
     parseBlobUrl(process.env.AURA3D_ARTIFACTS_BLOB_URL);
   '
+  fi
   A3D_RELEASE_PLAN="$(node -e '
     const fs = require("node:fs");
     const record = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
@@ -259,6 +276,7 @@ cleanup_ctx() {
     fi
   fi
   rm -rf "$CTX"
+  [ -z "${A3D_SAS_DIR:-}" ] || rm -rf "$A3D_SAS_DIR"
   [ -z "$INPUTS_JSON" ] || rm -f "$INPUTS_JSON"
   [ -z "$INPUTS_LIST" ] || rm -f "$INPUTS_LIST"
   [ -z "$HISTORICAL_INPUTS_JSON" ] || rm -f "$HISTORICAL_INPUTS_JSON"
@@ -393,7 +411,7 @@ echo "   verified   : sub=${SUB} tenant=${TENANT}"
 
 LOGIN_SERVER="$("$AZ_WRAPPER" acr show -n "$ACR_NAME" -g "$ACR_RG" --query loginServer -o tsv)"
 echo "   loginServer: ${LOGIN_SERVER}"
-if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
+if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ] && [ "$AURA3D_ARTIFACT_TRANSPORT" = managed-identity ]; then
   TASK_IDENTITY="$("$AZ_WRAPPER" acr task show -n "$AURA3D_ACR_IDENTITY_TASK" -r "$ACR_NAME" -g "$ACR_RG" --query identity -o json)"
   TASK_IDENTITY="$TASK_IDENTITY" node -e '
     const id = JSON.parse(process.env.TASK_IDENTITY || "null");
@@ -413,7 +431,7 @@ if [ "$BUILD" = "1" ]; then
     -t "${IMAGE_REPO}:${IMAGE_TAG}" \
     --build-arg "AURA3D_NATIVE_ACCEPTANCE=${AURA3D_NATIVE_ACCEPTANCE}" \
     --build-arg "AURA3D_CODE_COMPLETE_GATE=${AURA3D_CODE_COMPLETE_GATE:-none}" \
-    -f tools/remote-acr/Dockerfile.playwright \
+    -f tools/remote-acr/Dockerfile.playwright ${ACR_TIMEOUT_ARGS[@]+"${ACR_TIMEOUT_ARGS[@]}"} \
     "$CTX" 2>&1 | tee "${OUT_DIR}/acr-build.log" | tail -25
   BUILD_RC=${PIPESTATUS[0]}
   set -e
@@ -431,8 +449,19 @@ fi
 # identity and verify its access before test discovery.
 echo "== az acr run"
 RUN_RC=0
+TRANSPORT_SET=(--set "ARTIFACTS_SAS=none")
+if [ "$AURA3D_ARTIFACT_TRANSPORT" = legacy-sas ]; then
+  # One SAS for this invocation, after the image exists; value only in the
+  # 0600 values file of the run context (never argv, never printed).
+  # shellcheck source=tools/remote-acr/sas-transport.sh
+  . tools/remote-acr/sas-transport.sh
+  sas_transport_open "${SAS_TTL_MINUTES:-120}" tools/remote-acr/task.playwright.yaml || exit 2
+  TRANSPORT_SET=()
+fi
 set +e
-if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
+if [ "$AURA3D_ARTIFACT_TRANSPORT" = legacy-sas ]; then
+  RUN_COMMAND=("$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f task.playwright.yaml --values "$A3D_SAS_VALUES_FILE" --timeout 1800 "$A3D_SAS_DIR")
+elif [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
   # The existing task carries the preauthorized identity; override its job
   # content with this gate-verified context and YAML. No IAM is modified.
   RUN_COMMAND=("$AZ_WRAPPER" acr task run -n "$AURA3D_ACR_IDENTITY_TASK" -r "$ACR_NAME" -g "$ACR_RG" --context "$CTX" --file tools/remote-acr/task.playwright.yaml)
@@ -462,9 +491,17 @@ fi
   --set "PERF_DRIVER_B64=${NATIVE_PERF_DRIVER_B64:-none}" \
   --set "ARTIFACTS_BLOB_URL=${AURA3D_ARTIFACTS_BLOB_URL:-none}" \
   --set "ARTIFACTS_CLIENT_ID=${AURA3D_ARTIFACTS_CLIENT_ID:-none}" \
+  --set "ARTIFACT_TRANSPORT=${AURA3D_ARTIFACT_TRANSPORT}" \
+  --set "PW_SHARD=none" --set "PW_GLOBAL_TIMEOUT_MS=none" --set "PLAYWRIGHT_CONFIG=none" \
+  ${TRANSPORT_SET[@]+"${TRANSPORT_SET[@]}"} \
   2>&1 | tee "${OUT_DIR}/acr-run.log"
 RUN_RC=${PIPESTATUS[0]}
 set -e
+if [ "$AURA3D_ARTIFACT_TRANSPORT" = legacy-sas ]; then
+  sas_redact_file "${OUT_DIR}/acr-run.log"
+  sas_download_prefix "$RUN_ID" "${OUT_DIR}/artifacts" || echo "   (artifact download failed; see UPLOAD_EXIT)"
+  sas_transport_close
+fi
 echo "   acr run exit: ${RUN_RC} (log: ${OUT_DIR}/acr-run.log)"
 
 # The EXIT trap removes an ephemeral image even on early failure or signal.

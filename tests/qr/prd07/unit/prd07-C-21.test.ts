@@ -25,13 +25,34 @@ describe("P3-T3 C-21 SkyBackgroundPass", () => {
     expect(skyDrawPassFor(device)).toBeDefined();
   });
 
-  it("noon frame: radiance varies across the dome and horizon beats zenith", () => {
+  // 5.0 replaced the three.js r185 Sky.js port with an independent
+  // implementation of Preetham, Shirley & Smits 1999 (PreethamSky.ts header,
+  // 26eae82e2; independence rule in the 5.0 decision record). "Horizon beats
+  // zenith" was an r185 artifact: with the sun 25° from zenith the paper's
+  // Perez circumsolar term makes the zenith brighter. The live assertion is
+  // now the paper itself: relative luminance follows the Perez luminance
+  // distribution F(θ,γ) with the published T-dependent coefficients.
+  it("noon frame: radiance varies across the dome and follows the Preetham 1999 Perez luminance distribution", () => {
     const frame = skyFrame(NOON);
     const zenith = evaluateSky(frame, [0, 1, 0]);
-    const horizon = evaluateSky(frame, [1, 0.02, 0]);
     const away = evaluateSky(frame, [-0.8, 0.4, -0.3]);
     const l = (v: readonly number[]) => v[0] + v[1] + v[2];
-    expect(l(horizon)).toBeGreaterThan(l(zenith));
+    const lum = (v: readonly number[]) => 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    const T = NOON.turbidity;
+    const [A, B, C, D, E] = [0.1787 * T - 1.463, -0.3554 * T + 0.4275, -0.0227 * T + 5.3251, 0.1206 * T - 2.5771, -0.067 * T + 0.3703];
+    const sun = sunDirection(NOON.sun);
+    const perez = (d: readonly [number, number, number]) => {
+      const n = Math.hypot(...d);
+      const cosTheta = d[1] / n;
+      const cosGamma = (d[0] * sun[0] + d[1] * sun[1] + d[2] * sun[2]) / n;
+      const gamma = Math.acos(Math.min(1, Math.max(-1, cosGamma)));
+      return (1 + A * Math.exp(B / cosTheta)) * (1 + C * Math.exp(D * gamma) + E * cosGamma * cosGamma);
+    };
+    for (const d of [[1, 0.02, 0], [0, 0.2, 1], [-0.7, 0.5, 0.7]] as const) {
+      const ratio = lum(evaluateSky(frame, d)) / lum(zenith);
+      expect(ratio, JSON.stringify(d)).toBeCloseTo(perez(d) / perez([0, 1, 0]), 1);
+      expect(Math.abs(ratio / (perez(d) / perez([0, 1, 0])) - 1), JSON.stringify(d)).toBeLessThan(0.03);
+    }
     // Sky has structure: luminance spreads meaningfully across samples.
     const samples = [
       l(evaluateSky(frame, [1, 0.05, 0])), l(evaluateSky(frame, [0, 0.2, -1])),

@@ -20,7 +20,7 @@ describe("ProductStudio product assets", () => {
     expect(asset.textures.length).toBeGreaterThanOrEqual(asset.materials.length * 4);
     expect(asset.images.length).toBeGreaterThanOrEqual(asset.materials.length * 4);
     expect(asset.meshes.map((mesh) => mesh.name)).toEqual(expect.arrayContaining(manifest.parts.map((part: { name: string }) => part.name)));
-    expect(asset.loaderDiagnostics.textureSlots).toEqual(expect.arrayContaining(REQUIRED_SLOTS));
+    expect(asset.loaderDiagnostics.textureSlots).toEqual(expect.arrayContaining([...REQUIRED_SLOTS]));
     expect(manifest.requirements.materialTextureSlots).toEqual(expect.arrayContaining(["baseColorTexture", "metallicRoughnessTexture", "normalTexture", "emissiveTexture"]));
     expect(manifest.rejectedInputs).toEqual(expect.arrayContaining([
       "tests/reports/legacy-product-viewer/product-viewer.png",

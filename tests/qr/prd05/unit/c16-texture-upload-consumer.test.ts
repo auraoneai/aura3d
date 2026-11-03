@@ -5,7 +5,11 @@
  * - A3D_QR_ASSETS on: an sRGB ASTC 4x4 texture uploads with
  *   COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR (the internal format ANGLE Metal
  *   reports in the macos-14 lane browser run).
- * - flag off: the legacy resolver runs unchanged (linear RGBA ASTC constant).
+ * - 5.0: flag off / no provider no longer runs the colour-space-blind legacy
+ *   resolver (it uploaded sRGB content under the linear constant); uploads use
+ *   `resolveCompressedTextureFormatReal` (26eae82e2), as the default-flag
+ *   tests/unit/rendering/native-bc1-image.test.ts asserts. Rewritten cases are
+ *   listed in docs/project/status/retired-tests.md §5.
  * - flag on, sRGB S3TC without the s3tc_srgb extension: no compressed upload;
  *   the RGBA8 fallback path is used instead of uploading linear DXT data.
  *
@@ -83,17 +87,20 @@ describe("05-C16 TextureUpload consumes the C-16 slot", () => {
     expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
   });
 
-  it("flag off: the legacy resolver's linear ASTC constant is unchanged", () => {
+  // 5.0: the colour-space-blind legacy resolver no longer feeds uploads; the
+  // real resolver runs flag-off too (see header and retired-tests.md §5).
+  it("flag off: sRGB ASTC still uploads the sRGB ASTC constant (no linear legacy constant)", () => {
     setRendererQrFlags(FLAGS_OFF);
     const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
     registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
-    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
   });
 
-  it("flag off: bc7 still throws UNSUPPORTED_COMPRESSED_FORMAT exactly as before", () => {
+  it("flag off: bc7 without BPTC and without fallback data fails with COMPRESSED_TEXTURE_UNSUPPORTED", () => {
     setRendererQrFlags(FLAGS_OFF);
-    const { registry } = harness({});
-    expect(() => registry.getTextureHandle(compressed("bc7-rgba-unorm", "srgb"))).toThrow("UNSUPPORTED_COMPRESSED_FORMAT:bc7-rgba-unorm");
+    const { registry, calls } = harness({});
+    expect(() => registry.getTextureHandle(compressed("bc7-rgba-unorm", "srgb"))).toThrow(/Compressed texture format is not supported and no RGBA8 fallback data was provided/);
+    expect(compressedInternalFormats(calls)).toEqual([]);
   });
 
   it("A3D_QR_ASSETS on: sRGB DXT1 without s3tc_srgb falls back to RGBA8 instead of a linear upload", () => {
@@ -114,26 +121,36 @@ describe("05-C16 TextureUpload consumes the C-16 slot", () => {
     expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
   });
 
-  it("provided × flag off: legacy resolver", () => {
+  it("provided × flag off: real resolver (sRGB ASTC → SRGB8_ALPHA8 constant)", () => {
     setRendererQrFlags(FLAGS_OFF);
     const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
     registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
-    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
   });
 
-  it("unprovided × flag on: legacy resolver, no fail-closed RGBA8 drop", () => {
+  it("unprovided × flag on: sRGB DXT1 without s3tc_srgb still falls back to RGBA8, never a linear upload", () => {
     withoutProvider();
     setRendererQrFlags(ASSETS_ON);
     const { registry, calls } = harness({ WEBGL_compressed_texture_s3tc: S3TC });
     registry.getTextureHandle(compressed("bc1-rgba-unorm", "srgb", true));
-    expect(compressedInternalFormats(calls)).toEqual([S3TC.COMPRESSED_RGBA_S3TC_DXT1_EXT]);
+    expect(compressedInternalFormats(calls)).toEqual([]);
+    expect(calls.some((call) => call.name === "texImage2D")).toBe(true);
   });
 
-  it("unprovided × flag off: legacy resolver", () => {
+  it("unprovided × flag off: real resolver (sRGB ASTC → SRGB8_ALPHA8 constant)", () => {
     withoutProvider();
     setRendererQrFlags(FLAGS_OFF);
     const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
     registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "srgb"));
-    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
+    expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR]);
+  });
+
+  it("linear ASTC still uploads the linear ASTC constant in every mode", () => {
+    for (const flags of [FLAGS_OFF, ASSETS_ON]) {
+      setRendererQrFlags(flags);
+      const { registry, calls } = harness({ WEBGL_compressed_texture_astc: ASTC });
+      registry.getTextureHandle(compressed("astc-4x4-rgba-unorm", "linear"));
+      expect(compressedInternalFormats(calls)).toEqual([ASTC.COMPRESSED_RGBA_ASTC_4x4_KHR]);
+    }
   });
 });

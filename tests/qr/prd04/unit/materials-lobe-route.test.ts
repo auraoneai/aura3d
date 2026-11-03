@@ -8,7 +8,8 @@
  *
  * Asserts on the program the forward pass actually submits (MockRenderDevice):
  *  - materials + lobe material + linear target → generated program with the lobe chunk;
- *  - flags-off, lobe-free material, srgb target, `-core_generator` → legacy program.
+ *  - flags-off, lobe-free material, `-core_generator` → legacy program;
+ *  - 5.0: an srgb target → generated program with the lobe + sRGB output encode.
  */
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -106,15 +107,32 @@ describe("QR-04: materials lobes reach the generated program without A3D_QR_CORE
     device.dispose();
   });
 
-  it("materials on: lobe-free materials, srgb targets and -core_generator stay legacy", () => {
+  it("materials on: lobe-free materials and -core_generator stay legacy", () => {
     setRendererQrFlags(MATERIALS);
-    for (const device of [draw(plain(), "linear"), draw(sheen(), "srgb")]) {
-      expect(device.sources.filter(isGenerated)).toHaveLength(0);
-      device.dispose();
-    }
+    const plainDevice = draw(plain(), "linear");
+    expect(plainDevice.sources.filter(isGenerated)).toHaveLength(0);
+    plainDevice.dispose();
     setRendererQrFlags(MATERIALS_NO_GEN);
     const device = draw(sheen(), "linear");
     expect(device.sources.filter(isGenerated)).toHaveLength(0);
     device.dispose();
+  });
+
+  // 5.0 (26eae82e2, ForwardPass "an explicit sRGB output selects the
+  // generator's encode variant", PROGRAM_OUTPUT_SRGB_FEATURE): an sRGB direct
+  // target no longer drops the lobe program back to legacy pbr-direct; the
+  // generated program carries the lobe and its own sRGB output encode.
+  it("materials on: an srgb target draws the lobe through the generated sRGB-encode variant", () => {
+    setRendererQrFlags(MATERIALS);
+    const srgb = draw(sheen(), "srgb");
+    const linear = draw(sheen(), "linear");
+    const srgbGenerated = srgb.sources.filter(isGenerated);
+    expect(srgbGenerated.length).toBeGreaterThan(0);
+    expect(srgbGenerated.some((s) => /sheen/i.test(s.fragment))).toBe(true);
+    expect(srgb.drawCommands.length).toBeGreaterThan(0);
+    const linearFragments = new Set(linear.sources.filter(isGenerated).map((s) => s.fragment));
+    expect(srgbGenerated.some((s) => !linearFragments.has(s.fragment))).toBe(true);
+    srgb.dispose();
+    linear.dispose();
   });
 });

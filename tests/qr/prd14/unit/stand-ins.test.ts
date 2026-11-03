@@ -8,6 +8,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { PRD14_REBUILD_APP_DIRS, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const APPS = join(ROOT, "apps");
@@ -41,13 +42,13 @@ function tsFiles(dir: string): string[] {
   });
 }
 
-const games = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
-  games: { id: string; appDir?: string }[];
-}).games.map((g) => g.appDir ?? g.id);
+// S12 covers the shipped PRD-14 rebuild routes (helpers/games.ts; 13 of the
+// original 18 were deleted in 4.0.1, 46bca99f1).
+const games = PRD14_REBUILD_APP_DIRS;
 
 describe("S12 stand-ins tracked (PRD-14 §16.1)", () => {
-  it("covers all 18 games", () => {
-    expect(games).toHaveLength(18);
+  it("covers every shipped rebuild route", () => {
+    expect(games).toHaveLength(PRD14_REBUILD_ROUTES.length);
   });
 
   for (const appDir of games) {

@@ -5,8 +5,12 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const VENDOR_ROOT = fileURLToPath(new URL("../../vendor", import.meta.url));
-const WORKER_JS = fileURLToPath(new URL("../workers/ktx2.worker.js", import.meta.url));
-const WORKER_TS = fileURLToPath(new URL("../workers/ktx2.worker.ts", import.meta.url));
+const WORKER_DIR = fileURLToPath(new URL("../workers/", import.meta.url));
+const WORKER_JS = path.join(WORKER_DIR, "ktx2.worker.js");
+// Filesystem path for the workspace-only dev fallback (compileWorkspaceWorker),
+// never a Worker URL: published packages serve WORKER_JS. Joined as a path
+// because finalize-dist rejects import.meta.url URLs that name a TypeScript file.
+const WORKER_TS = path.join(WORKER_DIR, "ktx2.worker.ts");
 const CODECS = ["basis", "draco", "meshopt"] as const;
 const DEPLOYMENT_MODULE = "virtual:aura3d-decoder-deployment";
 const RESOLVED_DEPLOYMENT_MODULE = `\0${DEPLOYMENT_MODULE}`;

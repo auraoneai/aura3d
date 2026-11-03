@@ -3,12 +3,13 @@
 // fixed to tests/{unit,integration,assets}). Run:
 //   pnpm exec vitest run --config tests/qr/prd07/vitest.config.ts
 
+import { defineConfig } from "vitest/config";
 import baseConfig from "../../../vitest.config";
 
-export default {
+export default defineConfig({
   ...baseConfig,
   test: {
     ...baseConfig.test,
     include: ["tests/qr/prd07/**/*.test.ts"]
   }
-};
+});

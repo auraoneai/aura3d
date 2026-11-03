@@ -14,7 +14,9 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Geometry } from "../../../../packages/rendering/src/Geometry.js";
+import { Geometry } from "../../../../packages/rendering/src/Geometry.js";
+import { VertexBuffer } from "../../../../packages/rendering/src/VertexBuffer.js";
+import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat.js";
 import type { RenderItem } from "../../../../packages/rendering/src/contracts/renderItem.js";
 import type { UniformValue } from "../../../../packages/rendering/src/RenderDevice.js";
 import { registerDepthVariantFeature, skinnedWorldBounds } from "../../../../packages/rendering/src/contracts/shadows.js";
@@ -128,15 +130,13 @@ describe("prd06SkinnedBounds provider (T0.13)", () => {
   it("returns the skinned world-space AABB transformed by modelMatrix", () => {
     // One vertex at (1,2,3) driven by an identity joint → local bounds are the
     // point itself; a +10x model matrix yields world (11,2,3).
-    const geometry = {
-      bounds: { min: [0, 0, 0], max: [0, 0, 0] },
-      vertexBuffer: {
-        vertexCount: 1,
-        format: { hasAttribute: () => true },
-        getAttribute: (_vertex: number, name: string) =>
-          name === "position" ? [1, 2, 3] : name === "joints" ? [0, 0, 0, 0] : [1, 0, 0, 0]
-      }
-    } as unknown as Geometry;
+    // 5.0 geometry reads attributes per stream (`getAttributeBuffer`, multi
+    // vertex-buffer geometry); use a real Geometry instead of a partial mock.
+    const vertices = new VertexBuffer(VertexFormat.P3J4W4, 1);
+    vertices.setAttribute(0, "position", [1, 2, 3]);
+    vertices.setAttribute(0, "joints", [0, 0, 0, 0]);
+    vertices.setAttribute(0, "weights", [1, 0, 0, 0]);
+    const geometry = new Geometry(vertices, null, "triangles", { min: [0, 0, 0], max: [0, 0, 0] } as never);
     const modelMatrix = new Float32Array(16);
     modelMatrix.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 0, 0, 1]);
     const item: RenderItem = {

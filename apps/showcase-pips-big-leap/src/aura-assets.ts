@@ -9,7 +9,50 @@
 import { assets as catalog } from "./aura-catalog.js";
 import { sharedAssets as shared } from "./aura-assets.shared.js";
 
-export const assets = {
+/**
+ * Spelled out with `typeof` so the exported type stays nameable: inferring it
+ * would inline the engine-private asset-ref brand symbol (TS4023 under declaration emit).
+ */
+export interface PipsAssets {
+  readonly pip: typeof catalog.pipsPip;
+  readonly boss: typeof catalog.pipsBrambleback;
+  readonly sunseed: typeof catalog.pipsSunseed;
+  readonly goldenAcorn: typeof catalog.pipsGoldenAcorn;
+  readonly checkpointFlag: typeof catalog.pipsCheckpointFlag;
+  readonly sungate: typeof catalog.pipsSungate;
+  readonly hawk: typeof shared.heatsinkDroneNighthawk;
+  readonly sidekick: typeof shared.showcaseSidekickRunner;
+  readonly helper: typeof shared.helperChar;
+  // Backdrop kits are not mounted; certify.ts reads their hash only.
+  readonly backdrop: {
+    readonly verdant: typeof shared.showcaseKenneyVerdantPlatformerWorld;
+    readonly cartoon: typeof shared.showcaseCartoonPlatformWorld;
+    readonly palace: typeof shared.showcasePlatformerWorldLevel;
+    readonly readable: typeof shared.showcaseReadablePlatformLevel;
+    readonly sidescroll: typeof shared.showcaseSideScrollerPlatformLevel;
+    readonly basicpack: typeof shared.showcasePlatformerBasicPack;
+  };
+  readonly props: {
+    readonly conifer: typeof shared.propConifer;
+    readonly boulder: typeof shared.propBoulder;
+    readonly rockB: typeof shared.propRockB;
+    readonly windmill: typeof shared.gullsiegeWindmillMeshy;
+    readonly watchtower: typeof shared.gullsiegeWatchtowerMeshy;
+    readonly crate: typeof shared.gullsiegeCrateMeshy;
+    readonly barrel: typeof shared.gullsiegeBarrelMeshy;
+    readonly crystalShard: typeof shared.skylineCrystalShardMeshy;
+    readonly energyCore: typeof shared.fpsEnergyCorePickupMeshy;
+    readonly brazier: typeof shared.auraClashCornerBrazierPylonMeshy;
+    readonly streetLamp: typeof shared.neonStreetLampProp;
+    readonly boostPad: typeof shared.heatsinkBoostPad;
+    readonly arch: typeof shared.heatsinkArch;
+    readonly pedestal: typeof shared.galleryShiftPedestal;
+    readonly turbine: typeof shared.reactorFusionTurbineMeshy;
+    readonly pylon: typeof shared.blockfallReactorContainmentPylonMeshy;
+  };
+}
+
+export const assets: PipsAssets = {
   pip: catalog.pipsPip,
   boss: catalog.pipsBrambleback,
   sunseed: catalog.pipsSunseed,

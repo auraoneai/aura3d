@@ -7,6 +7,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { NON_REBUILD_ROUTES, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -33,7 +34,9 @@ function removedRendererKeys(src: string): string[] {
 
 describe("game routes use renderer.qualityProfile, not the removed mode/fallback (T0-29)", () => {
   it("covers every games.json route", () => {
-    expect(games.length).toBeGreaterThanOrEqual(18);
+    // 13 of the original 18 were deleted in 4.0.1 (46bca99f1, pruned 8e6ecef13);
+    // helpers/games.ts lists the shipped set, checked against games.json.
+    expect(games.length).toBeGreaterThanOrEqual(PRD14_REBUILD_ROUTES.length + NON_REBUILD_ROUTES.length);
   });
 
   for (const appDir of games) {

@@ -314,7 +314,7 @@ describe("shader graph struct, noise and function integration", () => {
     const device = new MockRenderDevice();
     const buffer = device.createBuffer("storage", 128);
     const dir = mkdtempSync(join(tmpdir(), "aura3d-storage-reflection-"));
-    let material: PortableShaderMaterial | undefined;
+    let material: ReturnType<typeof entry.createCustomShaderMaterial> | undefined;
     try {
       const spec = entry.shaderGraphMaterial({ graph: storageGraph(), backend: "wgsl", storage: { surfaceData: { kind: "storage-buffer", buffer } } }).custom!;
       material = entry.createCustomShaderMaterial(spec);

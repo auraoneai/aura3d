@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { PRD14_REBUILD_APP_DIRS } from "./helpers/games";
 
 /**
  * PRD-14 T3.2/T3.3 (row 14-KITS): every apps/showcase-kits/<Kn>/kit.json
@@ -116,9 +117,8 @@ function acceptProblems(lookdev: LookDev, where: string): string[] {
 
 function directionAudioCues(): { appDir: string; event: string; cue: string; variants: number }[] {
   const out: { appDir: string; event: string; cue: string; variants: number }[] = [];
-  // The 18 rebuild games from games.json; each must carry art/direction.ts (a missing file throws).
-  const games = readJson<{ games: { id: string; appDir?: string }[] }>(resolve(ROOT, "tools/quality-rebuild-capture/games.json")).games;
-  for (const dir of games.map((g) => g.appDir ?? g.id).sort()) {
+  // The shipped PRD-14 rebuild games (helpers/games.ts); each must carry art/direction.ts (a missing file throws).
+  for (const dir of PRD14_REBUILD_APP_DIRS) {
     const src = readFileSync(resolve(ROOT, "apps", dir, "art/direction.ts"), "utf8");
     for (const m of src.matchAll(/\{ event: "([^"]+)", cue: "([^"]+)", variants: (\d+)/g)) {
       out.push({ appDir: dir, event: m[1], cue: m[2], variants: Number(m[3]) });
@@ -194,11 +194,19 @@ describe("showcase kits K8 cues (PRD-14 T3.3)", () => {
     const declared = directionAudioCues();
     expect(declared.length).toBeGreaterThan(0);
     const key = (c: { appDir: string; event: string; cue: string }) => `${c.appDir}|${c.event}|${c.cue}`;
-    expect(k8.cues.map(key).sort()).toEqual(declared.map(key).sort());
+    // K8 still maps cues for the 13 rebuild apps deleted in 4.0.1 (46bca99f1).
+    // Those rows are inert; every one must belong to an app that is gone.
+    const live = new Set(PRD14_REBUILD_APP_DIRS);
+    const liveCues = k8.cues.filter((c) => live.has(c.appDir));
+    const deletedAppDirs = [...new Set(k8.cues.filter((c) => !live.has(c.appDir)).map((c) => c.appDir))];
+    expect(deletedAppDirs.filter((dir) => existsSync(resolve(ROOT, "apps", dir))), "K8 cues for an app outside the rebuild set that still exists").toEqual([]);
+    expect(liveCues.map(key).sort()).toEqual(declared.map(key).sort());
     const sampleIds = new Set(k8.samples.map((s) => s.id));
     for (const c of k8.cues) {
-      const d = declared.find((x) => key(x) === key(c));
-      expect(c.variants, `${key(c)} variants`).toBe(d?.variants);
+      if (live.has(c.appDir)) {
+        const d = declared.find((x) => key(x) === key(c));
+        expect(c.variants, `${key(c)} variants`).toBe(d?.variants);
+      }
       for (const s of c.samples) expect(sampleIds.has(s), `${key(c)} -> ${s}`).toBe(true);
       const expected = c.samples.length === 0 ? "unsourced" : c.samples.length >= c.variants ? "sourced" : "partial";
       expect(c.status, `${key(c)} status`).toBe(expected);

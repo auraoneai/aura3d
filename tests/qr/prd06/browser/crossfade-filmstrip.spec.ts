@@ -15,6 +15,16 @@ declare global {
   interface Window {
     __PRD06_CROSSFADE_FILMSTRIP_FRAMES__?: readonly { at: number; dataUrl: string }[];
     __PRD06_CROSSFADE_THREE_FRAMES__?: readonly { at: number; dataUrl: string }[];
+    // Published by crossfade-filmstrip-harness.ts and the external three.js
+    // comparison adapter; both are browser-served roots outside this program,
+    // so their declarations are restated here with the same shapes.
+    __PRD06_FILMSTRIP_HARNESS__?: { status: "importing" | "running" | "ok" | "error"; engine: string; error?: string };
+    __PRD06_CROSSFADE_THREE__?: {
+      readonly status: "running" | "done" | "error";
+      readonly error?: string;
+      readonly simSeconds?: number;
+      readonly firedTransitions?: readonly string[];
+    };
   }
 }
 

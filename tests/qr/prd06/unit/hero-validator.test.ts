@@ -20,11 +20,15 @@ import {
 import { validateHeroGlb } from "../../../../packages/aura3d-cli/src/commands/prd06/validateHero.js";
 
 const REPO = resolve(__dirname, "../../../..");
-const SKYLINE = resolve(REPO, "apps/showcase-skyline-runner/generated/skylineArcticRunner.glb");
+// The original static stand-in (apps/showcase-skyline-runner/generated/
+// skylineArcticRunner.glb) was deleted with the Skyline route in 4.0.1
+// (46bca99f1). Its tracked catalog successor is the same unrigged, textured,
+// clip-less Arctic Runner mesh and yields the same four codes.
+const SKYLINE = resolve(REPO, "public/aura-assets/skylineArcticRunnerHero.84024fc9.glb");
 const SOLDIER = resolve(REPO, "fixtures/threejs-parity/assets/character/soldier.glb");
 
 describe("T4.6 hero-character profile (GLB, §6.9)", () => {
-  it("rejects skylineArcticRunner.glb with exactly the four codes", () => {
+  it("rejects the unrigged skylineArcticRunnerHero.glb with exactly the four codes", () => {
     const report = validateHeroGlb(new Uint8Array(readFileSync(SKYLINE)));
     expect(report.ok).toBe(false);
     expect([...report.reasonCodes].sort()).toEqual(

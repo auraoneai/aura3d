@@ -160,9 +160,12 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
  * Observations exercised by the dedicated S5-WP19-04 probe suite
  * (tests/qr/prd15/compiler/optionProbes.test.ts: compiled render items, the
  * v2 bloom pipeline, toon pass uniforms, actor/instance model matrices and the
- * live fog) or by tests/unit/agent-api/pointer-interaction-target.test.ts.
+ * live fog), by optionProbes.misc.test.ts (`consumer.*`), by
+ * optionProbes.textures.test.ts (`texturedMaterial.*`, `materialDiagnostics.*`), by
+ * optionProbes.models.test.ts (`actor.*`, loaded-GLB actors) or by
+ * tests/unit/agent-api/pointer-interaction-target.test.ts.
  */
-const DEDICATED_OBSERVATION = /^(renderItem\.|bloom\.v2\.|toon\.(uniform\.|fragment$|order$)|model\.(matrix|instanceMatrices)$|fog\.live\.|interaction\.pointerTarget$)/;
+const DEDICATED_OBSERVATION = /^(renderItem\.|actor\.|consumer\.|texturedMaterial\.|materialDiagnostics\.|bloom\.v2\.|toon\.(uniform\.|fragment$|order$)|model\.(matrix|instanceMatrices)$|fog\.live\.|interaction\.pointerTarget$)/;
 
 describe("typed option probes and real consumers", () => {
   const rows = OPTION_COVERAGE_ROWS.filter((row) => row.disposition === "runtime" && !DEDICATED_OBSERVATION.test(row.observation ?? ""));
@@ -235,11 +238,9 @@ describe("option discovery and ownership", () => {
     // Fields that no documented example spells out are still discovered.
     for (const key of ["material.pbr.clearcoat", "material.pbr.roughness", "lights.directional.shadow", "effects.toon.inkColor", "geometry.define.uvs", "primitives.box.receiveShadow"]) expect(keys.has(key), key).toBe(true);
     const gaps = typedOptionGaps(inventory, readOptionProbeSummaries(readFileSync("packages/engine/src/agent-api/compiler/optionCoverage.ts", "utf8")));
-    const pbr = gaps.find((f) => f.detail.startsWith("material.pbr:"))?.detail ?? "";
-    expect(pbr).toContain("clearcoat");
-    // Probed fields are not reported as gaps.
-    expect(pbr).not.toMatch(/: .*\broughness\b(?!Map)/);
-    expect(gaps.every((f) => !f.enforced)).toBe(true);
+    // S5-WP19-04 closed: every typed option of every probed builder has a runtime probe or an
+    // actionable unsupported row, so the type-driven audit reports no gap at all.
+    expect(gaps.map((f) => f.detail)).toEqual([]);
   }, 120_000);
 
   it("all documented options have downstream evidence or an actionable unsupported diagnostic", () => {

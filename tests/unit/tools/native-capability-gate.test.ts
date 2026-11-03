@@ -1376,6 +1376,8 @@ const ACCEPTANCE_ENTRYPOINTS: ReadonlyArray<{ file: string; after?: string; gate
   { file: 'tools/remote-acr/run.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: '"$AZ_WRAPPER" account show' },
   { file: 'tools/remote-acr/Dockerfile.playwright', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: 'RUN pnpm install --frozen-lockfile' },
   { file: 'tools/remote-acr/task-run.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: 'pnpm exec playwright test' },
+  { file: 'tools/remote-acr/run-acceptance5.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: '"$AZ_WRAPPER" account show' },
+  { file: 'tools/remote-acr/acceptance5-evidence.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: 'pnpm exec vitest run' },
   { file: 'tools/remote-acr/historical-acceptance.mjs', after: 'function main(args)', gate: 'loadReplayGate(root, gatePath)', execution: 'spawnSync(process.execPath' },
   { file: 'tools/remote-acr/historical-acceptance.mjs', after: "options['--phase'] === 'prepare'", gate: 'validateAcceptanceGate(', execution: 'spawnSync(process.execPath' },
   { file: 'tools/remote-acr/external-codec-run.mjs', after: 'export function runCodecPreflight', gate: 'validateGate()', execution: 'validateFixtures(' },

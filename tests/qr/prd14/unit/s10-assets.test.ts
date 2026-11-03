@@ -6,12 +6,13 @@ import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 import { checkS10, formatS10 } from "../browser/lib/assets-admitted";
 import { parseDirectionAssets, parseDirectionAudio, readDirection } from "../browser/lib/direction";
+import { PRD14_REBUILD_APP_DIRS, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const APPS = join(ROOT, "apps");
-const GAMES = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
-  games: { id: string; appDir?: string }[];
-}).games.map((g) => g.appDir ?? g.id);
+// PRD-14 art/direction.ts inputs exist on the shipped rebuild routes
+// (helpers/games.ts; 13 of the original 18 were deleted in 4.0.1, 46bca99f1).
+const GAMES = PRD14_REBUILD_APP_DIRS;
 
 const fixtures = mkdtempSync(join(tmpdir(), "qr14-s10-"));
 afterAll(() => rmSync(fixtures, { recursive: true, force: true }));
@@ -87,9 +88,9 @@ describe("S10 validator (PRD-14 §16.1)", () => {
   });
 });
 
-describe("S10/S11 inputs parse for all 18 games", () => {
-  it("games.json lists 18 routes", () => {
-    expect(GAMES).toHaveLength(18);
+describe("S10/S11 inputs parse for every shipped PRD-14 rebuild game", () => {
+  it("covers every shipped rebuild route", () => {
+    expect(GAMES).toHaveLength(PRD14_REBUILD_ROUTES.length);
   });
 
   for (const appDir of GAMES) {

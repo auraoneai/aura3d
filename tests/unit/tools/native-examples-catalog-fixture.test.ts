@@ -203,11 +203,11 @@ describe("source-backed native example catalog fixture", () => {
         }
       });
       const warnings = new Set<string>();
-      let items: ReturnType<NonNullable<ReturnType<typeof createProductionRuntimeRendererInput>["source"]["collectRenderItems"]>> = [];
+      let items: Array<ReturnType<NonNullable<ReturnType<typeof createProductionRuntimeRendererInput>["source"]["collectRenderItems"]>> extends Iterable<infer Item> ? Item : never> = [];
       for (let frame = 0; frame <= 30; frame += 1) {
         const input = createProductionRuntimeRendererInput(snapshot, canvas, [{ node, actor }], [], frame * 1000 / 60,
           registry, warnings, { color: [0, 0, 0], intensity: 0 }, [], undefined, undefined, undefined, owner);
-        items = input.source.collectRenderItems?.() ?? [];
+        items = [...(input.source.collectRenderItems?.() ?? [])];
       }
       const rig = createShoulderRig({ target: "hero", collision: true });
       const probe = createCameraProbe({ bounds: () => [
@@ -1160,6 +1160,7 @@ describe("source-backed native example catalog fixture", () => {
       samePoint(queriedPose.target, pose.target);
       expect(queriedPose.fov).toBeCloseTo(pose.fov, 6);
       const vp = input.camera!.viewProjectionMatrix;
+      if (!vp) throw new Error("racing fixture camera has no view-projection matrix");
       for (const raw of [[0, 0, 0], [1, 2, 3], [-2, 3, -4]] as const) {
         const world = worldCar(raw), expected = project(world, pose.position, pose.target, pose.fov);
         const w = vp[3]! * world[0] + vp[7]! * world[1] + vp[11]! * world[2] + vp[15]!;
@@ -1177,7 +1178,7 @@ describe("source-backed native example catalog fixture", () => {
         resource.geometry.dispose();
         if (resource.shadowGeometry && resource.shadowGeometry !== resource.geometry) resource.shadowGeometry.dispose();
         resource.material.dispose();
-        if (resource.texturedMaterial && resource.texturedMaterial !== resource.material) resource.texturedMaterial.dispose();
+        resource.texturedMaterial?.dispose();
       }
       vi.unstubAllGlobals();
     }

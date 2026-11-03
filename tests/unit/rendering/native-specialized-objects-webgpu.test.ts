@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createGroundedSky, createShadowProjection, VolumeSlice, type SliceAxis } from "../../../packages/addons/src/objects/SpecializedObjects";
 import { createAuraApp, defineAuraAssets, scene, texture } from "../../../packages/engine/src/public/index";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
-import type { DrawCommand } from "../../../packages/rendering/src/RenderDevice";
+import type { DrawCommand, RecursiveUniformValue } from "../../../packages/rendering/src/RenderDevice";
 import { Texture } from "../../../packages/rendering/src/Texture";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import {
@@ -121,7 +121,8 @@ async function harness(initial: ReturnType<typeof scene>) {
   vi.stubGlobal("window", { innerWidth: 64, innerHeight: 64, location: { href: "https://assets.example.test/", search: "" }, addEventListener() {}, removeEventListener() {} });
   vi.stubGlobal("navigator", { gpu: { requestAdapter: async () => ({ requestDevice: async () => native }), getPreferredCanvasFormat: () => "bgra8unorm" } });
   const canvas = new FakeCanvas(context) as unknown as HTMLCanvasElement;
-  const commands: DrawCommand[] = [];
+  // WebGPUDevice.draw accepts structured (recursive) uniform data; record what it receives.
+  const commands: DrawCommand<RecursiveUniformValue>[] = [];
   const createRenderer = Renderer.create.bind(Renderer);
   // Observe the real factory and retain its real draw implementation. Only
   // navigator.gpu and the native command API are supplied by the fixture.
@@ -303,7 +304,7 @@ describe("specialized objects through the WebGPU device", () => {
       constructor(readonly width: number, readonly height: number) {}
       getContext(kind: string) {
         if (kind !== "2d") return null;
-        let current = new Uint8Array();
+        let current: Uint8Array = new Uint8Array();
         return {
           clearRect() {},
           drawImage(image: typeof bitmap) { current = image.pixels; },

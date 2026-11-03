@@ -3929,6 +3929,15 @@ interface GLTFSharedByteFetch {
 const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetchesV3";
 type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, GLTFSharedByteFetch> };
 const inFlightGltfFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, GLTFSharedByteFetch>());
+// Request identity is an async digest, so a caller's fetch can settle before a
+// concurrently started same-URL caller has computed its key. Each caller
+// registers synchronously and snapshots the peers that started before it; a
+// peer with the same reusable identity is joined even if its transport has
+// already settled. Module-local: entries hold only opaque digests.
+interface GLTFPendingByteFetch {
+  readonly ready: Promise<{ readonly key: string; readonly shared: GLTFSharedByteFetch } | undefined>;
+}
+const pendingGltfFetchesByUrl = new Map<string, Set<GLTFPendingByteFetch>>();
 
 export async function fetchGltfBytesShared(
   url: string,
@@ -3939,10 +3948,43 @@ export async function fetchGltfBytesShared(
   const signal = request.signal;
   if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
   const options = mergeAssetRequestOptions({}, request);
-  const identity = await requestIdentityDetails(options, url);
-  if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+  const peers = [...(pendingGltfFetchesByUrl.get(url) ?? [])];
+  let markReady!: (value: Awaited<GLTFPendingByteFetch["ready"]>) => void;
+  const pending: GLTFPendingByteFetch = { ready: new Promise((resolve) => { markReady = resolve; }) };
+  const pendingSet = pendingGltfFetchesByUrl.get(url) ?? new Set<GLTFPendingByteFetch>();
+  pendingSet.add(pending);
+  pendingGltfFetchesByUrl.set(url, pendingSet);
+  const unregisterPending = () => {
+    pendingSet.delete(pending);
+    if (pendingSet.size === 0 && pendingGltfFetchesByUrl.get(url) === pendingSet) pendingGltfFetchesByUrl.delete(url);
+  };
+  let identity: Awaited<ReturnType<typeof requestIdentityDetails>>;
+  try {
+    identity = await requestIdentityDetails(options, url);
+  } catch (error) {
+    markReady(undefined);
+    unregisterPending();
+    throw error;
+  }
+  if (signal?.aborted) {
+    markReady(undefined);
+    unregisterPending();
+    throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+  }
   const key = identity.key;
   let shared = identity.reusable ? inFlightGltfFetches.get(key) : undefined;
+  if (!shared && identity.reusable) {
+    for (const peer of peers) {
+      const candidate = await peer.ready;
+      if (candidate && candidate.key === key && !candidate.shared.controller.signal.aborted) { shared = candidate.shared; break; }
+    }
+    if (signal?.aborted) {
+      markReady(undefined);
+      unregisterPending();
+      throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+    }
+    if (!shared) shared = inFlightGltfFetches.get(key);
+  }
   if (!shared) {
     const controller = new AbortController();
     const subscribers = new Set<GLTFByteSubscriber>();
@@ -3973,6 +4015,8 @@ export async function fetchGltfBytesShared(
     }
   }
   const current = shared;
+  markReady(identity.reusable ? { key, shared: current } : undefined);
+  unregisterPending();
   const subscriber: GLTFByteSubscriber = { progress: request.onProgress, phase };
   current.subscribers.add(subscriber);
   return new Promise<ArrayBuffer>((resolve, reject) => {

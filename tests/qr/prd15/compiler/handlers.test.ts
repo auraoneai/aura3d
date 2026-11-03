@@ -12,7 +12,10 @@ describe("C-36 nodeHandlers table", () => {
       "light", "look", "model", "primitive", "probe", "scatter", "sky",
       "terrain", "time-of-day", "water", "wind",
       // threejs-parity L6 (real handlers) + L5 (batched, registered handler).
-      "line", "points", "sprite", "batched", "lensflare", "gaussian-splat"
+      "line", "points", "sprite", "batched", "lensflare", "gaussian-splat",
+      // 5.0: `scalarVolume(...)` node (docs/migration/4-to-5.md "Gaussian
+      // splats and scalar volumes"; aura3d-5.0-scope.md S5-IMP-19).
+      "scalar-volume"
     ].sort());
     for (const kind of Object.keys(nodeHandlers)) {
       expect(isKnownNodeKind(kind)).toBe(true);

@@ -9,15 +9,15 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { PRD14_REBUILD_APP_DIRS, PRD14_REBUILD_ROUTES } from "./helpers/games";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const widgetsSrc = readFileSync(join(ROOT, "packages/game/src/hud/widgets/index.ts"), "utf8");
 const createWidgetBody = widgetsSrc.slice(widgetsSrc.indexOf("export function createWidget("));
 const SUPPORTED = new Set([...createWidgetBody.slice(0, createWidgetBody.indexOf("\n}\n")).matchAll(/case "([a-z-]+)":/g)].map((m) => m[1]!));
 
-const games = (JSON.parse(readFileSync(join(ROOT, "tools/quality-rebuild-capture/games.json"), "utf8")) as {
-  games: { id: string; appDir?: string }[];
-}).games.map((g) => g.appDir ?? g.id);
+// createGame HUD specs live in the v2 boots of the PRD-14 rebuild routes (helpers/games.ts).
+const games = PRD14_REBUILD_APP_DIRS;
 
 /** The `hud: { ... widgets: [ ... ] }` specs in a v2 boot. */
 function hudWidgets(boot: string): { id: string; kind: string; max?: number }[] {
@@ -33,6 +33,7 @@ describe("route HUD widgets are buildable by the C-24 HudKit (T0-29)", () => {
     expect([...SUPPORTED].sort()).toEqual(
       ["combo", "indicator", "lives", "meter", "minimap", "objective", "prompt", "score", "speedometer", "timer"]
     );
+    expect(games).toHaveLength(PRD14_REBUILD_ROUTES.length);
   });
 
   for (const appDir of games) {

@@ -1,7 +1,10 @@
 version: v1.1.0
 # All --set values below are nonsecret. Native artifacts use the task's
-# preauthorized managed identity; neither access tokens nor SAS values appear
-# in CLI arguments, image layers, task definitions, or output.
+# preauthorized managed identity, or (ARTIFACT_TRANSPORT=legacy-sas, no
+# identity task) a short-lived container SAS that arrives only through the
+# --values file in the run context (tools/remote-acr/sas-transport.sh). Neither
+# access tokens nor SAS values appear in CLI arguments, image layers, task
+# definitions, or output; other launches pass ARTIFACTS_SAS=none.
 steps:
   - id: playwright
     cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}}
@@ -29,5 +32,10 @@ steps:
       - NATIVE_PERF_DRIVER_B64={{.Values.PERF_DRIVER_B64}}
       - AURA3D_ARTIFACTS_BLOB_URL={{.Values.ARTIFACTS_BLOB_URL}}
       - AURA3D_ARTIFACTS_CLIENT_ID={{.Values.ARTIFACTS_CLIENT_ID}}
+      - AURA3D_ARTIFACT_TRANSPORT={{.Values.ARTIFACT_TRANSPORT}}
+      - AURA3D_ARTIFACTS_SAS={{.Values.ARTIFACTS_SAS}}
+      - AURA3D_PW_SHARD={{.Values.PW_SHARD}}
+      - AURA3D_PW_GLOBAL_TIMEOUT_MS={{.Values.PW_GLOBAL_TIMEOUT_MS}}
+      - AURA3D_PLAYWRIGHT_CONFIG={{.Values.PLAYWRIGHT_CONFIG}}
       - PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/remote-acr-report.json
     timeout: 3600

@@ -34,6 +34,16 @@ runners, no VMs**).
 | `task-run.sh` | in-image runner: `pnpm exec playwright test …` then artifact upload; exits with the Playwright code |
 | `upload-artifacts.mjs` | zero-dependency Blob PUT over a container SAS (Node `fetch`) |
 
+## 5.0 acceptance (`run-acceptance5.sh`)
+
+The SAS steps above describe the original 4.x flow. `d0447d1cd` removed them because `az acr run --set-secret` cannot
+carry a secret. For 5.0 acceptance (the registry has no identity-enabled ACR task), `sas-transport.sh` brings the
+SAS path back. It mints one `rcwl` container SAS (≤ 120 min) and passes it through a `--values` file in the run
+context. The account key goes to `az storage` only through `AZURE_STORAGE_KEY`. Nothing is created. `run-acceptance5.sh`
+checks the code-complete gate before any Azure call. It then builds one image, runs the `acceptance5-inventory.txt`
+shards (≤ 2 concurrent, `--timeout 1800`) and the deferred evidence tests (`acceptance5-evidence.sh`), and merges
+`tests/reports/native-5/<run>/acceptance-report.json`. The commands are in `docs/prds/aura3d-native-acceptance.md`.
+
 ## Install & packaging decisions
 
 - **Hermetic in-image `pnpm install --frozen-lockfile`** (same command as

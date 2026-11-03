@@ -7,9 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { SLICES, assertIsolatedInputs, assertOptionalExternals, copyVerifiedProject, main as measureInstalledTree, measureSlice, retainedEngineSubtrees, retainedPackages } from "../../../tools/installed-tree-shaking/index";
 import { hashConsumerProject, type NativeConsumerProject } from "../../../tools/package-clean-install/index";
 import { renderBundleSizeMarkdown } from "../../../tools/bundle-size/markdown.mjs";
-// @ts-expect-error The release acceptance module is plain JavaScript.
 import { validateBundleCandidate, validateTreeCandidate } from "../../../tools/release/package-acceptance.mjs";
-// @ts-expect-error The budget contract module is plain JavaScript.
 import { validateBudgetContinuity } from "../../../tools/release/budget-continuity.mjs";
 
 const scratch: string[] = [];

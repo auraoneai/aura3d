@@ -82,11 +82,21 @@ describe("auraDecodersPlugin", () => {
     expect(js.res.headers.get("Content-Type")).toBe("text/javascript");
   });
 
-  it("dev middleware passes through traversal, directories, malformed escapes and other prefixes", () => {
-    for (const url of ["/aura-decoders/../../package.json", "/aura-decoders/..%2F..%2Fpackage.json", "/aura-decoders/basis/", "/aura-decoders/%E0%A4%A", "/assets/foo.glb"]) {
+  // 5.0 contract (S5-IMP-16 decoder plugin dev/build/static-base agreement;
+  // tests/unit/assets/native-decoder-deployment.test.ts "rejects traversal,
+  // missing files and methods"): a request under the decoder prefix is
+  // answered by the plugin and never falls through to another middleware
+  // (which could serve package.json or an SPA fallback). Traversal and
+  // malformed escapes are 400, directories 404; other prefixes pass through.
+  it("dev middleware rejects traversal, malformed escapes and directories under its prefix, and passes other prefixes through", () => {
+    for (const [url, status] of [["/aura-decoders/../../package.json", 400], ["/aura-decoders/..%2F..%2Fpackage.json", 400], ["/aura-decoders/%E0%A4%A", 400], ["/aura-decoders/basis/", 404]] as const) {
       const { res, calledNext } = request(url);
-      expect(calledNext, url).toBe(true);
-      expect(res.statusCode, url).toBe(0);
+      expect(calledNext, url).toBe(false);
+      expect(res.statusCode, url).toBe(status);
+      expect(res.body, url).toBeNull();
     }
+    const other = request("/assets/foo.glb");
+    expect(other.calledNext).toBe(true);
+    expect(other.res.statusCode).toBe(0);
   });
 });

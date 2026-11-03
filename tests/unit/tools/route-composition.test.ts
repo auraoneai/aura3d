@@ -2,7 +2,6 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-// @ts-expect-error plain .mjs tool, no typings
 import { analyzeRoute, compose } from "../../../tools/quality-rebuild-capture/route-composition.mjs";
 
 const scratchRoots: string[] = [];

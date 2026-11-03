@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AssetLoader } from "../../packages/assets/src/AssetLoader";
-import { FormatRegistry, type FormatMetadata, type FormatSelection } from "../../packages/assets/src/FormatRegistry";
+import { FormatRegistry, type FormatAdapter, type FormatMetadata, type FormatSelection } from "../../packages/assets/src/FormatRegistry";
 import { LoadContext } from "../../packages/assets/src/LoadContext";
 
 interface ExampleAsset { readonly id: string }
@@ -65,7 +65,9 @@ describe("format registry post-load validation", () => {
     });
     const replacementValidate = vi.fn();
     registry.register({ id: "sample", extensions: ["sample"], loader: original, validateLoadedAsset: validate });
-    const exposed = registry.select({ url: "input.sample" }) as { loader: AssetLoader<ExampleAsset>; validateLoadedAsset: typeof validate };
+    // Writable view of the registry entry: the test mutates it mid-load to prove the load pinned the original.
+    type MutableAdapterEntry = { -readonly [K in keyof Pick<FormatAdapter<ExampleAsset>, "loader" | "validateLoadedAsset">]: FormatAdapter<ExampleAsset>[K] };
+    const exposed: MutableAdapterEntry = registry.select({ url: "input.sample" });
     const pending = registry.load<ExampleAsset>({ url: "input.sample" }, new LoadContext());
     exposed.loader = replacement;
     exposed.validateLoadedAsset = replacementValidate;

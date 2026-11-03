@@ -392,9 +392,33 @@ function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset,
         boundingRadius: built.node.instanceCulling.boundingRadius,
         cullable: true as const
       } } : {}),
-      ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {})
+      ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {}),
+      ...unappliedInstancedModelOptions(options)
     };
     return new AuraNodeBuilder<AuraModelNode>(node);
+}
+
+/**
+ * S5-WP19-04: options `instances.model` accepts and records but no runtime
+ * consumer applies. The compiler reports each as an `option-ignored`
+ * degradation (strict mode throws) instead of silently drawing without it.
+ */
+const UNAPPLIED_INSTANCED_MODEL_OPTIONS: Readonly<Record<string, string>> = {
+  // buildModel keeps `collider` for model() only; `collider: false` (no collider) is what happens anyway.
+  collider: "a single bounds collider cannot represent instances, so no collider is built. Remove it, or declare physics with an explicit shape",
+  lod: "per-instance LOD switching is not implemented; every instance draws the full model. Remove it, or use model(asset, { lod }) for an imported MSFT_lod chain",
+  maxInstancesPerDraw: "the renderer draws each mesh's instances in one batch without a per-draw cap. Remove it",
+  static: "the scatter placements block it stamps is never promoted to a world scatter node. Remove it",
+  chunkSize: "the scatter placements block it configures is never promoted to a world scatter node. Remove it",
+  shadowLod: "the scatter placements block it configures is never promoted to a world scatter node. Remove it, or use castShadow",
+  impostor: "the scatter placements block it configures is never promoted to a world scatter node. Remove it"
+};
+
+function unappliedInstancedModelOptions(options: AuraInstancedModelOptions): { readonly unappliedOptions?: readonly string[] } {
+  const notes = Object.entries(UNAPPLIED_INSTANCED_MODEL_OPTIONS)
+    .filter(([key]) => key === "collider" ? Boolean(options.collider) : Reflect.get(options, key) !== undefined)
+    .map(([key, why]) => `OPTION_IGNORED instances.model: option "${key}" is accepted but not applied at runtime, so it has no effect: ${why}.`);
+  return notes.length ? { unappliedOptions: notes } : {};
 }
 
 /** `instances.model` reads the `model()` options plus these (anim-phys-06). */

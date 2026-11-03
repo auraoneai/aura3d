@@ -903,6 +903,8 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly instanceCulling?: { readonly instanceCount: number; readonly centroid: AuraVec3; readonly boundingRadius: number; readonly cullable: true };
   /** P2 D1 fallback diagnostic stamped by `instances.model` when the material is not instancing-aware. */
   readonly instancedModelWarning?: string;
+  /** S5-WP19-04: `OPTION_IGNORED` notes for options `instances.model` accepts but the runtime does not apply; reported like `ignoredOptions`. */
+  readonly unappliedOptions?: readonly string[];
   readonly role?: AuraModelRole;
   readonly scaleMode?: AuraModelScaleMode;
   readonly targetHeight?: number;

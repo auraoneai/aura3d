@@ -285,7 +285,7 @@ describe("app-owned runtime isolation", () => {
     oldA();
     const translateX = (canvas: HTMLCanvasElement) => {
       const input = createProductionRuntimeRendererInput(snapshot, canvas, [], [entry], 0, undefined, new Set(), { color: [0, 0, 0], intensity: 0 }, []);
-      return Array.from(input.source.collectRenderItems?.() ?? [])[0]!.modelMatrix[12];
+      return Array.from(input.source.collectRenderItems?.() ?? [])[0]!.modelMatrix?.[12];
     };
     expect(translateX(canvasA)).toBe(7);
     expect(translateX(canvasB)).toBe(2);

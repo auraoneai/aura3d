@@ -132,6 +132,20 @@ exist only as local ignored files were read case by case.
 | `tests/unit/apps/skyline-subject-pose-determinism.test.ts` (4 cases; file deleted) | `showcase-skyline-runner` was retired in 4.0.1 (`docs/project/showcase/apps-classification.md`); the file read `apps/showcase-skyline-runner/src/main.ts` (gone) and its ignored route probe, and already failed at collection locally. | none (route deleted) |
 | `tests/unit/engine/layered-scene-composition.test.ts` › keeps the hero readable and unclipped in the shipped frame; › passes its own route gate with the composition layer active; › ships no primitive stand-in as a primary subject | Same retired Skyline route; read its ignored, non-regenerable route-primary probe. | Planner-level cases in the same file (determinism, constraints, depth layers, density, sky backdrop) remain. |
 | `tests/unit/tools/head-to-head-current-aggregate.test.ts` (1 case; file deleted) | Ran `tools/head-to-head-current-aggregate/index.ts`, which was moved to `tools/_quarantine/` (`c92db9322`), and read the ignored three.js head-to-head aggregate. Already failing locally. | none (three.js comparison, independence rule) |
+| `tests/qr/prd14/unit/games-json.test.ts` › leaves Courier Rush with no canvasBlankCheck override | `showcase-courier-rush` was deleted in 4.0.1 (`46bca99f1`) and its games.json entry pruned (`8e6ecef13`); the case read an entry that no longer exists. | The canvasBlankCheck allow-list case in the same file still rejects any un-listed override. |
+
+PRD-14 per-route unit checks (`tests/qr/prd14/unit/{v2-flags,hud-widgets,sound-assets,s10-assets,stand-ins,kits,renderer-options,games-json}.test.ts`)
+were not retired: they asserted "18 routes" and read `src/v2/boot.ts` /
+`art/direction.ts` for every games.json entry. 13 of the 18 rebuild apps were
+deleted in 4.0.1 (`46bca99f1`, pruned `8e6ecef13`) and three later non-rebuild
+routes were registered (`644da6651`, `479225fd9`). They now iterate the five
+shipped rebuild routes (`tests/qr/prd14/unit/helpers/games.ts`), and
+`games-json.test.ts` asserts that split against games.json and the tree (rebuild
+routes have a v2 boot and dispatch their route flag; the others have neither).
+`tests/qr/prd06/unit/hero-validator.test.ts` › rejects skylineArcticRunner.glb
+read the Skyline route's deleted `generated/skylineArcticRunner.glb`; it now reads
+the tracked catalog successor `public/aura-assets/skylineArcticRunnerHero.84024fc9.glb`
+(same four codes).
 
 ### 3c. Open — first-party retained browser/tool evidence (not retired, not committed)
 

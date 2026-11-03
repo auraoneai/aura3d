@@ -9,6 +9,23 @@ if [ "${AURA3D_SOURCE_PROCESS_GUARD:-0}" = 1 ]; then
 fi
 cd /repo
 
+# Artifact transport. A legacy SAS (5.0 acceptance without an identity task)
+# is kept in an unexported variable so no test, browser or helper process sees
+# it; only upload-artifacts.mjs receives it (artifact_upload below).
+A3D_ARTIFACT_SAS="${AURA3D_ARTIFACTS_SAS:-}"
+unset AURA3D_ARTIFACTS_SAS
+[ "$A3D_ARTIFACT_SAS" != none ] || A3D_ARTIFACT_SAS=""
+AURA3D_ARTIFACT_TRANSPORT="${AURA3D_ARTIFACT_TRANSPORT:-managed-identity}"
+[ "$AURA3D_ARTIFACT_TRANSPORT" != none ] || AURA3D_ARTIFACT_TRANSPORT=managed-identity
+case "$AURA3D_ARTIFACT_TRANSPORT" in managed-identity|legacy-sas) ;; *) echo 'FATAL: invalid artifact transport' >&2; exit 2;; esac
+artifact_upload() {
+  if [ -n "$A3D_ARTIFACT_SAS" ]; then
+    AURA3D_ARTIFACTS_SAS="$A3D_ARTIFACT_SAS" node tools/remote-acr/upload-artifacts.mjs "$@"
+  else
+    node tools/remote-acr/upload-artifacts.mjs "$@"
+  fi
+}
+
 AURA3D_ACCEPTANCE_KIND="${AURA3D_ACCEPTANCE_KIND:-browser}"
 case "$AURA3D_ACCEPTANCE_KIND" in browser|historical-evidence|historical-replay|external-codec-fixtures) ;; *) echo 'FATAL: invalid acceptance kind' >&2; exit 2;; esac
 if [ "$AURA3D_ACCEPTANCE_KIND" != browser ]; then
@@ -48,6 +65,7 @@ if [ "$AURA3D_ACCEPTANCE_KIND" != browser ]; then
     ARTIFACT_DIR="tests/reports/native-external-codec-acceptance/${AURA3D_RUN_ID}"
   fi
   [ -n "${A3D_RELEASE_PLAN:-}" ] && [ "$A3D_RELEASE_PLAN" != none ] || { echo 'FATAL: candidate plan missing' >&2; exit 2; }
+  [ "$AURA3D_ARTIFACT_TRANSPORT" = managed-identity ] || { echo 'FATAL: historical acceptance uses the managed-identity transport' >&2; exit 2; }
   # Revalidate the gate, every report and the offline history before any
   # credential or test process is started in the remote container.
   node "$LAUNCHER" "${PREFLIGHT[@]}"
@@ -117,6 +135,9 @@ export AURA3D_NATIVE_ACCEPTANCE
 REPORTER="${AURA3D_REPORTER:-line}"
 XVFB_PID=""
 RESTORE_DIR=""
+A3D_PW_ARGS=()
+A3D_PW_RUN_ARGS=()
+A3D_CONFIG_DIR=""
 if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
   case " $AURA3D_SPECS " in *' @headed-xvfb '*|*' --headed '*) echo "FATAL: headed selectors are forbidden for native acceptance" >&2; exit 2;; esac
   case "$AURA3D_SPECS" in *'*'*|*'?'*|*'['*) echo "FATAL: native spec paths must be exact" >&2; exit 2;; esac
@@ -129,8 +150,32 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
   case "$AURA3D_CODE_COMPLETE_GATE" in none|''|/*|*'..'*|*[!a-zA-Z0-9_./-]*) echo "FATAL: missing or unsafe code-complete gate" >&2; exit 2;; esac
   [ -n "${A3D_RELEASE_PLAN:-}" ] && [ "$A3D_RELEASE_PLAN" != none ] || { echo "FATAL: candidate release plan is missing" >&2; exit 2; }
   case ",$REPORTER," in *,json,*) ;; *) echo "FATAL: JSON reporter is required" >&2; exit 2;; esac
+  # 5.0 acceptance (run-acceptance5.sh): optional allowlisted lane config,
+  # Playwright --shard and a --global-timeout that ends tests before the ACR
+  # run timeout so results are still uploaded.
+  case "${AURA3D_PLAYWRIGHT_CONFIG:-none}" in
+    none|'') A3D_CONFIG_DIR="" ;;
+    tests/qr/prd04/playwright.config.ts) A3D_CONFIG_DIR=tests/qr/prd04; A3D_PW_ARGS+=(--config "$AURA3D_PLAYWRIGHT_CONFIG") ;;
+    *) echo "FATAL: unsupported Playwright config" >&2; exit 2 ;;
+  esac
+  case "${AURA3D_PW_SHARD:-none}" in
+    none|'') AURA3D_PW_SHARD="" ;;
+    *) [[ "$AURA3D_PW_SHARD" =~ ^([1-9][0-9]{0,2})/([1-9][0-9]{0,2})$ ]] && [ "${BASH_REMATCH[1]}" -le "${BASH_REMATCH[2]}" ] \
+         || { echo "FATAL: invalid Playwright shard" >&2; exit 2; }
+       A3D_PW_ARGS+=(--shard="$AURA3D_PW_SHARD" --pass-with-no-tests) ;;
+  esac
+  case "${AURA3D_PW_GLOBAL_TIMEOUT_MS:-none}" in
+    none|'') ;;
+    *) [[ "$AURA3D_PW_GLOBAL_TIMEOUT_MS" =~ ^[1-9][0-9]{4,6}$ ]] && [ "$AURA3D_PW_GLOBAL_TIMEOUT_MS" -le 1800000 ] \
+         || { echo "FATAL: invalid Playwright global timeout" >&2; exit 2; }
+       A3D_PW_RUN_ARGS+=(--global-timeout="$AURA3D_PW_GLOBAL_TIMEOUT_MS") ;;
+  esac
   for spec in $AURA3D_SPECS; do
-    case "$spec" in tests/browser/*.spec.ts|tests/visual/*.spec.ts) ;; *) echo "FATAL: invalid native spec selector" >&2; exit 2;; esac
+    if [ -n "$A3D_CONFIG_DIR" ]; then
+      case "$spec" in "$A3D_CONFIG_DIR"/browser/*.spec.ts) ;; *) echo "FATAL: invalid native spec selector for the selected config" >&2; exit 2;; esac
+    else
+      case "$spec" in tests/browser/*.spec.ts|tests/visual/*.spec.ts) ;; *) echo "FATAL: invalid native spec selector" >&2; exit 2;; esac
+    fi
     case "$spec" in *'*'*|*'?'*|*'['*) echo "FATAL: native spec paths must be exact" >&2; exit 2;; esac
     case "/$spec/" in *'/../'*|*'/./'*) echo "FATAL: unsafe native spec path" >&2; exit 2;; esac
     [ -f "$spec" ] || { echo "FATAL: staged spec missing: $spec" >&2; exit 2; }
@@ -155,8 +200,17 @@ NODE
     decoded="$(node -e 'const s=Buffer.from(process.argv[1],"base64url").toString("utf8"); if(!s || s.length>200 || /[\x00-\x1f\x7f]/.test(s))process.exit(1); process.stdout.write(s)' "$encoded")" || exit 2
     export "$name=$decoded"
   done
-  [ -n "${AURA3D_ARTIFACTS_BLOB_URL:-}" ] && [ "$AURA3D_ARTIFACTS_BLOB_URL" != none ] || { echo "FATAL: managed-identity artifact destination missing" >&2; exit 2; }
-  node tools/remote-acr/upload-artifacts.mjs --prefix "$AURA3D_RUN_ID" --check || { echo "FATAL: managed identity cannot obtain a storage token" >&2; exit 2; }
+  if [ "$AURA3D_ARTIFACT_TRANSPORT" = legacy-sas ]; then
+    # Prove the destination is writable before any consumer restore or browser.
+    [ "${AURA3D_ARTIFACTS_BLOB_URL:-none}" = none ] && [ -n "$A3D_ARTIFACT_SAS" ] || { echo "FATAL: legacy SAS artifact destination missing" >&2; exit 2; }
+    printf '%s\n' "$AURA3D_RUN_ID" > /tmp/aura3d-transport-check.txt
+    artifact_upload --prefix "$AURA3D_RUN_ID" --copy /tmp/aura3d-transport-check.txt transport-check.txt >/dev/null \
+      || { echo "FATAL: legacy SAS artifact destination is not writable" >&2; exit 2; }
+  else
+    [ -z "$A3D_ARTIFACT_SAS" ] || { echo "FATAL: SAS supplied without the legacy-sas transport" >&2; exit 2; }
+    [ -n "${AURA3D_ARTIFACTS_BLOB_URL:-}" ] && [ "$AURA3D_ARTIFACTS_BLOB_URL" != none ] || { echo "FATAL: managed-identity artifact destination missing" >&2; exit 2; }
+    node tools/remote-acr/upload-artifacts.mjs --prefix "$AURA3D_RUN_ID" --check || { echo "FATAL: managed identity cannot obtain a storage token" >&2; exit 2; }
+  fi
   NATIVE_ACCEPTANCE_RUN_ID="$AURA3D_RUN_ID"
   export AURA3D_BROWSER_PROJECT A3D_RELEASE_PLAN NATIVE_ACCEPTANCE_RUN_ID
   mkdir -p "tests/reports/native-acceptance/${AURA3D_RUN_ID}"
@@ -248,10 +302,15 @@ fi
 # Validate the discovered inventory before starting any browser, then compare
 # it with the actual structured results after the run.
 validate_inventory() {
-  AURA3D_SPECS="$AURA3D_SPECS" AURA3D_BROWSER_PROJECT="$AURA3D_BROWSER_PROJECT" INVENTORY_PHASE="$1" node <<'NODE'
+  AURA3D_SPECS="$AURA3D_SPECS" AURA3D_BROWSER_PROJECT="$AURA3D_BROWSER_PROJECT" INVENTORY_PHASE="$1" \
+    A3D_CONFIG_DIR="$A3D_CONFIG_DIR" A3D_SHARDED="${AURA3D_PW_SHARD:+1}" node <<'NODE'
 const fs = require('node:fs');
 const requested = process.env.AURA3D_SPECS.trim().split(/\s+/);
 const project = process.env.AURA3D_BROWSER_PROJECT;
+const configDir = process.env.A3D_CONFIG_DIR;
+const sharded = process.env.A3D_SHARDED === '1';
+// Lane configs report files relative to their own directory.
+const repoFile = file => { file = file.replace(/^\.\//, ''); return configDir && !file.startsWith(`${configDir}/`) ? `${configDir}/${file}` : file; };
 function tests(path, observed) {
   const data = JSON.parse(fs.readFileSync(path, 'utf8'));
   if (data.errors?.length || !Array.isArray(data.suites)) throw new Error(`invalid report: ${path}`);
@@ -263,7 +322,7 @@ function tests(path, observed) {
         const key = `${spec.id}:${test.projectName}`;
         if (result.has(key)) throw new Error(`duplicate test: ${key}`);
         if (observed && (test.expectedStatus !== 'passed' || !test.results?.length || test.results.at(-1).status !== 'passed' || test.status !== 'expected')) throw new Error(`test missing, skipped or failed: ${key}`);
-        result.set(key, spec.file.replace(/^\.\//, ''));
+        result.set(key, repoFile(spec.file));
       }
     }
     for (const child of suite.suites || []) visit(child);
@@ -273,8 +332,11 @@ function tests(path, observed) {
 }
 try {
   const expected = tests('tests/reports/remote-acr-inventory.json', false);
-  if (!expected.size) throw new Error('test discovery returned no tests');
-  for (const spec of requested) if (![...expected.values()].includes(spec)) throw new Error(`selected spec contained no tests: ${spec}`);
+  // A Playwright shard holds whole files and may be empty; the host merge
+  // (tools/remote-acr/acceptance5.mjs) checks per-spec coverage across shards.
+  if (!expected.size && !sharded) throw new Error('test discovery returned no tests');
+  if (!sharded) for (const spec of requested) if (![...expected.values()].includes(spec)) throw new Error(`selected spec contained no tests: ${spec}`);
+  for (const file of new Set(expected.values())) if (!requested.includes(file)) throw new Error(`discovered an unrequested file: ${file}`);
   if (process.env.INVENTORY_PHASE === 'execution') {
     const actual = tests('tests/reports/remote-acr-report.json', true);
     if (expected.size !== actual.size || [...expected].some(([id, file]) => actual.get(id) !== file)) throw new Error('discovery and execution inventories differ');
@@ -292,19 +354,21 @@ INVENTORY_EXIT=0
 PW_EXIT=""
 CONSOLE_EXIT=0
 if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
-  export PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/remote-acr-inventory.json
+  # Absolute: lane configs resolve reporter paths from their own directory.
+  export PLAYWRIGHT_JSON_OUTPUT_NAME="$PWD/tests/reports/remote-acr-inventory.json"
   # shellcheck disable=SC2086 # selectors were validated as exact paths above
-  pnpm exec playwright test ${AURA3D_SPECS} --project="$AURA3D_BROWSER_PROJECT" --list --reporter=json > /tmp/playwright-discovery.txt 2>&1 || DISCOVERY_EXIT=$?
+  pnpm exec playwright test ${AURA3D_SPECS} ${A3D_PW_ARGS[@]+"${A3D_PW_ARGS[@]}"} --project="$AURA3D_BROWSER_PROJECT" --list --reporter=json > /tmp/playwright-discovery.txt 2>&1 || DISCOVERY_EXIT=$?
   if [ "$DISCOVERY_EXIT" = 0 ]; then validate_inventory discovery || DISCOVERY_EXIT=$?; fi
   INVENTORY_EXIT=$DISCOVERY_EXIT
 fi
 
 if [ "$DISCOVERY_EXIT" = 0 ]; then
   export PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/remote-acr-report.json
+  [ "$AURA3D_NATIVE_ACCEPTANCE" != 1 ] || PLAYWRIGHT_JSON_OUTPUT_NAME="$PWD/tests/reports/remote-acr-report.json"
   set +e
   if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
     # shellcheck disable=SC2086
-    pnpm exec playwright test ${AURA3D_SPECS} --project="$AURA3D_BROWSER_PROJECT" --reporter="$REPORTER" 2>&1 |
+    pnpm exec playwright test ${AURA3D_SPECS} ${A3D_PW_ARGS[@]+"${A3D_PW_ARGS[@]}"} ${A3D_PW_RUN_ARGS[@]+"${A3D_PW_RUN_ARGS[@]}"} --project="$AURA3D_BROWSER_PROJECT" --reporter="$REPORTER" 2>&1 |
       node --input-type=module -e '
         import { createInterface } from "node:readline";
         import { redactText } from "./tools/remote-acr/upload-artifacts.mjs";
@@ -345,7 +409,8 @@ UPLOAD_EXIT=0
 if [ "$AURA3D_NATIVE_ACCEPTANCE" = 1 ]; then
   mkdir -p /tmp/aura3d-browser-artifacts/reports
   AURA3D_SPECS="$AURA3D_SPECS" AURA3D_BROWSER_PROJECT="$AURA3D_BROWSER_PROJECT" DISCOVERY_EXIT="$DISCOVERY_EXIT" \
-    PW_EXIT="$PW_EXIT" INVENTORY_EXIT="$INVENTORY_EXIT" node <<'NODE' || UPLOAD_EXIT=1
+    PW_EXIT="$PW_EXIT" INVENTORY_EXIT="$INVENTORY_EXIT" AURA3D_PW_SHARD="${AURA3D_PW_SHARD:-}" A3D_CONFIG_DIR="$A3D_CONFIG_DIR" \
+    AURA3D_PLAYWRIGHT_CONFIG="${AURA3D_PLAYWRIGHT_CONFIG:-none}" AURA3D_ARTIFACT_TRANSPORT="$AURA3D_ARTIFACT_TRANSPORT" node <<'NODE' || UPLOAD_EXIT=1
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -396,18 +461,20 @@ fs.writeFileSync('/tmp/aura3d-browser-artifacts/run-manifest.json', JSON.stringi
   freezeCommit:gate.freezeCommit, sourceInputDigest:gate.sourceInputDigest, lockfileSha256:gate.lockfileSha256,
   gateSha256:crypto.createHash('sha256').update(gateBytes).digest('hex'),
   candidatePlan:gate.candidatePlan, node:process.version, artifacts,
+  shard:process.env.AURA3D_PW_SHARD || null, playwrightConfig:process.env.A3D_CONFIG_DIR ? process.env.AURA3D_PLAYWRIGHT_CONFIG : null,
+  artifactTransport:process.env.AURA3D_ARTIFACT_TRANSPORT,
   discoveryExit:Number(process.env.DISCOVERY_EXIT), playwrightExit:process.env.PW_EXIT === '' ? null : Number(process.env.PW_EXIT),
   inventoryExit:Number(process.env.INVENTORY_EXIT), completedUtc:new Date().toISOString()
 }, null, 2) + '\n');
 NODE
   if [ "$UPLOAD_EXIT" = 0 ]; then
-    node tools/remote-acr/upload-artifacts.mjs --prefix "$AURA3D_RUN_ID" \
+    artifact_upload --prefix "$AURA3D_RUN_ID" \
       --copy /tmp/playwright-output.txt playwright-output.txt \
       --copy /tmp/playwright-discovery.txt playwright-discovery.txt \
       /tmp/aura3d-browser-artifacts test-results || UPLOAD_EXIT=$?
   fi
-elif [ -n "${AURA3D_ARTIFACTS_BLOB_URL:-}" ] && [ "$AURA3D_ARTIFACTS_BLOB_URL" != none ] || [ -n "${AURA3D_ARTIFACTS_SAS:-}" ]; then
-  node tools/remote-acr/upload-artifacts.mjs --prefix "$AURA3D_RUN_ID" \
+elif [ -n "${AURA3D_ARTIFACTS_BLOB_URL:-}" ] && [ "$AURA3D_ARTIFACTS_BLOB_URL" != none ] || [ -n "$A3D_ARTIFACT_SAS" ]; then
+  artifact_upload --prefix "$AURA3D_RUN_ID" \
     --copy /tmp/playwright-output.txt playwright-output.txt tests/reports test-results || UPLOAD_EXIT=$?
 else
   UPLOAD_EXIT=2

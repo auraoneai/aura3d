@@ -1,0 +1,126 @@
+# Aura3D 5.0 acceptance inventory (tools/remote-acr/run-acceptance5.sh).
+# Parsed by tools/remote-acr/acceptance5.mjs: `[group <id>]`, `key = value`
+# settings, then one exact path per line (optional `tests=<n>` overrides the
+# static test-count estimate, `seconds-per-test=<n>` the group's per-test time).
+# Every tests/browser/native-*.spec.ts must appear in a browser or excluded
+# group, or planning fails. Shard counts are derived from these estimates so
+# each ACR run (<= 1800 s, Playwright --global-timeout 1200 s) holds ~900 s of
+# estimated tests; actual results come from the structured reports.
+
+[group native-webgl2]
+project = chromium-automation
+seconds-per-test = 45
+reason = Every native-*.spec.ts on the default automation project (PRD §4 geometry, rendering, assets, runtime, tools, maturity, depth-state, temporal-color, input-deployment groups plus native-bloom-pyramid and native-outline-pixel); decision record 4c.
+tests/browser/native-geometry-query.spec.ts
+tests/browser/native-multiview.spec.ts
+tests/browser/native-shader-graph.spec.ts
+tests/browser/native-material-lighting.spec.ts
+tests/browser/native-advanced-lighting.spec.ts
+tests/browser/native-post-effects.spec.ts
+tests/browser/native-bloom-pyramid.spec.ts
+tests/browser/native-outline-pixel.spec.ts
+tests/browser/native-gltf-materials.spec.ts
+tests/browser/native-format-import.spec.ts tests=13
+tests/browser/native-exporters.spec.ts
+tests/browser/native-controls-xr.spec.ts
+tests/browser/native-animation-audio.spec.ts
+tests/browser/native-capability-lifecycle.spec.ts
+tests/browser/native-geometry-tools.spec.ts
+tests/browser/native-alternative-outputs.spec.ts
+tests/browser/native-objects-generators.spec.ts
+tests/browser/native-editor-inspector.spec.ts
+tests/browser/native-multi-app-isolation.spec.ts
+tests/browser/native-resource-ownership.spec.ts
+tests/browser/native-react-lifecycle.spec.ts tests=10
+tests/browser/native-asset-integrity.spec.ts
+tests/browser/native-format-maturity.spec.ts tests=42 seconds-per-test=20
+tests/browser/native-world-text.spec.ts
+tests/browser/native-lines-models.spec.ts
+tests/browser/native-game-physics.spec.ts
+tests/browser/native-examples-catalog.spec.ts tests=1 seconds-per-test=600
+tests/browser/native-offline-environments.spec.ts tests=7
+tests/browser/native-offline-independence.spec.ts
+tests/browser/native-clipping.spec.ts
+tests/browser/native-camera-depth.spec.ts tests=5
+tests/browser/native-render-state.spec.ts
+tests/browser/native-transparency.spec.ts
+tests/browser/native-temporal-reconstruction.spec.ts
+tests/browser/native-color-output.spec.ts
+tests/browser/native-dynamic-textures.spec.ts tests=6
+tests/browser/native-input-coordinates.spec.ts tests=2
+tests/browser/native-deployment-contracts.spec.ts tests=2
+
+[group native-gpu]
+project = chromium-gpu-headless
+seconds-per-test = 60
+reason = PRD §4 native-gpu group (WebGPU render/compute, drawing pipelines, splats/volume, worker render) on the GPU probe project. The ACR container has no GPU: adapters are expected to report software or no-data, never physical.
+tests/browser/native-gpu-render-compute.spec.ts
+tests/browser/native-drawing-pipelines.spec.ts
+tests/browser/native-splats-volume.spec.ts
+tests/browser/native-worker-render.spec.ts
+
+[group xb-chromium]
+project = chromium-automation
+seconds-per-test = 180
+reason = PRD §4 cross-browser cell, Chromium (S5-WP20-06 / S5-WP22-01 matrix ranges).
+tests/browser/native-cross-browser.spec.ts
+
+[group xb-firefox]
+project = firefox-automation
+seconds-per-test = 180
+reason = PRD §4 cross-browser cell, Firefox.
+tests/browser/native-cross-browser.spec.ts
+
+[group xb-webkit]
+project = webkit-automation
+seconds-per-test = 180
+reason = PRD §4 cross-browser cell, WebKit.
+tests/browser/native-cross-browser.spec.ts
+
+[group perf]
+project = chromium-automation
+seconds-per-test = 400
+reason = PRD §4 performance group: gated performance probe (S5-ACC-04, 3+ sessions x 300 frames) and the repeated-resource soak with the WebGPU pipeline counter (S5-WP20-07). CPU timings only; GPU timing stays no-data.
+tests/browser/native-performance-probe.spec.ts tests=1 seconds-per-test=900
+tests/browser/resource-soak-u1.spec.ts
+
+[group s5-browser]
+project = chromium-automation
+seconds-per-test = 60
+reason = Non-native browser spec named by an S5 row (root texture streaming).
+tests/browser/root-texture-streaming-m2.spec.ts
+
+[group qr-prd04]
+project = chromium-automation
+config = tests/qr/prd04/playwright.config.ts
+seconds-per-test = 120
+reason = tests/qr browser specs with behavioral 5.0 edits: physical-lobes-numeric now compares against independently derived BSDF expectations (S5-WP29-05 "browser run is Phase B") and native-physical-numeric changed with it. generate-r185-golden.spec.ts was deleted in 5.0.
+tests/qr/prd04/browser/physical-lobes-numeric.spec.ts
+tests/qr/prd04/browser/native-physical-numeric.spec.ts
+
+[group visual]
+project = chromium-automation
+seconds-per-test = 60
+reason = Every tests/visual pixel suite: 5.0 changed the shared renderer paths they render through (depth modes, alpha-cutoff/blend state, WebGPU teardown, removed legacy subpaths with migrated example callers) and tests/visual/canvas-pixel-checks.ts. No visual spec file itself changed.
+tests/visual/animation-pixels.spec.ts
+tests/visual/asset-corpus-pixels.spec.ts
+tests/visual/editor-app-pixels.spec.ts
+tests/visual/editor-workflows.spec.ts
+tests/visual/pbr-environment-pixels.spec.ts
+tests/visual/product-demos.spec.ts tests=4
+tests/visual/rendering-material-matrix.spec.ts
+tests/visual/rendering-pixels.spec.ts
+tests/visual/rendering-postprocess-lab.spec.ts
+tests/visual/screenshot-diff.spec.ts
+tests/visual/shadow-cascade-motion.spec.ts
+tests/visual/skinned-animation-pixels.spec.ts
+
+[group evidence]
+kind = evidence
+reason = Evidence-reading unit tests deferred from the 5.0 source pass (acceptance-evidence-tests.txt). Run last, in one ACR run, after this batch's browser shard reports are fetched into tests/reports/ (candidate files are never overwritten). Most read evidence the native specs do not produce (vehicle-wheel-visibility, claim-lineage, bundle-scenarios, ...); a missing evidence file is reported as no-data.
+include = tools/remote-acr/acceptance-evidence-tests.txt
+
+[group qr-prd14-excluded]
+kind = excluded
+reason = 61 tests/qr/prd14/browser showcase specs were touched in 5.0 by TypeScript-only edits ((window as unknown as Record<...>) casts, one widened type); no runtime change. They are SwiftShader game captures (15-30 min per game test on this runner, README), need the lane config without matrix projects, and would take 30+ hours. Listed, not run; run them via the 4.x path (tools/remote-acr/run.sh, legacy mode) if wanted.
+tests/qr/prd14/browser/

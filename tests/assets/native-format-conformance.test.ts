@@ -6,10 +6,16 @@ import * as publicAssets from "@aura3d/assets";
 import {
   createGLTFRenderResources, exportOBJ, exportSTL, GLTFLoader, LoadContext,
   Model3MFLoader, OBJLoader, PLYLoader, read3MFPackageEntries, STLLoader,
-  transcodeKTX2BasisTexture, type GLTFAsset, type GLTFImageAsset
+  transcodeKTX2BasisTexture, type AssetLoader, type GLTFAsset, type GLTFImageAsset
 } from "@aura3d/assets";
 import { createDracoDecoder, createMeshoptDecoder, type GLTFDracoDecoderModule, type GLTFMeshoptDecoderModule } from "@aura3d/assets";
 import { createNativeFormatRegistry } from "@aura3d/assets/importers";
+
+/** OBJ/STL exporters return bytes in Node; a Blob here would be an exporter regression. */
+function exportedBytes(data: Blob | Uint8Array): Uint8Array {
+  if (!(data instanceof Uint8Array)) throw new Error("expected exporter bytes, got a Blob");
+  return data;
+}
 
 interface Fixture {
   id: string;
@@ -201,12 +207,12 @@ describe("independent native format conformance", () => {
     "%s loads real format bytes into render resources", async (id) => {
       stubFixtures();
       const item = fixture(id);
-      const loader = item.format === "obj" ? new OBJLoader() : item.format === "ply" ? new PLYLoader() : item.format === "stl" ? new STLLoader() : new Model3MFLoader();
+      const loader: AssetLoader<GLTFAsset> = item.format === "obj" ? new OBJLoader() : item.format === "ply" ? new PLYLoader() : item.format === "stl" ? new STLLoader() : new Model3MFLoader();
       const asset = await loader.load({ url: url(id), type: item.format }, new LoadContext());
       assertTriangle(asset, item);
       const resources = await createResources(asset);
       resources.dispose();
-      loader.dispose(asset);
+      loader.dispose?.(asset);
       expect(asset.disposed).toBe(true);
     }
   );
@@ -321,17 +327,17 @@ describe("independent native format conformance", () => {
   it("checks OBJ and binary STL exports using a small reader independent of Aura loaders", () => {
     const scene = {
       nodes: [{ name: "triangle", mesh: 0 }], roots: [0],
-      meshes: [{ name: "triangle", primitives: [{ attributes: { POSITION: { values: new Float32Array([-1, -1, 0, 1, -1, 0, 0, 1, 0]), itemSize: 3 } }, indices: [0, 1, 2] }] }],
+      meshes: [{ name: "triangle", primitives: [{ attributes: { POSITION: { values: new Float32Array([-1, -1, 0, 1, -1, 0, 0, 1, 0]), itemSize: 3 as const } }, indices: [0, 1, 2] }] }],
       metersPerUnit: 1, upAxis: "Y" as const
     };
     const obj = exportOBJ(scene);
-    const lines = new TextDecoder().decode(obj.data).split(/\r?\n/);
+    const lines = new TextDecoder().decode(exportedBytes(obj.data)).split(/\r?\n/);
     const vertices = lines.filter((line) => line.startsWith("v ")).map((line) => line.split(/\s+/).slice(1).map(Number));
     const faces = lines.filter((line) => line.startsWith("f ")).map((line) => line.split(/\s+/).slice(1).map((value) => Number(value.split("/")[0]) - 1));
     expect(vertices).toEqual(fixture("triangle-obj").expected.positions);
     expect(faces).toEqual([fixture("triangle-obj").expected.indices]);
     const stl = exportSTL(scene, { binary: true });
-    const binary = Buffer.from(stl.data);
+    const binary = Buffer.from(exportedBytes(stl.data));
     expect(binary.readUInt32LE(80)).toBe(1);
     expect(binary.length).toBe(134);
     expect(Array.from({ length: 9 }, (_, index) => binary.readFloatLE(96 + index * 4))).toEqual(vertices.flat());

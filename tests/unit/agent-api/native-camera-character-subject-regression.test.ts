@@ -17,6 +17,7 @@ import { scene } from "../../../packages/engine/src/agent-api/nodes/scene.js";
 import type { AuraApp, AuraModelNode } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import { createModelMatrixCache } from "../../../packages/engine/src/agent-api/sceneGraph.js";
 import type { AuraCameraPose } from "../../../packages/engine/src/contracts/camera.js";
+import type { RenderItem } from "../../../packages/rendering/src/ForwardPass.js";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags.js";
 import { createTypedGLBActor, type TypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor.js";
 import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags } from "../../../packages/engine/src/production-runtime/actor/extensions.js";
@@ -80,11 +81,11 @@ describe("default character-controller camera regression", () => {
         }
       });
       const warnings = new Set<string>();
-      let items: ReturnType<NonNullable<ReturnType<typeof createProductionRuntimeRendererInput>["source"]["collectRenderItems"]>> = [];
+      let items: RenderItem[] = [];
       for (let frame = 0; frame <= 30; frame += 1) {
         const input = createProductionRuntimeRendererInput(snapshot, canvas, [{ node, actor }], [], frame * 1000 / 60,
           registry, warnings, { color: [0, 0, 0], intensity: 0 }, [], undefined, undefined, undefined, owner);
-        items = input.source.collectRenderItems?.() ?? [];
+        items = [...(input.source.collectRenderItems?.() ?? [])];
       }
       expect([...warnings]).toEqual([]);
       expect(items[0]!.skinning?.jointCount).toBe(65);
