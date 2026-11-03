@@ -94,18 +94,26 @@ test("ExternalParity package manifest exposes installable product paths", () => 
     files: string[];
     devDependencies: Record<string, string>;
   };
-  // PRD-15 §6.1 + T8.1: "." is the public surface entry. Subpaths whose in-repo
-  // consumers were gone removed at 4.0.0; still-consumed ones stay deprecated.
+  // PRD-15 §6.1 + T8.1: "." is the public surface entry. Consumer-free subpaths were
+  // removed at 4.0.0; the remaining deprecated stubs were removed at 5.0.0 (migration
+  // guide B15). `./media-node` stays as the Node-only media entry.
   expect(manifest.exports).toMatchObject({
     ".": {
       browser: "./dist/engine/public/index.js",
       import: "./dist/engine/public/index.js"
     },
-    "./apps": "./dist/engine/deprecated/apps.js",
-    "./media-node": "./dist/engine/deprecated/media-node.js",
-    "./production-runtime": "./dist/engine/deprecated/production-runtime.js"
+    "./media-node": "./dist/engine/agent-api/media-node.js"
   });
   for (const removed of [
+    "./apps",
+    "./contracts",
+    "./rendering",
+    "./rendering/production-runtime",
+    "./rendering/webgpu",
+    "./production-runtime",
+    "./advanced-runtime",
+    "./assets/browser",
+    "./workflows/production",
     "./engine",
     "./engine-runtime",
     "./create-aura3d",

@@ -79,7 +79,9 @@ const FORBIDDEN_PATTERNS: ReadonlyArray<readonly [string, RegExp]> = [
   ["raw .glb/.gltf URL mount", /\bmodel\s*\([^)]*\.glb["'`\s)]/],
 ];
 
-const ADVANCED_RUNTIME_IMPORT = /advanced-runtime/;
+// 5.0.0 removed `@aura3d/engine/advanced-runtime`; its destination `@aura3d/engine/renderer` is the
+// attributed import for an A3DRenderer mount (the legacy specifier is still recognized in old sources).
+const ADVANCED_RUNTIME_IMPORT = /advanced-runtime|["']@aura3d\/engine\/renderer["']/;
 
 function scopeOf(path: string): "apps" | "examples" | "templates" | "other" {
   if (path.startsWith("apps/")) return "apps";

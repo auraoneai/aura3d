@@ -55,8 +55,15 @@ export interface NativeCodeCompleteGate {
   createdAt: string;
   sourceManifest: NativeFileReference;
   sourceReports: NativeFileReference;
+  /** Absent in 5.0 scope mode without `--ledger`; with `--scope` it is a historical reference only. */
   ledger: NativeFileReference;
   roadmap: NativeFileReference;
+  /** 5.0 scope mode: the required source-outcome set comes from the scope file. */
+  outcomeSource?: "aura3d-5.0-scope";
+  scope?: NativeFileReference;
+  ledgerRole?: "historical-reference";
+  experimentalOutcomes?: readonly NativeScopeExperimentalOutcome[];
+  supersededOutcomes?: readonly NativeScopeSupersededOutcome[];
   freezeCommit: string;
   testedOrigin: { commit: string; tree: string };
   sourceInputDigest: string;
@@ -100,11 +107,45 @@ export interface NativeCodeCompleteGate {
   inputs: string[];
 }
 
+export interface NativeScopeRow {
+  id: string;
+  label: "FINISH-5.0" | "EXPERIMENTAL-5.0" | "SUPERSEDED-PROCESS";
+  namedDefect: boolean;
+  task: string;
+  remaining: string;
+  fallback: string | null;
+}
+
+export interface NativeScopeExperimentalOutcome {
+  id: string;
+  label: "EXPERIMENTAL-5.0";
+  task: string;
+  fallback: string | null;
+}
+
+export interface NativeScopeSupersededOutcome {
+  id: string;
+  label: "SUPERSEDED-PROCESS";
+  task: string;
+  replacement: string | null;
+}
+
+export interface NativeScopeOutcomes {
+  rows: NativeScopeRow[];
+  /** FINISH-5.0 rows plus named-defect rows. */
+  required: string[];
+  experimental: NativeScopeExperimentalOutcome[];
+  superseded: NativeScopeSupersededOutcome[];
+}
+
 export interface EmitCodeCompleteGateOptions {
   root?: string;
   sourceManifest: string;
   sourceReports: string;
-  ledger: string;
+  /** Required without `scope`; historical reference only with it. */
+  ledger?: string;
+  /** Root-relative path of the 5.0 scope list (`docs/prds/aura3d-5.0-scope.md`). */
+  scope?: string;
   freezeCommit: string;
   out: string;
   owner: string;
@@ -155,6 +196,11 @@ export interface NativeTapCheck {
 }
 
 /** Recompute and write the source gate, or throw if any source check fails. */
+/** Parse the 5.0 scope list; fails closed on malformed input. */
+export function parseScopeOutcomes(markdown: string): NativeScopeOutcomes;
+/** Throw unless `completed` equals `required` exactly (no missing, extra or duplicate IDs). */
+export function compareScopeOutcomes(required: readonly string[], completed: readonly string[]): void;
+
 export function emitCodeCompleteGate(options: EmitCodeCompleteGateOptions): NativeCodeCompleteGate;
 
 /** Revalidate and return the gate synchronously, or throw before acceptance. */

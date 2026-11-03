@@ -76,7 +76,7 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     id: "antiqueCamera",
     repoPath: "fixtures/asset-corpus/antique-camera.glb",
     url: `${base}antique-camera.glb`,
-    sha256: "sha256-7480f9bed3918fe63ce1da0e54dcd235bd11fe54c5006fa0f7a0a31ddcc274c1",
+    sha256: "sha256-ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2",
     lfs: true,
     worldSize: [2.597, 7.209, 3.395],
     animations: [],

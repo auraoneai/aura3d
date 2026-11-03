@@ -1,7 +1,7 @@
 # Native example catalog expectations (partial)
 
 `expectations.json` contains independently authored **numeric hypotheses**, not
-screenshots or evidence that a candidate rendered. The 36 entries are derived
+screenshots or evidence that a candidate rendered. The entries are derived
 from the checked-in scene sources and their recorded SHA-256 digests. The
 typed-asset starter also uses the material factors in its existing hashed robot
 GLB; its current asset metadata does not specify a license. No captured frame
@@ -236,3 +236,42 @@ on before refreshing, not rehashed blindly:
   syncing. The owner-scoped matrix cache, color policy and frame-input wiring
   the racing test pins are unchanged, and that reconstruction passes after the
   refresh.
+
+## Documented examples (2026-11-02, 5.0 pre-source-pass)
+
+Discovery now resolves a published game URL slug (`/apps/chroma-roll/`) to its
+source folder through `tools/site/games.catalog.json` instead of reporting a
+missing example; docs that named nonexistent paths (planned apps, a deleted
+V2 variant, a three.js `examples/jsm` path, a placeholder) were corrected, a
+stale `neon-corridor-strike` classification row was removed and
+`showcase-port-shared` is classified support-only. The six capability cases'
+`tools/agent-examples/index.ts` digest was refreshed for that discovery-only
+change (scaffolding is untouched).
+
+28 documented examples now have entries authored the same way as the
+templates: the subject's authored world extents projected through the
+authored camera and canvas layout, colour bands from authored hex values, GLB
+factors or UV-addressed texels, and digests of every file the numbers rely on.
+They are uncalibrated hypotheses. **56 discovered documented examples still
+have no entry, deliberately**; no generic region was written for them:
+
+* game routes and ports whose no-query load shows a full-viewport, hit-testable
+  title/menu/splash overlay (the catalog loads the bare route, so no canvas
+  region can pass) or runs a wall-clock title flyover with no settled pose;
+* 2D-canvas or readback-composite pages (`10-particles`,
+  `animated-character`, `animation-state-machine`, `postprocess-lab`,
+  `raycast-ccd-lab`) and labs that dispose their apps or render only on an
+  external driver call (`parity-animation`, `parity-runtime-lab`,
+  `custom-draw-probe`);
+* examples that cannot build in the isolated harness: fixture hosts whose
+  relative script `src` is resolved next to the fixture by the Vite build
+  (`external-*`, `foundation-editor-authored-app`, `asset-viewer`), entries
+  that import the repo-root `src/aura-assets` or sibling examples, and
+  `*-port` app wrappers without a `build` script;
+* subjects whose colour cannot be grounded in source (light-dominated or
+  custom-shaded scenes, dark textured products).
+
+Closing these needs harness/route decisions (per-route start query, a
+non-hit-testable title layer, root-absolute fixture script paths, wrapper
+build scripts), not fill-in expectations, so the documented-completeness test
+keeps failing for them.

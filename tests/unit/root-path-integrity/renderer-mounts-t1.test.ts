@@ -22,7 +22,7 @@ describe("T1a assertNoUndocumentedRendererMount", () => {
     );
   });
 
-  test("advanced subordinate mounts require the advanced-runtime import and apps/ scope", () => {
+  test("advanced subordinate mounts require the @aura3d/engine/renderer import and apps/ scope", () => {
     expect(classifyRouteMount("apps/demo/src/main.ts", ADVANCED_ROUTE).violation).toBeNull();
     const unattributed = classifyRouteMount(
       "apps/demo/src/main.ts",

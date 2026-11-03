@@ -17,7 +17,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" }
       ],
       "regions": [
         {
@@ -50,7 +50,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" }
       ],
       "regions": [
         {
@@ -83,7 +83,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" }
       ],
       "regions": [
         {
@@ -116,7 +116,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" }
       ],
       "regions": [
         {
@@ -149,7 +149,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
         { "path": "packages/engine/src/public/index.ts", "sha256": "bc9a4a103db6c38d9d1e04dcf88313367ecf17784c4789a6bb49d996a55deb0f" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
@@ -613,7 +613,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "eb8c382b42f643d05091a2b231589c95a460669173ef77853428051e30931e31" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" }
       ],
       "regions": [
         {
@@ -1856,6 +1856,2077 @@
               "blue": [130, 252],
               "minFraction": 0.15,
               "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/postprocessing-custom",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently derived from source: the authored camera (position [0,1.25,4.2], target [0,0.8,-0.4], fov 46) projects the 'hero sphere' (unit-diameter sphere scaled 0.6 at [-0.9,0.6,0], radius 0.3) through the engine's lookAt + vertical-FOV perspective at aspect 16:9. The #viewport canvas is laid out by index.html + apps/common/src/styles.css as the first grid column: minmax(840px, 72vw) with a 370px minimum second column gives 910 x 511.875 CSS px at a 1280 x 720 viewport, vertically centered (top 104), assuming the #app panel column stays under 720px tall. The region is the inner 76% of the projected sphere box. The color band starts from the authored #d97742 (217,119,66) PBR color and allows for warm/cyan lights, the before-tonemap tint [1.04,0.97,0.9] and 12% scanline darkening. No reference capture was used. Lighting, post passes, tone mapping, real browser layout and rendered appearance remain unverified.",
+      "subject": "Orange PBR 'hero sphere' primitive (#d97742) left of center",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/postprocessing-custom/src/main.ts",
+        "sha256": "4723e279d8f406a147fd6273e8315a161567593e27b641320948c036eff6b095"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/postprocessing-custom/index.html",
+          "sha256": "edf822fa61a869f7acf09a8a7cd37f03521454dee71f69c3f90624e64801d8a3"
+        },
+        {
+          "path": "apps/common/src/styles.css",
+          "sha256": "32d282283733d36e7aa39bad76910eeb9fb3614af73cfaa97e24208e2043f706"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 293,
+          "y": 361,
+          "width": 66,
+          "height": 65,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange hero sphere pbr #d97742",
+              "red": [
+                130,
+                255
+              ],
+              "green": [
+                45,
+                175
+              ],
+              "blue": [
+                5,
+                125
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-aura-fc-3d",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Home striker h-fw (fcSoccerStrikerMeshy) in the red #b2352f outfield shirt standing at the centre spot for the user kickoff",
+      "provenance": "Source-derived. Default boot starts Quick Play (src/main.ts:949-960); the first kickoff belongs to the user team (kickoffTeam 0 = userTeam 0) and, without input or autopilot, the sim waits in static formation (src/game/sim.ts:1119-1134). startKickoff puts h-fw at x = -attackSign[0]*0.42 = -0.42, z 0 with the ball at the origin (sim.ts:185, 251-266). After the 4 s intro rail the Munich default look is 'hybrid' (look.ts:195-197), so the broadcast pose is hybridBroadcastPose(0,0,0): eye [0,10.5,20], target [0,2.0,-0.5], fov 34 (camera.ts:66-69); fitCameraToAspect leaves it unchanged at aspect 1280/720 >= 1.3 (camera.ts:8,15-16). The full-page canvas (#app inset 0) was projected with vertical-FOV lookAt perspective as in sceneMath.createCameraMatrices. The region is the projected box of the striker GLB '-kit' primitive (native y 1.06..1.558, x +-0.276, fit from native height 1.891 to targetHeight 2.22, rig.ts:110-114), treated as orientation-agnostic (+-0.324 m in x and z). Color: TEAM_KITS[0].shirt #b2352f (178,53,47) replaces the kit material (rig.ts:66-68, 118). No reference capture was used. Night venue lighting, LUT grade, idle animation, rendered appearance and the intro-to-broadcast transition remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-aura-fc-3d/src/main.ts",
+        "sha256": "37c1f88d5f08fa1ca2dd9ce70b0d1ae7548c99fb822e6f1fe84cc50138a36cb7"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-aura-fc-3d/index.html",
+          "sha256": "87aa703fb9ab73a50399ab2014bf2c074395e20edd16728804392ae41c878435"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/game/camera.ts",
+          "sha256": "099f63b0f3786c3957a35a9e8539fb744fa4d170b4e77f3fa15aee0862551d4a"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/game/sim.ts",
+          "sha256": "a248c846876c6e5503b5ca4548dd3e64c7399192b22f3750830a92c4f355b5ef"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/game/rig.ts",
+          "sha256": "e2f072f31bd2bc78bd304a6a41ba8369aba45304389267cbcb7f619d5bf967ef"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/game/look.ts",
+          "sha256": "1e4090d5d75a2bc2bab1d758e86c58db23d1aabd9f1f2a5fbe1d2dd64eed2299"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/game/hud.ts",
+          "sha256": "9ab9a9d3e634e1da4b53cf2a65fe633d65e4f0aeeb9823c39f8264a50d79bc6e"
+        },
+        {
+          "path": "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
+          "sha256": "f4440ea65171a341186de86c760ce5a7c369ecb11ca5987486a197147e1af571"
+        },
+        {
+          "path": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
+          "sha256": "1b37df23525f254dc5bb8483a512d850db21a1f4e67cb056aec68a143633d686"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 598,
+          "y": 370,
+          "width": 38,
+          "height": 48,
+          "minContrast": 6,
+          "colors": [
+            {
+              "name": "home red shirt #b2352f",
+              "red": [
+                90,
+                230
+              ],
+              "green": [
+                10,
+                110
+              ],
+              "blue": [
+                5,
+                105
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-aura-hoops-3d",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Home ball-handler p0 (hoopsAthleteGuardKit) torso in the HARLEM FLYERS orange #ff7a1a jersey under the live chase camera",
+      "provenance": "Source-derived. Default boot (no query) starts Quick Play at Rucker, holds the sim through the 6 s broadcast intro, then goes live with home athlete p0 holding the ball at FIVE_SPOTS[0] = [0,0,8.6] (src/main.ts:1727-1733, 1772-1781, 4191-4194). With no input and autopilot off, p0 keeps tx/tz at its spot. The live chase pose is eye = holder + LIVE_CAM.chase.offset [6.7, y 2.2, 5.0], target = holder + [-0.2, y 1.0, -0.9], fov 32 (src/broadcast.ts:34, src/main.ts:3321-3325); at that pose no Rucker pole blocks sight (cameraObstacles, src/main.ts:3240), so clearSight/pushEyeClear do not move it. The full-page 1280x720 canvas (#app inset 0) was used with vertical-FOV perspective as in sceneMath.createCameraMatrices. The region is the projected box of the GLB's '-kit' primitive torso part (native y 0.123..0.653 above a 0.952 m origin, x +-0.276, z +-0.153, fit to targetHeight 1.92 from native height 1.903), widened 0.2 m downward for the Crouch/dribble pose. Color: the kit material is replaced with flat #ff7a1a (255,122,26) by athleteOverrides (src/main.ts:738-742) since teamKits keeps the home primary (contrast vs the away purple #e26bff is 1.03, so the away side switches to #f2f0e2, src/rules.ts:177-185). No reference capture was used. Lighting, grade, animation pose, defender occlusion, CPU steals after the intro, the intro rail itself and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-aura-hoops-3d/src/main.ts",
+        "sha256": "056e6279dfbc99cdcc45f82bdea2ffe801801ac4eff777e88759ab83eba60494"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-aura-hoops-3d/index.html",
+          "sha256": "38f9323be60a9736ffa22d0d8fe04ef8cef6c5121311a31a4f732ddb40a20d64"
+        },
+        {
+          "path": "apps/showcase-aura-hoops-3d/src/broadcast.ts",
+          "sha256": "2f4ea3bace94846342c74b4c0441931976181b0945e164cc81e7dbb3c9fa1295"
+        },
+        {
+          "path": "apps/showcase-aura-hoops-3d/src/rules.ts",
+          "sha256": "4ada97a46406d81412e029cdc85a39846cf6ed05efbf9e3aee2de88db9d800f7"
+        },
+        {
+          "path": "apps/showcase-aura-hoops-3d/src/aura-assets.route.ts",
+          "sha256": "70b8c6532f5b809cae1347126d870c4c67c97fded2f634a156bc3b4aaaa9900a"
+        },
+        {
+          "path": "apps/showcase-aura-hoops-3d/public/aura-assets/hoopsAthleteGuardKit.5c0f9a76.glb",
+          "sha256": "5c0f9a76aacc6dcb14c3fb3b8895cfcef3a0d16305f3567f8cc66805a98643ce"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 513,
+          "y": 285,
+          "width": 89,
+          "height": 110,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "home orange jersey #ff7a1a",
+              "red": [
+                170,
+                255
+              ],
+              "green": [
+                60,
+                175
+              ],
+              "blue": [
+                0,
+                100
+              ],
+              "minFraction": 0.06,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-bean-brawl-race",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Red hero bean (heroBean.11d1ed86.glb, node \"hero\") held at a fixed offset by the per-frame follow camera",
+      "provenance": "Derived from source only. No reference capture. The hero model uses scaleMode world at scale (1.56/1.2).toFixed(4)=1.3 on the GLB POSITION bounds (x +/-0.499, y 0..1.2, z +/-0.321); every frame app.camera.setPose places the eye at [0.65x, y+2.65, z-4.8] looking at [0.45x, y+1.15, z+4.5] with fov 56 (src/main.ts:798-802), so the hero's screen box is nearly invariant while autopilot runs. The hero's projected bounding box was computed for hero x in {-0.6,0,0.6}, yaw in {-0.3,0,0.3} and fov 56/57.4 (run-start punch) on the full-page 1280x720 canvas (index.html #app 100%); the region is an inset of the intersection of those boxes and also lies inside the shoulder-rig box. The red band comes from an area-weighted histogram of the GLB's own UV-addressed baseColor JPEG texels (about 80% in R 192-255, G 0-96, B 0-96). Lighting, look preset/fog, post, animation pose (Idle/Run deformation), jumps, camera feel and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-bean-brawl-race/src/main.ts",
+        "sha256": "42688ee0ddf0541122f2febc165fe0886a4fe840f5c530ec269cae2b4289a780"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-bean-brawl-race/index.html",
+          "sha256": "927f43d49fb5cfe6bbe8eda190a9b04509d33641c1f41cf9add24d2a8e7a87de"
+        },
+        {
+          "path": "apps/showcase-bean-brawl-race/src/styles.css",
+          "sha256": "b02bb32b2a8e448eb9637a243f6f24dfd0a8ad53c663c43c5045a717ce9ba89f"
+        },
+        {
+          "path": "apps/showcase-bean-brawl-race/src/aura-assets.ts",
+          "sha256": "1ffe2dbacc03e15e270a2a62cb1b97b9241c975bd8033c178c4fb1a1448b9a08"
+        },
+        {
+          "path": "apps/showcase-bean-brawl-race/public/aura-assets/heroBean.11d1ed86.glb",
+          "sha256": "11d1ed867e4e7a1c5cf5e91a4972e34fcad0478300bce7990703c561c76c7d0f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 600,
+          "y": 420,
+          "width": 80,
+          "height": 180,
+          "minContrast": 6,
+          "colors": [
+            {
+              "name": "hero bean red baked texture",
+              "red": [
+                140,
+                255
+              ],
+              "green": [
+                0,
+                128
+              ],
+              "blue": [
+                0,
+                128
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-cross-hop",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Default 'Hop' critter (typed hop.67ed3f67.glb, olive-green baked texture tinted by CRITTER_MAT #fff1df) standing on start row 0",
+      "provenance": "No reference capture: independently derived from source. Quick-play autostarts (src/main.ts AUTOSTART) with the vivid (non-diorama) look; rows 0-3 are fixed meadow/river lanes regardless of the unseeded run seed (world.ts laneFor). With no input the critter stays at playerCol 0 / playerRow 0 (y = surfaceTopY 0.12 + foot offset 0.05) and the chase rig is camera [0, 3.85, 5.3] -> target [0, 0.55, -4.4], fov 50 (core.ts CAM and setPose), projected at 1280x720 onto the full-viewport #app canvas. The GLB's POSITION bounds (0.44 x 0.40 x 0.22) were scaled to targetHeight 1.05, giving a projected box of about x 560-720, y 447-604; the region is only the upper head band, because the first-run #ch-intro card (bottom 110px, 460px wide, shown for 3 s, ui.ts INTRO_MS) can cover the lower body. Colour: an area-weighted histogram of the GLB's own UV-addressed baseColor texels is ~86% olive green around sRGB (72-88, 104-119, 48-63), multiplied by the authored #fff1df tint (ModelMaterialOverrides baseColorMultiply). The band's green/blue upper bounds are chosen below the meadow lane colour #58a75c but a shaded meadow could still match. Timing: the no-input state is not settled - the hawk warning starts after the 3 s row-0 grace plus 1.4 s idle (fov widens up to +6 deg, hawk descends toward the player) and the critter is snatched at about 8.2 s (core.ts HAWK_KILL 5.2, ROW0_GRACE 3.0); this is a starting-state hypothesis for a capture taken in roughly the first 4 s after ready. Lighting, grade, shadows, animation pose, the intro overlay extent and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-cross-hop/src/main.ts",
+        "sha256": "fc9472d957a7faf49decd5cfb58a1cf1ed00fd47cd4dedec14e0d25f4905bcbe"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-cross-hop/src/game/core.ts",
+          "sha256": "d48919ce67e1f920be370288990d98deebffff36e79b03847b6c03be5b386cb7"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/game/world.ts",
+          "sha256": "f2d5934a5d41e5f7c491e5ecdc23b1a5d76d1b3d32e1e5f2fb28ca2578b8be61"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/game/themes.ts",
+          "sha256": "72b6fd9d70d3a0c011c59fd1084a1f9e941d2c3d0ea6a35e99b6ce79ed6dc39a"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/game/ui.ts",
+          "sha256": "2de57f7126ac161c4c2a7921bcf94922e526d5a835c99264a5c738397c7d55a4"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/game/look.ts",
+          "sha256": "3146ebe405af1fb574ac4bd8ef14ed1432dda5cac9caae49586a657566a549d7"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/styles.css",
+          "sha256": "9d9e13df5ba8eb54621cbe22311d2acd0a046a4ef40e095104261f44aa1ff760"
+        },
+        {
+          "path": "apps/showcase-cross-hop/index.html",
+          "sha256": "dcfaad193eec8eb7fde2f0a0114bd3aedf675718666b7cd0d560968dfa963aef"
+        },
+        {
+          "path": "apps/showcase-cross-hop/src/aura-assets.ts",
+          "sha256": "a9e41194870a46741ed1639f4494338d71b690c2358dd76625ffeff50ccf8a4b"
+        },
+        {
+          "path": "apps/showcase-cross-hop/public/aura-assets/hop.67ed3f67.glb",
+          "sha256": "67ed3f67944f6d140afea18902d0f1aab7801e2c780d85567cb9b8658fedca0b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/production-runtime/ModelMaterialOverrides.ts",
+          "sha256": "e0ffaf723fdf6a1dd36e768310291f35ac44edc7a83bb87f6715dfbfcacc8b71"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 604,
+          "y": 452,
+          "width": 72,
+          "height": 32,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "hop olive-green baked texture",
+              "red": [
+                25,
+                135
+              ],
+              "green": [
+                50,
+                150
+              ],
+              "blue": [
+                5,
+                85
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-dot-dash-3d",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Classic 'Relay Grid' maze board, lower-left block (tiles x 1-7, rows 15-19): green FR-4 solder-mask board with black epoxy wall chips",
+      "provenance": "No reference capture: independently derived from source. Quick Play autostarts on the classic maze (src/main.ts) and the board holds until the first direction (hud.ts 'READY ... Press a direction to move'), so the no-input frame is static. A fresh profile's camera is 'overhead' (save.ts cameraDefault), i.e. the CAMERA_RIG [0, 17.2, 13.8] -> [0, 0, 0], fov 48 pulled back by camera.ts fitDistanceScale at aspect 1280/720 times FRAME_PULL_BACK 1.06 (k = 1.3076, eye [0, 22.49, 18.04]); the intro rail cinematic is disabled when navigator.webdriver is true (motion.ts cinematicsAllowed). Tiles map to world x = col - 9, z = row - 10 (world.ts); the block's corners at board top (-0.02) and wall top (0.6) project to x 333-593, y 459-622 on the full-viewport canvas (styles.css #app inset 0), clear of the 30%-height READY banner. In that block 12 of 35 tiles are 0.9 x 0.6 x 0.9 wall chips coloured BOARD_PARTS.epoxy #141416 (look.ts); the rest is board mask #1f4a38 (look.ts classic row; boardMaterial.ts bakes it as albedo) with copper #c8743a traces and one surge cell. Lighting, clearcoat, LUT grade, shadows and rendered appearance remain unverified; the dark band can also match shadowed mask.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-dot-dash-3d/src/main.ts",
+        "sha256": "8103e4ce37f52e037a9b8247d2eadf75a2897ec7b3cb03563191e9bd28b899e6"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/world.ts",
+          "sha256": "aba0609f4cbfe557184a41a7796b9703f8de9430d1ddb6537928664c26809faf"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/camera.ts",
+          "sha256": "7ea6448228bc5221ac8390fa3178ea3ce07cc2a82ec8c24f40b866ce1f5a082f"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/look.ts",
+          "sha256": "b98661d494b2e0f1d2324f19f6ba4a996ffc86db127c344bf6657bc89d6ec591"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/save.ts",
+          "sha256": "4632677e775971a24e27e7ad0508f095942a62251ab1b658652e3c7f956192d4"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/sim.ts",
+          "sha256": "e46d042bba8cedcb7b65e0ff9d1857666bbdb3e61cdd926d515b11dcbc5692d6"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/mazes.ts",
+          "sha256": "2ea1758695a1fd80c8ed7b6190f6488b8a5e264f4e42c75ae0e503f5a70a3601"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/motion.ts",
+          "sha256": "3da7cc999d3a293d5fcb50f7f006e541e9a94dae3c2d19a7f29d9f19e149f8ae"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/boardMaterial.ts",
+          "sha256": "567c61f61eb94f6eaf6fb8ab7bbcdee67417a061ec760e7df54b7d2d559c4951"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/game/hud.ts",
+          "sha256": "1e9222229b7834b57a6d29cef76736e60df6d33cb7398d694304080263311e43"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/src/styles.css",
+          "sha256": "92426521938f31fd4a65da89f9bb977e4baee32c3f4be7cfd5350c0ece74e4e2"
+        },
+        {
+          "path": "apps/showcase-dot-dash-3d/index.html",
+          "sha256": "d39f297df0e335c13a91043615a2f0db5e749591b92c3954ae6f6e9ef9b401f8"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 344,
+          "y": 466,
+          "width": 239,
+          "height": 150,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "green solder mask #1f4a38",
+              "red": [
+                0,
+                100
+              ],
+              "green": [
+                30,
+                150
+              ],
+              "blue": [
+                15,
+                125
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.85
+            },
+            {
+              "name": "black epoxy wall chips #141416",
+              "red": [
+                0,
+                55
+              ],
+              "green": [
+                0,
+                55
+              ],
+              "blue": [
+                0,
+                60
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-kart-havoc",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Typed hero go-kart (assets.heroKart GLB, node race-car) at its no-input start pose on the canyon circuit",
+      "provenance": "Independently derived from the route source: the hero kart is placed at route progress 0.04 of the authored 7-point closed polyline (ROUTE_SCALE 19.5; linear segment sampling as in GameGenreKits createRaceSegments/sampleAt and arcadeKart sampleOffset), pose [6.107, 0.843, -8.103], heading -0.228 rad, yaw PI-heading, scaleMode world with scaleForSpan(bounds, 3.5) = 1.84 and the GLB's own POSITION min/max. With no input the arcade kart keeps speed 0, so the per-frame app.camera.setPose chase override (CameraController overrides replace the chase rig pose) is position [-1.296, 3.693, -6.384], target [11.172, 1.593, -9.279], fov 60 at 1280x720; the 8 box corners project to x 546-735, y 391-624, below the top-right pointer-transparent HUD. The orange band comes from an area-weighted histogram of the BakedMaterial texels addressed by the kart's own UVs (orange 224-255/96-127/0-31 about 10.7% of surface, burnt orange 160-191/64-95/0-31 about 4.7%); it excludes the authored #c88a58 desert floor by its blue channel. Rival karts start ahead (progress 0.055-0.082) and drive away once the race auto-starts after 0.6 s, so the region is a settled no-input hypothesis; early frames can overlap the yellow rival. No reference capture. Lighting, the outdoor-day look/grade, rear-view visibility of the livery, occlusion and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-kart-havoc/src/main.ts",
+        "sha256": "0c7f2bdaa39e9fccaa987a2cebee6bcd5bb42089ca93ea51fe91da83bff3b54f"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-kart-havoc/index.html",
+          "sha256": "0221c9025849015ca607706daed4c0c4893486c181bad98ad93ad1d9b3ac8229"
+        },
+        {
+          "path": "apps/showcase-kart-havoc/src/styles.css",
+          "sha256": "6405b4dda60e66ce66cf8f2218c45bf9b5ac147d3da033c4dff893394ebcf4ed"
+        },
+        {
+          "path": "apps/showcase-kart-havoc/src/aura-assets.ts",
+          "sha256": "5572f5cc818931445fa4ab94d740c9536aeee418e2501ed16ee0da67de2dcf9f"
+        },
+        {
+          "path": "apps/showcase-kart-havoc/public/aura-assets/heroKart.07989857.glb",
+          "sha256": "07989857aa040c207f65e44fd26eff65b469c493a9fc27e075fdea4d680e0445"
+        },
+        {
+          "path": "packages/engine/src/agent-api/GameGenreKits.ts",
+          "sha256": "77b2f859464c124d042eef145dc58d15d3321866bbedf5e4a2712530f802c405"
+        },
+        {
+          "path": "packages/engine/src/agent-api/game-kits/arcadeKart.ts",
+          "sha256": "eaf13a8e9b4eb1a00d2adfa03ca22bbca4639c7025ba6e66e59750b0db946b2a"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 546,
+          "y": 391,
+          "width": 189,
+          "height": 233,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "hero kart orange livery texels",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                60,
+                150
+              ],
+              "blue": [
+                0,
+                70
+              ],
+              "minFraction": 0.02,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-pips-big-leap",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Pip, the typed hero (assets.pip = pipsPip GLB, node pip), standing at the World 1 spawn",
+      "provenance": "Independently derived from the route source: Quick Play boots w1 (Whispering Forest, no blocking overlay; all pbl-overlay panels start hidden and #pbl-hud is pointer-events none). Pip spawns at [0, 0.62, 0.8] with spawnYaw/camYaw PI (worlds.ts, player.ts), drawn with targetHeight 1.25 scaleMode fit (feet at spawn y, centred in x/z; GLB POSITION extents 0.0066 x 0.009 x 0.0047 -> 0.92 x 1.25 x 0.65 m). w1 defaults to the diorama look, so after the 3.5 s fly-over driveAnimation sets the follow pose with miniatureFramingFor(16/9) (fov 46, boom 4.5, lift 1.7); no w1 decor or NPC camera obstacle lies between Pip and the lens, so clearance is 1: position [0, 2.32, 5.3], target [0, 1.17, -2.4]. Pip projects to x 554-726, y 319-543; the region is the projected torso core x 603-677, y 369-503 so it stays on Pip at any idle yaw. Bands come from an area-weighted histogram of the BakedMaterial texels addressed by Pip's own UVs (brown 96-127/32-63/0-31 about 53%, tan 224-255/128-159/32-63 about 36%); the brown band's green limit excludes the grass start platform. No reference capture. Skinned idle pose, PIP_GLOSS clearcoat, lighting, grade and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-pips-big-leap/src/main.ts",
+        "sha256": "dff7c024bf4e22e7e7a4eb8958525ac769338af831e3b09d857dedf7440d9c5b"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-pips-big-leap/index.html",
+          "sha256": "27a60c760f0f7cad2e30295757e51f9566734cd3719c140b65adad25bc87e5b2"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/styles.css",
+          "sha256": "7384a2a29aaf6f547028de12247df3809ae5fc706b36b674cafb0f76753e1dc6"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/aura-assets.ts",
+          "sha256": "8068508d4bc0a49b8c58d3528d530c4bde06f0dc5da2fa6714369eb34f2687cf"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/aura-catalog.ts",
+          "sha256": "e163d7ef6ca30934c5d2b617f8eb6a4f7743267fcc483ccec5c690e8cf5b4920"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/public/aura-assets/pipsPip.fcd4256f.glb",
+          "sha256": "fcd4256f0224f438f30bc72957bedca97de7b4728535118bb3b8b344b8860bfd"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/worlds.ts",
+          "sha256": "525975d7b8a683279c28041ce80fb49a02a2f509bd3e87364e7976472603f8f6"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/player.ts",
+          "sha256": "09f4f0d7228b3f458acbdf0cbd689bf49d4689dcce6d0b4dfa87f449a125285b"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/looks.ts",
+          "sha256": "6b5f31d45b8b35d9c73d5c3d2802ea76f4044e4f7499380783873b2652e82ac8"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/world.ts",
+          "sha256": "cc9ed998159aa8e082873e9de8bdacc72dad09c1b521392be01eea52d5e286de"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
+          "sha256": "a17ef82192f7e1a3eea5ea7fe22734b3a06050f7d0773f97ef22319fe837f2e2"
+        },
+        {
+          "path": "apps/showcase-pips-big-leap/src/game/presentation.ts",
+          "sha256": "7e003f9579425667e792dc0aa9999c9895dc13e6740fe0748b2fb90a496c38ff"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 603,
+          "y": 369,
+          "width": 74,
+          "height": 134,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "Pip brown fur texels",
+              "red": [
+                70,
+                210
+              ],
+              "green": [
+                15,
+                105
+              ],
+              "blue": [
+                0,
+                70
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.9
+            },
+            {
+              "name": "Pip tan muzzle texels",
+              "red": [
+                175,
+                255
+              ],
+              "green": [
+                100,
+                200
+              ],
+              "blue": [
+                20,
+                130
+              ],
+              "minFraction": 0.005,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-slingshot-siege",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Left column of the level-0 'First Splinter' wood tower: three solid lacquered wood blocks (instanced rounded boxes, family v-blocks-wood)",
+      "provenance": "Independently derived from the route source: START_LEVEL 0 (no ?level) is chapter 0 'First Splinter', tower(F=7.2, z 0, 2 cols x 3 rows, 0.7 x 0.34 x 0.7) in levels.ts on the ground slab whose top is y 0 (sim.ts/stage.ts). Chapter 0's look row has solidBlocks true and ORIGINAL_LOOK_CHAPTERS is empty, so wood blocks are SOLID_BLOCK_MATERIALS.wood, material.physical #a8703f (sRGB 168,112,63) with clearcoat 0.55. After the 3 s intro the settled 'aim' camera is dp=[-0.1 + sin(0.3t)*0.4, 4.0, 15.5] fitted by layout.ts fitHalfWidth (fov 55, aspect 1280/720, half width 10.6, exact) to target [-0.1, 1.6, 0], i.e. about [-0.1, 3.353, 11.319]. The left column's front face projects to x 1047-1084, y 399-457 over the full sway range; the region keeps clear of the plank above (y <= 394) and of the baked hill boulder (sling_rocksA.glb, placement [8.1, 0, 2.9] scale 2.8) that a triangle rasterisation of the real GLB shows covering the right column (0.000 coverage of this region at sway -0.4, 0 and +0.4). Bottom-right gull counter and bottom-centre ammo bar are outside. No reference capture. Sun/IBL lighting, the daylight grade, bloom, block settling and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-slingshot-siege/src/main.ts",
+        "sha256": "0803ba9e588ad0653c8f8836e22f7e567ea79624e13001a06b351908e272d09c"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-slingshot-siege/index.html",
+          "sha256": "c3a4ecc9a88f3b23d10469c068ed3fe5b0b74727e2b86be799d44942c9159bf2"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/styles.css",
+          "sha256": "e2c8a228d9007a96b0ad5628ece2f5c532959014f98cb3d0145db7f0da99ec44"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/levels.ts",
+          "sha256": "221bbf1b0857891b9bfbd6e030ab38eafd960329c7fa844f584329303f6b3451"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/layout.ts",
+          "sha256": "741c6d31e72d405d347b34cbf1d4c6e5d5cbb36b541abc7406e29ed60aad033e"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/stage.ts",
+          "sha256": "9a945286c22dbaaf8b99bafdf41487fc97f3977f8094387450dfca5445323fce"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/look.ts",
+          "sha256": "2c0b3ae25e72010ea0b29e3d1ab69be6304f9439bce593179aa3b1564fe4de5c"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/sim.ts",
+          "sha256": "6bf62c7c035969d686703e519254f74b36665b8d5b7566618169a4e5b0d92b43"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/game/presentation.ts",
+          "sha256": "abe6240bffa70006227c5e6b4b60bf3236480e3cefb43a79eac3ec47381fda27"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/art/staticSets.placements.json",
+          "sha256": "b26dd7dfb6a0b8797047b41e2b67e8df019d2eabe67175f5bbd27c602839963e"
+        },
+        {
+          "path": "apps/showcase-slingshot-siege/src/assets/models/sling_rocksA.glb",
+          "sha256": "cc22f8e4a553d39fb5eb083e0366180779faaf4900b3fff030ed00579859b5df"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 1048,
+          "y": 400,
+          "width": 34,
+          "height": 54,
+          "minContrast": 5,
+          "colors": [
+            {
+              "name": "lacquered wood block #a8703f",
+              "red": [
+                90,
+                255
+              ],
+              "green": [
+                50,
+                175
+              ],
+              "blue": [
+                15,
+                125
+              ],
+              "minFraction": 0.3,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:apps/showcase-turbo-ball",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Player orange rocket soccer car (typed heroCar GLB, node race-car) at its no-input kickoff spot",
+      "provenance": "Independently derived from source: with no input the hero car stays at its kickoff state x 0, z 11.2, heading 0 (createInitialMatchState; only ?autoplay=1 drives it) and syncSceneNodes yaws it -pi/2 so its 1.903-unit GLB X length lies along world Z. targetLength 3.6 gives scale 1.892 (width 1.669, height 1.048, bottom on the pitch per createModelMatrix). The default ball cam (setPose overrides the chase rig each frame) puts the eye 8.4 behind the hero along the hero-to-ball line at y 4.15, looking at 70% of the way to the ball at y 1.15 + 0.45 * ball.y, fov 60 at rest; eye, car and look target are collinear in plan so the car stays horizontally centred. At the kickoff pose (ball [0,0,0]: eye [0,4.15,19.6], target [0,1.15,3.36]) the car box projects to x 566-714, y 430-608 on the full-page 1280 x 720 canvas; the inner region stays inside the car's projection for ball distances 6-25 m on the ground. The orange band is the area-weighted chassis_body base-colour JPEG texels addressed by its UVs (~25% in 224-255/64-95/0-31, the rest dark grey), widened for the outdoor-day look and shadows. No reference capture. AI cars start moving after the automatic 0.75 s kickoff and can move the ball or nudge the car; lighting, post, occlusion and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "apps/showcase-turbo-ball/src/main.ts",
+        "sha256": "946bf39cc07c9658f8906cde8df97033e5d683a63ec97ac196b0c1fa45d98e22"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/showcase-turbo-ball/index.html",
+          "sha256": "041510f8eb34af5229054b02eb1ba8834ef3683a94bb4c2efec1cc9deee8f88f"
+        },
+        {
+          "path": "apps/showcase-turbo-ball/src/styles.css",
+          "sha256": "13556fa3dff1073ade87142e5c7ba8b08ca1bcaff58eadb9ecfeee55ab74dd5e"
+        },
+        {
+          "path": "apps/showcase-turbo-ball/src/aura-assets.ts",
+          "sha256": "aa985561e8713d5d60238fb653f4867652c35e6a71887593d7ec6fd10c028347"
+        },
+        {
+          "path": "apps/showcase-turbo-ball/public/aura-assets/heroCar.504dd96b.glb",
+          "sha256": "504dd96be58c6b6973c9c3eac930afb78ead8af062a546b1f559bd447e6bf04d"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 584,
+          "y": 476,
+          "width": 112,
+          "height": 90,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange hero car body",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                30,
+                140
+              ],
+              "blue": [
+                0,
+                80
+              ],
+              "minFraction": 0.03,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/context-recovery-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Resilience core sphere (authored PBR #76eef0, radius 0.51) crossed by the amber horizontal lifecycle ring, in the healthy pre-loss state",
+      "provenance": "Independently derived from the authored scene: camera.perspective position [0,1.35,10.8], target [0,0.35,0], fov 40 projected with lookAt + vertical-fov perspective onto the 864 x 720 canvas (grid column 1fr beside the 26rem aside at a 1280 px viewport, height 100vh). The core primitives.sphere (unit diameter, scale 1.02, at [0,0.72,0]) projects to x 385-479, y 279-373; the region is that disc's bounding square. The horizontal torus (major radius 0.43+0.045 tube, scale 1.58, rotated 90 deg about X) projects as a y 322-331 band across it; the vertical cyan ring is edge-on at x 432. Bands start from the authored #76eef0 core and #f5bc65 neon amber, widened for the outdoor-day look, metallic reflections, emissive bloom and tone mapping. No reference capture. Lighting, post, the context-loss cycle and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/context-recovery-lab/main.ts",
+        "sha256": "0d347a626c645fb130c6cde61a1c6bb376d9970977b2adabda0bce7df6c2d496"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/context-recovery-lab/index.html",
+          "sha256": "9bcee6feff60ab9a4962c74a90a1a993ffb83ea85fa35b81a4ffa1aa2440507a"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/geometry.ts",
+          "sha256": "c8042f5b76703653cdd2fa15a2412f59f6bd0f3f6b3008a5d701e0a59d5760aa"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 386,
+          "y": 280,
+          "width": 92,
+          "height": 92,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "cyan resilience core",
+              "red": [
+                20,
+                190
+              ],
+              "green": [
+                140,
+                255
+              ],
+              "blue": [
+                140,
+                255
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.95
+            },
+            {
+              "name": "amber lifecycle ring",
+              "red": [
+                190,
+                255
+              ],
+              "green": [
+                120,
+                255
+              ],
+              "blue": [
+                20,
+                235
+              ],
+              "minFraction": 0.005,
+              "maxFraction": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/custom-attributes-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Left red and right blue quads coloured only by the custom pigmentBase/paintOriginal vertex attributes",
+      "provenance": "Independently derived from the authored scene: camera.perspective position [0,0,7], target [0,0,0], fov 40 on the 640 x 320 #stage canvas (CSS: body padding 24px + 1px border, so content origin (25,25) in the 1280 x 720 viewport). The 2 x 2 quads centred at x -1.6 and +1.6 (z 0) project to x 182-307 and 383-508, y 122-248; the region spans both quads and the black gap/background between and around them. Colours are the authored pigmentBase [1,0,0] and [0,0,1] times (0.25 + 0.75 * paintOriginal=1), unlit custom GLSL with output toneMapping none and dither off, on background #000000; each quad is ~30% of the region. The lab's own sample windows (canvas 190-250 / 390-450 x 130-190) fall inside these projections. No reference capture. Attribute upload, shader compilation and rendered appearance remain unverified.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/custom-attributes-lab/main.ts",
+        "sha256": "5cafc85a4b32c9702cd2aacd6c54b90e957c761add4b090b9a125f7d402b0385"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/custom-attributes-lab/index.html",
+          "sha256": "e2233e873cb1de4a1fbca2c4454517d4d3e5bb7d1fd92f84da3eb6ed84b1ca8c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 170,
+          "y": 110,
+          "width": 350,
+          "height": 150,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "red pigmentBase quad",
+              "red": [
+                190,
+                255
+              ],
+              "green": [
+                0,
+                60
+              ],
+              "blue": [
+                0,
+                60
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.45
+            },
+            {
+              "name": "blue pigmentBase quad",
+              "red": [
+                0,
+                60
+              ],
+              "green": [
+                0,
+                60
+              ],
+              "blue": [
+                190,
+                255
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.45
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/custom-material-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "Left 'Ion Plasma' uv-sphere (PortableShaderMaterial ion-plasma, u_colorA [0.07, 0.18, 0.95] to u_colorB [0.93, 0.08, 0.62] mix) at NDC x -0.66",
+      "provenance": "Source-derived: the scene draws with modelViewProjection = model matrix (no camera), so the plasma sphere (Geometry.uvSphere radius 0.58, scale 0.47, translate [-0.66, 0.04]) maps directly to NDC centre (-0.66, 0.04), radius 0.2726 on a 1120x490 buffer shown at 1178x515.4 CSS px (main min(1180px, 100% - 40px) centred at x=50, 1px stage border). The canvas top depends on the header text wrap (eyebrow 14-17px, h1 54px*0.98 + 16px margins, 2-3 lines of 24.8px paragraph): 193.5..221.3 px; the region is chosen inside the sphere's vertical extent for that whole range and spans its left limb so it also contains the authored clear color [0.018, 0.024, 0.07]. Colors come from the authored u_colorA [0.07, 0.18, 0.95] / u_colorB [0.93, 0.08, 0.62] mix plus rim term; a CPU evaluation of the plasma fragment over the region (both hemispheres, t=0.3-0.8s, raw or sRGB-encoded output) gives a 0.64-0.82 band fraction and luma contrast >= 31. Assumes Playwright's hidden scrollbars (full 1280 px layout width). No reference capture was used. Font metrics, real layout, rendered output encoding and animation timing remain unverified.",
+      "source": {
+        "path": "examples/custom-material-lab/main.ts",
+        "sha256": "72d4fa78719d8e1579ad3290f0e569cc51dbb6de1fcf3e791587bcedc3adf882"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/custom-material-lab/index.html",
+          "sha256": "59480dc1b3712c0f09e2814f579e6d49247a32cd4064866a30ff464c9d8e483a"
+        },
+        {
+          "path": "packages/rendering/src/Geometry.ts",
+          "sha256": "8d35d996601ffc580858a84ef40e4ac2f47b13d6332fbf79061e0192af2525b3"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 70,
+          "y": 425,
+          "width": 160,
+          "height": 60,
+          "minContrast": 10,
+          "colors": [
+            {
+              "name": "ion-plasma blue-magenta",
+              "red": [
+                0,
+                255
+              ],
+              "green": [
+                0,
+                128
+              ],
+              "blue": [
+                140,
+                255
+              ],
+              "minFraction": 0.3,
+              "maxFraction": 0.92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/custom-shader-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "'chunk-sphere' primitive (material.custom with tint #f3b75c, scale 0.8 at [0, 0.75, 0])",
+      "provenance": "Source-derived: authored camera.perspective position [0, 1.6, 6.2], target [0, 0.4, 0], fov 46 (vertical) on the 1120x490 canvas (resize: false, aspect 16/7) shown at 1178x515.4 CSS px from x=51. The unit primitive sphere (radius 0.5, compiler/geometry.ts) scaled 0.8 and centred at [0, 0.75, 0] (primitives are not unit-normalized) projects to centre x 640, radius ~39 px, at canvas-y 224.2. The canvas top depends on the header text wrap (3-4 lines of the 24.8px paragraph): 218.3..246.1 px, so the sphere centre lies at y 442.5..470.3; the region spans the sphere's full width at y 441-473 (disc fraction ~0.70, the rest the #080a18 background) for that whole range. The gold band is grounded in the authored tint #f3b75c (243,183,92) mixed toward white by at most 0.4 (clock 0) and allows for the authored 4-level before-tonemap posterize pass, default ACES output and sRGB encode. No reference capture was used. Font metrics, real layout, the custom/post-pass color pipeline and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/custom-shader-lab/main.ts",
+        "sha256": "1d25b4549d7e7d9975dc7039c0bc4758bb03600dfb6767813c57dcc8e3eb4b29"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/custom-shader-lab/index.html",
+          "sha256": "d48b05a85fe2aaf09c6a419aa593f16123829f7db1a234c7223110b705d032c9"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/geometry.ts",
+          "sha256": "c8042f5b76703653cdd2fa15a2412f59f6bd0f3f6b3008a5d701e0a59d5760aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
+          "sha256": "734303c5168b2f6bf0d120fdb4cc87f2f6b27e93b7810b07035151a61ff04f7e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 590,
+          "y": 441,
+          "width": 100,
+          "height": 32,
+          "minContrast": 10,
+          "colors": [
+            {
+              "name": "chunk-sphere gold tint",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                80,
+                230
+              ],
+              "blue": [
+                0,
+                180
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/custom-shader-webgpu-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "material.custom adapter uv-sphere with tint #ff3a2a and sin(x) brightness bands (default ?backend=webgl2)",
+      "provenance": "Source-derived: Geometry.uvSphere(0.5) with column-major transform scale 0.8 used directly as the MVP, so the sphere is an NDC ellipse of radius 0.4 centred at (0,0): 112 x 64 px half-axes on the 560x320 canvas (CSS size equals buffer size), canvas at x=0 below the 12px #backend line (padding 6px; canvas top ~25.8-28 px). The region x 200-360, y 157-217 lies wholly inside the ellipse for that range. Colors: fragment = tint * (0.55 + 0.45 sin(gl_FragCoord.x * 0.06)) with tint set by hexToRgb('#ff3a2a') = (1, 0.227, 0.165) and raw (un-encoded) low-level output (the lab's own comment gives the clear color as ~(5,6,18) = raw 0.018/0.024/0.07); a per-column evaluation gives 0.58 bright and 0.42 dim fractions and luma contrast ~30. No reference capture was used. Real layout, backend selection and rendered output remain unverified.",
+      "source": {
+        "path": "examples/custom-shader-webgpu-lab/main.ts",
+        "sha256": "c3d3f8e4221e9cb33e9fb2a4d1334ba2e04bb363f7659eec5c3c7a4c19031d8d"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/custom-shader-webgpu-lab/index.html",
+          "sha256": "9f9d9301eedeeab9322a39033ee2e000ff66ff497b5dcb2e89f777eb92a787ed"
+        },
+        {
+          "path": "packages/rendering/src/Geometry.ts",
+          "sha256": "8d35d996601ffc580858a84ef40e4ac2f47b13d6332fbf79061e0192af2525b3"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 200,
+          "y": 157,
+          "width": 160,
+          "height": 60,
+          "minContrast": 10,
+          "colors": [
+            {
+              "name": "bright #ff3a2a tint bands",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                25,
+                75
+              ],
+              "blue": [
+                15,
+                60
+              ],
+              "minFraction": 0.25,
+              "maxFraction": 0.85
+            },
+            {
+              "name": "dim #ff3a2a tint bands",
+              "red": [
+                20,
+                149
+              ],
+              "green": [
+                0,
+                40
+              ],
+              "blue": [
+                0,
+                30
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/external-extension-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "Central cyan telemetry node 'c' at p=(0.12,-0.04) where four links converge, in the inactive (strength 0, time 1.25) host-baseline state",
+      "provenance": "Source-derived: installShell() lays out a grid with a minmax(0,1fr) stage and a 26rem (416px) aside, so at 1280x720 the canvas is 864x720 CSS px at (0,0) showing its 960x800 buffer (same 1.2 aspect, object-fit cover crops nothing). The external fullscreen-triangle shader maps p = ((uv.x-0.5)*1.42, uv.y-0.5); node c projects to (505.0, 388.8). A CPU evaluation of the authored fragment (inactive branch: base + (0.035,0.42,0.56)*(links*0.42 + cyan*0.34), pulse at time 1.25, raw 8-bit output) over the 80x80 region gives core fraction 0.015, glow/link fraction 0.52 and luma contrast 24.5; the pointer-events:none overlays are outside the region. No reference capture was used. Real layout, bilinear downscale, output encoding and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/external-extension-lab/main.ts",
+        "sha256": "3d09523951193b4449525ca3a8c3ed2f3440ba21b81e6da704847f737eaf0ca4"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/external-extension-lab/telemetry-extension.ts",
+          "sha256": "5c8f3edbabe37e3539262d4fa99aab77f6a117ac054cbe04e9a7c7fbf70fdd69"
+        },
+        {
+          "path": "examples/external-extension-lab/index.html",
+          "sha256": "c75f794ed7365ca5da18d94efad00c32e50ffadc1cd178df6affcd74cb6f2214"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 465,
+          "y": 349,
+          "width": 80,
+          "height": 80,
+          "minContrast": 10,
+          "colors": [
+            {
+              "name": "bright cyan node core",
+              "red": [
+                0,
+                110
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                180,
+                255
+              ],
+              "minFraction": 0.004,
+              "maxFraction": 0.12
+            },
+            {
+              "name": "dim cyan node glow and links",
+              "red": [
+                0,
+                40
+              ],
+              "green": [
+                35,
+                149
+              ],
+              "blue": [
+                50,
+                179
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/material-showroom",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "emissive-green PBR sphere ('material:emissive', uvSphere r=0.58 scaled 1.08 at x=-1.0, y=-0.98) in the material showroom grid",
+      "provenance": "Independently derived from the authored orthographic camera (left/right ±max(7.9, 4.45*960/540)=±7.91, bottom -2.9, top 2.5, resizeMode preserve-frustum) after the renderer's per-render camera resize to the 960x540 viewport (OrthographicCamera.resize preserve-frustum => y range [-4.649, 4.249]); 960x540 buffer presented as a full-width 1280x720 CSS canvas at (0,0) per installStyles (16:9 aspect, grid row 1). Sphere center projects to page (559, 423), radius ~51 px; region is the inscribed square. Cross-checked against the example's own readMaterialPixels emissive search box (x 370-490, y 150-265 from bottom in buffer pixels). Color from the authored emissiveColor [0.02, 0.95, 0.32] x 1.95 over baseColor [0.12, 0.44, 0.24] (green dominant). No reference capture. Lighting, environment reflections, tone response and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/material-showroom/main.ts",
+        "sha256": "52d95052744147fc920a7795032a66374f7e4959791613cd737592a4f7efe176"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/material-showroom/index.html",
+          "sha256": "42fe35a4394d7a539624656d8b5117d5bea9df2a78a3493a5755ffeab278f170"
+        },
+        {
+          "path": "packages/scene/src/OrthographicCamera.ts",
+          "sha256": "0d4a369f94a28633a56589b574a60702b8f81a24a662a124ed223213d4468675"
+        },
+        {
+          "path": "packages/rendering/src/Renderer.ts",
+          "sha256": "20206ea28388178a40d155611d34758214fc67e044af7a9a866eade6291e6c74"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 524,
+          "y": 388,
+          "width": 70,
+          "height": 70,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "emissive green sphere",
+              "red": [
+                0,
+                150
+              ],
+              "green": [
+                150,
+                255
+              ],
+              "blue": [
+                40,
+                240
+              ],
+              "minFraction": 0.25,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/parity-texture-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "left 'tex-data' plane (primitives.plane size 2.4 at x=-1.15) carrying the authored 16x16 orange/cyan checker data texture",
+      "provenance": "Independently derived: primitives.plane is the horizontal X/Z unit quad (compiler/geometry.ts createPlaneGeometry) scaled to 2.4x2.4 by primitiveSize; the authored camera [0, 0.3, 3.1] -> [0, 0, 0], fov 38, sees it at a grazing angle. Projected through the 960x540 #stage canvas at the default 8 px body margin (index.html has no CSS), the plane is a trapezoid spanning page y 257-325; the region is the projection of the interior world rectangle x in [-1.9, -0.4], z in [-0.6, 0.8] (page x 87-404 at y 266, x -155-353 at y 304), clipped inside. Colors are the authored checker texels (235,120,40) and (40,200,235) in sRGB, material color #ffffff, under the authored directional (2.4) and ambient (0.6) lights. No reference capture. Lighting, texture filtering at the grazing angle and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/parity-texture-lab/main.ts",
+        "sha256": "bbe952ce934118adbbab66473b88ad1361a5fb11180fa9c85e62926fc5f37931"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/parity-texture-lab/index.html",
+          "sha256": "4c8aa0a4aefa0ef4b4f5744aa28eb7971101fd27401d1bb62c750ba9204338a9"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/geometry.ts",
+          "sha256": "c8042f5b76703653cdd2fa15a2412f59f6bd0f3f6b3008a5d701e0a59d5760aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 100,
+          "y": 268,
+          "width": 250,
+          "height": 34,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange checker texel",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                50,
+                190
+              ],
+              "blue": [
+                0,
+                120
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.8
+            },
+            {
+              "name": "cyan checker texel",
+              "red": [
+                0,
+                130
+              ],
+              "green": [
+                120,
+                255
+              ],
+              "blue": [
+                150,
+                255
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/pbr-extension-texture-variants",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "clearcoat-variant textured PBR sphere (uvSphere r=0.78, scale 1.05, at x=-3.3) — leftmost of the four variant spheres",
+      "provenance": "Independently derived from the authored orthographic camera (left/right ±4.8, bottom/top ±2.7 at z=8; the default fit-vertical resize to 960x540 leaves it unchanged) and the installStyles layout: grid columns minmax(0,1fr) 320px at a 1280 px viewport give a 960x540 CSS canvas vertically centered at page (0, 90). 100 px per world unit puts the sphere center at canvas (150, 270) — matching the example's own variantCenters.clearcoat readback pixel — i.e. page (150, 360), radius ~82 px; region is the inscribed square. Color from the authored linear baseColor [0.72, 0.95, 0.86] (sRGB ~219, 249, 239, mint). The bottom variant-label strip (inset 18 px) lies below the sphere. No reference capture. Clearcoat shading, lighting and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/pbr-extension-texture-variants/main.ts",
+        "sha256": "90695afb3b8a981a1905128a355d92ad3198ab3361dbff752dc01b710bfbcbec"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/pbr-extension-texture-variants/index.html",
+          "sha256": "4cf09bc0afa4381dd2be3f1c855f639142b2b5ff3e4524ac325f34cb29104850"
+        },
+        {
+          "path": "packages/scene/src/OrthographicCamera.ts",
+          "sha256": "0d4a369f94a28633a56589b574a60702b8f81a24a662a124ed223213d4468675"
+        },
+        {
+          "path": "packages/rendering/src/Renderer.ts",
+          "sha256": "20206ea28388178a40d155611d34758214fc67e044af7a9a866eade6291e6c74"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 100,
+          "y": 310,
+          "width": 100,
+          "height": 100,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "mint clearcoat sphere",
+              "red": [
+                80,
+                245
+              ],
+              "green": [
+                128,
+                255
+              ],
+              "blue": [
+                100,
+                255
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/post-order-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "'dim-box' unit PBR box (#202636) at [1.6, 0.5, 0] in the post-order lab's initial slot-'none' frame",
+      "provenance": "Independently derived from the authored camera [0, 1.4, 6] -> [0, 0.5, 0], fov 46, on the 1120x490 #stage canvas at page (0, 0) (index.html CSS, resize false). The unit box's eight corners project to page x 656-780, y 194-303; the region is that projected bounding box, so its corners include the #05060d background. At the no-input state no band pass is registered (setSlot is only called through window.__AURA_POST_ORDER_LAB_SET_SLOT__), so the magenta band is absent. Color band from the authored #202636 (32, 38, 54) under the authored 0.25 directional key, excluding the #05060d background. No reference capture. Lighting, bloom, tone mapping and rendered appearance remain unverified; the subject is intentionally dim.",
+      "source": {
+        "path": "examples/post-order-lab/main.ts",
+        "sha256": "eb4cd942af339aee45116da3deb574fe4b89f36f94cb9816114027d9a84a2916"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/post-order-lab/index.html",
+          "sha256": "93f4177c748b628baea9d4e0ab8411410efa8d74cde69f2445e1f4b431ad8962"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 656,
+          "y": 194,
+          "width": 125,
+          "height": 109,
+          "minContrast": 5,
+          "colors": [
+            {
+              "name": "dim slate box",
+              "red": [
+                6,
+                90
+              ],
+              "green": [
+                8,
+                100
+              ],
+              "blue": [
+                14,
+                130
+              ],
+              "minFraction": 0.3,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/rapier-character-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "subject": "orange 'native autostep obstacle' box (#d97706, size [1.3, 0.3, 2.2] centered at [0, 0.15, 0])",
+      "provenance": "Independently derived from the authored camera [0, 2.7, 8.3] -> [0, 0.82, 0], fov 38. The injected layout (main grid minmax(0,1fr) 26rem, canvas width 100% / height 100vh, resize true, pixelRatio 1 at DPR 1) gives an 864x720 canvas at page (0, 0). The box corners project to page x 342-522, y 389-503; the region is that box inset 15%. The typed runner starts at x=-2.2 (projects near page x 155-167), clear of the region; the bottom-left title overlay starts below y~530. Color from the authored #d97706 (217, 119, 6). No reference capture. Lighting, the outdoor-day look, tone mapping and rendered appearance remain unverified.",
+      "source": {
+        "path": "examples/rapier-character-lab/main.ts",
+        "sha256": "2daa4497214831de5a4c1ec17c3d0fcdfba7c56239e5905aaad672892dcca034"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/rapier-character-lab/index.html",
+          "sha256": "782e939f58bd113bfc65627daa9519deb451d558024c9c067e2ef2980393f17f"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 369,
+          "y": 406,
+          "width": 126,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "amber obstacle",
+              "red": [
+                140,
+                255
+              ],
+              "green": [
+                50,
+                175
+              ],
+              "blue": [
+                0,
+                90
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/recast-crowd-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Amber 'unwalkable central obstacle' box (#d97706) on the navigation deck",
+      "provenance": "The shell (installShell, main.ts) lays the canvas out as the 1fr column of a grid with a 26rem aside, so at 1280x720 the canvas is 864x720 at (0,0). The obstacle box (unit primitive scaled [2,1,3] at [0,0.5,0], primitives.ts unit-size rule) was projected through the authored perspective camera (position [0,7.2,11.5], target [0,0.25,-0.5], fov 42, aspect 864/720, sceneMath lookAt + RootRuntimeSupport vertical-fov projection); the region is its projected bounding box (x 352-512, y 285-453). No crowd agent, gate or the lead actor starts inside x in [-1,1] (NAVIGATION.starts), and the HUD overlays are pointer-transparent and outside the box. The band starts at the authored #d97706 (217,119,6) and widens for the outdoor-day look, key light and tone mapping. Lighting, the skyline model behind it, post and rendered appearance remain unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/recast-crowd-lab/main.ts",
+        "sha256": "52226e9b69f6bd3c895e77f56e3afbb65fb0d313e1fb2fda538553d156c552fb"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/recast-crowd-lab/index.html",
+          "sha256": "b70b2dff8b4ec16e5e9a9bd8b099dafa3b67bb918dcd83d3a79cfd1ea4c665cb"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 352,
+          "y": 285,
+          "width": 160,
+          "height": 168,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "amber obstacle material #d97706",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                60,
+                175
+              ],
+              "blue": [
+                0,
+                90
+              ],
+              "minFraction": 0.15,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/rendering-large-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Native instanced 'data highlands' terrain cells (per-instance elevation colors) right of the central tower, overview camera",
+      "provenance": "The shell grid gives a 880x720 canvas at (0,0) (1fr + 25rem aside). The default overview camera is orthographic (position [14,12,17], target [0,0.8,0], orthographicSize 10.5 = half height per RootRuntimeSupport). buildTerrainInstances was re-evaluated exactly (50x50 cells, heights and the four elevation colors); projecting each cell top through that camera puts 462 cells in the region x 560-760, y 300-450 (teal #48c4b7: 204, blue #287ca0: 104, navy #183f66: 118, gold #f2c66d: 36). The central tower and ring project to x~440 and the bottom-left title block ends above y~545, so neither is inside. The teal band starts at #48c4b7 (72,196,183) on the white PBR instanced material and is widened for sun shading, fog and tone mapping. Lighting, the LOD tower, occlusion between cells and rendered appearance remain unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/rendering-large-scene/main.ts",
+        "sha256": "7795d170624a48ad7e568211771cd43bf7317e247d363258565fc2aa7a79875e"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/rendering-large-scene/index.html",
+          "sha256": "a8af793c8faa672f15bdddbc2d59eacdb128f09c277f5c5e0e4cde7690bfe494"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 560,
+          "y": 300,
+          "width": 200,
+          "height": 150,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "teal mid-elevation instance color #48c4b7",
+              "red": [
+                20,
+                140
+              ],
+              "green": [
+                110,
+                255
+              ],
+              "blue": [
+                100,
+                240
+              ],
+              "minFraction": 0.05,
+              "maxFraction": 0.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/shader-failure-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Gold 'valid-box' (#e0b030, size 2) on the left of the shader-failure scene",
+      "provenance": "index.html stretches the 320x180 canvas (main.ts sets the backing size) to 100vw x 100vh, i.e. 1280x720 with the same 16:9 aspect. The 2x2x2 valid box at [-2.4,0.5,0] was projected through the authored camera (position [0,1.5,9], target [0,0.5,0], fov 40) to x 217-504, y 250-494; the region is that box. The band starts at the authored #e0b030 (224,176,48) under ambient 0.9 + directional 1.4 and is widened for shading/tone mapping. The default route also adds the deliberately broken box on the right, which is outside the region. Lighting, the shader-failure handling and rendered appearance remain unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/shader-failure-lab/main.ts",
+        "sha256": "5d1ec793449b33cb65053753c15fc42d629299fc6f3b461e6b64a97e22663ba7"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/shader-failure-lab/index.html",
+          "sha256": "755403b34b528fcc39abdd76c0b0a328f2b9505b450cd1b6eeb6254df311177c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 217,
+          "y": 250,
+          "width": 287,
+          "height": 244,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "gold valid-box material #e0b030",
+              "red": [
+                160,
+                255
+              ],
+              "green": [
+                110,
+                235
+              ],
+              "blue": [
+                0,
+                130
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/spatial-audio-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Amber 'right HRTF emitter' neon sphere (#f59e0b) at its initial position [2.5,0.85,0]",
+      "provenance": "The shell grid gives a 864x720 canvas at (0,0) (1fr + 26rem aside). The emitter is a unit-diameter sphere scaled 0.62 placed by syncVisual at INITIAL.right [2.5,0.85,0]; its silhouette was projected through the authored camera (position [0,3.1,8.5], target [0,0.8,0], fov 39, aspect 864/720) to x 684-759, y 319-390, and the region pads that box by ~8 px so it contains the dark stage/background edge. The fit headphone model (targetHeight 2, typed bounds 936.9 x 960.5 x 382.4 in src/aura-assets.ts, so about 1.95 units wide) projects to x 310-554 and does not overlap. Band from the authored #f59e0b (245,158,11) with emissiveIntensity 1.8, widened for tone mapping. Lighting, emission/bloom response and rendered appearance remain unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/spatial-audio-lab/main.ts",
+        "sha256": "95a5d0df2e0482094943a89c18975bdab91265ddab4a10e2b4165e6f6e6d08d8"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/spatial-audio-lab/index.html",
+          "sha256": "5dbc4e13d26ad4a16994691398bfae09bf8da516a46d796cfb03379134018646"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        },
+        {
+          "path": "src/aura-assets.ts",
+          "sha256": "b50744bb712ea020bce66cb216e91d8d38eafc44c7cb77208fab12ff2331cc58"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 676,
+          "y": 310,
+          "width": 92,
+          "height": 90,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "amber emitter neon #f59e0b",
+              "red": [
+                180,
+                255
+              ],
+              "green": [
+                100,
+                240
+              ],
+              "blue": [
+                0,
+                170
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/spatial-text-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Hero extruded mesh text 'AURA3D' (#ffd276, size 0.9) in the front view",
+      "provenance": "The shell grid gives a 864x720 canvas at (0,0) (1fr + 26rem aside). text3D defaults to the extruded-mesh backend (nodes/text3d.ts); createAuraText3DGeometry (RootGeometry.ts) lays the 5x7 bitmap glyphs from the local origin with cell size/7 and spacing 0.14*size, so 'AURA3D' spans about 4.49 x 0.9 units, placed at [-4.1,0.2,0] with a small [-0.05,0.04,0] rotation. Projected through the front camera (position [0.2,1.15,13.2], target [0,0.72,0], fov 37) it covers x 95-464, y 329-403. The region keeps x 100-400 because the pointer-transparent 'Tracks its world anchor' DOM label is centered near (559,401) (WorldLabelRenderer translate(-50%,-50%)) and could reach left to ~410. The band starts at the authored #ffd276 (255,210,118) under a 4.8 warm key and is widened for metallic shading and tone mapping. Lighting, bloom/fog and rendered appearance remain unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/spatial-text-lab/main.ts",
+        "sha256": "e72696e0ab19f27ede016b8dabb21bc990c04f18baeed62042ccb717931e3022"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/spatial-text-lab/index.html",
+          "sha256": "9020cb155db28ca4422aecc01d5fa2203200308d4e86137f19464c9c5b4a7ed2"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootGeometry.ts",
+          "sha256": "e3694c61eb829a818208bf9d1b542c3403b6d4926c92f897dad61efe0e95ac6e"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/text3d.ts",
+          "sha256": "6944df1c3f70c8973f7eafdda843d556174674ba542ca395a40cc78dfe5f1561"
+        },
+        {
+          "path": "packages/engine/src/agent-api/WorldLabelRenderer.ts",
+          "sha256": "b3f84f068b2550e94c96866f4646be73192beb27c5acc4c8bcad2f4bfadc10e3"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 100,
+          "y": 333,
+          "width": 300,
+          "height": 66,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "amber-gold extruded text #ffd276",
+              "red": [
+                150,
+                255
+              ],
+              "green": [
+                100,
+                255
+              ],
+              "blue": [
+                20,
+                220
+              ],
+              "minFraction": 0.08,
+              "maxFraction": 0.85
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/tsl-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Node A quad: constant tsl.color('#33aa55') node material at column -3.4, row 1.45",
+      "provenance": "index.html places the 640x320 canvas after 24 px body padding and a 1 px border, so its content box starts at (25,25). Quad A (half-size 0.75 at [-3.4,1.45,0]) projected through the authored camera (position [0,0,7], target origin, fov 40, aspect 2; the lab's own PX_PER_UNIT 62.8) covers x 84-179, y 47-141 in page pixels. The region (x 62-200, y 30-150) contains the quad (~54% of the region) plus black background, and stays clear of quad D (top edge at y 154) and quad B (left edge at x 298). Output is authored as identity (toneMapping none, no dither); the band allows both an sRGB-encoded #33aa55 (51,170,85) and a linear-written value. Rendered appearance remains unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/tsl-lab/main.ts",
+        "sha256": "e8a51730e968d5465d5fea10f21ace76dd6f4d9013b872abad9f10c1e5df161a"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/tsl-lab/index.html",
+          "sha256": "adc52ed2b1c4058076a99865ef277f12d976a4a5141f7b099e617365c543629c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 62,
+          "y": 30,
+          "width": 138,
+          "height": 120,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "green constant node colour #33aa55",
+              "red": [
+                0,
+                100
+              ],
+              "green": [
+                90,
+                215
+              ],
+              "blue": [
+                0,
+                130
+              ],
+              "minFraction": 0.3,
+              "maxFraction": 0.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documented-example:examples/xr-lab",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "subject": "Emissive red cube 'red-cube' (#ff0000, size 0.5) in the non-presenting (mono) view",
+      "provenance": "index.html fixes the canvas at 640x360 at (0,0) with resize false, and the XR button is appended in normal flow below it (xrButton.ts sets no positioning). Without an XR session the app renders the authored camera (position [0,1.6,0], target [0,1.6,-3], fov 60, aspect 640/360); the 0.5 cube at [-0.7,1.6,-3] projects to x 212-277, y 152-208 and the region pads it with black background. The magenta cube projects above (y < 96) and the green cube to x 363-428. Output is identity (toneMapping none) and the material is pure red with emissiveIntensity 3, so the band matches the lab's own red classifier (r>180, g,b<70). Rendered appearance remains unverified. No reference capture was used; the numbers are unverified source-derived hypotheses.",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "examples/xr-lab/main.ts",
+        "sha256": "4a0443d0efc8b78bf3be237e7d462941b7dd3783d1c7554f2647c03ae940b87a"
+      },
+      "sourceDependencies": [
+        {
+          "path": "examples/xr-lab/index.html",
+          "sha256": "c1a654a1caabf66a6cdcf6ea9dc69d25d4a170281d5cf6dbc46e666afd1ead22"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
+        },
+        {
+          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/primitives.ts",
+          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+        },
+        {
+          "path": "packages/engine/src/agent-api/xr/xrButton.ts",
+          "sha256": "f9e1261aab970496c6563118057b924f49fc3a4a71b1159410ef280742331a1f"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 196,
+          "y": 140,
+          "width": 96,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "emissive red cube #ff0000",
+              "red": [
+                200,
+                255
+              ],
+              "green": [
+                0,
+                70
+              ],
+              "blue": [
+                0,
+                70
+              ],
+              "minFraction": 0.2,
+              "maxFraction": 0.8
             }
           ]
         }

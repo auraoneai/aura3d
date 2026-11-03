@@ -94,13 +94,16 @@ Khronos glTF-Sample-Assets models the tests need are now tracked under
 Note on `antique-camera.glb`: the canonical file at the pinned revision (and
 on `main`) is 17,540,348 bytes, SHA-256
 `ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2`; that is
-what is tracked. Several tracked pins
-(`tests/assets/corpus/gltf-corpus.manifest.json`,
+what is tracked. The pins that recorded `7480f9bed391…` (32,375,420 bytes, a
+local copy of unknown provenance) for the same URL were re-pinned to the
+canonical digest in 5.0.0 release prep:
+`tests/assets/corpus/gltf-corpus.manifest.json`,
+`tests/assets/corpus/gltf-100-classification.manifest.json`,
 `benchmarks/quality-rebuild/shared/assets.ts`,
-`templates/production-*/asset-manifest.json`) record `7480f9bed391…`
-(32,375,420 bytes, a local copy of unknown provenance) for the same URL. No
-vitest case checks that digest; the benchmark/template pins need updating to the
-canonical digest.
+`templates/production-{architecture-viewer,asset-inspector}/asset-manifest.json`
+and the golden `tests/qr/prd02/golden/base-scene-snapshots.json`. The official
+file's scene bounds (re-measured with glTF-Transform `getBounds`) are
+2.597 x 7.209 x 3.395, matching the recorded `worldSize`, so no bounds changed.
 
 ## 3. Other source-pass reads of gitignored paths (`tests/unit`, `tests/assets`, `tests/qr`, `tests/integration`)
 
