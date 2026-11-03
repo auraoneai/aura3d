@@ -1,4 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { instances, material } from "@aura3d/engine";
 import { upgradeProductionPrimitiveTextures } from "@aura3d/engine-runtime";
 import { InstancedPBRMaterial, TexturedPBRMaterial } from "@aura3d/rendering";
@@ -8,7 +10,9 @@ afterEach(() => vi.unstubAllGlobals());
 
 test("plain instanced primitive upgrades to textured material without losing authored instance transforms", async () => {
   const close = vi.fn();
-  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array([0]))));
+  // 5.0 verifies typed bitmap bytes against the asset's declared SHA-256, so serve the fixture's real bytes.
+  const checkerBytes = readFileSync(resolve(process.cwd(), "tests/browser/fixtures/c1-extension/generated/checker.99496e5e.png"));
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(new Uint8Array(checkerBytes))));
   vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1, height: 1, close })));
   const sourceNode = instances.sphere({ name: "plain textured instances", transforms: [
     { position: [-1, 0, 0], scale: .5 }, { position: [1, 0, 0], rotation: [0, .5, 0] }

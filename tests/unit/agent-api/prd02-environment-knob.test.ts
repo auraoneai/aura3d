@@ -406,8 +406,14 @@ describe("E3 step 4: generated procedural-specular-always deleted on the conjunc
       { flags }
     );
   const sha = (source: string) => createHash("sha256").update(source).digest("hex");
-  const PROC_SPEC_LINE =
-    "  indirectSpecular += a3dIndirectSpecular(a3dProceduralSpecularRadiance(reflect(-V, N), material.roughness), a3dProcIrradiance, V, N, material);";
+  // 5.0: the procedural specular radiance is bound to a local so local
+  // reflection probes can scale it by the global-probe weight; the block is
+  // still the single procedural specular add.
+  const PROC_SPEC_LINE = [
+    "  vec3 a3dProcSpecular = a3dProceduralSpecularRadiance(reflect(-V, N), material.roughness);",
+    "#ifdef A3D_LOCAL_PROBE\n  a3dProcSpecular *= a3d_probeGlobalWeight();\n#endif",
+    "  indirectSpecular += a3dIndirectSpecular(a3dProcSpecular, a3dProcIrradiance, V, N, material);"
+  ].join("\n");
   // Every stacked body term from the stage-2b trace §1 (generated family):
   // ambient 1/pi, π-scaled sampled diffuse+specular, procedural specular.
   // The sampled diffuse is pinned by its `PI * a3dSampleEnvironment` source
@@ -417,7 +423,7 @@ describe("E3 step 4: generated procedural-specular-always deleted on the conjunc
     "indirectDiffuse += a3dAmbientDiffuse(",
     "PI * a3dSampleEnvironment(N, 8.0)",
     "indirectSpecular += a3dIndirectSpecular(a3dSampleEnvironment(a3dReflect, a3dRoughLod), a3dEnvIrradiance, V, N, material);",
-    PROC_SPEC_LINE.trim()
+    "indirectSpecular += a3dIndirectSpecular(a3dProcSpecular, a3dProcIrradiance, V, N, material);"
   ];
 
   it("conjunction + prd02.ibl: no legacy stacked marker survives in the source", () => {

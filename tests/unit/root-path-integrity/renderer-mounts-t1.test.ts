@@ -143,9 +143,15 @@ const renderer = await A3DRenderer.create({ canvas });`;
  *   undocumented mount — fails the test until it is updated with the new
  *   source-verified set.
  */
+// Source-verified 2026-11-02 (5.0): the 5.0.0 subpath removal migrated
+// scene-player.ts from `@aura3d/engine/rendering` to `@aura3d/engine/renderer`,
+// so the same mount (`Renderer.create`) now classifies as the bare core
+// renderer it is. `apps/asset-lookdev/src/three-adapter.ts` (on main since
+// 77dad2e08, PRD-05 look-dev A/B sheet) mounts a three.js WebGLRenderer beside
+// the Aura adapter; removing the comparison engine is an owner decision.
 const KNOWN_UNDOCUMENTED_MOUNTS: readonly string[] = [
-  "packages/create-aura3d/templates/animation-studio/src/scene-player.ts :: A3DRenderer subordinate mount outside apps/ (scope: templates)",
-
+  "apps/asset-lookdev/src/three-adapter.ts :: forbidden renderer primitive: three.js WebGLRenderer mount",
+  "packages/create-aura3d/templates/animation-studio/src/scene-player.ts :: bare core Renderer.create mount outside apps/ evidence routes (scope: templates)",
 ];
 
 function readRouteSources(): Array<{ path: string; content: string }> {

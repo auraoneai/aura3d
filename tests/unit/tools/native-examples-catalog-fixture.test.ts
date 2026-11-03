@@ -1325,15 +1325,44 @@ describe("source-backed native example catalog fixture", () => {
       "template:character-controller": [[100, 65, 40], [215, 229, 236]],
       "template:fighting-game": [[100, 65, 40], [70, 20, 15]],
       "template:animation-channel": [[125, 226, 255]],
-      "template:animation-studio": [[160, 163, 168]]
+      "template:animation-studio": [[160, 163, 168]],
+      // Documented examples: one sample inside each authored band.
+      "documented-example:apps/postprocessing-custom": [[193,  110,  65]],
+      "documented-example:apps/showcase-aura-fc-3d": [[160,  60,  55]],
+      "documented-example:apps/showcase-aura-hoops-3d": [[213,  118,  50]],
+      "documented-example:apps/showcase-bean-brawl-race": [[198,  64,  64]],
+      "documented-example:apps/showcase-cross-hop": [[80,  100,  45]],
+      "documented-example:apps/showcase-kart-havoc": [[203,  105,  35]],
+      "documented-example:apps/showcase-pips-big-leap": [[140,  60,  35],  [215,  150,  75]],
+      "documented-example:apps/showcase-slingshot-siege": [[173,  113,  70]],
+      "documented-example:apps/showcase-turbo-ball": [[203,  85,  40]],
+      "documented-example:examples/context-recovery-lab": [[105,  198,  198],  [223,  188,  128]],
+      "documented-example:examples/custom-attributes-lab": [[223,  30,  30],  [30,  30,  223]],
+      "documented-example:examples/custom-material-lab": [[128,  64,  198]],
+      "documented-example:examples/custom-shader-lab": [[203,  155,  90]],
+      "documented-example:examples/material-showroom": [[75,  203,  140]],
+      "documented-example:examples/parity-texture-lab": [[203,  120,  60],  [65,  188,  203]],
+      "documented-example:examples/pbr-extension-texture-variants": [[163,  192,  178]],
+      "documented-example:examples/rapier-character-lab": [[198,  113,  45]],
+      "documented-example:examples/recast-crowd-lab": [[203,  118,  45]],
+      "documented-example:examples/rendering-large-scene": [[80,  183,  170]],
+      "documented-example:examples/shader-failure-lab": [[208,  173,  65]],
+      "documented-example:examples/spatial-audio-lab": [[218,  170,  85]],
+      "documented-example:examples/spatial-text-lab": [[203,  178,  120]],
+      "documented-example:examples/tsl-lab": [[50,  153,  65]],
+      "documented-example:examples/xr-lab": [[228,  35,  35]]
     };
+    // Patch width per band where the default half-region patch falls outside a
+    // case's authored fraction bounds, and a warm wrong color for cyan/teal subjects.
+    const sampleScale: Record<string, number> = { "template:racing-starter": 0.4, "documented-example:apps/showcase-slingshot-siege": 0.62, "documented-example:examples/custom-attributes-lab": 0.6, "documented-example:examples/custom-material-lab": 0.6, "documented-example:examples/tsl-lab": 0.61 };
+    const warmWrong = new Set(["documented-example:examples/context-recovery-lab", "documented-example:examples/rendering-large-scene"]);
     const data = fixture();
     expect(new Set(data.cases.map(({ id }) => id))).toEqual(new Set(Object.keys(samples)));
     for (const entry of data.cases) {
       const region = entry.regions[0]!;
       const colors = samples[entry.id]!;
       const right = image();
-      const width = Math.floor(region.width * (entry.id === "template:racing-starter" ? 0.4 : 0.5) / colors.length);
+      const width = Math.floor(region.width * (sampleScale[entry.id] ?? 0.5) / colors.length);
       const height = Math.floor(region.height * 0.5);
       colors.forEach((color, index) => paint(right, region.x + 10 + index * width, region.y + 10, width, height, color));
       expect(compareNumericCatalogRegions(right, WIDTH, HEIGHT, entry.regions)[0]?.pass, entry.id).toBe(true);
@@ -1351,7 +1380,7 @@ describe("source-backed native example catalog fixture", () => {
       }
 
       const wrong = image();
-      const wrongColor = entry.id.endsWith("custom-shader") ? [216, 138, 74] : [31, 143, 184];
+      const wrongColor = entry.id.endsWith("custom-shader") || warmWrong.has(entry.id) ? [216, 138, 74] : [31, 143, 184];
       paint(wrong, region.x + 10, region.y + 10, width, height, wrongColor);
       const wrongResult = compareNumericCatalogRegions(wrong, WIDTH, HEIGHT, entry.regions)[0]!;
       expect(wrongResult.contrast).toBeGreaterThanOrEqual(region.minContrast);

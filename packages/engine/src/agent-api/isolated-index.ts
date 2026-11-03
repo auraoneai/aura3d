@@ -11,6 +11,9 @@ export type { AuraOrbitRig, OrbitRigOptions } from "./camera/rigs/orbit.js";
 export { effects } from "./nodes/effects.composite.js";
 export { environments } from "./nodes/environments.composite.js";
 export { interactions } from "./nodes/interactions.js";
+// Public (docs/api/root-exports.md): the root exports it, so the staged v5 entry does too.
+export { bindPointerInteractions } from "./nodes/pointerInteraction.js";
+export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, AuraPointerInteractionEvent, AuraPointerInteractionPhase } from "./nodes/pointerInteraction.js";
 export { primitive, primitives } from "./nodes/primitives.js";
 export { instances } from "./nodes/instances.js";
 export { material } from "./nodes/material.js";

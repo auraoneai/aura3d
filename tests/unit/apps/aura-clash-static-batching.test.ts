@@ -17,7 +17,7 @@ import { resolve } from "node:path";
  */
 describe("Aura Clash arena enables renderer-owned static batching", () => {
   const source = readFileSync(
-    resolve(process.cwd(), "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"),
+    resolve(process.cwd(), "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts"),
     "utf8"
   );
 

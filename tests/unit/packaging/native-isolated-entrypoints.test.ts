@@ -89,7 +89,8 @@ describe("versioned engine entrypoint mappings", () => {
   });
 
   it("resolves the independent hull through its versioned source alias", async () => {
-    const { ConvexHull, Vector3 } = await import("@aura3d/engine/v5/math/hull");
+    // The entry names its vector type `HullVector3` (key set pinned in native-independent-hull-entry.test.ts).
+    const { ConvexHull, HullVector3: Vector3 } = await import("@aura3d/engine/v5/math/hull");
     const hull = ConvexHull.fromPoints([
       new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)
     ]);

@@ -15,6 +15,8 @@ as the compatibility baseline for a new candidate, not a promise of backports or
 an additional supported release line. An actual registry publication and its
 availability must be verified separately from the version in this repository.
 
+Support wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.
+
 ## Scope and status
 
 - **Stable:** documented, non-experimental public package exports and CLI

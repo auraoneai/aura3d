@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "b53af11c36b21bab857578cadb0114ecc50b1ea6c7449c615a1383b27ee331f1" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "bc9a4a103db6c38d9d1e04dcf88313367ecf17784c4789a6bb49d996a55deb0f" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "94909d3b5df357b8b497f4e4a8a99ad187132e23b31ced071f978413128f74dc" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -179,7 +179,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/arena-shooter/src/main.ts",
-        "sha256": "25e890719ed3f009614bacfc42149b6fd699ece3e63280f3d71ce11f7f565312"
+        "sha256": "ef5f05cdf7da8cd354751d094409a359db797bdddb126acf8c3ca574fb8e9e06"
       },
       "sourceDependencies": [
         { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
@@ -1066,7 +1066,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "70b1d1f48b72f4959431a8640a4893c8f4bbe9bf4f37ecc2f9bafbcb671b1f14"
+          "sha256": "cb0ccc4a74d772aace561406cf37e29a99c7315fcdb05a541952f1aa95c6db18"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
@@ -1613,12 +1613,12 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/character-controller/src/main.ts",
-        "sha256": "13a43c9d8b150fd9f53389023c196ed46068664601ed8deb0585a6b1de6da03c"
+        "sha256": "17528358b132eb267db02a7a259bdb6cd4f15562276c54bcca4df199fab8335c"
       },
       "sourceDependencies": [
         {
           "path": "templates/character-controller/src/main.ts",
-          "sha256": "13a43c9d8b150fd9f53389023c196ed46068664601ed8deb0585a6b1de6da03c"
+          "sha256": "17528358b132eb267db02a7a259bdb6cd4f15562276c54bcca4df199fab8335c"
         },
         {
           "path": "packages/create-aura3d/templates/character-controller/src/aura-assets.ts",
@@ -1825,7 +1825,7 @@
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
-          "sha256": "b34ad3f44077f532e57ab3b1a7446432c281d1b58562ba6606abccbf6ef7f352"
+          "sha256": "c39586fd75004a71e0b40cc010537ad4fa725c76f599ba375d7445d4d045e68f"
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/index.html",
@@ -2246,121 +2246,6 @@
               ],
               "minFraction": 0.05,
               "maxFraction": 0.95
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:apps/showcase-dot-dash-3d",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "subject": "Classic 'Relay Grid' maze board, lower-left block (tiles x 1-7, rows 15-19): green FR-4 solder-mask board with black epoxy wall chips",
-      "provenance": "No reference capture: independently derived from source. Quick Play autostarts on the classic maze (src/main.ts) and the board holds until the first direction (hud.ts 'READY ... Press a direction to move'), so the no-input frame is static. A fresh profile's camera is 'overhead' (save.ts cameraDefault), i.e. the CAMERA_RIG [0, 17.2, 13.8] -> [0, 0, 0], fov 48 pulled back by camera.ts fitDistanceScale at aspect 1280/720 times FRAME_PULL_BACK 1.06 (k = 1.3076, eye [0, 22.49, 18.04]); the intro rail cinematic is disabled when navigator.webdriver is true (motion.ts cinematicsAllowed). Tiles map to world x = col - 9, z = row - 10 (world.ts); the block's corners at board top (-0.02) and wall top (0.6) project to x 333-593, y 459-622 on the full-viewport canvas (styles.css #app inset 0), clear of the 30%-height READY banner. In that block 12 of 35 tiles are 0.9 x 0.6 x 0.9 wall chips coloured BOARD_PARTS.epoxy #141416 (look.ts); the rest is board mask #1f4a38 (look.ts classic row; boardMaterial.ts bakes it as albedo) with copper #c8743a traces and one surge cell. Lighting, clearcoat, LUT grade, shadows and rendered appearance remain unverified; the dark band can also match shadowed mask.",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "source": {
-        "path": "apps/showcase-dot-dash-3d/src/main.ts",
-        "sha256": "8103e4ce37f52e037a9b8247d2eadf75a2897ec7b3cb03563191e9bd28b899e6"
-      },
-      "sourceDependencies": [
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/world.ts",
-          "sha256": "aba0609f4cbfe557184a41a7796b9703f8de9430d1ddb6537928664c26809faf"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/camera.ts",
-          "sha256": "7ea6448228bc5221ac8390fa3178ea3ce07cc2a82ec8c24f40b866ce1f5a082f"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/look.ts",
-          "sha256": "b98661d494b2e0f1d2324f19f6ba4a996ffc86db127c344bf6657bc89d6ec591"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/save.ts",
-          "sha256": "4632677e775971a24e27e7ad0508f095942a62251ab1b658652e3c7f956192d4"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/sim.ts",
-          "sha256": "e46d042bba8cedcb7b65e0ff9d1857666bbdb3e61cdd926d515b11dcbc5692d6"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/mazes.ts",
-          "sha256": "2ea1758695a1fd80c8ed7b6190f6488b8a5e264f4e42c75ae0e503f5a70a3601"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/motion.ts",
-          "sha256": "3da7cc999d3a293d5fcb50f7f006e541e9a94dae3c2d19a7f29d9f19e149f8ae"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/boardMaterial.ts",
-          "sha256": "567c61f61eb94f6eaf6fb8ab7bbcdee67417a061ec760e7df54b7d2d559c4951"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/game/hud.ts",
-          "sha256": "1e9222229b7834b57a6d29cef76736e60df6d33cb7398d694304080263311e43"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/src/styles.css",
-          "sha256": "92426521938f31fd4a65da89f9bb977e4baee32c3f4be7cfd5350c0ece74e4e2"
-        },
-        {
-          "path": "apps/showcase-dot-dash-3d/index.html",
-          "sha256": "d39f297df0e335c13a91043615a2f0db5e749591b92c3954ae6f6e9ef9b401f8"
-        },
-        {
-          "path": "packages/engine/src/agent-api/sceneMath.ts",
-          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
-        },
-        {
-          "path": "packages/engine/src/agent-api/RootRuntimeSupport.ts",
-          "sha256": "5a6783e573cc995990066292d4cd1078d5a01c7db768810ed7353930a7f88cac"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 344,
-          "y": 466,
-          "width": 239,
-          "height": 150,
-          "minContrast": 8,
-          "colors": [
-            {
-              "name": "green solder mask #1f4a38",
-              "red": [
-                0,
-                100
-              ],
-              "green": [
-                30,
-                150
-              ],
-              "blue": [
-                15,
-                125
-              ],
-              "minFraction": 0.05,
-              "maxFraction": 0.85
-            },
-            {
-              "name": "black epoxy wall chips #141416",
-              "red": [
-                0,
-                55
-              ],
-              "green": [
-                0,
-                55
-              ],
-              "blue": [
-                0,
-                60
-              ],
-              "minFraction": 0.03,
-              "maxFraction": 0.75
             }
           ]
         }
@@ -3010,148 +2895,6 @@
       ]
     },
     {
-      "id": "documented-example:examples/custom-shader-webgpu-lab",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "subject": "material.custom adapter uv-sphere with tint #ff3a2a and sin(x) brightness bands (default ?backend=webgl2)",
-      "provenance": "Source-derived: Geometry.uvSphere(0.5) with column-major transform scale 0.8 used directly as the MVP, so the sphere is an NDC ellipse of radius 0.4 centred at (0,0): 112 x 64 px half-axes on the 560x320 canvas (CSS size equals buffer size), canvas at x=0 below the 12px #backend line (padding 6px; canvas top ~25.8-28 px). The region x 200-360, y 157-217 lies wholly inside the ellipse for that range. Colors: fragment = tint * (0.55 + 0.45 sin(gl_FragCoord.x * 0.06)) with tint set by hexToRgb('#ff3a2a') = (1, 0.227, 0.165) and raw (un-encoded) low-level output (the lab's own comment gives the clear color as ~(5,6,18) = raw 0.018/0.024/0.07); a per-column evaluation gives 0.58 bright and 0.42 dim fractions and luma contrast ~30. No reference capture was used. Real layout, backend selection and rendered output remain unverified.",
-      "source": {
-        "path": "examples/custom-shader-webgpu-lab/main.ts",
-        "sha256": "c3d3f8e4221e9cb33e9fb2a4d1334ba2e04bb363f7659eec5c3c7a4c19031d8d"
-      },
-      "sourceDependencies": [
-        {
-          "path": "examples/custom-shader-webgpu-lab/index.html",
-          "sha256": "9f9d9301eedeeab9322a39033ee2e000ff66ff497b5dcb2e89f777eb92a787ed"
-        },
-        {
-          "path": "packages/rendering/src/Geometry.ts",
-          "sha256": "8d35d996601ffc580858a84ef40e4ac2f47b13d6332fbf79061e0192af2525b3"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 200,
-          "y": 157,
-          "width": 160,
-          "height": 60,
-          "minContrast": 10,
-          "colors": [
-            {
-              "name": "bright #ff3a2a tint bands",
-              "red": [
-                150,
-                255
-              ],
-              "green": [
-                25,
-                75
-              ],
-              "blue": [
-                15,
-                60
-              ],
-              "minFraction": 0.25,
-              "maxFraction": 0.85
-            },
-            {
-              "name": "dim #ff3a2a tint bands",
-              "red": [
-                20,
-                149
-              ],
-              "green": [
-                0,
-                40
-              ],
-              "blue": [
-                0,
-                30
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.75
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:examples/external-extension-lab",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "subject": "Central cyan telemetry node 'c' at p=(0.12,-0.04) where four links converge, in the inactive (strength 0, time 1.25) host-baseline state",
-      "provenance": "Source-derived: installShell() lays out a grid with a minmax(0,1fr) stage and a 26rem (416px) aside, so at 1280x720 the canvas is 864x720 CSS px at (0,0) showing its 960x800 buffer (same 1.2 aspect, object-fit cover crops nothing). The external fullscreen-triangle shader maps p = ((uv.x-0.5)*1.42, uv.y-0.5); node c projects to (505.0, 388.8). A CPU evaluation of the authored fragment (inactive branch: base + (0.035,0.42,0.56)*(links*0.42 + cyan*0.34), pulse at time 1.25, raw 8-bit output) over the 80x80 region gives core fraction 0.015, glow/link fraction 0.52 and luma contrast 24.5; the pointer-events:none overlays are outside the region. No reference capture was used. Real layout, bilinear downscale, output encoding and rendered appearance remain unverified.",
-      "source": {
-        "path": "examples/external-extension-lab/main.ts",
-        "sha256": "3d09523951193b4449525ca3a8c3ed2f3440ba21b81e6da704847f737eaf0ca4"
-      },
-      "sourceDependencies": [
-        {
-          "path": "examples/external-extension-lab/telemetry-extension.ts",
-          "sha256": "5c8f3edbabe37e3539262d4fa99aab77f6a117ac054cbe04e9a7c7fbf70fdd69"
-        },
-        {
-          "path": "examples/external-extension-lab/index.html",
-          "sha256": "c75f794ed7365ca5da18d94efad00c32e50ffadc1cd178df6affcd74cb6f2214"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 465,
-          "y": 349,
-          "width": 80,
-          "height": 80,
-          "minContrast": 10,
-          "colors": [
-            {
-              "name": "bright cyan node core",
-              "red": [
-                0,
-                110
-              ],
-              "green": [
-                150,
-                255
-              ],
-              "blue": [
-                180,
-                255
-              ],
-              "minFraction": 0.004,
-              "maxFraction": 0.12
-            },
-            {
-              "name": "dim cyan node glow and links",
-              "red": [
-                0,
-                40
-              ],
-              "green": [
-                35,
-                149
-              ],
-              "blue": [
-                50,
-                179
-              ],
-              "minFraction": 0.2,
-              "maxFraction": 0.85
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "documented-example:examples/material-showroom",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
@@ -3340,64 +3083,6 @@
                 255
               ],
               "minFraction": 0.15,
-              "maxFraction": 0.95
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documented-example:examples/post-order-lab",
-      "kind": "numeric",
-      "author": "Aura3D native catalog fixture authors",
-      "surface": {
-        "kind": "canvas",
-        "selector": "canvas"
-      },
-      "subject": "'dim-box' unit PBR box (#202636) at [1.6, 0.5, 0] in the post-order lab's initial slot-'none' frame",
-      "provenance": "Independently derived from the authored camera [0, 1.4, 6] -> [0, 0.5, 0], fov 46, on the 1120x490 #stage canvas at page (0, 0) (index.html CSS, resize false). The unit box's eight corners project to page x 656-780, y 194-303; the region is that projected bounding box, so its corners include the #05060d background. At the no-input state no band pass is registered (setSlot is only called through window.__AURA_POST_ORDER_LAB_SET_SLOT__), so the magenta band is absent. Color band from the authored #202636 (32, 38, 54) under the authored 0.25 directional key, excluding the #05060d background. No reference capture. Lighting, bloom, tone mapping and rendered appearance remain unverified; the subject is intentionally dim.",
-      "source": {
-        "path": "examples/post-order-lab/main.ts",
-        "sha256": "eb4cd942af339aee45116da3deb574fe4b89f36f94cb9816114027d9a84a2916"
-      },
-      "sourceDependencies": [
-        {
-          "path": "examples/post-order-lab/index.html",
-          "sha256": "93f4177c748b628baea9d4e0ab8411410efa8d74cde69f2445e1f4b431ad8962"
-        },
-        {
-          "path": "packages/engine/src/agent-api/sceneMath.ts",
-          "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde"
-        },
-        {
-          "path": "packages/engine/src/agent-api/nodes/camera.ts",
-          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
-        }
-      ],
-      "regions": [
-        {
-          "label": "subject",
-          "x": 656,
-          "y": 194,
-          "width": 125,
-          "height": 109,
-          "minContrast": 5,
-          "colors": [
-            {
-              "name": "dim slate box",
-              "red": [
-                6,
-                90
-              ],
-              "green": [
-                8,
-                100
-              ],
-              "blue": [
-                14,
-                130
-              ],
-              "minFraction": 0.3,
               "maxFraction": 0.95
             }
           ]

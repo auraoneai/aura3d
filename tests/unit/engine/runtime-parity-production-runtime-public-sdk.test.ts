@@ -119,7 +119,8 @@ describe("RuntimeParity production public SDK", () => {
     const mixer = runtime.createMixer({ autoPlay: false });
     mixer.playExclusive("Gesture", { reset: true, loopMode: "once" });
     const update = mixer.update(0.25);
-    expect(update.events).toEqual([{ clipName: "Gesture", name: "gesture-start", time: 0.2, payload: { cue: "wave" } }]);
+    // 5.0 `AnimationEvent` also carries traversal `direction` and `loopCount`.
+    expect(update.events).toEqual([{ clipName: "Gesture", name: "gesture-start", time: 0.2, payload: { cue: "wave" }, direction: 1, loopCount: 0 }]);
     expect(update.applyResult.tracksApplied).toBe(2);
     expect(runtime.snapshot()).toMatchObject({
       clipCount: 2,

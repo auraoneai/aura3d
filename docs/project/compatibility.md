@@ -13,6 +13,8 @@ device runs have not yet been performed. All target cells below are
 **unverified**, including when an older report exists for a different revision,
 test, browser or launch profile.
 
+Compatibility wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.
+
 ## Runtime
 
 | Area | Current status |

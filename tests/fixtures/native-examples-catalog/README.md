@@ -248,11 +248,11 @@ stale `neon-corridor-strike` classification row was removed and
 `tools/agent-examples/index.ts` digest was refreshed for that discovery-only
 change (scaffolding is untouched).
 
-28 documented examples now have entries authored the same way as the
+24 documented examples now have entries authored the same way as the
 templates: the subject's authored world extents projected through the
 authored camera and canvas layout, colour bands from authored hex values, GLB
 factors or UV-addressed texels, and digests of every file the numbers rely on.
-They are uncalibrated hypotheses. **56 discovered documented examples still
+They are uncalibrated hypotheses. **60 discovered documented examples still
 have no entry, deliberately**; no generic region was written for them:
 
 * game routes and ports whose no-query load shows a full-viewport, hit-testable
@@ -269,9 +269,21 @@ have no entry, deliberately**; no generic region was written for them:
   that import the repo-root `src/aura-assets` or sibling examples, and
   `*-port` app wrappers without a `build` script;
 * subjects whose colour cannot be grounded in source (light-dominated or
-  custom-shaded scenes, dark textured products).
+  custom-shaded scenes, dark textured products), and four drafted entries
+  (`showcase-dot-dash-3d`, `custom-shader-webgpu-lab`, `external-extension-lab`,
+  `post-order-lab`) whose dark bands a blank or neutral canvas would also
+  satisfy in the fixture's synthetic oracle check, so they were dropped.
 
 Closing these needs harness/route decisions (per-route start query, a
 non-hit-testable title layer, root-absolute fixture script paths, wrapper
 build scripts), not fill-in expectations, so the documented-completeness test
 keeps failing for them.
+
+Release-prep digest refresh (same date): `arena-shooter`, both
+`character-controller` copies and the animation-studio `scene-player.ts`
+changed only their import specifiers from the removed 4.x subpaths
+(`/production-runtime`, `/rendering`, `/contracts`) to `@aura3d/engine/renderer`
+and `@aura3d/engine/game`, same symbols; `public/index.ts` only lost the
+deprecated root names (the controls case's orbit binding exports remain);
+`compiler/primitives.ts` gained an authored-only `alphaToCoverage` render-state
+request, which no cataloged subject authors.
